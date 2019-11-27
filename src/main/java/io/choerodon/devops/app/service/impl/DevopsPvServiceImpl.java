@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.github.pagehelper.PageSerializable;
 import com.google.gson.Gson;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -31,6 +32,7 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.PageInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.models.*;
 import org.slf4j.Logger;
@@ -314,9 +316,11 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             throw new CommonException("error.pv.not.exists");
         }
 
-        ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(iamProjectDTO.getOrganizationId());
-        List<ProjectDTO> projectDTOList = baseServiceClientOperator.listIamProjectByOrgId(organizationDTO.getId());
+        CustomPageRequest customPageRequest = CustomPageRequest.of(1, 0);
+
+        List<ProjectReqVO> projectReqVOList = Optional.ofNullable(pageProjects(projectId, pvId, customPageRequest, "{\"params\":[],\"searchParam\":{}}"))
+                .map(PageSerializable::getList)
+                .orElseThrow(() -> new CommonException("error.project.get"));
 
         //根据PvId查权限表中关联的projectId
         List<Long> permitted = devopsPvProPermissionService.baseListByPvId(pvId)
@@ -325,9 +329,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 .collect(Collectors.toList());
 
         //把组织下有权限的项目过滤掉再返回
-        return projectDTOList.stream()
+        return projectReqVOList.stream()
                 .filter(i -> !permitted.contains(i.getId()))
-                .map(i -> new ProjectReqVO(i.getId(), i.getName(), i.getCode(), null))
                 .collect(Collectors.toList());
     }
 
@@ -409,10 +412,6 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         if (devopsPvDTO == null) {
             throw new CommonException("error.pv.not.exists");
         }
-
-        Map<String, Object> map = TypeUtil.castMapParams(params);
-        //接收模糊查询参数列表
-        List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
 
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(devopsPvDTO.getClusterId());
         //集群跳过权限校验

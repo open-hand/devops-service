@@ -78,7 +78,7 @@ public class BaseServiceClientOperator {
     }
 
     public PageInfo<ProjectDTO> pageProjectByOrgId(Long organizationId, int page, int size, Sort sort, String name, String code, String params) {
-        Pageable pageable = PageRequest.of(page, size, sort == null ? Sort.unsorted() : sort);
+        CustomPageRequest pageable = CustomPageRequest.of(page, size, sort == null ? Sort.unsorted() : sort);
         try {
             ResponseEntity<PageInfo<ProjectDTO>> pageInfoResponseEntity = baseServiceClient.pageProjectsByOrgId(organizationId,
                     FeignParamUtils.encodePageRequest(pageable), name, code, true, params);
