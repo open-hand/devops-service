@@ -3,9 +3,15 @@ package io.choerodon.devops.app.service.impl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsPvcReqVO;
 import io.choerodon.devops.api.vo.DevopsPvcRespVO;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.PersistentVolumeClaimPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.KubernetesConstants;
@@ -38,7 +44,10 @@ import java.util.*;
 @Service
 public class DevopsPvcServiceImpl implements DevopsPvcService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsPvcServiceImpl.class);
-
+    private static final String PERSISTENTVOLUMECLAIM = "PersistentVolumeClaim";
+    private static final String PERSISTENTVOLUMECLAIM_PREFIX = "pvc-";
+    private static final String YAML_SUFFIX = ".yaml";
+    private static final String MASTER = "master";
     private Gson gson = new Gson();
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
@@ -61,10 +70,12 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     @Autowired
     private DevopsEnvCommandMapper devopsEnvCommandMapper;
     @Autowired
-    private DevopsClusterResourceService devopsClusterResourceService;
+    private TransactionalProducer producer;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_PERSISTENTVOLUMECLAIM,
+            description = "Devops创建PVC", inputSchema = "{}")
     public DevopsPvcRespVO create(Long projectId, DevopsPvcReqVO devopsPvcReqVO) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsPvcReqVO.getEnvId());
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -327,15 +338,55 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
 
         baseUpdate(devopsPvcDTO);
 
-        // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
+        PersistentVolumeClaimPayload persistentVolumeClaimPayload = new PersistentVolumeClaimPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());
+        persistentVolumeClaimPayload.setDevopsPvcDTO(devopsPvcDTO);
+        persistentVolumeClaimPayload.setCreated(true);
+        persistentVolumeClaimPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+        persistentVolumeClaimPayload.setV1PersistentVolumeClaim(v1PersistentVolumeClaim);
 
-        ResourceConvertToYamlHandler<V1PersistentVolumeClaim> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
-        resourceConvertToYamlHandler.setType(v1PersistentVolumeClaim);
-        resourceConvertToYamlHandler.operationEnvGitlabFile("pvc-" + devopsPvcDTO.getName(), gitlabEnvGroupProjectId,
-                CommandType.CREATE.getType(), userAttrDTO.getGitlabUserId(), devopsPvcDTO.getId(),
-                ResourceType.PERSISTENT_VOLUME_CLAIM.getType(), null, false,
-                devopsPvcDTO.getEnvId(), path);
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("env")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_PERSISTENTVOLUMECLAIM),
+                builder -> builder
+                        .withJson(gson.toJson(persistentVolumeClaimPayload))
+                        .withRefId(devopsEnvironmentDTO.getId().toString()));
+    }
+
+    public void operatePvcBySaga(PersistentVolumeClaimPayload persistentVolumeClaimPayload) {
+        try {
+            // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
+            String path = clusterConnectionHandler.handDevopsEnvGitRepository(persistentVolumeClaimPayload.getProjectId(),
+                    persistentVolumeClaimPayload.getDevopsEnvironmentDTO().getCode(),
+                    persistentVolumeClaimPayload.getDevopsEnvironmentDTO().getEnvIdRsa(),
+                    persistentVolumeClaimPayload.getDevopsEnvironmentDTO().getType(),
+                    persistentVolumeClaimPayload.getDevopsEnvironmentDTO().getClusterCode());
+
+            ResourceConvertToYamlHandler<V1PersistentVolumeClaim> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            resourceConvertToYamlHandler.setType(persistentVolumeClaimPayload.getV1PersistentVolumeClaim());
+            resourceConvertToYamlHandler.operationEnvGitlabFile(PERSISTENTVOLUMECLAIM_PREFIX + persistentVolumeClaimPayload.getDevopsPvcDTO().getName(), persistentVolumeClaimPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId().intValue(),
+                    CommandType.CREATE.getType(), persistentVolumeClaimPayload.getGitlabUserId(), persistentVolumeClaimPayload.getDevopsPvcDTO().getId(),
+                    ResourceType.PERSISTENT_VOLUME_CLAIM.getType(), null, false,
+                    persistentVolumeClaimPayload.getDevopsPvcDTO().getEnvId(), path);
+        } catch (Exception e) {
+            LOGGER.info("create or update PersistentVolumeClaim failed!", e);
+            //有异常更新实例以及command的状态
+            DevopsPvcDTO devopsPvcDTO = devopsPvcMapper.selectByPrimaryKey(persistentVolumeClaimPayload.getDevopsPvcDTO().getId());
+            DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
+                    .baseQueryByEnvIdAndResourceId(persistentVolumeClaimPayload.getDevopsEnvironmentDTO().getId(), devopsPvcDTO.getId(), PERSISTENTVOLUMECLAIM);
+            String filePath = devopsEnvFileResourceDTO == null ? PERSISTENTVOLUMECLAIM_PREFIX + devopsPvcDTO.getName() + YAML_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
+            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(persistentVolumeClaimPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
+                    filePath)) {
+                devopsPvcDTO.setStatus(CommandStatus.FAILED.getStatus());
+                baseUpdate(devopsPvcDTO);
+                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsPvcDTO.getCommandId());
+                devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
+                devopsEnvCommandDTO.setError("create or update PVC failed!");
+                devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+            }
+        }
     }
 
     private V1PersistentVolumeClaim initV1PersistentVolumeClaim(DevopsPvcDTO devopsPvcDTO) {

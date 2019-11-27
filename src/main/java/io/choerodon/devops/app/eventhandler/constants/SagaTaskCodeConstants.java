@@ -83,6 +83,16 @@ public class SagaTaskCodeConstants {
     public static final String DEVOPS_CREATE_INGRESS = "devopsCreateIngress";
 
     /**
+     * devops创建PVC
+     */
+    public static final String DEVOPS_CREATE_PERSISTENTVOLUMECLAIM = "devopsCreatePersistentVolumeClaim";
+
+    /**
+     * devops创建PV
+     */
+    public static final String DEVOPS_CREATE_PERSISTENTVOLUME = "devopsCreatePersistentVolume";
+
+    /**
      * 初始化Demo环境的项目相关数据
      */
     public static final String REGISTER_DEVOPS_INIT_DEMO_DATA = "register-devops-init-demo-data";
@@ -207,7 +217,6 @@ public class SagaTaskCodeConstants {
      * 应用市场下载失败删除gitlab相关项目
      */
     public static final String DEVOPS_MARKET_DELETE_GITLAB_PRO = "devops-market-failed-delete-gitlab-pro";
-
 
 
     private SagaTaskCodeConstants() {

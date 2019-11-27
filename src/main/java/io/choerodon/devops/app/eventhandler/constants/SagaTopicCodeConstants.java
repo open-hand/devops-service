@@ -31,6 +31,16 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_CREATE_INGRESS = "devops-create-ingress";
 
     /**
+     * Devops创建PVC
+     */
+    public static final String DEVOPS_CREATE_PERSISTENTVOLUMECLAIM = "devops-create-persistentvolumeclaim";
+
+    /**
+     * Devops创建PV
+     */
+    public static final String DEVOPS_CREATE_PERSISTENTVOLUME = "devops-create-persistentvolume";
+
+    /**
      * Devops创建应用服务
      */
     public static final String DEVOPS_CREATE_APPLICATION_SERVICE = "devops-create-application-service";

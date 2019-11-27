@@ -3,12 +3,17 @@ package io.choerodon.devops.app.service.impl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsPvValidator;
 import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
 import io.choerodon.devops.api.vo.DevopsPvReqVO;
 import io.choerodon.devops.api.vo.DevopsPvVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.PersistentVolumePayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.KubernetesConstants;
 import io.choerodon.devops.infra.dto.*;
@@ -28,6 +33,8 @@ import io.choerodon.devops.infra.util.PageInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -40,8 +47,10 @@ import java.util.stream.Collectors;
 
 @Service
 public class DevopsPvServiceImpl implements DevopsPvService {
-
+    private static Logger LOGGER = LoggerFactory.getLogger(DevopsPvServiceImpl.class);
     private static final String PERSISTENTVOLUME = "PersistentVolume";
+    private static final String PERSISTENTVOLUME_PREFIX = "pv-";
+    private static final String YAML_SUFFIX = ".yaml";
     private static final String CREATE = "create";
     private static final String DELETE = "delete";
     private static final String MASTER = "master";
@@ -72,6 +81,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     DevopsProjectService devopsProjectService;
     @Autowired
     DevopsClusterMapper devopsClusterMapper;
+    @Autowired
+    TransactionalProducer producer;
 
     private Gson gson = new Gson();
 
@@ -584,18 +595,58 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         baseupdatePv(devopsPvDTO);
 
-        // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
+        PersistentVolumePayload persistentVolumePayload = new PersistentVolumePayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());
+        persistentVolumePayload.setDevopsPvDTO(devopsPvDTO);
+        persistentVolumePayload.setCreated(true);
+        persistentVolumePayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+        persistentVolumePayload.setV1PersistentVolume(v1PersistentVolume);
 
-
-        //创建文件
-        ResourceConvertToYamlHandler<V1PersistentVolume> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
-        resourceConvertToYamlHandler.setType(v1PersistentVolume);
-        resourceConvertToYamlHandler.operationEnvGitlabFile("pv" + devopsPvDTO.getName(), gitlabEnvGroupProjectId,
-                CREATE, (long) GitUserNameUtil.getAdminId(), devopsPvDTO.getId(), PERSISTENTVOLUME, null, false,
-                devopsEnvironmentDTO.getId(), path);
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("env")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_PERSISTENTVOLUME),
+                builder -> builder
+                        .withJson(gson.toJson(persistentVolumePayload))
+                        .withRefId(devopsEnvironmentDTO.getId().toString()));
     }
 
+    @Override
+    public void operatePvBySaga(PersistentVolumePayload persistentVolumePayload) {
+        try {
+            // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
+            String path = clusterConnectionHandler.handDevopsEnvGitRepository(persistentVolumePayload.getDevopsEnvironmentDTO().getProjectId(),
+                    persistentVolumePayload.getDevopsEnvironmentDTO().getCode(),
+                    persistentVolumePayload.getDevopsEnvironmentDTO().getEnvIdRsa(),
+                    persistentVolumePayload.getDevopsEnvironmentDTO().getType(),
+                    persistentVolumePayload.getDevopsEnvironmentDTO().getClusterCode());
+
+
+            //创建文件
+            ResourceConvertToYamlHandler<V1PersistentVolume> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            resourceConvertToYamlHandler.setType(persistentVolumePayload.getV1PersistentVolume());
+            resourceConvertToYamlHandler.operationEnvGitlabFile(PERSISTENTVOLUME_PREFIX + persistentVolumePayload.getDevopsPvDTO().getName(), persistentVolumePayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId().intValue(),
+                    CREATE, (long) GitUserNameUtil.getAdminId(), persistentVolumePayload.getDevopsPvDTO().getId(), PERSISTENTVOLUME, null, false,
+                    persistentVolumePayload.getDevopsEnvironmentDTO().getId(), path);
+        } catch (Exception e) {
+            LOGGER.info("create or update PersistentVolume failed!", e);
+            //有异常更新实例以及command的状态
+            DevopsPvDTO devopsPvDTO = devopsPvMapper.selectByPrimaryKey(persistentVolumePayload.getDevopsPvDTO().getId());
+            DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
+                    .baseQueryByEnvIdAndResourceId(persistentVolumePayload.getDevopsEnvironmentDTO().getId(), devopsPvDTO.getId(), PERSISTENTVOLUME);
+            String filePath = devopsEnvFileResourceDTO == null ? PERSISTENTVOLUME_PREFIX + devopsPvDTO.getName() + YAML_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
+            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(persistentVolumePayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
+                    filePath)) {
+                devopsPvDTO.setStatus(CommandStatus.FAILED.getStatus());
+                baseUpdate(devopsPvDTO);
+                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsPvDTO.getCommandId());
+                devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
+                devopsEnvCommandDTO.setError("create or update PV failed!");
+                devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+            }
+        }
+    }
 
     @Override
     public List<DevopsPvVO> queryPvcRelatedPv(Long projectId, String params) {
@@ -606,7 +657,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 projectDTO.getOrganizationId(),
                 TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))), DevopsPvVO.class);
-        if (devopsPvVOList==null){
+        if (devopsPvVOList == null) {
             throw new CommonException("error.pv.query");
         }
         String pvcStorage = map.get("requestResource");
