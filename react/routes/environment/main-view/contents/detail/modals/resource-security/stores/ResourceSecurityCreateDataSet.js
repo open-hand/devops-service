@@ -1,6 +1,7 @@
 import { TARGET_SPECIFIER } from '../Constants';
 
 export default ({ projectId, formatMessage }) => ({
+  paging: false,
   fields: [
     {
       name: 'notifyTriggerEvent',
@@ -27,7 +28,9 @@ export default ({ projectId, formatMessage }) => ({
       type: 'number',
       multiple: true,
       label: formatMessage({ id: 'notification.target.specifier' }),
-      dynamicProps: changeProp,
+      dynamicProps: {
+        required: ({ dataSet, record, name }) => record.get('notifyObject') === TARGET_SPECIFIER,
+      },
       lookupAxiosConfig: {
         url: `/devops/v1/projects/${projectId}/users/list_users`,
         method: 'get',
@@ -38,7 +41,6 @@ export default ({ projectId, formatMessage }) => ({
   ],
   transport: {
     read: {
-      url: '/devops/v1/projects/projectId/notification/id',
       method: 'get',
     },
     submit: ({ data: [data] }) => ({
@@ -53,10 +55,3 @@ export default ({ projectId, formatMessage }) => ({
     }),
   },
 });
-
-
-function changeProp({ dataSet, record, name }) {
-  return {
-    required: record.get('notifyObject') === TARGET_SPECIFIER,
-  };
-}
