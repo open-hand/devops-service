@@ -1374,6 +1374,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
         List<Command> commandsToSend = devopsEnvCommandService.listInstanceCommandsToSync(envId, dateString);
         logger.debug("Sending commands to sync. The size is {}", commandsToSend.size());
+        logger.debug("commands: {}", commandsToSend);
         return commandsToSend;
     }
 
