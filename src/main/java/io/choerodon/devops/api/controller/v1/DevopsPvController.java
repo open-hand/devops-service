@@ -72,7 +72,7 @@ public class DevopsPvController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody @Valid DevopsPvReqVO devopsPvReqVo) {
-        devopsPvService.createPv(devopsPvReqVo);
+        devopsPvService.createPv(projectId,devopsPvReqVo);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 

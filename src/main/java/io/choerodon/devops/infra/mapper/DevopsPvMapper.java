@@ -62,4 +62,6 @@ public interface DevopsPvMapper extends Mapper<DevopsPvDTO> {
      * @param status 状态
      */
     void updateStatusById(@Param("id") Long id, @Param("status") String status);
+
+    List<DevopsPvDTO> listByPvIds(@Param("pvIds") List<Long> pvIds);
 }

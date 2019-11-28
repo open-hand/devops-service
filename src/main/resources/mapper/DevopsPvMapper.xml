@@ -5,6 +5,7 @@
     <select id="listPvByOptions" resultType="io.choerodon.devops.infra.dto.DevopsPvDTO">
         SELECT dpv.id id,
                dpv.pvc_name pvc_name,
+               dpv.project_id project_id,
                dpv.cluster_id cluster_id,
                dpv.name name,
                dpv.type type,
@@ -63,6 +64,7 @@
         SELECT dpv.id id,
         dpv.pvc_name pvc_name,
         dpv.cluster_id cluster_id,
+        dpv.project_id project_id,
         dpv.name name,
         dpv.type type,
         dpv.description description,
@@ -81,14 +83,16 @@
     </select>
 
     <select id="queryByNameAndClusterId" resultType="io.choerodon.devops.infra.dto.DevopsPvDTO">
-        SELECT dpv.id               id,
-               dpv.name             name,
-               dpv.type             type,
-               dpv.description      description,
-               dpv.status           status,
-               dpv.request_resource request_resource,
-               dpv.access_modes     access_modes,
-               dc.name              cluster_name
+        SELECT
+        dpv.id                  id,
+        dpv.name                name,
+        dpv.project_id          project_id,
+        dpv.type                type,
+        dpv.description         description,
+        dpv.status              status,
+        dpv.request_resource    request_resource,
+        dpv.access_modes        access_modes,
+        dc.name                 cluster_name
         FROM devops_pv dpv
         JOIN devops_cluster dc on dpv.cluster_id = dc.id
         WHERE dpv.name=#{name} AND dc.id=#{name}
@@ -122,4 +126,11 @@
         SET devops_pv.status = #{status}
         WHERE devops_pv.id = #{id}
     </update>
+    <select id="listByPvIds" resultType="io.choerodon.devops.infra.dto.DevopsPvDTO">
+        SELECT * FROM devops_pv
+        WHERE id IN
+        <foreach collection="pvIds" item="pvId" separator="," open="(" close=")">
+            #{pvId}
+        </foreach>
+    </select>
 </mapper>

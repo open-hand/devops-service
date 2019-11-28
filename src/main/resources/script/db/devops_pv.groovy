@@ -52,4 +52,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pv') {
             column(name: 'pvc_name', type: 'VARCHAR(40)', remarks: 'pv绑定的pvc名称')
         }
     }
+
+    changeSet(id: '2019-11-27-add-column', author: 'lihao') {
+        addColumn(tableName: 'devops_pv') {
+            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '所属项目id')
+        }
+    }
 }

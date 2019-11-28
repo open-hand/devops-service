@@ -18,7 +18,6 @@ import io.choerodon.devops.app.eventhandler.payload.PersistentVolumePayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.KubernetesConstants;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -109,8 +108,9 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createPv(DevopsPvReqVO devopsPvReqVo) {
+    public void createPv(Long projectId, DevopsPvReqVO devopsPvReqVo) {
         DevopsPvDTO devopsPvDTO = ConvertUtils.convertObject(devopsPvReqVo, DevopsPvDTO.class);
+        devopsPvDTO.setProjectId(projectId);
         devopsPvDTO.setStatus(PvStatus.OPERATING.getStatus());
         // 创建pv的环境是所选集群关联的系统环境
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsPvDTO.getClusterId());
@@ -652,13 +652,36 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
         Map<String, String> map = (Map) searchParamMap.get(TypeUtil.SEARCH_PARAM);
+
         List<DevopsPvVO> devopsPvVOList = ConvertUtils.convertList(devopsPvMapper.listPvByOptions(
                 projectDTO.getOrganizationId(),
                 TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))), DevopsPvVO.class);
+
         if (devopsPvVOList == null) {
             throw new CommonException("error.pv.query");
         }
+
+        Map<Long, List<Long>> projectIdAndPvIdsMap = new HashMap<>();
+
+        //获得不跳过权限的与本项目有关联的pv
+        projectIdAndPvIdsMap.put(projectId, devopsPvProPermissionService.baseListPvIdsByProjectId(projectId));
+
+        devopsPvVOList.forEach(pv -> {
+            CustomPageRequest customPageRequest = CustomPageRequest.of(1, 0);
+            //获得跳过权限的与本项目有关联的pv
+            if (pv.getSkipCheckProjectPermission()) {
+                List<ProjectReqVO> list = new ArrayList<>(Optional.ofNullable(pageProjects(pv.getProjectId(), pv.getId(), customPageRequest, params).getList()).orElse(new ArrayList<>()));
+                if (list.stream().map(ProjectReqVO::getId).collect(Collectors.toList()).contains(projectId)) {
+                    List<Long> pvIds = Optional.ofNullable(projectIdAndPvIdsMap.get(projectId)).orElse(new ArrayList<>());
+                    pvIds.add(pv.getId());
+                    projectIdAndPvIdsMap.put(projectId, pvIds);
+                }
+            }
+        });
+
+        devopsPvVOList = ConvertUtils.convertList(devopsPvMapper.listByPvIds(projectIdAndPvIdsMap.get(projectId)), DevopsPvVO.class);
+
         String pvcStorage = map.get("requestResource");
         // 筛选容量大于或等于pvc容量
         if (pvcStorage != null) {
@@ -667,7 +690,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                     .collect(Collectors.toList());
         } else {
             return devopsPvVOList.stream()
-                    .filter(e -> e.getName() == null)
+                    .filter(e -> e.getPvcName() == null)
                     .collect(Collectors.toList());
         }
     }

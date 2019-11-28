@@ -50,4 +50,9 @@ public class DevopsPvProPermissionServiceImpl implements DevopsPvProPermissionSe
         devopsPvProPermissionDTO.setPvId(pvId);
         devopsPvProPermissionMapper.delete(devopsPvProPermissionDTO);
     }
+
+    @Override
+    public List<Long> baseListPvIdsByProjectId(Long projectId) {
+        return devopsPvProPermissionMapper.listByProjectId(projectId);
+    }
 }
