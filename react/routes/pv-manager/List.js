@@ -11,9 +11,9 @@ import CreateForm from './modals/create-form';
 import PermissionManager from './modals/permission-mananger';
 import StatusTag from '../../components/status-tag';
 import { handlePromptError } from '../../utils';
+import StatusIcon from '../../components/StatusIcon/StatusIcon';
 
 import './index.less';
-import StatusIcon from '../../components/StatusIcon/StatusIcon';
 
 const { Column } = Table;
 const modalKey1 = Modal.key();
@@ -90,6 +90,7 @@ const AppService = withRouter(observer((props) => {
     return <StatusIcon
       name={value}
       status={status === 'Released' ? 'deleted' : 'success'}
+      width={0.08}
     />;
   }
 

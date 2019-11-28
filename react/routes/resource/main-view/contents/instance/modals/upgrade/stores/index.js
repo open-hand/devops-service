@@ -22,7 +22,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
       AppState: { currentMenuType: { projectId } },
       children,
       intl: { formatMessage },
-      store,
       vo: {
         id,
         parentId,
@@ -30,8 +29,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
         appServiceId,
       },
       intlPrefix,
-      prefixCls,
-      refresh,
     } = props;
 
     const upgradeStore = useStore();
