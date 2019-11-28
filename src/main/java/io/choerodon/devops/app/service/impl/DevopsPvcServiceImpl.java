@@ -1,8 +1,26 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.math.BigDecimal;
+import java.util.*;
+
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.kubernetes.client.custom.Quantity;
+import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.models.V1PersistentVolumeClaimSpec;
+import io.kubernetes.client.models.V1ResourceRequirements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -25,21 +43,6 @@ import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvcMapper;
 import io.choerodon.devops.infra.util.*;
-import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1PersistentVolumeClaim;
-import io.kubernetes.client.models.V1PersistentVolumeClaimSpec;
-import io.kubernetes.client.models.V1ResourceRequirements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.util.*;
 
 @Service
 public class DevopsPvcServiceImpl implements DevopsPvcService {
@@ -379,7 +382,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
             String filePath = devopsEnvFileResourceDTO == null ? PERSISTENTVOLUMECLAIM_PREFIX + devopsPvcDTO.getName() + YAML_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(persistentVolumeClaimPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
                     filePath)) {
-                devopsPvcDTO.setStatus(CommandStatus.FAILED.getStatus());
+                devopsPvcDTO.setStatus(PvcStatus.FAILED.getStatus());
                 baseUpdate(devopsPvcDTO);
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsPvcDTO.getCommandId());
                 devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
@@ -448,12 +451,71 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         devopsPvcMapper.delete(devopsPvcDTO);
     }
 
+    // 新启动一个事务
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public void retryPushPvcToGitLab(Long pvcId) {
-        // TODO by zmf
         DevopsPvcDTO devopsPvcDTO = devopsPvcMapper.selectByPrimaryKey(pvcId);
         if (devopsPvcDTO == null) {
-            throw new CommonException("error.pvc.not.exists");
+            LOGGER.info("The pvc {} to be retried doesn't exist in database", pvcId);
+            return;
         }
+
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsPvcDTO.getEnvId());
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        // 校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+
+        // 判断远程是否存在pvc对应的文件，存在就return
+        String remoteFileName = PERSISTENTVOLUMECLAIM_PREFIX + devopsPvcDTO.getName();
+        if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.MASTER, remoteFileName)) {
+            LOGGER.info("Pvc {} isn't necessary to retry to push to gitlab since corresponding remote file {} exists.", devopsPvcDTO.getName(), remoteFileName);
+            return;
+        }
+
+        // 将command的状态置为初始状态
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsPvcDTO.getCommandId());
+        if (devopsEnvCommandDTO == null) {
+            LOGGER.warn("Retry pushing pvc: unexpected null command for pvc with command id {}", devopsPvcDTO.getCommandId());
+            return;
+        } else {
+            if (!StringUtils.isEmpty(devopsEnvCommandDTO.getSha())) {
+                LOGGER.warn("Retry pushing pvc: it seems that this pvc had passed the GitOps flow due to the command sha {}", devopsEnvCommandDTO.getSha());
+                return;
+            }
+            devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
+            devopsEnvCommandDTO.setError(null);
+            devopsEnvCommandMapper.updateByPrimaryKey(devopsEnvCommandDTO);
+        }
+
+        // 将PVC的状态置为初始状态
+        if (!Objects.equals(PvcStatus.OPERATING.getStatus(), devopsPvcDTO.getStatus())
+                && !Objects.equals(PvcStatus.FAILED.getStatus(), devopsPvcDTO.getStatus())) {
+            LOGGER.warn("Retry pushing pvc: unexpected status {} for pvc", devopsPvcDTO.getStatus());
+            return;
+        } else {
+            devopsPvcMapper.updateStatusById(pvcId, PvcStatus.OPERATING.getStatus());
+        }
+
+        // 初始化V1PersistentVolumeClaim对象
+        V1PersistentVolumeClaim v1PersistentVolumeClaim = initV1PersistentVolumeClaim(devopsPvcDTO);
+
+        PersistentVolumeClaimPayload persistentVolumeClaimPayload = new PersistentVolumeClaimPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());
+        persistentVolumeClaimPayload.setDevopsPvcDTO(devopsPvcDTO);
+        persistentVolumeClaimPayload.setCreated(true);
+        persistentVolumeClaimPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+        persistentVolumeClaimPayload.setV1PersistentVolumeClaim(v1PersistentVolumeClaim);
+
+        // 重试不需要考虑saga在事务回滚的情况下仍然发出的情况
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("env")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_PERSISTENTVOLUMECLAIM),
+                builder -> builder
+                        .withPayloadAndSerialize(persistentVolumeClaimPayload)
+                        .withRefId(devopsEnvironmentDTO.getId().toString()));
     }
 }

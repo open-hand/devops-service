@@ -987,26 +987,34 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(envId, devopsPvDTO.getId(), ObjectType.PERSISTENTVOLUME.getType());
-        updateEnvCommandStatus(resourceCommitVO,
+        if (updateEnvCommandStatus(resourceCommitVO,
                 devopsPvDTO.getCommandId(),
                 devopsEnvFileResourceDTO,
                 PERSISTENT_VOLUME_KIND,
                 devopsPvDTO.getName(),
                 CommandStatus.SUCCESS.getStatus(),
-                envFileErrorFiles);
+                envFileErrorFiles)) {
+            if (Objects.equals(devopsPvDTO.getStatus(), PvStatus.OPERATING.getStatus())) {
+                devopsPvMapper.updateStatusById(devopsPvDTO.getId(), PvStatus.FAILED.getStatus());
+            }
+        }
     }
 
     private void syncPersistentVolumeClaim(Long envId, List<DevopsEnvFileErrorDTO> envFileErrorFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
         DevopsPvcDTO devopsPvcDTO = devopsPvcService.queryByEnvIdAndName(envId, objects[1]);
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(envId, devopsPvcDTO.getId(), ObjectType.PERSISTENTVOLUMECLAIM.getType());
-        updateEnvCommandStatus(resourceCommitVO,
+        if (updateEnvCommandStatus(resourceCommitVO,
                 devopsPvcDTO.getCommandId(),
                 devopsEnvFileResourceDTO,
                 PERSISTENT_VOLUME_CLAIM_KIND,
                 devopsPvcDTO.getName(),
                 CommandStatus.SUCCESS.getStatus(),
-                envFileErrorFiles);
+                envFileErrorFiles)) {
+            if (Objects.equals(devopsPvcDTO.getStatus(), PvcStatus.OPERATING.getStatus())) {
+                devopsPvcMapper.updateStatusById(devopsPvcDTO.getId(), PvcStatus.FAILED.getStatus());
+            }
+        }
     }
 
     private void syncSecret(Long envId, List<DevopsEnvFileErrorDTO> envFileErrorFiles, ResourceCommitVO resourceCommitVO,
@@ -1420,12 +1428,13 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
                         devopsEnvCommandDTO.setError("The deploy is time out!");
 
-                        // 如果是超时，不将pv和pvc的纪录本身的状态更改
                         updateResourceStatus(envId, devopsEnvCommandDTO,
                                 InstanceStatus.FAILED,
                                 ServiceStatus.FAILED,
                                 IngressStatus.FAILED,
-                                CertificationStatus.FAILED, null, null);
+                                CertificationStatus.FAILED,
+                                PvStatus.FAILED,
+                                PvcStatus.FAILED);
                     }
 
                     devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
@@ -1694,12 +1703,20 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 certificationService.updateStatus(certificationDTO);
                 break;
             case PERSISTENT_VOLUME_KIND:
-                if (pvStatus != null) {
+                DevopsPvDTO devopsPvDTO = devopsPvMapper.selectByPrimaryKey(devopsEnvCommandDTO.getObjectId());
+                if (pvStatus != PvStatus.FAILED) {
+                    devopsPvMapper.updateStatusById(devopsEnvCommandDTO.getObjectId(), pvStatus.getStatus());
+                } else if (devopsPvDTO != null
+                        && Objects.equals(devopsPvDTO.getStatus(), PvStatus.OPERATING.getStatus())) {
                     devopsPvMapper.updateStatusById(devopsEnvCommandDTO.getObjectId(), pvStatus.getStatus());
                 }
                 break;
             case PERSISTENT_VOLUME_CLAIM_KIND:
-                if (pvcStatus != null) {
+                DevopsPvcDTO devopsPvcDTO = devopsPvcMapper.selectByPrimaryKey(devopsEnvCommandDTO.getObjectId());
+                if (pvcStatus != PvcStatus.FAILED) {
+                    devopsPvcMapper.updateStatusById(devopsEnvCommandDTO.getObjectId(), pvcStatus.getStatus());
+                } else if (devopsPvcDTO != null
+                        && Objects.equals(devopsPvcDTO.getStatus(), PvcStatus.OPERATING.getStatus())) {
                     devopsPvcMapper.updateStatusById(devopsEnvCommandDTO.getObjectId(), pvcStatus.getStatus());
                 }
                 break;

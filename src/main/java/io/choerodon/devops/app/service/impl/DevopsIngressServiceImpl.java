@@ -620,7 +620,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             String filePath = devopsEnvFileResourceDTO == null ? INGRESS_PREFIX + devopsIngressDTO.getName() + YAML_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(ingressSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
                     filePath)) {
-                devopsIngressDTO.setStatus(CommandStatus.FAILED.getStatus());
+                devopsIngressDTO.setStatus(IngressStatus.FAILED.getStatus());
                 baseUpdate(devopsIngressDTO);
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsIngressDTO.getCommandId());
                 devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
