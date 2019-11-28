@@ -7,7 +7,7 @@ import { useClusterContentStore } from '../../stores';
 
 import './index.less';
 
-export default ({ name, errorMessage, describe, buttonData = [], status, className }) => {
+export default ({ name, errorMessage, describe, buttonData = [], status, className, progress }) => {
   const {
     prefixCls,
   } = useClusterMainStore();
@@ -61,7 +61,7 @@ export default ({ name, errorMessage, describe, buttonData = [], status, classNa
       <div className={`${prefixCls}-card-wrap-content`}>
         {getStatus()}
         <div className={`${prefixCls}-card-wrap-content-text`}>
-          {describe}
+          {progress || describe}
         </div>
       </div>
       <div className={`${prefixCls}-card-wrap-footer`}>
