@@ -28,7 +28,7 @@ export default ({ formatMessage, intlPrefix, projectId, versionsDs, valueDs }) =
         }
         return ({
           url: `/devops/v1/projects/${projectId}/app_service_instances`,
-          method: 'post',
+          method: 'put',
           data: res,
         });
       },

@@ -35,12 +35,12 @@ export default injectIntl(observer(() => {
   const [searchValue, setSearchValue] = useState('');
   const [hasEditorError, setHasEditorError] = useState(false);
 
-  modal.handleOk(() => {
+  modal.handleOk(async () => {
     if (hasEditorError) {
       return false;
     }
     try {
-      if (upgradeDs.submit() !== false) {
+      if (await upgradeDs.submit() !== false) {
         refresh();
       } else {
         return false;
@@ -57,16 +57,17 @@ export default injectIntl(observer(() => {
       if (versionsDs.totalCount && !versionId) {
         const { id: newVersionId } = (versionsDs.toData())[0] || {};
         record.set('appServiceVersionId', newVersionId);
+      } else {
+        valueDs.setQueryParameter('versionId', versionId);
+        valueDs.query();
       }
-      valueDs.setQueryParameter('versionId', record.get('appServiceVersionId'));
-      valueDs.query();
     }
     loadData();
   }, []);
 
   function loadInitVersion() {
     versionId && versionsDs.setQueryParameter('app_service_version_id', versionId);
-    loadVersions();
+    return loadVersions();
   }
 
   async function loadVersions(page = 1) {
