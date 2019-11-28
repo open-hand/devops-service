@@ -1,6 +1,7 @@
 import React, { Fragment, useMemo } from 'react';
 import { Modal, Spin } from 'choerodon-ui/pro';
 import map from 'lodash/map';
+import { Choerodon } from '@choerodon/boot';
 import { observer } from 'mobx-react-lite';
 import { useClusterMainStore } from '../../../stores';
 import { useClusterContentStore } from '../stores';
@@ -9,7 +10,6 @@ import ComponentCard from './card';
 import { handlePromptError } from '../../../../../../utils';
 
 import './index.less';
-import { Choerodon } from '@choerodon/boot';
 
 const monitorInstallKey = Modal.key();
 const monitorUninstallKey = Modal.key();
