@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, Fragment } from 'react';
 import { Action, Choerodon } from '@choerodon/boot';
-import { Table, Modal, Tooltip } from 'choerodon-ui/pro';
+import { Table, Modal, Tooltip, Spin } from 'choerodon-ui/pro';
 import TimePopover from '../../../../../components/time-popover';
 import UserInfo from '../../../../../components/userInfo';
 import ClickText from '../../../../../components/click-text';
@@ -42,22 +42,18 @@ export default function DeployConfig() {
     configDs.query();
   }
 
-  function openDeleteModal(name) {
-    Modal.open({
-      movable: false,
-      closable: false,
-      key: deleteModalKey,
-      title: formatMessage({ id: `${intlPrefix}.config.delete.disable` }, { name }),
-      children: formatMessage({ id: `${intlPrefix}.config.delete.describe` }),
-      okCancel: false,
-      okText: formatMessage({ id: 'iknow' }),
-    });
-  }
-
   async function checkDelete() {
     const record = configDs.current;
     const valueId = record.get('id');
     const name = record.get('name');
+    const deleteModal = Modal.open({
+      movable: false,
+      closable: false,
+      key: deleteModalKey,
+      title: formatMessage({ id: `${intlPrefix}.config.delete.disable` }, { name }),
+      children: <Spin />,
+      footer: null,
+    });
     try {
       const res = await envStore.checkDelete(projectId, valueId);
       if (handlePromptError(res)) {
@@ -65,15 +61,46 @@ export default function DeployConfig() {
           title: formatMessage({ id: `${intlPrefix}.config.delete.disable` }, { name }),
           children: formatMessage({ id: `${intlPrefix}.config.delete.des` }),
           okText: formatMessage({ id: 'delete' }),
+          onOk: () => handleDelete(record),
           okProps: { color: 'red' },
           cancelProps: { color: 'dark' },
+          footer: ((okBtn, cancelBtn) => (
+            <Fragment>{okBtn}{cancelBtn}</Fragment>
+          )),
         };
-        configDs.delete(record, modalProps);
+        // configDs.delete(record, modalProps);
+        deleteModal.update(modalProps);
+      } else if (!res.failed) {
+        deleteModal.update({
+          children: formatMessage({ id: `${intlPrefix}.config.delete.describe` }),
+          okCancel: false,
+          okText: formatMessage({ id: 'iknow' }),
+          footer: ((OkBtn) => (
+            <Fragment>
+              {OkBtn}
+            </Fragment>
+          )),
+        });
       } else {
-        openDeleteModal(name);
+        deleteModal.close();
       }
     } catch (e) {
       Choerodon.handleResponseError(e);
+      deleteModal.close();
+    }
+  }
+
+  async function handleDelete(record) {
+    try {
+      const res = await envStore.deleteRecord(projectId, record.get('id'));
+      if (handlePromptError(res, false)) {
+        refresh();
+      } else {
+        return false;
+      }
+    } catch (err) {
+      Choerodon.handleResponseError(err);
+      return false;
     }
   }
 
