@@ -91,7 +91,7 @@ const pvcContent = observer((props) => {
 
   function renderAction({ record }) {
     const status = record.get('status');
-    const disabled = getEnvIsNotRunning() || status === 'Pending' || status === 'Terminating' || status === 'Operating';
+    const disabled = getEnvIsNotRunning() || status === 'Terminating' || status === 'Operating';
     if (disabled) {
       return;
     }

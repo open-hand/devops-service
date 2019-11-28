@@ -1270,9 +1270,11 @@ const cluster = {
   'c7ncd.cluster.cert.uninstall': '卸载CertManager',
   'c7ncd.cluster.cert.uninstall.des': '确定要卸载CertManager吗？',
   'c7ncd.cluster.cert.uninstall.disabled': '无法卸载CertManager',
-  'c7ncd.cluster.install.step.gitops': '生成配置库',
-  'c7ncd.cluster.install.step.monitor': '安装监控组件',
-  'c7ncd.cluster.install.step.health': '健康检查',
+  'c7ncd.cluster.install.step.parserPvc': '创建PVC',
+  'c7ncd.cluster.install.step.boundPvc': '绑定PV',
+  'c7ncd.cluster.install.step.parserPrometheus': '生成配置库',
+  'c7ncd.cluster.install.step.installPrometheus': '安装集群监控',
+  'c7ncd.cluster.install.step.retry': '重试',
   'c7ncd.cluster.permission.tips':
     '此操作用于为此集群在该组织下配置公开范围。一般默认选择为组织下所有项目，即所有项目下的环境均能连接到此集群；若选择组织下特定项目，则只有被授权项目下的环境才有权限连接到此集群',
   'c7ncd.cluster.permission.tab.tips':

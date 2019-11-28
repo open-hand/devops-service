@@ -71,7 +71,6 @@ const ClusterModals = observer(() => {
         break;
       case COMPONENT_TAB:
         contentStore.loadComponentList(projectId, id);
-        contentStore.loadPrometheusStatus(projectId, id);
         break;
       case MONITOR_TAB:
         contentStore.loadGrafanaUrl(projectId, id);

@@ -37,6 +37,15 @@ export default function useStore({ NODE_TAB }) {
       return this.prometheusStatus;
     },
 
+    prometheusLoading: false,
+    setPrometheusLoading(data) {
+      this.prometheusLoading = data;
+    },
+    get getPrometheusLoading() {
+      return this.prometheusLoading;
+    },
+
+
     async loadGrafanaUrl(projectId, clusterId) {
       try {
         const res = await axios.get(`/devops/v1/projects/${projectId}/cluster_resource/grafana_url?cluster_id=${clusterId}&type=cluster`);
@@ -94,12 +103,15 @@ export default function useStore({ NODE_TAB }) {
     },
 
     async loadPrometheusStatus(projectId, clusterId) {
+      this.setPrometheusLoading(true);
       try {
         const res = await axios.get(`/devops/v1/projects/${projectId}/cluster_resource/prometheus/deploy_status?cluster_id=${clusterId}`);
         if (handlePromptError(res)) {
           this.setPrometheusStatus(res);
         }
+        this.setPrometheusLoading(false);
       } catch (e) {
+        this.setPrometheusLoading(false);
         Choerodon.handleResponseError(e);
       }
     },

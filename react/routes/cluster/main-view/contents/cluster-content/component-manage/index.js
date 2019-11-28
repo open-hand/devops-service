@@ -1,12 +1,14 @@
-import React, { Fragment, useMemo } from 'react';
+import React, { Fragment, useEffect, useMemo } from 'react';
 import { Modal, Spin } from 'choerodon-ui/pro';
 import map from 'lodash/map';
+import find from 'lodash/find';
 import { Choerodon } from '@choerodon/boot';
 import { observer } from 'mobx-react-lite';
 import { useClusterMainStore } from '../../../stores';
 import { useClusterContentStore } from '../stores';
 import MonitorCreate from './monitor-create';
 import ComponentCard from './card';
+import Progress from './progress';
 import { handlePromptError } from '../../../../../../utils';
 
 import './index.less';
@@ -22,6 +24,7 @@ export default observer((props) => {
   const {
     intlPrefix,
     prefixCls,
+    ClusterDetailDs,
   } = useClusterMainStore();
   const {
     formatMessage,
@@ -29,6 +32,10 @@ export default observer((props) => {
     projectId,
     clusterId,
   } = useClusterContentStore();
+  
+  function getClusterConnect() {
+    return ClusterDetailDs.current.get('connect');
+  }
 
   function getContent() {
     const { getComponentList } = contentStore;
@@ -44,6 +51,7 @@ export default observer((props) => {
           buttonData={getButtonData(type, status, operate, message)}
           status={status}
           errorMessage={message}
+          progress={type === 'prometheus' && status === 'processing' && operate !== 'uninstall' ? <Progress /> : null}
         />
       );
     });
@@ -51,6 +59,7 @@ export default observer((props) => {
   }
 
   function getButtonData(type, status, operate, message) {
+    const disabled = !getClusterConnect();
     let buttonData = [];
     if (type === 'prometheus') {
       switch (status) {
@@ -59,6 +68,7 @@ export default observer((props) => {
             {
               text: formatMessage({ id: 'install' }),
               onClick: () => installMonitor(message ? 'edit' : 'create'),
+              disabled,
             },
           ];
           break;
@@ -68,19 +78,20 @@ export default observer((props) => {
               {
                 text: formatMessage({ id: 'install' }),
                 loading: true,
-                popoverContent: getPopoverContent(),
               },
             ];
           } else {
             buttonData = [
               {
                 text: formatMessage({ id: 'edit' }),
+                loading: operate === 'upgrade',
                 onClick: () => installMonitor('edit'),
+                disabled,
               },
               {
                 text: formatMessage({ id: 'uninstall' }),
-                loading: true,
-                popoverContent: getPopoverContent(),
+                loading: operate !== 'upgrade',
+                disabled,
               },
             ];
           }
@@ -91,10 +102,12 @@ export default observer((props) => {
             {
               text: formatMessage({ id: 'edit' }),
               onClick: () => installMonitor('edit'),
+              disabled,
             },
             {
               text: formatMessage({ id: 'uninstall' }),
               onClick: uninstallMonitor,
+              disabled,
             },
           ];
           break;
@@ -107,6 +120,7 @@ export default observer((props) => {
             {
               text: formatMessage({ id: 'install' }),
               onClick: handleInstallCert,
+              disabled,
             },
           ];
           break;
@@ -124,6 +138,7 @@ export default observer((props) => {
             {
               text: formatMessage({ id: 'uninstall' }),
               onClick: uninstallCert,
+              disabled,
             },
           ];
           break;
@@ -131,27 +146,6 @@ export default observer((props) => {
       }
     }
     return buttonData;
-  }
-
-  function getPopoverContent() {
-    const { getPrometheusStatus } = contentStore;
-    return (
-      <Fragment>
-        {map(getPrometheusStatus, (value, key) => (
-          <div className={`${prefixCls}-install-step`} key={key}>
-            <div className={`${prefixCls}-install-step-content`}>
-              <span className={`${prefixCls}-install-step-status ${prefixCls}-install-step-status-${value}`} />
-              <span className={`${prefixCls}-install-step-text`}>
-                {formatMessage({ id: `${intlPrefix}.install.step.${key}` })}
-              </span>
-            </div>
-            {value !== 'pending' && (
-              <div className={`${prefixCls}-install-step-line ${prefixCls}-install-step-${value}`} />
-            )}
-          </div>
-        ))}
-      </Fragment>
-    );
   }
 
   function refresh() {
