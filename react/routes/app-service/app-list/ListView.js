@@ -303,6 +303,7 @@ const ListView = withRouter(observer((props) => {
         stopModal.close();
       }
     }).catch((err) => {
+      stopModal.close();
       Choerodon.handleResponseError(err);
     });
   }

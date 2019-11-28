@@ -9,6 +9,7 @@ import ComponentCard from './card';
 import { handlePromptError } from '../../../../../../utils';
 
 import './index.less';
+import { Choerodon } from '@choerodon/boot';
 
 const monitorInstallKey = Modal.key();
 const monitorUninstallKey = Modal.key();
@@ -199,24 +200,29 @@ export default observer((props) => {
       okText: formatMessage({ id: 'iknow' }),
       footer: null,
     });
-    const res = await contentStore.checkUninstallCert(projectId, clusterId);
-    if (handlePromptError(res)) {
-      if (res) {
-        deleteModal.update({
-          children: formatMessage({ id: `${intlPrefix}.cert.uninstall.des` }),
-          okText: formatMessage({ id: 'uninstall' }),
-          okCancel: true,
-          onOk: handleUninstallCert,
-          footer: (okBtn, cancelBtn) => <div>{okBtn}{cancelBtn}</div>,
-        });
+    try {
+      const res = await contentStore.checkUninstallCert(projectId, clusterId);
+      if (handlePromptError(res)) {
+        if (res) {
+          deleteModal.update({
+            children: formatMessage({ id: `${intlPrefix}.cert.uninstall.des` }),
+            okText: formatMessage({ id: 'uninstall' }),
+            okCancel: true,
+            onOk: handleUninstallCert,
+            footer: (okBtn, cancelBtn) => <div>{okBtn}{cancelBtn}</div>,
+          });
+        } else {
+          deleteModal.update({
+            children: formatMessage({ id: `${intlPrefix}.cert.uninstall.disabled` }),
+            footer: (okBtn) => okBtn,
+          });
+        }
       } else {
-        deleteModal.update({
-          children: formatMessage({ id: `${intlPrefix}.cert.uninstall.disabled` }),
-          footer: (okBtn) => okBtn,
-        });
+        deleteModal.close(true);
       }
-    } else {
-      deleteModal.close(true);
+    } catch (error) {
+      Choerodon.handlePromptError(error);
+      deleteModal.close();
     }
   }
 

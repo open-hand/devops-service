@@ -104,23 +104,28 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
       okCancel: false,
       okText: formatMessage({ id: 'iknow' }),
     });
-    const res = await checkStatus();
-    if (res) {
-      modifyModal.update({
-        okCancel: true,
-        children: <EnvModifyForm
-          intlPrefix={intlPrefix}
-          refresh={refresh}
-          record={record}
-          store={envStore}
-        />,
-        okText: formatMessage({ id: 'save' }),
-      });
-    } else {
-      modifyModal.update({
-        children: formatMessage({ id: `${intlPrefix}.status.change` }),
-        onOk: refresh,
-      });
+    try {
+      const res = await checkStatus();
+      if (res) {
+        modifyModal.update({
+          okCancel: true,
+          children: <EnvModifyForm
+            intlPrefix={intlPrefix}
+            refresh={refresh}
+            record={record}
+            store={envStore}
+          />,
+          okText: formatMessage({ id: 'save' }),
+        });
+      } else {
+        modifyModal.update({
+          children: formatMessage({ id: `${intlPrefix}.status.change` }),
+          onOk: refresh,
+        });
+      }
+    } catch (error) {
+      Choerodon.handlePromptError(error);
+      modifyModal.close();
     }
   }
 
@@ -149,31 +154,36 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     });
     const res = await checkStatus();
     if (res) {
-      const result = await mainStore.checkEffect(projectId, envId);
+      try {
+        const result = await mainStore.checkEffect(projectId, envId);
 
-      if (handlePromptError(result)) {
-        effectModal.update({
-          children: formatMessage({ id: `${intlPrefix}.stop.des` }),
-          okText: formatMessage({ id: 'ok' }),
-          okCancel: true,
-          onOk: () => handleEffect(false),
-          footer: ((okBtn, cancelBtn) => (
-            <Fragment>
-              {okBtn}{cancelBtn}
-            </Fragment>
-          )),
-        });
-      } else if (!result.failed) {
-        effectModal.update({
-          children: formatMessage({ id: `${intlPrefix}.no.stop.des` }),
-          okText: formatMessage({ id: 'iknow' }),
-          footer: ((okBtn, cancelBtn) => (
-            <Fragment>
-              {okBtn}
-            </Fragment>
-          )),
-        });
-      } else {
+        if (handlePromptError(result)) {
+          effectModal.update({
+            children: formatMessage({ id: `${intlPrefix}.stop.des` }),
+            okText: formatMessage({ id: 'ok' }),
+            okCancel: true,
+            onOk: () => handleEffect(false),
+            footer: ((okBtn, cancelBtn) => (
+              <Fragment>
+                {okBtn}{cancelBtn}
+              </Fragment>
+            )),
+          });
+        } else if (!result.failed) {
+          effectModal.update({
+            children: formatMessage({ id: `${intlPrefix}.no.stop.des` }),
+            okText: formatMessage({ id: 'iknow' }),
+            footer: ((okBtn, cancelBtn) => (
+              <Fragment>
+                {okBtn}
+              </Fragment>
+            )),
+          });
+        } else {
+          effectModal.close();
+        }
+      } catch (error) {
+        Choerodon.handleResponseError(error);
         effectModal.close();
       }
     } else {
