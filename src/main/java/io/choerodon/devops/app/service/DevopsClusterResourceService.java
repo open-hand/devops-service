@@ -124,16 +124,18 @@ public interface DevopsClusterResourceService {
     void retryPvc(List<Long> pvcIds);
 
     /**
-     * prometheus实例重新部署
+     * prometheus的实例异常时进行重试
      *
-     * @param instanceId prometheus组件对应的实例id
+     * @param instanceId 实例id
+     * @param envId      环境id
      */
-    void reDeployPrometheus(Long instanceId);
+    void retryPrometheusInstance(Long instanceId, Long envId);
 
     /**
      * 重试系统环境的GitOps解析
      *
      * @param envId 环境id
+     * @return 重试GitOps解析是否重试
      */
-    void retrySystemEnvGitOps(Long envId);
+    boolean retrySystemEnvGitOps(Long envId);
 }

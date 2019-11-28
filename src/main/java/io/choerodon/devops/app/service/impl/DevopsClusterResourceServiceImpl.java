@@ -526,15 +526,28 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
-    public void reDeployPrometheus(Long instanceId) {
-        appServiceInstanceService.restartInstance(instanceId);
+    public void retryPrometheusInstance(Long instanceId, Long envId) {
+        // 三步只重试一步
+        if (componentReleaseService.retryPushingToGitLab(instanceId, ClusterResourceType.PROMETHEUS)) {
+            return;
+        }
+
+        if (retrySystemEnvGitOps(envId)) {
+            return;
+        }
+
+        if (componentReleaseService.restartReleaseInstance(instanceId)) {
+            return;
+        }
     }
 
     @Override
-    public void retrySystemEnvGitOps(Long envId) {
+    public boolean retrySystemEnvGitOps(Long envId) {
+        // TODO by zmf
         devopsEnvironmentService.retryGitOps(envId);
+        return true;
     }
-    
+
     private PrometheusStageVO getPvcsStatus(DevopsPrometheusDTO devopsPrometheusDTO, PrometheusStageVO prometheusStageVO) {
         DevopsPvcDTO pormetheusPVC = devopsPvcService.queryById(devopsPrometheusDTO.getPrometheusPvId());
         DevopsPvcDTO grafanaPVC = devopsPvcService.queryById(devopsPrometheusDTO.getGrafanaPvId());

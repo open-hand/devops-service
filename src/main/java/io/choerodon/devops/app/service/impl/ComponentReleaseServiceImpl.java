@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
@@ -8,17 +9,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
+import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvFileResourceMapper;
 import io.choerodon.devops.infra.util.*;
 
 /**
@@ -46,6 +53,12 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
     private DevopsEnvCommandValueService devopsEnvCommandValueService;
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
+    @Autowired
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    private DevopsEnvFileResourceMapper devopsEnvFileResourceMapper;
+    @Autowired
+    private DevopsEnvCommandMapper devopsEnvCommandMapper;
 
     /**
      * 更新时要保证是真的更新了组件的配置值
@@ -140,6 +153,94 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public AppServiceInstanceDTO updateReleaseForPrometheus(DevopsPrometheusDTO devopsPrometheusDTO, Long instanceId, Long systemEnvId) {
         return createOrUpdateComponentRelease(ClusterResourceType.PROMETHEUS, CommandType.UPDATE, devopsPrometheusDTO, systemEnvId, instanceId);
+    }
+
+    // 开新事务
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public boolean retryPushingToGitLab(Long instanceId, ClusterResourceType clusterResourceType) {
+        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(instanceId);
+        if (appServiceInstanceDTO == null) {
+            LOGGER.info("Retry pushing instance: the instance with id {} is unexpectedly null.", instanceId);
+            return false;
+        }
+
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+
+        // 判断是否解析过了
+        if (devopsEnvFileResourceMapper.countRecords(devopsEnvironmentDTO.getId(), ResourceType.C7NHELMRELEASE.getType(), appServiceInstanceDTO.getId()) > 0) {
+            LOGGER.info("Retry pushing instance: the instance with code {} has passed the GitOps flow since the env-file-resource record exists", appServiceInstanceDTO.getCode());
+            return false;
+        }
+
+        // 校验远程文件是否存在
+        String remoteFileName = GitOpsConstants.RELEASE_PREFIX + appServiceInstanceDTO.getCode() + GitOpsConstants.YAML_FILE_SUFFIX;
+        if (doesRemoteFileExist(remoteFileName,
+                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()))) {
+            LOGGER.info("Retry pushing instance: retry cancels since the remote file {} exists.", remoteFileName);
+            return false;
+        }
+
+        // 校验command
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
+        if (!StringUtils.isEmpty(devopsEnvCommandDTO.getSha())) {
+            LOGGER.info("Retry pushing instance: it seems that this instance had passed the GitOps flow due to the command sha {}", devopsEnvCommandDTO.getSha());
+            return false;
+        }
+
+        // 校验实例状态
+        if (!Objects.equals(appServiceInstanceDTO.getStatus(), InstanceStatus.FAILED.getStatus())
+                && !Objects.equals(appServiceInstanceDTO.getStatus(), InstanceStatus.OPERATING.getStatus())) {
+            LOGGER.info("Retry pushing instance: unexpected status {} for instance", appServiceInstanceDTO.getStatus());
+            return false;
+        }
+
+        // 将实例状态置为初始状态
+        appServiceInstanceDTO.setStatus(InstanceStatus.OPERATING.getStatus());
+        appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
+
+        // 将command的状态置为初始状态
+        devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
+        devopsEnvCommandDTO.setError(null);
+        devopsEnvCommandMapper.updateByPrimaryKey(devopsEnvCommandDTO);
+
+        // 准备构造saga的payload
+        AppServiceVersionDTO appServiceVersionDTO = ComponentVersionUtil.getComponentVersion(clusterResourceType);
+
+        AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO(null, devopsEnvironmentDTO.getId(), appServiceInstanceService.baseQueryValueByInstanceId(instanceId), null, devopsEnvCommandDTO.getCommandType(), appServiceInstanceDTO.getId(), appServiceInstanceDTO.getCode(), null, null);
+        AppServiceDTO fakeAppService = new AppServiceDTO();
+        fakeAppService.setCode(appServiceInstanceDTO.getComponentChartName());
+
+        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), null, appServiceInstanceDTO.getCommandId().intValue());
+        instanceSagaPayload.setApplicationDTO(fakeAppService);
+        instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
+        instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
+        instanceSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("env")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE),
+                builder -> builder
+                        .withPayloadAndSerialize(instanceSagaPayload)
+                        .withRefId(devopsEnvironmentDTO.getId().toString()));
+
+        return true;
+    }
+
+
+    private boolean doesRemoteFileExist(String remoteFileName, Integer gitlabGroupId) {
+        return gitlabServiceClientOperator.getFile(gitlabGroupId, GitOpsConstants.MASTER, remoteFileName);
+    }
+
+    @Override
+    public boolean restartReleaseInstance(Long instanceId) {
+        // TODO by zmf
+        return false;
     }
 
     @Override
