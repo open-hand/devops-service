@@ -9,9 +9,21 @@
         dpro.admin_password,
         dpro.grafana_domain,
         dpro.object_version_number,
-        (SELECT dpv.name FROM devops_pv dpv WHERE dpv.id = dpro.prometheus_pv_id) AS PROMETHEUS_PV_NAME,
-        (SELECT dpv.name FROM devops_pv dpv WHERE dpv.id = dpro.grafana_pv_id) AS GRAFANA_PV_NAME,
-        (SELECT dpv.name FROM devops_pv dpv WHERE dpv.id = dpro.alertmanager_pv_id) AS ALERTMANAGER_PV_NAME
+        (SELECT dpv.name FROM devops_pv dpv
+            <if test="dpv.pvc_name!=null">
+                JOIN devops_pvc dpvc on dpvc.name = dpv.pvc_name
+            </if>
+        WHERE dpv.id = dpro.prometheus_pv_id ) AS PROMETHEUS_PV_NAME,
+        (SELECT dpv.name FROM devops_pv dpv
+            <if test="dpv.pvc_name!=null">
+                JOIN devops_pvc dpvc on dpvc.name = dpv.pvc_name
+            </if>
+        WHERE dpv.id = dpro.grafana_pv_id) AS GRAFANA_PV_NAME,
+        (SELECT dpv.name FROM devops_pv dpv
+            <if test="dpv.pvc_name!=null">
+                JOIN devops_pvc dpvc on dpvc.name = dpv.pvc_name
+            </if>
+        WHERE dpv.id = dpro.alertmanager_pv_id) AS ALERTMANAGER_PV_NAME
         FROM devops_prometheus dpro
         WHERE dpro.id = #{id}
     </select>

@@ -10,7 +10,8 @@ public enum PvStatus {
     BOUND("Bound"),
     TERMINATING("Terminating"),
     OPERATING("Operating"),
-    AVAILABLE("Available");
+    AVAILABLE("Available"),
+    RELEASED("Released");
 
     private String status;
 
