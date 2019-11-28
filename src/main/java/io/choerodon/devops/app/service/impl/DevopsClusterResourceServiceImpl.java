@@ -3,8 +3,11 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -15,10 +18,12 @@ import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.PrometheusConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.iam.ClientDTO;
 import io.choerodon.devops.infra.dto.iam.ClientVO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 
@@ -28,6 +33,8 @@ import io.choerodon.devops.infra.util.*;
  */
 @Service
 public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsClusterResourceServiceImpl.class);
+
     private static final String GRAFANA_NODE = "/d/choerodon-default-node/jie-dian";
     private static final String GRAFANA_CLUSTER = "/d/choerodon-default-cluster/ji-qun";
     private static final String ERROR_FORMAT = "%s;";
@@ -46,40 +53,36 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private DevopsPrometheusMapper devopsPrometheusMapper;
     @Autowired
     private DevopsClusterResourceService devopsClusterResourceService;
-
     @Autowired
     private ComponentReleaseService componentReleaseService;
-
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
-
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
-
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
-
     @Autowired
     private DevopsClusterService devopsClusterService;
-
     @Autowired
     private DevopsEnvPodService devopsEnvPodService;
-
     @Autowired
     private DevopsCertManagerMapper devopsCertManagerMapper;
-
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
-
     @Autowired
     private DevopsPvcService devopsPvcService;
-
     @Autowired
     private DevopsPvService devopsPvService;
     @Autowired
     private DevopsEnvFileErrorService devopsEnvFileErrorService;
     @Autowired
     private UserAttrService userAttrService;
+    @Autowired
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    private DevopsGitService devopsGitService;
+    @Autowired
+    private DevopsEnvCommitService devopsEnvCommitService;
 
     @Override
     public void baseCreate(DevopsClusterResourceDTO devopsClusterResourceDTO) {
@@ -527,7 +530,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     public void retryPrometheusInstance(Long instanceId, Long envId) {
-        // 三步只重试一步
+        // 三步重试每次只重试一步
         if (componentReleaseService.retryPushingToGitLab(instanceId, ClusterResourceType.PROMETHEUS)) {
             return;
         }
@@ -541,11 +544,43 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         }
     }
 
+    // 开启新事务
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public boolean retrySystemEnvGitOps(Long envId) {
-        // TODO by zmf
-        devopsEnvironmentService.retryGitOps(envId);
-        return true;
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        if (devopsEnvironmentDTO == null) {
+            LOGGER.info("Retry cluster env GitOps: the environment with id {} is unexpectedly null", envId);
+            return false;
+        }
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId().longValue());
+        if (userAttrDTO == null) {
+            throw new CommonException("error.gitlab.user.sync.failed");
+        }
+
+        // 查询GitLab上环境最新的commit
+        CommitDTO commitDO = gitlabServiceClientOperator.listCommits(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), userAttrDTO.getGitlabUserId().intValue(), 1, 1).get(0);
+
+        // 当环境总览第一阶段为空，第一阶段的commit不是最新commit, 第一阶段和第二阶段commit不一致时，可以重新触发gitOps
+        if (GitOpsUtil.isToRetryGitOps(
+                devopsEnvironmentDTO.getSagaSyncCommit(),
+                devopsEnvCommitService.baseQuery(devopsEnvironmentDTO.getSagaSyncCommit()).getCommitSha(),
+                devopsEnvironmentDTO.getDevopsSyncCommit(), commitDO.getId())) {
+
+            PushWebHookVO pushWebHookVO = new PushWebHookVO();
+            pushWebHookVO.setCheckoutSha(commitDO.getId());
+            pushWebHookVO.setUserId(userAttrDTO.getGitlabUserId().intValue());
+            pushWebHookVO.setProjectId(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue());
+            CommitVO commitDTO = new CommitVO();
+            commitDTO.setId(commitDO.getId());
+            commitDTO.setTimestamp(commitDO.getTimestamp());
+            pushWebHookVO.setCommits(ArrayUtil.singleAsList(commitDTO));
+
+            devopsGitService.fileResourceSyncSaga(pushWebHookVO, devopsEnvironmentDTO.getToken());
+            return true;
+        }
+        return false;
     }
 
     private PrometheusStageVO getPvcsStatus(DevopsPrometheusDTO devopsPrometheusDTO, PrometheusStageVO prometheusStageVO) {
