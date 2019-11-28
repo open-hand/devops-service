@@ -318,9 +318,6 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
             throw new CommonException("error.pv.bound");
         }
 
-        devopsPvDTO.setPvcName(devopsPvcReqVO.getName());
-        devopsPvMapper.updateByPrimaryKeySelective(devopsPvDTO);
-
         devopsPvcDTO.setPvName(devopsPvDTO.getName());
         devopsPvcDTO.setRequestResource(devopsPvDTO.getRequestResource());
         devopsPvcDTO.setAccessModes(devopsPvDTO.getAccessModes());
