@@ -13,6 +13,7 @@ import StatusTag from '../../components/status-tag';
 import { handlePromptError } from '../../utils';
 
 import './index.less';
+import StatusIcon from '../../components/StatusIcon/StatusIcon';
 
 const { Column } = Table;
 const modalKey1 = Modal.key();
@@ -84,6 +85,14 @@ const AppService = withRouter(observer((props) => {
     );
   }
 
+  function renderPvcName({ value, record }) {
+    const status = record.get('status');
+    return <StatusIcon
+      name={value}
+      status={status === 'Released' ? 'deleted' : 'success'}
+    />;
+  }
+
   function renderActions({ record }) {
     const actionData = {
       permission: {
@@ -108,6 +117,8 @@ const AppService = withRouter(observer((props) => {
         }
         break;
       case 'Released':
+        data = [actionData.delete];
+        break;
       case 'Failed':
         if (!record.get('pvcName')) {
           data = [actionData.delete];
@@ -197,7 +208,7 @@ const AppService = withRouter(observer((props) => {
           <Column name="description" sortable />
           <Column name="clusterName" />
           <Column name="type" width={100} />
-          <Column name="pvcName" />
+          <Column name="pvcName" renderer={renderPvcName} />
           <Column name="accessModes" width={140} />
           <Column name="requestResource" width={100} />
         </Table>
