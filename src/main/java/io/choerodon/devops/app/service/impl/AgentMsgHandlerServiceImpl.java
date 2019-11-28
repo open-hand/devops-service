@@ -494,6 +494,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
         V1PersistentVolume pv = json.deserialize(msg, V1PersistentVolume.class);
         devopsPvDTO.setStatus(pv.getStatus().getPhase());
+        if (devopsPvDTO.getStatus().equals(PvStatus.BOUND.getStatus())) {
+            devopsPvDTO.setPvcName(pv.getSpec().getClaimRef().getName());
+        }
         devopsPvMapper.updateByPrimaryKeySelective(devopsPvDTO);
     }
 
