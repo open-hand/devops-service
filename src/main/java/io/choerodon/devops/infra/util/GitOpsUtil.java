@@ -2,11 +2,9 @@ package io.choerodon.devops.infra.util;
 
 import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
-
 import javax.annotation.Nullable;
 
 import io.choerodon.core.exception.CommonException;
@@ -209,5 +207,24 @@ public class GitOpsUtil {
     public static void throwCapacityChangeException(String filePath, String resourceName) {
         throw new GitOpsExplainException(
                 GitOpsObjectError.CAPACITY_CHANGE_NOT_ALLOWED.getError(), filePath, resourceName);
+    }
+
+    /**
+     * 是否需要重试GitOps流程
+     * 当环境总览第一阶段为空，第一阶段的commit不是最新commit, 第一阶段和第二阶段commit不一致时，可以重新触发gitOps
+     *
+     * @param sagaSyncCommitId      环境的saga_sync_commit id
+     * @param sagaSyncCommitSha     环境的saga_sync_commit对应的sha值
+     * @param devopsSyncCommitId    环境的devops_sync_commit id
+     * @param remoteLatestCommitSha 环境远程的GitLab的最新提交的sha值
+     * @return true说明需要重试, false反之
+     */
+    public static boolean isToRetryGitOps(Long sagaSyncCommitId,
+                                               String sagaSyncCommitSha,
+                                               Long devopsSyncCommitId,
+                                               String remoteLatestCommitSha) {
+        return sagaSyncCommitId == null
+                || !Objects.equals(sagaSyncCommitId, devopsSyncCommitId)
+                || !Objects.equals(sagaSyncCommitSha, remoteLatestCommitSha);
     }
 }
