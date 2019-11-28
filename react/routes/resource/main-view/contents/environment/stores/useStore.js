@@ -53,5 +53,8 @@ export default function useStore({ defaultTab }) {
     checkDelete(projectId, id) {
       return axios.get(`/devops/v1/projects/${projectId}/deploy_value/check_delete?value_id=${id}`);
     },
+    deleteRecord(projectId, id) {
+      return axios.delete(`/devops/v1/projects/${projectId}/deploy_value?value_id=${id}`);
+    },
   }));
 }
