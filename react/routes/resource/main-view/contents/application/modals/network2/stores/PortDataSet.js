@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { map } from 'lodash';
 
 export default ({ formatMessage, projectId, envId, appId }) => {
   /**
@@ -20,10 +20,10 @@ export default ({ formatMessage, projectId, envId, appId }) => {
     };
 
     switch (type) {
-      case 'targetport':
+      case 'targetPort':
         data.typeMsg = 'network.targetport.check.repeat';
         break;
-      case 'nodeport':
+      case 'nodePort':
         data.typeMsg = 'network.nport.check.repeat';
         data.min = 30000;
         data.max = 32767;
@@ -51,10 +51,9 @@ export default ({ formatMessage, projectId, envId, appId }) => {
 
 
   return {
-    autoCreate: true,
     fields: [
       {
-        name: 'nodeport',
+        name: 'nodePort',
         type: 'string', 
         label: formatMessage({ id: 'network.config.nodePort' }),
         validator: checkPort,
@@ -67,16 +66,31 @@ export default ({ formatMessage, projectId, envId, appId }) => {
         validator: checkPort,
       },
       {
-        name: 'targetport',
+        name: 'targetPort',
         type: 'string', 
         label: formatMessage({ id: 'network.config.targetPort' }),
         required: true,
         validator: checkPort,
-        valueField: 'portValue',
-        textField: 'portValue',
+        valueField: 'codePort',
+        textField: 'resourceName',
         lookupAxiosConfig: {
           method: 'get',
           url: `/devops/v1/projects/${projectId}/env/app_services/list_port?env_id=${envId}&app_service_id=${appId}`,
+          transformResponse: (resp) => {
+            try {
+              const data = JSON.parse(resp);
+              if (data && data.failed) {
+                return data;
+              } else {
+                return map(data, (item, index) => ({
+                  ...item,
+                  codePort: `${item.resourceName}: ${item.portValue}`,
+                }));
+              }
+            } catch (e) {
+              return resp;
+            }
+          },
         },
       },
       {
@@ -91,5 +105,14 @@ export default ({ formatMessage, projectId, envId, appId }) => {
         },
       },
     ],
+    events: {
+      update: ({ dataSet, record, name, value, oldValue }) => {
+        if (name === 'targetPort') {
+          if (value && value.indexOf(':') >= 0) {
+            record.set(name, value.slice(value.indexOf(':') + 2));
+          }
+        }
+      },
+    },
   };
 };

@@ -42,7 +42,6 @@ export default ({ formatMessage, keyOptionsDs }) => {
 
 
   return {
-    autoCreate: true,
     fields: [
       {
         name: 'keyword',

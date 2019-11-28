@@ -1,10 +1,10 @@
 import React, { useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
-import { TextField, Form, Button, Icon, Select, SelectBox } from 'choerodon-ui/pro';
+import { TextField, Form, Button, Icon, Select, SelectBox, Tooltip } from 'choerodon-ui/pro';
 import { map } from 'lodash';
-import useNetWorkStore from './stores';
+import useNetWorkStore from '../stores';
 
-import './index.less';
+import '../index.less';
 
 const { Option } = Select;
 
@@ -18,7 +18,16 @@ function FormContent() {
     intl: {
       formatMessage,
     },
+    networkInfoDs,
+    networkId,
   } = useNetWorkStore();
+
+  useEffect(() => {
+    if (!networkId) {
+      portDs.create();
+      targetLabelsDs.create();
+    }
+  }, []);
 
   const current = formDs.current;
 
@@ -47,8 +56,11 @@ function FormContent() {
   }
 
   function targetPortOptionRenderer({ record, text, value }) {
-    if (!record.get('resourceName')) return value;
-    return `${record.get('resourceName')}: ${value}`;
+    return value;
+  }
+
+  function targetPortOptionsFilter(record) {
+    return !!record.get('portName');
   }
 
 
@@ -56,12 +68,39 @@ function FormContent() {
     return `${record.get('meaning')}`;
   }
 
+  function appInstanceOptionRenderer({ record, text, value }) {
+    // 如果数据带有status字段，就是来自网络信息详情的数据
+    const status = record.get('status');
+    if (status) {
+      return <Fragment>
+        <Tooltip
+          title={formatMessage({ id: status })}
+          placement="right"
+        >
+          {text}
+        </Tooltip>
+        { status !== 'running' && (
+        <Tooltip title={formatMessage({ id: 'deleted' })} placement="top">
+          <Icon type="error" className="c7ncd-instance-status-icon" />
+        </Tooltip>
+        )}
+      </Fragment>;
+    } else {
+      return text;
+    }
+  }
+
+  function clearInputOption(record) {
+    const meaning = record.get('meaning');
+    return meaning && meaning.indexOf(':') >= 0;
+  }
+
 
   return (
     <Fragment>
       <div className="c7ncd-create-network">
         <Form dataSet={formDs} columns={3}>
-          <TextField name="name" colSpan={3} maxLength={30} />
+          <TextField name="name" colSpan={3} maxLength={30} disabled={!!networkId} />
         </Form>
 
         <div className="hr" />
@@ -80,13 +119,13 @@ function FormContent() {
           <div colSpan={3} className="target-form">
             {
               (current && current.get('target') === 'instance')
-                ? <Select name="appInstance" colSpan={3} className="app-instance-select" />
+                ? <Select name="appInstance" colSpan={3} className="app-instance-select" optionRenderer={appInstanceOptionRenderer} />
                 : <div className="label-form">
                   {
                     map(targetLabelsDs.created, (record, index) => (<Form record={record} key={`target-label-record-${index}`} columns={4}>
-                      <Select name="keyword" combo optionRenderer={labelOptionRenderer} />
+                      <Select name="keyword" combo optionRenderer={labelOptionRenderer} optionsFilter={clearInputOption} />
                       <Icon className="network-group-icon" type="drag_handle" />
-                      <Select name="value" combo optionRenderer={labelOptionRenderer} />
+                      <Select name="value" combo optionRenderer={labelOptionRenderer} optionsFilter={clearInputOption} />
                       {
                         targetLabelsDs.created.length > 1 ? <Icon
                           colSpan={1}
@@ -131,10 +170,10 @@ function FormContent() {
               
               {
                 current.get('type') !== 'ClusterIP'
-                  && <TextField name="nodeport" maxLength={5} />
+                  && <TextField name="nodePort" maxLength={5} />
               }
               <TextField name="port" maxLength={5} />
-              <Select name="targetport" combo optionRenderer={targetPortOptionRenderer} clearButton={false} />
+              <Select name="targetPort" combo optionRenderer={targetPortOptionRenderer} clearButton={false} optionsFilter={targetPortOptionsFilter} />
               {
                 current.get('type') === 'NodePort'
                 && <Select name="protocol" clearButton={false}>
