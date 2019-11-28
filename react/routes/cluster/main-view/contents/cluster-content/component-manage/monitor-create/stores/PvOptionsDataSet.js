@@ -9,9 +9,6 @@ export default (projectId) => ({
         params: [],
         searchParam: {
           status: 'Available',
-          accessModes: 'ReadWriteMany',
-          type: 'NFS',
-          requestResource: '1Gi',
         },
       },
     },
