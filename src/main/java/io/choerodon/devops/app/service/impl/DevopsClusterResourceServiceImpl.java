@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -18,7 +17,6 @@ import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.PrometheusConstants;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.iam.ClientDTO;
 import io.choerodon.devops.infra.dto.iam.ClientVO;
 import io.choerodon.devops.infra.enums.*;
@@ -520,57 +518,23 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             return;
         }
 
-        if (componentReleaseService.restartReleaseInstance(instanceId)) {
+        if (componentReleaseService.restartComponentInstance(instanceId, ClusterResourceType.PROMETHEUS)) {
             return;
         }
     }
 
-    // 开启新事务
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
     public boolean retrySystemEnvGitOps(Long envId) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-        if (devopsEnvironmentDTO == null) {
-            LOGGER.info("Retry cluster env GitOps: the environment with id {} is unexpectedly null", envId);
-            return false;
-        }
-
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId().longValue());
-        if (userAttrDTO == null) {
-            throw new CommonException("error.gitlab.user.sync.failed");
-        }
-
-        // 查询GitLab上环境最新的commit
-        CommitDTO commitDO = gitlabServiceClientOperator.listCommits(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), userAttrDTO.getGitlabUserId().intValue(), 1, 1).get(0);
-
-        // 当环境总览第一阶段为空，第一阶段的commit不是最新commit, 第一阶段和第二阶段commit不一致时，可以重新触发gitOps
-        if (GitOpsUtil.isToRetryGitOps(
-                devopsEnvironmentDTO.getSagaSyncCommit(),
-                devopsEnvCommitService.baseQuery(devopsEnvironmentDTO.getSagaSyncCommit()).getCommitSha(),
-                devopsEnvironmentDTO.getDevopsSyncCommit(), commitDO.getId())) {
-
-            PushWebHookVO pushWebHookVO = new PushWebHookVO();
-            pushWebHookVO.setCheckoutSha(commitDO.getId());
-            pushWebHookVO.setUserId(userAttrDTO.getGitlabUserId().intValue());
-            pushWebHookVO.setProjectId(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue());
-            CommitVO commitDTO = new CommitVO();
-            commitDTO.setId(commitDO.getId());
-            commitDTO.setTimestamp(commitDO.getTimestamp());
-            pushWebHookVO.setCommits(ArrayUtil.singleAsList(commitDTO));
-
-            devopsGitService.fileResourceSyncSaga(pushWebHookVO, devopsEnvironmentDTO.getToken());
-            return true;
-        }
-        return false;
+        return devopsEnvironmentService.retrySystemEnvGitOps(envId);
     }
 
     private void checkPodIsReady(Long instanceId, ClusterResourceVO clusterResourceVO) {
         List<DevopsEnvPodVO> devopsEnvPodDTOS = ConvertUtils.convertList(devopsEnvPodService.baseListByInstanceId(instanceId), DevopsEnvPodVO.class);
         //查询pod状态
-        devopsEnvPodDTOS.stream().forEach(devopsEnvPodVO -> devopsEnvPodService.fillContainers(devopsEnvPodVO));
+        devopsEnvPodDTOS.forEach(devopsEnvPodVO -> devopsEnvPodService.fillContainers(devopsEnvPodVO));
         List<ContainerVO> readyPod = new ArrayList<>();
         //健康检查，ready=true的pod大于1就是可用的
-        devopsEnvPodDTOS.stream().forEach(devopsEnvPodVO -> {
+        devopsEnvPodDTOS.forEach(devopsEnvPodVO -> {
             if (Boolean.TRUE.equals(devopsEnvPodVO.getReady())) {
                 readyPod.addAll(devopsEnvPodVO.getContainers().stream().filter(pod -> pod.getReady() == true).collect(Collectors.toList()));
             }

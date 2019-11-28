@@ -41,10 +41,10 @@ public interface ComponentReleaseService {
     /**
      * 重启组件对应的实例
      *
-     * @param instanceId 实例id
+     * @param instanceId          实例id
+     * @param clusterResourceType 集群组件类型
      */
-    boolean restartReleaseInstance(Long instanceId);
-
+    boolean restartComponentInstance(Long instanceId, ClusterResourceType clusterResourceType);
 
 
     /**
