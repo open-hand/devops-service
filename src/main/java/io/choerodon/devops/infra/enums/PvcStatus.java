@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum PvcStatus {
     OPERATING("Operating"),
-    FAILED("Failed"),
+    FAILED("failed"),
+
     PENDING("Pending"),
     BOUND("Bound"),
     LOST("Lost"),

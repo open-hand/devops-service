@@ -522,17 +522,17 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     public void retryPvc(List<Long> pvcIds) {
-        //TODO by zmf
-    }
-
-    @Override
-    public void retrySystemEnvGitOps(Long envId) {
-        // TODO by zmf
+        pvcIds.forEach(pvcId -> devopsPvcService.retryPushPvcToGitLab(pvcId));
     }
 
     @Override
     public void reDeployPrometheus(Long instanceId) {
-        // TODO by zmf
+        appServiceInstanceService.restartInstance(instanceId);
+    }
+
+    @Override
+    public void retrySystemEnvGitOps(Long envId) {
+        devopsEnvironmentService.retryGitOps(envId);
     }
     
     private PrometheusStageVO getPvcsStatus(DevopsPrometheusDTO devopsPrometheusDTO, PrometheusStageVO prometheusStageVO) {
