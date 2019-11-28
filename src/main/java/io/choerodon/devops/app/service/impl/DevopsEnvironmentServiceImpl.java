@@ -689,6 +689,45 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
     }
 
+    // 开启新事务
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public boolean retrySystemEnvGitOps(Long envId) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
+        if (devopsEnvironmentDTO == null) {
+            LOGGER.info("Retry cluster env GitOps: the environment with id {} is unexpectedly null", envId);
+            return false;
+        }
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId().longValue());
+        if (userAttrDTO == null) {
+            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+        }
+
+        // 查询GitLab上环境最新的commit
+        CommitDTO commitDO = gitlabServiceClientOperator.listCommits(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), userAttrDTO.getGitlabUserId().intValue(), 1, 1).get(0);
+
+        // 当环境总览第一阶段为空，第一阶段的commit不是最新commit, 第一阶段和第二阶段commit不一致时，可以重新触发gitOps
+        if (GitOpsUtil.isToRetryGitOps(
+                devopsEnvironmentDTO.getSagaSyncCommit(),
+                devopsEnvCommitService.baseQuery(devopsEnvironmentDTO.getSagaSyncCommit()).getCommitSha(),
+                devopsEnvironmentDTO.getDevopsSyncCommit(), commitDO.getId())) {
+
+            PushWebHookVO pushWebHookVO = new PushWebHookVO();
+            pushWebHookVO.setCheckoutSha(commitDO.getId());
+            pushWebHookVO.setUserId(userAttrDTO.getGitlabUserId().intValue());
+            pushWebHookVO.setProjectId(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue());
+            CommitVO commitDTO = new CommitVO();
+            commitDTO.setId(commitDO.getId());
+            commitDTO.setTimestamp(commitDO.getTimestamp());
+            pushWebHookVO.setCommits(ArrayUtil.singleAsList(commitDTO));
+
+            devopsGitService.fileResourceSyncSaga(pushWebHookVO, devopsEnvironmentDTO.getToken());
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void checkCode(Long projectId, Long clusterId, String code) {
         if (!CODE.matcher(code).matches()) {

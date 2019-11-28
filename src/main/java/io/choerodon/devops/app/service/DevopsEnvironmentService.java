@@ -233,6 +233,14 @@ public interface DevopsEnvironmentService {
     void retryGitOps(Long envId);
 
     /**
+     * 重试系统环境的GitOps解析
+     *
+     * @param envId 环境id
+     * @return 重试GitOps解析是否重试
+     */
+    boolean retrySystemEnvGitOps(Long envId);
+
+    /**
      * @param devopsEnvironmentDTO
      * @param userAttrDTO
      */

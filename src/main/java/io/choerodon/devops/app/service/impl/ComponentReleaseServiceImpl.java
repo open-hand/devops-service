@@ -237,10 +237,62 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
         return gitlabServiceClientOperator.getFile(gitlabGroupId, GitOpsConstants.MASTER, remoteFileName);
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
-    public boolean restartReleaseInstance(Long instanceId) {
-        // TODO by zmf
-        return false;
+    public boolean restartComponentInstance(Long instanceId, ClusterResourceType clusterResourceType) {
+        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(instanceId);
+
+        if (appServiceInstanceDTO == null) {
+            LOGGER.info("Restart component instance: the instance with id {} to be restarted is unexpectedly null.", instanceId);
+            return false;
+        }
+
+        if (InstanceStatus.OPERATING.getStatus().equals(appServiceInstanceDTO.getStatus())) {
+            LOGGER.info("Restart component instance: the instance with id {} to be restarted is still operating.", instanceId);
+            return false;
+        }
+
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
+
+        AppServiceDTO fakeAppService = new AppServiceDTO();
+        fakeAppService.setCode(appServiceInstanceDTO.getComponentChartName());
+
+        AppServiceVersionDTO appServiceVersionDTO = ComponentVersionUtil.getComponentVersion(clusterResourceType);;
+
+        devopsEnvCommandDTO.setId(null);
+        devopsEnvCommandDTO.setCommandType(CommandType.UPDATE.getType());
+        devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
+        devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
+
+        appServiceInstanceDTO.setStatus(InstanceStatus.OPERATING.getStatus());
+        appServiceInstanceDTO.setCommandId(devopsEnvCommandDTO.getId());
+        appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
+
+        AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO(null, devopsEnvironmentDTO.getId(), appServiceInstanceService.baseQueryValueByInstanceId(instanceId), null, devopsEnvCommandDTO.getCommandType(), appServiceInstanceDTO.getId(), appServiceInstanceDTO.getCode(), null, null);
+
+        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), null, devopsEnvCommandDTO.getId().intValue());
+        instanceSagaPayload.setApplicationDTO(fakeAppService);
+        instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
+        instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
+        instanceSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("env")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE),
+                builder -> builder
+                        .withPayloadAndSerialize(instanceSagaPayload)
+                        .withRefId(devopsEnvironmentDTO.getId().toString()));
+        return true;
     }
 
     @Override
