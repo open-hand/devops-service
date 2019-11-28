@@ -40,6 +40,7 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvFileResourceMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvcMapper;
 import io.choerodon.devops.infra.util.*;
@@ -59,13 +60,13 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
-    BaseServiceClientOperator baseServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
-    GitlabServiceClientOperator gitlabServiceClientOperator;
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private UserAttrService userAttrService;
     @Autowired
-    ClusterConnectionHandler clusterConnectionHandler;
+    private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private DevopsPvcMapper devopsPvcMapper;
     @Autowired
@@ -74,6 +75,8 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     private DevopsEnvCommandMapper devopsEnvCommandMapper;
     @Autowired
     private TransactionalProducer producer;
+    @Autowired
+    private DevopsEnvFileResourceMapper devopsEnvFileResourceMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -467,36 +470,38 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         // 校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
+        // 判断是否解析过了
+        if (devopsEnvFileResourceMapper.countRecords(devopsEnvironmentDTO.getId(), ResourceType.PERSISTENT_VOLUME_CLAIM.getType(), pvcId) > 0) {
+            LOGGER.info("Retry pushing instance: the instance with code {} has passed the GitOps flow since the env-file-resource record exists", devopsPvcDTO.getName());
+            return;
+        }
+
         // 判断远程是否存在pvc对应的文件，存在就return
-        String remoteFileName = PERSISTENTVOLUMECLAIM_PREFIX + devopsPvcDTO.getName();
+        String remoteFileName = PERSISTENTVOLUMECLAIM_PREFIX + devopsPvcDTO.getName() + GitOpsConstants.YAML_FILE_SUFFIX;
         if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.MASTER, remoteFileName)) {
             LOGGER.info("Pvc {} isn't necessary to retry to push to gitlab since corresponding remote file {} exists.", devopsPvcDTO.getName(), remoteFileName);
             return;
         }
 
-        // 将command的状态置为初始状态
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsPvcDTO.getCommandId());
-        if (devopsEnvCommandDTO == null) {
-            LOGGER.warn("Retry pushing pvc: unexpected null command for pvc with command id {}", devopsPvcDTO.getCommandId());
+        if (!StringUtils.isEmpty(devopsEnvCommandDTO.getSha())) {
+            LOGGER.info("Retry pushing pvc: it seems that this pvc had passed the GitOps flow due to the command sha {}", devopsEnvCommandDTO.getSha());
             return;
-        } else {
-            if (!StringUtils.isEmpty(devopsEnvCommandDTO.getSha())) {
-                LOGGER.warn("Retry pushing pvc: it seems that this pvc had passed the GitOps flow due to the command sha {}", devopsEnvCommandDTO.getSha());
-                return;
-            }
-            devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
-            devopsEnvCommandDTO.setError(null);
-            devopsEnvCommandMapper.updateByPrimaryKey(devopsEnvCommandDTO);
         }
 
         // 将PVC的状态置为初始状态
         if (!Objects.equals(PvcStatus.OPERATING.getStatus(), devopsPvcDTO.getStatus())
                 && !Objects.equals(PvcStatus.FAILED.getStatus(), devopsPvcDTO.getStatus())) {
-            LOGGER.warn("Retry pushing pvc: unexpected status {} for pvc", devopsPvcDTO.getStatus());
+            LOGGER.info("Retry pushing pvc: unexpected status {} for pvc", devopsPvcDTO.getStatus());
             return;
         } else {
             devopsPvcMapper.updateStatusById(pvcId, PvcStatus.OPERATING.getStatus());
         }
+
+        // 将command的状态置为初始状态
+        devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
+        devopsEnvCommandDTO.setError(null);
+        devopsEnvCommandMapper.updateByPrimaryKey(devopsEnvCommandDTO);
 
         // 初始化V1PersistentVolumeClaim对象
         V1PersistentVolumeClaim v1PersistentVolumeClaim = initV1PersistentVolumeClaim(devopsPvcDTO);

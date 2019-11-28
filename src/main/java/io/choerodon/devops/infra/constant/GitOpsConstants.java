@@ -39,4 +39,11 @@ public class GitOpsConstants {
      * gitops/${orgCode}/${proCode}/${clusterCode}/${envCode}
      */
     public static final String LOCAL_ENV_PATH = "gitops/%s/%s/%s/%s";
+
+    public static final String YAML_FILE_SUFFIX = ".yaml";
+
+    /**
+     * release文件对应的gitlab文件前缀
+     */
+    public static final String RELEASE_PREFIX = "release-";
 }

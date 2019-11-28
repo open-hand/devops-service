@@ -637,7 +637,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             String exceptionContent = LogUtil.readContentOfThrowable(ex);
             LOGGER.info("Failed to clone repository, the ex is {}", exceptionContent);
             AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceSagaPayload.getAppServiceDeployVO().getInstanceId());
-            appServiceInstanceDTO.setStatus(CommandStatus.FAILED.getStatus());
+            appServiceInstanceDTO.setStatus(InstanceStatus.FAILED.getStatus());
             baseUpdate(appServiceInstanceDTO);
             DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
             devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());

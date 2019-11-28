@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
+import io.choerodon.devops.infra.enums.ClusterResourceType;
 
 /**
  * 为集群组件创建对应的Release
@@ -30,9 +31,26 @@ public interface ComponentReleaseService {
     AppServiceInstanceDTO updateReleaseForPrometheus(DevopsPrometheusDTO devopsPrometheusDTO, Long instanceId, Long systemEnvId);
 
     /**
+     * 重试将实例推向GitLab
+     *
+     * @param instanceId          实例id
+     * @param clusterResourceType 集群组件类型
+     */
+    boolean retryPushingToGitLab(Long instanceId, ClusterResourceType clusterResourceType);
+
+    /**
+     * 重启组件对应的实例
+     *
+     * @param instanceId 实例id
+     */
+    boolean restartReleaseInstance(Long instanceId);
+
+
+
+    /**
      * 删除组件对应的实例
      *
      * @param instanceId 组件对应的实例ID
      */
-    void deleteReleaseForComponent(Long instanceId,Boolean deletePrometheus);
+    void deleteReleaseForComponent(Long instanceId, Boolean deletePrometheus);
 }
