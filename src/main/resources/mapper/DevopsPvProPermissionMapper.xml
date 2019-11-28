@@ -20,7 +20,7 @@
 
     <select id="listByClusterId" resultType="io.choerodon.devops.infra.dto.DevopsPvProPermissionDTO">
         SELECT * FROM devops_pv_project_rel dppr
-        JOIN devops_pv dp ON  dppr.pv_id=dp.id
+        JOIN devops_pv dp ON dppr.pv_id=dp.id
         WHERE dp.skip_check_project_permission=0
         AND dp.cluster_id=#{clusterId}
     </select>
@@ -28,8 +28,13 @@
     <delete id="batchDelete">
         DELETE FROM devops_pv_project_rel dppr
         WHERE
-            <foreach collection="devopsPvProPermissionDTOS" item="devopsPvProPermissionDTO" open="(" close=")" separator="OR">
-                dppr.pv_id=#{devopsPvProPermissionDTO.pvId} AND dppr.project_id=#{devopsPvProPermissionDTO.projectId}
-            </foreach>
+        <foreach collection="devopsPvProPermissionDTOS" item="devopsPvProPermissionDTO" open="(" close=")" separator="OR">
+            dppr.pv_id=#{devopsPvProPermissionDTO.pvId} AND dppr.project_id=#{devopsPvProPermissionDTO.projectId}
+        </foreach>
     </delete>
+
+    <select id="listByProjectId" resultType="long">
+        SELECT dppr.pv_id FROM devops_pv_project_rel dppr
+        WHERE dppr.project_id=#{projectId}
+    </select>
 </mapper>

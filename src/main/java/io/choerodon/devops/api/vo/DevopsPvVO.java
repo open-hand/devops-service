@@ -10,6 +10,9 @@ public class DevopsPvVO {
     @ApiModelProperty("关联的clusterId")
     private Long clusterId;
 
+    @ApiModelProperty("所属项目id")
+    private Long projectId;
+
     @ApiModelProperty("PV名称")
     private String name;
 
@@ -39,6 +42,14 @@ public class DevopsPvVO {
 
     @ApiModelProperty("版本号")
     private Long ObjectVersionNumber;
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
 
     public Long getId() {
         return id;

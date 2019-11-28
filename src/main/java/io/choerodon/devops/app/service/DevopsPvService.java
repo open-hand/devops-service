@@ -45,7 +45,7 @@ public interface DevopsPvService {
      *
      * @param devopsPvReqVo
      */
-    void createPv(DevopsPvReqVO devopsPvReqVo);
+    void createPv(Long projectId, DevopsPvReqVO devopsPvReqVo);
 
     /**
      * 校验唯一性

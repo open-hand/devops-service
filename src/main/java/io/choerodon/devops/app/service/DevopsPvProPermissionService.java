@@ -25,4 +25,6 @@ public interface DevopsPvProPermissionService {
      */
     void baseDeleteByPvId(Long pvId);
 
+    List<Long> baseListPvIdsByProjectId(Long projectId);
+
 }

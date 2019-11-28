@@ -13,6 +13,9 @@ public class DevopsPvDTO extends BaseDTO {
     @Id
     private Long id;
 
+    @ApiModelProperty("projectId")
+    private Long projectId;
+
     @ApiModelProperty("pv名称")
     private String name;
 
@@ -52,6 +55,14 @@ public class DevopsPvDTO extends BaseDTO {
 
     @ApiModelProperty("根据存储类型的不同，生成不同的Json数据")
     private String valueConfig;
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
 
     public Long getId() {
         return id;
