@@ -3,6 +3,7 @@ import { Choerodon } from '@choerodon/boot';
 import { Form, Password, Select, TextField } from 'choerodon-ui/pro';
 import filter from 'lodash/filter';
 import forEach from 'lodash/forEach';
+import map from 'lodash/map';
 import { usePrometheusStore } from './stores';
 
 import './index.less';
@@ -15,6 +16,7 @@ export default (props) => {
     prefixCls,
     intl: { formatMessage },
     intlPrefix,
+    pvSelect,
   } = usePrometheusStore();
 
   const isModify = useMemo(() => {
@@ -40,7 +42,7 @@ export default (props) => {
   function handlePvFilter(optionRecord, name) {
     const pvId = optionRecord.get('id');
     const record = formDs.current;
-    const arr = filter(['prometheusPvId', 'grafanaPvId', 'alertmanagerPvId'], (item) => item !== name);
+    const arr = filter(pvSelect, (item) => item !== name);
     let result = true;
     forEach(arr, (item) => {
       if (pvId === record.get(item)) {
@@ -48,6 +50,22 @@ export default (props) => {
       }
     });
     return result;
+  }
+
+  function getSelectContent(item) {
+    const record = formDs.current;
+    if (isModify && record.getPristineValue(item)) {
+      return <TextField name={item} key={item} disabled />;
+    } else {
+      return (
+        <Select
+          key={item}
+          name={item}
+          searchable
+          optionsFilter={(optionRecord) => handlePvFilter(optionRecord, item)}
+        />
+      );
+    }
   }
 
   return (
@@ -60,9 +78,7 @@ export default (props) => {
         <span>{formatMessage({ id: `${intlPrefix}.monitor.pv` })}</span>
       </div>
       <Form dataSet={formDs}>
-        <Select name="prometheusPvId" searchable disabled={isModify} optionsFilter={(record) => handlePvFilter(record, 'prometheusPvId')} />
-        <Select name="grafanaPvId" searchable disabled={isModify} optionsFilter={(record) => handlePvFilter(record, 'grafanaPvId')} />
-        <Select name="alertmanagerPvId" searchable disabled={isModify} optionsFilter={(record) => handlePvFilter(record, 'alertmanagerPvId')} />
+        {map(pvSelect, (item) => getSelectContent(item))}
       </Form>
     </div>
   );

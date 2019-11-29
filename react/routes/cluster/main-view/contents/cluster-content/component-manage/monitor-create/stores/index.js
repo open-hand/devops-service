@@ -36,6 +36,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
 
     const value = {
       ...props,
+      pvSelect: ['prometheusPvId', 'grafanaPvId', 'alertmanagerPvId'],
       formDs,
     };
     return (
