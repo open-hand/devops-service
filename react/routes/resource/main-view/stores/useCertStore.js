@@ -39,5 +39,15 @@ export default function useCertStore() {
       return axios.delete(`/devops/v1/projects/${projectId}/certifications?cert_id=${id}`);
     },
 
+    async checkCertManager(projectId, envId) {
+      try {
+        const res = await axios.get(`/devops/v1/projects/${projectId}/cluster_resource/cert_manager/check_by_env_id?env_id=${envId}`);
+        return handlePromptError(res);
+      } catch (e) {
+        Choerodon.handleResponseError(e);
+        return false;
+      }
+    },
+
   }));
 }
