@@ -100,14 +100,11 @@ const IngressContent = observer(() => {
           className="c7n-network-service"
           key={record.get('id')}
         >
-          <StatusTags
-            colorCode={serviceStatus}
-            name={formatMessage({ id: serviceStatus })}
-            style={serviceStyle}
+          <StatusIcon
+            name={serviceName}
+            width={0.1}
+            status={serviceStatus}
           />
-          <MouserOverWrapper text={serviceName} width={0.1}>
-            {serviceName}
-          </MouserOverWrapper>
         </div>
       ))
     );

@@ -4,7 +4,6 @@ import { Spin } from 'choerodon-ui';
 import map from 'lodash/map';
 import { observer } from 'mobx-react-lite';
 import omit from 'lodash/omit';
-import find from 'lodash/find';
 import { useClusterMainStore } from '../../../../stores';
 import { useClusterContentStore } from '../../stores';
 
@@ -31,9 +30,6 @@ export default observer((props) => {
   const progressError = useMemo(() => getPrometheusStatus.error, [getPrometheusStatus]);
 
   useEffect(() => {
-    // const { getComponentList } = contentStore;
-    // const item = find(getComponentList, { type: 'prometheus', status: 'processing', operate: 'install' });
-    // item && contentStore.loadPrometheusStatus(projectId, clusterId);
     contentStore.loadPrometheusStatus(projectId, clusterId);
   }, []);
 
