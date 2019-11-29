@@ -726,7 +726,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         DevopsPvcReqVO devopsPvcReqVO = new DevopsPvcReqVO();
         DevopsPvVO devopsPvVO = devopsPvService.queryById(pvId);
         devopsPvcReqVO.setPvId(devopsPvVO.getId());
-        devopsPvcReqVO.setName(name + "-" + GenerateUUID.generateUUID());
+        devopsPvcReqVO.setName(name + "-" + GenerateUUID.generateUUID().substring(0, 10));
         devopsPvcReqVO.setAccessModes(devopsPvVO.getAccessModes());
         devopsPvcReqVO.setRequestResource(devopsPvVO.getRequestResource());
         devopsPvcReqVO.setEnvId(envId);
