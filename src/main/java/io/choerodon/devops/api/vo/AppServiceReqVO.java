@@ -17,7 +17,6 @@ public class AppServiceReqVO {
     @NotNull(message = "error.app.code.null")
     private String code;
     @ApiModelProperty("项目id/必填")
-    @NotNull(message = "error.project.id.null")
     private Long projectId;
     @ApiModelProperty("服务类型/必填")
     @NotNull(message = "error.app.type.null")
