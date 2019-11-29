@@ -163,6 +163,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         devopsEnvCommandDTO.setObjectId(pvId);
         devopsPvDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+        devopsPvDTO.setStatus(PvStatus.Deleting.getStatus());
         baseupdatePv(devopsPvDTO);
 
         // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆

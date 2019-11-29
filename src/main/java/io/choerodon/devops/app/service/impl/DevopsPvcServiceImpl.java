@@ -129,6 +129,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         // 更新pvc
         devopsEnvCommandDTO.setObjectId(pvcId);
         devopsPvcDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+        devopsPvcDTO.setStatus(PvcStatus.Deleting.getStatus());
         baseUpdate(devopsPvcDTO);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆

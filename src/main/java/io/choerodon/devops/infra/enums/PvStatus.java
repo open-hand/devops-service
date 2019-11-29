@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum PvStatus {
+    OPERATING("Operating"),
+    Deleting("Deleting"),
     FAILED("Failed"),
+
 
     PENDING("Pending"),
     BOUND("Bound"),
     TERMINATING("Terminating"),
-    OPERATING("Operating"),
     AVAILABLE("Available"),
     RELEASED("Released");
 
