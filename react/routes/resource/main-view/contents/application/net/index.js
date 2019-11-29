@@ -13,11 +13,14 @@ import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
 import DomainModal from '../modals/domain';
 import EditNetwork from '../modals/network/network-edit';
+import EditNetwork2 from '../modals/network2';
 import { useMainStore } from '../../../stores';
 
 import './index.less';
 
+
 const { Column } = Table;
+const editNetWorkKey = Modal.key();
 
 const Networking = observer(() => {
   const {
@@ -287,9 +290,22 @@ const Networking = observer(() => {
   }
 
   function openNetworkEdit() {
-    setShowNetwork(true);
+    Modal.open({
+      key: editNetWorkKey,
+      title: formatMessage({ id: 'network.header.create' }),
+      style: { width: 740 },
+      okText: formatMessage({ id: 'edit' }),
+      drawer: true,
+      children: <EditNetwork2 
+        envId={parentId}
+        appId={id} 
+        networkStore={networkStore}
+        refresh={refresh}
+        networkId={netDs.current.get('id')}
+      />,
+    });
   }
-
+ 
   function closeNetworkEdit(isLoad) {
     setShowNetwork(false);
     isLoad && refresh();
