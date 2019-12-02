@@ -51,6 +51,8 @@ export default function useStore({ NODE_TAB }) {
         const res = await axios.get(`/devops/v1/projects/${projectId}/cluster_resource/grafana_url?cluster_id=${clusterId}&type=cluster`);
         if (handlePromptError(res)) {
           this.setGrafanaUrl(res);
+        } else {
+          this.setGrafanaUrl(null);
         }
       } catch (e) {
         Choerodon.handleResponseError(e);
