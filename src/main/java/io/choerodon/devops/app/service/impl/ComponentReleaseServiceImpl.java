@@ -134,10 +134,9 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
                         .withRefType("env")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE),
-                builder -> builder
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE)
                         .withPayloadAndSerialize(instanceSagaPayload)
-                        .withRefId(devopsEnvironmentDTO.getId().toString()));
+                        .withRefId(devopsEnvironmentDTO.getId().toString()), builder -> {});
 
 
         return appServiceInstanceDTO;
@@ -224,10 +223,9 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
                         .withRefType("env")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE),
-                builder -> builder
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE)
                         .withPayloadAndSerialize(instanceSagaPayload)
-                        .withRefId(devopsEnvironmentDTO.getId().toString()));
+                        .withRefId(devopsEnvironmentDTO.getId().toString()), builder -> {});
 
         return true;
     }
@@ -288,10 +286,9 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
                         .withRefType("env")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE),
-                builder -> builder
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE)
                         .withPayloadAndSerialize(instanceSagaPayload)
-                        .withRefId(devopsEnvironmentDTO.getId().toString()));
+                        .withRefId(devopsEnvironmentDTO.getId().toString()), builder -> {});
         return true;
     }
 
