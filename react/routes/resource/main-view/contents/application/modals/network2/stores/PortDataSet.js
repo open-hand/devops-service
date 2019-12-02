@@ -9,7 +9,6 @@ export default ({ formatMessage, projectId, envId, appId }) => {
    */
   function checkPort(value, type, record) {
     const p = /^([1-9]\d*|0)$/;
-
     const isRepeat = record.dataSet.findIndex((r) => record.id !== r.id && r.get(type) === value) !== -1;
 
     const data = {
@@ -21,7 +20,7 @@ export default ({ formatMessage, projectId, envId, appId }) => {
 
     switch (type) {
       case 'targetPort':
-        data.typeMsg = 'network.targetport.check.repeat';
+        data.typeMsg = 'network.tport.check.repeat';
         break;
       case 'nodePort':
         data.typeMsg = 'network.nport.check.repeat';
@@ -100,19 +99,36 @@ export default ({ formatMessage, projectId, envId, appId }) => {
         dynamicProps: {
           required: ({ dataSet, record, name }) => {
             if (!dataSet.parent.current) return false;
-            return dataSet.parent.current.get('protocol') === 'NodePort';
+            return dataSet.parent.current.get('type') === 'NodePort';
           },
         },
       },
     ],
     events: {
-      update: ({ dataSet, record, name, value, oldValue }) => {
-        if (name === 'targetPort') {
-          if (value && value.indexOf(':') >= 0) {
-            record.set(name, value.slice(value.indexOf(':') + 2));
-          }
-        }
-      },
+      update: updateEventHandler,
     },
   };
 };
+
+function updateEventHandler({ dataSet, record, name, value, oldValue }) {
+  if (name === 'targetPort') {
+    if (value && value.indexOf(':') >= 0) {
+      record.set(name, value.slice(value.indexOf(':') + 2));
+    }
+  }
+  // 对于在 targetPort，nodePort,port这几个字段，当值发生改变时，对其余记录进行校验
+  if (name !== 'protocol') {
+    checkOtherRecords(record, name);
+  }
+}
+
+function checkOtherRecords(record, type) {
+  record.dataSet.forEach((r) => {
+    if (r.id !== record.id) {
+      // 此处只对重复性做校验，不对空值做校验
+      if (r.get(type)) {
+        r.getField(type).checkValidity();
+      }
+    }
+  });
+}

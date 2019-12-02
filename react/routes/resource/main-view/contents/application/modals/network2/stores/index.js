@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
-import { flatMap, forEach, isEmpty, map } from 'lodash';
-
+import { forEach, isEmpty, map } from 'lodash';
 import { DataSet } from 'choerodon-ui/pro';
 import CreateFormDataSet, { transFormData } from './CreateFormDataSet';
 import PortDataSet from './PortDataSet';
@@ -51,7 +50,7 @@ function StoreProvider(props) {
         const { type, target, target: { instances, targetAppServiceId } } = res;
         loadInfo({ data: res, formatMessage, targetLabelsDs, portDs, formDs, networkInfoDs });
         // 这里做兼容旧数据的处理 一个网络对应部分实例（>=1）
-        if (targetAppServiceId || (instances && instances.length)) {
+        if (instances && instances.length && instances.length >= 2) {
           forEach(instances, (item, index) => {
             // 过滤重复的选项
             if (appInstanceOptionsDs.findIndex((record) => record.get('code') === item.code) < 0) {
@@ -64,6 +63,12 @@ function StoreProvider(props) {
     }
   }, [networkId, formDs.current]);
   
+  useEffect(() => {
+    if (!networkId) {
+      portDs.create();
+      targetLabelsDs.create();
+    }
+  }, []);
 
   const value = {
     ...props,
