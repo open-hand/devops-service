@@ -18,16 +18,8 @@ function FormContent() {
     intl: {
       formatMessage,
     },
-    networkInfoDs,
     networkId,
   } = useNetWorkStore();
-
-  useEffect(() => {
-    if (!networkId) {
-      portDs.create();
-      targetLabelsDs.create();
-    }
-  }, []);
 
   const current = formDs.current;
 
@@ -45,6 +37,7 @@ function FormContent() {
 
   function removePortGroup(record) {
     portDs.remove(record);
+    portDs.validate();
   }
 
   function createTargetLabelGroup() {
@@ -53,6 +46,7 @@ function FormContent() {
 
   function removeTargetLabelGroup(record) {
     targetLabelsDs.remove(record);
+    targetLabelsDs.validate();
   }
 
   function targetPortOptionRenderer({ record, text, value }) {

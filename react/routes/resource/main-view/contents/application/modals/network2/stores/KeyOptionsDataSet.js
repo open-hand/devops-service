@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { flatMap } from 'lodash';
 
 export default (projectId, envId, appId) => ({
   autoQuery: true,
@@ -12,7 +12,7 @@ export default (projectId, envId, appId) => ({
           if (data && data.failed) {
             return data;
           } else if (data.length > 0) {
-            return _.flatMap(data[0], (value, key) => ({
+            return flatMap(data[0], (value, key) => ({
               meaning: `${key}:${value}`,
               value: `${value}`,
               key: `${key}`,

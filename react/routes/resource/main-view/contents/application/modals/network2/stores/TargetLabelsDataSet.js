@@ -1,6 +1,3 @@
-import _ from 'lodash';
-import { includes } from 'lodash/includes';
-
 export default ({ formatMessage, keyOptionsDs }) => {
   /**
    * 关键字检查
@@ -65,12 +62,31 @@ export default ({ formatMessage, keyOptionsDs }) => {
       },
     ],
     events: {
-      update: ({ dataSet, record, name, value, oldValue }) => {
-        if (!value || !value.includes(':')) return;
-        const splitkv = value.split(':');
-        record.set('keyword', splitkv[0]);
-        record.set('value', splitkv[1]);
-      },
+      update: updateEventHandler,
     },
   };
 };
+
+function updateEventHandler({ dataSet, record, name, value, oldValue }) {
+  if (value && value.includes(':')) {
+    const splitkv = value.split(':');
+    record.set('keyword', splitkv[0]);
+    record.set('value', splitkv[1]);
+  }
+  // 当keyword的值发生变化的时候 对其余记录做校验 
+  if (name === 'keyword') {
+    checkOtherRecords(record, name);
+  }
+}
+
+
+function checkOtherRecords(record, type) {
+  record.dataSet.forEach((r) => {
+    if (r.id !== record.id) {
+      // 此处只对重复性做校验，不对空值做校验
+      if (r.get(type)) {
+        r.getField(type).checkValidity();
+      }
+    }
+  });
+}
