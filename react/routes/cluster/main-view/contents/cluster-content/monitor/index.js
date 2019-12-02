@@ -1,8 +1,8 @@
-import React, { Fragment, useMemo } from 'react';
+import React, { Fragment, Suspense, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
+import { Spin } from 'choerodon-ui';
 import { useClusterMainStore } from '../../../stores';
 import { useClusterContentStore } from '../stores';
-import Loading from '../../../../../../components/loading';
 import EmptyPage from '../../../../../../components/empty-page';
 
 import './index.less';
@@ -60,7 +60,9 @@ export default observer((props) => {
 
   return (
     <div className={`${prefixCls}-monitor-wrap`}>
-      {getContent()}
+      <Suspense fallback={<Spin />}>
+        {getContent()}
+      </Suspense>
     </div>
   );
 });
