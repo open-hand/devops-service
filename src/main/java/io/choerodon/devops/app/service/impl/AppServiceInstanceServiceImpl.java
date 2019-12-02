@@ -1307,7 +1307,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
         c7nHelmRelease.getMetadata().setName(code);
         // 设置这个app-service-id是防止不同项目的应用服务被网络根据应用服务code误选择，要以id作为标签保证准确性
-        c7nHelmRelease.getMetadata().setAppServiceId(appServiceId);
+        c7nHelmRelease.getSpec().setAppServiceId(appServiceId);
         c7nHelmRelease.getSpec().setRepoUrl(repository);
         c7nHelmRelease.getSpec().setChartName(appServiceCode);
         c7nHelmRelease.getSpec().setChartVersion(version);

@@ -16,8 +16,6 @@ public class Metadata {
     @ApiModelProperty("release类型/这个值选填，且只是由devops-service处理的元数据，正常部署应用服务时这个值为null即可，部署集群组件等没有应用服务版本的release是 cluster-component")
     private String type;
 
-    @ApiModelProperty("这个实例所属的应用服务id/选填，由猪齿鱼前端页面创建的实例应该有这个值，便于网络选择此实例进行管理。被用于实例的label: choerodon.io/app-service-id")
-    private Long appServiceId;
 
     public Date getCreationTimestamp() {
         return creationTimestamp;
@@ -43,11 +41,4 @@ public class Metadata {
         this.type = type;
     }
 
-    public Long getAppServiceId() {
-        return appServiceId;
-    }
-
-    public void setAppServiceId(Long appServiceId) {
-        this.appServiceId = appServiceId;
-    }
 }
