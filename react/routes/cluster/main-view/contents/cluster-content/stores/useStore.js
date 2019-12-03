@@ -117,5 +117,14 @@ export default function useStore({ NODE_TAB }) {
         Choerodon.handleResponseError(e);
       }
     },
+
+    async retryPrometheus(projectId, clusterId) {
+      try {
+        const res = await axios.get(`/devops/v1/projects/${projectId}/cluster_resource/prometheus/retry?cluster_id=${clusterId}`);
+        return handlePromptError(res);
+      } catch (e) {
+        return false;
+      }
+    },
   }));
 }

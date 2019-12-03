@@ -51,7 +51,7 @@ export default observer((props) => {
           buttonData={getButtonData(type, status, operate, message)}
           status={status}
           errorMessage={message}
-          progress={type === 'prometheus' && status === 'processing' && operate !== 'uninstall' ? <Progress /> : null}
+          progress={type === 'prometheus' && status === 'processing' && operate !== 'uninstall' ? <Progress refresh={refresh} /> : null}
         />
       );
     });
