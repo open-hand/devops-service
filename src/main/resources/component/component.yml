@@ -7,8 +7,8 @@ valuesFile: cert-manager.yml
 image: http://registry.com/cert-manager
 ---
 componentName: prometheus
-chartName: prometheus-0.10.0
-version: 0.10.0
-chartRepo: http://example.com
+chartName: prometheus-operator
+version: 0.1.0
+chartRepo: http://chart.choerodon.com.cn/choerodon/infra/
 valuesFile: prometheus.yml
 image: http://registry.com/prometheus
