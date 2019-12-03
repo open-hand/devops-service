@@ -534,34 +534,35 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsPvcDTO.setStatus(pv.getStatus().getPhase());
         devopsPvcMapper.updateByPrimaryKeySelective(devopsPvcDTO);
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-        DevopsPrometheusDTO devopsPrometheusDTO = devopsClusterResourceService.baseQueryPrometheusDTO(devopsEnvironmentDTO.getClusterId());
-        if (devopsPrometheusDTO != null) {
-            Long prometheusPvId = devopsPrometheusDTO.getPrometheusPvId();
-            Long grafanaPvId = devopsPrometheusDTO.getGrafanaPvId();
-            Long alertmanagerPvId = devopsPrometheusDTO.getAlertmanagerPvId();
-            Long pvId = devopsPvcDTO.getPvId();
-            if (pvId.equals(prometheusPvId) || pvId.equals(grafanaPvId) || pvId.equals(alertmanagerPvId)) {
-                List<DevopsPvcDTO> devopsPvcDTOS = new ArrayList<>();
-                addBoundPVC(devopsPvcDTOS, prometheusPvId);
-                addBoundPVC(devopsPvcDTOS, grafanaPvId);
-                addBoundPVC(devopsPvcDTOS, alertmanagerPvId);
-
-                if (devopsPvcDTOS.size() == 3) {
-                    logger.info("Start to install prometheus, clusterId : {} ", devopsEnvironmentDTO.getClusterId());
-                    devopsPrometheusDTO.setDevopsPvcList(devopsPvcDTOS);
-                    devopsClusterResourceService.installPrometheus(devopsEnvironmentDTO.getClusterId(), devopsPrometheusDTO);
-                }
-            }
-        }
+        // TODO 0.20 发版前删除
+//        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+//        DevopsPrometheusDTO devopsPrometheusDTO = devopsClusterResourceService.baseQueryPrometheusDTO(devopsEnvironmentDTO.getClusterId());
+//        if (devopsPrometheusDTO != null) {
+//            Long prometheusPvId = devopsPrometheusDTO.getPrometheusPvId();
+//            Long grafanaPvId = devopsPrometheusDTO.getGrafanaPvId();
+//            Long alertmanagerPvId = devopsPrometheusDTO.getAlertmanagerPvId();
+//            Long pvId = devopsPvcDTO.getPvId();
+//            if (pvId.equals(prometheusPvId) || pvId.equals(grafanaPvId) || pvId.equals(alertmanagerPvId)) {
+//                List<DevopsPvcDTO> devopsPvcDTOS = new ArrayList<>();
+//                addBoundPVC(devopsPvcDTOS, prometheusPvId);
+//                addBoundPVC(devopsPvcDTOS, grafanaPvId);
+//                addBoundPVC(devopsPvcDTOS, alertmanagerPvId);
+//
+//                if (devopsPvcDTOS.size() == 3) {
+//                    logger.info("Start to install prometheus, clusterId : {} ", devopsEnvironmentDTO.getClusterId());
+//                    devopsPrometheusDTO.setDevopsPvcList(devopsPvcDTOS);
+//                    devopsClusterResourceService.installPrometheus(devopsEnvironmentDTO.getClusterId(), devopsPrometheusDTO);
+//                }
+//            }
+//        }
     }
 
-    private void addBoundPVC(List<DevopsPvcDTO> devopsPvcDTOS, Long pvId) {
-        DevopsPvcDTO devopsPvc = devopsPvcService.queryByPvId(pvId);
-        if (PvcStatus.BOUND.getStatus().equals(devopsPvc.getStatus())) {
-            devopsPvcDTOS.add(devopsPvc);
-        }
-    }
+//    private void addBoundPVC(List<DevopsPvcDTO> devopsPvcDTOS, Long pvId) {
+//        DevopsPvcDTO devopsPvc = devopsPvcService.queryByPvId(pvId);
+//        if (PvcStatus.BOUND.getStatus().equals(devopsPvc.getStatus())) {
+//            devopsPvcDTOS.add(devopsPvc);
+//        }
+//    }
 
     private void handleUpdateServiceMsg(String key, Long envId, String msg, DevopsEnvResourceDTO devopsEnvResourceDTO) {
         AppServiceInstanceDTO appServiceInstanceDTO;

@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.dto;
 
-import java.util.List;
 import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -41,9 +40,16 @@ public class DevopsPrometheusDTO extends BaseDTO {
     @Transient
     private String clusterCode;
 
-    @ApiModelProperty("pvc")
     @Transient
-    private List<DevopsPvcDTO> devopsPvcList;
+    private DevopsPvDTO prometheusPv;
+    @Transient
+    private DevopsPvDTO altermanagerPv;
+    @Transient
+    private DevopsPvDTO grafanaPv;
+
+//    @ApiModelProperty("pvc")
+//    @Transient
+//    private List<DevopsPvcDTO> devopsPvcList;
 
     public Long getId() {
         return id;
@@ -85,13 +91,13 @@ public class DevopsPrometheusDTO extends BaseDTO {
         this.clusterCode = clusterCode;
     }
 
-    public List<DevopsPvcDTO> getDevopsPvcList() {
-        return devopsPvcList;
-    }
-
-    public void setDevopsPvcList(List<DevopsPvcDTO> devopsPvcList) {
-        this.devopsPvcList = devopsPvcList;
-    }
+//    public List<DevopsPvcDTO> getDevopsPvcList() {
+//        return devopsPvcList;
+//    }
+//
+//    public void setDevopsPvcList(List<DevopsPvcDTO> devopsPvcList) {
+//        this.devopsPvcList = devopsPvcList;
+//    }
 
     public Long getPrometheusPvId() {
         return prometheusPvId;
@@ -115,5 +121,29 @@ public class DevopsPrometheusDTO extends BaseDTO {
 
     public void setAlertmanagerPvId(Long alertmanagerPvId) {
         this.alertmanagerPvId = alertmanagerPvId;
+    }
+
+    public DevopsPvDTO getPrometheusPv() {
+        return prometheusPv;
+    }
+
+    public void setPrometheusPv(DevopsPvDTO prometheusPv) {
+        this.prometheusPv = prometheusPv;
+    }
+
+    public DevopsPvDTO getAltermanagerPv() {
+        return altermanagerPv;
+    }
+
+    public void setAltermanagerPv(DevopsPvDTO altermanagerPv) {
+        this.altermanagerPv = altermanagerPv;
+    }
+
+    public DevopsPvDTO getGrafanaPv() {
+        return grafanaPv;
+    }
+
+    public void setGrafanaPv(DevopsPvDTO grafanaPv) {
+        this.grafanaPv = grafanaPv;
     }
 }

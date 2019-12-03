@@ -10,7 +10,6 @@ import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
 import io.choerodon.devops.infra.enums.ClusterResourceType;
 
 public class ComponentValuesTemplateUtil {
-
     private static final String TEMPLATE = "/component/template/%s.yml";
 
     private ComponentValuesTemplateUtil() {
@@ -29,26 +28,27 @@ public class ComponentValuesTemplateUtil {
     /***
      *
      * @param devopsPrometheusDTO 普罗米修斯配置数据
-     * @param in yaml文件输入流
-     * @return
+     * @param in                  yaml文件输入流
+     * @return 替换完毕的values文件
      */
     public static String convertPrometheus(DevopsPrometheusDTO devopsPrometheusDTO, InputStream in) {
         Map<String, String> map = new HashMap<>();
         map.put("{{adminPassword}}", devopsPrometheusDTO.getAdminPassword());
         map.put("{{host}}", devopsPrometheusDTO.getGrafanaDomain());
         map.put("{{clusterName}}", devopsPrometheusDTO.getClusterCode());
-        devopsPrometheusDTO.getDevopsPvcList().stream().forEach(devopsPvcDTO -> {
-            if (devopsPvcDTO.getPvId().equals(devopsPrometheusDTO.getPrometheusPvId())) {
-                map.put("{{prometheus-pvc}}", devopsPvcDTO.getName());
-            }
-            if (devopsPvcDTO.getPvId().equals(devopsPrometheusDTO.getAlertmanagerPvId())) {
-                map.put("{{alertmanager-pvc}}", devopsPvcDTO.getName());
-            }
-            if (devopsPvcDTO.getPvId().equals(devopsPrometheusDTO.getGrafanaPvId())) {
-                map.put("{{grafana-pvc}}", devopsPvcDTO.getName());
-            }
-        });
 
+        map.put("{{prometheus-pv}}", devopsPrometheusDTO.getPrometheusPv().getName());
+        map.put("{{prometheusAccessMode}}", devopsPrometheusDTO.getPrometheusPv().getAccessModes());
+        map.put("{{prometheusStorage}}", devopsPrometheusDTO.getPrometheusPv().getRequestResource());
+
+        map.put("{{alertmanager-pv}}", devopsPrometheusDTO.getAltermanagerPv().getName());
+        map.put("{{altermanagerAccesssMode}}", devopsPrometheusDTO.getAltermanagerPv().getAccessModes());
+        map.put("{{altermanagerStorage}}", devopsPrometheusDTO.getAltermanagerPv().getRequestResource());
+
+
+        map.put("{{grafana-pv}}", devopsPrometheusDTO.getGrafanaPv().getName());
+        map.put("{{grafanaAccessMode}}", devopsPrometheusDTO.getGrafanaPv().getAccessModes());
+        map.put("{{grafanaStorage}}", devopsPrometheusDTO.getGrafanaPv().getRequestResource());
 
         return FileUtil.replaceReturnString(in, map);
     }
