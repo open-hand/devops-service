@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import io.choerodon.devops.api.vo.CertManagerMsgVO;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,7 +83,7 @@ public class DevopsClusterResourceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "集群下安装prometheus")
     @PostMapping("/prometheus")
-    public ResponseEntity<Boolean> create(
+    public ResponseEntity<Boolean> createPrometheus(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
@@ -98,7 +99,7 @@ public class DevopsClusterResourceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "升级prometheus")
     @PutMapping("/prometheus")
-    public ResponseEntity<Boolean> update(
+    public ResponseEntity<Boolean> updatePrometheus(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
@@ -113,7 +114,7 @@ public class DevopsClusterResourceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询集群下prometheus")
     @GetMapping("/prometheus")
-    public ResponseEntity<DevopsPrometheusVO> query(
+    public ResponseEntity<DevopsPrometheusVO> queryPrometheus(
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id") Long clusterId) {
 
@@ -125,7 +126,7 @@ public class DevopsClusterResourceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询prometheus部署状态")
     @GetMapping("/prometheus/deploy_status")
-    public ResponseEntity<PrometheusStageVO> getDeployStatus(
+    public ResponseEntity<PrometheusStageVO> getPrometheusDeployStatus(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id") Long clusterId) {
@@ -137,12 +138,22 @@ public class DevopsClusterResourceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "卸载prometheus")
     @DeleteMapping("/prometheus/unload")
-    public ResponseEntity<Boolean> delete(
+    public ResponseEntity<Boolean> deletePrometheus(
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
         return Optional.ofNullable(devopsClusterResourceService.uninstallPrometheus(clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.prometheus.unload"));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "卸载prometheus")
+    @DeleteMapping("/prometheus/retry")
+    public ResponseEntity<Boolean> retryInstallPrometheus(
+            @ApiParam(value = "集群id", required = true)
+            @RequestParam(name = "cluster_id", required = true) Long clusterId) {
+        devopsClusterResourceService.retryInstallPrometheus(clusterId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})

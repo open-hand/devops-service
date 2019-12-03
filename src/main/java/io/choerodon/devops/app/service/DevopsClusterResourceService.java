@@ -114,15 +114,6 @@ public interface DevopsClusterResourceService {
      */
     void installPrometheus(Long clusterId, DevopsPrometheusDTO devopsPrometheusDTO);
 
-    void deletePvc(Long clusterId);
-
-    /**
-     * 重试pvc推向GitLab
-     *
-     * @param pvcIds 所有的pvcId,正常的pvc也可以传，不止是失败的
-     */
-    void retryPvc(List<Long> pvcIds);
-
     /**
      * prometheus的实例异常时进行重试
      *
@@ -131,11 +122,6 @@ public interface DevopsClusterResourceService {
      */
     void retryPrometheusInstance(Long instanceId, Long envId);
 
-    /**
-     * 重试系统环境的GitOps解析
-     *
-     * @param envId 环境id
-     * @return 重试GitOps解析是否重试
-     */
-    boolean retrySystemEnvGitOps(Long envId);
+    void retryInstallPrometheus(Long clusterId);
+
 }

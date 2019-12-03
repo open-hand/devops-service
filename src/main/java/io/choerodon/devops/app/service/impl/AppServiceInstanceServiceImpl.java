@@ -869,10 +869,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
             devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
             appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
-            //删除集群组件prometheus
-            if (deletePrometheus) {
-                devopsClusterResourceService.deletePvc(devopsEnvironmentDTO.getClusterId());
-            }
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX)) {
                 gitlabServiceClientOperator.deleteFile(
@@ -890,9 +886,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
                 appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
                 devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
-                if (deletePrometheus) {
-                    devopsClusterResourceService.deletePvc(devopsEnvironmentDTO.getClusterId());
-                }
                 return;
             }
         }
@@ -953,7 +946,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
         appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
         appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
-        devopsClusterResourceService.deletePvc(devopsEnvironmentDTO.getClusterId());
     }
 
 
