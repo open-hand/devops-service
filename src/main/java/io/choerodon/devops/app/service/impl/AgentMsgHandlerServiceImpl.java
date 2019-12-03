@@ -1683,8 +1683,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                       CertificationStatus certificationStatus,
                                       PvStatus pvStatus,
                                       PvcStatus pvcStatus) {
-        switch (devopsEnvCommandDTO.getObject()) {
-            case INSTANCE_KIND:
+        switch (ObjectType.forValue(devopsEnvCommandDTO.getObject())) {
+            case INSTANCE:
                 AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsEnvCommandDTO.getObjectId());
                 if (appServiceInstanceDTO != null
                         && !InstanceStatus.RUNNING.getStatus().equals(appServiceInstanceDTO.getStatus())) {
@@ -1692,21 +1692,21 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     appServiceInstanceService.updateStatus(appServiceInstanceDTO);
                 }
                 break;
-            case SERVICE_KIND:
+            case SERVICE:
                 DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQuery(devopsEnvCommandDTO.getObjectId());
                 devopsServiceDTO.setStatus(serviceStatus.getStatus());
                 devopsServiceService.updateStatus(devopsServiceDTO);
                 break;
-            case INGRESS_KIND:
+            case INGRESS:
                 DevopsIngressDTO devopsIngressDTO = devopsIngressService.baseQuery(devopsEnvCommandDTO.getObjectId());
                 devopsIngressService.updateStatus(envId, devopsIngressDTO.getName(), ingressStatus.getStatus());
                 break;
-            case CERTIFICATE_KIND:
+            case CERTIFICATE:
                 CertificationDTO certificationDTO = certificationService.baseQueryById(devopsEnvCommandDTO.getObjectId());
                 certificationDTO.setStatus(certificationStatus.getStatus());
                 certificationService.updateStatus(certificationDTO);
                 break;
-            case PERSISTENT_VOLUME_KIND:
+            case PERSISTENTVOLUME:
                 DevopsPvDTO devopsPvDTO = devopsPvMapper.selectByPrimaryKey(devopsEnvCommandDTO.getObjectId());
                 if (pvStatus != PvStatus.FAILED) {
                     devopsPvMapper.updateStatusById(devopsEnvCommandDTO.getObjectId(), pvStatus.getStatus());
@@ -1715,7 +1715,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     devopsPvMapper.updateStatusById(devopsEnvCommandDTO.getObjectId(), pvStatus.getStatus());
                 }
                 break;
-            case PERSISTENT_VOLUME_CLAIM_KIND:
+            case PERSISTENTVOLUMECLAIM:
                 DevopsPvcDTO devopsPvcDTO = devopsPvcMapper.selectByPrimaryKey(devopsEnvCommandDTO.getObjectId());
                 if (pvcStatus != PvcStatus.FAILED) {
                     devopsPvcMapper.updateStatusById(devopsEnvCommandDTO.getObjectId(), pvcStatus.getStatus());
