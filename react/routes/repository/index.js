@@ -1,9 +1,9 @@
 import React from 'react';
 import { StoreProvider } from './stores';
-import TabContent from './TabContent';
+import Content from './Content';
 
 export default (props) => (
   <StoreProvider {...props}>
-    <TabContent />
+    <Content />
   </StoreProvider>
 );
