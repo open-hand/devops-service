@@ -6,8 +6,6 @@ package io.choerodon.devops.api.vo;
  * @description:
  */
 public class PrometheusStageVO {
-    private String parserPvc;
-    private String boundPvc;
     private String parserPrometheus;
     private String installPrometheus;
     private String error;
@@ -15,19 +13,9 @@ public class PrometheusStageVO {
     public PrometheusStageVO() {
     }
 
-    public PrometheusStageVO(String parserPvc, String boundPvc, String parserPrometheus, String installPrometheus) {
-        this.parserPvc = parserPvc;
-        this.boundPvc = boundPvc;
+    public PrometheusStageVO( String parserPrometheus, String installPrometheus) {
         this.parserPrometheus = parserPrometheus;
         this.installPrometheus = installPrometheus;
-    }
-
-    public String getBoundPvc() {
-        return boundPvc;
-    }
-
-    public void setBoundPvc(String boundPvc) {
-        this.boundPvc = boundPvc;
     }
 
     public String getParserPrometheus() {
@@ -44,14 +32,6 @@ public class PrometheusStageVO {
 
     public void setInstallPrometheus(String installPrometheus) {
         this.installPrometheus = installPrometheus;
-    }
-
-    public String getParserPvc() {
-        return parserPvc;
-    }
-
-    public void setParserPvc(String parserPvc) {
-        this.parserPvc = parserPvc;
     }
 
     public String getError() {
