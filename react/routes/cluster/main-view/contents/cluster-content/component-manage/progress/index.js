@@ -9,7 +9,7 @@ import { useClusterContentStore } from '../../stores';
 
 import './index.less';
 
-export default observer((props) => {
+export default observer(({ refresh }) => {
   const {
     intlPrefix,
     prefixCls,
@@ -33,6 +33,12 @@ export default observer((props) => {
     contentStore.loadPrometheusStatus(projectId, clusterId);
   }, []);
 
+  async function handleRetry() {
+    if (await contentStore.retryPrometheus(projectId, clusterId)) {
+      refresh();
+    }
+  }
+
   return (
     <Spin spinning={getPrometheusLoading}>
       {map(progressData, (value, key) => (
@@ -53,6 +59,7 @@ export default observer((props) => {
                   funcType="raised"
                   color="primary"
                   size="small"
+                  onClick={handleRetry}
                   className={`${prefixCls}-install-step-btn`}
                 >
                   {formatMessage({ id: `${intlPrefix}.install.step.retry` })}
