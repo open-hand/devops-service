@@ -83,7 +83,7 @@ export default ((intlPrefix, formatMessage, projectId) => {
     transport: {},
     fields: [
       { name: 'id', type: 'number' },
-      { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }), validator: checkName, maxLength: 20 },
+      { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }), validator: checkName, maxLength: 40 },
       { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.code` }), validator: checkCode, maxLength: 30 },
       { name: 'type', type: 'string', label: formatMessage({ id: `${intlPrefix}.type` }) },
       { name: 'projectName', type: 'string', label: formatMessage({ id: `${intlPrefix}.project` }) },

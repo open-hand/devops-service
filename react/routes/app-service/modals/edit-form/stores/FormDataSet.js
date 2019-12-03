@@ -132,7 +132,7 @@ export default (({ intlPrefix, formatMessage, projectId, appServiceId }) => {
       },
     },
     fields: [
-      { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }), required: true, validator: checkName, maxLength: 20 },
+      { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }), required: true, validator: checkName, maxLength: 40 },
       { name: 'code', type: 'string' },
       { name: 'type', type: 'string' },
       { name: 'imgUrl', type: 'string' },
