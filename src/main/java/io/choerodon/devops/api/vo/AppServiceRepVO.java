@@ -28,6 +28,9 @@ public class AppServiceRepVO {
     @ApiModelProperty("应用服务对应的gitlab仓库地址")
     private String repoUrl;
 
+    @ApiModelProperty("应用服务对应的gitlab的仓库的ssh协议克隆地址")
+    private String sshRepositoryUrl;
+
     @ApiModelProperty("应用服务是否同步完成，false表示正在处理中")
     private Boolean synchro;
 
@@ -291,5 +294,13 @@ public class AppServiceRepVO {
 
     public void setEmptyRepository(Boolean emptyRepository) {
         this.emptyRepository = emptyRepository;
+    }
+
+    public String getSshRepositoryUrl() {
+        return sshRepositoryUrl;
+    }
+
+    public void setSshRepositoryUrl(String sshRepositoryUrl) {
+        this.sshRepositoryUrl = sshRepositoryUrl;
     }
 }
