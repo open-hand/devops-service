@@ -78,8 +78,8 @@ public class ComponentVersionUtil {
                         .orElseThrow(() -> new CommonException("error.component.config.property.not.exist", "image")));
                 appServiceVersionDTO.setVersion(Optional.ofNullable(componentConfig.get("version"))
                         .orElseThrow(() -> new CommonException("error.component.config.property.not.exist", "version")));
-                appServiceVersionDTO.setRepository(Optional.ofNullable(componentConfig.get("image"))
-                        .orElseThrow(() -> new CommonException("error.component.config.property.not.exist", "image")));
+                appServiceVersionDTO.setRepository(Optional.ofNullable(componentConfig.get("chartRepo"))
+                        .orElseThrow(() -> new CommonException("error.component.config.property.not.exist", "chartRepo")));
                 appServiceVersionDTO.setChartName(Optional.ofNullable(componentConfig.get("chartName"))
                         .orElseThrow(() -> new CommonException("error.component.config.property.not.exist", "chartName")));
 
