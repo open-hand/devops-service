@@ -1,5 +1,5 @@
-import React, { useCallback, Fragment, useEffect } from 'react';
-import { TabPage, Content, Header, Breadcrumb, Permission } from '@choerodon/boot';
+import React from 'react';
+import { Page, Content, Header, Breadcrumb, Permission } from '@choerodon/boot';
 import { Modal, Button } from 'choerodon-ui/pro';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
@@ -51,7 +51,7 @@ const Repository = withRouter(observer((props) => {
   }
 
   return (
-    <TabPage
+    <Page
       service={permissions}
     >
       <Header>
@@ -91,7 +91,7 @@ const Repository = withRouter(observer((props) => {
           </span>
         </div>
       </Content>
-    </TabPage>
+    </Page>
   );
 }));
 
