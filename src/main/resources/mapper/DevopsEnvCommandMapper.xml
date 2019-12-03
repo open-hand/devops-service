@@ -76,7 +76,7 @@ WHERE
     </delete>
 
     <select id="listCommandsToSync" resultType="io.choerodon.devops.api.vo.kubernetes.Command">
-        (SELECT command.id, command.sha AS commit, dasi.code AS resource_name, 'instance' AS resource_ype
+        (SELECT command.id, command.sha AS commit, dasi.code AS resource_name, 'instance' AS resource_type
         FROM devops_app_service_instance dasi
         INNER JOIN devops_env_command command ON dasi.command_id = command.id
         WHERE command.status = 'operating'
@@ -85,7 +85,7 @@ WHERE
 
         UNION ALL
 
-        (SELECT command.id, command.sha AS commit, dasi.name AS resource_name, 'service' AS resource_ype
+        (SELECT command.id, command.sha AS commit, dasi.name AS resource_name, 'service' AS resource_type
         FROM devops_service dasi
         INNER JOIN devops_env_command command ON dasi.command_id = command.id
         WHERE command.status = 'operating'
@@ -94,7 +94,7 @@ WHERE
 
         UNION ALL
 
-        (SELECT command.id, command.sha AS commit, dasi.name AS resource_name, 'ingress' AS resource_ype
+        (SELECT command.id, command.sha AS commit, dasi.name AS resource_name, 'ingress' AS resource_type
         FROM devops_ingress dasi
         INNER JOIN devops_env_command command ON dasi.command_id = command.id
         WHERE command.status = 'operating'
@@ -103,7 +103,7 @@ WHERE
 
         UNION ALL
 
-        (SELECT command.id, command.sha AS commit, dasi.name AS resource_name, 'certificate' AS resource_ype
+        (SELECT command.id, command.sha AS commit, dasi.name AS resource_name, 'certificate' AS resource_type
         FROM devops_certification dasi
         INNER JOIN devops_env_command command ON dasi.command_id = command.id
         WHERE command.status = 'operating'
@@ -112,7 +112,7 @@ WHERE
 
         UNION ALL
 
-        (SELECT command.id, command.sha AS commit, dasi.name AS resource_name, 'configmap' AS resource_ype
+        (SELECT command.id, command.sha AS commit, dasi.name AS resource_name, 'configmap' AS resource_type
         FROM devops_config_map dasi
         INNER JOIN devops_env_command command ON dasi.command_id = command.id
         WHERE command.status = 'operating'
@@ -121,7 +121,7 @@ WHERE
 
         UNION ALL
 
-        (SELECT command.id, command.sha AS commit, dasi.name AS resource_name, 'secret' AS resource_ype
+        (SELECT command.id, command.sha AS commit, dasi.name AS resource_name, 'secret' AS resource_type
         FROM devops_secret dasi
         INNER JOIN devops_env_command command ON dasi.command_id = command.id
         WHERE command.status = 'operating'
@@ -130,7 +130,7 @@ WHERE
 
         UNION ALL
 
-        (SELECT command.id, command.sha AS commit, dasi.name AS resource_name, 'persistentvolume' AS resource_ype
+        (SELECT command.id, command.sha AS commit, dasi.name AS resource_name, 'persistentvolume' AS resource_type
         FROM devops_pv dasi
         INNER JOIN devops_env env ON dasi.cluster_id = env.cluster_id
         INNER JOIN devops_env_command command ON dasi.command_id = command.id
@@ -140,7 +140,7 @@ WHERE
 
         UNION ALL
 
-        (SELECT command.id, command.sha AS commit, dasi.name AS resource_name, 'persistentvolumeclaim' AS resource_ype
+        (SELECT command.id, command.sha AS commit, dasi.name AS resource_name, 'persistentvolumeclaim' AS resource_type
         FROM devops_pvc dasi
         INNER JOIN devops_env_command command ON dasi.command_id = command.id
         WHERE command.status = 'operating'

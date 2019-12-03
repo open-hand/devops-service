@@ -1383,7 +1383,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         Date threeMinutesBefore = new Date(System.currentTimeMillis() - THREE_MINUTE_MILLISECONDS);
         String dateString = simpleDateFormat.format(threeMinutesBefore);
 
-        List<Command> commandsToSend = devopsEnvCommandService.listInstanceCommandsToSync(envId, dateString);
+        List<Command> commandsToSend = devopsEnvCommandService.listCommandsToSync(envId, dateString);
         logger.debug("Sending commands to sync. The size is {}", commandsToSend.size());
         logger.debug("commands: {}", commandsToSend);
         return commandsToSend;

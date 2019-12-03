@@ -39,10 +39,10 @@ public interface DevopsEnvCommandService {
     void baseDeleteByEnvCommandId(DevopsEnvCommandDTO devopsEnvCommandDTO);
 
     /**
-     * 列出三分钟以上还在处理中状态的实例相关的command
+     * 列出三分钟以上还在处理中状态的各种资源相关的command
      * @param envId 环境id
      * @param beforeDate 特定时间字符串，格式为：'yyyy-MM-dd HH:mm:ss'
      * @return commands
      */
-    List<Command> listInstanceCommandsToSync(Long envId, String beforeDate);
+    List<Command> listCommandsToSync(Long envId, String beforeDate);
 }

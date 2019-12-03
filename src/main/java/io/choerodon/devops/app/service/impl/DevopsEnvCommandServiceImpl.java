@@ -117,7 +117,7 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
     }
 
     @Override
-    public List<Command> listInstanceCommandsToSync(Long envId, String beforeDate) {
+    public List<Command> listCommandsToSync(Long envId, String beforeDate) {
         return devopsEnvCommandMapper.listCommandsToSync(envId, beforeDate);
     }
 }
