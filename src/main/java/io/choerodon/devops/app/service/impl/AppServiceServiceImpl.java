@@ -2581,6 +2581,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         for (AppServiceDTO t : applicationDTOS) {
             if (t.getGitlabProjectId() != null) {
+                t.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabUrl, organizationDTO.getCode(), projectDTO.getCode(), t.getCode()));
                 t.setRepoUrl(
                         gitlabUrl + urlSlash + organizationDTO.getCode() + "-" + projectDTO.getCode() + "/"
                                 + t.getCode() + ".git");
