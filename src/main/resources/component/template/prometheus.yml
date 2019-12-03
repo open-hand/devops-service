@@ -25,6 +25,7 @@ grafana:
     - {{host}}
   persistence:
     enabled: true
+    existingClaim: c7n-grafana-pvc
     accessModes:
     - {{grafanaAccessMode}}
     size: {{grafanaStorage}}
