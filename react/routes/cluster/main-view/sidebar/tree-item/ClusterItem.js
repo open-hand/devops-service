@@ -66,6 +66,12 @@ function ClusterItem({
       deleteModal.update({
         title: formatMessage({ id: 'c7ncd.cluster.action.can\'t.delete' }),
         children: message,
+        okText: formatMessage({ id: 'iknow' }),
+        footer: ((okBtn, cancelBtn) => (
+          <Fragment>
+            {okBtn}
+          </Fragment>
+        )),
       });
     } else {
       const modalContent = (
