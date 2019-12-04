@@ -14,7 +14,7 @@ const Content = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    intl: { formatMessage }
+    intl: { formatMessage },
   } = useResourceStore();
   const { detailDs } = useCertDetailStore();
 
