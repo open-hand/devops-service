@@ -72,7 +72,7 @@ public class DevopsPvController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody @Valid DevopsPvReqVO devopsPvReqVo) {
-        devopsPvService.createPv(projectId,devopsPvReqVo);
+        devopsPvService.createPv(projectId, devopsPvReqVo);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
@@ -112,8 +112,9 @@ public class DevopsPvController {
     }
 
     /**
-     * 根据pvId查询相应pv
-     *
+     * 根据pvId查询对应pv
+     * @param projectId
+     * @param pvId
      * @return
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -140,14 +141,18 @@ public class DevopsPvController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "列出组织下所有项目中没有分配权限的项目")
     @PostMapping(value = "/{pv_id}/permission/list_non_related")
-    public ResponseEntity<List<ProjectReqVO>> listAllNonRelatedMembers(
+    public ResponseEntity<PageInfo<ProjectReqVO>> listAllNonRelatedMembers(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "PvId", required = true)
             @PathVariable(value = "pv_id") Long pvId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore Pageable pageable,
+            @ApiParam(value = "指定项目id")
+            @RequestParam(value = "selected_project_id") Long selectedProjectId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvService.listNonRelatedProjects(projectId, pvId))
+        return Optional.ofNullable(devopsPvService.listNonRelatedProjects(projectId, pvId, selectedProjectId, pageable,params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.pv.non.related.project"));
     }
@@ -170,7 +175,7 @@ public class DevopsPvController {
             @PathVariable(value = "pv_id") Long pvId,
             @ApiParam(value = "要删除的proejctId")
             @RequestParam(value = "related_project_id") Long relatedProjectId) {
-        devopsPvService.deleteRelatedProjectById(pvId, projectId);
+        devopsPvService.deleteRelatedProjectById(pvId, relatedProjectId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
