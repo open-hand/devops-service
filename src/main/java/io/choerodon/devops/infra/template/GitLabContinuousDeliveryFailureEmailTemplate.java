@@ -7,15 +7,15 @@ import io.choerodon.core.notify.EmailTemplate;
  * @since 12/4/19
  */
 // TODO by zmf
-public class DisableAppServiceEmailTemplate implements EmailTemplate {
+public class GitLabContinuousDeliveryFailureEmailTemplate implements EmailTemplate {
     @Override
     public String code() {
-        return "DisableAppServiceEmail";
+        return "GitLabContinuousDeliveryFailureEmail";
     }
 
     @Override
     public String name() {
-        return "停用应用服务邮件模板";
+        return "GitLab持续集成失败邮件模板";
     }
 
     @Override
@@ -31,6 +31,6 @@ public class DisableAppServiceEmailTemplate implements EmailTemplate {
 
     @Override
     public String content() {
-        return "<p>项目“${projectName}”下的应用服务“${appServiceName}”已被停用</p>";
+        return "<p>您在项目“${projectName}”下应用服务“${appServiceName}”中的持续集成过程失败</p>";
     }
 }

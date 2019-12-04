@@ -10,14 +10,12 @@ import io.choerodon.core.notify.EmailTemplate;
 public class EnableAppServiceEmailTemplate implements EmailTemplate {
     @Override
     public String code() {
-        // TODO by zmf
-        return null;
+        return "EnableAppServiceEmail";
     }
 
     @Override
     public String name() {
-        // TODO by zmf
-        return null;
+        return "启用应用服务邮件模板";
     }
 
     @Override
