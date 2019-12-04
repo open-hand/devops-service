@@ -123,6 +123,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private JSON json = new JSON();
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
+    @Value("${services.gitlab.sshUrl}")
+    private String gitlabSshUrl;
     @Value("${spring.application.name}")
     private String applicationName;
     @Value("${services.sonarqube.url:}")
@@ -2611,7 +2613,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         for (AppServiceDTO t : applicationDTOS) {
             if (t.getGitlabProjectId() != null) {
-                t.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabUrl, organizationDTO.getCode(), projectDTO.getCode(), t.getCode()));
+                t.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, organizationDTO.getCode(), projectDTO.getCode(), t.getCode()));
                 t.setRepoUrl(
                         gitlabUrl + urlSlash + organizationDTO.getCode() + "-" + projectDTO.getCode() + "/"
                                 + t.getCode() + ".git");
