@@ -84,7 +84,7 @@ export default (({ intlPrefix, formatMessage, projectId, sourceDs, store }) => {
       },
     },
     fields: [
-      { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }), required: true, validator: checkName, maxLength: 20 },
+      { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }), required: true, validator: checkName, maxLength: 40 },
       { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.code` }), required: true, maxLength: 30, validator: checkCode },
       { name: 'type', type: 'string', defaultValue: 'normal', label: formatMessage({ id: `${intlPrefix}.type` }), required: true },
       { name: 'imgUrl', type: 'string' },

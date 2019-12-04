@@ -2084,7 +2084,8 @@ const zhCN = {
   'repository.report': '查看报表',
   'repository.quality': '代码质量',
   'repository.noUrl': '仓库代码为空',
-
+  'repository.SSHaddress': 'SSH地址',
+  'repository.HTTPSaddress': 'HTTPS地址',
   //
   'envoverview.head': '环境总览',
   'envoverview.noEnv': '暂无可用环境',
