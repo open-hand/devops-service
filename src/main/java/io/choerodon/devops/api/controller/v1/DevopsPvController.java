@@ -113,6 +113,7 @@ public class DevopsPvController {
 
     /**
      * 根据pvId查询对应pv
+     *
      * @param projectId
      * @param pvId
      * @return
@@ -149,10 +150,10 @@ public class DevopsPvController {
             @ApiParam(value = "分页参数")
             @ApiIgnore Pageable pageable,
             @ApiParam(value = "指定项目id")
-            @RequestParam(value = "selected_project_id") Long selectedProjectId,
+            @RequestParam(value = "selected_project_id", required = false) Long selectedProjectId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvService.listNonRelatedProjects(projectId, pvId, selectedProjectId, pageable,params))
+        return Optional.ofNullable(devopsPvService.listNonRelatedProjects(projectId, pvId, selectedProjectId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.pv.non.related.project"));
     }

@@ -1012,7 +1012,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public PageInfo<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, Long iamUserId, Pageable pageable, String params) {
+    public PageInfo<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, Long selectedIamUserId, Pageable pageable, String params) {
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         roleAssignmentSearchVO.setEnabled(true);
         // 处理搜索参数
@@ -1062,8 +1062,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .filter(member -> !assigned.contains(member.getId()))
                 .collect(Collectors.toSet());
 
-        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(iamUserId);
-        members.add(iamUserDTO);
+        if (selectedIamUserId != null) {
+            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(selectedIamUserId);
+            members.add(iamUserDTO);
+        }
 
         PageInfo<IamUserDTO> pageInfo;
         CustomPageRequest customPageRequest;

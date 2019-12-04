@@ -259,8 +259,10 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
                 .map(i -> new ProjectReqVO(i.getId(), i.getName(), i.getCode()))
                 .collect(Collectors.toSet());
 
-        ProjectDTO selectedProjectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
-        nonRelatedMembers.add(new ProjectReqVO(selectedProjectDTO.getId(), selectedProjectDTO.getName(), selectedProjectDTO.getCode()));
+        if (selectedProjectId != null) {
+            ProjectDTO selectedProjectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
+            nonRelatedMembers.add(new ProjectReqVO(selectedProjectDTO.getId(), selectedProjectDTO.getName(), selectedProjectDTO.getCode()));
+        }
 
         return PageInfoUtil.createPageFromList(new ArrayList<>(nonRelatedMembers), pageable);
     }

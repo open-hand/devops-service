@@ -9,7 +9,10 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsPvValidator;
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
+import io.choerodon.devops.api.vo.DevopsPvReqVO;
+import io.choerodon.devops.api.vo.DevopsPvVO;
+import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.PersistentVolumePayload;
 import io.choerodon.devops.app.service.*;
@@ -331,8 +334,10 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 .filter(i -> !permitted.contains(i.getId()))
                 .collect(Collectors.toSet());
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
-        projectReqVOS.add(new ProjectReqVO(projectDTO.getId(), projectDTO.getName(), projectDTO.getCode()));
+        if (selectedProjectId != null) {
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
+            projectReqVOS.add(new ProjectReqVO(projectDTO.getId(), projectDTO.getName(), projectDTO.getCode()));
+        }
 
         return PageInfoUtil.createPageFromList(new ArrayList<>(projectReqVOS), pageable);
     }
