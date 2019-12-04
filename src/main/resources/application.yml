@@ -80,8 +80,8 @@ asgard-servie:
 
 logging:
   level:
-    io.choerodon.event.consumer: debug
-    com.zaxxer: debug
+#    io.choerodon.event.consumer: debug
+#    com.zaxxer: debug
     io.choerodon.feign: warn
-    io.choerodon.devops.app.service: debug
+#    io.choerodon.devops.app.service: debug
   config: classpath:logback-spring.xml
