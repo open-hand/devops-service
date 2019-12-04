@@ -107,16 +107,16 @@ const PodList = observer(() => {
         formatter(obj) {
           return `${formatMessage({ id: `${intlPrefix}.time` })}: ${
             obj.name
-            }<br/>${formatMessage({ id: `${intlPrefix}.usage` })}: ${
+          }<br/>${formatMessage({ id: `${intlPrefix}.usage` })}: ${
             obj.value
-            }`;
+          }`;
         },
       },
     } : {
-        grid: {
-          bottom: 30,
-        },
-      };
+      grid: {
+        bottom: 30,
+      },
+    };
     return ({
       ...optionData,
       color: '#7885cb',
@@ -173,52 +173,52 @@ const PodList = observer(() => {
         podIp,
         creationDate,
       }, index) => (
-          <ul className="service-detail-pod-list" key={podId}>
-            <li className="service-detail-pod-item">
-              <span className="service-detail-pod-item-name">{podName}</span>
-              <span className="service-detail-pod-item-time">
-                <TimePopover content={creationDate} />
+        <ul className="service-detail-pod-list" key={podId}>
+          <li className="service-detail-pod-item">
+            <span className="service-detail-pod-item-name">{podName}</span>
+            <span className="service-detail-pod-item-time">
+              <TimePopover content={creationDate} />
+            </span>
+          </li>
+          <li className="service-detail-pod-item">
+            <div>
+              <span className="service-detail-pod-item-key" style={{ whiteSpace: 'nowrap' }}>
+                {formatMessage({ id: `${intlPrefix}.instance.ip` })}:{podIp || '-'}
               </span>
+            </div>
+            <div>
+              <span className="service-detail-pod-item-key" style={{ whiteSpace: 'nowrap' }}>
+                {formatMessage({ id: `${intlPrefix}.node` })}: {nodeIp ? `${nodeName}(${nodeIp})` : '-'}
+              </span>
+            </div>
+          </li>
+          <li className="service-detail-pod-item">
+            {renderRegistry(containers, index)}
+          </li>
+          {timeList && (
+          <Fragment>
+            <li className="service-detail-pod-echarts">
+              <Tooltip title={formatMessage({ id: `${intlPrefix}.report.cpu.click` })}>
+                <div onClick={() => openModal(cpuUsedList, timeList, 'cpu')}>
+                  <ReactEcharts
+                    option={getOption(cpuUsedList, timeList, 'CPU /m')}
+                    style={{ height: '0.42rem', width: '1.2rem' }}
+                  />
+                </div>
+              </Tooltip>
+              <Tooltip title={formatMessage({ id: `${intlPrefix}.report.memory.click` })}>
+                <div onClick={() => openModal(memoryUsedList, timeList, 'memory')}>
+                  <ReactEcharts
+                    option={getOption(memoryUsedList, timeList, 'Memory /MiB')}
+                    style={{ height: '0.42rem', width: '1.2rem' }}
+                  />
+                </div>
+              </Tooltip>
             </li>
-            <li className="service-detail-pod-item">
-              <div>
-                <span className="service-detail-pod-item-key" style={{ whiteSpace: 'nowrap' }}>
-                  {formatMessage({ id: `${intlPrefix}.instance.ip` })}:{podIp || '-'}
-                </span>
-              </div>
-              <div>
-                <span className="service-detail-pod-item-key" style={{ whiteSpace: 'nowrap' }}>
-                  {formatMessage({ id: `${intlPrefix}.node` })}: {nodeIp ? `${nodeName}(${nodeIp})` : '-'}
-                </span>
-              </div>
-            </li>
-            <li className="service-detail-pod-item">
-              {renderRegistry(containers, index)}
-            </li>
-            {timeList && (
-              <Fragment>
-                <li className="service-detail-pod-echarts">
-                  <Tooltip title={formatMessage({ id: `${intlPrefix}.report.cpu.click` })}>
-                    <div onClick={() => openModal(cpuUsedList, timeList, 'cpu')}>
-                      <ReactEcharts
-                        option={getOption(cpuUsedList, timeList, 'CPU /m')}
-                        style={{ height: '0.42rem', width: '1.2rem' }}
-                      />
-                    </div>
-                  </Tooltip>
-                  <Tooltip title={formatMessage({ id: `${intlPrefix}.report.memory.click` })}>
-                    <div onClick={() => openModal(memoryUsedList, timeList, 'memory')}>
-                      <ReactEcharts
-                        option={getOption(memoryUsedList, timeList, 'Memory /MiB')}
-                        style={{ height: '0.42rem', width: '1.2rem' }}
-                      />
-                    </div>
-                  </Tooltip>
-                </li>
-              </Fragment>
-            )}
-          </ul>
-        )) : <FormattedMessage id="nodata" />}
+          </Fragment>
+          )}
+        </ul>
+      )) : <span style={{ color: 'rgba(0,0,0,.65)' }}>{formatMessage({ id: 'nodata' })}</span>}
     </div>
     {visible && <LogSidebar visible={visible} onClose={closeLog} record={data} />}
   </Fragment>);
