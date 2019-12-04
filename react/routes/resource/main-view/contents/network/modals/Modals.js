@@ -9,6 +9,7 @@ import { useModalStore } from './stores';
 import { useNetworkStore } from '../stores';
 import CreateNetwork from './network-create';
 import { useMainStore } from '../../../stores';
+import CreateNetwork2 from './network-operation';
 
 const modalKey = Modal.key();
 const modalStyle = {
@@ -46,7 +47,7 @@ const EnvModals = observer(() => {
       style: modalStyle,
       drawer: true,
       title: formatMessage({ id: 'network.header.create' }),
-      children: <CreateNetwork
+      children: <CreateNetwork2
         envId={parentId}
         store={networkStore}
         refresh={refresh}
