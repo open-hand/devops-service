@@ -3,14 +3,11 @@ package io.choerodon.devops.infra.template;
 import io.choerodon.core.notify.EmailTemplate;
 
 /**
- * 应用服务创建失败的邮件模板
- *
  * @author zmf
  * @since 12/4/19
  */
-//TODO @Component
-public class AppServiceCreationFailureEmailTemplate implements EmailTemplate {
-
+// TODO by zmf
+public class EnableAppServiceEmailTemplate implements EmailTemplate {
     @Override
     public String code() {
         // TODO by zmf
@@ -34,11 +31,8 @@ public class AppServiceCreationFailureEmailTemplate implements EmailTemplate {
         return null;
     }
 
-    /**
-     * projectName, appServiceName
-     */
     @Override
     public String content() {
-        return "<p>您在项目“${projectName}”下创建的应用服务“${appServiceName}”失败</p>";
+        return "<p>项目“${projectName}”下的应用服务“${appServiceName}”已被启用</p>";
     }
 }
