@@ -1,26 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
@@ -37,6 +20,19 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCertificationFileMapper;
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
 import io.choerodon.devops.infra.util.*;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DevopsProjectCertificationServiceImpl implements DevopsProjectCertificationService {
@@ -235,17 +231,21 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     }
 
     @Override
-    public List<ProjectReqVO> listNonRelatedMembers(Long projectId, Long certId, String params) {
+    public PageInfo<ProjectReqVO> listNonRelatedMembers(Long projectId, Long certId, Long selectedProjectId, Pageable pageable, String params) {
         CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
         if (certificationDTO == null) {
             throw new CommonException(ERROR_CERTIFICATION_NOT_EXIST, certId);
         }
 
+        Map<String, String> searchParamMap = new HashMap<>();
+        if (!StringUtils.isEmpty(params)) {
+            Map maps = gson.fromJson(params, Map.class);
+            searchParamMap = Optional.ofNullable((Map) TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM))).orElse(new HashMap<>());
+        }
         //查询出该项目所属组织下的所有项目
-        Map<String, Object> searchMap = TypeUtil.castMapParams(params);
         ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(iamProjectDTO.getOrganizationId());
-        List<ProjectDTO> projectDTOList = baseServiceClientOperator.listIamProjectByOrgId(organizationDTO.getId());
+        List<ProjectDTO> projectDTOList = baseServiceClientOperator.listIamProjectByOrgId(organizationDTO.getId(), searchParamMap.get("name"), searchParamMap.get("code"), null);
 
         //查询已经分配权限的项目
         List<Long> permitted = devopsCertificationProRelationshipService.baseListByCertificationId(certId)
@@ -254,10 +254,15 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
                 .collect(Collectors.toList());
 
         //把组织下有权限的项目过滤掉再返回
-        return projectDTOList.stream()
+        Set<ProjectReqVO> nonRelatedMembers = projectDTOList.stream()
                 .filter(i -> !permitted.contains(i.getId()))
                 .map(i -> new ProjectReqVO(i.getId(), i.getName(), i.getCode(), null))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
+
+        ProjectDTO selectedProjectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
+        nonRelatedMembers.add(new ProjectReqVO(selectedProjectDTO.getId(), selectedProjectDTO.getName(), selectedProjectDTO.getCode(), null));
+
+        return PageInfoUtil.createPageFromList(new ArrayList<>(nonRelatedMembers), pageable);
     }
 
     @Override

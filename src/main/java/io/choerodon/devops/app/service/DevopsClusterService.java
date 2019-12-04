@@ -1,12 +1,12 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
 import com.github.pagehelper.PageInfo;
-import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 public interface DevopsClusterService {
 
@@ -50,10 +50,10 @@ public interface DevopsClusterService {
     /**
      * 集群列表查询
      *
-     * @param projectId   项目id
-     * @param doPage      是否分页
-     * @param pageable 分页参数
-     * @param params      查询参数
+     * @param projectId 项目id
+     * @param doPage    是否分页
+     * @param pageable  分页参数
+     * @param params    查询参数
      * @return 集群列表
      */
     PageInfo<ClusterWithNodesVO> pageClusters(Long projectId, Boolean doPage, Pageable pageable, String params);
@@ -67,7 +67,7 @@ public interface DevopsClusterService {
      * @param params    搜索参数
      * @return 组织下所有项目中在数据库中没有权限关联关系的项目
      */
-    List<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, String params);
+    PageInfo<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, Long selectedProjectId, Pageable pageable, String params);
 
     /**
      * 分配权限
@@ -79,7 +79,7 @@ public interface DevopsClusterService {
     /**
      * 删除该项目对该集群的权限
      *
-     * @param clusterId 集群id
+     * @param clusterId        集群id
      * @param relatedProjectId 项目id
      */
     void deletePermissionOfProject(Long clusterId, Long relatedProjectId);
@@ -95,10 +95,10 @@ public interface DevopsClusterService {
     /**
      * 分页查询组织下在数据库中已有关联关系项目列表
      *
-     * @param projectId   项目id
-     * @param clusterId   集群id
-     * @param pageable 分页参数
-     * @param params      查询参数
+     * @param projectId 项目id
+     * @param clusterId 集群id
+     * @param pageable  分页参数
+     * @param params    查询参数
      * @return List
      */
     PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long clusterId, Pageable pageable, String params);
@@ -130,7 +130,7 @@ public interface DevopsClusterService {
      *
      * @param clusterId   集群id
      * @param nodeName    节点名称
-     * @param pageable 分页参数
+     * @param pageable    分页参数
      * @param searchParam 查询参数
      * @return pods
      */
@@ -172,7 +172,7 @@ public interface DevopsClusterService {
      *
      * @param clusterId   集群id
      * @param nodeName    节点名称
-     * @param pageable 分页参数
+     * @param pageable    分页参数
      * @param searchParam 查询参数
      * @return pods
      */

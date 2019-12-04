@@ -1012,7 +1012,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public PageInfo<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, Pageable pageable, String params) {
+    public PageInfo<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, Long iamUserId, Pageable pageable, String params) {
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         roleAssignmentSearchVO.setEnabled(true);
         // 处理搜索参数
@@ -1056,20 +1056,23 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<Long> assigned = devopsEnvUserPermissionMapper.listUserIdsByEnvId(envId);
 
         // 过滤项目成员中的项目所有者和已被分配权限的
-        List<IamUserDTO> members = allProjectMembers.getList()
+        Set<IamUserDTO> members = allProjectMembers.getList()
                 .stream()
                 .filter(member -> !allProjectOwnerIds.contains(member.getId()))
                 .filter(member -> !assigned.contains(member.getId()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
+
+        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(iamUserId);
+        members.add(iamUserDTO);
 
         PageInfo<IamUserDTO> pageInfo;
         CustomPageRequest customPageRequest;
         if (pageable.getPageSize() == 0) {
             customPageRequest = CustomPageRequest.of(0, 0);
-            pageInfo = PageInfoUtil.createPageFromList(members, customPageRequest);
+            pageInfo = PageInfoUtil.createPageFromList(new ArrayList<>(members), customPageRequest);
         } else {
             customPageRequest = CustomPageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
-            pageInfo = PageInfoUtil.createPageFromList(members, customPageRequest);
+            pageInfo = PageInfoUtil.createPageFromList(new ArrayList<>(members), customPageRequest);
         }
 
         return ConvertUtils.convertPage(pageInfo, member -> new DevopsEnvUserVO(member.getId(), member.getLdap() ? member.getLoginName() : member.getEmail(), member.getRealName(), member.getImageUrl()));

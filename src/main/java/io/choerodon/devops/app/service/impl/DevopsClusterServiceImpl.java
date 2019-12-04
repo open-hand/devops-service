@@ -1,23 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.InputStream;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
+import com.google.gson.Gson;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
@@ -31,6 +16,21 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvProPermissionMapper;
 import io.choerodon.devops.infra.util.*;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -45,6 +45,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private String agentServiceUrl;
     @Value("${agent.repoUrl}")
     private String agentRepoUrl;
+    private Gson gson = new Gson();
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
@@ -167,20 +168,23 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public List<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, String params) {
+    public PageInfo<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, Long selectedProjectId, Pageable pageable, String params) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         if (devopsClusterDTO == null) {
             throw new CommonException(ERROR_CLUSTER_NOT_EXIST, clusterId);
         }
 
-        Map<String, Object> searchMap = TypeUtil.castMapParams(params);
-        List<String> paramList = TypeUtil.cast(searchMap.get(TypeUtil.PARAMS));
+        Map<String, String> searchParamMap = new HashMap<>();
+        if (!StringUtils.isEmpty(params)) {
+            Map maps = gson.fromJson(params, Map.class);
+            searchParamMap = Optional.ofNullable((Map) TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM))).orElse(new HashMap<>());
+        }
 
         ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         // 查出组织下所有符合条件的项目
         List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
-                iamProjectDTO.getOrganizationId(), null, null, paramList == null ? null : paramList.get(0));
+                iamProjectDTO.getOrganizationId(), searchParamMap.get("name"), searchParamMap.get("code"), null);
 
         // 查出数据库中已经分配权限的项目
         List<Long> permitted = devopsClusterProPermissionService.baseListByClusterId(clusterId)
@@ -189,11 +193,16 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 .collect(Collectors.toList());
 
         // 将已经分配权限的项目过滤
-        return filteredProjects
+        Set<ProjectReqVO> projectReqVOS = filteredProjects
                 .stream()
                 .filter(p -> !permitted.contains(p.getId()))
                 .map(p -> new ProjectReqVO(p.getId(), p.getName(), p.getCode()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
+
+        ProjectDTO selectedProjectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
+        projectReqVOS.add(new ProjectReqVO(selectedProjectDTO.getId(), selectedProjectDTO.getName(), selectedProjectDTO.getCode()));
+
+        return PageInfoUtil.createPageFromList(new ArrayList<>(projectReqVOS), pageable);
     }
 
     @Transactional

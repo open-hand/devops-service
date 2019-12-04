@@ -103,10 +103,10 @@ public class ProjectCertificationController {
     /**
      * 分页查询证书下已有权限的项目列表
      *
-     * @param projectId   项目id
-     * @param certId      证书id
-     * @param pageable 分页参数
-     * @param params      查询参数
+     * @param projectId 项目id
+     * @param certId    证书id
+     * @param pageable  分页参数
+     * @param params    查询参数
      * @return page
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -138,14 +138,18 @@ public class ProjectCertificationController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "列出组织下所有项目中没有分配权限的项目")
     @PostMapping(value = "/{cert_id}/permission/list_non_related")
-    public ResponseEntity<List<ProjectReqVO>> listAllNonRelatedMembers(
+    public ResponseEntity<PageInfo<ProjectReqVO>> listAllNonRelatedMembers(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书id", required = true)
             @PathVariable(value = "cert_id") Long certId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore Pageable pageable,
+            @ApiParam(value = "指定项目Id")
+            @RequestParam(value = "selected_project_id", required = false) Long selectedProjectId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsProjectCertificationService.listNonRelatedMembers(projectId, certId, params))
+        return Optional.ofNullable(devopsProjectCertificationService.listNonRelatedMembers(projectId, certId, selectedProjectId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.cert.non.related.project"));
     }

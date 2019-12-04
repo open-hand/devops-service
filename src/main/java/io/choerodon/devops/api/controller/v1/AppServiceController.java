@@ -629,10 +629,12 @@ public class AppServiceController {
             @PathVariable(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
             @ApiIgnore Pageable pageable,
+            @ApiParam(value = "指定的用户Id")
+            @RequestParam(value = "iam_user_id", required = false) Long iamUserId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationServiceService.listMembers(projectId, appServiceId, pageable, params))
+                applicationServiceService.listMembers(projectId, appServiceId, iamUserId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.share.app.service.no.user.permission.get"));
     }
