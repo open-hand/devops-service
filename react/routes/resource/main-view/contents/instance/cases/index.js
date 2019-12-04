@@ -215,7 +215,9 @@ const Cases = observer(() => {
             active={currentCommandId}
           />
           <div className="cases-operation-content">
-            {istEventDom(data)}
+            <div className="case-operation-main">
+              {istEventDom(data)}
+            </div>
           </div>
         </Fragment>
       );
