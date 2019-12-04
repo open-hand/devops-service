@@ -180,11 +180,11 @@ public class AppServiceController {
     /**
      * 项目下分页查询服务
      *
-     * @param projectId   项目id
-     * @param isActive    项目是否启用
-     * @param appMarket   服务市场导入
-     * @param pageable 分页参数
-     * @param params      参数
+     * @param projectId 项目id
+     * @param isActive  项目是否启用
+     * @param appMarket 服务市场导入
+     * @param pageable  分页参数
+     * @param params    参数
      * @return Page
      */
     @Permission(type = ResourceType.PROJECT,
@@ -397,9 +397,9 @@ public class AppServiceController {
     /**
      * 项目下查询已经启用有版本未发布的服务
      *
-     * @param projectId   项目id
-     * @param pageable 分页参数
-     * @param params      查询参数
+     * @param projectId 项目id
+     * @param pageable  分页参数
+     * @param params    查询参数
      * @return Page
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -421,9 +421,9 @@ public class AppServiceController {
     /**
      * 项目下分页查询代码仓库
      *
-     * @param projectId   项目id
-     * @param pageable 分页参数
-     * @param params      参数
+     * @param projectId 项目id
+     * @param pageable  分页参数
+     * @param params    参数
      * @return Page
      */
     @Permission(type = ResourceType.PROJECT,
@@ -621,16 +621,18 @@ public class AppServiceController {
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询没有服务权限的项目成员")
-    @GetMapping(value = "/{app_service_id}/list_non_permission_users")
-    public ResponseEntity<List<DevopsUserPermissionVO>> listNonPermissionUsers(
+    @PostMapping(value = "/{app_service_id}/list_non_permission_users")
+    public ResponseEntity<PageInfo<DevopsUserPermissionVO>> listNonPermissionUsers(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务服务Id")
             @PathVariable(value = "app_service_id", required = false) Long appServiceId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "查询参数")
-            @RequestParam(value = "param", required = false) String params) {
+            @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationServiceService.listMembers(projectId, appServiceId, params))
+                applicationServiceService.listMembers(projectId, appServiceId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.share.app.service.no.user.permission.get"));
     }
@@ -806,6 +808,6 @@ public class AppServiceController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.service.templates"));
     }
-    
+
 }
 

@@ -35,13 +35,11 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -1014,7 +1012,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public List<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, String params) {
+    public PageInfo<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, Pageable pageable, String params) {
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         roleAssignmentSearchVO.setEnabled(true);
         // 处理搜索参数
@@ -1040,7 +1038,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         PageInfo<IamUserDTO> allProjectMembers = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
                 CustomPageRequest.of(0, 0), roleAssignmentSearchVO, memberRoleId, projectId, false);
         if (allProjectMembers.getList().isEmpty()) {
-            return Collections.emptyList();
+            PageInfo<DevopsEnvUserVO> pageInfo = new PageInfo<>();
+            pageInfo.setList(new ArrayList<>());
+            return pageInfo;
         }
 
         // 获取项目下所有的项目所有者（带上搜索参数搜索可以获得更精确的结果）
@@ -1062,8 +1062,17 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .filter(member -> !assigned.contains(member.getId()))
                 .collect(Collectors.toList());
 
-        return ConvertUtils.convertList(members,
-                iamUserDTO -> new DevopsEnvUserVO(iamUserDTO.getId(), iamUserDTO.getLdap() ? iamUserDTO.getLoginName() : iamUserDTO.getEmail(), iamUserDTO.getRealName()));
+        PageInfo<IamUserDTO> pageInfo;
+        CustomPageRequest customPageRequest;
+        if (pageable.getPageSize() == 0) {
+            customPageRequest = CustomPageRequest.of(0, 0);
+            pageInfo = PageInfoUtil.createPageFromList(members, customPageRequest);
+        } else {
+            customPageRequest = CustomPageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+            pageInfo = PageInfoUtil.createPageFromList(members, customPageRequest);
+        }
+
+        return ConvertUtils.convertPage(pageInfo, member -> new DevopsEnvUserVO(member.getId(), member.getLdap() ? member.getLoginName() : member.getEmail(), member.getRealName(), member.getImageUrl()));
     }
 
     @Override

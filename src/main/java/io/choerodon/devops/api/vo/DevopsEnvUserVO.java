@@ -10,6 +10,7 @@ public class DevopsEnvUserVO {
     private Long iamUserId;
     private String loginName;
     private String realName;
+    private String imageUrl;
 
     public DevopsEnvUserVO() {
     }
@@ -18,6 +19,21 @@ public class DevopsEnvUserVO {
         this.iamUserId = iamUserId;
         this.loginName = loginName;
         this.realName = realName;
+    }
+
+    public DevopsEnvUserVO(Long iamUserId, String loginName, String realName, String imageUrl) {
+        this.iamUserId = iamUserId;
+        this.loginName = loginName;
+        this.realName = realName;
+        this.imageUrl = imageUrl;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public Long getIamUserId() {

@@ -304,10 +304,10 @@ public class DevopsEnvironmentController {
     /**
      * 分页查询环境下用户权限
      *
-     * @param projectId   项目id
-     * @param pageable 分页参数
-     * @param envId       环境id
-     * @param params      搜索参数
+     * @param projectId 项目id
+     * @param pageable  分页参数
+     * @param envId     环境id
+     * @param params    搜索参数
      * @return page
      */
     @Permission(type = ResourceType.PROJECT,
@@ -342,14 +342,16 @@ public class DevopsEnvironmentController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "列出项目下所有与该环境未分配权限的项目成员")
     @PostMapping(value = "/{env_id}/permission/list_non_related")
-    public ResponseEntity<List<DevopsEnvUserVO>> listAllNonRelatedMembers(
+    public ResponseEntity<PageInfo<DevopsEnvUserVO>> listAllNonRelatedMembers(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
+            @ApiParam(value = "分页参数", required = true)
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsEnvironmentService.listNonRelatedMembers(projectId, envId, params))
+        return Optional.ofNullable(devopsEnvironmentService.listNonRelatedMembers(projectId, envId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.env.non.related.users"));
     }
@@ -434,7 +436,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId) {
-        devopsEnvironmentService.deleteDeactivatedOrFailedEnvironment(projectId,envId);
+        devopsEnvironmentService.deleteDeactivatedOrFailedEnvironment(projectId, envId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -565,7 +567,7 @@ public class DevopsEnvironmentController {
      * @return boolean
      */
     @Permission(type = ResourceType.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER,InitRoleCode.PROJECT_MEMBER})
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "检查资源是否存在")
     @GetMapping(value = "/{env_id}/check")
     public ResponseEntity<EnvironmentMsgVO> checkExist(

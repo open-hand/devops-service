@@ -115,6 +115,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String SHARE_SERVICE = "share_service";
     private static final String MARKET_SERVICE = "market_service";
     private static final String TEMP_MODAL = "\\?version=";
+    private static final String LOGIN_NAME = "loginName";
+    private static final String REAL_NAME = "realName";
     @Autowired
     DevopsSagaHandler devopsSagaHandler;
     private Gson gson = new Gson();
@@ -1553,16 +1555,35 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public List<DevopsUserPermissionVO> listMembers(Long projectId, Long appServiceId, String params) {
+    public PageInfo<DevopsUserPermissionVO> listMembers(Long projectId, Long appServiceId, Pageable pageable, String params) {
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         roleAssignmentSearchVO.setParam(new String[]{params});
         roleAssignmentSearchVO.setEnabled(true);
+        // 处理搜索参数
+        if (!StringUtils.isEmpty(params)) {
+            Map maps = gson.fromJson(params, Map.class);
+            Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+            List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+
+            roleAssignmentSearchVO.setParam(paramList == null ? null : paramList.toArray(new String[0]));
+            if (searchParamMap.get(LOGIN_NAME) != null) {
+                String loginName = TypeUtil.objToString(searchParamMap.get(LOGIN_NAME));
+                roleAssignmentSearchVO.setLoginName(loginName);
+            }
+
+            if (searchParamMap.get(REAL_NAME) != null) {
+                String realName = TypeUtil.objToString(searchParamMap.get(REAL_NAME));
+                roleAssignmentSearchVO.setRealName(realName);
+            }
+        }
 
         // 根据参数搜索所有的项目成员
         Long memberRoleId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
         PageInfo<IamUserDTO> allProjectMembers = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), roleAssignmentSearchVO, memberRoleId, projectId, false);
         if (allProjectMembers.getList().isEmpty()) {
-            return Collections.emptyList();
+            PageInfo<DevopsUserPermissionVO> pageInfo = new PageInfo<>();
+            pageInfo.setList(new ArrayList<>());
+            return pageInfo;
         }
         // 获取项目下所有的项目所有者
         Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
@@ -1582,8 +1603,17 @@ public class AppServiceServiceImpl implements AppServiceService {
                 .filter(member -> !assigned.contains(member.getId()))
                 .collect(Collectors.toList());
 
-        return ConvertUtils.convertList(members,
-                iamUserDTO -> new DevopsUserPermissionVO(iamUserDTO.getId(), iamUserDTO.getLdap() ? iamUserDTO.getLoginName() : iamUserDTO.getEmail(), iamUserDTO.getRealName()));
+        PageInfo<IamUserDTO> pageInfo;
+        CustomPageRequest customPageRequest;
+        if (pageable.getPageSize() == 0) {
+            customPageRequest = CustomPageRequest.of(0, 0);
+            pageInfo = PageInfoUtil.createPageFromList(members, customPageRequest);
+        } else {
+            customPageRequest = CustomPageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+            pageInfo = PageInfoUtil.createPageFromList(members, customPageRequest);
+        }
+
+        return ConvertUtils.convertPage(pageInfo, member -> new DevopsUserPermissionVO(member.getId(), member.getLdap() ? member.getLoginName() : member.getEmail(), member.getRealName(), member.getImageUrl()));
     }
 
     @Override
