@@ -1707,6 +1707,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 certificationService.updateStatus(certificationDTO);
                 break;
             case PERSISTENTVOLUME:
+                if (pvStatus == null) {
+                    logger.warn("Command Sync: unexpected pv status null for resource {} with id {}", devopsEnvCommandDTO.getObject(), devopsEnvCommandDTO.getObjectId());
+                    return;
+                }
                 DevopsPvDTO devopsPvDTO = devopsPvMapper.selectByPrimaryKey(devopsEnvCommandDTO.getObjectId());
                 if (pvStatus != PvStatus.FAILED) {
                     devopsPvMapper.updateStatusById(devopsEnvCommandDTO.getObjectId(), pvStatus.getStatus());
@@ -1716,6 +1720,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 }
                 break;
             case PERSISTENTVOLUMECLAIM:
+                if (pvStatus == null) {
+                    logger.warn("Command Sync: unexpected pv status null for resource {} with id {}", devopsEnvCommandDTO.getObject(), devopsEnvCommandDTO.getObjectId());
+                    return;
+                }
                 DevopsPvcDTO devopsPvcDTO = devopsPvcMapper.selectByPrimaryKey(devopsEnvCommandDTO.getObjectId());
                 if (pvcStatus != PvcStatus.FAILED) {
                     devopsPvcMapper.updateStatusById(devopsEnvCommandDTO.getObjectId(), pvcStatus.getStatus());
