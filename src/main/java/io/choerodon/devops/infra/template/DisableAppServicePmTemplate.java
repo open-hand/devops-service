@@ -10,14 +10,12 @@ import io.choerodon.core.notify.PmTemplate;
 public class DisableAppServicePmTemplate implements PmTemplate {
     @Override
     public String code() {
-        // TODO by zmf
-        return null;
+        return "DisableAppServicePm";
     }
 
     @Override
     public String name() {
-        // TODO by zmf
-        return null;
+        return "停用应用服务站内信模板";
     }
 
     @Override

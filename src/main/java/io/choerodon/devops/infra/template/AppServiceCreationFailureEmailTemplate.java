@@ -13,14 +13,12 @@ public class AppServiceCreationFailureEmailTemplate implements EmailTemplate {
 
     @Override
     public String code() {
-        // TODO by zmf
-        return null;
+        return "AppServiceCreationFailureEmail";
     }
 
     @Override
     public String name() {
-        // TODO by zmf
-        return null;
+        return "应用服务创建失败邮件模板";
     }
 
     @Override

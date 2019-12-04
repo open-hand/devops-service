@@ -12,14 +12,12 @@ import io.choerodon.core.notify.PmTemplate;
 public class AppServiceCreationFailurePmTemplate implements PmTemplate {
     @Override
     public String code() {
-        // TODO by zmf
-        return null;
+        return "AppServiceCreationFailurePm";
     }
 
     @Override
     public String name() {
-        // TODO by zmf
-        return null;
+        return "应用服务创建失败站内信模板";
     }
 
     @Override
