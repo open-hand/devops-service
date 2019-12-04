@@ -187,6 +187,8 @@ public class GitUtil {
                 if (PATTERN.matcher(urls[1]).matches()) {
                     result = String.format("ssh://%s/%s-%s/%s.git",
                             sshUrl, orgCode, proCode, appServiceCode);
+                } else {
+                    LOGGER.debug("Unexpected case occurred when getting app-service ssh url: the gitlabSshUrl is {}, the orgCode is {}, the proCode is {} and the appServiceCode is {}", sshUrl, orgCode, proCode, appServiceCode);
                 }
             }
         } else {
@@ -198,6 +200,8 @@ public class GitUtil {
                 if (PATTERN.matcher(urls[1]).matches()) {
                     result = String.format("ssh://git@%s/%s-%s/%s.git",
                             sshUrl, orgCode, proCode, appServiceCode);
+                } else {
+                    LOGGER.debug("Unexpected case occurred when getting app-service ssh url: the gitlabSshUrl is {}, the orgCode is {}, the proCode is {} and the appServiceCode is {}", sshUrl, orgCode, proCode, appServiceCode);
                 }
             }
         }
