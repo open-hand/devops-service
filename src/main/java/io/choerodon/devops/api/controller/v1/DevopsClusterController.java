@@ -145,10 +145,10 @@ public class DevopsClusterController {
     /**
      * 分页查询集群下已有权限的项目列表
      *
-     * @param projectId   项目id
-     * @param clusterId   集群id
-     * @param pageable 分页参数
-     * @param params      查询参数
+     * @param projectId 项目id
+     * @param clusterId 集群id
+     * @param pageable  分页参数
+     * @param params    查询参数
      * @return page
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -179,14 +179,18 @@ public class DevopsClusterController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询组织下所有与该集群未分配权限的项目")
     @PostMapping(value = "/{cluster_id}/permission/list_non_related")
-    public ResponseEntity<List<ProjectReqVO>> listAllNonRelatedProjects(
+    public ResponseEntity<PageInfo<ProjectReqVO>> listAllNonRelatedProjects(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @PathVariable(value = "cluster_id") Long clusterId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore Pageable pageable,
+            @ApiParam(value = "指定项目id")
+            @RequestParam(value = "selected_project_id", required = false) Long selectedProjectId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return new ResponseEntity<>(devopsClusterService.listNonRelatedProjects(projectId, clusterId, params), HttpStatus.OK);
+        return new ResponseEntity<>(devopsClusterService.listNonRelatedProjects(projectId, clusterId, selectedProjectId, pageable, params), HttpStatus.OK);
     }
 
     /**
@@ -339,7 +343,7 @@ public class DevopsClusterController {
      * @param projectId   项目id
      * @param clusterId   集群id
      * @param nodeName    节点名称
-     * @param pageable 分页参数
+     * @param pageable    分页参数
      * @param searchParam 查询参数
      * @return pods
      */
@@ -366,9 +370,9 @@ public class DevopsClusterController {
     /**
      * 分页查询集群下的节点
      *
-     * @param projectId   项目ID
-     * @param clusterId   集群id
-     * @param pageable 分页参数
+     * @param projectId 项目ID
+     * @param clusterId 集群id
+     * @param pageable  分页参数
      * @return Page
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})

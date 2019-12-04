@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.dto.iam;
 
 import java.util.List;
+import java.util.Objects;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -57,6 +58,7 @@ public class ProjectDTO extends BaseDTO {
     private String applicationName;
     private String applicationCode;
     private String programName;
+
     public Long getAppServiceId() {
         return appServiceId;
     }

@@ -69,11 +69,9 @@ public class BaseServiceClientOperator {
 
 
     public List<ProjectDTO> listIamProjectByOrgId(Long organizationId, String name, String code, String params) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("page", 0);
-        map.put("size", 0);
+        CustomPageRequest customPageRequest = CustomPageRequest.of(0, 0);
         ResponseEntity<PageInfo<ProjectDTO>> pageResponseEntity =
-                baseServiceClient.pageProjectsByOrgId(organizationId, map, name, code, true, params);
+                baseServiceClient.pageProjectsByOrgId(organizationId, FeignParamUtils.encodePageRequest(customPageRequest), name, code, true, params);
         return Objects.requireNonNull(pageResponseEntity.getBody()).getList();
     }
 

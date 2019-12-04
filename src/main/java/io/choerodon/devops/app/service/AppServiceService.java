@@ -316,7 +316,7 @@ public interface AppServiceService {
      * @param params
      * @return
      */
-    PageInfo<DevopsUserPermissionVO> listMembers(Long projectId, Long appServiceId, Pageable pageable, String params);
+    PageInfo<DevopsUserPermissionVO> listMembers(Long projectId, Long appServiceId, Long iamUserId, Pageable pageable, String params);
 
     /**
      * 更新服务服务权限

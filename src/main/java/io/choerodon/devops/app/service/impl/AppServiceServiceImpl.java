@@ -1557,7 +1557,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public PageInfo<DevopsUserPermissionVO> listMembers(Long projectId, Long appServiceId, Pageable pageable, String params) {
+    public PageInfo<DevopsUserPermissionVO> listMembers(Long projectId, Long appServiceId, Long iamUserId, Pageable pageable, String params) {
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         roleAssignmentSearchVO.setParam(new String[]{params});
         roleAssignmentSearchVO.setEnabled(true);
@@ -1599,20 +1599,23 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<Long> assigned = appServiceUserRelMapper.listAllUserPermissionByAppId(appServiceId).stream().map(AppServiceUserRelDTO::getIamUserId).collect(Collectors.toList());
 
         // 过滤项目成员中的项目所有者和已被分配权限的
-        List<IamUserDTO> members = allProjectMembers.getList()
+        Set<IamUserDTO> members = allProjectMembers.getList()
                 .stream()
                 .filter(member -> !allProjectOwnerIds.contains(member.getId()))
                 .filter(member -> !assigned.contains(member.getId()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
+
+        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(iamUserId);
+        members.add(iamUserDTO);
 
         PageInfo<IamUserDTO> pageInfo;
         CustomPageRequest customPageRequest;
         if (pageable.getPageSize() == 0) {
             customPageRequest = CustomPageRequest.of(0, 0);
-            pageInfo = PageInfoUtil.createPageFromList(members, customPageRequest);
+            pageInfo = PageInfoUtil.createPageFromList(new ArrayList<>(members), customPageRequest);
         } else {
             customPageRequest = CustomPageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
-            pageInfo = PageInfoUtil.createPageFromList(members, customPageRequest);
+            pageInfo = PageInfoUtil.createPageFromList(new ArrayList<>(members), customPageRequest);
         }
 
         return ConvertUtils.convertPage(pageInfo, member -> new DevopsUserPermissionVO(member.getId(), member.getLdap() ? member.getLoginName() : member.getEmail(), member.getRealName(), member.getImageUrl()));

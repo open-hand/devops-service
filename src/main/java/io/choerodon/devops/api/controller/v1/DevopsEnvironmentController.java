@@ -349,9 +349,11 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "分页参数", required = true)
             @ApiIgnore Pageable pageable,
+            @ApiParam(value = "指定用户id")
+            @RequestParam(value = "iam_user_id", required = false) Long iamUserId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsEnvironmentService.listNonRelatedMembers(projectId, envId, pageable, params))
+        return Optional.ofNullable(devopsEnvironmentService.listNonRelatedMembers(projectId, envId, iamUserId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.env.non.related.users"));
     }
