@@ -1557,7 +1557,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public PageInfo<DevopsUserPermissionVO> listMembers(Long projectId, Long appServiceId, Long iamUserId, Pageable pageable, String params) {
+    public PageInfo<DevopsUserPermissionVO> listMembers(Long projectId, Long appServiceId, Long selectedIamUserId, Pageable pageable, String params) {
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         roleAssignmentSearchVO.setParam(new String[]{params});
         roleAssignmentSearchVO.setEnabled(true);
@@ -1605,8 +1605,10 @@ public class AppServiceServiceImpl implements AppServiceService {
                 .filter(member -> !assigned.contains(member.getId()))
                 .collect(Collectors.toSet());
 
-        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(iamUserId);
-        members.add(iamUserDTO);
+        if (selectedIamUserId!=null) {
+            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(selectedIamUserId);
+            members.add(iamUserDTO);
+        }
 
         PageInfo<IamUserDTO> pageInfo;
         CustomPageRequest customPageRequest;
