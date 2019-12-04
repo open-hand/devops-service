@@ -630,7 +630,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                     CREATE, (long) GitUserNameUtil.getAdminId(), persistentVolumePayload.getDevopsPvDTO().getId(), PERSISTENTVOLUME, null, false,
                     persistentVolumePayload.getDevopsEnvironmentDTO().getId(), path);
         } catch (Exception e) {
-            LOGGER.info("create or update PersistentVolume failed!", e);
+            LOGGER.info("create or update PersistentVolume failed! {}", e);
             //有异常更新实例以及command的状态
             DevopsPvDTO devopsPvDTO = devopsPvMapper.selectByPrimaryKey(persistentVolumePayload.getDevopsPvDTO().getId());
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService

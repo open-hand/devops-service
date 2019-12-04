@@ -69,12 +69,12 @@ public interface AppServiceService {
     /**
      * 组织下分页查询服务
      *
-     * @param projectId   项目id
-     * @param isActive    是否启用
-     * @param appMarket   服务市场导入
-     * @param hasVersion  是否存在版本
-     * @param pageable 分页参数
-     * @param params      参数
+     * @param projectId  项目id
+     * @param isActive   是否启用
+     * @param appMarket  服务市场导入
+     * @param hasVersion 是否存在版本
+     * @param pageable   分页参数
+     * @param params     参数
      * @return Page
      */
     PageInfo<AppServiceRepVO> pageByOptions(Long projectId,
@@ -129,9 +129,9 @@ public interface AppServiceService {
     /**
      * 根据环境id获取已部署正在运行实例的服务
      *
-     * @param projectId   项目id
-     * @param envId       环境Id
-     * @param pageable 分页参数
+     * @param projectId 项目id
+     * @param envId     环境Id
+     * @param pageable  分页参数
      * @return baseList of ApplicationRepDTO
      */
     PageInfo<AppServiceCodeVO> pageByIds(Long projectId, Long envId, Long appServiceId, Pageable pageable);
@@ -186,9 +186,9 @@ public interface AppServiceService {
     /**
      * 项目下查询已经启用有版本未发布的服务
      *
-     * @param projectId   项目id
-     * @param pageable 分页参数
-     * @param params      查询参数
+     * @param projectId 项目id
+     * @param pageable  分页参数
+     * @param params    查询参数
      * @return baseList of ApplicationRepDTO
      */
     PageInfo<AppServiceReqVO> pageByActiveAndPubAndVersion(Long projectId, Pageable pageable, String params);
@@ -196,9 +196,9 @@ public interface AppServiceService {
     /**
      * 项目下分页查询代码仓库
      *
-     * @param projectId   项目id
-     * @param pageable 分页参数
-     * @param params      查询参数
+     * @param projectId 项目id
+     * @param pageable  分页参数
+     * @param params    查询参数
      * @return page of ApplicationRepDTO
      */
     PageInfo<AppServiceRepVO> pageCodeRepository(Long projectId, Pageable pageable, String params);
@@ -316,7 +316,7 @@ public interface AppServiceService {
      * @param params
      * @return
      */
-    List<DevopsUserPermissionVO> listMembers(Long projectId, Long appServiceId, String params);
+    PageInfo<DevopsUserPermissionVO> listMembers(Long projectId, Long appServiceId, Pageable pageable, String params);
 
     /**
      * 更新服务服务权限
@@ -461,9 +461,9 @@ public interface AppServiceService {
                        String oldGroupName,
                        Boolean isGetWorkingDirectory);
 
-    String checkAppServiceType(Long projectId,AppServiceDTO appServiceDTO);
+    String checkAppServiceType(Long projectId, AppServiceDTO appServiceDTO);
 
-    void deleteAppServiceSage(Long projectId,Long appServiceId);
+    void deleteAppServiceSage(Long projectId, Long appServiceId);
 
     List<AppServiceTemplateVO> listServiceTemplates();
 

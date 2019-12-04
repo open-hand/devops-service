@@ -164,7 +164,7 @@ public interface DevopsEnvironmentService {
      * @param params    搜索参数
      * @return 所有项目成员
      */
-    List<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, String params);
+    PageInfo<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, Pageable pageable, String params);
 
     /**
      * 删除环境下该用户的权限
