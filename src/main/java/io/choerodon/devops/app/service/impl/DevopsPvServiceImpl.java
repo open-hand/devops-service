@@ -9,10 +9,7 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsPvValidator;
-import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
-import io.choerodon.devops.api.vo.DevopsPvReqVO;
-import io.choerodon.devops.api.vo.DevopsPvVO;
-import io.choerodon.devops.api.vo.ProjectReqVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.PersistentVolumePayload;
 import io.choerodon.devops.app.service.*;
@@ -311,7 +308,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     }
 
     @Override
-    public List<ProjectReqVO> listNonRelatedProjects(Long projectId, Long pvId) {
+    public PageInfo<ProjectReqVO> listNonRelatedProjects(Long projectId, Long pvId, Long selectedProjectId, Pageable pageable, String params) {
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
         if (devopsPvDTO == null) {
             throw new CommonException("error.pv.not.exists");
@@ -319,7 +316,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         CustomPageRequest customPageRequest = CustomPageRequest.of(1, 0);
 
-        List<ProjectReqVO> projectReqVOList = Optional.ofNullable(pageProjects(projectId, pvId, customPageRequest, "{\"params\":[],\"searchParam\":{}}"))
+        List<ProjectReqVO> projectReqVOList = Optional.ofNullable(pageProjects(projectId, pvId, customPageRequest, params))
                 .map(PageSerializable::getList)
                 .orElseThrow(() -> new CommonException("error.project.get"));
 
@@ -330,9 +327,14 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 .collect(Collectors.toList());
 
         //把组织下有权限的项目过滤掉再返回
-        return projectReqVOList.stream()
+        Set<ProjectReqVO> projectReqVOS = projectReqVOList.stream()
                 .filter(i -> !permitted.contains(i.getId()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
+
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
+        projectReqVOS.add(new ProjectReqVO(projectDTO.getId(), projectDTO.getName(), projectDTO.getCode()));
+
+        return PageInfoUtil.createPageFromList(new ArrayList<>(projectReqVOS), pageable);
     }
 
     @Override

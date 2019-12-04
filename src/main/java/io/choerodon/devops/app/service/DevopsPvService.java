@@ -89,7 +89,7 @@ public interface DevopsPvService {
      * @param projectId
      * @return
      */
-    List<ProjectReqVO> listNonRelatedProjects(Long projectId, Long pvId);
+    PageInfo<ProjectReqVO> listNonRelatedProjects(Long projectId, Long pvId, Long selectedProjectId, Pageable pageable, String params);
 
     /**
      * 根据项目id删除相对应的权限

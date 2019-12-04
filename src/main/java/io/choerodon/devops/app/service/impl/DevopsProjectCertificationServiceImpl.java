@@ -256,11 +256,11 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         //把组织下有权限的项目过滤掉再返回
         Set<ProjectReqVO> nonRelatedMembers = projectDTOList.stream()
                 .filter(i -> !permitted.contains(i.getId()))
-                .map(i -> new ProjectReqVO(i.getId(), i.getName(), i.getCode(), null))
+                .map(i -> new ProjectReqVO(i.getId(), i.getName(), i.getCode()))
                 .collect(Collectors.toSet());
 
         ProjectDTO selectedProjectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
-        nonRelatedMembers.add(new ProjectReqVO(selectedProjectDTO.getId(), selectedProjectDTO.getName(), selectedProjectDTO.getCode(), null));
+        nonRelatedMembers.add(new ProjectReqVO(selectedProjectDTO.getId(), selectedProjectDTO.getName(), selectedProjectDTO.getCode()));
 
         return PageInfoUtil.createPageFromList(new ArrayList<>(nonRelatedMembers), pageable);
     }
