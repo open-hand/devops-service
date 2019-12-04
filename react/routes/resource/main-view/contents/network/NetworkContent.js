@@ -16,6 +16,7 @@ import { useResourceStore } from '../../../stores';
 import { useNetworkStore } from './stores';
 import Modals from './modals';
 import EditNetwork from './modals/network-edit';
+import EditNetwork2 from './modals/network-operation';
 import { useMainStore } from '../../stores';
 
 import './index.less';
@@ -287,7 +288,7 @@ const NetworkContent = observer(() => {
       style: modalStyle,
       drawer: true,
       title: formatMessage({ id: 'network.header.update' }),
-      children: <EditNetwork
+      children: <EditNetwork2
         netId={networkDs.current.get('id')}
         envId={parentId}
         store={networkStore}
