@@ -1,4 +1,4 @@
-package io.choerodon.devops.infra.config;
+package io.choerodon.devops.infra.template;
 
 import org.springframework.stereotype.Component;
 
