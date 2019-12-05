@@ -21,6 +21,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -196,8 +197,6 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
     }
 
 
-
-
     /**
      * 校验版本是否为空
      *
@@ -255,6 +254,11 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             appServiceVersionDTO = ComponentVersionUtil.getComponentVersion(c7nHelmRelease.getSpec().getChartName());
             validateVersion(appServiceVersionDTO, filePath, c7nHelmRelease);
             versionValue = appServiceVersionDTO.getValues();
+        }
+
+        // 校验应用服务id是实例的实际应用服务id
+        if (!Objects.equals(releaseAppServiceId, c7nHelmRelease.getSpec().getAppServiceId())) {
+            throw new GitOpsExplainException(GitOpsObjectError.RELEASE_APP_SERVICE_ID_MISMATCH.getError(), filePath);
         }
 
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
