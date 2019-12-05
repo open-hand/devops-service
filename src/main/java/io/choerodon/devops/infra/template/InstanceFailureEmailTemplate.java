@@ -31,6 +31,6 @@ public class InstanceFailureEmailTemplate implements EmailTemplate {
 
     @Override
     public String content() {
-        return "<p>您在项目“${projectName}”下“${envName}”环境中创建的实例“${resourceCode}”失败</p>";
+        return "<p>您在项目“${projectName}”下“${envName}”环境中创建的实例“${resourceName}”失败</p>";
     }
 }
