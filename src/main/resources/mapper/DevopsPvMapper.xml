@@ -21,7 +21,7 @@
         <where>
             dc.organization_id=#{organizationId}
             <if test="projectId!=null">
-                AND dc.project_id=#{projectId}
+                AND dpv.project_id=#{projectId}
             </if>
         <include refid="sqlparams"/>
         </where>
