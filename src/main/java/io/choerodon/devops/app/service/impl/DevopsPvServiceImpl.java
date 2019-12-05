@@ -96,6 +96,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize())
                 .doSelectPageInfo(() -> devopsPvMapper.listPvByOptions(
                         projectDTO.getOrganizationId(),
+                        projectId,
                         TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))
                 ));
@@ -663,6 +664,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         List<DevopsPvVO> devopsPvVOList = ConvertUtils.convertList(devopsPvMapper.listPvByOptions(
                 projectDTO.getOrganizationId(),
+                null,
                 TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))), DevopsPvVO.class);
 
