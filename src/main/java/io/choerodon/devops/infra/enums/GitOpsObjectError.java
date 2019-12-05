@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.enums;
 
 public enum GitOpsObjectError {
+    RELEASE_APP_SERVICE_ID_MISMATCH("release.app.service.id.not.matched"),
     RELEASE_META_DATA_NOT_FOUND("release.meta.data.not.found"),
     RELEASE_NAME_NOT_FOUND("release.name.not.found"),
     RELEASE_SPEC_NOT_FOUND("release.spec.not.found"),
