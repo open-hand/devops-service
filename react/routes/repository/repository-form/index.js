@@ -95,6 +95,7 @@ export default injectIntl(observer(({
         <Button
           onClick={handleClick}
           funcType="raised"
+          color="primary"
           className={`${prefixCls}-form-button`}
         >
           <FormattedMessage id={`${intlPrefix}.test`} />
