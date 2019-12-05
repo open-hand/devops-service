@@ -1540,6 +1540,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
+    public List<DevopsEnvironmentDTO> listByProjectIdAndName(Long projectId, String envName) {
+        return devopsEnvironmentMapper.listByProjectIdAndName(projectId,envName);
+    }
+
+    @Override
     public List<DevopsClusterRepVO> listDevopsCluster(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         List<DevopsClusterRepVO> devopsClusterRepVOS = ConvertUtils.convertList(devopsClusterService.baseListByProjectId(projectId, projectDTO.getOrganizationId()), DevopsClusterRepVO.class);

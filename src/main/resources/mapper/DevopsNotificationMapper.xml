@@ -35,6 +35,35 @@
              dn.notify_trigger_event LIKE CONCAT(CONCAT('%', #{notifyTriggerEvent, jdbcType=VARCHAR}),'%')
         </foreach>
     </select>
+    <select id="queryByProjectIdAndEnvId" resultMap="notificationEventVOMap">
+        SELECT
+          dn.id,dn.env_id,dn.project_id,dn.is_send_email,
+          dn.is_send_pm,dn.is_send_sms,dn.notify_trigger_event,
+          dnur.user_id,dnur.user_type,dnur.notification_id
+        FROM devops_notification dn
+        LEFT JOIN devops_notification_user_rel dnur ON dnur.notification_id = dn.id
+        WHERE dn.project_id = #{projectId} AND dn.env_id = #{envId}
+    </select>
+    <select id="listDefaultNotifyEvent" resultMap="notificationEventVOMap">
+        SELECT *
+        FROM  devops_notification dn
+        WHERE dn.is_default = TRUE
+    </select>
+
+    <resultMap id="notificationEventVOMap" type="io.choerodon.devops.api.vo.NotificationEventVO">
+        <id column="id" property="id"/>
+        <result column="env_id" property="envId"/>
+        <result column="project_id" property="projectId"/>
+        <result column="is_send_email" property="sendEmail"/>
+        <result column="is_send_pm" property="sendPm"/>
+        <result column="is_send_sms" property="sendSms"/>
+        <result column="notify_trigger_event" property="notifyTriggerEvent"/>
+        <collection property="userList" ofType="io.choerodon.devops.api.vo.DevopsNotificationUserRelVO">
+            <id column="user_id" property="userId" />
+            <result column="user_type" property="userType"/>
+            <result column="notification_id" property="notificationId"/>
+        </collection>
+    </resultMap>
 
 
     <sql id="sqlparam">

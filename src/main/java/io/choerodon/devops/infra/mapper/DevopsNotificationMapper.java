@@ -1,12 +1,12 @@
 package io.choerodon.devops.infra.mapper;
 
-import java.util.List;
-import java.util.Map;
-
+import io.choerodon.devops.api.vo.NotificationEventVO;
+import io.choerodon.devops.infra.dto.DevopsNotificationDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dto.DevopsNotificationDTO;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -22,4 +22,13 @@ public interface DevopsNotificationMapper extends Mapper<DevopsNotificationDTO> 
     Integer queryByEnvIdAndEvent(@Param("projectId") Long projectId,
                                  @Param("envId") Long envId,
                                  @Param("notifyTriggerEvent") List<String> notifyTriggerEvent);
+
+    List<NotificationEventVO> queryByProjectIdAndEnvId(@Param("projectId") Long projectId, @Param("envId") Long envId);
+
+    /**
+     * 查询预置的通知事件
+     * @return
+     */
+    List<NotificationEventVO> listDefaultNotifyEvent();
+
 }

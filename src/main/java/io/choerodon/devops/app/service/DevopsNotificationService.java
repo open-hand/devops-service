@@ -1,11 +1,14 @@
 package io.choerodon.devops.app.service;
 
-import java.util.Set;
-
 import com.github.pagehelper.PageInfo;
-import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.DevopsNotificationVO;
+import io.choerodon.devops.api.vo.NotificationEventVO;
+import io.choerodon.devops.api.vo.NotifyEventVO;
 import io.choerodon.devops.api.vo.ResourceCheckVO;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -100,4 +103,7 @@ public interface DevopsNotificationService {
      */
     void validateCaptcha(Long envId, Long objectId, String objectType, String captcha);
 
+    NotifyEventVO queryNotifyEventGroupByEnv(Long projectId, String envName);
+
+    void batchUpdateNotifyEvent(Long projectId, List<NotificationEventVO> notificationEventList);
 }
