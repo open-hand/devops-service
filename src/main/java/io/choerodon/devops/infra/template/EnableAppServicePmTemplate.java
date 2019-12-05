@@ -30,7 +30,7 @@ public class EnableAppServicePmTemplate implements PmTemplate {
     }
 
     /**
-     * projectName appServiceName projectId projectName projectCategory organizationId
+     * projectName appServiceName projectId projectCategory organizationId
      */
     @Override
     public String content() {

@@ -31,6 +31,6 @@ public class IngressFailureEmailTemplate implements EmailTemplate {
 
     @Override
     public String content() {
-        return "<p>您在项目“${projectName}”下“${envName}”环境中创建的域名“${resourceCode}”失败</p>";
+        return "<p>您在项目“${projectName}”下“${envName}”环境中创建的域名“${resourceName}”失败</p>";
     }
 }
