@@ -29,7 +29,7 @@ public class AppServiceCreationFailureEmailTemplate implements EmailTemplate {
 
     @Override
     public String title() {
-        return null;
+        return "Choerodon通知";
     }
 
     /**

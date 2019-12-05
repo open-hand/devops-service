@@ -26,7 +26,7 @@ public class EnableAppServiceEmailTemplate implements EmailTemplate {
 
     @Override
     public String title() {
-        return null;
+        return "Choerodon通知";
     }
 
     @Override
