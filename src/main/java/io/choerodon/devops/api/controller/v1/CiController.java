@@ -67,7 +67,7 @@ public class CiController {
             @ApiParam(value = "image", required = true)
             @RequestParam String image,
             @ApiParam(value = "harbor_config_id", required = true)
-            @RequestParam String harborConfigId,
+            @RequestParam(value = "harbor_config_id") String harborConfigId,
             @ApiParam(value = "token", required = true)
             @RequestParam String token,
             @ApiParam(value = "版本", required = true)
