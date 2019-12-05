@@ -41,6 +41,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -439,11 +440,19 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             throw new CommonException("error.pv.not.exists");
         }
 
-        Map<String, Object> map = TypeUtil.castMapParams(params);
-        //接收模糊查询参数列表
-        List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
 
-        if (CollectionUtils.isEmpty(paramList)) {
+        Map<String, Object> searchMap = TypeUtil.castMapParams(params);
+        Map<String, Object> searchParamsMap = TypeUtil.cast(searchMap.get(TypeUtil.SEARCH_PARAM));
+        String name = null;
+        String code = null;
+        if (!CollectionUtils.isEmpty(searchParamsMap)) {
+            name = TypeUtil.cast(searchParamsMap.get("name"));
+            code = TypeUtil.cast(searchParamsMap.get("code"));
+        }
+        List<String> paramList = TypeUtil.cast(searchMap.get(TypeUtil.PARAMS));
+        //接收模糊查询参数列表
+
+        if (CollectionUtils.isEmpty(paramList) && StringUtils.isEmpty(name) && StringUtils.isEmpty(code)) {
             // 如果不搜索
             PageInfo<DevopsPvProPermissionDTO> relationPage = PageHelper.startPage(
                     pageable.getPageNumber(), pageable.getPageSize())
@@ -459,7 +468,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             // 手动查出所有组织下的项目
             List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
                     iamProjectDTO.getOrganizationId(),
-                    null, null,
+                    name, code,
                     paramList.get(0));
 
             // 数据库中的有权限的项目
