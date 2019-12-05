@@ -79,6 +79,8 @@ public class DevopsSagaHandler {
     private DevopsPvcService devopsPvcService;
     @Autowired
     private DevopsPvService devopsPvService;
+    @Autowired
+    private SendNotificationService sendNotificationService;
 
 
     /**
@@ -428,6 +430,7 @@ public class DevopsSagaHandler {
         applicationDTO.setSynchro(true);
         applicationDTO.setFailed(true);
         appServiceService.baseUpdate(applicationDTO);
+        sendNotificationService.sendWhenAppServiceFailure(devOpsAppServicePayload.getAppServiceId());
         return data;
     }
 
