@@ -4,18 +4,18 @@ import io.choerodon.core.notify.EmailTemplate;
 
 /**
  * @author zmf
- * @since 12/4/19
+ * @since 12/5/19
  */
 // TODO by zmf
-public class DisableAppServiceEmailTemplate implements EmailTemplate {
+public class IngressFailureEmailTemplate implements EmailTemplate {
     @Override
     public String code() {
-        return "DisableAppServiceEmail";
+        return "IngressFailureEmail";
     }
 
     @Override
     public String name() {
-        return "停用应用服务邮件模板";
+        return "创建域名失败邮件模板";
     }
 
     @Override
@@ -31,6 +31,6 @@ public class DisableAppServiceEmailTemplate implements EmailTemplate {
 
     @Override
     public String content() {
-        return "<p>项目“${projectName}”下的应用服务“${appServiceName}”已被停用</p>";
+        return "<p>您在项目“${projectName}”下“${envName}”环境中创建的域名“${resourceCode}”失败</p>";
     }
 }

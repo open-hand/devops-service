@@ -1,21 +1,21 @@
 package io.choerodon.devops.infra.template;
 
-import io.choerodon.core.notify.EmailTemplate;
+import io.choerodon.core.notify.PmTemplate;
 
 /**
  * @author zmf
- * @since 12/4/19
+ * @since 12/5/19
  */
 // TODO by zmf
-public class DisableAppServiceEmailTemplate implements EmailTemplate {
+public class ServiceFailurePmTemplate implements PmTemplate {
     @Override
     public String code() {
-        return "DisableAppServiceEmail";
+        return "ServiceFailurePm";
     }
 
     @Override
     public String name() {
-        return "停用应用服务邮件模板";
+        return "网络创建失败站内信模板";
     }
 
     @Override
@@ -26,11 +26,11 @@ public class DisableAppServiceEmailTemplate implements EmailTemplate {
 
     @Override
     public String title() {
-        return "Choerodon通知";
+        return "网络创建失败";
     }
 
     @Override
     public String content() {
-        return "<p>项目“${projectName}”下的应用服务“${appServiceName}”已被停用</p>";
+        return "<p>您在项目“${projectName}”下“${envName}”环境中创建的网络“${resourceCode}”失败</p>";
     }
 }

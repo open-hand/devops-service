@@ -26,7 +26,7 @@ public class GitLabContinuousDeliveryFailureEmailTemplate implements EmailTempla
 
     @Override
     public String title() {
-        return null;
+        return "Choerodon通知";
     }
 
     @Override
