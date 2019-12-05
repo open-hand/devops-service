@@ -638,7 +638,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                     CREATE, (long) GitUserNameUtil.getAdminId(), persistentVolumePayload.getDevopsPvDTO().getId(), PERSISTENTVOLUME, null, false,
                     persistentVolumePayload.getDevopsEnvironmentDTO().getId(), path);
         } catch (Exception e) {
-            LOGGER.info("create or update PersistentVolume failed! {}", e);
+            LOGGER.info("create or update PersistentVolume failed! {}", e.getMessage());
             //有异常更新实例以及command的状态
             DevopsPvDTO devopsPvDTO = devopsPvMapper.selectByPrimaryKey(persistentVolumePayload.getDevopsPvDTO().getId());
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
@@ -646,7 +646,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             String filePath = devopsEnvFileResourceDTO == null ? PERSISTENTVOLUME_PREFIX + devopsPvDTO.getName() + YAML_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(persistentVolumePayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
                     filePath)) {
-                devopsPvDTO.setStatus(CommandStatus.FAILED.getStatus());
+                devopsPvDTO.setStatus(PvStatus.FAILED.getStatus());
                 baseUpdate(devopsPvDTO);
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsPvDTO.getCommandId());
                 devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());

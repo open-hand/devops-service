@@ -375,7 +375,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
                     ResourceType.PERSISTENT_VOLUME_CLAIM.getType(), null, false,
                     persistentVolumeClaimPayload.getDevopsPvcDTO().getEnvId(), path);
         } catch (Exception e) {
-            LOGGER.info("create or update PersistentVolumeClaim failed!", e);
+            LOGGER.info("create or update PersistentVolumeClaim failed! {}", e.getMessage());
             //有异常更新实例以及command的状态
             DevopsPvcDTO devopsPvcDTO = devopsPvcMapper.selectByPrimaryKey(persistentVolumeClaimPayload.getDevopsPvcDTO().getId());
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
