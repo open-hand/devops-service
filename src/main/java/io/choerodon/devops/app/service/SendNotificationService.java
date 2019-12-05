@@ -1,5 +1,10 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+import java.util.Map;
+
+import io.choerodon.core.notify.NoticeSendDTO;
+
 /**
  * 发送通知的服务
  *
@@ -7,50 +12,37 @@ package io.choerodon.devops.app.service;
  * @since 12/5/19
  */
 public interface SendNotificationService {
+
+    /**
+     * 发送通知
+     *
+     * @param sendSettingCode 通知code
+     * @param sourceId        projectId, organizationId, 0L
+     * @param targetUsers     目标用户
+     * @param params          参数映射
+     */
+    void sendNotices(String sendSettingCode, Long sourceId, List<NoticeSendDTO.User> targetUsers, Map<String, Object> params);
+
     /**
      * 当应用服务创建失败后，发送消息
      *
-     * @param organizationId  组织id
-     * @param projectId       项目id
-     * @param projectName     项目名称
-     * @param projectCategory 项目类别
-     * @param appServiceName  应用服务名称
+     * @param appServiceId 应用服务id
      */
-    void sendWhenAppServiceFailure(Long organizationId,
-                                   Long projectId,
-                                   String projectName,
-                                   String projectCategory,
-                                   String appServiceName);
+    void sendWhenAppServiceFailure(Long appServiceId);
 
     /**
      * 当应用服务启用后，发送消息
      *
-     * @param organizationId  组织id
-     * @param projectId       项目id
-     * @param projectName     项目名称
-     * @param projectCategory 项目类别
-     * @param appServiceName  应用服务名称
+     * @param appServiceId 应用服务id
      */
-    void sendWhenAppServiceEnabled(Long organizationId,
-                                   Long projectId,
-                                   String projectName,
-                                   String projectCategory,
-                                   String appServiceName);
+    void sendWhenAppServiceEnabled(Long appServiceId);
 
     /**
      * 当应用服务停用后，发送消息
      *
-     * @param organizationId  组织id
-     * @param projectId       项目id
-     * @param projectName     项目名称
-     * @param projectCategory 项目类别
-     * @param appServiceName  应用服务名称
+     * @param appServiceId 应用服务id
      */
-    void sendWhenAppServiceDisabled(Long organizationId,
-                                    Long projectId,
-                                    String projectName,
-                                    String projectCategory,
-                                    String appServiceName);
+    void sendWhenAppServiceDisabled(Long appServiceId);
 
     /**
      * 当持续集成失败后

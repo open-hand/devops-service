@@ -29,9 +29,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -179,6 +177,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsGitlabPipelineMapper gitlabPipelineMapper;
     @Autowired
     private DevopsMergeRequestMapper mergeRequestMapper;
+    @Autowired
+    private SendNotificationService sendNotificationService;
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE,
@@ -409,6 +409,13 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         appServiceDTO.setActive(toUpdateValue);
         baseUpdate(appServiceDTO);
+
+        // 发送启停用消息
+        if (toUpdateValue) {
+            sendNotificationService.sendWhenAppServiceEnabled(appServiceId);
+        } else {
+            sendNotificationService.sendWhenAppServiceDisabled(appServiceId);
+        }
         return true;
     }
 
@@ -1605,7 +1612,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 .filter(member -> !assigned.contains(member.getId()))
                 .collect(Collectors.toSet());
 
-        if (selectedIamUserId!=null) {
+        if (selectedIamUserId != null) {
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(selectedIamUserId);
             members.add(iamUserDTO);
         }
