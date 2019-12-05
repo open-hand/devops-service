@@ -11,9 +11,7 @@ import io.choerodon.devops.infra.enums.PipelineNoticeType;
  * Description:
  */
 @NotifyBusinessType(code = "pipelineaudit", name = "流水线审核通知", level = Level.PROJECT,
-        description = "流水线审核通知", isAllowConfig = false, isManualRetry = true, categoryCode = "stream-change-notice",
-        notifyType = ServiceNotifyType.DEVOPS_NOTIFY,
-        targetUserType = {TargetUserType.TARGET_USER_CREATOR})
+        description = "流水线审核通知", isAllowConfig = false, isManualRetry = true, categoryCode = "stream-change-notice")
 @Component
 public class PipelineAuditPmTemplate implements PmTemplate {
     @Override
