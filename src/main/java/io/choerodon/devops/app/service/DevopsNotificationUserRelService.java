@@ -1,8 +1,8 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
 import io.choerodon.devops.infra.dto.DevopsNotificationUserRelDTO;
+
+import java.util.List;
 
 /**
  * Created by Sheep on 2019/7/15.
@@ -14,4 +14,8 @@ public interface DevopsNotificationUserRelService {
     void baseDelete(Long notificationId, Long userId);
 
     List<DevopsNotificationUserRelDTO> baseListByNotificationId(Long notificationId);
+
+    void batchInsert(List<DevopsNotificationUserRelDTO> devopsNotificationUserRelDTOS);
+
+    void baseDeleteByNotificationId(Long id);
 }

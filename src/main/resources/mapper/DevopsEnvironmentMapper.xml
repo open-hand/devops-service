@@ -459,5 +459,15 @@
         INNER JOIN devops_cluster dc ON de.cluster_id = dc.id
         WHERE de.id = #{id}
     </select>
+    <select id="listByProjectIdAndName" resultType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
+        SELECT *
+        FROM devops_env de
+        <where>
+            de.project_id = #{projectId}
+            <if test="envName">
+                AND de.name LIKE concat(concat('%', #{envName}),'%')
+            </if>
+        </where>
+    </select>
 
 </mapper>

@@ -1,39 +1,44 @@
-package io.choerodon.devops.infra.dto;
+package io.choerodon.devops.api.vo;
 
-import io.choerodon.mybatis.entity.BaseDTO;
 import io.swagger.annotations.ApiModelProperty;
 
-import javax.persistence.*;
+import java.util.List;
 
 /**
- * Creator: ChangpingShi0213@gmail.com
- * Date:  17:37 2019/5/13
- * Description:
+ * 〈功能简述〉
+ * 〈删除验证通知事件VO〉
+ *
+ * @author wanghao
+ * @Date 2019/12/5 15:08
  */
-@Table(name = "devops_notification")
-public class DevopsNotificationDTO extends BaseDTO {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class NotificationEventVO {
+
     private Long id;
     private Long envId;
     private Long projectId;
+
+    @ApiModelProperty(value = "通知事件类型")
     private String notifyTriggerEvent;
-    private String notifyObject;
-    private String notifyType;
 
     @ApiModelProperty(value = "是否发送邮件")
-    @Column(name = "is_send_email")
     private Boolean sendEmail;
 
     @ApiModelProperty(value = "是否发送短信")
-    @Column(name = "is_send_sms")
     private Boolean sendSms;
 
     @ApiModelProperty(value = "是否发送站内信")
-    @Column(name = "is_send_pm")
     private Boolean sendPm;
-    @Transient
-    private String envName;
+
+    @ApiModelProperty(name = "是否发送给操作者")
+    private Boolean sendHandler = false;
+
+    @ApiModelProperty(name = "是否发送给所有者")
+    private Boolean sendOwner = false;
+
+    @ApiModelProperty(name = "是否发送指定用户")
+    private Boolean sendSpecifier = false;
+
+    private List<DevopsNotificationUserRelVO> userList;
 
     public Long getId() {
         return id;
@@ -59,36 +64,12 @@ public class DevopsNotificationDTO extends BaseDTO {
         this.projectId = projectId;
     }
 
-    public String getEnvName() {
-        return envName;
-    }
-
-    public void setEnvName(String envName) {
-        this.envName = envName;
-    }
-
     public String getNotifyTriggerEvent() {
         return notifyTriggerEvent;
     }
 
     public void setNotifyTriggerEvent(String notifyTriggerEvent) {
         this.notifyTriggerEvent = notifyTriggerEvent;
-    }
-
-    public String getNotifyObject() {
-        return notifyObject;
-    }
-
-    public void setNotifyObject(String notifyObject) {
-        this.notifyObject = notifyObject;
-    }
-
-    public String getNotifyType() {
-        return notifyType;
-    }
-
-    public void setNotifyType(String notifyType) {
-        this.notifyType = notifyType;
     }
 
     public Boolean getSendEmail() {
@@ -113,5 +94,37 @@ public class DevopsNotificationDTO extends BaseDTO {
 
     public void setSendPm(Boolean sendPm) {
         this.sendPm = sendPm;
+    }
+
+    public List<DevopsNotificationUserRelVO> getUserList() {
+        return userList;
+    }
+
+    public void setUserList(List<DevopsNotificationUserRelVO> userList) {
+        this.userList = userList;
+    }
+
+    public Boolean getSendHandler() {
+        return sendHandler;
+    }
+
+    public void setSendHandler(Boolean sendHandler) {
+        this.sendHandler = sendHandler;
+    }
+
+    public Boolean getSendOwner() {
+        return sendOwner;
+    }
+
+    public void setSendOwner(Boolean sendOwner) {
+        this.sendOwner = sendOwner;
+    }
+
+    public Boolean getSendSpecifier() {
+        return sendSpecifier;
+    }
+
+    public void setSendSpecifier(Boolean sendSpecifier) {
+        this.sendSpecifier = sendSpecifier;
     }
 }

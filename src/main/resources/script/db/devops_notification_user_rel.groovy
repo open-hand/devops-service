@@ -7,4 +7,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_notification_user_rel.groovy') {
             column(name: 'user_id', type: 'BIGINT UNSIGNED', remarks: '用户Id')
         }
     }
+    changeSet(id: '2019-12-04-devops-notification-user-rel-add-column', author: 'wanghao') {
+        addColumn(tableName: 'devops_notification_user_rel') {
+            column(name: 'user_type', type: 'VARCHAR(64)', remarks: '用户类型')
+        }
+    }
 }

@@ -1,16 +1,15 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
 import com.github.pagehelper.PageInfo;
-
-import org.apache.ibatis.annotations.Param;
-import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 
 /**
@@ -326,4 +325,12 @@ public interface DevopsEnvironmentService {
     List<DevopsEnvironmentDTO> listAllEnvByClusterId(Long clusterId);
 
     DevopsEnvironmentDTO queryByTokenWithClusterCode(@Param("token") String token);
+
+    /**
+     * 查询项目下的环境
+     * @param projectId
+     * @param envName 环境名
+     * @return
+     */
+    List<DevopsEnvironmentDTO> listByProjectIdAndName(Long projectId, String envName);
 }

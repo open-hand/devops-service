@@ -1,25 +1,28 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Optional;
-import java.util.Set;
-
 import com.github.pagehelper.PageInfo;
 import io.choerodon.core.annotation.Permission;
-import org.springframework.data.domain.Pageable;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.DevopsNotificationVO;
+import io.choerodon.devops.api.vo.NotificationEventVO;
+import io.choerodon.devops.api.vo.NotifyEventVO;
 import io.choerodon.devops.api.vo.ResourceCheckVO;
 import io.choerodon.devops.app.service.DevopsNotificationService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -239,5 +242,26 @@ public class DevopsNotificationController {
             @ApiParam(value = "资源对象类型")
             @RequestParam(value = "object_type") String objectType) {
         notificationService.validateCaptcha(envId, objectId, objectType, captcha);
+    }
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
+    @GetMapping(value = "/group_by_env")
+    public ResponseEntity<NotifyEventVO> queryNotifyEventGroupByEnv(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境名")
+            @RequestParam(value = "env_name",required = false) String envName) {
+        return ResponseEntity.ok(notificationService.queryNotifyEventGroupByEnv(projectId, envName));
+    }
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
+    @PutMapping(value = "/batch")
+    public ResponseEntity<Void> batchUpdateNotifyEvent(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestBody List<NotificationEventVO> notificationEventList
+            ) {
+        notificationService.batchUpdateNotifyEvent(projectId, notificationEventList);
+        return ResponseEntity.noContent().build();
     }
 }
