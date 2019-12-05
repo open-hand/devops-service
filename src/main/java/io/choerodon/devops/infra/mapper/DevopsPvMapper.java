@@ -12,6 +12,7 @@ public interface DevopsPvMapper extends Mapper<DevopsPvDTO> {
 
 
     List<DevopsPvDTO> listPvByOptions(@Param("organizationId") Long organizationId,
+                                      @Param("projectId") Long projectId,
                                       @Param("searchParam") Map<String, Object> searchParamMap,
                                       @Param("params") List<String> params);
 

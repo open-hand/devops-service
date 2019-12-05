@@ -20,6 +20,9 @@
         LEFT JOIN devops_cluster dc on dpv.cluster_id = dc.id
         <where>
             dc.organization_id=#{organizationId}
+            <if test="projectId!=null">
+                AND dc.project_id=#{projectId}
+            </if>
         <include refid="sqlparams"/>
         </where>
         ORDER BY id DESC
