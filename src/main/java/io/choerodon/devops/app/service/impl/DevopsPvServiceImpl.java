@@ -702,12 +702,14 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         });
 
         devopsPvVOList = ConvertUtils.convertList(devopsPvMapper.listByPvIds(projectIdAndPvIdsMap.get(projectId)), DevopsPvVO.class);
+        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedClusterList();
 
         String pvcStorage = map.get("requestResource");
-        // 筛选容量大于或等于pvc容量
+        // 筛选容量大于或等于pvc容量且集群agent处于连接状态
         if (pvcStorage != null) {
             return devopsPvVOList.stream()
                     .filter((e) -> compareResource(e.getRequestResource(), pvcStorage) > 0 && e.getPvcName() == null)
+                    .filter((e) -> connectedClusterList.contains(e.getClusterId()))
                     .collect(Collectors.toList());
         } else {
             return devopsPvVOList.stream()
