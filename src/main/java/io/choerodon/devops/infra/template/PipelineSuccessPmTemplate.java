@@ -13,6 +13,7 @@ import io.choerodon.devops.infra.enums.PipelineNoticeType;
 @NotifyBusinessType(code = "pipelinesuccess", name = "流水线执行成功", level = Level.PROJECT,
         description = "流水线执行成功通知", isAllowConfig = false, isManualRetry = true, categoryCode = "stream-change-notice",
         pmEnabledFlag = true,
+        emailEnabledFlag = true,
         notifyType = ServiceNotifyType.DEVOPS_NOTIFY, targetUserType = {TargetUserType.TARGET_USER_PIPELINE_TRIGGERSS})
 @Component
 public class PipelineSuccessPmTemplate implements PmTemplate {

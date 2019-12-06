@@ -1,12 +1,23 @@
 package io.choerodon.devops.infra.template;
 
-import io.choerodon.core.notify.PmTemplate;
+import org.springframework.stereotype.Component;
+
+import io.choerodon.core.notify.*;
+import io.choerodon.devops.infra.constant.NoticeCodeConstants;
 
 /**
  * @author zmf
  * @since 12/4/19
  */
-// TODO by zmf
+@NotifyBusinessType(code = NoticeCodeConstants.AUDIT_MERGE_REQUEST,
+        name = "合并请求审核通知", level = Level.PROJECT,
+        description = "合并请求审核通知", isAllowConfig = false, isManualRetry = true, categoryCode = "code-management-notice",
+        pmEnabledFlag = true,
+        emailEnabledFlag = true,
+        notifyType = ServiceNotifyType.DEVOPS_NOTIFY,
+        // 这个目标对象是不对的，但是前端不允许修改由后端发送时查询就暂时这样
+        targetUserType = {TargetUserType.TARGET_USER_CREATOR})
+@Component
 public class AuditMergeRequestPmTemplate implements PmTemplate {
     @Override
     public String code() {
@@ -20,8 +31,7 @@ public class AuditMergeRequestPmTemplate implements PmTemplate {
 
     @Override
     public String businessTypeCode() {
-        // TODO by zmf
-        return null;
+        return NoticeCodeConstants.AUDIT_MERGE_REQUEST;
     }
 
     @Override

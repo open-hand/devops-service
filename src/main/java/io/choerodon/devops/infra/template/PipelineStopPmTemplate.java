@@ -13,6 +13,8 @@ import io.choerodon.devops.infra.enums.PipelineNoticeType;
  * Description:
  */
 @NotifyBusinessType(code = "pipelinestop", name = "流水线被终止通知", level = Level.PROJECT,
+        pmEnabledFlag = true,
+        emailEnabledFlag = true,
         description = "流水线被终止通知", isAllowConfig = false, isManualRetry = true, categoryCode = "stream-change-notice")
 @Component
 public class PipelineStopPmTemplate implements PmTemplate {

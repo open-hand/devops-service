@@ -3,14 +3,17 @@ package io.choerodon.devops.infra.template;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.notify.*;
+import io.choerodon.devops.infra.constant.NoticeCodeConstants;
 
 /**
  * @author zmf
  * @since 12/4/19
  */
-@NotifyBusinessType(code = "instanceFailure", name = "实例部署失败", level = Level.PROJECT,
+@NotifyBusinessType(code = NoticeCodeConstants.INSTANCE_CREATION_FAILURE,
+        name = "实例部署失败", level = Level.PROJECT,
         description = "实例部署失败通知", isAllowConfig = false, isManualRetry = true, categoryCode = "deployment-resources-notice",
         pmEnabledFlag = true,
+        emailEnabledFlag = true,
         notifyType = ServiceNotifyType.DEVOPS_NOTIFY,
         targetUserType = {TargetUserType.TARGET_USER_INSTANCE_DEPLOYER})
 @Component
@@ -27,8 +30,7 @@ public class InstanceFailurePmTemplate implements PmTemplate {
 
     @Override
     public String businessTypeCode() {
-        // TODO by zmf
-        return null;
+        return NoticeCodeConstants.INSTANCE_CREATION_FAILURE;
     }
 
     @Override

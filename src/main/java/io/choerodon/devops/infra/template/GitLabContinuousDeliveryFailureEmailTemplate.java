@@ -1,12 +1,15 @@
 package io.choerodon.devops.infra.template;
 
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.notify.EmailTemplate;
+import io.choerodon.devops.infra.constant.NoticeCodeConstants;
 
 /**
  * @author zmf
  * @since 12/4/19
  */
-// TODO by zmf
+@Component
 public class GitLabContinuousDeliveryFailureEmailTemplate implements EmailTemplate {
     @Override
     public String code() {
@@ -20,8 +23,7 @@ public class GitLabContinuousDeliveryFailureEmailTemplate implements EmailTempla
 
     @Override
     public String businessTypeCode() {
-        // TODO by zmf
-        return null;
+        return NoticeCodeConstants.GITLAB_CONTINUOUS_DELIVERY_FAILURE;
     }
 
     @Override
