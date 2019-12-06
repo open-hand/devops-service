@@ -30,11 +30,11 @@ public class GitLabContinuousDeliveryFailurePmTemplate implements PmTemplate {
     }
 
     /**
-     * projectName appServiceName gitlabUrl organizationCode projectCode appServiceCode
+     * projectName appServiceName gitlabUrl organizationCode projectCode appServiceCode gitlabPipelineId
      */
     @Override
     public String content() {
         return "<p>您在项目“${projectName}”下应用服务“${appServiceName}”中的持续集成过程失败</p>\n" +
-                "<p><a href=${gitlabUrl}/${organizationCode}-${projectCode}/${appServiceCode}/pipelines>查看详情</a></p>";
+                "<p><a href=${gitlabUrl}/${organizationCode}-${projectCode}/${appServiceCode}/pipelines/${gitlabPipelineId}>查看详情</a></p>";
     }
 }

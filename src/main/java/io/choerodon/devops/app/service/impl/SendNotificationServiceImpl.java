@@ -176,11 +176,45 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
 
     @Override
-    public void sendWhenCDFailure(String gitlabUrl, String organizationCode, String projectCode, String projectName, String appServiceCode, String appServiceName) {
-        if (!sendMessages) {
-            return;
-        }
-        // TODO by zmf
+    public void sendWhenCDFailure(Long gitlabPipelineId, AppServiceDTO appServiceDTO, String pipelineOperatorUserName) {
+        doWithTryCatchAndLog(() -> {
+                    if (appServiceDTO == null) {
+                        LOGGER.info("Parameter appServiceDTO is null when sending gitlab pipeline failure notice");
+                        return;
+                    }
+
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+                    if (projectDTO == null) {
+                        LogUtil.loggerInfoObjectNullWithId("Project", appServiceDTO.getProjectId(), LOGGER);
+                        return;
+                    }
+
+                    OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+                    if (organizationDTO == null) {
+                        LogUtil.loggerInfoObjectNullWithId("Organization", projectDTO.getOrganizationId(), LOGGER);
+                        return;
+                    }
+
+                    Map<String, Object> params = new HashMap<>();
+                    params.put("gitlabUrl", gitlabUrl);
+                    params.put("organizationCode", organizationDTO.getCode());
+                    params.put("projectCode", projectDTO.getCode());
+                    params.put("projectName", projectDTO.getName());
+                    params.put("appServiceCode", appServiceDTO.getCode());
+                    params.put("appServiceName", appServiceDTO.getName());
+                    params.put("gitlabPipelineId", gitlabPipelineId);
+
+                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(pipelineOperatorUserName);
+
+                    NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
+                    noticeSendDTO.setSourceId(projectDTO.getId());
+                    // TODO by zmf
+                    noticeSendDTO.setCode(null);
+                    noticeSendDTO.setTargetUsers(ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())));
+                    noticeSendDTO.setParams(params);
+                    notifyClient.sendMessage(noticeSendDTO);
+                },
+                ex -> LOGGER.info("Error occurred when sending message about gitlab-pipeline-failure. The exception is {}.", ex));
     }
 
     /**
@@ -281,9 +315,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     /**
      * 当merge request关闭或者合并时发送消息
      *
-     * @param sendSettingCode   发送消息的code
-     * @param gitlabProjectId   merge request 所属gitlab项目id
-     * @param mergeRequestId    merge request id
+     * @param sendSettingCode 发送消息的code
+     * @param gitlabProjectId merge request 所属gitlab项目id
+     * @param mergeRequestId  merge request id
      */
     private void doSendWhenMergeRequestClosedOrMerged(String sendSettingCode, Integer gitlabProjectId, Long mergeRequestId) {
         if (!sendMessages) {
