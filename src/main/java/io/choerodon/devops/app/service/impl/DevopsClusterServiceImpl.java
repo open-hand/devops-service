@@ -175,16 +175,21 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         }
 
         Map<String, String> searchParamMap = new HashMap<>();
+        List<String> paramList = new ArrayList<>();
         if (!StringUtils.isEmpty(params)) {
             Map maps = gson.fromJson(params, Map.class);
             searchParamMap = Optional.ofNullable((Map) TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM))).orElse(new HashMap<>());
+            paramList = Optional.ofNullable((List) TypeUtil.cast(maps.get(TypeUtil.PARAMS))).orElse(new ArrayList<String>());
         }
 
         ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         // 查出组织下所有符合条件的项目
         List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
-                iamProjectDTO.getOrganizationId(), searchParamMap.get("name"), searchParamMap.get("code"), null);
+                iamProjectDTO.getOrganizationId(),
+                searchParamMap.get("name"),
+                searchParamMap.get("code"),
+                CollectionUtils.isEmpty(paramList) ? null : paramList.get(0));
 
         // 查出数据库中已经分配权限的项目
         List<Long> permitted = devopsClusterProPermissionService.baseListByClusterId(clusterId)
