@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.template;
 
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.notify.EmailTemplate;
 import io.choerodon.devops.infra.enums.PipelineNoticeType;
 
@@ -7,7 +9,7 @@ import io.choerodon.devops.infra.enums.PipelineNoticeType;
  * @author zmf
  * @since 12/5/19
  */
-// TODO by zmf
+@Component
 public class PipelineAuditEmailTemplate implements EmailTemplate {
     @Override
     public String code() {

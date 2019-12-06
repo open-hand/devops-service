@@ -3,14 +3,17 @@ package io.choerodon.devops.infra.template;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.notify.*;
+import io.choerodon.devops.infra.constant.NoticeCodeConstants;
 
 /**
  * @author zmf
  * @since 12/4/19
  */
-@NotifyBusinessType(code = "gitLabContinuousDeliveryFailure", name = "持续集成流水线失败", level = Level.PROJECT,
+@NotifyBusinessType(code = NoticeCodeConstants.GITLAB_CONTINUOUS_DELIVERY_FAILURE,
+        name = "持续集成流水线失败", level = Level.PROJECT,
         description = "持续集成流水线失败通知", isAllowConfig = false, isManualRetry = true, categoryCode = "code-management-notice",
         pmEnabledFlag = true,
+        emailEnabledFlag = true,
         notifyType = ServiceNotifyType.DEVOPS_NOTIFY,
         targetUserType = {TargetUserType.TARGET_USER_CODE_SUBMITTER})
 @Component
@@ -27,8 +30,7 @@ public class GitLabContinuousDeliveryFailurePmTemplate implements PmTemplate {
 
     @Override
     public String businessTypeCode() {
-        // TODO by zmf
-        return null;
+        return NoticeCodeConstants.GITLAB_CONTINUOUS_DELIVERY_FAILURE;
     }
 
     @Override

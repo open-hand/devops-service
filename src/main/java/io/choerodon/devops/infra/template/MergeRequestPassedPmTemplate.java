@@ -3,14 +3,17 @@ package io.choerodon.devops.infra.template;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.notify.*;
+import io.choerodon.devops.infra.constant.NoticeCodeConstants;
 
 /**
  * @author zmf
  * @since 12/4/19
  */
-@NotifyBusinessType(code = "mergeRequestPassed", name = "合并请求通过", level = Level.PROJECT,
+@NotifyBusinessType(code = NoticeCodeConstants.MERGE_REQUEST_PASSED,
+        name = "合并请求通过", level = Level.PROJECT,
         description = "合并请求通过通知", isAllowConfig = false, isManualRetry = true, categoryCode = "code-management-notice",
         pmEnabledFlag = true,
+        emailEnabledFlag = true,
         notifyType = ServiceNotifyType.DEVOPS_NOTIFY,
         targetUserType = {TargetUserType.TARGET_USER_CREATOR})
 @Component
@@ -27,8 +30,7 @@ public class MergeRequestPassedPmTemplate implements PmTemplate {
 
     @Override
     public String businessTypeCode() {
-        // TODO by zmf
-        return null;
+        return NoticeCodeConstants.MERGE_REQUEST_PASSED;
     }
 
     @Override

@@ -3,14 +3,16 @@ package io.choerodon.devops.infra.template;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.notify.*;
+import io.choerodon.devops.infra.constant.NoticeCodeConstants;
 
 /**
  * @author zmf
  * @since 12/4/19
  */
-@NotifyBusinessType(code = "enableAppService", name = "启用应用服务", level = Level.PROJECT,
+@NotifyBusinessType(code = NoticeCodeConstants.APP_SERVICE_ENABLED, name = "启用应用服务", level = Level.PROJECT,
         description = "启用应用服务通知", isAllowConfig = false, isManualRetry = true, categoryCode = "app-service-notice",
         pmEnabledFlag = true,
+        emailEnabledFlag = true,
         notifyType = ServiceNotifyType.DEVOPS_NOTIFY,
         targetUserType = {TargetUserType.TARGET_USER_APPLICATION_SERVICE_PERMISSION_OWNER})
 @Component
@@ -27,8 +29,7 @@ public class EnableAppServicePmTemplate implements PmTemplate {
 
     @Override
     public String businessTypeCode() {
-        // TODO by zmf
-        return null;
+        return NoticeCodeConstants.APP_SERVICE_ENABLED;
     }
 
     @Override

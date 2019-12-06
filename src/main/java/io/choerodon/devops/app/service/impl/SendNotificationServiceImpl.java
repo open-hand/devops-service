@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
@@ -18,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.NoticeCodeConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
@@ -41,6 +41,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
 
+    // TODO by zmf
     @Value("${sendMessages:false}")
     private boolean sendMessages;
 
@@ -127,12 +128,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             return;
         }
         doWithTryCatchAndLog(
-                () -> {
-                    // TODO by zmf
-                    sendNoticeAboutAppService(appServiceId, null, app ->
-                            ArrayUtil.singleAsList(constructTargetUser(app.getCreatedBy()))
-                    );
-                },
+                () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.APP_SERVICE_CREATION_FAILED,
+                        app -> ArrayUtil.singleAsList(constructTargetUser(app.getCreatedBy()))),
                 ex -> LOGGER.info("Error occurred when sending message about failure of app-service. The exception is {}.", ex));
     }
 
@@ -142,14 +139,11 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             return;
         }
         doWithTryCatchAndLog(
-                () -> {
-                    // TODO by zmf
-                    sendNoticeAboutAppService(appServiceId, null,
-                            app -> appServiceService.listAllUserPermission(app.getId())
-                                    .stream()
-                                    .map(p -> constructTargetUser(p.getIamUserId()))
-                                    .collect(Collectors.toList()));
-                },
+                () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.APP_SERVICE_ENABLED,
+                        app -> appServiceService.listAllUserPermission(app.getId())
+                                .stream()
+                                .map(p -> constructTargetUser(p.getIamUserId()))
+                                .collect(Collectors.toList())),
                 ex -> LOGGER.info("Error occurred when sending message about app-service-enable. The exception is {}.", ex));
     }
 
@@ -159,14 +153,11 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             return;
         }
         doWithTryCatchAndLog(
-                () -> {
-                    // TODO by zmf
-                    sendNoticeAboutAppService(appServiceId, null,
-                            app -> appServiceService.listAllUserPermission(app.getId())
-                                    .stream()
-                                    .map(p -> constructTargetUser(p.getIamUserId()))
-                                    .collect(Collectors.toList()));
-                },
+                () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.APP_SERVICE_DISABLE,
+                        app -> appServiceService.listAllUserPermission(app.getId())
+                                .stream()
+                                .map(p -> constructTargetUser(p.getIamUserId()))
+                                .collect(Collectors.toList())),
                 ex -> LOGGER.info("Error occurred when sending message about app-service-disable. The exception is {}.", ex));
     }
 
@@ -202,8 +193,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(pipelineOperatorUserName);
 
-                    // TODO by zmf
-                    sendNotices(null, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params);
+                    sendNotices(NoticeCodeConstants.GITLAB_CONTINUOUS_DELIVERY_FAILURE, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params);
                 },
                 ex -> LOGGER.info("Error occurred when sending message about gitlab-pipeline-failure. The exception is {}.", ex));
     }
@@ -286,8 +276,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     Map<String, Object> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getCode(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), iamUserDTO.getRealName(), mergeRequestId);
 
-                    // TODO by zmf
-                    sendNotices(null, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params);
+                    sendNotices(NoticeCodeConstants.AUDIT_MERGE_REQUEST, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params);
                 },
                 ex -> LOGGER.info("Error occurred when sending message about merge-request-audit. The exception is {}.", ex));
     }
@@ -357,15 +346,13 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     @Override
     public void sendWhenMergeRequestClosed(Integer gitlabProjectId, Long mergeRequestId) {
-        // TODO by zmf
-        doSendWhenMergeRequestClosedOrMerged(null, gitlabProjectId, mergeRequestId);
+        doSendWhenMergeRequestClosedOrMerged(NoticeCodeConstants.MERGE_REQUEST_CLOSED, gitlabProjectId, mergeRequestId);
     }
 
 
     @Override
     public void sendWhenMergeRequestPassed(Integer gitlabProjectId, Long mergeRequestId) {
-        // TODO by zmf
-        doSendWhenMergeRequestClosedOrMerged(null, gitlabProjectId, mergeRequestId);
+        doSendWhenMergeRequestClosedOrMerged(NoticeCodeConstants.MERGE_REQUEST_PASSED, gitlabProjectId, mergeRequestId);
     }
 
     /**
@@ -418,8 +405,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         if (!sendMessages) {
             return;
         }
-        // TODO by zmf
-        doSendWhenResourceCreationFailure(null, envId, resourceName, creatorId, resourceCommandId);
+        doSendWhenResourceCreationFailure(NoticeCodeConstants.INSTANCE_CREATION_FAILURE, envId, resourceName, creatorId, resourceCommandId);
     }
 
     @Override
@@ -427,8 +413,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         if (!sendMessages) {
             return;
         }
-        // TODO by zmf
-        doSendWhenResourceCreationFailure(null, envId, resourceName, creatorId, resourceCommandId);
+        doSendWhenResourceCreationFailure(NoticeCodeConstants.SERVICE_CREATION_FAILURE, envId, resourceName, creatorId, resourceCommandId);
     }
 
     @Override
@@ -436,8 +421,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         if (!sendMessages) {
             return;
         }
-        // TODO by zmf
-        doSendWhenResourceCreationFailure(null, envId, resourceName, creatorId, resourceCommandId);
+        doSendWhenResourceCreationFailure(NoticeCodeConstants.INGRESS_CREATION_FAILURE, envId, resourceName, creatorId, resourceCommandId);
     }
 
     @Override
@@ -445,8 +429,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         if (!sendMessages) {
             return;
         }
-        // TODO by zmf
-        doSendWhenResourceCreationFailure(null, envId, resourceName, creatorId, resourceCommandId);
+        doSendWhenResourceCreationFailure(NoticeCodeConstants.CERTIFICATION_CREATION_FAILURE, envId, resourceName, creatorId, resourceCommandId);
     }
 
 

@@ -1,6 +1,9 @@
 package io.choerodon.devops.infra.template;
 
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.notify.EmailTemplate;
+import io.choerodon.devops.infra.constant.NoticeCodeConstants;
 
 /**
  * 应用服务创建失败的邮件模板
@@ -8,7 +11,7 @@ import io.choerodon.core.notify.EmailTemplate;
  * @author zmf
  * @since 12/4/19
  */
-//TODO @Component
+@Component
 public class AppServiceCreationFailureEmailTemplate implements EmailTemplate {
 
     @Override
@@ -23,8 +26,7 @@ public class AppServiceCreationFailureEmailTemplate implements EmailTemplate {
 
     @Override
     public String businessTypeCode() {
-        // TODO by zmf
-        return null;
+        return NoticeCodeConstants.APP_SERVICE_CREATION_FAILED;
     }
 
     @Override
