@@ -361,9 +361,10 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
     @Override
     public void batchUpdateNotifyEvent(Long projectId, List<NotificationEventVO> notificationEventList) {
+        // 系统默认配置
         List<NotificationEventVO> notificationEventVOS = devopsNotificationMapper.listDefaultNotifyEvent();
         Set<Long> defaultEventIds = notificationEventVOS.stream().map(NotificationEventVO::getId).collect(Collectors.toSet());
-        // 系统预置的数据
+        // 默认配置的修改
         List<NotificationEventVO> defaultEventList = notificationEventList.stream().filter(v -> defaultEventIds.contains(v.getId())).collect(Collectors.toList());
         defaultEventList.forEach(defaultEvent -> {
             defaultEvent.setId(null);
@@ -376,6 +377,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 devopsNotificationUserRelService.batchInsert(devopsNotificationUserRelDTOS);
             }
         });
+        // 自定义配置的修改
         List<NotificationEventVO> customerEventList = notificationEventList.stream().filter(v -> !defaultEventIds.contains(v.getId())).collect(Collectors.toList());
         customerEventList.forEach(customerEvent -> {
                 DevopsNotificationDTO devopsNotificationDTO = ConvertUtils.convertObject(customerEvent, DevopsNotificationDTO.class);

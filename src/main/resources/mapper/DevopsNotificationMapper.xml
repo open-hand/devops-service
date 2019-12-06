@@ -39,6 +39,7 @@
         SELECT
           dn.id,dn.env_id,dn.project_id,dn.is_send_email,
           dn.is_send_pm,dn.is_send_sms,dn.notify_trigger_event,
+          dn.is_default_setting,
           dnur.user_id,dnur.user_type,dnur.notification_id
         FROM devops_notification dn
         LEFT JOIN devops_notification_user_rel dnur ON dnur.notification_id = dn.id
@@ -58,6 +59,7 @@
         <result column="is_send_pm" property="sendPm"/>
         <result column="is_send_sms" property="sendSms"/>
         <result column="notify_trigger_event" property="notifyTriggerEvent"/>
+        <result column="is_default_setting" property="defaultSetting"/>
         <collection property="userList" ofType="io.choerodon.devops.api.vo.DevopsNotificationUserRelVO">
             <id column="user_id" property="userId" />
             <result column="user_type" property="userType"/>

@@ -38,6 +38,9 @@ public class NotificationEventVO {
     @ApiModelProperty(name = "是否发送指定用户")
     private Boolean sendSpecifier = false;
 
+    @ApiModelProperty(value = "是否是默认设置")
+    private Boolean defaultSetting;
+
     private List<DevopsNotificationUserRelVO> userList;
 
     public Long getId() {
@@ -126,5 +129,13 @@ public class NotificationEventVO {
 
     public void setSendSpecifier(Boolean sendSpecifier) {
         this.sendSpecifier = sendSpecifier;
+    }
+
+    public Boolean getDefaultSetting() {
+        return defaultSetting;
+    }
+
+    public void setDefaultSetting(Boolean defaultSetting) {
+        this.defaultSetting = defaultSetting;
     }
 }
