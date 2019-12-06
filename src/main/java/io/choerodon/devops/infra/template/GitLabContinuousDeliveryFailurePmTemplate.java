@@ -14,6 +14,7 @@ import io.choerodon.devops.infra.constant.NoticeCodeConstants;
         description = "持续集成流水线失败通知", isAllowConfig = false, isManualRetry = true, categoryCode = "code-management-notice",
         pmEnabledFlag = true,
         emailEnabledFlag = true,
+        proPmEnabledFlag = true,
         notifyType = ServiceNotifyType.DEVOPS_NOTIFY,
         targetUserType = {TargetUserType.TARGET_USER_CODE_SUBMITTER})
 @Component

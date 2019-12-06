@@ -14,6 +14,7 @@ import io.choerodon.devops.infra.constant.NoticeCodeConstants;
         description = "实例部署失败通知", isAllowConfig = false, isManualRetry = true, categoryCode = "deployment-resources-notice",
         pmEnabledFlag = true,
         emailEnabledFlag = true,
+        proPmEnabledFlag = true,
         notifyType = ServiceNotifyType.DEVOPS_NOTIFY,
         targetUserType = {TargetUserType.TARGET_USER_INSTANCE_DEPLOYER})
 @Component

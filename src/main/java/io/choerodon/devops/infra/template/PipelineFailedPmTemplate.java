@@ -14,6 +14,7 @@ import io.choerodon.devops.infra.enums.PipelineNoticeType;
         description = "流水线执行失败通知", isAllowConfig = false, isManualRetry = true, categoryCode = "stream-change-notice",
         pmEnabledFlag = true,
         emailEnabledFlag = true,
+        proPmEnabledFlag = true,
         notifyType = ServiceNotifyType.DEVOPS_NOTIFY, targetUserType = {TargetUserType.TARGET_USER_PIPELINE_TRIGGERSS})
 @Component
 public class PipelineFailedPmTemplate implements PmTemplate {
