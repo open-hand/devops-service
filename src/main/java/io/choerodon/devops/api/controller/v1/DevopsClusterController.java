@@ -187,7 +187,7 @@ public class DevopsClusterController {
             @ApiParam(value = "分页参数")
             @ApiIgnore Pageable pageable,
             @ApiParam(value = "指定项目id")
-            @RequestParam(value = "iamProjectId", required = false) Long selectedProjectId,
+            @RequestParam(value = "id", required = false) Long selectedProjectId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return new ResponseEntity<>(devopsClusterService.listNonRelatedProjects(projectId, clusterId, selectedProjectId, pageable, params), HttpStatus.OK);
