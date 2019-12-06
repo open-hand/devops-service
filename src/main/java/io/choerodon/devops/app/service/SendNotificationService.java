@@ -61,68 +61,32 @@ public interface SendNotificationService {
                            String appServiceCode,
                            String appServiceName);
 
+
     /**
      * 当有合并请求需要审核时
      *
-     * @param gitlabUrl        gitlab的http(s)地址
-     * @param organizationCode 组织code
-     * @param projectCode      项目code
-     * @param projectName      项目名称
-     * @param appServiceCode   应用服务code
-     * @param appServiceName   应用服务名称
-     * @param realName         合并请求提交者的名称
-     * @param mergeRequestId   合并请求的id
+     * @param gitlabProjectId gitlab项目id
+     * @param mergeRequestId  合并请求的id
      */
-    void sendWhenMergeRequestAuditEvent(String gitlabUrl,
-                                        String organizationCode,
-                                        String projectCode,
-                                        String projectName,
-                                        String appServiceCode,
-                                        String appServiceName,
-                                        String realName,
-                                        Long mergeRequestId);
+    void sendWhenMergeRequestAuditEvent(Integer gitlabProjectId, Long mergeRequestId);
+
 
     /**
      * 当合并请求被关闭时
      *
-     * @param gitlabUrl        gitlab的http(s)地址
-     * @param organizationCode 组织code
-     * @param projectCode      项目code
-     * @param projectName      项目名称
-     * @param appServiceCode   应用服务code
-     * @param appServiceName   应用服务名称
-     * @param realName         关闭合并请求的操作者的名称
-     * @param mergeRequestId   合并请求的id
+     * @param gitlabProjectId gitlab项目id
+     * @param mergeRequestId  合并请求的id
      */
-    void sendWhenMergeRequestClosed(String gitlabUrl,
-                                    String organizationCode,
-                                    String projectCode,
-                                    String projectName,
-                                    String appServiceCode,
-                                    String appServiceName,
-                                    String realName,
-                                    Long mergeRequestId);
+    void sendWhenMergeRequestClosed(Integer gitlabProjectId, Long mergeRequestId);
+
 
     /**
      * 当合并请求被通过时
      *
-     * @param gitlabUrl        gitlab的http(s)地址
-     * @param organizationCode 组织code
-     * @param projectCode      项目code
-     * @param projectName      项目名称
-     * @param appServiceCode   应用服务code
-     * @param appServiceName   应用服务名称
-     * @param realName         通过合并请求的操作者的名称
-     * @param mergeRequestId   合并请求的id
+     * @param gitlabProjectId gitlab项目id
+     * @param mergeRequestId  合并请求的id
      */
-    void sendWhenMergeRequestPassed(String gitlabUrl,
-                                    String organizationCode,
-                                    String projectCode,
-                                    String projectName,
-                                    String appServiceCode,
-                                    String appServiceName,
-                                    String realName,
-                                    Long mergeRequestId);
+    void sendWhenMergeRequestPassed(Integer gitlabProjectId, Long mergeRequestId);
 
     /**
      * 当创建实例失败后
