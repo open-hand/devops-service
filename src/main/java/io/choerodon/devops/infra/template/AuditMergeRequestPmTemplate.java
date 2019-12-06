@@ -15,9 +15,7 @@ import io.choerodon.devops.infra.constant.NoticeCodeConstants;
         pmEnabledFlag = true,
         emailEnabledFlag = true,
         proPmEnabledFlag = true,
-        notifyType = ServiceNotifyType.DEVOPS_NOTIFY,
-        // 这个目标对象是不对的，但是前端不允许修改由后端发送时查询就暂时这样
-        targetUserType = {TargetUserType.TARGET_USER_CREATOR})
+        notifyType = ServiceNotifyType.DEVOPS_NOTIFY)
 @Component
 public class AuditMergeRequestPmTemplate implements PmTemplate {
     @Override

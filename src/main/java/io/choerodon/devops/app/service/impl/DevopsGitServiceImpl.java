@@ -563,7 +563,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             resourceKindMap.computeIfAbsent(V1Endpoints.class, key -> new ArrayList());
             resourceKindMap.forEach((k, v) -> {
                 HandlerObjectFileRelationsService handler = objectFileRelationHandlers.get(k);
-                if (handler == null) {
+                if (handler == null && k != V1Endpoints.class) {
                     LOGGER.info("Handler is unexpectedly null. The resource kind is {}", k);
                     return;
                 }
