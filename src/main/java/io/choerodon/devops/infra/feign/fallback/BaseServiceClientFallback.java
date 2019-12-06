@@ -1,15 +1,6 @@
 package io.choerodon.devops.infra.feign.fallback;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.validation.Valid;
-
 import com.github.pagehelper.PageInfo;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
@@ -18,6 +9,14 @@ import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by younger on 2018/3/29.
@@ -251,6 +250,11 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     @Override
     public ResponseEntity<Boolean> checkIsProjectOwner(Long id, Long projectId) {
         throw new CommonException("error.check.project.permission");
+    }
+
+    @Override
+    public ResponseEntity<List<IamUserDTO>> listProjectUsersByPorjectIdAndRoleLable(Long projectId, String roleLable) {
+        throw new CommonException("error.query.project.users");
     }
 
     @Override
