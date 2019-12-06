@@ -368,6 +368,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         defaultEventList.forEach(defaultEvent -> {
             defaultEvent.setId(null);
             DevopsNotificationDTO devopsNotificationDTO = ConvertUtils.convertObject(defaultEvent, DevopsNotificationDTO.class);
+            devopsNotificationDTO.setDefaultSetting(false);
             devopsNotificationMapper.insertSelective(devopsNotificationDTO);
             List<DevopsNotificationUserRelVO> userList = defaultEvent.getUserList();
             if (!CollectionUtils.isEmpty(userList)) {

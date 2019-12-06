@@ -32,6 +32,11 @@ public class DevopsNotificationDTO extends BaseDTO {
     @ApiModelProperty(value = "是否发送站内信")
     @Column(name = "is_send_pm")
     private Boolean sendPm;
+
+    @ApiModelProperty(value = "是否发送站内信")
+    @Column(name = "is_default_setting")
+    private Boolean defaultSetting;
+
     @Transient
     private String envName;
 
@@ -113,5 +118,13 @@ public class DevopsNotificationDTO extends BaseDTO {
 
     public void setSendPm(Boolean sendPm) {
         this.sendPm = sendPm;
+    }
+
+    public Boolean getDefaultSetting() {
+        return defaultSetting;
+    }
+
+    public void setDefaultSetting(Boolean defaultSetting) {
+        this.defaultSetting = defaultSetting;
     }
 }

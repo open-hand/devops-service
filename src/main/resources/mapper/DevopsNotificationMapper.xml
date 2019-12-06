@@ -47,7 +47,7 @@
     <select id="listDefaultNotifyEvent" resultMap="notificationEventVOMap">
         SELECT *
         FROM  devops_notification dn
-        WHERE dn.is_default = TRUE
+        WHERE dn.is_default_setting = TRUE
     </select>
 
     <resultMap id="notificationEventVOMap" type="io.choerodon.devops.api.vo.NotificationEventVO">
