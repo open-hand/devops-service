@@ -630,7 +630,7 @@ public class AppServiceController {
             @ApiParam(value = "分页参数")
             @ApiIgnore Pageable pageable,
             @ApiParam(value = "指定的用户Id")
-            @RequestParam(value = "selected_iam_user_id", required = false) Long selectedIamUserId,
+            @RequestParam(value = "iamUserId", required = false) Long selectedIamUserId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(

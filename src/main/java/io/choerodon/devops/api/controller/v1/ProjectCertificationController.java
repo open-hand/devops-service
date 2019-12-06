@@ -146,7 +146,7 @@ public class ProjectCertificationController {
             @ApiParam(value = "分页参数")
             @ApiIgnore Pageable pageable,
             @ApiParam(value = "指定项目Id")
-            @RequestParam(value = "selected_project_id", required = false) Long selectedProjectId,
+            @RequestParam(value = "iamProjectId", required = false) Long selectedProjectId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsProjectCertificationService.listNonRelatedMembers(projectId, certId, selectedProjectId, pageable, params))

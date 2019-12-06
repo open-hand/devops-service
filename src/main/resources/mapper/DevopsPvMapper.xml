@@ -25,7 +25,7 @@
             </if>
         <include refid="sqlparams"/>
         </where>
-        ORDER BY id DESC
+        ORDER BY dpv.id DESC
     </select>
 
     <sql id="sqlparams">
@@ -50,13 +50,16 @@
                 AND
                 dpv.status = #{searchParam.status, jdbcType=VARCHAR}
             </if>
+            <if test="searchParam.description!=null and searchParam.description.length>0">
+                AND
+                dpv.description LIKE CONCAT(CONCAT('%', #{searchParam.type, jdbcType=VARCHAR}),'%')
+            </if>
         </if>
         <if test='params != null and params.size > 0'>
             AND
             <foreach collection="params" item="param" open="(" separator=" OR " close=")">
                 dpv.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 OR dpv.type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                OR dc.name  LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 OR dpv.access_modes LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 OR dpv.status LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             </foreach>

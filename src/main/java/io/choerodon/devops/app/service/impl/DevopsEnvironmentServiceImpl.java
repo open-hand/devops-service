@@ -1056,25 +1056,27 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<Long> assigned = devopsEnvUserPermissionMapper.listUserIdsByEnvId(envId);
 
         // 过滤项目成员中的项目所有者和已被分配权限的
-        Set<IamUserDTO> members = allProjectMembers.getList()
+        List<IamUserDTO> members = allProjectMembers.getList()
                 .stream()
                 .filter(member -> !allProjectOwnerIds.contains(member.getId()))
                 .filter(member -> !assigned.contains(member.getId()))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
 
         if (selectedIamUserId != null) {
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(selectedIamUserId);
-            members.add(iamUserDTO);
+            if (!members.contains(iamUserDTO)) {
+                members.set(0, iamUserDTO);
+            }
         }
 
         PageInfo<IamUserDTO> pageInfo;
         CustomPageRequest customPageRequest;
         if (pageable.getPageSize() == 0) {
             customPageRequest = CustomPageRequest.of(0, 0);
-            pageInfo = PageInfoUtil.createPageFromList(new ArrayList<>(members), customPageRequest);
+            pageInfo = PageInfoUtil.createPageFromList(members, customPageRequest);
         } else {
             customPageRequest = CustomPageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
-            pageInfo = PageInfoUtil.createPageFromList(new ArrayList<>(members), customPageRequest);
+            pageInfo = PageInfoUtil.createPageFromList(members, customPageRequest);
         }
 
         return ConvertUtils.convertPage(pageInfo, member -> new DevopsEnvUserVO(member.getId(), member.getLdap() ? member.getLoginName() : member.getEmail(), member.getRealName(), member.getImageUrl()));
