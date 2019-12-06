@@ -340,7 +340,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
             ProjectReqVO projectReqVO = new ProjectReqVO(projectDTO.getId(), projectDTO.getName(), projectDTO.getCode());
             if (!projectReqVOS.contains(projectReqVO)) {
-                projectReqVOS.add(projectReqVO);
+                projectReqVOS.set(0, projectReqVO);
             }
         }
 
