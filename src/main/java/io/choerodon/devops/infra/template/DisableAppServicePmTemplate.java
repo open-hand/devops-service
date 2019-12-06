@@ -14,6 +14,7 @@ import io.choerodon.devops.infra.constant.NoticeCodeConstants;
         description = "应用服务停用通知", isAllowConfig = false, isManualRetry = true, categoryCode = "app-service-notice",
         pmEnabledFlag = true,
         emailEnabledFlag = true,
+        proPmEnabledFlag = true,
         notifyType = ServiceNotifyType.DEVOPS_NOTIFY,
         targetUserType = {TargetUserType.TARGET_USER_APPLICATION_SERVICE_PERMISSION_OWNER})
 @Component

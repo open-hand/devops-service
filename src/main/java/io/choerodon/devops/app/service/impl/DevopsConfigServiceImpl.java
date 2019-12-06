@@ -256,11 +256,13 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
 
                     DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
                     List<Long> longs = Arrays.asList(devopsProjectDTO.getHarborUserId(), devopsProjectDTO.getHarborPullUserId());
-                    longs.stream().forEach(e->devopsHarborUserService.baseDelete(e));
+                    longs.forEach(e -> devopsHarborUserService.baseDelete(e));
                     devopsProjectDTO.setHarborProjectIsPrivate(false);
                     devopsProjectDTO.setHarborPullUserId(null);
                     devopsProjectDTO.setHarborUserId(null);
                     devopsProjectService.baseUpdate(devopsProjectDTO);
+                } else {
+                    throw new CommonException("error.harbor.get.project");
                 }
             } catch (Exception e) {
                 throw new CommonException(e);

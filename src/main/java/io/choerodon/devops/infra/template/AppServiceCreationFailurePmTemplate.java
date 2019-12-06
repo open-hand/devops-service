@@ -16,6 +16,7 @@ import io.choerodon.devops.infra.constant.NoticeCodeConstants;
         description = "创建应用服务失败通知", isAllowConfig = false, isManualRetry = true, categoryCode = "app-service-notice",
         pmEnabledFlag = true,
         emailEnabledFlag = true,
+        proPmEnabledFlag = true,
         notifyType = ServiceNotifyType.DEVOPS_NOTIFY,
         targetUserType = {TargetUserType.TARGET_USER_CREATOR})
 @Component

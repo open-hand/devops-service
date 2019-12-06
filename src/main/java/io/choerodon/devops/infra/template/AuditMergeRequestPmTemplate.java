@@ -14,6 +14,7 @@ import io.choerodon.devops.infra.constant.NoticeCodeConstants;
         description = "合并请求审核通知", isAllowConfig = false, isManualRetry = true, categoryCode = "code-management-notice",
         pmEnabledFlag = true,
         emailEnabledFlag = true,
+        proPmEnabledFlag = true,
         notifyType = ServiceNotifyType.DEVOPS_NOTIFY,
         // 这个目标对象是不对的，但是前端不允许修改由后端发送时查询就暂时这样
         targetUserType = {TargetUserType.TARGET_USER_CREATOR})

@@ -13,6 +13,7 @@ import io.choerodon.devops.infra.enums.PipelineNoticeType;
 @NotifyBusinessType(code = "pipelinepass", name = "流水线或签任务通过通知", level = Level.PROJECT,
         pmEnabledFlag = true,
         emailEnabledFlag = true,
+        proPmEnabledFlag = true,
         description = "流水线或签任务通过通知", isAllowConfig = false, isManualRetry = true, categoryCode = "stream-change-notice")
 @Component
 public class PipelinePassPmTemplate implements PmTemplate {
