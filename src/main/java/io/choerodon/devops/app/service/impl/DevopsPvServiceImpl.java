@@ -27,10 +27,7 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvMapper;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.devops.infra.util.PageInfoUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.models.*;
@@ -94,10 +91,12 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         // search_param 根据确定的键值对查询
         // params 是遍历字段模糊查询
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
+        String orderBy = PageRequestUtil.getOrderBy(pageable);
         return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize())
                 .doSelectPageInfo(() -> devopsPvMapper.listPvByOptions(
                         projectDTO.getOrganizationId(),
                         projectId,
+                        orderBy,
                         TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))
                 ));
@@ -339,9 +338,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         if (selectedProjectId != null) {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
             ProjectReqVO projectReqVO = new ProjectReqVO(projectDTO.getId(), projectDTO.getName(), projectDTO.getCode());
-            if (!projectReqVOS.contains(projectReqVO)) {
-                projectReqVOS.set(0, projectReqVO);
-            }
+            projectReqVOS.remove(projectReqVO);
+            projectReqVOS.set(0, projectReqVO);
         }
 
         return PageInfoUtil.createPageFromList(projectReqVOS, pageable);
@@ -676,6 +674,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         List<DevopsPvVO> devopsPvVOList = ConvertUtils.convertList(devopsPvMapper.listPvByOptions(
                 projectDTO.getOrganizationId(),
+                null,
                 null,
                 TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))), DevopsPvVO.class);

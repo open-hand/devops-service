@@ -25,7 +25,11 @@
             </if>
         <include refid="sqlparams"/>
         </where>
-        ORDER BY dpv.id DESC
+        ORDER BY
+        <if test="orderBy != null and orderBy != ''">
+            ${orderBy},
+        </if>
+        dpv.id DESC
     </select>
 
     <sql id="sqlparams">
