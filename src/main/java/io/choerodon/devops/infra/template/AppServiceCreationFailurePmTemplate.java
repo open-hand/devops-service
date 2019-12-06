@@ -1,6 +1,8 @@
 package io.choerodon.devops.infra.template;
 
-import io.choerodon.core.notify.PmTemplate;
+import org.springframework.stereotype.Component;
+
+import io.choerodon.core.notify.*;
 
 /**
  * 应用服务创建失败的站内信模板
@@ -8,7 +10,12 @@ import io.choerodon.core.notify.PmTemplate;
  * @author zmf
  * @since 12/4/19
  */
-// TODO @Component
+@NotifyBusinessType(code = "appServiceCreationFailure", name = "创建应用服务失败", level = Level.PROJECT,
+        description = "创建应用服务失败通知", isAllowConfig = false, isManualRetry = true, categoryCode = "app-service-notice",
+        pmEnabledFlag = true,
+        notifyType = ServiceNotifyType.DEVOPS_NOTIFY,
+        targetUserType = {TargetUserType.TARGET_USER_CREATOR})
+@Component
 public class AppServiceCreationFailurePmTemplate implements PmTemplate {
     @Override
     public String code() {

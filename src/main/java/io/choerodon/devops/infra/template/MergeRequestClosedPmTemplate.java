@@ -1,12 +1,19 @@
 package io.choerodon.devops.infra.template;
 
-import io.choerodon.core.notify.PmTemplate;
+import org.springframework.stereotype.Component;
+
+import io.choerodon.core.notify.*;
 
 /**
  * @author zmf
  * @since 12/4/19
  */
-// TODO by zmf
+@NotifyBusinessType(code = "mergeRequestClosed", name = "合并请求被关闭", level = Level.PROJECT,
+        description = "合并请求被关闭通知", isAllowConfig = false, isManualRetry = true, categoryCode = "code-management-notice",
+        pmEnabledFlag = true,
+        notifyType = ServiceNotifyType.DEVOPS_NOTIFY,
+        targetUserType = {TargetUserType.TARGET_USER_CREATOR})
+@Component
 public class MergeRequestClosedPmTemplate implements PmTemplate {
     @Override
     public String code() {
