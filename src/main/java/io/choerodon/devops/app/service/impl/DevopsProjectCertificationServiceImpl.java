@@ -238,14 +238,19 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         }
 
         Map<String, String> searchParamMap = new HashMap<>();
+        List<String> paramList = new ArrayList<>();
         if (!StringUtils.isEmpty(params)) {
             Map maps = gson.fromJson(params, Map.class);
             searchParamMap = Optional.ofNullable((Map) TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM))).orElse(new HashMap<>());
+            paramList = Optional.ofNullable((List) TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM))).orElse(new ArrayList<>());
         }
         //查询出该项目所属组织下的所有项目
         ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(iamProjectDTO.getOrganizationId());
-        List<ProjectDTO> projectDTOList = baseServiceClientOperator.listIamProjectByOrgId(organizationDTO.getId(), searchParamMap.get("name"), searchParamMap.get("code"), null);
+        List<ProjectDTO> projectDTOList = baseServiceClientOperator.listIamProjectByOrgId(organizationDTO.getId(),
+                searchParamMap.get("name"),
+                searchParamMap.get("code"),
+                CollectionUtils.isEmpty(paramList) ? null : paramList.get(0));
 
         //查询已经分配权限的项目
         List<Long> permitted = devopsCertificationProRelationshipService.baseListByCertificationId(certId)
