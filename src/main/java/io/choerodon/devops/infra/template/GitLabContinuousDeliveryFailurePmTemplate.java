@@ -11,7 +11,7 @@ import io.choerodon.devops.infra.constant.NoticeCodeConstants;
  */
 @NotifyBusinessType(code = NoticeCodeConstants.GITLAB_CONTINUOUS_DELIVERY_FAILURE,
         name = "持续集成流水线失败", level = Level.PROJECT,
-        description = "持续集成流水线失败通知", isAllowConfig = false, isManualRetry = true, categoryCode = "code-management-notice",
+        description = "持续集成流水线失败通知", isManualRetry = true, categoryCode = "code-management-notice",
         pmEnabledFlag = true,
         emailEnabledFlag = true,
         proPmEnabledFlag = true,

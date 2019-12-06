@@ -10,7 +10,7 @@ import io.choerodon.devops.infra.constant.NoticeCodeConstants;
  * @since 12/4/19
  */
 @NotifyBusinessType(code = NoticeCodeConstants.APP_SERVICE_ENABLED, name = "启用应用服务", level = Level.PROJECT,
-        description = "启用应用服务通知", isAllowConfig = false, isManualRetry = true, categoryCode = "app-service-notice",
+        description = "启用应用服务通知", isManualRetry = true, categoryCode = "app-service-notice",
         pmEnabledFlag = true,
         emailEnabledFlag = true,
         proPmEnabledFlag = true,

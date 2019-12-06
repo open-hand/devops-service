@@ -11,7 +11,7 @@ import io.choerodon.devops.infra.enums.PipelineNoticeType;
  * Description:
  */
 @NotifyBusinessType(code = "pipelinesuccess", name = "流水线执行成功", level = Level.PROJECT,
-        description = "流水线执行成功通知", isAllowConfig = false, isManualRetry = true, categoryCode = "stream-change-notice",
+        description = "流水线执行成功通知", isManualRetry = true, categoryCode = "stream-change-notice",
         pmEnabledFlag = true,
         emailEnabledFlag = true,
         proPmEnabledFlag = true,
