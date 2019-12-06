@@ -371,6 +371,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         // 处理创建数据
         DevopsPvDTO devopsPvDTO = ConvertUtils.convertObject(devopsPvReqVO, DevopsPvDTO.class);
+        devopsPvDTO.setProjectId(environmentDTO.getProjectId());
         devopsPvDTO.setStatus(PvcStatus.OPERATING.getStatus());
         devopsPvDTO.setClusterId(environmentDTO.getClusterId());
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(devopsPvReqVO.getCommandType());
