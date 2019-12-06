@@ -2,9 +2,7 @@ package io.choerodon.devops.infra.template;
 
 import org.springframework.stereotype.Component;
 
-import io.choerodon.core.notify.Level;
-import io.choerodon.core.notify.NotifyBusinessType;
-import io.choerodon.core.notify.PmTemplate;
+import io.choerodon.core.notify.*;
 import io.choerodon.devops.infra.enums.PipelineNoticeType;
 
 /**
@@ -12,8 +10,8 @@ import io.choerodon.devops.infra.enums.PipelineNoticeType;
  * Date:  14:41 2019/6/6
  * Description:
  */
-@NotifyBusinessType(code = "pipelinepass", name = "流水线或签任务通过通知", level = Level.SITE,
-        description = "流水线或签任务通过通知", isAllowConfig = false, isManualRetry = true,categoryCode = "stream-change-notice")
+@NotifyBusinessType(code = "pipelinepass", name = "流水线或签任务通过通知", level = Level.PROJECT,
+        description = "流水线或签任务通过通知", isAllowConfig = false, isManualRetry = true, categoryCode = "stream-change-notice")
 @Component
 public class PipelinePassPmTemplate implements PmTemplate {
     @Override

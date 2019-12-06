@@ -1,12 +1,19 @@
 package io.choerodon.devops.infra.template;
 
-import io.choerodon.core.notify.PmTemplate;
+import org.springframework.stereotype.Component;
+
+import io.choerodon.core.notify.*;
 
 /**
  * @author zmf
  * @since 12/4/19
  */
-// TODO by zmf
+@NotifyBusinessType(code = "enableAppService", name = "启用应用服务", level = Level.PROJECT,
+        description = "启用应用服务通知", isAllowConfig = false, isManualRetry = true, categoryCode = "app-service-notice",
+        pmEnabledFlag = true,
+        notifyType = ServiceNotifyType.DEVOPS_NOTIFY,
+        targetUserType = {TargetUserType.TARGET_USER_APPLICATION_SERVICE_PERMISSION_OWNER})
+@Component
 public class EnableAppServicePmTemplate implements PmTemplate {
     @Override
     public String code() {
