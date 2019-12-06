@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.core.notify.NoticeSendDTO;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 
 /**
  * 发送通知的服务
@@ -44,22 +45,15 @@ public interface SendNotificationService {
      */
     void sendWhenAppServiceDisabled(Long appServiceId);
 
+
     /**
      * 当持续集成失败后
      *
-     * @param gitlabUrl        gitlab的http(s)地址
-     * @param organizationCode 组织code
-     * @param projectCode      项目code
-     * @param projectName      项目名称
-     * @param appServiceCode   应用服务code
-     * @param appServiceName   应用服务名称
+     * @param gitlabPipelineId         gitlab的pipeline的id(GitLab存的id)
+     * @param appServiceDTO            持续集成流水线所属的应用服务
+     * @param pipelineOperatorUserName pipeline操作者的用户名(正常情况下，pipeline中包含的用户名是猪齿鱼中用户的登录名)
      */
-    void sendWhenCDFailure(String gitlabUrl,
-                           String organizationCode,
-                           String projectCode,
-                           String projectName,
-                           String appServiceCode,
-                           String appServiceName);
+    void sendWhenCDFailure(Long gitlabPipelineId, AppServiceDTO appServiceDTO, String pipelineOperatorUserName);
 
 
     /**

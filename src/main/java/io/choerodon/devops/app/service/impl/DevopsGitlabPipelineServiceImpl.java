@@ -16,12 +16,12 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.Stage;
@@ -32,6 +32,7 @@ import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper;
@@ -64,7 +65,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     @Autowired
     private TransactionalProducer transactionalProducer;
     @Autowired
-    private DevopsProjectService devopsProjectService;
+    private SendNotificationService sendNotificationService;
 
 
     @Override
@@ -158,6 +159,11 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 devopsGitlabPipelineDTO.setCommitId(devopsGitlabCommitDTO.getId());
             }
             baseUpdate(devopsGitlabPipelineDTO);
+        }
+
+        // 发送流水线失败的通知
+        if (PipelineStatus.FAILED.toValue().equals(pipelineWebHookVO.getObjectAttributes().getStatus())) {
+            sendNotificationService.sendWhenCDFailure(pipelineWebHookVO.getObjectAttributes().getId(), applicationDTO, pipelineWebHookVO.getUser().getUsername());
         }
     }
 

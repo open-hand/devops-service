@@ -253,4 +253,9 @@ public class BaseServiceClientFallback implements BaseServiceClient {
         throw new CommonException("error.check.project.permission");
     }
 
+    @Override
+    public ResponseEntity<IamUserDTO> query(String loginName) {
+        throw new CommonException("error.query.user.by.login.name", loginName);
+    }
+
 }

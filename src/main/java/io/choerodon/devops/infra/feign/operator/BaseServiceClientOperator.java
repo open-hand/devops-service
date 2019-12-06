@@ -13,7 +13,6 @@ import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +23,10 @@ import io.choerodon.core.exception.ExceptionResponse;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
-import io.choerodon.devops.api.vo.iam.*;
+import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
+import io.choerodon.devops.api.vo.iam.RemoteTokenAuthorizationVO;
+import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.enums.OrgPublishMarketStatus;
@@ -517,6 +519,25 @@ public class BaseServiceClientOperator {
             return responseEntity.getBody();
         } catch (Exception ex) {
             throw new CommonException("error.query.client");
+        }
+    }
+
+    /**
+     * 通过登录名查询用户
+     *
+     * @param loginName 登录名
+     * @return 用户信息
+     */
+    public IamUserDTO queryUserByLoginName(String loginName) {
+        try {
+            ResponseEntity<IamUserDTO> responseEntity = baseServiceClient.queryByLoginName(loginName);
+            IamUserDTO iamUserDTO = responseEntity.getBody();
+            if (iamUserDTO == null || iamUserDTO.getId() == null) {
+                throw new CommonException("error.query.user.by.login.name", loginName);
+            }
+            return iamUserDTO;
+        } catch (Exception ex) {
+            throw new CommonException("error.query.user.by.login.name", loginName);
         }
     }
 }
