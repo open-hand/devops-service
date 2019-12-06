@@ -33,7 +33,7 @@ public class DevopsNotificationDTO extends BaseDTO {
     @Column(name = "is_send_pm")
     private Boolean sendPm;
 
-    @ApiModelProperty(value = "是否发送站内信")
+    @ApiModelProperty(value = "是否是默认设置")
     @Column(name = "is_default_setting")
     private Boolean defaultSetting;
 
