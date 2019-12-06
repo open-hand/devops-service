@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -15,14 +16,21 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.app.service.DevopsMergeRequestService;
 import io.choerodon.devops.app.service.SendNotificationService;
+import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.LogUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * @author zmf
@@ -31,6 +39,9 @@ import io.choerodon.devops.infra.util.LogUtil;
 @Service
 public class SendNotificationServiceImpl implements SendNotificationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SendNotificationServiceImpl.class);
+
+    @Value("${services.gitlab.url}")
+    private String gitlabUrl;
 
     @Value("${sendMessages:false}")
     private boolean sendMessages;
@@ -41,6 +52,12 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private AppServiceService appServiceService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private DevopsMergeRequestService devopsMergeRequestService;
+    @Autowired
+    private AppServiceMapper appServiceMapper;
+    @Autowired
+    private UserAttrService userAttrService;
 
     /**
      * 发送和应用服务失败、启用和停用的消息(调用此方法时注意在外层捕获异常，此方法不保证无异常抛出)
@@ -60,12 +77,12 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
         if (projectDTO == null) {
-            LogUtil.loggerInfoObjectNullWithId("Project", appServiceId, LOGGER);
+            LogUtil.loggerInfoObjectNullWithId("Project", appServiceDTO.getProjectId(), LOGGER);
             return;
         }
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         if (organizationDTO == null) {
-            LogUtil.loggerInfoObjectNullWithId("Organization", appServiceId, LOGGER);
+            LogUtil.loggerInfoObjectNullWithId("Organization", projectDTO.getOrganizationId(), LOGGER);
             return;
         }
 
@@ -116,11 +133,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         doWithTryCatchAndLog(
                 () -> {
                     // TODO by zmf
-                    sendNoticeAboutAppService(appServiceId, null, app -> {
-                        NoticeSendDTO.User targetUser = new NoticeSendDTO.User();
-                        targetUser.setId(app.getCreatedBy());
-                        return ArrayUtil.singleAsList(targetUser);
-                    });
+                    sendNoticeAboutAppService(appServiceId, null, app ->
+                            ArrayUtil.singleAsList(constructTargetUser(app.getCreatedBy()))
+                    );
                 },
                 ex -> LOGGER.info("Error occurred when sending message about failure of app-service. The exception is {}.", ex));
     }
@@ -136,11 +151,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     sendNoticeAboutAppService(appServiceId, null,
                             app -> appServiceService.listAllUserPermission(app.getId())
                                     .stream()
-                                    .map(p -> {
-                                        NoticeSendDTO.User user = new NoticeSendDTO.User();
-                                        user.setId(p.getIamUserId());
-                                        return user;
-                                    })
+                                    .map(p -> constructTargetUser(p.getIamUserId()))
                                     .collect(Collectors.toList()));
                 },
                 ex -> LOGGER.info("Error occurred when sending message about app-service-enable. The exception is {}.", ex));
@@ -157,11 +168,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     sendNoticeAboutAppService(appServiceId, null,
                             app -> appServiceService.listAllUserPermission(app.getId())
                                     .stream()
-                                    .map(p -> {
-                                        NoticeSendDTO.User user = new NoticeSendDTO.User();
-                                        user.setId(p.getIamUserId());
-                                        return user;
-                                    })
+                                    .map(p -> constructTargetUser(p.getIamUserId()))
                                     .collect(Collectors.toList()));
                 },
                 ex -> LOGGER.info("Error occurred when sending message about app-service-disable. The exception is {}.", ex));
@@ -176,28 +183,174 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         // TODO by zmf
     }
 
-    @Override
-    public void sendWhenMergeRequestAuditEvent(String gitlabUrl, String organizationCode, String projectCode, String projectName, String appServiceCode, String appServiceName, String realName, Long mergeRequestId) {
-        if (!sendMessages) {
-            return;
-        }
-        // TODO by zmf
+    /**
+     * 构造merge request审核，关闭和合并三个事件的所需参数
+     *
+     * @param gitlabUrl        gitlab的http(s)地址
+     * @param organizationCode 组织code
+     * @param projectCode      项目code
+     * @param projectName      项目名称
+     * @param appServiceCode   应用服务code
+     * @param appServiceName   应用服务名称
+     * @param realName         对于审核merge request的消息，是合并请求提交者的名称；
+     *                         对于merge request关闭和合并的事件，是merge request提出者的名称
+     * @param mergeRequestId   合并请求的id
+     */
+    private Map<String, Object> makeMergeRequestEventParams(String gitlabUrl,
+                                                            String organizationCode,
+                                                            String projectCode,
+                                                            String projectName,
+                                                            String appServiceCode,
+                                                            String appServiceName,
+                                                            String realName,
+                                                            Long mergeRequestId) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("gitlabUrl", gitlabUrl);
+        params.put("organizationCode", organizationCode);
+        params.put("projectCode", projectCode);
+        params.put("projectName", projectName);
+        params.put("appServiceCode", appServiceCode);
+        params.put("appServiceName", appServiceName);
+        params.put("realName", realName);
+        params.put("mergeRequestId", mergeRequestId);
+        return params;
     }
 
     @Override
-    public void sendWhenMergeRequestClosed(String gitlabUrl, String organizationCode, String projectCode, String projectName, String appServiceCode, String appServiceName, String realName, Long mergeRequestId) {
+    public void sendWhenMergeRequestAuditEvent(Integer gitlabProjectId, Long mergeRequestId) {
         if (!sendMessages) {
             return;
         }
-        // TODO by zmf
+        doWithTryCatchAndLog(
+                () -> {
+                    DevopsMergeRequestDTO devopsMergeRequestDTO = devopsMergeRequestService.baseQueryByAppIdAndMergeRequestId(TypeUtil.objToLong(gitlabProjectId), mergeRequestId);
+                    if (devopsMergeRequestDTO == null) {
+                        LOGGER.info("Merge Request with id {} and gitlab project id {} is null", mergeRequestId, gitlabProjectId);
+                        return;
+                    }
+
+                    UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(devopsMergeRequestDTO.getAssigneeId());
+                    if (userAttrDTO == null) {
+                        LOGGER.info("DevopsUser with gitlab user id {} is null.", devopsMergeRequestDTO.getAssigneeId());
+                        return;
+                    }
+
+                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrDTO.getIamUserId());
+                    if (iamUserDTO == null) {
+                        LogUtil.loggerInfoObjectNullWithId("IamUser", userAttrDTO.getIamUserId(), LOGGER);
+                        return;
+                    }
+
+                    AppServiceDTO appServiceDTO = queryAppServiceByGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId));
+                    if (appServiceDTO == null) {
+                        LOGGER.info("AppService is null with gitlab project id {}", gitlabProjectId);
+                        return;
+                    }
+
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+                    if (projectDTO == null) {
+                        LogUtil.loggerInfoObjectNullWithId("Project", appServiceDTO.getProjectId(), LOGGER);
+                        return;
+                    }
+
+                    OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+                    if (organizationDTO == null) {
+                        LogUtil.loggerInfoObjectNullWithId("Organization", projectDTO.getOrganizationId(), LOGGER);
+                        return;
+                    }
+
+                    Map<String, Object> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getCode(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), iamUserDTO.getRealName(), mergeRequestId);
+
+                    NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
+                    // TODO by zmf
+                    noticeSendDTO.setCode(null);
+                    noticeSendDTO.setSourceId(projectDTO.getId());
+                    noticeSendDTO.setTargetUsers(ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())));
+                    noticeSendDTO.setParams(params);
+                    notifyClient.sendMessage(noticeSendDTO);
+                },
+                ex -> LOGGER.info("Error occurred when sending message about merge-request-audit. The exception is {}.", ex));
+    }
+
+    private AppServiceDTO queryAppServiceByGitlabProjectId(Integer gitlabProjectId) {
+        AppServiceDTO appServiceDTO = new AppServiceDTO();
+        appServiceDTO.setGitlabProjectId(Objects.requireNonNull(gitlabProjectId));
+        return appServiceMapper.selectOne(appServiceDTO);
+    }
+
+    /**
+     * 当merge request关闭或者合并时发送消息
+     *
+     * @param sendSettingCode   发送消息的code
+     * @param gitlabProjectId   merge request 所属gitlab项目id
+     * @param mergeRequestId    merge request id
+     */
+    private void doSendWhenMergeRequestClosedOrMerged(String sendSettingCode, Integer gitlabProjectId, Long mergeRequestId) {
+        if (!sendMessages) {
+            return;
+        }
+        doWithTryCatchAndLog(
+                () -> {
+                    DevopsMergeRequestDTO devopsMergeRequestDTO = devopsMergeRequestService.baseQueryByAppIdAndMergeRequestId(TypeUtil.objToLong(gitlabProjectId), mergeRequestId);
+                    if (devopsMergeRequestDTO == null) {
+                        LOGGER.info("Merge Request with id {} and gitlab project id {} is null", mergeRequestId, gitlabProjectId);
+                        return;
+                    }
+
+                    // merge request的发起者
+                    UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(devopsMergeRequestDTO.getAuthorId());
+                    if (userAttrDTO == null) {
+                        LOGGER.info("DevopsUser with gitlab user id {} is null.", devopsMergeRequestDTO.getAuthorId());
+                        return;
+                    }
+
+                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrDTO.getIamUserId());
+                    if (iamUserDTO == null) {
+                        LogUtil.loggerInfoObjectNullWithId("IamUser", userAttrDTO.getIamUserId(), LOGGER);
+                        return;
+                    }
+
+                    AppServiceDTO appServiceDTO = queryAppServiceByGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId));
+                    if (appServiceDTO == null) {
+                        LOGGER.info("AppService is null with gitlab project id {}", gitlabProjectId);
+                        return;
+                    }
+
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+                    if (projectDTO == null) {
+                        LogUtil.loggerInfoObjectNullWithId("Project", appServiceDTO.getProjectId(), LOGGER);
+                        return;
+                    }
+
+                    OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+                    if (organizationDTO == null) {
+                        LogUtil.loggerInfoObjectNullWithId("Organization", projectDTO.getOrganizationId(), LOGGER);
+                        return;
+                    }
+
+                    Map<String, Object> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getCode(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), iamUserDTO.getRealName(), mergeRequestId);
+
+                    NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
+                    noticeSendDTO.setCode(sendSettingCode);
+                    noticeSendDTO.setSourceId(projectDTO.getId());
+                    noticeSendDTO.setTargetUsers(ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())));
+                    noticeSendDTO.setParams(params);
+                    notifyClient.sendMessage(noticeSendDTO);
+                },
+                ex -> LOGGER.info("Error occurred when sending message about {}. The exception is {}.", sendSettingCode, ex));
     }
 
     @Override
-    public void sendWhenMergeRequestPassed(String gitlabUrl, String organizationCode, String projectCode, String projectName, String appServiceCode, String appServiceName, String realName, Long mergeRequestId) {
-        if (!sendMessages) {
-            return;
-        }
+    public void sendWhenMergeRequestClosed(Integer gitlabProjectId, Long mergeRequestId) {
         // TODO by zmf
+        doSendWhenMergeRequestClosedOrMerged(null, gitlabProjectId, mergeRequestId);
+    }
+
+
+    @Override
+    public void sendWhenMergeRequestPassed(Integer gitlabProjectId, Long mergeRequestId) {
+        // TODO by zmf
+        doSendWhenMergeRequestClosedOrMerged(null, gitlabProjectId, mergeRequestId);
     }
 
     @Override
@@ -258,5 +411,11 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 LOGGER.info("Exception occurred in actionInCatch.accept...");
             }
         }
+    }
+
+    private static NoticeSendDTO.User constructTargetUser(Long id) {
+        NoticeSendDTO.User targetUser = new NoticeSendDTO.User();
+        targetUser.setId(id);
+        return targetUser;
     }
 }
