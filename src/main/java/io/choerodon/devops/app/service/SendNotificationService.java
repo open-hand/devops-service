@@ -85,36 +85,36 @@ public interface SendNotificationService {
     /**
      * 当创建实例失败后
      *
-     * @param projectName  项目名称
-     * @param envName      环境名称
+     * @param envId        环境id
      * @param resourceName 资源的名称
+     * @param creatorId    资源创建者的id
      */
-    void sendWhenInstanceCreationFailure(String projectName, String envName, String resourceName);
+    void sendWhenInstanceCreationFailure(Long envId, String resourceName, Long creatorId);
 
     /**
      * 当创建网络失败后
      *
-     * @param projectName  项目名称
-     * @param envName      环境名称
+     * @param envId        环境id
      * @param resourceName 资源的名称
+     * @param creatorId    资源创建者的id
      */
-    void sendWhenServiceCreationFailure(String projectName, String envName, String resourceName);
+    void sendWhenServiceCreationFailure(Long envId, String resourceName, Long creatorId);
 
     /**
      * 当创建域名失败后
      *
-     * @param projectName  项目名称
-     * @param envName      环境名称
+     * @param envId        环境id
      * @param resourceName 资源的名称
+     * @param creatorId    资源创建者的id
      */
-    void sendWhenIngressCreationFailure(String projectName, String envName, String resourceName);
+    void sendWhenIngressCreationFailure(Long envId, String resourceName, Long creatorId);
 
     /**
      * 当创建证书失败后
      *
-     * @param projectName  项目名称
-     * @param envName      环境名称
+     * @param envId        环境id
      * @param resourceName 资源的名称
+     * @param creatorId    资源创建者的id
      */
-    void sendWhenCertificationCreationFailure(String projectName, String envName, String resourceName);
+    void sendWhenCertificationCreationFailure(Long envId, String resourceName, Long creatorId);
 }
