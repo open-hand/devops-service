@@ -12,8 +12,8 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.ObjectType;
+import io.choerodon.devops.infra.enums.RoleLabel;
 import io.choerodon.devops.infra.enums.TriggerObject;
-import io.choerodon.devops.infra.enums.TriggerType;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsNotificationMapper;
@@ -21,7 +21,6 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +45,6 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     public static final String DEVOPS_DELETE_INSTANCE_4_SMS = "devopsDeleteInstance4Sms";
     public static final String NOTIFY_RESOURCE_DELETE_CONFIRMATION = "resourceDeleteConfirmation";
     public static final Gson gson = new Gson();
-    private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private static final Long TIMEOUT = 600L;
     private static final String MOBILE = "mobile";
 
@@ -165,54 +163,61 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     public ResourceCheckVO checkResourceDelete(Long envId, String objectType) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         ResourceCheckVO resourceCheckVO = new ResourceCheckVO();
-        List<DevopsNotificationDTO> devopsNotificationDTOS = baseListByEnvId(devopsEnvironmentDTO.getProjectId(), envId);
-        if (devopsNotificationDTOS.isEmpty()) {
+
+        DevopsNotificationDTO devopsNotificationDTO = queryNotifyEventByProjectIdAndEnvIdAndType(devopsEnvironmentDTO.getProjectId(), envId, objectType);
+        if (devopsNotificationDTO == null) {
             return resourceCheckVO;
         }
+        resourceCheckVO.setNotificationId(devopsNotificationDTO.getId());
         //返回删除对象时,获取验证码方式和所通知的目标人群
-        for (DevopsNotificationDTO devopsNotificationDTO : devopsNotificationDTOS) {
-            List<String> triggerEvents = Arrays.asList(devopsNotificationDTO.getNotifyTriggerEvent().split(","));
-            for (String triggerEvent : triggerEvents) {
-                if (triggerEvent.equals(objectType)) {
-                    resourceCheckVO.setNotificationId(devopsNotificationDTO.getId());
-                    List<String> triggerTypes = Arrays.asList(devopsNotificationDTO.getNotifyType().split(","));
-                    resourceCheckVO.setMethod(StringUtils.join(triggerTypes.stream().map(trigger -> {
-                        if (trigger.equals(TriggerType.EMAIL.getType())) {
-                            return "邮件";
-                        } else if (trigger.equals(TriggerType.PM.getType())) {
-                            return "站内信";
-                        } else {
-                            return "短消息";
-                        }
-                    }).toArray(), ","));
-                    if (devopsNotificationDTO.getNotifyObject().equals(TriggerObject.HANDLER.getObject())) {
-                        List<IamUserDTO> users = baseServiceClientOperator.listUsersByIds(Arrays.asList(GitUserNameUtil.getUserId().longValue()));
-                        if (!users.isEmpty()) {
-                            if (users.get(0).getRealName() != null) {
-                                resourceCheckVO.setUser(users.get(0).getRealName());
-                            } else {
-                                resourceCheckVO.setUser(users.get(0).getLoginName());
-                            }
-                        }
-                    } else if (devopsNotificationDTO.getNotifyObject().equals(TriggerObject.OWNER.getObject())) {
-                        resourceCheckVO.setUser("项目所有者");
-                    } else {
-                        List<Long> userIds = devopsNotificationUserRelService.baseListByNotificationId(devopsNotificationDTO.getId()).stream().map(DevopsNotificationUserRelDTO::getUserId).collect(Collectors.toList());
-                        baseServiceClientOperator.listUsersByIds(userIds).stream().map(IamUserDTO::getRealName).collect(Collectors.toList());
-                        resourceCheckVO.setUser(StringUtils.join(baseServiceClientOperator.listUsersByIds(userIds).stream().map(userDTO -> {
-                            if (userDTO.getRealName() != null) {
-                                return userDTO.getRealName();
-                            } else {
-                                return userDTO.getLoginName();
-                            }
-                        }).toArray(), ","));
-                    }
-                    return resourceCheckVO;
-                }
-            }
+        List<String> notifyType = new ArrayList<>();
+        if (Boolean.TRUE.equals(devopsNotificationDTO.getSendEmail())) {
+            notifyType.add("邮件");
         }
+        if (Boolean.TRUE.equals(devopsNotificationDTO.getSendPm())) {
+            notifyType.add("站内信");
+        }
+        if (Boolean.TRUE.equals(devopsNotificationDTO.getSendSms())) {
+            notifyType.add("短消息");
+        }
+        resourceCheckVO.setMethod(StringUtils.join(notifyType, ","));
+        List<String> notifyUserList = new ArrayList<>();
+        List<DevopsNotificationUserRelDTO> devopsNotificationUserRelDTOList = devopsNotificationUserRelService.baseListByNotificationId(devopsNotificationDTO.getId());
+
+        // 添加项目所有者
+        if (devopsNotificationUserRelDTOList.stream().anyMatch(v -> TriggerObject.OWNER.getObject().equals(v.getUserType()))) {
+            notifyUserList.add("项目所有者");
+        }
+        // 添加指定用户
+        List<Long> userIds = new ArrayList<>();
+        if (devopsNotificationUserRelDTOList.stream().anyMatch(v -> TriggerObject.SPECIFIER.getObject().equals(v.getUserType()))) {
+            userIds = devopsNotificationUserRelDTOList.stream().filter(user -> TriggerObject.SPECIFIER.getObject().equals(user.getUserType()))
+                    .map(DevopsNotificationUserRelDTO::getUserId)
+                    .collect(Collectors.toList());
+            List<IamUserDTO> iamUserDTOList = baseServiceClientOperator.listUsersByIds(userIds);
+            iamUserDTOList.forEach(user -> {
+                if (user.getRealName() != null) {
+                    notifyUserList.add(user.getRealName());
+                } else {
+                    notifyUserList.add(user.getLoginName());
+                }
+            });
+        }
+        if (devopsNotificationUserRelDTOList.stream().anyMatch(v -> TriggerObject.HANDLER.getObject().equals(v.getUserType()))
+                && !userIds.contains(GitUserNameUtil.getUserId().longValue())) {
+            // 去除指定用户中已经包含当前操作用户
+            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
+            if (iamUserDTO.getRealName() != null) {
+                notifyUserList.add(iamUserDTO.getRealName());
+            } else {
+                notifyUserList.add(iamUserDTO.getLoginName());
+            }
+
+        }
+        resourceCheckVO.setUser(StringUtils.join(notifyUserList, ","));
         return resourceCheckVO;
     }
+
 
     @Override
     public void sendMessage(Long envId, Long notificationId, Long objectId, String objectType) {
@@ -227,15 +232,14 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
         //生成发送消息需要的模板对象
         DevopsNotificationDTO devopsNotificationDTO = baseQuery(notificationId);
-        List<String> triggerTypes = Arrays.asList(devopsNotificationDTO.getNotifyType().split(","));
         NotifyVO notifyVO = new NotifyVO();
         Map<String, Object> params = new HashMap<>();
-        List<IamUserDTO> userES = baseServiceClientOperator.listUsersByIds(Arrays.asList(GitUserNameUtil.getUserId().longValue()));
-        if (!userES.isEmpty()) {
-            if (userES.get(0).getRealName() != null) {
-                params.put("user", userES.get(0).getRealName());
+        IamUserDTO userDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
+        if (userDTO != null) {
+            if (userDTO.getRealName() != null) {
+                params.put("user", userDTO.getRealName());
             } else {
-                params.put("user", userES.get(0).getLoginName());
+                params.put("user", userDTO.getLoginName());
             }
         }
 
@@ -246,63 +250,59 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         params.put("timeout", "10");
         //由于短信模板内容的问题，暂时需要传入此instance,后续统一改成object和objectType
         params.put("instance", objectCode);
-        if (devopsNotificationDTO.getNotifyObject().equals(TriggerObject.HANDLER.getObject())) {
-            NoticeSendDTO.User user = new NoticeSendDTO.User();
-            params.put(MOBILE, userES.get(0).getPhone());
-            user.setEmail(GitUserNameUtil.getEmail());
-            user.setId(GitUserNameUtil.getUserId().longValue());
-            notifyVO.setTargetUsers(Arrays.asList(user));
-        } else if (devopsNotificationDTO.getNotifyObject().equals(TriggerObject.OWNER.getObject())) {
-            Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
-            PageInfo<IamUserDTO> allOwnerUsersPage = baseServiceClientOperator
 
-                    .pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), new RoleAssignmentSearchVO(),
-
-                            ownerId, devopsEnvironmentDTO.getProjectId(), false);
-            List<NoticeSendDTO.User> users = new ArrayList<>();
-            if (!allOwnerUsersPage.getList().isEmpty()) {
-                params.put(MOBILE, StringUtils.join(allOwnerUsersPage.getList().stream().map(userDTO -> {
-                    NoticeSendDTO.User user = new NoticeSendDTO.User();
-                    user.setEmail(userDTO.getEmail());
-                    user.setId(userDTO.getId());
-                    users.add(user);
-                    return userDTO.getPhone();
-                }).collect(Collectors.toList()), ","));
-            }
-            notifyVO.setTargetUsers(users);
-        } else {
-            List<Long> userIds = devopsNotificationUserRelService.baseListByNotificationId(devopsNotificationDTO.getId()).stream().map(DevopsNotificationUserRelDTO::getUserId).collect(Collectors.toList());
-            List<NoticeSendDTO.User> users = new ArrayList<>();
-            params.put(MOBILE, StringUtils.join(baseServiceClientOperator.listUsersByIds(userIds).stream().map(userDTO -> {
-                NoticeSendDTO.User user = new NoticeSendDTO.User();
-                user.setEmail(userDTO.getEmail());
-                user.setId(userDTO.getId());
-                users.add(user);
-                return userDTO.getPhone();
-            }).collect(Collectors.toList()), ","));
-            notifyVO.setTargetUsers(users);
+        Set<Long> notifyUserIds = new HashSet<>();
+        List<DevopsNotificationUserRelDTO> devopsNotificationUserRelDTOList = devopsNotificationUserRelService.baseListByNotificationId(devopsNotificationDTO.getId());
+        if (CollectionUtils.isEmpty(devopsNotificationUserRelDTOList)) {
+            return;
         }
-        notifyVO.setParams(params);
+        // 添加要通知的指定用户
+        Set<Long> specifierUserIdList = devopsNotificationUserRelDTOList.stream().filter(v -> TriggerObject.SPECIFIER.getObject().equals(v.getUserType()))
+                .map(DevopsNotificationUserRelDTO::getUserId).collect(Collectors.toSet());
+        notifyUserIds.addAll(specifierUserIdList);
+        // 添加操作者
+        if (devopsNotificationUserRelDTOList.stream().anyMatch(v -> TriggerObject.HANDLER.getObject().equals(v.getUserType()))) {
+            notifyUserIds.add(GitUserNameUtil.getUserId().longValue());
+        }
+        // 添加项目所有者
+        if (devopsNotificationUserRelDTOList.stream().anyMatch(v -> TriggerObject.OWNER.getObject().equals(v.getUserType()))) {
+            List<IamUserDTO> ownerList = baseServiceClientOperator.listProjectUsersByPorjectIdAndRoleLable(devopsNotificationDTO.getProjectId(), RoleLabel.PROJECT_OWNER.value());
+            if (!CollectionUtils.isEmpty(ownerList)) {
+                Set<Long> ownerIds = ownerList.stream().map(IamUserDTO::getId).collect(Collectors.toSet());
+                notifyUserIds.addAll(ownerIds);
+            }
+        }
+        List<IamUserDTO> iamUserDTOList = baseServiceClientOperator.listUsersByIds(new ArrayList<>(notifyUserIds));
+        List<String> phoneList = iamUserDTOList.stream().map(IamUserDTO::getPhone).collect(Collectors.toList());
+        params.put(MOBILE, StringUtils.join(phoneList, ","));
+        List<NoticeSendDTO.User> userList = iamUserDTOList.stream().map(v -> {
+            NoticeSendDTO.User user = new NoticeSendDTO.User();
+            user.setId(v.getId());
+            user.setEmail(v.getEmail());
+            return user;
+        }).collect(Collectors.toList());
+        notifyVO.setTargetUsers(userList);
+
         try {
             //根据不同的通知方式发送验证码
-            triggerTypes.forEach(triggerType -> {
-                if (triggerType.equals(TriggerType.EMAIL.getType())) {
-                    notifyVO.setSourceId(devopsEnvironmentDTO.getProjectId());
-                    notifyVO.setCode(RESOURCE_DELETE_CONFIRMATION);
-                    notifyVO.setCustomizedSendingTypes(Arrays.asList("email"));
-                    notifyClient.sendMessage(notifyVO);
-                } else if (triggerType.equals(TriggerType.PM.getType())) {
-                    notifyVO.setSourceId(devopsEnvironmentDTO.getProjectId());
-                    notifyVO.setCode(RESOURCE_DELETE_CONFIRMATION);
-                    notifyVO.setCustomizedSendingTypes(Arrays.asList("siteMessage"));
-                    notifyClient.sendMessage(notifyVO);
-                } else {
-                    notifyVO.setSourceId(0L);
-                    notifyVO.setCode(DEVOPS_DELETE_INSTANCE_4_SMS);
-                    notifyVO.setCustomizedSendingTypes(Arrays.asList("sms"));
-                    notifyClient.sendMessage(notifyVO);
-                }
-            });
+            if (Boolean.TRUE.equals(devopsNotificationDTO.getSendEmail())) {
+                notifyVO.setSourceId(devopsEnvironmentDTO.getProjectId());
+                notifyVO.setCode(RESOURCE_DELETE_CONFIRMATION);
+                notifyVO.setCustomizedSendingTypes(Arrays.asList("email"));
+                notifyClient.sendMessage(notifyVO);
+            }
+            if (Boolean.TRUE.equals(devopsNotificationDTO.getSendSms())) {
+                notifyVO.setSourceId(0L);
+                notifyVO.setCode(DEVOPS_DELETE_INSTANCE_4_SMS);
+                notifyVO.setCustomizedSendingTypes(Arrays.asList("sms"));
+                notifyClient.sendMessage(notifyVO);
+            }
+            if (Boolean.TRUE.equals(devopsNotificationDTO.getSendPm())) {
+                notifyVO.setSourceId(devopsEnvironmentDTO.getProjectId());
+                notifyVO.setCode(RESOURCE_DELETE_CONFIRMATION);
+                notifyVO.setCustomizedSendingTypes(Arrays.asList("siteMessage"));
+                notifyClient.sendMessage(notifyVO);
+            }
         } catch (Exception e) {
             redisTemplate.delete(resendKey);
             throw new CommonException("error.msg.send.failed");
@@ -380,15 +380,15 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         // 自定义配置的修改
         List<NotificationEventVO> customerEventList = notificationEventList.stream().filter(v -> !defaultEventIds.contains(v.getId())).collect(Collectors.toList());
         customerEventList.forEach(customerEvent -> {
-                DevopsNotificationDTO devopsNotificationDTO = ConvertUtils.convertObject(customerEvent, DevopsNotificationDTO.class);
-                devopsNotificationMapper.updateByPrimaryKeySelective(devopsNotificationDTO);
-                devopsNotificationUserRelService.baseDeleteByNotificationId(devopsNotificationDTO.getId());
-                List<DevopsNotificationUserRelVO> userList = customerEvent.getUserList();
-                if (!CollectionUtils.isEmpty(userList)) {
-                    List<DevopsNotificationUserRelDTO> devopsNotificationUserRelDTOS = ConvertUtils.convertList(userList, DevopsNotificationUserRelDTO.class);
-                    devopsNotificationUserRelService.batchInsert(devopsNotificationUserRelDTOS);
+                    DevopsNotificationDTO devopsNotificationDTO = ConvertUtils.convertObject(customerEvent, DevopsNotificationDTO.class);
+                    devopsNotificationMapper.updateByPrimaryKeySelective(devopsNotificationDTO);
+                    devopsNotificationUserRelService.baseDeleteByNotificationId(devopsNotificationDTO.getId());
+                    List<DevopsNotificationUserRelVO> userList = customerEvent.getUserList();
+                    if (!CollectionUtils.isEmpty(userList)) {
+                        List<DevopsNotificationUserRelDTO> devopsNotificationUserRelDTOS = ConvertUtils.convertList(userList, DevopsNotificationUserRelDTO.class);
+                        devopsNotificationUserRelService.batchInsert(devopsNotificationUserRelDTOS);
+                    }
                 }
-            }
         );
     }
 
@@ -442,24 +442,30 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         return devopsNotificationMapper.select(devopsNotificationDTO);
     }
 
+    private DevopsNotificationDTO queryNotifyEventByProjectIdAndEnvIdAndType(Long projectId, Long envId, String objectType) {
+        DevopsNotificationDTO devopsNotificationDTO = new DevopsNotificationDTO();
+        devopsNotificationDTO.setEnvId(envId);
+        devopsNotificationDTO.setProjectId(projectId);
+        devopsNotificationDTO.setNotifyTriggerEvent(objectType);
+        return devopsNotificationMapper.selectOne(devopsNotificationDTO);
+    }
+
     private void calculateSendUser(List<NotificationEventVO> devopsNotificationList) {
         devopsNotificationList.forEach(v -> {
             List<DevopsNotificationUserRelVO> userList = v.getUserList();
 
-            if (!CollectionUtils.isEmpty(userList)) {
-                if (userList.stream().anyMatch(user -> TriggerObject.HANDLER.getObject().equals(user.getUserType()))) {
-                    v.setSendHandler(true);
-                }
+            if (!CollectionUtils.isEmpty(userList)
+                    && userList.stream().anyMatch(user -> TriggerObject.HANDLER.getObject().equals(user.getUserType()))) {
+                v.setSendHandler(true);
             }
-            if (!CollectionUtils.isEmpty(userList)) {
-                if (userList.stream().anyMatch(user -> TriggerObject.OWNER.getObject().equals(user.getUserType()))) {
-                    v.setSendOwner(true);
-                }
+            if (!CollectionUtils.isEmpty(userList)
+                    && userList.stream().anyMatch(user -> TriggerObject.OWNER.getObject().equals(user.getUserType()))) {
+                v.setSendOwner(true);
+
             }
-            if (!CollectionUtils.isEmpty(userList)) {
-                if (userList.stream().anyMatch(user -> TriggerObject.SPECIFIER.getObject().equals(user.getUserType()))) {
-                    v.setSendSpecifier(true);
-                }
+            if (!CollectionUtils.isEmpty(userList)
+                    && userList.stream().anyMatch(user -> TriggerObject.SPECIFIER.getObject().equals(user.getUserType()))) {
+                v.setSendSpecifier(true);
             }
 
         });

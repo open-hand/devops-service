@@ -1,23 +1,7 @@
 package io.choerodon.devops.infra.feign.operator;
 
-import static io.choerodon.core.iam.InitRoleCode.PROJECT_MEMBER;
-import static io.choerodon.core.iam.InitRoleCode.PROJECT_OWNER;
-
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ExceptionResponse;
 import io.choerodon.core.exception.FeignException;
@@ -33,6 +17,21 @@ import io.choerodon.devops.infra.enums.OrgPublishMarketStatus;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.util.FeignParamUtils;
 import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.core.iam.InitRoleCode.PROJECT_MEMBER;
+import static io.choerodon.core.iam.InitRoleCode.PROJECT_OWNER;
 
 /**
  * Created by Sheep on 2019/7/11.
@@ -519,6 +518,15 @@ public class BaseServiceClientOperator {
             return responseEntity.getBody();
         } catch (Exception ex) {
             throw new CommonException("error.query.client");
+        }
+    }
+
+    public List<IamUserDTO> listProjectUsersByPorjectIdAndRoleLable(Long projectId, String roleLable) {
+        try {
+            ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.listProjectUsersByPorjectIdAndRoleLable(projectId,roleLable);
+            return responseEntity.getBody();
+        } catch (Exception ex) {
+            throw new CommonException("error.query.project.users");
         }
     }
 
