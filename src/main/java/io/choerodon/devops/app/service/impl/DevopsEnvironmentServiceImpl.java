@@ -1064,9 +1064,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         if (selectedIamUserId != null) {
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(selectedIamUserId);
-            if (!members.contains(iamUserDTO)) {
-                members.set(0, iamUserDTO);
-            }
+            members.remove(iamUserDTO);
+            members.set(0, iamUserDTO);
         }
 
         PageInfo<IamUserDTO> pageInfo;
@@ -1543,7 +1542,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsEnvironmentDTO> listByProjectIdAndName(Long projectId, String envName) {
-        return devopsEnvironmentMapper.listByProjectIdAndName(projectId,envName);
+        return devopsEnvironmentMapper.listByProjectIdAndName(projectId, envName);
     }
 
     @Override

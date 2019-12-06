@@ -339,9 +339,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         if (selectedProjectId != null) {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
             ProjectReqVO projectReqVO = new ProjectReqVO(projectDTO.getId(), projectDTO.getName(), projectDTO.getCode());
-            if (!projectReqVOS.contains(projectReqVO)) {
-                projectReqVOS.set(0, projectReqVO);
-            }
+            projectReqVOS.remove(projectReqVO);
+            projectReqVOS.set(0, projectReqVO);
         }
 
         return PageInfoUtil.createPageFromList(projectReqVOS, pageable);
