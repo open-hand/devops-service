@@ -818,7 +818,6 @@ public class PipelineServiceImpl implements PipelineService {
         notifyVO.setTargetUsers(users);
         notifyVO.setSourceId(pipelineRecordId);
         notifyVO.setCode(type);
-        notifyVO.setCustomizedSendingTypes(Collections.singletonList("siteMessage"));
         PipelineRecordDTO record = pipelineRecordService.baseQueryById(pipelineRecordId);
         params.put("pipelineId", record.getPipelineId().toString());
         params.put("pipelineName", record.getPipelineName());
