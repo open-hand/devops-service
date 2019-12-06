@@ -1,14 +1,32 @@
 package io.choerodon.devops.app.service.impl;
 
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.AppInstanceValidator;
@@ -31,25 +49,7 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
-import io.choerodon.devops.infra.mapper.PipelineAppServiceDeployMapper;
 import io.choerodon.devops.infra.util.*;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.env.YamlPropertySourceLoader;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -92,8 +92,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
-    @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private AppServiceVersionService appServiceVersionService;
@@ -122,29 +120,19 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     private PipelineAppDeployService pipelineAppDeployService;
     @Autowired
-    private AppServiceVersionValueService appServiceVersionValueService;
-    @Autowired
-    private AppServiceVersionReadmeService appServiceVersionReadmeService;
-    @Autowired
     private ResourceFileCheckHandler resourceFileCheckHandler;
     @Autowired
     private DevopsEnvAppServiceMapper devopsEnvAppServiceMapper;
-    @Autowired
-    private DevopsIngressService devopsIngressService;
     @Autowired
     private DevopsServiceService devopsServiceService;
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired
-    private PipelineAppServiceDeployMapper pipelineAppServiceDeployMapper;
-    @Autowired
-    private DevopsClusterResourceService devopsClusterResourceService;
-    @Autowired
     private DevopsProjectMapper devopsProjectMapper;
     @Autowired
     private DevopsHarborUserService devopsHarborUserService;
     @Autowired
-    private DevopsClusterService devopsClusterService;
+    private SendNotificationService sendNotificationService;
 
     @Override
     public AppServiceInstanceInfoVO queryInfoById(Long instanceId) {
@@ -643,6 +631,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
             devopsEnvCommandDTO.setError(LogUtil.cutOutString("Clone repository failed. The exception is: " + exceptionContent, 5000));
             devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+
+            // 这里不需要发送创建实例失败的通知，因为只用update才可能导致抛异常
             return;
         }
 
@@ -692,6 +682,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 devopsEnvCommandDTO.setError(LogUtil.cutOutString("create or update gitOps file failed! The exception is: " + exceptionContent, 5000));
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
                 LOGGER.info("Successfully update the status of instance with name {} to failed after exception occurred.", appServiceInstanceDTO.getCode());
+
+                // 已经判断了是创建时失败，直接发送实例创建失败通知
+                sendNotificationService.sendWhenInstanceCreationFailure(appServiceInstanceDTO.getEnvId(), appServiceInstanceDTO.getCode(), appServiceInstanceDTO.getCreatedBy(), null);
             } else {
                 // 更新的超时情况暂未处理
                 throw e;

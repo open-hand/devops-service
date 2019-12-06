@@ -3,6 +3,8 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 
@@ -85,36 +87,40 @@ public interface SendNotificationService {
     /**
      * 当创建实例失败后
      *
-     * @param envId        环境id
-     * @param resourceName 资源的名称
-     * @param creatorId    资源创建者的id
+     * @param envId             环境id
+     * @param resourceName      资源的名称
+     * @param creatorId         资源创建者的id
+     * @param resourceCommandId 资源的command id (不为null时校验command的commandType是不是create)
      */
-    void sendWhenInstanceCreationFailure(Long envId, String resourceName, Long creatorId);
+    void sendWhenInstanceCreationFailure(Long envId, String resourceName, Long creatorId, @Nullable Long resourceCommandId);
 
     /**
      * 当创建网络失败后
      *
-     * @param envId        环境id
-     * @param resourceName 资源的名称
-     * @param creatorId    资源创建者的id
+     * @param envId             环境id
+     * @param resourceName      资源的名称
+     * @param creatorId         资源创建者的id
+     * @param resourceCommandId 资源的command id (不为null时校验command的commandType是不是create)
      */
-    void sendWhenServiceCreationFailure(Long envId, String resourceName, Long creatorId);
+    void sendWhenServiceCreationFailure(Long envId, String resourceName, Long creatorId, @Nullable Long resourceCommandId);
 
     /**
      * 当创建域名失败后
      *
-     * @param envId        环境id
-     * @param resourceName 资源的名称
-     * @param creatorId    资源创建者的id
+     * @param envId             环境id
+     * @param resourceName      资源的名称
+     * @param creatorId         资源创建者的id
+     * @param resourceCommandId 资源的command id (不为null时校验command的commandType是不是create)
      */
-    void sendWhenIngressCreationFailure(Long envId, String resourceName, Long creatorId);
+    void sendWhenIngressCreationFailure(Long envId, String resourceName, Long creatorId, @Nullable Long resourceCommandId);
 
     /**
      * 当创建证书失败后
      *
-     * @param envId        环境id
-     * @param resourceName 资源的名称
-     * @param creatorId    资源创建者的id
+     * @param envId             环境id
+     * @param resourceName      资源的名称
+     * @param creatorId         资源创建者的id
+     * @param resourceCommandId 资源的command id (不为null时校验command的commandType是不是create)
      */
-    void sendWhenCertificationCreationFailure(Long envId, String resourceName, Long creatorId);
+    void sendWhenCertificationCreationFailure(Long envId, String resourceName, Long creatorId, @Nullable Long resourceCommandId);
 }

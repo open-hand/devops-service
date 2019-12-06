@@ -8,6 +8,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +18,11 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
-import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
@@ -58,6 +58,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private UserAttrService userAttrService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DevopsEnvCommandService devopsEnvCommandService;
 
     /**
      * 发送和应用服务失败、启用和停用的消息(调用此方法时注意在外层捕获异常，此方法不保证无异常抛出)
@@ -369,13 +371,28 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     /**
      * 发送资源创建相关的失败通知
      *
-     * @param sendSettingCode 通知的code
-     * @param envId           环境的id
-     * @param resourceName    资源的名称
-     * @param creatorId       创建者的id
+     * @param sendSettingCode   通知的code
+     * @param envId             环境的id
+     * @param resourceName      资源的名称
+     * @param creatorId         创建者的id
+     * @param resourceCommandId 资源commandId用于判断资源是否是在创建时失败的
      */
-    private void doSendWhenResourceCreationFailure(String sendSettingCode, Long envId, String resourceName, Long creatorId) {
+    private void doSendWhenResourceCreationFailure(String sendSettingCode, Long envId, String resourceName, Long creatorId, @Nullable Long resourceCommandId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+
+        // 校验资源是否是创建时失败
+        if (resourceCommandId != null) {
+            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(resourceCommandId);
+            if (devopsEnvCommandDTO == null) {
+                LogUtil.loggerInfoObjectNullWithId("DevOpsEnvCommand", resourceCommandId, LOGGER);
+                return;
+            } else {
+                if (!CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+                    LOGGER.debug("Resource {} with name {} failed after updating instead of creating.", devopsEnvCommandDTO.getObject(), resourceName);
+                    return;
+                }
+            }
+        }
 
         if (devopsEnvironmentDTO == null) {
             LogUtil.loggerInfoObjectNullWithId("Environment", envId, LOGGER);
@@ -397,39 +414,39 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
     @Override
-    public void sendWhenInstanceCreationFailure(Long envId, String resourceName, Long creatorId) {
+    public void sendWhenInstanceCreationFailure(Long envId, String resourceName, Long creatorId, Long resourceCommandId) {
         if (!sendMessages) {
             return;
         }
         // TODO by zmf
-        doSendWhenResourceCreationFailure(null, envId, resourceName, creatorId);
+        doSendWhenResourceCreationFailure(null, envId, resourceName, creatorId, resourceCommandId);
     }
 
     @Override
-    public void sendWhenServiceCreationFailure(Long envId, String resourceName, Long creatorId) {
+    public void sendWhenServiceCreationFailure(Long envId, String resourceName, Long creatorId, Long resourceCommandId) {
         if (!sendMessages) {
             return;
         }
         // TODO by zmf
-        doSendWhenResourceCreationFailure(null, envId, resourceName, creatorId);
+        doSendWhenResourceCreationFailure(null, envId, resourceName, creatorId, resourceCommandId);
     }
 
     @Override
-    public void sendWhenIngressCreationFailure(Long envId, String resourceName, Long creatorId) {
+    public void sendWhenIngressCreationFailure(Long envId, String resourceName, Long creatorId, Long resourceCommandId) {
         if (!sendMessages) {
             return;
         }
         // TODO by zmf
-        doSendWhenResourceCreationFailure(null, envId, resourceName, creatorId);
+        doSendWhenResourceCreationFailure(null, envId, resourceName, creatorId, resourceCommandId);
     }
 
     @Override
-    public void sendWhenCertificationCreationFailure(Long envId, String resourceName, Long creatorId) {
+    public void sendWhenCertificationCreationFailure(Long envId, String resourceName, Long creatorId, Long resourceCommandId) {
         if (!sendMessages) {
             return;
         }
         // TODO by zmf
-        doSendWhenResourceCreationFailure(null, envId, resourceName, creatorId);
+        doSendWhenResourceCreationFailure(null, envId, resourceName, creatorId, resourceCommandId);
     }
 
 

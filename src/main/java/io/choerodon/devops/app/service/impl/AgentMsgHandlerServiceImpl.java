@@ -151,6 +151,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private DevopsCertManagerRecordMapper devopsCertManagerRecordMapper;
     @Autowired
     private DevopsCertManagerMapper devopsCertManagerMapper;
+    @Autowired
+    private SendNotificationService sendNotificationService;
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
@@ -1055,6 +1057,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 devopsEnvFileResourceDTO, CERTIFICATE_KIND, certificationDTO.getName(),
                 null, errorDevopsFiles)) {
             certificationDTO.setStatus(CertificationStatus.FAILED.getStatus());
+            // 发送资源创建失败通知
+            sendNotificationService.sendWhenCertificationCreationFailure(certificationDTO.getEnvId(), certificationDTO.getName(), certificationDTO.getCreatedBy(), certificationDTO.getCommandId());
         } else {
             certificationDTO.setStatus(CertificationStatus.APPLYING.getStatus());
         }
@@ -1070,6 +1074,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         if (updateEnvCommandStatus(resourceCommitVO, devopsServiceDTO.getCommandId(),
                 devopsEnvFileResourceDTO, SERVICE_KIND, devopsServiceDTO.getName(), CommandStatus.SUCCESS.getStatus(), errorDevopsFiles)) {
             devopsServiceDTO.setStatus(ServiceStatus.FAILED.getStatus());
+            // 发送资源创建失败通知
+            sendNotificationService.sendWhenServiceCreationFailure(devopsServiceDTO.getEnvId(), devopsServiceDTO.getName(), devopsServiceDTO.getCreatedBy(), devopsServiceDTO.getCommandId());
         } else {
             devopsServiceDTO.setStatus(ServiceStatus.RUNNING.getStatus());
         }
@@ -1131,6 +1137,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         if (updateEnvCommandStatus(resourceCommitVO, devopsIngressDTO.getCommandId(),
                 devopsEnvFileResourceDTO, INGRESS_KIND, devopsIngressDTO.getName(), CommandStatus.SUCCESS.getStatus(), errorDevopsFiles)) {
             devopsIngressService.updateStatus(envId, devopsIngressDTO.getName(), IngressStatus.FAILED.getStatus());
+            // 发送资源创建失败通知
+            sendNotificationService.sendWhenIngressCreationFailure(devopsIngressDTO.getEnvId(), devopsIngressDTO.getName(), devopsIngressDTO.getCreatedBy(), devopsIngressDTO.getCommandId());
         } else {
             devopsIngressService.updateStatus(envId, devopsIngressDTO.getName(), IngressStatus.RUNNING.getStatus());
         }
@@ -1148,6 +1156,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             if (!appServiceInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
                 appServiceInstanceDTO.setStatus(InstanceStatus.FAILED.getStatus());
                 appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
+
+                // 发送资源创建失败通知
+                sendNotificationService.sendWhenInstanceCreationFailure(appServiceInstanceDTO.getEnvId(), appServiceInstanceDTO.getCode(), appServiceInstanceDTO.getCreatedBy(), appServiceInstanceDTO.getCommandId());
             }
         }
     }
@@ -1690,21 +1701,41 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         && !InstanceStatus.RUNNING.getStatus().equals(appServiceInstanceDTO.getStatus())) {
                     appServiceInstanceDTO.setStatus(instanceStatus.getStatus());
                     appServiceInstanceService.updateStatus(appServiceInstanceDTO);
+                    // 发送资源创建失败通知
+                    if (InstanceStatus.FAILED == instanceStatus
+                            && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+                        sendNotificationService.sendWhenInstanceCreationFailure(appServiceInstanceDTO.getEnvId(), appServiceInstanceDTO.getCode(), appServiceInstanceDTO.getCreatedBy(), null);
+                    }
                 }
                 break;
             case SERVICE:
                 DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQuery(devopsEnvCommandDTO.getObjectId());
                 devopsServiceDTO.setStatus(serviceStatus.getStatus());
                 devopsServiceService.updateStatus(devopsServiceDTO);
+                // 发送资源创建失败通知
+                if (ServiceStatus.FAILED == serviceStatus
+                        && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+                    sendNotificationService.sendWhenServiceCreationFailure(devopsServiceDTO.getEnvId(), devopsServiceDTO.getName(), devopsServiceDTO.getCreatedBy(), null);
+                }
                 break;
             case INGRESS:
                 DevopsIngressDTO devopsIngressDTO = devopsIngressService.baseQuery(devopsEnvCommandDTO.getObjectId());
                 devopsIngressService.updateStatus(envId, devopsIngressDTO.getName(), ingressStatus.getStatus());
+                // 发送资源创建失败通知
+                if (IngressStatus.FAILED == ingressStatus
+                        && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+                    sendNotificationService.sendWhenIngressCreationFailure(devopsIngressDTO.getEnvId(), devopsIngressDTO.getName(), devopsIngressDTO.getCreatedBy(), null);
+                }
                 break;
             case CERTIFICATE:
                 CertificationDTO certificationDTO = certificationService.baseQueryById(devopsEnvCommandDTO.getObjectId());
                 certificationDTO.setStatus(certificationStatus.getStatus());
                 certificationService.updateStatus(certificationDTO);
+                // 发送资源创建失败通知
+                if (CertificationStatus.FAILED == certificationStatus
+                        && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+                    sendNotificationService.sendWhenCertificationCreationFailure(certificationDTO.getEnvId(), certificationDTO.getName(), certificationDTO.getCreatedBy(), null);
+                }
                 break;
             case PERSISTENTVOLUME:
                 if (pvStatus == null) {
@@ -1826,6 +1857,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             if (failedStatus.equals(certificationDTO.getStatus())) {
                 certificationDTO.setStatus(failedStatus);
                 certificationService.updateStatus(certificationDTO);
+
+                // 发送创建失败通知
+                sendNotificationService.sendWhenCertificationCreationFailure(certificationDTO.getEnvId(), certificationDTO.getName(), certificationDTO.getCreatedBy(), certificationService.baseQueryById(certificationDTO.getId()).getCommandId());
             }
         }
 
