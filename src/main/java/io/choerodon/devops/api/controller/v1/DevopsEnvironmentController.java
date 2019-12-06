@@ -350,7 +350,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "分页参数", required = true)
             @ApiIgnore Pageable pageable,
             @ApiParam(value = "指定用户id")
-            @RequestParam(value = "selected_iam_user_id", required = false) Long selectedIamUserId,
+            @RequestParam(value = "iamUserId", required = false) Long selectedIamUserId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsEnvironmentService.listNonRelatedMembers(projectId, envId, selectedIamUserId, pageable, params))

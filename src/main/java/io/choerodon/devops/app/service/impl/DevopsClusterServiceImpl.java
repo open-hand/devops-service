@@ -193,18 +193,21 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 .collect(Collectors.toList());
 
         // 将已经分配权限的项目过滤
-        Set<ProjectReqVO> projectReqVOS = filteredProjects
+        List<ProjectReqVO> projectReqVOS = filteredProjects
                 .stream()
                 .filter(p -> !permitted.contains(p.getId()))
                 .map(p -> new ProjectReqVO(p.getId(), p.getName(), p.getCode()))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
 
         if (selectedProjectId != null) {
             ProjectDTO selectedProjectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
-            projectReqVOS.add(new ProjectReqVO(selectedProjectDTO.getId(), selectedProjectDTO.getName(), selectedProjectDTO.getCode()));
+            ProjectReqVO projectReqVO = new ProjectReqVO(selectedProjectDTO.getId(), selectedProjectDTO.getName(), selectedProjectDTO.getCode());
+            if (!projectReqVOS.contains(projectReqVO)) {
+                projectReqVOS.add(projectReqVO);
+            }
         }
 
-        return PageInfoUtil.createPageFromList(new ArrayList<>(projectReqVOS), pageable);
+        return PageInfoUtil.createPageFromList(projectReqVOS, pageable);
     }
 
     @Transactional

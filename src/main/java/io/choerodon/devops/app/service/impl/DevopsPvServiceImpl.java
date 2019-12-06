@@ -332,16 +332,19 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 .collect(Collectors.toList());
 
         //把组织下有权限的项目过滤掉再返回
-        Set<ProjectReqVO> projectReqVOS = projectReqVOList.stream()
+        List<ProjectReqVO> projectReqVOS = projectReqVOList.stream()
                 .filter(i -> !permitted.contains(i.getId()))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
 
         if (selectedProjectId != null) {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
-            projectReqVOS.add(new ProjectReqVO(projectDTO.getId(), projectDTO.getName(), projectDTO.getCode()));
+            ProjectReqVO projectReqVO = new ProjectReqVO(projectDTO.getId(), projectDTO.getName(), projectDTO.getCode());
+            if (!projectReqVOS.contains(projectReqVO)) {
+                projectReqVOS.add(projectReqVO);
+            }
         }
 
-        return PageInfoUtil.createPageFromList(new ArrayList<>(projectReqVOS), pageable);
+        return PageInfoUtil.createPageFromList(projectReqVOS, pageable);
     }
 
     @Override
@@ -469,7 +472,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
                     iamProjectDTO.getOrganizationId(),
                     name, code,
-                    paramList.get(0));
+                    CollectionUtils.isEmpty(paramList) ? null : paramList.get(0));
 
             // 数据库中的有权限的项目
             List<Long> permissions = devopsPvProPermissionService.baseListByPvId(pvId)
