@@ -8,6 +8,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,16 +17,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.notify.NoticeSendDTO;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.DevopsMergeRequestService;
-import io.choerodon.devops.app.service.SendNotificationService;
-import io.choerodon.devops.app.service.UserAttrService;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
-import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
@@ -58,6 +56,10 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private AppServiceMapper appServiceMapper;
     @Autowired
     private UserAttrService userAttrService;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DevopsEnvCommandService devopsEnvCommandService;
 
     /**
      * 发送和应用服务失败、启用和停用的消息(调用此方法时注意在外层捕获异常，此方法不保证无异常抛出)
@@ -116,13 +118,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             return;
         }
 
-        NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
-        noticeSendDTO.setSourceId(sourceId);
-        noticeSendDTO.setCode(sendSettingCode);
-        noticeSendDTO.setTargetUsers(targetUsers);
-        noticeSendDTO.setParams(params);
-
-        notifyClient.sendMessage(noticeSendDTO);
+        notifyClient.sendMessage(constructNotice(sendSettingCode, sourceId, targetUsers, params));
     }
 
     @Override
@@ -206,13 +202,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(pipelineOperatorUserName);
 
-                    NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
-                    noticeSendDTO.setSourceId(projectDTO.getId());
                     // TODO by zmf
-                    noticeSendDTO.setCode(null);
-                    noticeSendDTO.setTargetUsers(ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())));
-                    noticeSendDTO.setParams(params);
-                    notifyClient.sendMessage(noticeSendDTO);
+                    sendNotices(null, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params);
                 },
                 ex -> LOGGER.info("Error occurred when sending message about gitlab-pipeline-failure. The exception is {}.", ex));
     }
@@ -295,13 +286,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     Map<String, Object> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getCode(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), iamUserDTO.getRealName(), mergeRequestId);
 
-                    NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
                     // TODO by zmf
-                    noticeSendDTO.setCode(null);
-                    noticeSendDTO.setSourceId(projectDTO.getId());
-                    noticeSendDTO.setTargetUsers(ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())));
-                    noticeSendDTO.setParams(params);
-                    notifyClient.sendMessage(noticeSendDTO);
+                    sendNotices(null, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params);
                 },
                 ex -> LOGGER.info("Error occurred when sending message about merge-request-audit. The exception is {}.", ex));
     }
@@ -364,12 +350,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     Map<String, Object> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getCode(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), iamUserDTO.getRealName(), mergeRequestId);
 
-                    NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
-                    noticeSendDTO.setCode(sendSettingCode);
-                    noticeSendDTO.setSourceId(projectDTO.getId());
-                    noticeSendDTO.setTargetUsers(ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())));
-                    noticeSendDTO.setParams(params);
-                    notifyClient.sendMessage(noticeSendDTO);
+                    sendNotices(sendSettingCode, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params);
                 },
                 ex -> LOGGER.info("Error occurred when sending message about {}. The exception is {}.", sendSettingCode, ex));
     }
@@ -387,36 +368,85 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         doSendWhenMergeRequestClosedOrMerged(null, gitlabProjectId, mergeRequestId);
     }
 
-    @Override
-    public void sendWhenInstanceCreationFailure(String projectName, String envName, String resourceName) {
-        if (!sendMessages) {
+    /**
+     * 发送资源创建相关的失败通知
+     *
+     * @param sendSettingCode   通知的code
+     * @param envId             环境的id
+     * @param resourceName      资源的名称
+     * @param creatorId         创建者的id
+     * @param resourceCommandId 资源commandId用于判断资源是否是在创建时失败的
+     */
+    private void doSendWhenResourceCreationFailure(String sendSettingCode, Long envId, String resourceName, Long creatorId, @Nullable Long resourceCommandId) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+
+        // 校验资源是否是创建时失败
+        if (resourceCommandId != null) {
+            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(resourceCommandId);
+            if (devopsEnvCommandDTO == null) {
+                LogUtil.loggerInfoObjectNullWithId("DevOpsEnvCommand", resourceCommandId, LOGGER);
+                return;
+            } else {
+                if (!CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+                    LOGGER.debug("Resource {} with name {} failed after updating instead of creating.", devopsEnvCommandDTO.getObject(), resourceName);
+                    return;
+                }
+            }
+        }
+
+        if (devopsEnvironmentDTO == null) {
+            LogUtil.loggerInfoObjectNullWithId("Environment", envId, LOGGER);
             return;
         }
-        // TODO by zmf
+
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        if (projectDTO == null) {
+            LogUtil.loggerInfoObjectNullWithId("Project", devopsEnvironmentDTO.getProjectId(), LOGGER);
+            return;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("projectName", Objects.requireNonNull(projectDTO.getName()));
+        params.put("envName", Objects.requireNonNull(devopsEnvironmentDTO.getName()));
+        params.put("resourceName", Objects.requireNonNull(resourceName));
+
+        sendNotices(sendSettingCode, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(Objects.requireNonNull(creatorId))), params);
     }
 
     @Override
-    public void sendWhenServiceCreationFailure(String projectName, String envName, String resourceName) {
+    public void sendWhenInstanceCreationFailure(Long envId, String resourceName, Long creatorId, Long resourceCommandId) {
         if (!sendMessages) {
             return;
         }
         // TODO by zmf
+        doSendWhenResourceCreationFailure(null, envId, resourceName, creatorId, resourceCommandId);
     }
 
     @Override
-    public void sendWhenIngressCreationFailure(String projectName, String envName, String resourceName) {
+    public void sendWhenServiceCreationFailure(Long envId, String resourceName, Long creatorId, Long resourceCommandId) {
         if (!sendMessages) {
             return;
         }
         // TODO by zmf
+        doSendWhenResourceCreationFailure(null, envId, resourceName, creatorId, resourceCommandId);
     }
 
     @Override
-    public void sendWhenCertificationCreationFailure(String projectName, String envName, String resourceName) {
+    public void sendWhenIngressCreationFailure(Long envId, String resourceName, Long creatorId, Long resourceCommandId) {
         if (!sendMessages) {
             return;
         }
         // TODO by zmf
+        doSendWhenResourceCreationFailure(null, envId, resourceName, creatorId, resourceCommandId);
+    }
+
+    @Override
+    public void sendWhenCertificationCreationFailure(Long envId, String resourceName, Long creatorId, Long resourceCommandId) {
+        if (!sendMessages) {
+            return;
+        }
+        // TODO by zmf
+        doSendWhenResourceCreationFailure(null, envId, resourceName, creatorId, resourceCommandId);
     }
 
 
@@ -451,5 +481,14 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         NoticeSendDTO.User targetUser = new NoticeSendDTO.User();
         targetUser.setId(id);
         return targetUser;
+    }
+
+    private static NoticeSendDTO constructNotice(String sendSettingCode, Long sourceId, List<NoticeSendDTO.User> targetUsers, Map<String, Object> params) {
+        NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
+        noticeSendDTO.setCode(Objects.requireNonNull(sendSettingCode));
+        noticeSendDTO.setSourceId(Objects.requireNonNull(sourceId));
+        noticeSendDTO.setTargetUsers(Objects.requireNonNull(targetUsers));
+        noticeSendDTO.setParams(Objects.requireNonNull(params));
+        return noticeSendDTO;
     }
 }

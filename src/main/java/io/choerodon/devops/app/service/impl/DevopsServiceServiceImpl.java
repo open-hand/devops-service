@@ -17,6 +17,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -25,10 +27,6 @@ import org.springframework.util.StringUtils;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
@@ -105,13 +103,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Autowired
     private DevopsEnvPodMapper devopsEnvPodMapper;
     @Autowired
-    AgentPodInfoServiceImpl agentPodInfoService;
+    private AgentPodInfoServiceImpl agentPodInfoService;
     @Autowired
-    DevopsClusterService devopsClusterService;
+    private DevopsClusterService devopsClusterService;
     @Autowired
-    DevopsEnvResourceService devopsEnvResourceService;
-    @Autowired
-    DevopsEnvResourceDetailService devopsEnvResourceDetailService;
+    private SendNotificationService sendNotificationService;
 
     @Override
     public Boolean checkName(Long envId, String name) {
@@ -1098,7 +1094,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                     .baseQueryByEnvIdAndResourceId(serviceSagaPayLoad.getDevopsEnvironmentDTO().getId(), devopsServiceDTO.getId(), SERVICE);
             String filePath = devopsEnvFileResourceDTO == null ? SERVICE_PREFIX + devopsServiceDTO.getName() + YAML_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
-            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(serviceSagaPayLoad.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
+            // 只有创建时判断并处理超时
+            if (serviceSagaPayLoad.getCreated() && !gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(serviceSagaPayLoad.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
                     filePath)) {
                 devopsServiceDTO.setStatus(CommandStatus.FAILED.getStatus());
                 baseUpdate(devopsServiceDTO);
@@ -1106,6 +1103,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
                 devopsEnvCommandDTO.setError("create or update service failed");
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+
+                // 发送创建失败通知
+                sendNotificationService.sendWhenServiceCreationFailure(devopsServiceDTO.getEnvId(), devopsServiceDTO.getName(), devopsServiceDTO.getCreatedBy(), null);
+            } else {
+                throw e;
             }
         }
     }

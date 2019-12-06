@@ -99,6 +99,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private TransactionalProducer producer;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private SendNotificationService sendNotificationService;
+
     private JSON json = new JSON();
 
     @Override
@@ -618,7 +621,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                     .baseQueryByEnvIdAndResourceId(ingressSagaPayload.getDevopsEnvironmentDTO().getId(), devopsIngressDTO.getId(), INGRESS);
             String filePath = devopsEnvFileResourceDTO == null ? INGRESS_PREFIX + devopsIngressDTO.getName() + YAML_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
-            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(ingressSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
+            // 只处理创建时可能的超时情况
+            if (ingressSagaPayload.getCreated() && !gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(ingressSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
                     filePath)) {
                 devopsIngressDTO.setStatus(IngressStatus.FAILED.getStatus());
                 baseUpdate(devopsIngressDTO);
@@ -626,6 +630,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
                 devopsEnvCommandDTO.setError("create or update Ingress failed!");
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+
+                // 发送创建失败通知
+                sendNotificationService.sendWhenIngressCreationFailure(devopsIngressDTO.getEnvId(), devopsIngressDTO.getName(), devopsIngressDTO.getCreatedBy(), null);
+            } else {
+                throw e;
             }
         }
     }
