@@ -5,15 +5,14 @@ import some from 'lodash/some';
 import { SelectBox, Select, Form, Tooltip } from 'choerodon-ui/pro';
 import { handlePromptError } from '../../../../../../../utils';
 import DynamicSelect from '../../../../../../../components/dynamic-select-new';
+import UserInfo from '../../../../../../../components/userInfo';
+
 
 const { Option } = Select;
 
 export default observer((props) => {
   const { dataSet, nonePermissionDs, refresh, baseDs, store, projectId, formatMessage, prefixCls, intlPrefix, modal } = props;
-  useEffect(() => {
-    dataSet.getField('iamUserId').set('options', nonePermissionDs);
-    nonePermissionDs.query();
-  }, []);
+  
 
   const record = useMemo(() => baseDs.current, [baseDs.current]);
 
@@ -63,14 +62,15 @@ export default observer((props) => {
     record.reset();
     dataSet.reset();
   });
-
-  function handleUserFilter(optionRecord) {
-    const flag = some(dataSet.created, (creatRecord) => creatRecord.get('iamUserId') === optionRecord.get('iamUserId'));
-    return !flag;
-  }
+  
 
   function renderUserOption({ record: optionRecord }) {
-    return <Tooltip title={optionRecord.get('loginName')}>{optionRecord.get('realName')}</Tooltip>;
+    return <UserInfo name={optionRecord.get('realName') || ''} id={record.get('loginName')} />;
+  }
+  
+
+  function renderer({ optionRecord }) {
+    return <UserInfo name={optionRecord.get('realName') || ''} id={record.get('loginName')} />;
   }
 
   return (
@@ -84,8 +84,9 @@ export default observer((props) => {
       {record && !record.get('skipCheckPermission') && (
         <DynamicSelect
           selectDataSet={dataSet} 
-          optionsFilter={handleUserFilter} 
           optionsRenderer={renderUserOption}
+          optionsDataSet={nonePermissionDs}
+          renderer={renderer}
           selectName="iamUserId"
           addText={formatMessage({ id: `${intlPrefix}.add.member` })}
         />

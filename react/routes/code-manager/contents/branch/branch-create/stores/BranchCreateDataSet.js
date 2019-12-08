@@ -9,7 +9,7 @@ export default ({ projectId, issueNameOptionDs, appServiceId, formatMessage, sea
     const prefix = contentStore.getBranchPrefix;
     let branchName = '';
     if (prefix) {
-      branchName = `${prefix}-${value}`;
+      branchName = `${prefix}${value}`;
     } else {
       branchName = value;
     }

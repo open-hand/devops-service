@@ -16,14 +16,14 @@ export default function useStore() {
      */
     loadBranchData(projectId, appServiceId, branchPageSize, text = '') {
       const postData = { searchParam: { branchName: text }, param: [] };
-      return axios.post(`devops/v1/projects/${projectId}/app_service/${appServiceId}/git/page_branch_by_options?page=1&size=${branchPageSize}&sort=creation_date,asc`, postData);
+      return axios.post(`devops/v1/projects/${projectId}/app_service/${appServiceId}/git/page_branch_by_options?page=1&size=${branchPageSize}`, postData);
     },
     /**
      * 加载标记数据
      */
     loadTagData(projectId, appServiceId, tagPageSize, text = '') {
       const postData = { searchParam: { tagName: text }, param: [] };
-      return axios.post(`devops/v1/projects/${projectId}/app_service/${appServiceId}/git/page_tags_by_options?page=1&size=${tagPageSize}&sort=creation_date,asc`, postData);
+      return axios.post(`devops/v1/projects/${projectId}/app_service/${appServiceId}/git/page_tags_by_options?page=1&size=${tagPageSize}`, postData);
     },
   }));
 }

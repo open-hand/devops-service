@@ -8,7 +8,7 @@ import { useAppTopStore } from '../stores';
 import { useServiceDetailStore } from './stores';
 import HeaderButtons from './HeaderButtons';
 import TimePopover from '../../../components/timePopover/TimePopover';
-import ServicePermission from './modals/permission';
+import ServicePermission from '../../resource/main-view/contents/environment/modals/permission';
 import Tips from '../../../components/new-tips';
 
 
@@ -70,10 +70,10 @@ const Allocation = observer(() => {
       />,
       children: <ServicePermission
         dataSet={permissionDs}
-        record={detailDs.current}
+        baseDs={detailDs}
         store={appServiceStore}
-        nonePermissionDS={nonePermissionDs}
-        intlPrefix={intlPrefix}
+        nonePermissionDs={nonePermissionDs}
+        intlPrefix="c7ncd.deployment"
         prefixCls={prefixCls}
         formatMessage={formatMessage}
         projectId={id}
