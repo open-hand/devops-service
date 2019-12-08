@@ -16,6 +16,7 @@ import io.choerodon.devops.infra.enums.RoleLabel;
 import io.choerodon.devops.infra.enums.TriggerObject;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsNotificationMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
@@ -27,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
@@ -72,6 +74,8 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     private DevopsSecretService devopsSecretService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private ClusterConnectionHandler clusterConnectionHandler;
 
 
     @Override
@@ -330,6 +334,11 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         }
         // 项目下环境信息
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOList = devopsEnvironmentService.listByProjectIdAndName(projectId, envName);
+        if (CollectionUtils.isEmpty(devopsEnvironmentDTOList)) {
+            return notifyEventVO;
+        }
+        devopsEnvironmentDTOList = devopsEnvironmentDTOList.stream().filter(v -> Boolean.TRUE.equals(v.getActive())
+                && clusterConnectionHandler.getEnvConnectionStatus(v.getClusterId())).collect(Collectors.toList());
         List<DevopsEnvironmentVO> devopsEnvironmentVOList = ConvertUtils.convertList(devopsEnvironmentDTOList, DevopsEnvironmentVO.class);
         Set<Long> envIds = devopsEnvironmentDTOList.stream().map(DevopsEnvironmentDTO::getId).collect(Collectors.toSet());
         notifyEventVO.setDevopsEnvironmentList(devopsEnvironmentVOList);
@@ -360,6 +369,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void batchUpdateNotifyEvent(Long projectId, List<NotificationEventVO> notificationEventList) {
         // 系统默认配置
         List<NotificationEventVO> notificationEventVOS = devopsNotificationMapper.listDefaultNotifyEvent();
@@ -392,20 +402,24 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         );
     }
 
-    private void addUserInfo(List<NotificationEventVO> devopsNotificationList) {
-        devopsNotificationList.stream().flatMap(v -> v.getUserList().stream())
-                .filter(user -> TriggerObject.SPECIFIER.getObject().equals(user.getUserType()))
-                .forEach(u -> {
-                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(u.getUserId());
-                    if (iamUserDTO != null) {
-                        u.setImageUrl(iamUserDTO.getImageUrl());
-                        u.setRealName(iamUserDTO.getRealName());
-                        u.setLoginName(iamUserDTO.getLdap() ? iamUserDTO.getLoginName() : iamUserDTO.getEmail());
-                    }
-                });
-
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteNotifyEventByProjectIdAndEnvId(Long projectId, Long envId) {
+        if (projectId == null) {
+            throw new CommonException("error.project.id.null");
+        }
+        if (envId == null) {
+            throw new CommonException("error.env.id.null");
+        }
+        DevopsNotificationDTO record = new DevopsNotificationDTO();
+        record.setProjectId(projectId);
+        record.setEnvId(envId);
+        DevopsNotificationDTO devopsNotificationDTO = devopsNotificationMapper.selectOne(record);
+        // 删除通知对象
+        devopsNotificationUserRelService.baseDeleteByNotificationId(devopsNotificationDTO.getId());
+        // 删除通知设置
+        baseDelete(devopsNotificationDTO.getId());
     }
-
 
     public DevopsNotificationDTO baseCreateOrUpdate(DevopsNotificationDTO devopsNotificationDTO) {
         if (devopsNotificationDTO.getId() == null) {
@@ -440,6 +454,20 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         devopsNotificationDTO.setProjectId(projectId);
         devopsNotificationDTO.setEnvId(envId);
         return devopsNotificationMapper.select(devopsNotificationDTO);
+    }
+
+    private void addUserInfo(List<NotificationEventVO> devopsNotificationList) {
+        devopsNotificationList.stream().flatMap(v -> v.getUserList().stream())
+                .filter(user -> TriggerObject.SPECIFIER.getObject().equals(user.getUserType()))
+                .forEach(u -> {
+                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(u.getUserId());
+                    if (iamUserDTO != null) {
+                        u.setImageUrl(iamUserDTO.getImageUrl());
+                        u.setRealName(iamUserDTO.getRealName());
+                        u.setLoginName(iamUserDTO.getLdap() ? iamUserDTO.getLoginName() : iamUserDTO.getEmail());
+                    }
+                });
+
     }
 
     private DevopsNotificationDTO queryNotifyEventByProjectIdAndEnvIdAndType(Long projectId, Long envId, String objectType) {

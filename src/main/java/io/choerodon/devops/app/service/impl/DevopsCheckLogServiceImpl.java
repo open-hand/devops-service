@@ -1,29 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.core.iam.InitRoleCode.PROJECT_OWNER;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageInfo;
 import com.zaxxer.hikari.util.UtilityElf;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.kubernetes.CheckLog;
@@ -40,11 +19,32 @@ import io.choerodon.devops.infra.dto.harbor.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.TriggerObject;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import static io.choerodon.core.iam.InitRoleCode.PROJECT_OWNER;
 
 
 @Service
@@ -97,12 +97,16 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsHarborUserService devopsHarborUserService;
     @Autowired
     private HarborService harborService;
+    @Autowired
+    private DevopsNotificationMapper devopsNotificationMapper;
+    @Autowired
+    private DevopsNotificationUserRelMapper devopsNotificationUserRelMapper;
+
 
     @Override
     public void checkLog(String version) {
         LOGGER.info("start upgrade task");
         executorService.execute(new UpgradeTask(version));
-
     }
 
 
@@ -127,6 +131,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 devopsCheckLogDTO.setBeginCheckDate(new Date());
                 if ("0.20.0".equals(version)) {
                     syncHarborUser();
+                    // 资源删除验证通知数据迁移
+                    syncNotificationAndNotificationUserRel();
                 } else if ("0.19.0".equals(version)) {
                     syncEnvAppRelevance(logs);
                     // 0.20.0删除此方法
@@ -161,6 +167,79 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             } catch (Throwable ex) {
                 LOGGER.warn("Exception occurred when applying data migration. The ex is: {}", ex);
             }
+        }
+
+        private void syncNotificationAndNotificationUserRel() {
+
+            List<DevopsNotificationDTO> devopsNotificationDTOList = devopsNotificationMapper.listOldNotificationDTO();
+
+            devopsNotificationDTOList.forEach(v -> {
+                DevopsNotificationDTO notificationDTO = new DevopsNotificationDTO();
+                notificationDTO.setProjectId(v.getProjectId());
+                notificationDTO.setEnvId(v.getEnvId());
+                notificationDTO.setDefaultSetting(false);
+                if (v.getNotifyType().contains("sms")) {
+                    notificationDTO.setSendSms(true);
+                } else {
+                    notificationDTO.setSendSms(false);
+                }
+
+                if (v.getNotifyType().contains("email")) {
+                    notificationDTO.setSendEmail(true);
+                } else {
+                    notificationDTO.setSendEmail(false);
+                }
+
+                if (v.getNotifyType().contains("pm")) {
+                    notificationDTO.setSendPm(true);
+                } else {
+                    notificationDTO.setSendPm(false);
+                }
+                String[] triggerEvents = v.getNotifyTriggerEvent().split(",");
+                for (String triggerEvent : triggerEvents) {
+                    notificationDTO.setId(null);
+                    notificationDTO.setNotifyTriggerEvent(triggerEvent);
+                    if (devopsNotificationMapper.insertSelective(notificationDTO) != 1) {
+                        throw new CommonException("error.insert.notification");
+                    }
+                }
+                if (devopsNotificationMapper.deleteByPrimaryKey(v.getId()) != 1) {
+                    throw new CommonException("error.delete.notification");
+                }
+
+                if (TriggerObject.HANDLER.getObject().equals(v.getNotifyObject())) {
+                    DevopsNotificationUserRelDTO devopsNotificationUserRelDTO = new DevopsNotificationUserRelDTO();
+                    devopsNotificationUserRelDTO.setNotificationId(v.getId());
+                    devopsNotificationUserRelDTO.setUserType(TriggerObject.HANDLER.getObject());
+                    if (devopsNotificationUserRelMapper.insertSelective(devopsNotificationUserRelDTO) != 1) {
+                        throw new CommonException("error.insert.user.rel");
+                    }
+                }
+                if (TriggerObject.OWNER.getObject().equals(v.getNotifyObject())) {
+                    DevopsNotificationUserRelDTO devopsNotificationUserRelDTO = new DevopsNotificationUserRelDTO();
+                    devopsNotificationUserRelDTO.setNotificationId(v.getId());
+                    devopsNotificationUserRelDTO.setUserType(TriggerObject.OWNER.getObject());
+                    if (devopsNotificationUserRelMapper.insertSelective(devopsNotificationUserRelDTO) != 1) {
+                        throw new CommonException("error.insert.user.rel");
+                    }
+                }
+                if (TriggerObject.SPECIFIER.getObject().equals(v.getNotifyObject())) {
+                    DevopsNotificationUserRelDTO notificationUserRelDTORecord = new DevopsNotificationUserRelDTO();
+                    notificationUserRelDTORecord.setNotificationId(v.getId());
+                    List<DevopsNotificationUserRelDTO> devopsNotificationUserRelDTOList = devopsNotificationUserRelMapper.select(notificationUserRelDTORecord);
+                    devopsNotificationUserRelDTOList.forEach(user -> {
+                        if (devopsNotificationUserRelMapper.delete(user) != 1) {
+                            throw new CommonException("error.delete.user.rel");
+                        }
+                        user.setUserType(TriggerObject.SPECIFIER.getObject());
+                        if (devopsNotificationUserRelMapper.insertSelective(user) != 1) {
+                            throw new CommonException("error.insert.user.rel");
+                        }
+                    });
+                }
+            });
+
+
         }
 
 

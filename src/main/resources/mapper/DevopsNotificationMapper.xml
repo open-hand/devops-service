@@ -50,6 +50,10 @@
         FROM  devops_notification dn
         WHERE dn.is_default_setting = TRUE
     </select>
+    <select id="listOldNotificationDTO" resultType="io.choerodon.devops.infra.dto.DevopsNotificationDTO">
+        select * from devops_notification
+        WHERE is_default_setting is null;
+    </select>
 
     <resultMap id="notificationEventVOMap" type="io.choerodon.devops.api.vo.NotificationEventVO">
         <id column="id" property="id"/>

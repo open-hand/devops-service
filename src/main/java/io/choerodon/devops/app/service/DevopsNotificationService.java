@@ -106,4 +106,6 @@ public interface DevopsNotificationService {
     NotifyEventVO queryNotifyEventGroupByEnv(Long projectId, String envName);
 
     void batchUpdateNotifyEvent(Long projectId, List<NotificationEventVO> notificationEventList);
+
+    void deleteNotifyEventByProjectIdAndEnvId(Long projectId, Long envId);
 }
