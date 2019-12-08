@@ -1,17 +1,5 @@
 package io.choerodon.devops.infra.handler;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ClusterSessionVO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
@@ -21,6 +9,17 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.GitOpsUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Creator: Runge
@@ -106,6 +105,21 @@ public class ClusterConnectionHandler {
         if (!envConnected) {
             throw new CommonException("error.env.disconnect");
         }
+    }
+
+    /**
+     * 检查集群的环境是否链接
+     *
+     * @param clusterId 环境ID
+     */
+    public boolean getEnvConnectionStatus(Long clusterId) {
+        Map<String, ClusterSessionVO> clusterSessions = (Map<String, ClusterSessionVO>) (Map) redisTemplate.opsForHash().entries(CLUSTER_SESSION);
+
+        boolean envConnected = clusterSessions.entrySet().stream()
+                .anyMatch(t -> clusterId.equals(t.getValue().getClusterId())
+                        && compareVersion(t.getValue().getVersion() == null ? "0" : t.getValue().getVersion(), agentExpectVersion) != 1);
+        return envConnected;
+
     }
 
     /**

@@ -31,4 +31,6 @@ public interface DevopsNotificationMapper extends Mapper<DevopsNotificationDTO> 
      */
     List<NotificationEventVO> listDefaultNotifyEvent();
 
+    List<DevopsNotificationDTO> listOldNotificationDTO();
+
 }
