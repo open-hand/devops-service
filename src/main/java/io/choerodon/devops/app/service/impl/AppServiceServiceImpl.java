@@ -272,7 +272,8 @@ public class AppServiceServiceImpl implements AppServiceService {
             return;
         }
         // 禁止删除未失败或者启用状态的应用服务
-        if (Boolean.TRUE.equals(appServiceDTO.getActive())) {
+        if (Boolean.TRUE.equals(appServiceDTO.getActive())
+                && Boolean.FALSE.equals(appServiceDTO.getFailed())) {
             throw new CommonException("error.delete.nonfailed.app.service", appServiceDTO.getName());
         }
         // 验证改应用服务在其他项目是否被生成实例
@@ -288,7 +289,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
                         .withRefType("app")
-                        .withRefId("")
+                        .withRefId(TypeUtil.objToString(appServiceId))
                         .withSourceId(projectId)
                         .withPayloadAndSerialize(devOpsAppServicePayload)
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_APP_DELETE),
