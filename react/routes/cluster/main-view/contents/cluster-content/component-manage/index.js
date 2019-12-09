@@ -136,8 +136,7 @@ export default observer((props) => {
             buttonData = [
               {
                 text: formatMessage({ id: 'uninstall' }),
-                loading: operate !== 'upgrade',
-                disabled,
+                loading: true,
               },
             ];
           }
