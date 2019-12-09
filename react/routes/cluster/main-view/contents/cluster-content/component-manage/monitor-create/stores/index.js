@@ -23,7 +23,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       clusterId,
     } = props;
 
-    const pvDs = useMemo(() => new DataSet(PvOptionsDataSet(projectId)), [projectId]);
+    const pvDs = useMemo(() => new DataSet(PvOptionsDataSet(projectId, clusterId)), [projectId, clusterId]);
     const formDs = useMemo(() => new DataSet(FormDataSet({ formatMessage, intlPrefix, projectId, clusterId, pvDs })), [projectId, clusterId]);
 
     useEffect(() => {
@@ -37,6 +37,11 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const value = {
       ...props,
       pvSelect: ['prometheusPvId', 'grafanaPvId', 'alertmanagerPvId'],
+      pvSelectEdit: {
+        prometheusPvId: 'prometheusPvName',
+        grafanaPvId: 'grafanaPvName',
+        alertmanagerPvId: 'alertmanagerPvName',
+      },
       formDs,
     };
     return (

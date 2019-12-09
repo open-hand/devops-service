@@ -17,6 +17,7 @@ export default (props) => {
     intl: { formatMessage },
     intlPrefix,
     pvSelect,
+    pvSelectEdit,
   } = usePrometheusStore();
 
   const isModify = useMemo(() => {
@@ -54,8 +55,8 @@ export default (props) => {
 
   function getSelectContent(item) {
     const record = formDs.current;
-    if (isModify && record.getPristineValue(item)) {
-      return <TextField name={item} key={item} disabled />;
+    if (isModify && record.getPristineValue(pvSelectEdit[item])) {
+      return <TextField name={pvSelectEdit[item]} key={item} disabled />;
     } else {
       return (
         <Select
