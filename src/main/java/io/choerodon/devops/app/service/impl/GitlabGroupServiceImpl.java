@@ -1,7 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
 
+import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
+
+import java.util.List;
+
 import feign.FeignException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.app.service.DevopsProjectService;
@@ -18,20 +27,11 @@ import io.choerodon.devops.infra.enums.Visibility;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.GitOpsUtil;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-
-import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
 
 @Service
 public class GitlabGroupServiceImpl implements GitlabGroupService {
-    private static Logger LOGGER = LoggerFactory.getLogger(GitlabGroupServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitlabGroupServiceImpl.class);
 
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;

@@ -129,7 +129,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         // 更新pvc
         devopsEnvCommandDTO.setObjectId(pvcId);
         devopsPvcDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
-        devopsPvcDTO.setStatus(PvcStatus.Deleting.getStatus());
+        devopsPvcDTO.setStatus(PvcStatus.DELETING.getStatus());
         baseUpdate(devopsPvcDTO);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
@@ -142,10 +142,10 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         if (devopsEnvFileResourceDTO == null) {
             devopsPvcMapper.deleteByPrimaryKey(pvcId);
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.MASTER,
-                    "pvc-" + devopsPvcDTO.getName() + ".yaml")) {
+                    PERSISTENTVOLUMECLAIM_PREFIX + devopsPvcDTO.getName() + YAML_SUFFIX)) {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
-                        "pvc-" + devopsPvcDTO.getName() + ".yaml",
+                        PERSISTENTVOLUMECLAIM_PREFIX + devopsPvcDTO.getName() + YAML_SUFFIX,
                         "DELETE FILE",
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             }

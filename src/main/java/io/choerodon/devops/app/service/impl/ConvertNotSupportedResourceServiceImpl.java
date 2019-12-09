@@ -28,10 +28,6 @@ public class ConvertNotSupportedResourceServiceImpl extends ConvertK8sObjectServ
     }
 
     @Override
-    public void checkIfExist(List<Object> objects, Long envId, List<DevopsEnvFileResourceDTO> beforeSyncDelete, Map<String, String> objectPath, Object o) {
-    }
-
-    @Override
     public ResourceType getType() {
         return ResourceType.MISSTYPE;
     }

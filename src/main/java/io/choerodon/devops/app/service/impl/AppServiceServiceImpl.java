@@ -1512,12 +1512,12 @@ public class AppServiceServiceImpl implements AppServiceService {
                 roleAssignmentSearchVO.setParam(arrayParams);
             }
             if (!CollectionUtils.isEmpty(searchParamMap)) {
-                if (searchParamMap.get("loginName") != null) {
-                    String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
+                if (searchParamMap.get(LOGIN_NAME) != null) {
+                    String loginName = TypeUtil.objToString(searchParamMap.get(LOGIN_NAME));
                     roleAssignmentSearchVO.setLoginName(loginName);
                 }
-                if (searchParamMap.get("realName") != null) {
-                    String realName = TypeUtil.objToString(searchParamMap.get("realName"));
+                if (searchParamMap.get(REAL_NAME) != null) {
+                    String realName = TypeUtil.objToString(searchParamMap.get(REAL_NAME));
                     roleAssignmentSearchVO.setRealName(realName);
                 }
             }
@@ -1614,7 +1614,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         if (selectedIamUserId != null) {
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(selectedIamUserId);
-            if (members.size() != 0) {
+            if (!CollectionUtils.isEmpty(members)) {
                 members.remove(iamUserDTO);
                 members.add(0, iamUserDTO);
             } else {
@@ -2451,10 +2451,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         });
 
         // 去重
-        ArrayList<ProjectVO> collect = projectVOS.stream().collect(collectingAndThen(
+        return projectVOS.stream().collect(collectingAndThen(
                 toCollection(() -> new TreeSet<>(comparing(ProjectVO::getId))), ArrayList::new));
-
-        return collect;
     }
 
     @Override

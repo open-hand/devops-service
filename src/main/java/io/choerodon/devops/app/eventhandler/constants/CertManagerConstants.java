@@ -7,6 +7,9 @@ package io.choerodon.devops.app.eventhandler.constants;
  * @since 2019/11/1
  */
 public class CertManagerConstants {
+    private CertManagerConstants() {
+    }
+
     /**
      * 创建chart的版本
      */
@@ -35,6 +38,4 @@ public class CertManagerConstants {
     public static final String DELETED = "deleted";
 
     public static final String RELEASE_NAME = "releaseName";
-
-
 }

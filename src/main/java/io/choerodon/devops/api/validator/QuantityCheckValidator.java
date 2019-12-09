@@ -11,11 +11,6 @@ import javax.validation.ConstraintValidatorContext;
  */
 public class QuantityCheckValidator implements ConstraintValidator<QuantityCheck, String> {
     @Override
-    public void initialize(QuantityCheck constraintAnnotation) {
-
-    }
-
-    @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         try {
             if (value.length() == 0) {

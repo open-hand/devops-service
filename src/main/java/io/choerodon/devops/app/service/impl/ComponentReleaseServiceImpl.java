@@ -262,7 +262,7 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
         AppServiceDTO fakeAppService = new AppServiceDTO();
         fakeAppService.setCode(appServiceInstanceDTO.getComponentChartName());
 
-        AppServiceVersionDTO appServiceVersionDTO = ComponentVersionUtil.getComponentVersion(clusterResourceType);;
+        AppServiceVersionDTO appServiceVersionDTO = ComponentVersionUtil.getComponentVersion(clusterResourceType);
 
         devopsEnvCommandDTO.setId(null);
         devopsEnvCommandDTO.setCommandType(CommandType.UPDATE.getType());

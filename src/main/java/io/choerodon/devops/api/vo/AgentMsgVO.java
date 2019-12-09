@@ -11,7 +11,6 @@ public class AgentMsgVO {
     private String type;
     private String payload;
     private Integer msgType;
-    @Deprecated
     private Long commandId;
     @ApiModelProperty("实例对应的commandId/非必填")
     private Long command;
@@ -49,12 +48,10 @@ public class AgentMsgVO {
         this.msgType = msgType;
     }
 
-    @Deprecated
     public Long getCommandId() {
         return commandId;
     }
 
-    @Deprecated
     public void setCommandId(Long commandId) {
         this.commandId = commandId;
     }

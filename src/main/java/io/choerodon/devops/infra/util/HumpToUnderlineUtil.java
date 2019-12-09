@@ -11,6 +11,9 @@ import org.springframework.util.StringUtils;
 public final class HumpToUnderlineUtil {
     private static final String UNDERLINE = "_";
 
+    private HumpToUnderlineUtil() {
+    }
+
     /**
      * 驼峰转下划线格式
      *

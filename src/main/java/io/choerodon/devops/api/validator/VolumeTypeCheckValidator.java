@@ -8,11 +8,6 @@ import javax.validation.ConstraintValidatorContext;
 
 public class VolumeTypeCheckValidator implements ConstraintValidator<VolumeTypeCheck, String> {
     @Override
-    public void initialize(VolumeTypeCheck constraintAnnotation) {
-
-    }
-
-    @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         try {
             if (value.length() == 0) {

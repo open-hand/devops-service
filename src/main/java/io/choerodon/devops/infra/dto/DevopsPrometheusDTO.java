@@ -47,10 +47,6 @@ public class DevopsPrometheusDTO extends BaseDTO {
     @Transient
     private DevopsPvDTO grafanaPv;
 
-//    @ApiModelProperty("pvc")
-//    @Transient
-//    private List<DevopsPvcDTO> devopsPvcList;
-
     public Long getId() {
         return id;
     }
@@ -90,14 +86,6 @@ public class DevopsPrometheusDTO extends BaseDTO {
     public void setClusterCode(String clusterCode) {
         this.clusterCode = clusterCode;
     }
-
-//    public List<DevopsPvcDTO> getDevopsPvcList() {
-//        return devopsPvcList;
-//    }
-//
-//    public void setDevopsPvcList(List<DevopsPvcDTO> devopsPvcList) {
-//        this.devopsPvcList = devopsPvcList;
-//    }
 
     public Long getPrometheusPvId() {
         return prometheusPvId;

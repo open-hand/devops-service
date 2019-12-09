@@ -1084,51 +1084,51 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsServiceService.updateStatus(devopsServiceDTO);
     }
 
-    private void syncService(DevopsServiceDTO devopsServiceDTO, String msg, AppServiceInstanceDTO appServiceInstanceDTO) {
-        V1Service v1Service = json.deserialize(msg, V1Service.class);
-        Map<String, String> lab = v1Service.getMetadata().getLabels();
-        if (lab.get(SERVICE_LABLE) != null && lab.get(SERVICE_LABLE).equals(SERVICE_KIND)) {
-            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(
-                    appServiceInstanceDTO.getEnvId());
-            if (devopsServiceService.baseQueryByNameAndEnvId(
-                    v1Service.getMetadata().getName(), devopsEnvironmentDTO.getId()) == null) {
-                devopsServiceDTO.setEnvId(devopsEnvironmentDTO.getId());
-                devopsServiceDTO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
-                devopsServiceDTO.setName(v1Service.getMetadata().getName());
-                devopsServiceDTO.setType(v1Service.getSpec().getType());
-                devopsServiceDTO.setStatus(ServiceStatus.RUNNING.getStatus());
-                devopsServiceDTO.setPorts(gson.fromJson(
-                        gson.toJson(v1Service.getSpec().getPorts()),
-                        new TypeToken<ArrayList<PortMapVO>>() {
-                        }.getType()));
-                if (v1Service.getSpec().getExternalIPs() != null) {
-                    devopsServiceDTO.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
-                }
-//                devopsServiceDTO.setLabels(json.serialize(v1Service.getMetadata().getLabels()));
-                devopsServiceDTO.setAnnotations(json.serialize(v1Service.getMetadata().getAnnotations()));
-                devopsServiceDTO.setId(devopsServiceService.baseCreate(devopsServiceDTO).getId());
-
-                DevopsServiceInstanceDTO devopsServiceInstanceDTO = devopsServiceInstanceService
-                        .baseQueryByOptions(devopsServiceDTO.getId(), appServiceInstanceDTO.getId());
-                if (devopsServiceInstanceDTO == null) {
-                    devopsServiceInstanceDTO = new DevopsServiceInstanceDTO();
-                    devopsServiceInstanceDTO.setServiceId(devopsServiceDTO.getId());
-                    devopsServiceInstanceDTO.setInstanceId(appServiceInstanceDTO.getId());
-                    devopsServiceInstanceService.baseCreate(devopsServiceInstanceDTO);
-                }
-
-                DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
-                devopsEnvCommandDTO.setObject(ObjectType.SERVICE.getType());
-                devopsEnvCommandDTO.setObjectId(devopsServiceDTO.getId());
-                devopsEnvCommandDTO.setCommandType(CommandType.CREATE.getType());
-                devopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
-                devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
-            }
-        } else {
-            devopsEnvResourceService.deleteByEnvIdAndKindAndName(appServiceInstanceDTO.getEnvId(),
-                    ResourceType.SERVICE.getType(), v1Service.getMetadata().getName());
-        }
-    }
+//    private void syncService(DevopsServiceDTO devopsServiceDTO, String msg, AppServiceInstanceDTO appServiceInstanceDTO) {
+//        V1Service v1Service = json.deserialize(msg, V1Service.class);
+//        Map<String, String> lab = v1Service.getMetadata().getLabels();
+//        if (lab.get(SERVICE_LABLE) != null && lab.get(SERVICE_LABLE).equals(SERVICE_KIND)) {
+//            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(
+//                    appServiceInstanceDTO.getEnvId());
+//            if (devopsServiceService.baseQueryByNameAndEnvId(
+//                    v1Service.getMetadata().getName(), devopsEnvironmentDTO.getId()) == null) {
+//                devopsServiceDTO.setEnvId(devopsEnvironmentDTO.getId());
+//                devopsServiceDTO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
+//                devopsServiceDTO.setName(v1Service.getMetadata().getName());
+//                devopsServiceDTO.setType(v1Service.getSpec().getType());
+//                devopsServiceDTO.setStatus(ServiceStatus.RUNNING.getStatus());
+//                devopsServiceDTO.setPorts(gson.fromJson(
+//                        gson.toJson(v1Service.getSpec().getPorts()),
+//                        new TypeToken<ArrayList<PortMapVO>>() {
+//                        }.getType()));
+//                if (v1Service.getSpec().getExternalIPs() != null) {
+//                    devopsServiceDTO.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
+//                }
+////                devopsServiceDTO.setLabels(json.serialize(v1Service.getMetadata().getLabels()));
+//                devopsServiceDTO.setAnnotations(json.serialize(v1Service.getMetadata().getAnnotations()));
+//                devopsServiceDTO.setId(devopsServiceService.baseCreate(devopsServiceDTO).getId());
+//
+//                DevopsServiceInstanceDTO devopsServiceInstanceDTO = devopsServiceInstanceService
+//                        .baseQueryByOptions(devopsServiceDTO.getId(), appServiceInstanceDTO.getId());
+//                if (devopsServiceInstanceDTO == null) {
+//                    devopsServiceInstanceDTO = new DevopsServiceInstanceDTO();
+//                    devopsServiceInstanceDTO.setServiceId(devopsServiceDTO.getId());
+//                    devopsServiceInstanceDTO.setInstanceId(appServiceInstanceDTO.getId());
+//                    devopsServiceInstanceService.baseCreate(devopsServiceInstanceDTO);
+//                }
+//
+//                DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
+//                devopsEnvCommandDTO.setObject(ObjectType.SERVICE.getType());
+//                devopsEnvCommandDTO.setObjectId(devopsServiceDTO.getId());
+//                devopsEnvCommandDTO.setCommandType(CommandType.CREATE.getType());
+//                devopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
+//                devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
+//            }
+//        } else {
+//            devopsEnvResourceService.deleteByEnvIdAndKindAndName(appServiceInstanceDTO.getEnvId(),
+//                    ResourceType.SERVICE.getType(), v1Service.getMetadata().getName());
+//        }
+//    }
 
     private void syncIngress(Long envId, List<DevopsEnvFileErrorDTO> errorDevopsFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO;
@@ -1646,7 +1646,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
         AgentMsgStatusVO agentMsgStatusVO = json.deserialize(agentMsgVO.getPayload(), AgentMsgStatusVO.class);
         //如果集群安装了cert_manager而数据库没有数据就插入数据库
-        if (Objects.isNull(devopsClusterResourceDTO) && CertManagerConstants.RUNNING.equals(agentMsgStatusVO.getStatus().toLowerCase())) {
+        if (Objects.isNull(devopsClusterResourceDTO) && CertManagerConstants.RUNNING.equalsIgnoreCase(agentMsgStatusVO.getStatus())) {
             DevopsClusterResourceDTO clusterResourceDTO = new DevopsClusterResourceDTO();
             clusterResourceDTO.setType(ClusterResourceType.CERTMANAGER.getType());
             clusterResourceDTO.setClusterId(clusterId);
@@ -1670,7 +1670,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         if (!ObjectUtils.isEmpty(devopsClusterResourceDTO)) {
             //安装返回,如果不是running状态就是不可用
             if (ClusterResourceOperateType.INSTALL.getType().equals(devopsClusterResourceDTO.getOperate())) {
-                if (CertManagerConstants.RUNNING.equals(agentMsgStatusVO.getStatus().toLowerCase())) {
+                if (CertManagerConstants.RUNNING.equalsIgnoreCase(agentMsgStatusVO.getStatus())) {
                     devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.AVAILABLE.getStatus().toLowerCase(), null);
                 } else {
                     devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.DISABLED.getStatus().toLowerCase(), agentMsgVO.getPayload());
@@ -1678,7 +1678,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             }
             //卸载返回
             if (ClusterResourceOperateType.UNINSTALL.getType().equals(devopsClusterResourceDTO.getOperate())) {
-                if (CertManagerConstants.DELETED.equals(agentMsgStatusVO.getStatus().toLowerCase())) {
+                if (CertManagerConstants.DELETED.equalsIgnoreCase(agentMsgStatusVO.getStatus())) {
                     devopsClusterResourceService.unloadCertManager(clusterId);
                 } else {
                     devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.DISABLED.getStatus().toLowerCase(), agentMsgVO.getPayload());

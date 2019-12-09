@@ -103,7 +103,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
         devopsClusterResourceDTO.setType(ClusterResourceType.CERTMANAGER.getType());
         devopsClusterResourceDTO.setClusterId(clusterId);
-        DevopsClusterResourceDTO clusterResourceDTO = devopsClusterResourceMapper.selectOne(devopsClusterResourceDTO);
 
         DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = new DevopsCertManagerRecordDTO();
         devopsCertManagerRecordDTO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
@@ -322,7 +321,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             throw new CommonException("error.prometheus.update");
         }
         // 添加prometheus挂载的pvc
-//        addPvcList(devopsPrometheusDTO);
         DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         clusterResourceDTO.setOperate(ClusterResourceOperateType.UPGRADE.getType());
 
@@ -393,7 +391,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
-    @Transactional
     public ClusterResourceVO queryPrometheusStatus(Long projectId, Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         ClusterResourceVO clusterResourceVO = new ClusterResourceVO();
@@ -512,10 +509,10 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         //健康检查，ready=true的pod大于1就是可用的
         devopsEnvPodDTOS.forEach(devopsEnvPodVO -> {
             if (Boolean.TRUE.equals(devopsEnvPodVO.getReady())) {
-                readyPod.addAll(devopsEnvPodVO.getContainers().stream().filter(pod -> pod.getReady()).collect(Collectors.toList()));
+                readyPod.addAll(devopsEnvPodVO.getContainers().stream().filter(ContainerVO::getReady).collect(Collectors.toList()));
             }
         });
-        if (readyPod.size() >= 1) {
+        if (!readyPod.isEmpty()) {
             clusterResourceVO.setStatus(ClusterResourceStatus.AVAILABLE.getStatus());
         } else {
             clusterResourceVO.setStatus(ClusterResourceStatus.DISABLED.getStatus());
@@ -553,24 +550,13 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         } else {
             List<DevopsEnvFileErrorDTO> fileErrorDTOList = devopsEnvFileErrorService.baseListByEnvId(envId);
             if (CommandStatus.OPERATING.getStatus().equals(prometheusCommand.getStatus())
-                    && (fileErrorDTOList == null || fileErrorDTOList.size() == 0)) {
+                    && (fileErrorDTOList == null || fileErrorDTOList.isEmpty())) {
                 return PrometheusDeploy.OPERATING.getStaus();
             } else {
                 return PrometheusDeploy.FAILED.getStaus();
             }
         }
     }
-
-//    private void addPvcList(DevopsPrometheusDTO devopsPrometheusDTO) {
-//        DevopsPvcDTO prometheusPvcDTO = devopsPvcService.queryByPvId(devopsPrometheusDTO.getPrometheusPvId());
-//        DevopsPvcDTO grafanaPvcDTO = devopsPvcService.queryByPvId(devopsPrometheusDTO.getGrafanaPvId());
-//        DevopsPvcDTO alertmanagerDTO = devopsPvcService.queryByPvId(devopsPrometheusDTO.getAlertmanagerPvId());
-//        List<DevopsPvcDTO> devopsPvcDTOList = new ArrayList<>();
-//        devopsPvcDTOList.add(prometheusPvcDTO);
-//        devopsPvcDTOList.add(grafanaPvcDTO);
-//        devopsPvcDTOList.add(alertmanagerDTO);
-//        devopsPrometheusDTO.setDevopsPvcList(devopsPvcDTOList);
-//    }
 
     private Boolean checkValidity(Date date, Date validFrom, Date validUntil) {
         return validFrom != null && validUntil != null

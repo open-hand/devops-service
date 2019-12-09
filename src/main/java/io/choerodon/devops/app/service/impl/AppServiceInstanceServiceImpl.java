@@ -1173,85 +1173,85 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
 
-    private void initInstanceOverView(AppServiceInstanceOverViewVO appServiceInstanceOverViewVO, AppServiceInstanceOverViewDTO appServiceInstanceOverViewDTO,
-                                      Long latestVersionId) {
-        EnvVersionVO envVersionVO = new EnvVersionVO(
-                appServiceInstanceOverViewDTO.getVersionId(),
-                appServiceInstanceOverViewDTO.getVersion(),
-                appServiceInstanceOverViewDTO.getInstanceId(),
-                appServiceInstanceOverViewDTO.getInstanceCode(),
-                appServiceInstanceOverViewDTO.getInstanceStatus());
-        EnvInstanceVO envInstanceVO = new EnvInstanceVO(appServiceInstanceOverViewDTO.getEnvId());
-        if (appServiceInstanceOverViewDTO.getVersionId().equals(latestVersionId)) {
-            envVersionVO.setLatest(true);
-        }
-        envInstanceVO.addEnvVersionDTOS(envVersionVO);
-        appServiceInstanceOverViewVO.appendEnvInstanceVOS(envInstanceVO);
-        if (appServiceInstanceOverViewVO.getLatestVersionId().equals(appServiceInstanceOverViewDTO.getVersionId())) {
-            appServiceInstanceOverViewVO.appendInstances(new EnvInstancesVO(
-                    appServiceInstanceOverViewDTO.getInstanceId(), appServiceInstanceOverViewDTO.getInstanceCode(), appServiceInstanceOverViewDTO.getInstanceStatus()));
-        }
-    }
-
-
-    private void initInstanceOverViewIfNotExist(AppServiceInstanceOverViewVO appServiceInstanceOverViewVO,
-                                                AppServiceInstanceOverViewDTO appServiceInstanceOverViewDTO) {
-        EnvInstanceVO envInstanceVO = appServiceInstanceOverViewVO.queryLastEnvInstanceVO();
-        if (appServiceInstanceOverViewVO.getLatestVersionId().equals(appServiceInstanceOverViewDTO.getVersionId())) {
-            appServiceInstanceOverViewVO.appendInstances(new EnvInstancesVO(
-                    appServiceInstanceOverViewDTO.getInstanceId(), appServiceInstanceOverViewDTO.getInstanceCode(), appServiceInstanceOverViewDTO.getInstanceStatus()));
-        }
-        if (envInstanceVO.getEnvId().equals(appServiceInstanceOverViewDTO.getEnvId())) {
-            EnvVersionVO envVersionVO = envInstanceVO.queryLastEnvVersionVO();
-            if (envVersionVO.getVersion().equals(appServiceInstanceOverViewDTO.getVersion())) {
-                envVersionVO.appendInstanceList(
-                        appServiceInstanceOverViewDTO.getInstanceId(),
-                        appServiceInstanceOverViewDTO.getInstanceCode(),
-                        appServiceInstanceOverViewDTO.getInstanceStatus());
-            } else {
-                envInstanceVO.addEnvVersionDTOS(new EnvVersionVO(
-                        appServiceInstanceOverViewDTO.getVersionId(),
-                        appServiceInstanceOverViewDTO.getVersion(),
-                        appServiceInstanceOverViewDTO.getInstanceId(),
-                        appServiceInstanceOverViewDTO.getInstanceCode(),
-                        appServiceInstanceOverViewDTO.getInstanceStatus()));
-            }
-        } else {
-            EnvVersionVO envVersionVO = new EnvVersionVO(
-                    appServiceInstanceOverViewDTO.getVersionId(),
-                    appServiceInstanceOverViewDTO.getVersion(),
-                    appServiceInstanceOverViewDTO.getInstanceId(),
-                    appServiceInstanceOverViewDTO.getInstanceCode(),
-                    appServiceInstanceOverViewDTO.getInstanceStatus());
-            envInstanceVO = new EnvInstanceVO(appServiceInstanceOverViewDTO.getEnvId());
-            if (appServiceInstanceOverViewDTO.getVersionId().equals(appServiceInstanceOverViewVO.getLatestVersionId())) {
-                envVersionVO.setLatest(true);
-            }
-            envInstanceVO.addEnvVersionDTOS(envVersionVO);
-            appServiceInstanceOverViewVO.appendEnvInstanceVOS(envInstanceVO);
-        }
-    }
-
-    /**
-     * 创建远程配置
-     *
-     * @param type
-     * @param code
-     * @param configVO
-     * @return
-     */
-    private DevopsConfigDTO createConfig(String type, String code, ConfigVO configVO) {
-        String name = code + "-" + type;
-        DevopsConfigDTO devopsConfigDTO = devopsConfigService.baseCheckByName(name);
-        if (devopsConfigDTO == null) {
-            devopsConfigDTO = new DevopsConfigDTO();
-            devopsConfigDTO.setConfig(gson.toJson(configVO));
-            devopsConfigDTO.setName(name);
-            devopsConfigDTO.setType(type);
-            return devopsConfigService.baseCreate(devopsConfigDTO);
-        }
-        return devopsConfigDTO;
-    }
+//    private void initInstanceOverView(AppServiceInstanceOverViewVO appServiceInstanceOverViewVO, AppServiceInstanceOverViewDTO appServiceInstanceOverViewDTO,
+//                                      Long latestVersionId) {
+//        EnvVersionVO envVersionVO = new EnvVersionVO(
+//                appServiceInstanceOverViewDTO.getVersionId(),
+//                appServiceInstanceOverViewDTO.getVersion(),
+//                appServiceInstanceOverViewDTO.getInstanceId(),
+//                appServiceInstanceOverViewDTO.getInstanceCode(),
+//                appServiceInstanceOverViewDTO.getInstanceStatus());
+//        EnvInstanceVO envInstanceVO = new EnvInstanceVO(appServiceInstanceOverViewDTO.getEnvId());
+//        if (appServiceInstanceOverViewDTO.getVersionId().equals(latestVersionId)) {
+//            envVersionVO.setLatest(true);
+//        }
+//        envInstanceVO.addEnvVersionDTOS(envVersionVO);
+//        appServiceInstanceOverViewVO.appendEnvInstanceVOS(envInstanceVO);
+//        if (appServiceInstanceOverViewVO.getLatestVersionId().equals(appServiceInstanceOverViewDTO.getVersionId())) {
+//            appServiceInstanceOverViewVO.appendInstances(new EnvInstancesVO(
+//                    appServiceInstanceOverViewDTO.getInstanceId(), appServiceInstanceOverViewDTO.getInstanceCode(), appServiceInstanceOverViewDTO.getInstanceStatus()));
+//        }
+//    }
+//
+//
+//    private void initInstanceOverViewIfNotExist(AppServiceInstanceOverViewVO appServiceInstanceOverViewVO,
+//                                                AppServiceInstanceOverViewDTO appServiceInstanceOverViewDTO) {
+//        EnvInstanceVO envInstanceVO = appServiceInstanceOverViewVO.queryLastEnvInstanceVO();
+//        if (appServiceInstanceOverViewVO.getLatestVersionId().equals(appServiceInstanceOverViewDTO.getVersionId())) {
+//            appServiceInstanceOverViewVO.appendInstances(new EnvInstancesVO(
+//                    appServiceInstanceOverViewDTO.getInstanceId(), appServiceInstanceOverViewDTO.getInstanceCode(), appServiceInstanceOverViewDTO.getInstanceStatus()));
+//        }
+//        if (envInstanceVO.getEnvId().equals(appServiceInstanceOverViewDTO.getEnvId())) {
+//            EnvVersionVO envVersionVO = envInstanceVO.queryLastEnvVersionVO();
+//            if (envVersionVO.getVersion().equals(appServiceInstanceOverViewDTO.getVersion())) {
+//                envVersionVO.appendInstanceList(
+//                        appServiceInstanceOverViewDTO.getInstanceId(),
+//                        appServiceInstanceOverViewDTO.getInstanceCode(),
+//                        appServiceInstanceOverViewDTO.getInstanceStatus());
+//            } else {
+//                envInstanceVO.addEnvVersionDTOS(new EnvVersionVO(
+//                        appServiceInstanceOverViewDTO.getVersionId(),
+//                        appServiceInstanceOverViewDTO.getVersion(),
+//                        appServiceInstanceOverViewDTO.getInstanceId(),
+//                        appServiceInstanceOverViewDTO.getInstanceCode(),
+//                        appServiceInstanceOverViewDTO.getInstanceStatus()));
+//            }
+//        } else {
+//            EnvVersionVO envVersionVO = new EnvVersionVO(
+//                    appServiceInstanceOverViewDTO.getVersionId(),
+//                    appServiceInstanceOverViewDTO.getVersion(),
+//                    appServiceInstanceOverViewDTO.getInstanceId(),
+//                    appServiceInstanceOverViewDTO.getInstanceCode(),
+//                    appServiceInstanceOverViewDTO.getInstanceStatus());
+//            envInstanceVO = new EnvInstanceVO(appServiceInstanceOverViewDTO.getEnvId());
+//            if (appServiceInstanceOverViewDTO.getVersionId().equals(appServiceInstanceOverViewVO.getLatestVersionId())) {
+//                envVersionVO.setLatest(true);
+//            }
+//            envInstanceVO.addEnvVersionDTOS(envVersionVO);
+//            appServiceInstanceOverViewVO.appendEnvInstanceVOS(envInstanceVO);
+//        }
+//    }
+//
+//    /**
+//     * 创建远程配置
+//     *
+//     * @param type
+//     * @param code
+//     * @param configVO
+//     * @return
+//     */
+//    private DevopsConfigDTO createConfig(String type, String code, ConfigVO configVO) {
+//        String name = code + "-" + type;
+//        DevopsConfigDTO devopsConfigDTO = devopsConfigService.baseCheckByName(name);
+//        if (devopsConfigDTO == null) {
+//            devopsConfigDTO = new DevopsConfigDTO();
+//            devopsConfigDTO.setConfig(gson.toJson(configVO));
+//            devopsConfigDTO.setName(name);
+//            devopsConfigDTO.setType(type);
+//            return devopsConfigService.baseCreate(devopsConfigDTO);
+//        }
+//        return devopsConfigDTO;
+//    }
 
 
     private void updateInstanceStatus(Long instanceId, Long commandId, String status) {

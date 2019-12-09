@@ -26,8 +26,6 @@ public class ExecMessageHandler {
     @Lazy
     private WebSocketHelper webSocketHelper;
 
-    public ExecMessageHandler() {
-    }
 
     public void handle(WebSocketSession webSocketSession, BinaryMessage message) {
 

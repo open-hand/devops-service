@@ -7,6 +7,9 @@ package io.choerodon.devops.infra.constant;
  * @since 12/6/19
  */
 public class NoticeCodeConstants {
+    private NoticeCodeConstants() {
+    }
+
     public static final String APP_SERVICE_CREATION_FAILED = "appServiceCreationFailure";
     public static final String APP_SERVICE_ENABLED = "enableAppService";
     public static final String APP_SERVICE_DISABLE = "disableAppService";
