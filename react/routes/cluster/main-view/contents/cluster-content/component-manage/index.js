@@ -32,7 +32,7 @@ export default observer((props) => {
     projectId,
     clusterId,
   } = useClusterContentStore();
-  
+
   function getClusterConnect() {
     return ClusterDetailDs.current.get('connect');
   }
@@ -125,12 +125,22 @@ export default observer((props) => {
           ];
           break;
         case 'processing':
-          buttonData = [
-            {
-              text: formatMessage({ id: 'uninstall' }),
-              loading: true,
-            },
-          ];
+          if (operate === 'install') {
+            buttonData = [
+              {
+                text: formatMessage({ id: 'install' }),
+                loading: true,
+              },
+            ];
+          } else {
+            buttonData = [
+              {
+                text: formatMessage({ id: 'uninstall' }),
+                loading: operate !== 'upgrade',
+                disabled,
+              },
+            ];
+          }
           break;
         case 'available':
         case 'disabled':
