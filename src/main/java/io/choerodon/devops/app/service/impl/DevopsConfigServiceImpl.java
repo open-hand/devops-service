@@ -51,10 +51,9 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     private static final String AUTHTYPE_PULL = "pull";
     private static final String AUTHTYPE_PUSH = "push";
     private static final String CHART = "chart";
-    private static final String CUSTOM = "custom";
     private static final Gson gson = new Gson();
     private static final String USER_PREFIX = "User%s%s";
-    private static final String USER_PREFIX_PULL = "pullUser%s%s";
+    private static final String ERROR_CREATE_HARBOR_USER = "error.create.harbor.user";
 
     @Autowired
     private DevopsConfigMapper devopsConfigMapper;
@@ -265,7 +264,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     throw new CommonException("error.harbor.get.project");
                 }
             } catch (Exception e) {
-                throw new CommonException(e);
+                throw new CommonException(e.getMessage(), e);
             }
         }
 
@@ -494,7 +493,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     }
 
     @Override
-    public void operateConfig(Long organizationId, String resourceType, DevopsConfigRepVO devopsConfigRepVO) {
+    public void operateConfig(Long resourceId, String resourceType, DevopsConfigRepVO devopsConfigRepVO) {
         List<DevopsConfigVO> configVOS = new ArrayList<>();
         DevopsConfigVO harbor = new DevopsConfigVO();
         DevopsConfigVO chart = new DevopsConfigVO();
@@ -516,7 +515,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         } else {
             configVOS.add(devopsConfigRepVO.getChart());
         }
-        operate(organizationId, resourceType, configVOS);
+        operate(resourceId, resourceType, configVOS);
     }
 
     @Override
@@ -559,36 +558,36 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         try {
             Response<List<User>> users = harborClient.listUser(user.getUsername()).execute();
             if (users.raw().code() != 200) {
-                throw new CommonException(users.errorBody().string());
+                throw new CommonException(ERROR_CREATE_HARBOR_USER);
             }
-            if (users.body().isEmpty()) {
+            if (users.body() == null || users.body().isEmpty()) {
                 result = harborClient.insertUser(user).execute();
                 if (result.raw().code() != 201 && result.raw().code() != 409) {
-                    throw new CommonException(result.errorBody().string());
+                    throw new CommonException(ERROR_CREATE_HARBOR_USER);
                 }
             } else {
                 Boolean exist = users.body().stream().anyMatch(user1 -> user1.getUsername().equals(user.getUsername()));
                 if (!exist) {
                     result = harborClient.insertUser(user).execute();
                     if (result.raw().code() != 201 && result.raw().code() != 409) {
-                        throw new CommonException(result.errorBody().string());
+                        throw new CommonException(ERROR_CREATE_HARBOR_USER);
                     }
                 }
             }
             //给项目绑定角色
             Response<List<ProjectDetail>> projects = harborClient.listProject(organizationDTO.getCode() + "-" + projectDTO.getCode()).execute();
-            if (!projects.body().isEmpty()) {
+            if (projects.body() != null && !projects.body().isEmpty()) {
                 ProjectDetail projectDetail = new ProjectDetail();
                 Metadata metadata = new Metadata();
                 metadata.setHarborPublic("false");
                 projectDetail.setMetadata(metadata);
                 result = harborClient.updateProject(projects.body().get(0).getProjectId(), projectDetail).execute();
                 if (result.raw().code() != 200) {
-                    throw new CommonException(result.errorBody().string());
+                    throw new CommonException("error.update.harbor.project");
                 }
                 Response<SystemInfo> systemInfoResponse = harborClient.getSystemInfo().execute();
                 if (systemInfoResponse.raw().code() != 200) {
-                    throw new CommonException(systemInfoResponse.errorBody().string());
+                    throw new CommonException("error.get.harbor.info");
                 }
 
                 if (systemInfoResponse.body().getHarborVersion().equals("v1.4.0")) {
@@ -605,7 +604,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), projectMember).execute();
                 }
                 if (result.raw().code() != 201 && result.raw().code() != 200 && result.raw().code() != 409) {
-                    throw new CommonException(result.errorBody().string());
+                    throw new CommonException("error.create.harbor.project.member");
                 }
             }
         } catch (IOException e) {
