@@ -155,11 +155,13 @@ public interface DevopsPvService {
 
     /**
      * 供创建pvc时查询可用pv时用
-     *
+     * @param projectId
+     * @param envId
+     * @param clusterId
      * @param params
      * @return
      */
-    List<DevopsPvVO> queryPvcRelatedPv(Long projectId, String params);
+    List<DevopsPvVO> queryPvcRelatedPv(Long projectId, Long envId, Long clusterId, String params);
 
     /**
      * 根据集群ID查询集群

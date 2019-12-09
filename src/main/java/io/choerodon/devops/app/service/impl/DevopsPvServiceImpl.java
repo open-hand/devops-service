@@ -96,6 +96,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 .doSelectPageInfo(() -> devopsPvMapper.listPvByOptions(
                         projectDTO.getOrganizationId(),
                         projectId,
+                        null,
                         orderBy,
                         TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))
@@ -668,7 +669,15 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     }
 
     @Override
-    public List<DevopsPvVO> queryPvcRelatedPv(Long projectId, String params) {
+    public List<DevopsPvVO> queryPvcRelatedPv(Long projectId, Long envId, Long clusterId, String params) {
+        if (clusterId == null) {
+            if (envId != null) {
+                DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+                clusterId = devopsEnvironmentDTO.getClusterId();
+            } else {
+                throw new CommonException("error.envId.and.clusterId.null");
+            }
+        }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
         Map<String, String> map = (Map) searchParamMap.get(TypeUtil.SEARCH_PARAM);
@@ -676,6 +685,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         List<DevopsPvVO> devopsPvVOList = ConvertUtils.convertList(devopsPvMapper.listPvByOptions(
                 projectDTO.getOrganizationId(),
                 null,
+                clusterId,
                 null,
                 TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))), DevopsPvVO.class);

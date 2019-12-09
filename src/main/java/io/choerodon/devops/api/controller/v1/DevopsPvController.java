@@ -266,9 +266,13 @@ public class DevopsPvController {
     public ResponseEntity<List<DevopsPvVO>> queryPvcRelatedPv(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id")
+            @RequestParam(value = "env_id", required = false) Long envId,
+            @ApiParam(value = "集群id")
+            @RequestParam(value = "cluster_id", required = false) Long clusterId,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvService.queryPvcRelatedPv(projectId, params))
+        return Optional.ofNullable(devopsPvService.queryPvcRelatedPv(projectId, envId, clusterId, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
     }
