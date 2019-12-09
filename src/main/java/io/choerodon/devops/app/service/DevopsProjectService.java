@@ -52,7 +52,7 @@ public interface DevopsProjectService {
      * @param projectId 项目id
      * @return 项目所有者和项目成员
      */
-    List<UserVO> listAllOwnerAndMembers(Long projectId);
+    PageInfo<UserVO> listAllOwnerAndMembers(Long projectId, Long selectedIamUserId, Pageable pageable);
 
     List<DevopsProjectDTO> listAll();
 }
