@@ -207,8 +207,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         if (selectedProjectId != null) {
             ProjectDTO selectedProjectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
             ProjectReqVO projectReqVO = new ProjectReqVO(selectedProjectDTO.getId(), selectedProjectDTO.getName(), selectedProjectDTO.getCode());
-            projectReqVOS.remove(projectReqVO);
-            projectReqVOS.set(0, projectReqVO);
+            if (projectReqVOS.size() != 0) {
+                projectReqVOS.remove(projectReqVO);
+                projectReqVOS.add(0, projectReqVO);
+            } else {
+                projectReqVOS.add(projectReqVO);
+            }
         }
         return PageInfoUtil.createPageFromList(projectReqVOS, pageable);
     }

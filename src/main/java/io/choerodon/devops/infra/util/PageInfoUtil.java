@@ -41,8 +41,8 @@ public class PageInfoUtil {
             } else {
                 size = pageable.getPageSize();
             }
-            // 只有一页
-            if (result.getPages() == 1) {
+            // 页数小于等于1
+            if (result.getPages() <= 1) {
                 result.setHasPreviousPage(false);
                 result.setHasNextPage(false);
                 result.setIsFirstPage(true);

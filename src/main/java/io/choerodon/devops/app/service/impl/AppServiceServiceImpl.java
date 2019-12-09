@@ -1614,8 +1614,12 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         if (selectedIamUserId != null) {
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(selectedIamUserId);
-            members.remove(iamUserDTO);
-            members.set(0, iamUserDTO);
+            if (members.size() != 0) {
+                members.remove(iamUserDTO);
+                members.add(0, iamUserDTO);
+            } else {
+                members.add(iamUserDTO);
+            }
         }
 
         PageInfo<IamUserDTO> pageInfo;
