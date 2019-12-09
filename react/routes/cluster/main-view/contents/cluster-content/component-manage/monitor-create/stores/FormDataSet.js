@@ -20,7 +20,7 @@ export default ({ formatMessage, intlPrefix, projectId, clusterId, pvDs }) => ({
       });
     },
     update: ({ data: [data] }) => {
-      const postData = pick(data, ['adminPassword', 'grafanaDomain', 'objectVersionNumber']);
+      const postData = omit(data, ['__id', '__status']);
       return ({
         url: `/devops/v1/projects/${projectId}/cluster_resource/prometheus?cluster_id=${clusterId}`,
         method: 'put',
