@@ -23,6 +23,9 @@
             <if test="projectId!=null">
                 AND dpv.project_id=#{projectId}
             </if>
+            <if test="clusterId!=null">
+                AND dpv.cluster_id=#{clusterId}
+            </if>
         <include refid="sqlparams"/>
         </where>
         ORDER BY
