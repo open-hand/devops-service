@@ -1268,7 +1268,7 @@ const cluster = {
   'c7ncd.cluster.monitor.uninstall': '卸载监控组件',
   'c7ncd.cluster.monitor.uninstall.des': '确定要卸载监控组件吗？',
   'c7ncd.cluster.cert.uninstall': '卸载CertManager',
-  'c7ncd.cluster.cert.uninstall.des': '确定要卸载CertManager吗？',
+  'c7ncd.cluster.cert.uninstall.des': '确定要卸载该组件？卸载后，将不能在该集群关联的环境中使用申请证书与上传证书的功能。',
   'c7ncd.cluster.cert.uninstall.disabled': '无法卸载CertManager',
   'c7ncd.cluster.install.step.parserPvc': '创建PVC',
   'c7ncd.cluster.install.step.boundPvc': '绑定PV',

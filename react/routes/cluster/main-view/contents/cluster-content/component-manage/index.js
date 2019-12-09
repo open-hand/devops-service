@@ -32,7 +32,7 @@ export default observer((props) => {
     projectId,
     clusterId,
   } = useClusterContentStore();
-  
+
   function getClusterConnect() {
     return ClusterDetailDs.current.get('connect');
   }
@@ -125,12 +125,21 @@ export default observer((props) => {
           ];
           break;
         case 'processing':
-          buttonData = [
-            {
-              text: formatMessage({ id: 'install' }),
-              loading: true,
-            },
-          ];
+          if (operate === 'install') {
+            buttonData = [
+              {
+                text: formatMessage({ id: 'install' }),
+                loading: true,
+              },
+            ];
+          } else {
+            buttonData = [
+              {
+                text: formatMessage({ id: 'uninstall' }),
+                loading: true,
+              },
+            ];
+          }
           break;
         case 'available':
         case 'disabled':
@@ -203,7 +212,9 @@ export default observer((props) => {
             okText: formatMessage({ id: 'uninstall' }),
             okCancel: true,
             onOk: handleUninstallCert,
-            footer: (okBtn, cancelBtn) => <div>{okBtn}{cancelBtn}</div>,
+            okProps: { color: 'red' },
+            cancelProps: { color: 'dark' },
+            footer: (okBtn, cancelBtn) => <div>{cancelBtn}{okBtn}</div>,
           });
         } else {
           deleteModal.update({
