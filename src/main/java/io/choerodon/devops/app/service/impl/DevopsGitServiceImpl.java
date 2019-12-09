@@ -564,8 +564,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             LOGGER.debug("Endpoints: {}", resourceKindMap.get(V1Endpoints.class));
             resourceKindMap.forEach((k, v) -> {
                 HandlerObjectFileRelationsService handler = objectFileRelationHandlers.get(k);
-                if (handler == null && k != V1Endpoints.class) {
-                    LOGGER.info("Handler is unexpectedly null. The resource kind is {}", k);
+                if (handler == null) {
+                    if (k != V1Endpoints.class) {
+                        LOGGER.info("Handler is unexpectedly null. The resource kind is {}", k);
+                    }
                     return;
                 }
                 handler.handlerRelations(objectPath, beforeSyncFileResource, v, resourceKindMap.get(V1Endpoints.class), envId, projectId, path, userId);
