@@ -13,9 +13,8 @@ import io.choerodon.devops.infra.constant.NoticeCodeConstants;
  */
 @NotifyBusinessType(code = NoticeCodeConstants.APP_SERVICE_CREATION_FAILED,
         name = "创建应用服务失败", level = Level.PROJECT,
-        description = "创建应用服务失败通知", isAllowConfig = false, isManualRetry = true, categoryCode = "app-service-notice",
+        description = "创建应用服务失败通知", isManualRetry = true, categoryCode = "app-service-notice",
         pmEnabledFlag = true,
-        emailEnabledFlag = true,
         proPmEnabledFlag = true,
         notifyType = ServiceNotifyType.DEVOPS_NOTIFY,
         targetUserType = {TargetUserType.TARGET_USER_CREATOR})
