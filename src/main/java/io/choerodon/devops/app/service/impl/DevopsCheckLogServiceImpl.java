@@ -196,46 +196,52 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     notificationDTO.setSendPm(false);
                 }
                 String[] triggerEvents = v.getNotifyTriggerEvent().split(",");
+                // 查询原来指定用户列表
+                DevopsNotificationUserRelDTO notificationUserRelDTORecord = new DevopsNotificationUserRelDTO();
+                notificationUserRelDTORecord.setNotificationId(v.getId());
+                List<DevopsNotificationUserRelDTO> devopsNotificationUserRelDTOList = devopsNotificationUserRelMapper.select(notificationUserRelDTORecord);
+                // 删除指定用户列表旧数据
+                devopsNotificationUserRelDTOList.forEach(user -> {
+                    if (devopsNotificationUserRelMapper.delete(user) != 1) {
+                        throw new CommonException("error.delete.user.rel");
+                    }
+                });
                 for (String triggerEvent : triggerEvents) {
                     notificationDTO.setId(null);
                     notificationDTO.setNotifyTriggerEvent(triggerEvent);
                     if (devopsNotificationMapper.insertSelective(notificationDTO) != 1) {
                         throw new CommonException("error.insert.notification");
                     }
+                    if (TriggerObject.HANDLER.getObject().equals(v.getNotifyObject())) {
+                        DevopsNotificationUserRelDTO devopsNotificationUserRelDTO = new DevopsNotificationUserRelDTO();
+                        devopsNotificationUserRelDTO.setNotificationId(notificationDTO.getId());
+                        devopsNotificationUserRelDTO.setUserType(TriggerObject.HANDLER.getObject());
+                        if (devopsNotificationUserRelMapper.insertSelective(devopsNotificationUserRelDTO) != 1) {
+                            throw new CommonException("error.insert.user.rel");
+                        }
+                    }
+                    if (TriggerObject.OWNER.getObject().equals(v.getNotifyObject())) {
+                        DevopsNotificationUserRelDTO devopsNotificationUserRelDTO = new DevopsNotificationUserRelDTO();
+                        devopsNotificationUserRelDTO.setNotificationId(notificationDTO.getId());
+                        devopsNotificationUserRelDTO.setUserType(TriggerObject.OWNER.getObject());
+                        if (devopsNotificationUserRelMapper.insertSelective(devopsNotificationUserRelDTO) != 1) {
+                            throw new CommonException("error.insert.user.rel");
+                        }
+                    }
+
+                    if (TriggerObject.SPECIFIER.getObject().equals(v.getNotifyObject())) {
+                        devopsNotificationUserRelDTOList.forEach(user -> {
+                            user.setNotificationId(notificationDTO.getId());
+                            user.setUserType(TriggerObject.SPECIFIER.getObject());
+                            if (devopsNotificationUserRelMapper.insertSelective(user) != 1) {
+                                throw new CommonException("error.insert.user.rel");
+                            }
+                        });
+                    }
+
                 }
                 if (devopsNotificationMapper.deleteByPrimaryKey(v.getId()) != 1) {
                     throw new CommonException("error.delete.notification");
-                }
-
-                if (TriggerObject.HANDLER.getObject().equals(v.getNotifyObject())) {
-                    DevopsNotificationUserRelDTO devopsNotificationUserRelDTO = new DevopsNotificationUserRelDTO();
-                    devopsNotificationUserRelDTO.setNotificationId(v.getId());
-                    devopsNotificationUserRelDTO.setUserType(TriggerObject.HANDLER.getObject());
-                    if (devopsNotificationUserRelMapper.insertSelective(devopsNotificationUserRelDTO) != 1) {
-                        throw new CommonException("error.insert.user.rel");
-                    }
-                }
-                if (TriggerObject.OWNER.getObject().equals(v.getNotifyObject())) {
-                    DevopsNotificationUserRelDTO devopsNotificationUserRelDTO = new DevopsNotificationUserRelDTO();
-                    devopsNotificationUserRelDTO.setNotificationId(v.getId());
-                    devopsNotificationUserRelDTO.setUserType(TriggerObject.OWNER.getObject());
-                    if (devopsNotificationUserRelMapper.insertSelective(devopsNotificationUserRelDTO) != 1) {
-                        throw new CommonException("error.insert.user.rel");
-                    }
-                }
-                if (TriggerObject.SPECIFIER.getObject().equals(v.getNotifyObject())) {
-                    DevopsNotificationUserRelDTO notificationUserRelDTORecord = new DevopsNotificationUserRelDTO();
-                    notificationUserRelDTORecord.setNotificationId(v.getId());
-                    List<DevopsNotificationUserRelDTO> devopsNotificationUserRelDTOList = devopsNotificationUserRelMapper.select(notificationUserRelDTORecord);
-                    devopsNotificationUserRelDTOList.forEach(user -> {
-                        if (devopsNotificationUserRelMapper.delete(user) != 1) {
-                            throw new CommonException("error.delete.user.rel");
-                        }
-                        user.setUserType(TriggerObject.SPECIFIER.getObject());
-                        if (devopsNotificationUserRelMapper.insertSelective(user) != 1) {
-                            throw new CommonException("error.insert.user.rel");
-                        }
-                    });
                 }
             });
 
