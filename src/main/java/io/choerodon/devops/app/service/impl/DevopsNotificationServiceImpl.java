@@ -187,7 +187,9 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         resourceCheckVO.setMethod(StringUtils.join(notifyType, ","));
         List<String> notifyUserList = new ArrayList<>();
         List<DevopsNotificationUserRelDTO> devopsNotificationUserRelDTOList = devopsNotificationUserRelService.baseListByNotificationId(devopsNotificationDTO.getId());
-
+        if (CollectionUtils.isEmpty(devopsNotificationUserRelDTOList)) {
+            return resourceCheckVO;
+        }
         // 添加项目所有者
         if (devopsNotificationUserRelDTOList.stream().anyMatch(v -> TriggerObject.OWNER.getObject().equals(v.getUserType()))) {
             notifyUserList.add("项目所有者");
@@ -373,7 +375,6 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void batchUpdateNotifyEvent(Long projectId, List<NotificationEventVO> notificationEventList) {
-        notificationEventList = filterNotificationEventList(notificationEventList);
         // 系统默认配置
         List<NotificationEventVO> notificationEventVOS = devopsNotificationMapper.listDefaultNotifyEvent();
         Set<Long> defaultEventIds = notificationEventVOS.stream().map(NotificationEventVO::getId).collect(Collectors.toSet());
@@ -392,30 +393,13 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         customerEventList.forEach(customerEvent -> {
             DevopsNotificationDTO devopsNotificationDTO = ConvertUtils.convertObject(customerEvent, DevopsNotificationDTO.class);
             devopsNotificationMapper.updateByPrimaryKeySelective(devopsNotificationDTO);
-            devopsNotificationUserRelService.baseDeleteByNotificationId(devopsNotificationDTO.getId());
+            if(!CollectionUtils.isEmpty(devopsNotificationUserRelService.baseListByNotificationId(devopsNotificationDTO.getId()))) {
+                devopsNotificationUserRelService.baseDeleteByNotificationId(devopsNotificationDTO.getId());
+            }
             saveUserRel(devopsNotificationDTO.getId(), customerEvent);
         });
     }
 
-    /**
-     * 过滤掉不包含通知用户的默认设置
-     * @param notificationEventList
-     * @return
-     */
-    private List<NotificationEventVO> filterNotificationEventList(List<NotificationEventVO> notificationEventList) {
-        return notificationEventList.stream().filter(v -> {
-            if (Boolean.FALSE.equals(v.getDefaultSetting())) {
-                return true;
-            }
-            if (Boolean.TRUE.equals(v.getSendOwner()) || Boolean.TRUE.equals(v.getSendHandler())) {
-                return true;
-            }
-            if (!CollectionUtils.isEmpty(v.getUserList())) {
-                return true;
-            }
-            return false;
-        }).collect(Collectors.toList());
-    }
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteNotifyEventByProjectIdAndEnvId(Long projectId, Long envId) {
@@ -428,11 +412,16 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         DevopsNotificationDTO record = new DevopsNotificationDTO();
         record.setProjectId(projectId);
         record.setEnvId(envId);
-        DevopsNotificationDTO devopsNotificationDTO = devopsNotificationMapper.selectOne(record);
-        // 删除通知对象
-        devopsNotificationUserRelService.baseDeleteByNotificationId(devopsNotificationDTO.getId());
-        // 删除通知设置
-        baseDelete(devopsNotificationDTO.getId());
+        List<DevopsNotificationDTO> devopsNotificationDTOList = devopsNotificationMapper.select(record);
+        devopsNotificationDTOList.forEach(devopsNotificationDTO -> {
+            // 删除通知对象
+            if (!CollectionUtils.isEmpty(devopsNotificationUserRelService.baseListByNotificationId(devopsNotificationDTO.getId()))) {
+                devopsNotificationUserRelService.baseDeleteByNotificationId(devopsNotificationDTO.getId());
+            }
+            // 删除通知设置
+            baseDelete(devopsNotificationDTO.getId());
+        });
+
     }
 
     public DevopsNotificationDTO baseCreateOrUpdate(DevopsNotificationDTO devopsNotificationDTO) {
