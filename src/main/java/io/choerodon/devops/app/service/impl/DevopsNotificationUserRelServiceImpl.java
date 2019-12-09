@@ -59,7 +59,7 @@ public class DevopsNotificationUserRelServiceImpl implements DevopsNotificationU
         }
         DevopsNotificationUserRelDTO devopsNotificationUserRelDTO = new DevopsNotificationUserRelDTO();
         devopsNotificationUserRelDTO.setNotificationId(id);
-        if (devopsNotificationUserRelMapper.delete(devopsNotificationUserRelDTO) != 1) {
+        if (devopsNotificationUserRelMapper.delete(devopsNotificationUserRelDTO) < 1) {
             throw new CommonException("delete.user.rel.failed");
         }
     }

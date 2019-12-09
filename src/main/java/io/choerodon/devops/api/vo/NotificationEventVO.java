@@ -41,6 +41,8 @@ public class NotificationEventVO {
     @ApiModelProperty(value = "是否是默认设置")
     private Boolean defaultSetting;
 
+    private Long objectVersionNumber;
+
     private List<DevopsNotificationUserRelVO> userList;
 
     public Long getId() {
@@ -137,5 +139,13 @@ public class NotificationEventVO {
 
     public void setDefaultSetting(Boolean defaultSetting) {
         this.defaultSetting = defaultSetting;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }

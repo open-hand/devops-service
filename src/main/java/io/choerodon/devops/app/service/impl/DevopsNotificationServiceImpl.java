@@ -363,6 +363,8 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
         // 计算是否发送给操作者，项目所有者，指定用户的值
         calculateSendUser(notifyEventVO.getDevopsNotificationList());
+        // 删除用户列表里的操作者，项目所有者
+        delOwnerAndHandler(notifyEventVO.getDevopsNotificationList());
         // 添加用户信息（登录名，真实姓名）
         addUserInfo(notifyEventVO.getDevopsNotificationList());
         return notifyEventVO;
@@ -371,37 +373,49 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void batchUpdateNotifyEvent(Long projectId, List<NotificationEventVO> notificationEventList) {
+        notificationEventList = filterNotificationEventList(notificationEventList);
         // 系统默认配置
         List<NotificationEventVO> notificationEventVOS = devopsNotificationMapper.listDefaultNotifyEvent();
         Set<Long> defaultEventIds = notificationEventVOS.stream().map(NotificationEventVO::getId).collect(Collectors.toSet());
-        // 默认配置的修改
+
         List<NotificationEventVO> defaultEventList = notificationEventList.stream().filter(v -> defaultEventIds.contains(v.getId())).collect(Collectors.toList());
+        List<NotificationEventVO> customerEventList = notificationEventList.stream().filter(v -> !defaultEventIds.contains(v.getId())).collect(Collectors.toList());
+        // 默认配置的修改
         defaultEventList.forEach(defaultEvent -> {
             defaultEvent.setId(null);
             DevopsNotificationDTO devopsNotificationDTO = ConvertUtils.convertObject(defaultEvent, DevopsNotificationDTO.class);
             devopsNotificationDTO.setDefaultSetting(false);
             devopsNotificationMapper.insertSelective(devopsNotificationDTO);
-            List<DevopsNotificationUserRelVO> userList = defaultEvent.getUserList();
-            if (!CollectionUtils.isEmpty(userList)) {
-                List<DevopsNotificationUserRelDTO> devopsNotificationUserRelDTOS = ConvertUtils.convertList(userList, DevopsNotificationUserRelDTO.class);
-                devopsNotificationUserRelService.batchInsert(devopsNotificationUserRelDTOS);
-            }
+            saveUserRel(devopsNotificationDTO.getId(), defaultEvent);
         });
         // 自定义配置的修改
-        List<NotificationEventVO> customerEventList = notificationEventList.stream().filter(v -> !defaultEventIds.contains(v.getId())).collect(Collectors.toList());
         customerEventList.forEach(customerEvent -> {
-                    DevopsNotificationDTO devopsNotificationDTO = ConvertUtils.convertObject(customerEvent, DevopsNotificationDTO.class);
-                    devopsNotificationMapper.updateByPrimaryKeySelective(devopsNotificationDTO);
-                    devopsNotificationUserRelService.baseDeleteByNotificationId(devopsNotificationDTO.getId());
-                    List<DevopsNotificationUserRelVO> userList = customerEvent.getUserList();
-                    if (!CollectionUtils.isEmpty(userList)) {
-                        List<DevopsNotificationUserRelDTO> devopsNotificationUserRelDTOS = ConvertUtils.convertList(userList, DevopsNotificationUserRelDTO.class);
-                        devopsNotificationUserRelService.batchInsert(devopsNotificationUserRelDTOS);
-                    }
-                }
-        );
+            DevopsNotificationDTO devopsNotificationDTO = ConvertUtils.convertObject(customerEvent, DevopsNotificationDTO.class);
+            devopsNotificationMapper.updateByPrimaryKeySelective(devopsNotificationDTO);
+            devopsNotificationUserRelService.baseDeleteByNotificationId(devopsNotificationDTO.getId());
+            saveUserRel(devopsNotificationDTO.getId(), customerEvent);
+        });
     }
 
+    /**
+     * 过滤掉不包含通知用户的默认设置
+     * @param notificationEventList
+     * @return
+     */
+    private List<NotificationEventVO> filterNotificationEventList(List<NotificationEventVO> notificationEventList) {
+        return notificationEventList.stream().filter(v -> {
+            if (Boolean.FALSE.equals(v.getDefaultSetting())) {
+                return true;
+            }
+            if (Boolean.TRUE.equals(v.getSendOwner()) || Boolean.TRUE.equals(v.getSendHandler())) {
+                return true;
+            }
+            if (!CollectionUtils.isEmpty(v.getUserList())) {
+                return true;
+            }
+            return false;
+        }).collect(Collectors.toList());
+    }
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteNotifyEventByProjectIdAndEnvId(Long projectId, Long envId) {
@@ -454,6 +468,36 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         devopsNotificationDTO.setProjectId(projectId);
         devopsNotificationDTO.setEnvId(envId);
         return devopsNotificationMapper.select(devopsNotificationDTO);
+    }
+
+    private void delOwnerAndHandler(List<NotificationEventVO> devopsNotificationList) {
+        devopsNotificationList.forEach(v -> {
+            if (!CollectionUtils.isEmpty(v.getUserList())) {
+                v.setUserList(v.getUserList().stream().filter(user -> TriggerObject.SPECIFIER.getObject().equals(user.getUserType())).collect(Collectors.toList()));
+            }
+        });
+    }
+
+    private void saveUserRel(Long notificationId, NotificationEventVO defaultEvent) {
+        List<DevopsNotificationUserRelDTO> devopsNotificationUserRelDTOS = new ArrayList<>();
+        // 添加操作者和项目管理者
+        if (defaultEvent.getSendOwner()) {
+            DevopsNotificationUserRelDTO devopsNotificationUserRelDTO = new DevopsNotificationUserRelDTO();
+            devopsNotificationUserRelDTO.setUserType(TriggerObject.OWNER.getObject());
+            devopsNotificationUserRelDTOS.add(devopsNotificationUserRelDTO);
+        }
+        if (defaultEvent.getSendHandler()) {
+            DevopsNotificationUserRelDTO devopsNotificationUserRelDTO = new DevopsNotificationUserRelDTO();
+            devopsNotificationUserRelDTO.setUserType(TriggerObject.HANDLER.getObject());
+            devopsNotificationUserRelDTOS.add(devopsNotificationUserRelDTO);
+        }
+        // 添加指定用户
+        List<DevopsNotificationUserRelVO> userList = defaultEvent.getUserList();
+        if (!CollectionUtils.isEmpty(userList)) {
+            devopsNotificationUserRelDTOS.addAll(ConvertUtils.convertList(userList, DevopsNotificationUserRelDTO.class));
+        }
+        devopsNotificationUserRelDTOS.forEach(user -> user.setNotificationId(notificationId));
+        devopsNotificationUserRelService.batchInsert(devopsNotificationUserRelDTOS);
     }
 
     private void addUserInfo(List<NotificationEventVO> devopsNotificationList) {
