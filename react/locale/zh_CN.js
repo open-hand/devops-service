@@ -613,7 +613,7 @@ const certificate = {
   'c7ncd.certificate.add.tips': '您需在此添加对应的文件内容，目前只支持base64格式的证书内容',
   'c7ncd.certificate.some.tips': '若本项目想使用该证书，同样需要为本项目授权',
   'c7ncd.certificate.delete.title': '删除证书“{name}”',
-  'c7ncd.certificate.delete.des': '确定要卸载该组件？卸载后，将不能在该集群关联的环境中使用申请证书与上传证书的功能。',
+  'c7ncd.certificate.delete.des': '确定要删除该证书吗？',
   'c7ncd.certificate.permission.tips':
     '当选择将权限分配至组织下所有项目时，此时便不能在列表中删除任何项目的权限；仅在选择将权限分配给组织下特定项目时，才能在下方列表中管理项目的权限',
   'c7ncd.certificate.share.tips':
@@ -1268,7 +1268,7 @@ const cluster = {
   'c7ncd.cluster.monitor.uninstall': '卸载监控组件',
   'c7ncd.cluster.monitor.uninstall.des': '确定要卸载监控组件吗？',
   'c7ncd.cluster.cert.uninstall': '卸载CertManager',
-  'c7ncd.cluster.cert.uninstall.des': '确定要卸载CertManager吗？',
+  'c7ncd.cluster.cert.uninstall.des': '确定要卸载该组件？卸载后，将不能在该集群关联的环境中使用申请证书与上传证书的功能。',
   'c7ncd.cluster.cert.uninstall.disabled': '无法卸载CertManager',
   'c7ncd.cluster.install.step.parserPvc': '创建PVC',
   'c7ncd.cluster.install.step.boundPvc': '绑定PV',

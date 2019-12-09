@@ -127,7 +127,7 @@ export default observer((props) => {
         case 'processing':
           buttonData = [
             {
-              text: formatMessage({ id: 'install' }),
+              text: formatMessage({ id: 'uninstall' }),
               loading: true,
             },
           ];
@@ -203,7 +203,9 @@ export default observer((props) => {
             okText: formatMessage({ id: 'uninstall' }),
             okCancel: true,
             onOk: handleUninstallCert,
-            footer: (okBtn, cancelBtn) => <div>{okBtn}{cancelBtn}</div>,
+            okProps: { color: 'red' },
+            cancelProps: { color: 'dark' },
+            footer: (okBtn, cancelBtn) => <div>{cancelBtn}{okBtn}</div>,
           });
         } else {
           deleteModal.update({
