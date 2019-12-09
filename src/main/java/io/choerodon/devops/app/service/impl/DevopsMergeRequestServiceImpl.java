@@ -95,11 +95,11 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
         // 发送关于Merge Request的相关通知
         Integer gitProjectId = TypeUtil.objToInteger(gitlabProjectId);
         if (MergeRequestState.OPENED.getValue().equals(devopsMergeRequestDTO.getState())) {
-            sendNotificationService.sendWhenMergeRequestAuditEvent(gitProjectId, devopsMergeRequestDTO.getId());
+            sendNotificationService.sendWhenMergeRequestAuditEvent(gitProjectId, devopsMergeRequestDTO.getGitlabMergeRequestId());
         } else if (MergeRequestState.CLOSED.getValue().equals(devopsMergeRequestDTO.getState())) {
-            sendNotificationService.sendWhenMergeRequestClosed(gitProjectId, devopsMergeRequestDTO.getId());
+            sendNotificationService.sendWhenMergeRequestClosed(gitProjectId, devopsMergeRequestDTO.getGitlabMergeRequestId());
         } else if (MergeRequestState.MERGED.getValue().equals(devopsMergeRequestDTO.getState())) {
-            sendNotificationService.sendWhenMergeRequestPassed(gitProjectId, devopsMergeRequestDTO.getId());
+            sendNotificationService.sendWhenMergeRequestPassed(gitProjectId, devopsMergeRequestDTO.getGitlabMergeRequestId());
         }
     }
 
