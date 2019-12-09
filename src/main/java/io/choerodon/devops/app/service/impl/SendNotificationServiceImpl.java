@@ -23,6 +23,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.CommandType;
+import io.choerodon.devops.infra.enums.EnvironmentType;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
@@ -31,6 +32,8 @@ import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
+ * 发送DevOps相关通知的实现类
+ *
  * @author zmf
  * @since 12/5/19
  */
@@ -40,10 +43,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
-
-    // TODO by zmf
-    @Value("${sendMessages:false}")
-    private boolean sendMessages;
 
     @Autowired
     private NotifyClient notifyClient;
@@ -70,9 +69,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
      * @param targetSupplier  转换目标用户
      */
     private void sendNoticeAboutAppService(Long appServiceId, String sendSettingCode, Function<AppServiceDTO, List<NoticeSendDTO.User>> targetSupplier) {
-        if (!sendMessages) {
-            return;
-        }
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         if (appServiceDTO == null) {
             LogUtil.loggerInfoObjectNullWithId("AppService", appServiceId, LOGGER);
@@ -113,20 +109,20 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         return params;
     }
 
-    @Override
+    /**
+     * 发送通知
+     *
+     * @param sendSettingCode 通知code
+     * @param sourceId        projectId, organizationId, 0L
+     * @param targetUsers     目标用户
+     * @param params          参数映射
+     */
     public void sendNotices(String sendSettingCode, Long sourceId, List<NoticeSendDTO.User> targetUsers, Map<String, Object> params) {
-        if (!sendMessages) {
-            return;
-        }
-
         notifyClient.sendMessage(constructNotice(sendSettingCode, sourceId, targetUsers, params));
     }
 
     @Override
     public void sendWhenAppServiceFailure(Long appServiceId) {
-        if (!sendMessages) {
-            return;
-        }
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.APP_SERVICE_CREATION_FAILED,
                         app -> ArrayUtil.singleAsList(constructTargetUser(app.getCreatedBy()))),
@@ -135,9 +131,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     @Override
     public void sendWhenAppServiceEnabled(Long appServiceId) {
-        if (!sendMessages) {
-            return;
-        }
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.APP_SERVICE_ENABLED,
                         app -> appServiceService.listAllUserPermission(app.getId())
@@ -149,9 +142,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     @Override
     public void sendWhenAppServiceDisabled(Long appServiceId) {
-        if (!sendMessages) {
-            return;
-        }
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.APP_SERVICE_DISABLE,
                         app -> appServiceService.listAllUserPermission(app.getId())
@@ -233,9 +223,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     @Override
     public void sendWhenMergeRequestAuditEvent(Integer gitlabProjectId, Long mergeRequestId) {
-        if (!sendMessages) {
-            return;
-        }
         doWithTryCatchAndLog(
                 () -> {
                     DevopsMergeRequestDTO devopsMergeRequestDTO = devopsMergeRequestService.baseQueryByAppIdAndMergeRequestId(TypeUtil.objToLong(gitlabProjectId), mergeRequestId);
@@ -295,9 +282,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
      * @param mergeRequestId  merge request id
      */
     private void doSendWhenMergeRequestClosedOrMerged(String sendSettingCode, Integer gitlabProjectId, Long mergeRequestId) {
-        if (!sendMessages) {
-            return;
-        }
         doWithTryCatchAndLog(
                 () -> {
                     DevopsMergeRequestDTO devopsMergeRequestDTO = devopsMergeRequestService.baseQueryByAppIdAndMergeRequestId(TypeUtil.objToLong(gitlabProjectId), mergeRequestId);
@@ -386,6 +370,11 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             return;
         }
 
+        // 系统环境的实例失败不发送通知
+        if (EnvironmentType.SYSTEM.getValue().equals(devopsEnvironmentDTO.getType())) {
+            return;
+        }
+
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
         if (projectDTO == null) {
             LogUtil.loggerInfoObjectNullWithId("Project", devopsEnvironmentDTO.getProjectId(), LOGGER);
@@ -402,33 +391,21 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     @Override
     public void sendWhenInstanceCreationFailure(Long envId, String resourceName, Long creatorId, Long resourceCommandId) {
-        if (!sendMessages) {
-            return;
-        }
         doSendWhenResourceCreationFailure(NoticeCodeConstants.INSTANCE_CREATION_FAILURE, envId, resourceName, creatorId, resourceCommandId);
     }
 
     @Override
     public void sendWhenServiceCreationFailure(Long envId, String resourceName, Long creatorId, Long resourceCommandId) {
-        if (!sendMessages) {
-            return;
-        }
         doSendWhenResourceCreationFailure(NoticeCodeConstants.SERVICE_CREATION_FAILURE, envId, resourceName, creatorId, resourceCommandId);
     }
 
     @Override
     public void sendWhenIngressCreationFailure(Long envId, String resourceName, Long creatorId, Long resourceCommandId) {
-        if (!sendMessages) {
-            return;
-        }
         doSendWhenResourceCreationFailure(NoticeCodeConstants.INGRESS_CREATION_FAILURE, envId, resourceName, creatorId, resourceCommandId);
     }
 
     @Override
     public void sendWhenCertificationCreationFailure(Long envId, String resourceName, Long creatorId, Long resourceCommandId) {
-        if (!sendMessages) {
-            return;
-        }
         doSendWhenResourceCreationFailure(NoticeCodeConstants.CERTIFICATION_CREATION_FAILURE, envId, resourceName, creatorId, resourceCommandId);
     }
 
