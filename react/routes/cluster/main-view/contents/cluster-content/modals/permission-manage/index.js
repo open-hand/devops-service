@@ -12,11 +12,11 @@ const { Option } = Select;
 
 const Permission = observer((props) => {
   const { refreshPermission, modal, onOk, intlPrefix, prefixCls, formatMessage, clusterDetail, PermissionDs, NonPermissionDs } = props;
-  useEffect(() => {
-    PermissionDs.getField('projectId').set('options', NonPermissionDs);
-    NonPermissionDs.query();
-  }, []);
 
+  useEffect(() => () => {
+    clusterDetail.reset();
+  }, []);
+  
   modal.handleOk(async () => {
     const projectIds = map(PermissionDs.created, ({ data: { projectId } }) => projectId);
     const skipCheckProjectPermission = clusterDetail.get('skipCheckProjectPermission');
@@ -38,6 +38,7 @@ const Permission = observer((props) => {
       return false;
     }
   });
+  
 
   function handleFilter(optionRecord) {
     const flag = some(PermissionDs.created, (creatRecord) => creatRecord.get('projectId') === optionRecord.get('id'));
@@ -61,10 +62,12 @@ const Permission = observer((props) => {
       </Form>
       {!clusterDetail.get('skipCheckProjectPermission') && (
         <DynamicSelect
-          selectDataSet={PermissionDs} 
+          selectDataSet={PermissionDs}
+          optionsDataSet={NonPermissionDs}
           optionsFilter={handleFilter} 
           optionsRenderer={renderOption}
           selectName="projectId"
+          optionKeyName="id"
           addText={formatMessage({ id: `${intlPrefix}.add.project` })}
         />
       )}

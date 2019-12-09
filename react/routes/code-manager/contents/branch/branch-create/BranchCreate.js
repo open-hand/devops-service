@@ -99,8 +99,8 @@ function BranchCreate(props) {
               });
             }
           }
-          setBranchOringData(branchs.list);
-          setBranchTagData(tags.list);
+          setBranchOringData(branchs.list || []);
+          setBranchTagData(tags.list || []);
         }
       }));
   }, 700), [selectCom, projectId, appServiceId, branchPageSize, tagPageSize]);
