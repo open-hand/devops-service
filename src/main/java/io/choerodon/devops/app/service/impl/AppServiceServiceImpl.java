@@ -1571,10 +1571,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         // 处理搜索参数
         if (!StringUtils.isEmpty(params)) {
             Map maps = gson.fromJson(params, Map.class);
-            Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-            List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+            Map<String, Object> searchParamMap = Optional.ofNullable((Map) TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM))).orElse(new HashMap<>());
+            List<String> paramList = Optional.of((List) TypeUtil.cast(maps.get(TypeUtil.PARAMS))).orElse(new ArrayList());
 
-            roleAssignmentSearchVO.setParam(paramList == null ? null : paramList.toArray(new String[0]));
+            roleAssignmentSearchVO.setParam(CollectionUtils.isEmpty(paramList) ? null : paramList.toArray(new String[1]));
             if (searchParamMap.get(LOGIN_NAME) != null) {
                 String loginName = TypeUtil.objToString(searchParamMap.get(LOGIN_NAME));
                 roleAssignmentSearchVO.setLoginName(loginName);
