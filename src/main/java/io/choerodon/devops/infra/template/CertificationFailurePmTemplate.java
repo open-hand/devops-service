@@ -11,7 +11,7 @@ import io.choerodon.devops.infra.constant.NoticeCodeConstants;
  */
 @NotifyBusinessType(code = NoticeCodeConstants.CERTIFICATION_CREATION_FAILURE,
         name = "证书创建失败", level = Level.PROJECT,
-        description = "证书创建失败通知", isAllowConfig = false, isManualRetry = true, categoryCode = "deployment-resources-notice",
+        description = "证书创建失败通知", isManualRetry = true, categoryCode = "deployment-resources-notice",
         pmEnabledFlag = true,
         emailEnabledFlag = true,
         proPmEnabledFlag = true,

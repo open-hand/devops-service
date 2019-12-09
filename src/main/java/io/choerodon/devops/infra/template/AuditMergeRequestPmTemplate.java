@@ -13,9 +13,7 @@ import io.choerodon.devops.infra.constant.NoticeCodeConstants;
         name = "合并请求审核通知", level = Level.PROJECT,
         description = "合并请求审核通知", isAllowConfig = false, isManualRetry = true, categoryCode = "code-management-notice",
         pmEnabledFlag = true,
-        emailEnabledFlag = true,
-        proPmEnabledFlag = true,
-        notifyType = ServiceNotifyType.DEVOPS_NOTIFY)
+        emailEnabledFlag = true)
 @Component
 public class AuditMergeRequestPmTemplate implements PmTemplate {
     @Override

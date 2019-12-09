@@ -11,7 +11,7 @@ import io.choerodon.devops.infra.constant.NoticeCodeConstants;
  */
 @NotifyBusinessType(code = NoticeCodeConstants.MERGE_REQUEST_CLOSED,
         name = "合并请求被关闭", level = Level.PROJECT,
-        description = "合并请求被关闭通知", isAllowConfig = false, isManualRetry = true, categoryCode = "code-management-notice",
+        description = "合并请求被关闭通知", isManualRetry = true, categoryCode = "code-management-notice",
         pmEnabledFlag = true,
         emailEnabledFlag = true,
         proPmEnabledFlag = true,
