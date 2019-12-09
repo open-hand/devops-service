@@ -1703,8 +1703,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     appServiceInstanceDTO.setStatus(instanceStatus.getStatus());
                     appServiceInstanceService.updateStatus(appServiceInstanceDTO);
                     // 发送资源创建失败通知
+                    logger.debug("Sending instance notices: The instance status is {}, the command type is {}", instanceStatus.getStatus(), devopsEnvCommandDTO.getCommandType());
                     if (InstanceStatus.FAILED == instanceStatus
                             && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+                        logger.debug("Sending instance notices: env id: {}, instance code {}, createdby: {}", appServiceInstanceDTO.getEnvId(), appServiceInstanceDTO.getCode(), appServiceInstanceDTO.getCreatedBy());
                         sendNotificationService.sendWhenInstanceCreationFailure(appServiceInstanceDTO.getEnvId(), appServiceInstanceDTO.getCode(), appServiceInstanceDTO.getCreatedBy(), null);
                     }
                 }
