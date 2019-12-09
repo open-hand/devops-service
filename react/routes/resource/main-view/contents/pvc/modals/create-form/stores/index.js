@@ -60,7 +60,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       selection: 'single',
     }), []);
 
-    const pvDs = useMemo(() => new DataSet(OptionsDataSet(projectId)), [projectId]);
+    const pvDs = useMemo(() => new DataSet(OptionsDataSet(projectId, envId)), [projectId, envId]);
     const formDs = useMemo(() => new DataSet(FormDataSet({ intlPrefix, formatMessage, projectId, envId, typeDs, modeDs, storageDs, pvDs })), [projectId, envId]);
 
     const value = {
