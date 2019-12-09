@@ -11,9 +11,8 @@ import io.choerodon.devops.infra.constant.NoticeCodeConstants;
  */
 @NotifyBusinessType(code = NoticeCodeConstants.APP_SERVICE_DISABLE,
         name = "应用服务停用", level = Level.PROJECT,
-        description = "应用服务停用通知", isAllowConfig = false, isManualRetry = true, categoryCode = "app-service-notice",
+        description = "应用服务停用通知", isManualRetry = true, categoryCode = "app-service-notice",
         pmEnabledFlag = true,
-        emailEnabledFlag = true,
         proPmEnabledFlag = true,
         notifyType = ServiceNotifyType.DEVOPS_NOTIFY,
         targetUserType = {TargetUserType.TARGET_USER_APPLICATION_SERVICE_PERMISSION_OWNER})
