@@ -28,7 +28,7 @@ public class MergeRequestClosedEmailTemplate implements EmailTemplate {
 
     @Override
     public String title() {
-        return null;
+        return "合并请求";
     }
 
     @Override

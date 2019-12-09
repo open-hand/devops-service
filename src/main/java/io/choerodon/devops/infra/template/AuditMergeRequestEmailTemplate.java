@@ -28,7 +28,7 @@ public class AuditMergeRequestEmailTemplate implements EmailTemplate {
 
     @Override
     public String title() {
-        return "Choerodon通知";
+        return "合并请求";
     }
 
     @Override
