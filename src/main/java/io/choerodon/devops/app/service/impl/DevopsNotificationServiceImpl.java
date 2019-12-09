@@ -419,7 +419,10 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 devopsNotificationUserRelService.baseDeleteByNotificationId(devopsNotificationDTO.getId());
             }
             // 删除通知设置
-            baseDelete(devopsNotificationDTO.getId());
+            if (queryById(devopsNotificationDTO.getId()) != null) {
+                baseDelete(devopsNotificationDTO.getId());
+            }
+
         });
 
     }
@@ -438,7 +441,9 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     }
 
     public void baseDelete(Long notificationId) {
-        devopsNotificationMapper.deleteByPrimaryKey(notificationId);
+        if (devopsNotificationMapper.deleteByPrimaryKey(notificationId) != 1) {
+            throw new CommonException("error.delete.notify.failed");
+        }
     }
 
     public DevopsNotificationDTO baseQuery(Long notificationId) {
