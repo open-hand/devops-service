@@ -74,15 +74,9 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
   const { appServiceDs, selectAppDs } = codeManagerStore;
   const { intl: { formatMessage } } = props;
   const currentApp = _.find(appServiceDs.toData(), ['id', selectAppDs.current.get('appServiceId')]);
-  const [toggle, setToggle] = useState(true);
   const noRepoUrl = formatMessage({ id: 'repository.noUrl' });
 
   const handleCopy = () => { Choerodon.prompt('复制成功'); };
-
-  function handleToggleDropdown() {
-    setToggle(!toggle);
-  }
-
   const copyMenu = (
     <div className="c7ncd-copyMenu">
       <Form>
@@ -143,11 +137,11 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
       </Select>
 
       <Dropdown
-        hidden={toggle}
+        trigger={['click', 'focus']}
         overlay={copyMenu}
         placement="bottomRight"
       >
-        <Button onClick={handleToggleDropdown} funcType="raised" disabled={!(currentApp && currentApp.repoUrl)}>
+        <Button funcType="raised" disabled={!(currentApp && currentApp.repoUrl)}>
           {formatMessage({ id: 'repository.copyUrl' })}<Icon type="arrow_drop_down" />
         </Button>
       </Dropdown>
