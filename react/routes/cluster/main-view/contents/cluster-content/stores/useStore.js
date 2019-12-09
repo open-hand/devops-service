@@ -73,7 +73,7 @@ export default function useStore({ NODE_TAB }) {
     async installCertManager(projectId, clusterId) {
       try {
         const res = await axios.post(`/devops/v1/projects/${projectId}/cluster_resource/cert_manager/deploy?cluster_id=${clusterId}`);
-        return handlePromptError(res);
+        return handlePromptError(res, false);
       } catch (e) {
         Choerodon.handleResponseError(e);
         return false;
