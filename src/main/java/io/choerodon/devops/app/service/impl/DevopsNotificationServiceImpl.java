@@ -337,8 +337,8 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         if (CollectionUtils.isEmpty(devopsEnvironmentDTOList)) {
             return notifyEventVO;
         }
-        devopsEnvironmentDTOList = devopsEnvironmentDTOList.stream().filter(v -> Boolean.TRUE.equals(v.getActive())
-                && clusterConnectionHandler.getEnvConnectionStatus(v.getClusterId())).collect(Collectors.toList());
+//        devopsEnvironmentDTOList = devopsEnvironmentDTOList.stream().filter(v -> Boolean.TRUE.equals(v.getActive())
+//                && clusterConnectionHandler.getEnvConnectionStatus(v.getClusterId())).collect(Collectors.toList());
         List<DevopsEnvironmentVO> devopsEnvironmentVOList = ConvertUtils.convertList(devopsEnvironmentDTOList, DevopsEnvironmentVO.class);
         Set<Long> envIds = devopsEnvironmentDTOList.stream().map(DevopsEnvironmentDTO::getId).collect(Collectors.toSet());
         notifyEventVO.setDevopsEnvironmentList(devopsEnvironmentVOList);
