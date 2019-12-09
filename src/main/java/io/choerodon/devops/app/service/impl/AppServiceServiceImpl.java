@@ -2551,9 +2551,9 @@ public class AppServiceServiceImpl implements AppServiceService {
                     List<Long> gitlabProjectIds = appServiceMapper.listGitlabProjectIdByAppPermission(TypeUtil.objToLong(devOpsAppServicePayload.getGroupId()), userAttrDTO.getIamUserId());
                     if (gitlabProjectIds != null && !gitlabProjectIds.isEmpty()) {
                         gitlabProjectIds.forEach(gitlabProjectId -> {
-                            MemberDTO gitlabMemberDTO = gitlabServiceClientOperator.getProjectMember(devOpsAppServicePayload.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                            MemberDTO gitlabMemberDTO = gitlabServiceClientOperator.getProjectMember(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
                             if (gitlabMemberDTO == null || gitlabMemberDTO.getId() == null) {
-                                gitlabServiceClientOperator.createProjectMember(devOpsAppServicePayload.getGitlabProjectId(),
+                                gitlabServiceClientOperator.createProjectMember(TypeUtil.objToInteger(gitlabProjectId),
                                         new MemberDTO(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), 30, ""));
                             }
 

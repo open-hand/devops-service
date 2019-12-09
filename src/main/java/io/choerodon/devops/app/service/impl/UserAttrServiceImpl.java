@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
@@ -21,6 +22,13 @@ public class UserAttrServiceImpl implements UserAttrService {
     @Override
     public UserAttrVO queryByUserId(Long userId) {
         return ConvertUtils.convertObject(baseQueryById(userId), UserAttrVO.class);
+    }
+
+    @Override
+    public void checkUserSync(UserAttrDTO userAttrDTO) {
+        if (userAttrDTO == null) {
+            throw new CommonException("error.gitlab.user.sync.failed");
+        }
     }
 
     @Override

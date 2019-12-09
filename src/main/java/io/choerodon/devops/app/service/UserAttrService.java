@@ -15,6 +15,13 @@ public interface UserAttrService {
     UserAttrVO queryByUserId(Long userId);
 
     /**
+     * 如果传入的参数是null，抛出异常
+     *
+     * @param userAttrDTO 用户信息
+     */
+    void checkUserSync(UserAttrDTO userAttrDTO);
+
+    /**
      * 根据gitlab用户id查询平台用户id
      *
      * @param gitLabUserId gitLab user id
