@@ -85,7 +85,10 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             return;
         }
 
-        sendNotices(sendSettingCode, projectDTO.getId(), targetSupplier.apply(appServiceDTO), makeAppServiceParams(organizationDTO.getId(), projectDTO.getId(), projectDTO.getName(), projectDTO.getCategory(), appServiceDTO.getName()));
+        List<NoticeSendDTO.User> targetUsers = targetSupplier.apply(appServiceDTO);
+        LOGGER.debug("AppService notice {}. Target users size: {}", sendSettingCode, targetUsers);
+
+        sendNotices(sendSettingCode, projectDTO.getId(), targetUsers, makeAppServiceParams(organizationDTO.getId(), projectDTO.getId(), projectDTO.getName(), projectDTO.getCategory(), appServiceDTO.getName()));
     }
 
 
