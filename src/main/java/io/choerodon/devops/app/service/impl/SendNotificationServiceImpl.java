@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -30,6 +27,7 @@ import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
 
 /**
  * 发送DevOps相关通知的实现类
@@ -86,7 +84,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         }
 
         List<NoticeSendDTO.User> targetUsers = targetSupplier.apply(appServiceDTO);
-        LOGGER.debug("AppService notice {}. Target users size: {}", sendSettingCode, targetUsers);
+        LOGGER.debug("AppService notice {}. Target users size: {}", sendSettingCode, targetUsers.size());
 
         sendNotices(sendSettingCode, projectDTO.getId(), targetUsers, makeAppServiceParams(organizationDTO.getId(), projectDTO.getId(), projectDTO.getName(), projectDTO.getCategory(), appServiceDTO.getName()));
     }
@@ -132,11 +130,16 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 ex -> LOGGER.info("Error occurred when sending message about failure of app-service. The exception is {}.", ex));
     }
 
+    private static <T> List<T> mapNullListToEmpty(List<T> list) {
+        return list == null ? Collections.emptyList() : list;
+    }
+
     @Override
     public void sendWhenAppServiceEnabled(Long appServiceId) {
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.APP_SERVICE_ENABLED,
-                        app -> appServiceService.listAllUserPermission(app.getId())
+                        app -> mapNullListToEmpty(appServiceService.pagePermissionUsers(app.getProjectId(), app.getId(), CustomPageRequest.of(0, 0), null)
+                                .getList())
                                 .stream()
                                 .map(p -> constructTargetUser(p.getIamUserId()))
                                 .collect(Collectors.toList())),
@@ -147,7 +150,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     public void sendWhenAppServiceDisabled(Long appServiceId) {
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.APP_SERVICE_DISABLE,
-                        app -> appServiceService.listAllUserPermission(app.getId())
+                        app -> mapNullListToEmpty(appServiceService.pagePermissionUsers(app.getProjectId(), app.getId(), CustomPageRequest.of(0, 0), null)
+                                .getList())
                                 .stream()
                                 .map(p -> constructTargetUser(p.getIamUserId()))
                                 .collect(Collectors.toList())),
