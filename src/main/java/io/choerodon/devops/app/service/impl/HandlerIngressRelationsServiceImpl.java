@@ -27,9 +27,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
 public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRelationsService<V1beta1Ingress> {
-
     public static final String INGRESS = "Ingress";
-    private static final String CREATE = "create";
     private static final String GIT_SUFFIX = "/.git";
     Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     private Gson gson = new Gson();

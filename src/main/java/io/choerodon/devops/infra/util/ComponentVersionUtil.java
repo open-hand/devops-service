@@ -4,6 +4,8 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.enums.ClusterResourceType;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
@@ -18,6 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * 获取组件版本配置工具类
  */
 public class ComponentVersionUtil {
+    private static final String ERROR_COMPONENT_CONFIG_PROPERTY_NOT_EXIST = "error.component.config.property.not.exist";
+    private static final Logger LOGGER = LoggerFactory.getLogger(ComponentVersionUtil.class);
     //是否已经初始化
     private static boolean inited = false;
     private static final String COMPONENT_CONFIG_FILE_NAME = "/component/component.yml";
@@ -65,7 +69,7 @@ public class ComponentVersionUtil {
                 Map<String, String> componentConfig = (Map<String, String>) config;
 
                 String valuesFileName = Optional.ofNullable(componentConfig.get("valuesFile"))
-                        .orElseThrow(() -> new CommonException("error.component.config.property.not.exist", "valuesFile"));
+                        .orElseThrow(() -> new CommonException(ERROR_COMPONENT_CONFIG_PROPERTY_NOT_EXIST, "valuesFile"));
                 InputStream valuesInputStream = Optional.ofNullable(ComponentVersionUtil.class.getResourceAsStream(String.format(COMPONENT_CONFIG_VALUE_FILE_FORMAT, valuesFileName)))
                         .orElseThrow(() -> new CommonException("error.component.config.values.not.exist", valuesFileName));
                 String values = IOUtils.toString(valuesInputStream, StandardCharsets.UTF_8);
@@ -75,24 +79,24 @@ public class ComponentVersionUtil {
 
                 appServiceVersionDTO.setValues(values);
                 appServiceVersionDTO.setImage(Optional.ofNullable(componentConfig.get("image"))
-                        .orElseThrow(() -> new CommonException("error.component.config.property.not.exist", "image")));
+                        .orElseThrow(() -> new CommonException(ERROR_COMPONENT_CONFIG_PROPERTY_NOT_EXIST, "image")));
                 appServiceVersionDTO.setVersion(Optional.ofNullable(componentConfig.get("version"))
-                        .orElseThrow(() -> new CommonException("error.component.config.property.not.exist", "version")));
+                        .orElseThrow(() -> new CommonException(ERROR_COMPONENT_CONFIG_PROPERTY_NOT_EXIST, "version")));
                 appServiceVersionDTO.setRepository(Optional.ofNullable(componentConfig.get("chartRepo"))
-                        .orElseThrow(() -> new CommonException("error.component.config.property.not.exist", "chartRepo")));
+                        .orElseThrow(() -> new CommonException(ERROR_COMPONENT_CONFIG_PROPERTY_NOT_EXIST, "chartRepo")));
                 appServiceVersionDTO.setChartName(Optional.ofNullable(componentConfig.get("chartName"))
-                        .orElseThrow(() -> new CommonException("error.component.config.property.not.exist", "chartName")));
+                        .orElseThrow(() -> new CommonException(ERROR_COMPONENT_CONFIG_PROPERTY_NOT_EXIST, "chartName")));
 
 
                 componentVersionConfigsWithChartName.put(appServiceVersionDTO.getChartName(), appServiceVersionDTO);
                 componentVersionConfigsWithComponentName.put(Optional.ofNullable(componentConfig.get("componentName"))
-                        .orElseThrow(() -> new CommonException("error.component.config.property.not.exist", "componentName")), appServiceVersionDTO);
+                        .orElseThrow(() -> new CommonException(ERROR_COMPONENT_CONFIG_PROPERTY_NOT_EXIST, "componentName")), appServiceVersionDTO);
 
                 valuesInputStream.close();
             }
             inputStream.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Unexpected error occurred when reading the component version config files. The exception is {}.", e);
         }
     }
 }

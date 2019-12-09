@@ -1,7 +1,6 @@
 package io.choerodon.devops.infra.dto.iam;
 
 import java.util.List;
-import java.util.Objects;
 
 import io.swagger.annotations.ApiModelProperty;
 

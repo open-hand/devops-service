@@ -522,9 +522,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     public void deleteByConfigIds(Set<Long> configIds) {
         List<DevopsConfigDTO> devopsConfigDTOS = devopsConfigMapper.listByConfigs(configIds);
         devopsConfigDTOS.stream().filter(devopsConfigDTO -> devopsConfigDTO.getAppServiceId() != null)
-                .forEach(devopsConfigDTO -> {
-                    devopsConfigMapper.deleteByPrimaryKey(devopsConfigDTO.getId());
-                });
+                .forEach(devopsConfigDTO -> devopsConfigMapper.deleteByPrimaryKey(devopsConfigDTO.getId()));
     }
 
     private void checkRegistryProjectIsPrivate(DevopsConfigVO devopsConfigVO) {

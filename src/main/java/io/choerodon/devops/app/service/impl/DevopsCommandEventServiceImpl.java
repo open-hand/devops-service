@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -44,11 +45,6 @@ public class DevopsCommandEventServiceImpl implements DevopsCommandEventService 
 
     @Override
     public List<DevopsCommandEventDTO> listByCommandIdsAndType(Set<Long> commandIds, String type) {
-        if(commandIds.size() > 0) {
-            List<DevopsCommandEventDTO> ListByCommandIdsAndType = devopsCommandEventMapper.listByCommandIdsAndType(commandIds, type);
-            return ListByCommandIdsAndType;
-        }
-        return null;
+        return commandIds.isEmpty() ? new ArrayList<>() : devopsCommandEventMapper.listByCommandIdsAndType(commandIds, type);
     }
-
 }

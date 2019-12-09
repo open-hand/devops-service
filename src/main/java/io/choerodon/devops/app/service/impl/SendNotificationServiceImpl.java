@@ -38,6 +38,8 @@ import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
 @Service
 public class SendNotificationServiceImpl implements SendNotificationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SendNotificationServiceImpl.class);
+    private static final String PROJECT = "Project";
+    private static final String ORGANIZATION = "Organization";
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -74,12 +76,12 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
         if (projectDTO == null) {
-            LogUtil.loggerInfoObjectNullWithId("Project", appServiceDTO.getProjectId(), LOGGER);
+            LogUtil.loggerInfoObjectNullWithId(PROJECT, appServiceDTO.getProjectId(), LOGGER);
             return;
         }
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         if (organizationDTO == null) {
-            LogUtil.loggerInfoObjectNullWithId("Organization", projectDTO.getOrganizationId(), LOGGER);
+            LogUtil.loggerInfoObjectNullWithId(ORGANIZATION, projectDTO.getOrganizationId(), LOGGER);
             return;
         }
 
@@ -169,13 +171,13 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                     if (projectDTO == null) {
-                        LogUtil.loggerInfoObjectNullWithId("Project", appServiceDTO.getProjectId(), LOGGER);
+                        LogUtil.loggerInfoObjectNullWithId(PROJECT, appServiceDTO.getProjectId(), LOGGER);
                         return;
                     }
 
                     OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                     if (organizationDTO == null) {
-                        LogUtil.loggerInfoObjectNullWithId("Organization", projectDTO.getOrganizationId(), LOGGER);
+                        LogUtil.loggerInfoObjectNullWithId(ORGANIZATION, projectDTO.getOrganizationId(), LOGGER);
                         return;
                     }
 
@@ -258,13 +260,13 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                     if (projectDTO == null) {
-                        LogUtil.loggerInfoObjectNullWithId("Project", appServiceDTO.getProjectId(), LOGGER);
+                        LogUtil.loggerInfoObjectNullWithId(PROJECT, appServiceDTO.getProjectId(), LOGGER);
                         return;
                     }
 
                     OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                     if (organizationDTO == null) {
-                        LogUtil.loggerInfoObjectNullWithId("Organization", projectDTO.getOrganizationId(), LOGGER);
+                        LogUtil.loggerInfoObjectNullWithId(ORGANIZATION, projectDTO.getOrganizationId(), LOGGER);
                         return;
                     }
 
@@ -318,13 +320,13 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                     if (projectDTO == null) {
-                        LogUtil.loggerInfoObjectNullWithId("Project", appServiceDTO.getProjectId(), LOGGER);
+                        LogUtil.loggerInfoObjectNullWithId(PROJECT, appServiceDTO.getProjectId(), LOGGER);
                         return;
                     }
 
                     OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                     if (organizationDTO == null) {
-                        LogUtil.loggerInfoObjectNullWithId("Organization", projectDTO.getOrganizationId(), LOGGER);
+                        LogUtil.loggerInfoObjectNullWithId(ORGANIZATION, projectDTO.getOrganizationId(), LOGGER);
                         return;
                     }
 
@@ -384,7 +386,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
         if (projectDTO == null) {
-            LogUtil.loggerInfoObjectNullWithId("Project", devopsEnvironmentDTO.getProjectId(), LOGGER);
+            LogUtil.loggerInfoObjectNullWithId(PROJECT, devopsEnvironmentDTO.getProjectId(), LOGGER);
             return;
         }
 

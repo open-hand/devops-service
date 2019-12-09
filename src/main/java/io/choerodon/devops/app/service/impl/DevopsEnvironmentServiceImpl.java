@@ -1066,7 +1066,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         if (selectedIamUserId != null) {
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(selectedIamUserId);
-            if (members.size() != 0) {
+            if (!members.isEmpty()) {
                 members.remove(iamUserDTO);
                 members.add(0, iamUserDTO);
             } else {

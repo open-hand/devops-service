@@ -38,7 +38,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     private static final String UPGRADE_MESSAGE = "Version is too low, please upgrade!";
     private static final String ERROR_CLUSTER_NOT_EXIST = "error.cluster.not.exist";
-    private static final String projectOwner = "role/project/default/project-owner";
+    private static final String PROJECT_OWNER = "role/project/default/project-owner";
     @Value("${agent.version}")
     private String agentExpectVersion;
     @Value("${agent.serviceUrl}")
@@ -207,7 +207,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         if (selectedProjectId != null) {
             ProjectDTO selectedProjectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
             ProjectReqVO projectReqVO = new ProjectReqVO(selectedProjectDTO.getId(), selectedProjectDTO.getName(), selectedProjectDTO.getCode());
-            if (projectReqVOS.size() != 0) {
+            if (!projectReqVOS.isEmpty()) {
                 projectReqVOS.remove(projectReqVO);
                 projectReqVOS.add(0, projectReqVO);
             } else {
@@ -440,7 +440,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         }
         //集群是否存在PV
         List<DevopsPvDTO> clusterDTOList = devopsPvService.queryByClusterId(clusterId);
-        if (!Objects.isNull(clusterDTOList) && clusterDTOList.size() > 0) {
+        if (!Objects.isNull(clusterDTOList) && !clusterDTOList.isEmpty()) {
             clusterMsgVO.setCheckPV(true);
         }
         return clusterMsgVO;
@@ -591,7 +591,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             if (CollectionUtils.isEmpty(v.getRoles())) {
                 return;
             }
-            Set<Long> collect = v.getRoles().stream().filter(role -> projectOwner.equals(role.getCode())).map(RoleVO::getId).collect(Collectors.toSet());
+            Set<Long> collect = v.getRoles().stream().filter(role -> PROJECT_OWNER.equals(role.getCode())).map(RoleVO::getId).collect(Collectors.toSet());
             if (!CollectionUtils.isEmpty(collect)) {
                 ownerRoleProjectIds.add(v.getId());
             }
@@ -601,7 +601,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         }
         // 获取集群和集群分配的项目Ids
         List<DevopsClusterProPermissionDTO> devopsClusterProPermissionDTOS = devopsClusterProPermissionService.baseListByClusterId(clusterId);
-        Set<Long> clusterBelongToProjectIds = devopsClusterProPermissionDTOS.stream().map(devopsClusterProPermissionDTO -> devopsClusterProPermissionDTO.getProjectId()).collect(Collectors.toSet());
+        Set<Long> clusterBelongToProjectIds = devopsClusterProPermissionDTOS.stream().map(DevopsClusterProPermissionDTO::getProjectId).collect(Collectors.toSet());
         clusterBelongToProjectIds.add(devopsClusterDTO1.getProjectId());
 
         // 集合做差集处理

@@ -59,6 +59,7 @@ public class GitUtil {
     private static final String REPO_NAME = "devops-service-repo";
     private static final Logger LOGGER = LoggerFactory.getLogger(GitUtil.class);
     private static final Pattern PATTERN = Pattern.compile("^[-\\+]?[\\d]*$");
+    private static final String ERROR_GIT_PUSH = "error.git.push";
     @Autowired
     private DevopsClusterMapper devopsClusterMapper;
     @Autowired
@@ -276,7 +277,7 @@ public class GitUtil {
                     .call();
             return git;
         } catch (GitAPIException e) {
-            LOGGER.info("Repository:{}\nsshKeyRsa:{}\n");
+            LOGGER.info("Repository:{}\nsshKeyRsa:{}\n", repository, sshKeyRsa);
             LOGGER.info("Pull error", e);
         }
         return null;
@@ -432,7 +433,7 @@ public class GitUtil {
                     "", accessToken));
             pushCommand.call();
         } catch (GitAPIException e) {
-            throw new CommonException("error.git.push", e);
+            throw new CommonException(ERROR_GIT_PUSH, e);
         }
     }
 
@@ -469,7 +470,7 @@ public class GitUtil {
                     .setCredentialsProvider(new UsernamePasswordCredentialsProvider("", accessToken))
                     .call();
         } catch (GitAPIException e) {
-            throw new CommonException("error.git.push", e);
+            throw new CommonException(ERROR_GIT_PUSH, e);
         }
     }
 
@@ -484,7 +485,7 @@ public class GitUtil {
             pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider("", accessToken));
             pushCommand.call();
         } catch (GitAPIException e) {
-            throw new CommonException("error.git.push", e);
+            throw new CommonException(ERROR_GIT_PUSH, e);
         }
     }
 
@@ -525,7 +526,7 @@ public class GitUtil {
                     userName, accessToken));
             pushCommand.call();
         } catch (GitAPIException e) {
-            throw new CommonException("error.git.push", e);
+            throw new CommonException(ERROR_GIT_PUSH, e);
         } finally {
             //删除模板
             deleteWorkingDirectory(name);

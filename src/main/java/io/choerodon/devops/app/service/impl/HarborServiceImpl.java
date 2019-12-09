@@ -199,8 +199,7 @@ public class HarborServiceImpl implements HarborService {
         ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
         configurationProperties.setType(HARBOR);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-        HarborClient harborClient = retrofit.create(HarborClient.class);
-        return harborClient;
+        return retrofit.create(HarborClient.class);
     }
 
 }

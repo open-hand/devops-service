@@ -456,6 +456,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         if (devopsEnvironmentDTO == null) {
             LOGGER.error("Environment is unexpectedly null. The token is {}. The gitlab projectId is {}.", token, pushWebHookVO.getProjectId());
+            return;
         }
 
         pushWebHookVO.getCommits().forEach(commitDTO -> {
@@ -528,7 +529,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         try {
             //更新本地库到最新提交
-            Git git = handDevopsEnvGitRepository(path, url, devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvCommitDTO.getCommitSha());
+            handDevopsEnvGitRepository(path, url, devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvCommitDTO.getCommitSha());
             LOGGER.info("更新gitops库成功");
             //查询devops-sync tag是否存在，存在则比较tag和最新commit的diff，不存在则识别gitops库下所有文件为新增文件
             tagNotExist = getDevopsSyncTag(pushWebHookVO);
@@ -1014,7 +1015,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             return gitUtil.cloneBySsh(path, url, envIdRsa);
         } else {
             if (file.isDirectory() && file.listFiles().length > 0) {
-                String localPath = String.format("%s%s", path, "/.git");
+                String localPath = String.format("%s%s", path, GIT_SUFFIX);
                 return GitUtil.pullBySsh(localPath, envIdRsa);
             } else {
                return gitUtil.cloneBySsh(path, url, envIdRsa);

@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class DevopsPvServiceImpl implements DevopsPvService {
-    private static Logger LOGGER = LoggerFactory.getLogger(DevopsPvServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsPvServiceImpl.class);
     private static final String PERSISTENTVOLUME = "PersistentVolume";
     private static final String PERSISTENTVOLUME_PREFIX = "pv-";
     private static final String YAML_SUFFIX = ".yaml";
@@ -165,7 +165,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         devopsEnvCommandDTO.setObjectId(pvId);
         devopsPvDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
-        devopsPvDTO.setStatus(PvStatus.Deleting.getStatus());
+        devopsPvDTO.setStatus(PvStatus.DELETING.getStatus());
         baseupdatePv(devopsPvDTO);
 
         // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
@@ -188,10 +188,10 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             devopsPvProPermissionService.baseDeleteByPvId(pvId);
 
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
-                    "pv-" + devopsPvDTO.getName() + ".yaml")) {
+                    PERSISTENTVOLUME_PREFIX + devopsPvDTO.getName() + YAML_SUFFIX)) {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
-                        "pv-" + devopsPvDTO.getName() + ".yaml",
+                        PERSISTENTVOLUME_PREFIX + devopsPvDTO.getName() + YAML_SUFFIX,
                         "DELETE FILE",
                         TypeUtil.objToInteger(GitUserNameUtil.getAdminId()));
             }
@@ -339,7 +339,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         if (selectedProjectId != null) {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
             ProjectReqVO projectReqVO = new ProjectReqVO(projectDTO.getId(), projectDTO.getName(), projectDTO.getCode());
-            if (projectReqVOS.size() != 0) {
+            if (!projectReqVOS.isEmpty()) {
                 projectReqVOS.remove(projectReqVO);
                 projectReqVOS.add(0, projectReqVO);
             } else {
@@ -723,8 +723,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         // 筛选容量大于或等于pvc容量且集群agent处于连接状态
         if (pvcStorage != null) {
             return devopsPvVOList.stream()
-                    .filter((e) -> compareResource(e.getRequestResource(), pvcStorage) > 0 && e.getPvcName() == null)
-                    .filter((e) -> connectedClusterList.contains(e.getClusterId()))
+                    .filter(e -> compareResource(e.getRequestResource(), pvcStorage) > 0 && e.getPvcName() == null)
+                    .filter(e -> connectedClusterList.contains(e.getClusterId()))
                     .collect(Collectors.toList());
         } else {
             return devopsPvVOList.stream()

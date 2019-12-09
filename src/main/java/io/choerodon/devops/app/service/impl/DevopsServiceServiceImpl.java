@@ -722,7 +722,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //从数据库中获得pod已经存在的信息
         List<DevopsEnvPodDTO> devopsEnvPodDTOList = devopsEnvPodMapper.queryPodByEnvIdAndInstanceId(instanceId, envId);
         if (CollectionUtils.isEmpty(devopsEnvPodDTOList)) {
-            return null;
+            return new ArrayList<>();
         }
         List<PodLiveInfoVO> podLiveInfoVOList;
         podLiveInfoVOList = devopsEnvPodDTOList.stream().map(devopsEnvPodDTO -> {

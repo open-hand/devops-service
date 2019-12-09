@@ -6,7 +6,6 @@ import javax.validation.ConstraintValidatorContext;
 
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.util.StringUtils;
 
 import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
 

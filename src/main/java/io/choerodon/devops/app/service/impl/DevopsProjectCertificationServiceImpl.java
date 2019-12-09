@@ -267,7 +267,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         if (selectedProjectId != null) {
             ProjectDTO selectedProjectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
             ProjectReqVO projectReqVO = new ProjectReqVO(selectedProjectDTO.getId(), selectedProjectDTO.getName(), selectedProjectDTO.getCode());
-            if (nonRelatedMembers.size() != 0) {
+            if (!nonRelatedMembers.isEmpty()) {
                 nonRelatedMembers.remove(projectReqVO);
                 nonRelatedMembers.add(0, projectReqVO);
             } else {

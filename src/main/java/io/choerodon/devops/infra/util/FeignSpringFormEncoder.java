@@ -38,9 +38,6 @@ public class FeignSpringFormEncoder implements Encoder {
 
     public static final Charset UTF_8 = StandardCharsets.UTF_8;
 
-    public FeignSpringFormEncoder() {
-    }
-
     /**
      * {@inheritDoc }
      */

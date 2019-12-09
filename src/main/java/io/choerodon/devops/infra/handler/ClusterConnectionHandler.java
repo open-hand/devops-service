@@ -115,11 +115,9 @@ public class ClusterConnectionHandler {
     public boolean getEnvConnectionStatus(Long clusterId) {
         Map<String, ClusterSessionVO> clusterSessions = (Map<String, ClusterSessionVO>) (Map) redisTemplate.opsForHash().entries(CLUSTER_SESSION);
 
-        boolean envConnected = clusterSessions.entrySet().stream()
+        return clusterSessions.entrySet().stream()
                 .anyMatch(t -> clusterId.equals(t.getValue().getClusterId())
                         && compareVersion(t.getValue().getVersion() == null ? "0" : t.getValue().getVersion(), agentExpectVersion) != 1);
-        return envConnected;
-
     }
 
     /**

@@ -1,11 +1,10 @@
 package io.choerodon.devops.infra.util;
 
-import com.github.pagehelper.PageInfo;
-import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
-import org.springframework.data.domain.Pageable;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.github.pagehelper.PageInfo;
+import org.springframework.data.domain.Pageable;
 
 /**
  * @author zmf

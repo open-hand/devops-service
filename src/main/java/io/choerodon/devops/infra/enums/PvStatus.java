@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum PvStatus {
     OPERATING("Operating"),
-    Deleting("Deleting"),
+    DELETING("Deleting"),
     FAILED("Failed"),
 
 
