@@ -485,6 +485,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             return;
         }
 
+        devopsEnvResourceDTO.setEnvId(devopsPvDTO.getEnvId());
+
         DevopsEnvResourceDTO oldDevopsEnvResourceDTO =
                 devopsEnvResourceService.baseQueryOptions(
                         null,
