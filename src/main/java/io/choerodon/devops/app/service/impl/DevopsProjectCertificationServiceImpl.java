@@ -242,7 +242,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         if (!StringUtils.isEmpty(params)) {
             Map maps = gson.fromJson(params, Map.class);
             searchParamMap = Optional.ofNullable((Map) TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM))).orElse(new HashMap<>());
-            paramList = Optional.ofNullable((List) TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM))).orElse(new ArrayList<>());
+            paramList = Optional.ofNullable((List) TypeUtil.cast(maps.get(TypeUtil.PARAMS))).orElse(new ArrayList<>());
         }
         //查询出该项目所属组织下的所有项目
         ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
