@@ -698,10 +698,10 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             throw new CommonException("error.pv.query");
         }
 
-        Map<Long, List<Long>> projectIdAndPvIdsMap = new HashMap<>();
+        List<Long> projectRelatedPvIdsList = new ArrayList<>();
 
         //获得不跳过权限的与本项目有关联的pv
-        projectIdAndPvIdsMap.put(projectId, devopsPvProPermissionService.baseListPvIdsByProjectId(projectId));
+        projectRelatedPvIdsList.addAll(devopsPvProPermissionService.baseListPvIdsByProjectId(projectId));
 
         devopsPvVOList.forEach(pv -> {
             CustomPageRequest customPageRequest = CustomPageRequest.of(1, 0);
@@ -709,25 +709,28 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             if (pv.getSkipCheckProjectPermission()) {
                 List<ProjectReqVO> list = new ArrayList<>(Optional.ofNullable(pageProjects(pv.getProjectId(), pv.getId(), customPageRequest, params).getList()).orElse(new ArrayList<>()));
                 if (list.stream().map(ProjectReqVO::getId).collect(Collectors.toList()).contains(projectId)) {
-                    List<Long> pvIds = Optional.ofNullable(projectIdAndPvIdsMap.get(projectId)).orElse(new ArrayList<>());
-                    pvIds.add(pv.getId());
-                    projectIdAndPvIdsMap.put(projectId, pvIds);
+                    projectRelatedPvIdsList.add(pv.getId());
                 }
             }
         });
 
-        devopsPvVOList = ConvertUtils.convertList(devopsPvMapper.listByPvIds(projectIdAndPvIdsMap.get(projectId)), DevopsPvVO.class);
+        List<DevopsPvVO> projectRelatedPvList = new ArrayList<>();
+
+        if (!CollectionUtils.isEmpty(projectRelatedPvIdsList)) {
+            projectRelatedPvList = ConvertUtils.convertList(devopsPvMapper.listByPvIds(projectRelatedPvIdsList), DevopsPvVO.class);
+        }
+
         List<Long> connectedClusterList = clusterConnectionHandler.getConnectedClusterList();
 
         String pvcStorage = map.get("requestResource");
         // 筛选容量大于或等于pvc容量且集群agent处于连接状态
         if (pvcStorage != null) {
-            return devopsPvVOList.stream()
+            return projectRelatedPvList.stream()
                     .filter(e -> compareResource(e.getRequestResource(), pvcStorage) > 0 && e.getPvcName() == null)
                     .filter(e -> connectedClusterList.contains(e.getClusterId()))
                     .collect(Collectors.toList());
         } else {
-            return devopsPvVOList.stream()
+            return projectRelatedPvList.stream()
                     .filter(e -> e.getPvcName() == null)
                     .collect(Collectors.toList());
         }
