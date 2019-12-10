@@ -3,11 +3,14 @@ package io.choerodon.devops.infra.util;
 import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
@@ -209,11 +212,25 @@ public class GitOpsUtil {
      * @return true说明需要重试, false反之
      */
     public static boolean isToRetryGitOps(Long sagaSyncCommitId,
-                                               String sagaSyncCommitSha,
-                                               Long devopsSyncCommitId,
-                                               String remoteLatestCommitSha) {
+                                          String sagaSyncCommitSha,
+                                          Long devopsSyncCommitId,
+                                          String remoteLatestCommitSha) {
         return sagaSyncCommitId == null
                 || !Objects.equals(sagaSyncCommitId, devopsSyncCommitId)
                 || !Objects.equals(sagaSyncCommitSha, remoteLatestCommitSha);
+    }
+
+    /**
+     * 返回用户的语言类型
+     *
+     * @return Locale
+     */
+    public static Locale locale() {
+        CustomUserDetails details = DetailsHelper.getUserDetails();
+        Locale locale = Locale.SIMPLIFIED_CHINESE;
+        if (details != null && "en_US".equals(details.getLanguage())) {
+            locale = Locale.US;
+        }
+        return locale;
     }
 }

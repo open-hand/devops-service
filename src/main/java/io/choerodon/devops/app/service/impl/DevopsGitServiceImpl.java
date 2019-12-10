@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -114,6 +115,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private DevopsGitlabCommitService devopsGitlabCommitService;
     @Autowired
     private DevopsCustomizeResourceService devopsCustomizeResourceService;
+    @Autowired
+    private MessageSource messageSource;
 
     @Autowired
     private List<HandlerObjectFileRelationsService> handlerObjectFileRelationsServices;
@@ -597,8 +600,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             DevopsEnvFileErrorDTO devopsEnvFileErrorDTO = getDevopsFileError(envId, filePath, path);
             String error;
             try {
-                error = ResourceBundleHandler.getInstance().getValue(e.getMessage());
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Exception parameters: {}", Arrays.toString(e.getParameters()));
+                }
+                error = messageSource.getMessage(e.getMessage(), e.getParameters(), GitOpsUtil.locale());
             } catch (Exception e1) {
+                LOGGER.debug("Exception occurred when read message from message source. The original message is {}. The exception is : {}",e.getMessage(), e1);
                 error = e.getMessage();
             }
             devopsEnvFileErrorDTO.setError(error + ":" + errorCode);

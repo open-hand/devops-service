@@ -115,12 +115,10 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
                         devopsEnvFileResourceDTO,
                         pv.hashCode(), devopsPvDTO.getId(), pv.getKind());
 
+            } catch (GitOpsExplainException ex) {
+                throw ex;
             } catch (CommonException e) {
-                String errorCode = "";
-                if (e instanceof GitOpsExplainException) {
-                    errorCode = ((GitOpsExplainException) e).getErrorCode() == null ? "" : ((GitOpsExplainException) e).getErrorCode();
-                }
-                throw new GitOpsExplainException(e.getMessage(), filePath, errorCode, e);
+                throw new GitOpsExplainException(e.getMessage(), filePath, "", e.getParameters());
             }
         });
     }
@@ -160,12 +158,10 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
 
                 devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, pv.hashCode(), newDevopsPvDTO.getId(),
                         pv.getKind());
+            } catch (GitOpsExplainException ex) {
+                throw ex;
             } catch (CommonException e) {
-                String errorCode = "";
-                if (e instanceof GitOpsExplainException) {
-                    errorCode = ((GitOpsExplainException) e).getErrorCode() == null ? "" : ((GitOpsExplainException) e).getErrorCode();
-                }
-                throw new GitOpsExplainException(e.getMessage(), filePath, errorCode, e);
+                throw new GitOpsExplainException(e.getMessage(), filePath, "", e.getParameters());
             }
         });
     }
