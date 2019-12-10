@@ -135,12 +135,10 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                                 devopsEnvFileResourceDTO,
                                 c7nHelmRelease.hashCode(), appServiceDeployVO.getInstanceId(),
                                 c7nHelmRelease.getKind());
+                    } catch (GitOpsExplainException ex) {
+                        throw ex;
                     } catch (CommonException e) {
-                        String errorCode = "";
-                        if (e instanceof GitOpsExplainException) {
-                            errorCode = ((GitOpsExplainException) e).getErrorCode() == null ? "" : ((GitOpsExplainException) e).getErrorCode();
-                        }
-                        throw new GitOpsExplainException(e.getMessage(), filePath, errorCode, e);
+                        throw new GitOpsExplainException(e.getMessage(), filePath, "", e.getParameters());
                     }
                 }
         );
@@ -186,12 +184,10 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                 devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, c7nHelmRelease.hashCode(), instanceId,
                         c7nHelmRelease.getKind());
 
+            } catch (GitOpsExplainException ex) {
+                throw ex;
             } catch (CommonException e) {
-                String errorCode = "";
-                if (e instanceof GitOpsExplainException) {
-                    errorCode = ((GitOpsExplainException) e).getErrorCode() == null ? "" : ((GitOpsExplainException) e).getErrorCode();
-                }
-                throw new GitOpsExplainException(e.getMessage(), filePath, errorCode, e);
+                throw new GitOpsExplainException(e.getMessage(), filePath, "", e.getParameters());
             }
         });
     }

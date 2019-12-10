@@ -75,12 +75,10 @@ public class HandlePVCFileRelationServiceImpl implements HandlerObjectFileRelati
                         devopsEnvFileResourceDTO,
                         pvc.hashCode(), devopsPvcDTO.getId(), pvc.getKind());
 
+            } catch (GitOpsExplainException ex) {
+                throw ex;
             } catch (CommonException e) {
-                String errorCode = "";
-                if (e instanceof GitOpsExplainException) {
-                    errorCode = ((GitOpsExplainException) e).getErrorCode() == null ? "" : ((GitOpsExplainException) e).getErrorCode();
-                }
-                throw new GitOpsExplainException(e.getMessage(), filePath, errorCode, e);
+                throw new GitOpsExplainException(e.getMessage(), filePath, "", e.getParameters());
             }
         });
     }
@@ -118,12 +116,10 @@ public class HandlePVCFileRelationServiceImpl implements HandlerObjectFileRelati
 
                 devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, pvc.hashCode(), newDevopsPvcDTO.getId(),
                         pvc.getKind());
+            } catch (GitOpsExplainException ex) {
+                throw ex;
             } catch (CommonException e) {
-                String errorCode = "";
-                if (e instanceof GitOpsExplainException) {
-                    errorCode = ((GitOpsExplainException) e).getErrorCode() == null ? "" : ((GitOpsExplainException) e).getErrorCode();
-                }
-                throw new GitOpsExplainException(e.getMessage(), filePath, errorCode, e);
+                throw new GitOpsExplainException(e.getMessage(), filePath, "", e.getParameters());
             }
         });
     }
