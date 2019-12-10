@@ -485,6 +485,30 @@ export default class TaskCreate extends Component {
     PipelineCreateStore.loadConfig(id, envId, appId);
   }
 
+
+  loadMoreWrap = (e) => {
+    e.stopPropagation();
+    const { page } = this.state;
+    const { 
+      AppState: {
+        currentMenuType: { id: projectId },
+      },
+    } = this.props;
+    this.setState({ 
+      page: page + 1,
+    });
+    PipelineCreateStore.loadUser(projectId, page + 1);
+  }
+
+  handleSearch = (value) => {
+    const { 
+      AppState: {
+        currentMenuType: { id: projectId },
+      },
+    } = this.props;
+    PipelineCreateStore.loadUser(projectId, 1, value);
+  }
+
   render() {
     const {
       visible,
@@ -513,6 +537,7 @@ export default class TaskCreate extends Component {
       getUser,
       getTaskSettings,
       getTrigger,
+      getPageInfo,
     } = PipelineCreateStore;
     const {
       submitting,
@@ -796,11 +821,18 @@ export default class TaskCreate extends Component {
               optionFilterProp="children"
               className="c7n-select_512"
               label={<FormattedMessage id="pipeline.task.auditor" />}
-              filterOption={(input, option) => option.props.children.props.children
-                .toLowerCase()
-                .indexOf(input.toLowerCase()) >= 0}
+              onSearch={this.handleSearch}
             >
               {userOptions}
+              {getPageInfo && getPageInfo.hasNextPage
+              && <Option key="pipeline-create-user-select-more-key" className="c7n-load-more-wrap">
+                <div
+                  className="c7n-option-popover"
+                  onClick={this.loadMoreWrap}
+                >
+                  <span className="c7n-option-span">{formatMessage({ id: 'loadMore' })}</span>
+                </div>
+              </Option>}
             </Select>,
           )}
         </FormItem>

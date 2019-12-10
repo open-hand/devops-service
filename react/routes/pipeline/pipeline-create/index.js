@@ -44,6 +44,7 @@ export default class PipelineCreate extends Component {
     prevId: null,
     submitLoading: false,
     promptDisplay: true,
+    page: 1,
   };
 
   checkName = _.debounce((rule, value, callback) => {
@@ -78,13 +79,6 @@ export default class PipelineCreate extends Component {
   }, 600);
 
   componentDidMount() {
-    const {
-      AppState: {
-        currentMenuType: { id },
-      },
-    } = this.props;
-
-    PipelineCreateStore.loadUser(id);
     PipelineCreateStore.checkCanSubmit();
   }
 
@@ -194,6 +188,29 @@ export default class PipelineCreate extends Component {
     />));
   }
 
+  loadMoreWrap = (e) => {
+    e.stopPropagation();
+    const { page } = this.state;
+    const { 
+      AppState: {
+        currentMenuType: { id: projectId },
+      },
+    } = this.props;
+    this.setState({
+      page: page + 1,
+    });
+    PipelineCreateStore.loadUser(projectId, page + 1);
+  }
+
+  handleSearch = (value) => {
+    const { 
+      AppState: {
+        currentMenuType: { id: projectId },
+      },
+    } = this.props;
+    PipelineCreateStore.loadUser(projectId, 1, value);
+  }
+
   render() {
     const {
       intl: { formatMessage },
@@ -212,6 +229,7 @@ export default class PipelineCreate extends Component {
       getUser,
       getIsDisabled,
       getCanSubmit,
+      getPageInfo,
     } = PipelineCreateStore;
 
     const user = _.map(getUser, ({ id, realName, loginName }) => (
@@ -310,15 +328,21 @@ export default class PipelineCreate extends Component {
                   filter
                   allowClear
                   mode="multiple"
-                  optionFilterProp="children"
                   label={formatMessage({ id: 'pipeline.trigger.member' })}
                   loading={getLoading.user}
                   getPopupContainer={(triggerNode) => triggerNode.parentNode}
-                  filterOption={(input, option) => option.props.children.props.children
-                    .toLowerCase()
-                    .indexOf(input.toLowerCase()) >= 0}
+                  onSearch={this.handleSearch}
                 >
                   {user}
+                  {getPageInfo && getPageInfo.hasNextPage
+                  && <Option key="pipeline-create-user-select-more-key" className="c7n-load-more-wrap">
+                    <div
+                      className="c7n-option-popover"
+                      onClick={this.loadMoreWrap}
+                    >
+                      <span className="c7n-option-span">{formatMessage({ id: 'loadMore' })}</span>
+                    </div>
+                  </Option>}
                 </Select>,
               )}
             </FormItem>}
