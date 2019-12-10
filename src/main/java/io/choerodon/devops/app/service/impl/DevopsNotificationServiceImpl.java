@@ -11,6 +11,7 @@ import io.choerodon.devops.api.vo.notify.SendSettingDTO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.enums.NotifyEventEnum;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.RoleLabel;
 import io.choerodon.devops.infra.enums.TriggerObject;
@@ -369,8 +370,12 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         delOwnerAndHandler(notifyEventVO.getDevopsNotificationList());
         // 添加用户信息（登录名，真实姓名）
         addUserInfo(notifyEventVO.getDevopsNotificationList());
+        // 计算事件名称
+        calEventName(notifyEventVO.getDevopsNotificationList());
         return notifyEventVO;
     }
+
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -462,6 +467,29 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         devopsNotificationDTO.setProjectId(projectId);
         devopsNotificationDTO.setEnvId(envId);
         return devopsNotificationMapper.select(devopsNotificationDTO);
+    }
+    private void calEventName(List<NotificationEventVO> devopsNotificationList) {
+        devopsNotificationList.forEach(notificationEventVO -> {
+            if (NotifyEventEnum.INSTANCE.value().equals(notificationEventVO.getNotifyTriggerEvent())) {
+                notificationEventVO.setName("删除实例");
+            }
+            if (NotifyEventEnum.INGRESS.value().equals(notificationEventVO.getNotifyTriggerEvent())) {
+                notificationEventVO.setName("删除域名");
+            }
+            if (NotifyEventEnum.SERVICE.value().equals(notificationEventVO.getNotifyTriggerEvent())) {
+                notificationEventVO.setName("删除网络");
+            }
+            if (NotifyEventEnum.CONFIGMAP.value().equals(notificationEventVO.getNotifyTriggerEvent())) {
+                notificationEventVO.setName("删除配置映射");
+            }
+            if (NotifyEventEnum.CERTIFICATE.value().equals(notificationEventVO.getNotifyTriggerEvent())) {
+                notificationEventVO.setName("删除证书");
+            }
+            if (NotifyEventEnum.SECRET.value().equals(notificationEventVO.getNotifyTriggerEvent())) {
+                notificationEventVO.setName("删除密文");
+            }
+        });
+
     }
 
     private void delOwnerAndHandler(List<NotificationEventVO> devopsNotificationList) {

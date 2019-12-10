@@ -17,6 +17,9 @@ public class NotificationEventVO {
     private Long envId;
     private Long projectId;
 
+    @ApiModelProperty(value = "通知事件类型名称")
+    private String name;
+
     @ApiModelProperty(value = "通知事件类型")
     private String notifyTriggerEvent;
 
@@ -147,5 +150,13 @@ public class NotificationEventVO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
