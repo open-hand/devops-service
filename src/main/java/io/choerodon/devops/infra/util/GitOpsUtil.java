@@ -199,17 +199,6 @@ public class GitOpsUtil {
     }
 
     /**
-     * 抛出容量改变的异常
-     *
-     * @param filePath     资源所在文件路径
-     * @param resourceName 资源名称
-     */
-    public static void throwCapacityChangeException(String filePath, String resourceName) {
-        throw new GitOpsExplainException(
-                GitOpsObjectError.CAPACITY_CHANGE_NOT_ALLOWED.getError(), filePath, resourceName);
-    }
-
-    /**
      * 是否需要重试GitOps流程
      * 当环境总览第一阶段为空，第一阶段的commit不是最新commit, 第一阶段和第二阶段commit不一致时，可以重新触发gitOps
      *

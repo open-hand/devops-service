@@ -21,6 +21,7 @@ import io.choerodon.devops.infra.constant.KubernetesConstants;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.dto.DevopsPvcDTO;
+import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.mapper.DevopsPvcMapper;
@@ -58,18 +59,12 @@ public class HandlePVCFileRelationServiceImpl implements HandlerObjectFileRelati
                         pvc,
                         envId, "update");
 
-                if (!Objects.equals(devopsPvcDTO.getRequestResource(), devopsPvcReqVO.getRequestResource())) {
-                    GitOpsUtil.throwCapacityChangeException(filePath, devopsPvcReqVO.getName());
-                }
-
                 boolean isNotChange = isIdentical(devopsPvcDTO, devopsPvcReqVO);
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsPvcDTO.getCommandId());
                 devopsPvcReqVO.setId(devopsPvcDTO.getId());
                 if (!isNotChange) {
-                    devopsPvcService.createOrUpdateByGitOps(userId, devopsPvcReqVO);
-                    DevopsPvcDTO newDevOpsPvcDTO = devopsPvcService
-                            .queryByEnvIdAndName(envId, pvc.getMetadata().getName());
-                    devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(newDevOpsPvcDTO.getCommandId());
+                    // PVC不允许更改
+                    throw new GitOpsExplainException(GitOpsObjectError.PERSISTENT_VOLUME_CLAIM_UNMODIFIED.getError(), path, devopsPvcDTO.getName());
                 }
                 devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                 devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
