@@ -49,16 +49,6 @@ const CodeManagerToolBar = injectIntl(inject('AppState')(observer((props) => {
   return <React.Fragment>
     <Header>
       {getSelfToolBar()}
-      <CopyToClipboard
-        text={(currentApp && currentApp.repoUrl) || noRepoUrl}
-        onCopy={handleCopy}
-      >
-        <Tooltip title={formatMessage({ id: 'repository.copyUrl' })} placement="bottom">
-          <Button icon="content_copy" disabled={!(currentApp && currentApp.repoUrl)}>
-            {formatMessage({ id: 'repository.copyUrl' })}
-          </Button>
-        </Tooltip>
-      </CopyToClipboard>
       <Button
         onClick={refreshApp}
         icon="refresh"
@@ -89,7 +79,7 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
               text={(currentApp && currentApp.sshRepositoryUrl) || noRepoUrl}
               onCopy={handleCopy}
             >
-              <Icon type="content_copy" />
+              <Icon type="content_copy" style={{ cursor: 'pointer' }} />
             </CopyToClipboard>
           }
         />
