@@ -89,7 +89,7 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
               text={(currentApp && currentApp.sshRepositoryUrl) || noRepoUrl}
               onCopy={handleCopy}
             >
-              <Icon type="content_copy" />
+              <Icon type="content_copy" style={{ cursor: 'pointer' }} />
             </CopyToClipboard>
           }
         />
