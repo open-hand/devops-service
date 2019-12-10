@@ -406,6 +406,7 @@ const deployment = {
   'c7ncd.deployment.service.tips':
     '您可在此选择项目下已存在但无实例的应用服务，并将其关联到该环境下，以便为其创建相应的资源',
   'c7ncd.deployment.pvc.name': 'PVC名称',
+  'pvc.name.failed': 'PVC名称必须以小写字母开头，只能包含小写字母,数字,"."和"-"',
   'c7ncd.deployment.pvc.pv': '绑定PV',
   'c7ncd.deployment.pvc.accessModes': '访问模式',
   'c7ncd.deployment.pvc.requestResource': '总量',
