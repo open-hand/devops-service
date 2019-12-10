@@ -64,7 +64,7 @@ public class HandlePVCFileRelationServiceImpl implements HandlerObjectFileRelati
                 devopsPvcReqVO.setId(devopsPvcDTO.getId());
                 if (!isNotChange) {
                     // PVC不允许更改
-                    throw new GitOpsExplainException(GitOpsObjectError.PERSISTENT_VOLUME_CLAIM_UNMODIFIED.getError(), path, new Object[]{devopsPvcDTO.getName()});
+                    throw new GitOpsExplainException(GitOpsObjectError.PERSISTENT_VOLUME_CLAIM_UNMODIFIED.getError(), filePath, new Object[]{devopsPvcDTO.getName()});
                 }
                 devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                 devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
