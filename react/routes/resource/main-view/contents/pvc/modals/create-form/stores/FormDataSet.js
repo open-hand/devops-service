@@ -4,7 +4,7 @@ import indexOf from 'lodash/indexOf';
 
 export default (({ intlPrefix, formatMessage, projectId, envId, typeDs, modeDs, storageDs, pvDs }) => {
   async function checkName(value) {
-    const pa = /[a-z]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/;
+    const pa = /[a-z]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/;
     if (!value) return;
     if (pa.test(value)) {
       try {
@@ -18,7 +18,7 @@ export default (({ intlPrefix, formatMessage, projectId, envId, typeDs, modeDs, 
         return formatMessage({ id: 'checkNameFailed' });
       }
     } else {
-      return formatMessage({ id: `${intlPrefix}.pvc.name.failed` });
+      return formatMessage({ id: 'pvc.name.failed' });
     }
   }
 
