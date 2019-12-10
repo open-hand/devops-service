@@ -23,6 +23,7 @@ import io.choerodon.devops.infra.constant.KubernetesConstants;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.dto.DevopsPvDTO;
+import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.enums.PersistentVolumeType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
@@ -98,18 +99,12 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
                         pv,
                         envId, "update");
 
-                if (!Objects.equals(devopsPvDTO.getRequestResource(), devopsPvReqVO.getRequestResource())) {
-                    GitOpsUtil.throwCapacityChangeException(filePath, devopsPvReqVO.getName());
-                }
-
                 boolean isNotChange = isIdentical(devopsPvDTO, devopsPvReqVO);
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsPvDTO.getCommandId());
                 devopsPvReqVO.setId(devopsPvDTO.getId());
                 if (!isNotChange) {
-                    devopsPvService.createOrUpdateByGitOps(devopsPvReqVO, userId);
-                    DevopsPvDTO newDevOpsPvDTO = devopsPvService
-                            .queryByEnvIdAndName(envId, pv.getMetadata().getName());
-                    devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(newDevOpsPvDTO.getCommandId());
+                    // PV不允许更改
+                    throw new GitOpsExplainException(GitOpsObjectError.PERSISTENT_VOLUME_UNMODIFIED.getError(), path, devopsPvReqVO.getName());
                 }
                 devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                 devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
