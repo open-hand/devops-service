@@ -257,12 +257,12 @@ public class BaseServiceClientOperator {
             }
         }
 
+        // 查出项目下的所有成员
         List<IamUserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), roleAssignmentSearchVO, memberId,
                 projectId, false).getList();
         List<Long> memberIds = list.stream().filter(IamUserDTO::getEnabled).map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
-        this.pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), new RoleAssignmentSearchVO(), ownerId,
-
+        this.pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), roleAssignmentSearchVO, ownerId,
                 projectId, false).getList().stream().filter(IamUserDTO::getEnabled).forEach(t -> {
             if (!memberIds.contains(t.getId())) {
                 list.add(t);
