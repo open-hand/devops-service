@@ -6,6 +6,8 @@ import javax.validation.Valid;
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -108,10 +110,10 @@ public class DevopsSecretController {
     /**
      * 分页查询secret
      *
-     * @param envId       环境id
+     * @param envId    环境id
      * @param pageable 分页参数
-     * @param params      查询参数
-     * @param params      服务id
+     * @param params   查询参数
+     * @param params   服务id
      * @return Page
      */
     @Permission(type = ResourceType.PROJECT,
@@ -127,6 +129,7 @@ public class DevopsSecretController {
             @ApiParam(value = "服务id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
+            @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore Pageable pageable,
             @ApiParam(value = "是否解码值")
             @RequestParam(value = "to_decode", required = false, defaultValue = "false") boolean toDecode,
