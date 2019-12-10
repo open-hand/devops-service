@@ -275,7 +275,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
             }
         }
 
-        return PageInfoUtil.createPageFromList(new ArrayList<>(nonRelatedMembers), pageable);
+        return PageInfoUtil.createPageFromList(nonRelatedMembers, pageable);
     }
 
     @Override

@@ -16,6 +16,7 @@ import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.enums.OrgPublishMarketStatus;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.util.FeignParamUtils;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -42,6 +44,9 @@ public class BaseServiceClientOperator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseServiceClientOperator.class);
     private static final Gson gson = new Gson();
+
+    private static final String LOGIN_NAME = "loginName";
+    private static final String REAL_NAME = "realName";
 
 
     @Autowired
@@ -223,14 +228,36 @@ public class BaseServiceClientOperator {
         return ownerIds.stream().filter(e -> !memberIds.contains(e)).collect(Collectors.toList());
     }
 
-    public List<IamUserDTO> getAllMember(Long projectId) {
+    public List<IamUserDTO> getAllMember(Long projectId, String params) {
         // 获取项目成员id
         Long memberId = this.queryRoleIdByCode(PROJECT_MEMBER);
         // 获取项目所有者id
         Long ownerId = this.queryRoleIdByCode(PROJECT_OWNER);
         // 项目下所有项目成员
 
-        List<IamUserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), new RoleAssignmentSearchVO(), memberId,
+        RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
+        roleAssignmentSearchVO.setEnabled(true);
+        Map<String, Object> searchParamMap;
+        List<String> paramList;
+        // 处理搜索参数
+        if (!StringUtils.isEmpty(params)) {
+            Map maps = gson.fromJson(params, Map.class);
+            searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+            paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+            roleAssignmentSearchVO.setParam(paramList == null ? null : paramList.toArray(new String[0]));
+            if (searchParamMap != null) {
+                if (searchParamMap.get(LOGIN_NAME) != null) {
+                    String loginName = TypeUtil.objToString(searchParamMap.get(LOGIN_NAME));
+                    roleAssignmentSearchVO.setLoginName(loginName);
+                }
+                if (searchParamMap.get(REAL_NAME) != null) {
+                    String realName = TypeUtil.objToString(searchParamMap.get(REAL_NAME));
+                    roleAssignmentSearchVO.setRealName(realName);
+                }
+            }
+        }
+
+        List<IamUserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), roleAssignmentSearchVO, memberId,
                 projectId, false).getList();
         List<Long> memberIds = list.stream().filter(IamUserDTO::getEnabled).map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
@@ -523,7 +550,7 @@ public class BaseServiceClientOperator {
 
     public List<IamUserDTO> listProjectUsersByPorjectIdAndRoleLable(Long projectId, String roleLable) {
         try {
-            ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.listProjectUsersByPorjectIdAndRoleLable(projectId,roleLable);
+            ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.listProjectUsersByPorjectIdAndRoleLable(projectId, roleLable);
             return responseEntity.getBody();
         } catch (Exception ex) {
             throw new CommonException("error.query.project.users");
