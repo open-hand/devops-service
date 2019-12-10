@@ -154,8 +154,8 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     }
 
     @Override
-    public PageInfo<UserVO> listAllOwnerAndMembers(Long projectId, Long selectedIamUserId, Pageable pageable) {
-        List<IamUserDTO> allMember = baseServiceClientOperator.getAllMember(projectId);
+    public PageInfo<UserVO> listAllOwnerAndMembers(Long projectId, Long selectedIamUserId, Pageable pageable, String params) {
+        List<IamUserDTO> allMember = baseServiceClientOperator.getAllMember(projectId, params);
 
         if (selectedIamUserId != null) {
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(selectedIamUserId);
