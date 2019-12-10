@@ -104,7 +104,7 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
                 devopsPvReqVO.setId(devopsPvDTO.getId());
                 if (!isNotChange) {
                     // PV不允许更改
-                    throw new GitOpsExplainException(GitOpsObjectError.PERSISTENT_VOLUME_UNMODIFIED.getError(), path, devopsPvReqVO.getName());
+                    throw new GitOpsExplainException(GitOpsObjectError.PERSISTENT_VOLUME_UNMODIFIED.getError(), path, new Object[]{devopsPvReqVO.getName()});
                 }
                 devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                 devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
