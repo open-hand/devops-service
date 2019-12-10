@@ -1,5 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
@@ -9,19 +20,8 @@ import io.choerodon.devops.infra.dto.iam.ClientDTO;
 import io.choerodon.devops.infra.dto.iam.ClientVO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author zhaotianxin
@@ -73,12 +73,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private DevopsEnvFileErrorService devopsEnvFileErrorService;
     @Autowired
     private UserAttrService userAttrService;
-    @Autowired
-    private GitlabServiceClientOperator gitlabServiceClientOperator;
-    @Autowired
-    private DevopsGitService devopsGitService;
-    @Autowired
-    private DevopsEnvCommitService devopsEnvCommitService;
 
     @Override
     public void baseCreate(DevopsClusterResourceDTO devopsClusterResourceDTO) {
@@ -187,8 +181,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     public DevopsClusterResourceDTO queryByClusterIdAndType(Long clusterId, String type) {
-        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, type);
-        return devopsClusterResourceDTO;
+        return devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, type);
     }
 
     @Override
@@ -228,9 +221,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     public void unloadCertManager(Long clusterId) {
         List<CertificationDTO> certificationDTOS = devopsCertificationMapper.listClusterCertification(clusterId);
         if (!CollectionUtils.isEmpty(certificationDTOS)) {
-            certificationDTOS.forEach(v -> {
-                devopsCertificationMapper.deleteByPrimaryKey(v.getId());
-            });
+            certificationDTOS.forEach(v -> devopsCertificationMapper.deleteByPrimaryKey(v.getId()));
         }
         DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
         devopsCertManagerRecordMapper.deleteByPrimaryKey(devopsClusterResourceDTO.getObjectId());
@@ -537,11 +528,11 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     /**
-     * 获取pvc和promethuex 解析结果
+     * 获取pvc和prometheus 解析结果
      *
-     * @param commandId
-     * @param envId
-     * @return
+     * @param commandId commandId
+     * @param envId     环境id
+     * @return 状态
      */
     private String getParserStatus(Long commandId, Long envId) {
         DevopsEnvCommandDTO prometheusCommand = devopsEnvCommandService.baseQuery(commandId);
@@ -572,23 +563,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         devopsPvcReqVO.setRequestResource(devopsPvVO.getRequestResource());
         devopsPvcReqVO.setEnvId(envId);
         return devopsPvcReqVO;
-    }
-
-    /**
-     * 创建与安装Prometheus相关的PVC
-     *
-     * @param projectId
-     * @param devopsPrometheusVO
-     * @param clusterId
-     * @param systemEnvId
-     */
-    private void createPVC(Long projectId, DevopsPrometheusVO devopsPrometheusVO, Long systemEnvId, Long clusterId) {
-        DevopsPvcReqVO prometheusPvcReqVO = operatePV(devopsPrometheusVO.getPrometheusPvId(), systemEnvId, PrometheusPVCTypeEnum.PROMETHEUS_PVC.value());
-        DevopsPvcReqVO grafanaPvcReqVO = operatePV(devopsPrometheusVO.getGrafanaPvId(), systemEnvId, PrometheusPVCTypeEnum.GRAFANA_PVC.value());
-        DevopsPvcReqVO alertmanagerPvcReqVO = operatePV(devopsPrometheusVO.getAlertmanagerPvId(), systemEnvId, PrometheusPVCTypeEnum.ALERTMANAGER_PVC.value());
-        devopsPvcService.create(projectId, prometheusPvcReqVO);
-        devopsPvcService.create(projectId, grafanaPvcReqVO);
-        devopsPvcService.create(projectId, alertmanagerPvcReqVO);
     }
 
     private DevopsClusterDTO checkClusterExist(Long clusterId) {
