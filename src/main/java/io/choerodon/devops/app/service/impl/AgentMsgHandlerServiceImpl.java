@@ -88,8 +88,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Autowired
     private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
     @Autowired
-    private DevopsServiceInstanceService devopsServiceInstanceService;
-    @Autowired
     private DevopsServiceService devopsServiceService;
     @Autowired
     private DevopsEnvCommandLogService devopsEnvCommandLogService;
@@ -268,7 +266,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void helmInstallResourceInfo(String key, String msg, Long clusterId, Long effectCommandId) {
+    public void helmInstallResourceInfo(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
             logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
@@ -291,7 +289,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 } else {
                     appServiceInstanceDTO.setComponentVersion(releasePayloadVO.getChartVersion());
                 }
-                appServiceInstanceDTO.setEffectCommandId(effectCommandId);
+                if (releasePayloadVO.getCommand() == null) {
+                    logger.warn("Unexpected empty value '{}' for command of release payload.", releasePayloadVO.getCommand());
+                } else {
+                    appServiceInstanceDTO.setEffectCommandId(releasePayloadVO.getCommand());
+                }
                 appServiceInstanceDTO.setStatus(InstanceStatus.RUNNING.getStatus());
                 appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
                 installResource(resources, appServiceInstanceDTO);
@@ -749,8 +751,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void helmUpgradeResourceInfo(String key, String msg, Long clusterId, Long effectCommandId) {
-        helmInstallResourceInfo(key, msg, clusterId, effectCommandId);
+    public void helmUpgradeResourceInfo(String key, String msg, Long clusterId) {
+        helmInstallResourceInfo(key, msg, clusterId);
     }
 
 
