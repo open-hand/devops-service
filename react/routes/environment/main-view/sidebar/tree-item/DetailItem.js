@@ -68,7 +68,7 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
         onOk: handleDelete,
         footer: ((okBtn, cancelBtn) => (
           <Fragment>
-            {okBtn}{cancelBtn}
+            {cancelBtn}{okBtn}
           </Fragment>
         )),
       });
