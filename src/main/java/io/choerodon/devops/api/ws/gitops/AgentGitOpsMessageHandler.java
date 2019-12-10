@@ -31,7 +31,6 @@ public class AgentGitOpsMessageHandler implements TextMessageHandler<AgentMsgVO>
         HelmType helmType = HelmType.forValue(String.valueOf(msg.getType()));
 //        logger.info("===========================查看msg.type:{}", msg.getType());
 //        logger.info("===========================查看msg:{}",msg.toString());
-        logger.debug("=======================查看msg的commandId: {}", msg.getCommand());
         if (helmType == null) {
             logger.info("找不到指令啊 {}", msg.getType());
             return;
@@ -52,12 +51,13 @@ public class AgentGitOpsMessageHandler implements TextMessageHandler<AgentMsgVO>
             // helm release包中的相关资源(除去JOB)信息同步
             // 可能因为消息缓冲池大小太小而接收不到消息
             case HELM_INSTALL_RESOURCE_INFO:
-                logger.debug("install_resource: {}", msg);
-                agentMsgHandlerService.helmInstallResourceInfo(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()), msg.getCommand());
+                logger.debug("helm_install_resource: {}", msg);
+                agentMsgHandlerService.helmInstallResourceInfo(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             // helm release更新时包中的相关资源(除去JOB)信息同步
             case HELM_UPGRADE_RESOURCE_INFO:
-                agentMsgHandlerService.helmUpgradeResourceInfo(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()), msg.getCommand());
+                logger.debug("helm_update_resource: {}", msg);
+                agentMsgHandlerService.helmUpgradeResourceInfo(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 agentMsgHandlerService.updateInstanceStatus(
                         msg.getKey(),
                         KeyParseUtil.getResourceName(msg.getKey()),
