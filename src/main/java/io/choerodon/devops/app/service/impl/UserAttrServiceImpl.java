@@ -12,6 +12,7 @@ import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.MapperUtil;
 
 @Service
 public class UserAttrServiceImpl implements UserAttrService {
@@ -41,8 +42,8 @@ public class UserAttrServiceImpl implements UserAttrService {
     }
 
     @Override
-    public int baseInsert(UserAttrDTO userAttrDTO) {
-        return userAttrMapper.insert(userAttrDTO);
+    public void baseInsert(UserAttrDTO userAttrDTO) {
+        MapperUtil.resultJudgedInsert(userAttrMapper, userAttrDTO, "error.insert.user");
     }
 
     @Override
