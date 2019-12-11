@@ -76,6 +76,8 @@ public class DevopsProjectController {
      * 列出项目下的所有项目所有者和项目成员
      *
      * @param projectId 项目id
+     * @param pageable  分页参数
+     * @param params    查询参数
      * @return 项目所有者和项目成员
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -86,12 +88,10 @@ public class DevopsProjectController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore Pageable pageable,
-            @ApiParam(value = "指定用户id")
-            @RequestParam(value = "id", required = false) Long selectedIamUserId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params
     ) {
-        return Optional.ofNullable(devopsProjectService.listAllOwnerAndMembers(projectId, selectedIamUserId, pageable, params))
+        return Optional.ofNullable(devopsProjectService.listAllOwnerAndMembers(projectId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.users.all.list"));
     }
