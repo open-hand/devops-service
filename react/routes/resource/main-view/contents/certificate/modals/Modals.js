@@ -37,7 +37,7 @@ const EnvModals = observer(() => {
   const createDisabled = useMemo(() => {
     async function checkCertManager() {
       const res = await certStore.checkCertManager(projectId, parentId);
-      return res;
+      return !res;
     }
     return checkCertManager();
   }, [projectId, parentId]);
