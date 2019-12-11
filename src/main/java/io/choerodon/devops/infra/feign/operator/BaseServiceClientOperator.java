@@ -210,22 +210,13 @@ public class BaseServiceClientOperator {
     }
 
     //获得所有项目所有者id
-    public List<Long> getAllMemberIdsWithoutMember(Long projectId) {
-        // 获取项目成员id
-        Long memberId = this.queryRoleIdByCode(PROJECT_MEMBER);
-        // 获取项目所有者id
+    public List<Long> getAllOwnerIds(Long projectId) {
+        // 获取项目所有者角色id
         Long ownerId = this.queryRoleIdByCode(PROJECT_OWNER);
-        // 项目下所有项目成员
-        List<Long> memberIds =
 
-                this.pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), new RoleAssignmentSearchVO(), memberId,
-                        projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
-        List<Long> ownerIds =
-                this.pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), new RoleAssignmentSearchVO(), ownerId,
-
-                        projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
-        return ownerIds.stream().filter(e -> !memberIds.contains(e)).collect(Collectors.toList());
+        return this.pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), new RoleAssignmentSearchVO(), ownerId,
+                projectId, false).getList().stream().filter(IamUserDTO::getEnabled).map(IamUserDTO::getId).collect(Collectors.toList());
     }
 
     public List<IamUserDTO> getAllMember(Long projectId, String params) {
