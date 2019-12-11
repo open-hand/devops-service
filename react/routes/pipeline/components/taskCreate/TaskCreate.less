@@ -1,3 +1,5 @@
+@import '~choerodon-ui/lib/style/themes/default';
+
 .c7n-pipeline-task-create {
 
   .c7n-pipeline-config {
@@ -69,6 +71,21 @@
       &_has-tips {
         width: calc(~'512px - 0.27rem');
       }
+    }
+  }
+}
+
+.c7n-load-more-wrap {
+  .@{c7n-prefix}-checkbox-wrapper {
+    display: none;
+}
+  .c7n-option-popover {
+    color: #3f51b5;
+    margin: -0.04rem -0.12rem;
+    padding: 0.04rem 0.12rem;
+    .c7n-option-span {
+      margin-top: 0.01rem;
+      padding-left: 0.01rem;
     }
   }
 }

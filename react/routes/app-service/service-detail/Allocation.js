@@ -8,7 +8,7 @@ import { useAppTopStore } from '../stores';
 import { useServiceDetailStore } from './stores';
 import HeaderButtons from './HeaderButtons';
 import TimePopover from '../../../components/timePopover/TimePopover';
-import ServicePermission from '../../resource/main-view/contents/environment/modals/permission';
+import ServicePermission from './modals/permission';
 import Tips from '../../../components/new-tips';
 
 

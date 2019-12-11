@@ -175,6 +175,31 @@ export default class PipelineEdit extends Component {
     />));
   }
 
+  loadMoreWrap = (e) => {
+    e.stopPropagation();
+    const { page } = this.state;
+    const { 
+      AppState: {
+        currentMenuType: { id: projectId },
+      },
+      PipelineCreateStore,
+    } = this.props;
+    this.setState({
+      page: page + 1,
+    });
+    PipelineCreateStore.loadUser(projectId, page + 1);
+  }
+
+  handleSearch = _.debounce((value) => {
+    const { 
+      AppState: {
+        currentMenuType: { id: projectId },
+      },
+      PipelineCreateStore,
+    } = this.props;
+    PipelineCreateStore.loadUser(projectId, 1, value);
+  }, 700)
+
   render() {
     const {
       intl: { formatMessage },
@@ -190,6 +215,7 @@ export default class PipelineEdit extends Component {
       getDetailLoading,
       getCanSubmit,
       editVisible: visible,
+      getPageInfo,
     } = PipelineCreateStore;
 
     const showUserSelector = triggerType
@@ -201,6 +227,18 @@ export default class PipelineEdit extends Component {
         <Tooltip title={loginName}>{realName || loginName}</Tooltip>
       </Option>
     ));
+
+    if (getPageInfo && getPageInfo.hasNextPage) {
+      user.push(<Option key="pipeline-create-user-select-more-key" className="c7n-load-more-wrap">
+        <div
+          className="c7n-option-popover"
+          onClick={this.loadMoreWrap}
+        >
+          <span className="c7n-option-span">{formatMessage({ id: 'loadMore' })}</span>
+        </div>
+      </Option>);
+    }     
+
     const initUser = _.map(getPipeline.pipelineUserRels, (item) => String(item));
 
     return (
@@ -274,15 +312,13 @@ export default class PipelineEdit extends Component {
                 })(
                   <Select
                     filter
+                    filterOption={false}
                     allowClear
                     mode="multiple"
-                    optionFilterProp="children"
                     label={formatMessage({ id: 'pipeline.trigger.member' })}
                     loading={getLoading.user}
                     getPopupContainer={(triggerNode) => triggerNode.parentNode}
-                    filterOption={(input, option) => option.props.children.props.children
-                      .toLowerCase()
-                      .indexOf(input.toLowerCase()) >= 0}
+                    onSearch={this.handleSearch}
                   >
                     {user}
                   </Select>,

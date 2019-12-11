@@ -1,8 +1,7 @@
-import React, { Fragment, useEffect, useMemo } from 'react';
+import React, { Fragment, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
-import some from 'lodash/some';
-import { SelectBox, Select, Form, Tooltip } from 'choerodon-ui/pro';
+import { SelectBox, Select, Form } from 'choerodon-ui/pro';
 import { handlePromptError } from '../../../../../../../utils';
 import DynamicSelect from '../../../../../../../components/dynamic-select-new';
 import UserInfo from '../../../../../../../components/userInfo';

@@ -1,18 +1,13 @@
-import React, { Fragment, useEffect } from 'react';
-import { Form, Select, Button } from 'choerodon-ui/pro';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import React from 'react';
+import { injectIntl } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import map from 'lodash/map';
 import some from 'lodash/some';
+import DynamicSelect from '../../../../components/dynamic-select-new';
+
 
 import './index.less';
 
-export default injectIntl(observer(({ dataSet, optionsDs, intlPrefix, prefixCls, modal, DetailDs }) => {
-  useEffect(() => {
-    optionsDs.query();
-    handleCreate();
-  }, []);
-
+export default injectIntl(observer(({ dataSet, optionsDs, intlPrefix, prefixCls, modal, DetailDs, intl: { formatMessage } }) => {
   modal.handleOk(async () => {
     try {
       if (await dataSet.submit() !== false) {
@@ -26,14 +21,6 @@ export default injectIntl(observer(({ dataSet, optionsDs, intlPrefix, prefixCls,
     }
   });
 
-  function handleDelete(record) {
-    dataSet.remove(record);
-  }
-
-  function handleCreate() {
-    dataSet.create();
-  }
-
   function handleFilter(record) {
     const flag = some(dataSet.created, (creatRecord) => creatRecord.get('projectId') === record.get('id'));
     return !flag;
@@ -41,27 +28,14 @@ export default injectIntl(observer(({ dataSet, optionsDs, intlPrefix, prefixCls,
 
   return (
     <div className={`${prefixCls}-project-add`}>
-      {map(dataSet.created, (record, index) => (
-        <div className={`${prefixCls}-project-add-item`} key={index}>
-          <Form record={record}>
-            <Select name="projectId" searchable optionsFilter={handleFilter} />
-          </Form>
-          <Button
-            icon="delete"
-            shape="circle"
-            onClick={() => handleDelete(record)}
-            disabled={dataSet.created.length === 1}
-            className={`${prefixCls}-project-add-button`}
-          />
-        </div>
-      ))}
-      <Button
-        color="primary"
-        icon="add"
-        onClick={handleCreate}
-      >
-        <FormattedMessage id={`${intlPrefix}.project.add`} />
-      </Button>
+      <DynamicSelect
+        selectDataSet={dataSet}
+        optionsDataSet={optionsDs}
+        optionsFilter={handleFilter} 
+        selectName="projectId"
+        optionKeyName="id"
+        addText={formatMessage({ id: `${intlPrefix}.project.add` })}
+      />
     </div>
   );
 }));

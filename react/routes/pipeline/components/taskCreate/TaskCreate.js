@@ -485,6 +485,30 @@ export default class TaskCreate extends Component {
     PipelineCreateStore.loadConfig(id, envId, appId);
   }
 
+
+  loadMoreWrap = (e) => {
+    e.stopPropagation();
+    const { page } = this.state;
+    const { 
+      AppState: {
+        currentMenuType: { id: projectId },
+      },
+    } = this.props;
+    this.setState({ 
+      page: page + 1,
+    });
+    PipelineCreateStore.loadUser(projectId, page + 1);
+  }
+
+  handleSearch = _.debounce((value) => {
+    const { 
+      AppState: {
+        currentMenuType: { id: projectId },
+      },
+    } = this.props;
+    PipelineCreateStore.loadUser(projectId, 1, value);
+  }, 700)
+
   render() {
     const {
       visible,
@@ -513,6 +537,7 @@ export default class TaskCreate extends Component {
       getUser,
       getTaskSettings,
       getTrigger,
+      getPageInfo,
     } = PipelineCreateStore;
     const {
       submitting,
@@ -560,6 +585,17 @@ export default class TaskCreate extends Component {
         <Tooltip title={loginName}>{realName || loginName}</Tooltip>
       </Option>
     ));
+
+    if (getPageInfo && getPageInfo.hasNextPage) {
+      userOptions.push(<Option key="pipeline-create-user-select-more-key" className="c7n-load-more-wrap">
+        <div
+          className="c7n-option-popover"
+          onClick={this.loadMoreWrap}
+        >
+          <span className="c7n-option-span">{formatMessage({ id: 'loadMore' })}</span>
+        </div>
+      </Option>);
+    }
 
     const configOptions = _.map(getConfigList, ({ id, name }) => (<Option key={id} value={id}>
       {name}
@@ -791,14 +827,14 @@ export default class TaskCreate extends Component {
           })(
             <Select
               filter
+              filterOption={false}
+              loading={getLoading.user}
               allowClear
               mode="multiple"
               optionFilterProp="children"
               className="c7n-select_512"
               label={<FormattedMessage id="pipeline.task.auditor" />}
-              filterOption={(input, option) => option.props.children.props.children
-                .toLowerCase()
-                .indexOf(input.toLowerCase()) >= 0}
+              onSearch={this.handleSearch}
             >
               {userOptions}
             </Select>,

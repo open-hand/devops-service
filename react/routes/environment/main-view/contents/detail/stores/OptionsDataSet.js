@@ -2,7 +2,7 @@ export default (() => ({
   autoQuery: false,
   selection: false,
   paging: true,
-  pageSize: 5,
+  pageSize: 20,
   transport: {
     read: {
       method: 'post',

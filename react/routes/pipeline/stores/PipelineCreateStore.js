@@ -384,6 +384,17 @@ class PipelineCreateStore {
     this.taskList = taskList;
   }
 
+
+  @observable pageInfo = {};
+
+  @action setPageInfo(pageInfo) {
+    this.pageInfo = pageInfo;
+  }
+
+  @computed get getPageInfo() {
+    return this.pageInfo;
+  }
+
   /**
    * 检查流水线名称唯一性
    * @param projectId
@@ -531,19 +542,33 @@ class PipelineCreateStore {
    * @param projectId
    * @returns {Promise<void>}
    */
-  async loadUser(projectId) {
+  async loadUser(projectId, page = 1, searchValue) {
     this.setLoading('user', true);
+
+    const data = {
+      params: searchValue ? [searchValue] : [],
+      searchParam: {},
+    };
+
     const response = await axios
-      .get(`/devops/v1/projects/${projectId}/users/list_users`)
+      .post(`/devops/v1/projects/${projectId}/users/list_users?page=${page}&size=20`, data)
       .catch((e) => {
         this.setLoading('user', false);
         Choerodon.handleResponseError(e);
       });
     this.setLoading('user', false);
     if (handlePromptError(response)) {
-      this.setUser(response);
+      const { list, ...rest } = response;
+      this.setPageInfo(rest);
+      if (searchValue || searchValue === '') {
+        this.setUser(list);
+      } else {
+        const allList = this.getUser.concat(list);
+        this.setUser(allList);
+      }
     }
   }
+
 
   /**
    * 创建流水线

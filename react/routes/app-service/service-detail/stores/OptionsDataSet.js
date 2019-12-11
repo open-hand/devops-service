@@ -1,8 +1,9 @@
 export default (() => ({
   paging: true,
-  pageSize: 5,
+  pageSize: 20,
   transport: {
     read: {
+      data: null,
     },
   },
 }));

@@ -28,18 +28,6 @@ const DynamicSelect = injectIntl(observer((props) => {
     };
   }, []);
 
-
-  useEffect(() => {
-    if (optionsDataSet.status === 'ready' && optionsDataSet.length > 0) {
-      const tempMap = optionMap;
-      forEach(optionsDataSet.data, (r) => {
-        tempMap[r.get(valueField)] = r;
-      });
-      setOptionMap(tempMap);
-    }
-  }, [optionsDataSet.status]);
-
-
   function handleDelete(current) {
     selectDataSet.remove(current);
   }
@@ -65,6 +53,12 @@ const DynamicSelect = injectIntl(observer((props) => {
         });
         optionsDataSet.push(loadMoreRecord);
       }
+
+      const tempMap = optionMap;
+      forEach(optionsDataSet.data, (r) => {
+        tempMap[r.get(valueField)] = r;
+      });
+      setOptionMap(tempMap);
       
       return res;
     } else {
@@ -74,7 +68,7 @@ const DynamicSelect = injectIntl(observer((props) => {
 
   function setQueryParameter(param) {
     optionsDataSet.transport.read.data = {
-      params: [param],
+      params: param ? [param] : [],
       searchParam: {},
     };
   }
@@ -108,18 +102,11 @@ const DynamicSelect = injectIntl(observer((props) => {
     searchData(e.target.value);
   }
 
-  function handleBlur() {
-    setSearchParam(null);
+  function handleBlur(record) {
+    const url = optionsDataSet.transport.read.url.split('?')[0];
+    optionsDataSet.transport.read.data = null;
+    optionsDataSet.transport.read.url = `${url}${record.get(selectName) ? `?${optionKeyName}=${record.get(selectName)}` : ''}`;
     searchData();
-  }
-
-  function handleFocus(record) {
-    setSearchParam(null);
-    if (selectDataSet.created.length > 1 || selectDataSet.created[0].get(selectName)) {
-      const url = optionsDataSet.transport.read.url.split('?')[0];
-      optionsDataSet.transport.read.url = `${url}${record.get(selectName) ? `?${optionKeyName}=${record.get(selectName)}` : ''}`;
-      searchData();
-    }
   }
 
   function optionRendererWraper({ record, text, value }) {
@@ -153,7 +140,7 @@ const DynamicSelect = injectIntl(observer((props) => {
     {map(selectDataSet.created, (createdRecord, index) => (
       <div className="dynamic-select-form-item" key={`dynamic-select-form-${index}`}>
         <Form record={createdRecord}>
-          <Select name={selectName} optionRenderer={optionRendererWraper} renderer={rendererWraper} optionsFilter={optionsFilterWaper} searchable onInput={handleInput} searchMatcher={() => true} onFocus={handleFocus.bind(this, createdRecord)} />
+          <Select name={selectName} optionRenderer={optionRendererWraper} renderer={rendererWraper} optionsFilter={optionsFilterWaper} searchable onInput={handleInput} searchMatcher={() => true} onBlur={handleBlur.bind(this, createdRecord)} />
         </Form>
         <Button
           icon="delete"
