@@ -542,12 +542,13 @@ class PipelineCreateStore {
    * @param projectId
    * @returns {Promise<void>}
    */
-  async loadUser(projectId, page = 1, searchValue) {
+  async loadUser(projectId, page = 1, searchValue, users) {
     this.setLoading('user', true);
 
     const data = {
       params: searchValue ? [searchValue] : [],
       searchParam: {},
+      ids: users || [],
     };
 
     const response = await axios
@@ -607,7 +608,7 @@ class PipelineCreateStore {
       this.initPipeline(response);
       this.setTrigger(response.triggerType);
       this.checkCanSubmit();
-      return true;
+      return response;
     }
     return false;
   }
