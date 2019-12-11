@@ -44,6 +44,7 @@ const EnvModals = observer(() => {
     tabs: {
       SYNC_TAB,
       ASSIGN_TAB,
+      CONFIG_TAB,
     },
     permissionsDs,
     gitopsLogDs,
@@ -68,13 +69,14 @@ const EnvModals = observer(() => {
   function refresh() {
     baseInfoDs.query();
     treeDs.query();
-    configDs.query();
     const tabKey = envStore.getTabKey;
     if (tabKey === SYNC_TAB) {
       gitopsSyncDs.query();
       gitopsLogDs.query();
     } else if (tabKey === ASSIGN_TAB) {
       permissionsDs.query();
+    } else if (tabKey === CONFIG_TAB) {
+      configDs.query();
     }
   }
 

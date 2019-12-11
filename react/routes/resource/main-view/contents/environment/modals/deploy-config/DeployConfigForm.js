@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 import { Form, TextField, TextArea, Select } from 'choerodon-ui/pro';
 import YamlEditor from '../../../../../../../components/yamlEditor';
 import { useFormStore } from './stores';
-import { useEnvironmentStore } from '../../stores';
 
 import './index.less';
 
@@ -22,7 +21,6 @@ function DeployConfigForm() {
     refresh,
     store,
   } = useFormStore();
-  // const { configDs } = useEnvironmentStore();
   const [value, setValue] = useState('');
   const [isError, setValueError] = useState(false);
 
