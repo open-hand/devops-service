@@ -109,8 +109,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
       });
       const recentAppList = localStorage.getItem('recent-app') && JSON.parse(localStorage.getItem('recent-app'));
       appServiceDs.query().then((res) => {
-        if (recentAppList) {
-          selectAppDs.current.set('appServiceId', recentAppList[projectId][0].id);
+        if (recentAppList !== null && recentAppList[projectId]) {
+          selectAppDs.current && selectAppDs.current.set('appServiceId', recentAppList[projectId][0].id);
         } else if (res && res.length && res.length > 0) {
           selectAppDs.current.set('appServiceId', res[0].id);
         }
