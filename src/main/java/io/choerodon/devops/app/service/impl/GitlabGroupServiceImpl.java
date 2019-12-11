@@ -95,7 +95,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         }
         ownerIds.forEach(id -> {
                     UserAttrDTO ownerAttrDTO = userAttrService.baseQueryById(id);
-                    gitlabServiceClientOperator.createProjectMember(devopsProjectDTO.getDevopsClusterEnvGroupId().intValue(),
+                    gitlabServiceClientOperator.createGroupMember(devopsProjectDTO.getDevopsClusterEnvGroupId().intValue(),
                             new MemberDTO(ownerAttrDTO.getGitlabUserId().intValue(), AccessLevel.MASTER.value, ""));
                 }
         );
@@ -120,6 +120,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         if (groupDTO == null) {
             groupDTO = gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            LOGGER.info("group类型:{}创建完成 gitlabGroupId:{}", suffix, groupDTO.getId());
         }
 
 

@@ -13,6 +13,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.PageInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.slf4j.Logger;
@@ -111,7 +112,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         DevopsProjectDTO oldDevopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(devopsProjectDTO);
         if (oldDevopsProjectDTO == null) {
             try {
-                devopsProjectMapper.insertSelective(devopsProjectDTO);
+                MapperUtil.resultJudgedInsertSelective(devopsProjectMapper, devopsProjectDTO, "error.project.insert", (Object[]) null);
             } catch (Exception e) {
                 logger.info("An exception occurred when inserting into devops_project: {}", JSONObject.toJSONString(devopsProjectDTO));
                 logger.info("The exception is: ", e);
@@ -123,7 +124,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
             }
         } else {
             devopsProjectDTO.setObjectVersionNumber(oldDevopsProjectDTO.getObjectVersionNumber());
-            devopsProjectMapper.updateByPrimaryKeySelective(devopsProjectDTO);
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsProjectMapper, devopsProjectDTO, "error.project.update", (Object[]) null);
         }
     }
 
