@@ -12,6 +12,7 @@ import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Tag;
@@ -179,11 +180,13 @@ public class ResourceConvertToYamlHandler<T> {
                 Map<String, String> oldAnnotations = v1Service.getMetadata().getAnnotations();
                 newV1Service = (V1Service) t;
                 Map<String, String> newAnnotations = newV1Service.getMetadata().getAnnotations();
-                oldAnnotations.forEach((key, value) -> {
-                    if (!key.equals("choerodon.io/network-service-instances") && !key.equals("choerodon.io/network-service-app")) {
-                        newAnnotations.put(key, value);
-                    }
-                });
+                if (!CollectionUtils.isEmpty(oldAnnotations)) {
+                    oldAnnotations.forEach((key, value) -> {
+                        if (!key.equals("choerodon.io/network-service-instances") && !key.equals("choerodon.io/network-service-app")) {
+                            newAnnotations.put(key, value);
+                        }
+                    });
+                }
                 newV1Service.getMetadata().setAnnotations(newAnnotations);
             } else {
                 return;
