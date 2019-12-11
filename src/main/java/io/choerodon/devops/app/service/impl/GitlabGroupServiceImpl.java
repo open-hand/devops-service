@@ -88,7 +88,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         payload.setUserId(userAttrDTO.getIamUserId());
         createGroup(payload, CLUSTER_ENV_GROUP_SUFFIX);
 
-        List<Long> ownerIds = baseServiceClientOperator.getAllMemberIdsWithoutMember(projectDTO.getId());
+        List<Long> ownerIds = baseServiceClientOperator.getAllOwnerIds(projectDTO.getId());
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
         if (devopsProjectDTO.getDevopsClusterEnvGroupId() == null) {
             throw new CommonException("error.cluster.env.group.create");
