@@ -38,7 +38,7 @@
             <foreach collection="params" item="param" open="(" separator=" OR " close=")">
                 (dasr.version_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 OR dasr.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                OR dasr.id = #{searchParam.id}
+                OR dasr.id = #{param}
                 )
             </foreach>
         </if>
