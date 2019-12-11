@@ -23,13 +23,14 @@ public class MapperUtil {
      * @param mapper              mapper
      * @param recordToInsert      待插入的纪录
      * @param commonExceptionCode 插入异常时的异常消息Code
+     * @param messageParameters   渲染异常消息需要的参数
      * @param <T>                 纪录类型
      * @return 插入纪录
      */
     @Nonnull
-    public static <T> T resultJudgedInsert(Mapper<T> mapper, T recordToInsert, String commonExceptionCode) {
+    public static <T> T resultJudgedInsert(Mapper<T> mapper, T recordToInsert, String commonExceptionCode, Object... messageParameters) {
         if (mapper.insert(Objects.requireNonNull(recordToInsert)) != 1) {
-            throw new CommonException(commonExceptionCode);
+            throw new CommonException(commonExceptionCode, messageParameters);
         }
         return recordToInsert;
     }
@@ -40,13 +41,14 @@ public class MapperUtil {
      * @param mapper              mapper
      * @param recordToInsert      待插入的纪录
      * @param commonExceptionCode 插入异常时的异常消息Code
+     * @param messageParameters   渲染异常消息需要的参数
      * @param <T>                 纪录类型
      * @return 插入纪录
      */
     @Nonnull
-    public static <T> T resultJudgedInsertSelective(Mapper<T> mapper, T recordToInsert, String commonExceptionCode) {
+    public static <T> T resultJudgedInsertSelective(Mapper<T> mapper, T recordToInsert, String commonExceptionCode, Object... messageParameters) {
         if (mapper.insertSelective(Objects.requireNonNull(recordToInsert)) != 1) {
-            throw new CommonException(commonExceptionCode);
+            throw new CommonException(commonExceptionCode, messageParameters);
         }
         return recordToInsert;
     }
@@ -57,11 +59,12 @@ public class MapperUtil {
      * @param mapper              mapper
      * @param recordToUpdate      待更新的纪录
      * @param commonExceptionCode 更新异常时的异常消息Code
+     * @param messageParameters   渲染异常消息需要的参数
      * @param <T>                 纪录类型
      */
-    public static <T> void resultJudgedUpdateByPrimaryKey(Mapper<T> mapper, T recordToUpdate, String commonExceptionCode) {
+    public static <T> void resultJudgedUpdateByPrimaryKey(Mapper<T> mapper, T recordToUpdate, String commonExceptionCode, Object... messageParameters) {
         if (mapper.updateByPrimaryKey(Objects.requireNonNull(recordToUpdate)) != 1) {
-            throw new CommonException(commonExceptionCode);
+            throw new CommonException(commonExceptionCode, messageParameters);
         }
     }
 
@@ -71,11 +74,12 @@ public class MapperUtil {
      * @param mapper              mapper
      * @param recordToUpdate      待更新的纪录
      * @param commonExceptionCode 更新异常时的异常消息Code
+     * @param messageParameters   渲染异常消息需要的参数
      * @param <T>                 纪录类型
      */
-    public static <T> void resultJudgedUpdateByPrimaryKeySelective(Mapper<T> mapper, T recordToUpdate, String commonExceptionCode) {
+    public static <T> void resultJudgedUpdateByPrimaryKeySelective(Mapper<T> mapper, T recordToUpdate, String commonExceptionCode, Object... messageParameters) {
         if (mapper.updateByPrimaryKeySelective(Objects.requireNonNull(recordToUpdate)) != 1) {
-            throw new CommonException(commonExceptionCode);
+            throw new CommonException(commonExceptionCode, messageParameters);
         }
     }
 }
