@@ -61,7 +61,7 @@ export default CodeManagerToolBar;
 
 export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
   const codeManagerStore = useCodeManagerStore();
-  const { appServiceDs, selectAppDs } = codeManagerStore;
+  const { appServiceDs, selectAppDs, projectId } = codeManagerStore;
   const { intl: { formatMessage } } = props;
   const currentApp = _.find(appServiceDs.toData(), ['id', selectAppDs.current.get('appServiceId')]);
   const noRepoUrl = formatMessage({ id: 'repository.noUrl' });
@@ -113,6 +113,20 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
         clearButton={false}
         disabled={appServiceDs.status !== 'ready' || appServiceDs.length === 0}
       >
+        {
+          localStorage.getItem('recent-app') && <OptGroup label={formatMessage({ id: 'deploy.app-recent' })} key="app-recent">
+            {
+              _.map(JSON.parse(localStorage.getItem('recent-app'))[projectId], ({ id, code, name: opName }, index) => (
+                <Option
+                  value={id}
+                  key={index}
+                >
+                  {opName}
+                </Option>))
+            }
+          </OptGroup>
+        }
+
         <OptGroup label={formatMessage({ id: 'deploy.app' })} key="app">
           {
             _.map(appServiceDs.toData(), ({ id, code, name: opName }, index) => (
@@ -124,6 +138,7 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
               </Option>))
           }
         </OptGroup>
+
       </Select>
 
       <Dropdown
