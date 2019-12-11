@@ -253,7 +253,8 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         }
 
         // 校验应用服务id是实例的实际应用服务id
-        if (!Objects.equals(releaseAppServiceId, c7nHelmRelease.getSpec().getAppServiceId())) {
+        if (c7nHelmRelease.getSpec().getAppServiceId() != null
+                && !Objects.equals(releaseAppServiceId, c7nHelmRelease.getSpec().getAppServiceId())) {
             throw new GitOpsExplainException(GitOpsObjectError.RELEASE_APP_SERVICE_ID_MISMATCH.getError(), filePath);
         }
 
