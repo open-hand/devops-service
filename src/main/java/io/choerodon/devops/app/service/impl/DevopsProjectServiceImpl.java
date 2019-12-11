@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
@@ -32,8 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static io.choerodon.devops.app.service.impl.DevopsNotificationServiceImpl.gson;
 
 /**
  * Created by Sheep on 2019/7/15.
@@ -163,8 +162,8 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         List<IamUserDTO> allMember = baseServiceClientOperator.getAllMember(projectId, params);
         List<Long> selectedIamUserIds = new ArrayList<>();
         if (!StringUtils.isEmpty(params)) {
-            Map maps = gson.fromJson(params, Map.class);
-            selectedIamUserIds = TypeUtil.cast(maps.get("ids"));
+            Map maps = JSONObject.parseObject(params, Map.class);
+            selectedIamUserIds = TypeUtil.cast(((JSONArray) maps.get("ids")).toJavaList(Long.class));
         }
         if (!CollectionUtils.isEmpty(selectedIamUserIds)) {
             List<IamUserDTO> iamUserDTOList = baseServiceClientOperator.queryUsersByUserIds(selectedIamUserIds);
