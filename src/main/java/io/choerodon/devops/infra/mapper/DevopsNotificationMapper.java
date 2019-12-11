@@ -34,5 +34,5 @@ public interface DevopsNotificationMapper extends Mapper<DevopsNotificationDTO> 
 
     List<DevopsNotificationDTO> listOldNotificationDTO();
 
-    List<DevopsNotificationVO> transferData();
+    List<NotificationEventVO> transferData();
 }

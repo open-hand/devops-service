@@ -109,5 +109,5 @@ public interface DevopsNotificationService {
 
     void deleteNotifyEventByProjectIdAndEnvId(Long projectId, Long envId);
 
-    List<DevopsNotificationVO> transferDate();
+    List<NotificationEventVO> transferDate();
 }
