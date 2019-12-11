@@ -50,6 +50,7 @@ const EnvModals = observer(() => {
     gitopsSyncDs,
     baseInfoDs,
     configFormDs,
+    configDs,
   } = useEnvironmentStore();
 
   const ModalStores = useModalStore();
@@ -159,7 +160,7 @@ const EnvModals = observer(() => {
     envStore.setTabKey(ASSIGN_TAB);
     getTabKey === ASSIGN_TAB && permissionsDs.query();
   }
-  
+
   function linkToConfig() {
     const record = baseInfoDs.current;
     const url = record && record.get('gitlabUrl');
@@ -184,6 +185,7 @@ const EnvModals = observer(() => {
       afterClose: () => {
         configFormDs.reset();
         envStore.setValue('');
+        configDs.query();
       },
       okText: formatMessage({ id: 'create' }),
     });
