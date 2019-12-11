@@ -1538,7 +1538,7 @@ const zhCN = {
   'deploy.instance': '实例名称',
   'deploy.envName': '环境名称',
   'deploy.app': '应用服务',
-  'deploy.app-recent': '最近使用的应用服务',
+  'deploy.app-recent': '最近使用',
   'deploy.ver': '版本',
   'deploy.env': '环境',
   'deploy.pod': 'Pod状态',

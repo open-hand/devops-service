@@ -107,14 +107,13 @@ export const StoreProvider = injectIntl(inject('AppState')(
         url: `/devops/v1/projects/${projectId}/app_service/list_by_active`,
         method: 'get',
       });
-      const recentApp = localStorage.getItem('recent-app') && JSON.parse(localStorage.getItem('recent-app'));
+      const recentAppList = localStorage.getItem('recent-app') && JSON.parse(localStorage.getItem('recent-app'));
       appServiceDs.query().then((res) => {
-        // if (recentApp) {
-        //   selectAppDs.current.set('appServiceId', recentApp[0].id);
-        // } else if (res && res.length && res.length > 0) {
-
-        // }
-        selectAppDs.current.set('appServiceId', res[0].id);
+        if (recentAppList) {
+          selectAppDs.current.set('appServiceId', recentAppList[projectId][0].id);
+        } else if (res && res.length && res.length > 0) {
+          selectAppDs.current.set('appServiceId', res[0].id);
+        }
       });
     }, [projectId]);
     const value = {
