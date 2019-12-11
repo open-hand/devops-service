@@ -500,14 +500,14 @@ export default class TaskCreate extends Component {
     PipelineCreateStore.loadUser(projectId, page + 1);
   }
 
-  handleSearch = (value) => {
+  handleSearch = _.debounce((value) => {
     const { 
       AppState: {
         currentMenuType: { id: projectId },
       },
     } = this.props;
     PipelineCreateStore.loadUser(projectId, 1, value);
-  }
+  }, 700)
 
   render() {
     const {
@@ -585,6 +585,17 @@ export default class TaskCreate extends Component {
         <Tooltip title={loginName}>{realName || loginName}</Tooltip>
       </Option>
     ));
+
+    if (getPageInfo && getPageInfo.hasNextPage) {
+      userOptions.push(<Option key="pipeline-create-user-select-more-key" className="c7n-load-more-wrap">
+        <div
+          className="c7n-option-popover"
+          onClick={this.loadMoreWrap}
+        >
+          <span className="c7n-option-span">{formatMessage({ id: 'loadMore' })}</span>
+        </div>
+      </Option>);
+    }
 
     const configOptions = _.map(getConfigList, ({ id, name }) => (<Option key={id} value={id}>
       {name}
@@ -816,6 +827,8 @@ export default class TaskCreate extends Component {
           })(
             <Select
               filter
+              filterOption={false}
+              loading={getLoading.user}
               allowClear
               mode="multiple"
               optionFilterProp="children"
@@ -824,15 +837,6 @@ export default class TaskCreate extends Component {
               onSearch={this.handleSearch}
             >
               {userOptions}
-              {getPageInfo && getPageInfo.hasNextPage
-              && <Option key="pipeline-create-user-select-more-key" className="c7n-load-more-wrap">
-                <div
-                  className="c7n-option-popover"
-                  onClick={this.loadMoreWrap}
-                >
-                  <span className="c7n-option-span">{formatMessage({ id: 'loadMore' })}</span>
-                </div>
-              </Option>}
             </Select>,
           )}
         </FormItem>

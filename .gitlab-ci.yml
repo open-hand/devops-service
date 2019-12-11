@@ -52,11 +52,11 @@ build-combine:
     - mvn --batch-mode  verify sonar:sonar  -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_LOGIN -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}
     - mvn package spring-boot:repackage
     - mv target/app.jar docker
-    - echo '//${NPM_REGISTRY}:_authToken=${NPM_TOKEN}'>.npmrc
     - npm install --registry https://nexus.choerodon.com.cn/repository/choerodon-npm/ --sass-binary-site=http://npm.taobao.org/mirrors/node-sass
     - chmod -R 755 node_modules
     - npm run dist
     - npm run compile
+    - echo '//${NPM_REGISTRY}:_authToken=${NPM_TOKEN}'>.npmrc
     - npm publish --registry https://nexus.choerodon.com.cn/repository/private-npm/
     - curl -sX POST -F token=${FRONT_REPOSITORY_TOKEN} -F ref=${REF_NAME} https://code.choerodon.com.cn/api/v4/projects/6643/trigger/pipeline
     - mv src/main/resources/lib/dist docker

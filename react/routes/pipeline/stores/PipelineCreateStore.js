@@ -560,8 +560,12 @@ class PipelineCreateStore {
     if (handlePromptError(response)) {
       const { list, ...rest } = response;
       this.setPageInfo(rest);
-      const allList = this.getUser().connect(list);
-      this.setUser(allList);
+      if (searchValue || searchValue === '') {
+        this.setUser(list);
+      } else {
+        const allList = this.getUser.concat(list);
+        this.setUser(allList);
+      }
     }
   }
 

@@ -103,12 +103,10 @@ const DynamicSelect = injectIntl(observer((props) => {
   }
 
   function handleBlur(record) {
-    setSearchParam(null);
-    if (selectDataSet.created.length > 1 || selectDataSet.created[0].get(selectName)) {
-      const url = optionsDataSet.transport.read.url.split('?')[0];
-      optionsDataSet.transport.read.url = `${url}${record.get(selectName) ? `?${optionKeyName}=${record.get(selectName)}` : ''}`;
-      searchData();
-    }
+    const url = optionsDataSet.transport.read.url.split('?')[0];
+    optionsDataSet.transport.read.data = null;
+    optionsDataSet.transport.read.url = `${url}${record.get(selectName) ? `?${optionKeyName}=${record.get(selectName)}` : ''}`;
+    searchData();
   }
 
   function optionRendererWraper({ record, text, value }) {

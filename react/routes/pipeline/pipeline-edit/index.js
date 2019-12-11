@@ -190,7 +190,7 @@ export default class PipelineEdit extends Component {
     PipelineCreateStore.loadUser(projectId, page + 1);
   }
 
-  handleSearch = (value) => {
+  handleSearch = _.debounce((value) => {
     const { 
       AppState: {
         currentMenuType: { id: projectId },
@@ -198,7 +198,7 @@ export default class PipelineEdit extends Component {
       PipelineCreateStore,
     } = this.props;
     PipelineCreateStore.loadUser(projectId, 1, value);
-  }
+  }, 700)
 
   render() {
     const {
@@ -215,6 +215,7 @@ export default class PipelineEdit extends Component {
       getDetailLoading,
       getCanSubmit,
       editVisible: visible,
+      getPageInfo,
     } = PipelineCreateStore;
 
     const showUserSelector = triggerType
@@ -226,6 +227,18 @@ export default class PipelineEdit extends Component {
         <Tooltip title={loginName}>{realName || loginName}</Tooltip>
       </Option>
     ));
+
+    if (getPageInfo && getPageInfo.hasNextPage) {
+      user.push(<Option key="pipeline-create-user-select-more-key" className="c7n-load-more-wrap">
+        <div
+          className="c7n-option-popover"
+          onClick={this.loadMoreWrap}
+        >
+          <span className="c7n-option-span">{formatMessage({ id: 'loadMore' })}</span>
+        </div>
+      </Option>);
+    }     
+
     const initUser = _.map(getPipeline.pipelineUserRels, (item) => String(item));
 
     return (
@@ -299,6 +312,7 @@ export default class PipelineEdit extends Component {
                 })(
                   <Select
                     filter
+                    filterOption={false}
                     allowClear
                     mode="multiple"
                     label={formatMessage({ id: 'pipeline.trigger.member' })}
@@ -307,14 +321,6 @@ export default class PipelineEdit extends Component {
                     onSearch={this.handleSearch}
                   >
                     {user}
-                    <Option key="pipeline-create-user-select-more-key" className="c7n-load-more-wrap">
-                      <div
-                        className="c7n-option-popover"
-                        onClick={this.loadMoreWrap}
-                      >
-                        <span className="c7n-option-span">{formatMessage({ id: 'loadMore' })}</span>
-                      </div>
-                    </Option>
                   </Select>,
                 )}
               </FormItem>}
