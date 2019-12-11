@@ -100,12 +100,12 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
         DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = new DevopsCertManagerRecordDTO();
         devopsCertManagerRecordDTO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
-        devopsCertManagerRecordMapper.insertSelective(devopsCertManagerRecordDTO);
+        MapperUtil.resultJudgedInsertSelective(devopsCertManagerRecordMapper, devopsCertManagerRecordDTO, "error.insert.cert.manager.record");
         //记录chart信息
         DevopsCertManagerDTO devopsCertManagerDTO = new DevopsCertManagerDTO();
         devopsCertManagerDTO.setNamespace(CertManagerConstants.CERT_MANAGER_REALASE_NAME_C7N);
         devopsCertManagerDTO.setChartVersion(CertManagerConstants.CERT_MANAGER_CHART_VERSION);
-        devopsCertManagerMapper.insertSelective(devopsCertManagerDTO);
+        MapperUtil.resultJudgedInsertSelective(devopsCertManagerMapper, devopsCertManagerDTO, "error.insert.cert.manager");
         // 插入数据
         devopsClusterResourceDTO.setObjectId(devopsCertManagerRecordDTO.getId());
         devopsClusterResourceDTO.setClusterId(clusterId);

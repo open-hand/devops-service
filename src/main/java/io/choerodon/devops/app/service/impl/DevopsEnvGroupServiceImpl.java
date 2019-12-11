@@ -15,6 +15,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvGroupDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvGroupMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.MapperUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -99,8 +100,7 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
 
     @Override
     public DevopsEnvGroupDTO baseCreate(DevopsEnvGroupDTO devopsEnvGroupDTO) {
-        devopsEnvGroupMapper.insert(devopsEnvGroupDTO);
-        return devopsEnvGroupDTO;
+        return MapperUtil.resultJudgedInsert(devopsEnvGroupMapper, devopsEnvGroupDTO, "error.insert.env.group");
     }
 
     @Override

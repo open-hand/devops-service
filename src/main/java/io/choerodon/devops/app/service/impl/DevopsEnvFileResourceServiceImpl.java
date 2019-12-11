@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileResourceMapper;
+import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
@@ -42,8 +43,7 @@ public class DevopsEnvFileResourceServiceImpl implements DevopsEnvFileResourceSe
 
     @Override
     public DevopsEnvFileResourceDTO baseCreate(DevopsEnvFileResourceDTO devopsEnvFileResourceDTO) {
-        devopsEnvFileResourceMapper.insert(devopsEnvFileResourceDTO);
-        return devopsEnvFileResourceDTO;
+        return MapperUtil.resultJudgedInsert(devopsEnvFileResourceMapper, devopsEnvFileResourceDTO, "error.insert.env.file.resource");
     }
 
     @Override

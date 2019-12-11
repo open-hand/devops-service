@@ -467,8 +467,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public CertificationDTO baseCreate(CertificationDTO certificationDTO) {
-        devopsCertificationMapper.insert(certificationDTO);
-        return certificationDTO;
+        return MapperUtil.resultJudgedInsert(devopsCertificationMapper, certificationDTO, "error.certification.create");
     }
 
     @Override
@@ -577,8 +576,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public Long baseStoreCertFile(CertificationFileDTO certificationFileDTO) {
-        devopsCertificationFileMapper.insert(certificationFileDTO);
-        return certificationFileDTO.getId();
+        return MapperUtil.resultJudgedInsert(devopsCertificationFileMapper, certificationFileDTO, "error.insert.certification.file").getId();
     }
 
     @Override
