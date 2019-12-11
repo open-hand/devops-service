@@ -68,6 +68,7 @@ const EnvModals = observer(() => {
   function refresh() {
     baseInfoDs.query();
     treeDs.query();
+    configDs.query();
     const tabKey = envStore.getTabKey;
     if (tabKey === SYNC_TAB) {
       gitopsSyncDs.query();
@@ -185,7 +186,6 @@ const EnvModals = observer(() => {
       afterClose: () => {
         configFormDs.reset();
         envStore.setValue('');
-        configDs.query();
       },
       okText: formatMessage({ id: 'create' }),
     });
