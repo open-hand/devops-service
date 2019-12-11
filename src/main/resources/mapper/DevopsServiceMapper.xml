@@ -311,6 +311,18 @@
         WHERE ds.id = #{serviceId}
     </update>
 
+    <update id="updateTargetAppServiceIdToNull">
+        UPDATE devops_service ds
+        SET ds.target_app_service_id = null
+        WHERE ds.id = #{serviceId}
+    </update>
+
+    <update id="updateTargetInstanceCodeToNull">
+        UPDATE devops_service ds
+        SET ds.target_instance_code = null
+        WHERE ds.id = #{serviceId}
+    </update>
+
     <update id="setExternalIpNull">
         UPDATE devops_service ds
         SET ds.external_ip = null
