@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import com.jcraft.jsch.JSch;
@@ -617,15 +618,16 @@ public class GitUtil {
     /**
      * 本地创建tag并推送远程仓库
      *
-     * @param git git repo
-     * @throws GitAPIException push error
+     * @param git     git repo
+     * @param sshKey  ssh私钥
+     * @param tagName tag名称
+     * @param sha     要打tag的散列值
+     * @throws CommonException push error
      */
-    public static void createTag(Git git, String sshKey, String tagName, String sha) {
+    public static void createTagAndPush(Git git, String sshKey, String tagName, String sha) {
         try {
-            List<Ref> taglist = git.tagList().call();
-            if (taglist.contains(DEV_OPS_REFS + tagName)) {
-                deleteTag(git, tagName);
-            }
+            // 创建之前删除，保证本地不存在要创建的tag
+            deleteTag(git, tagName);
             Repository repository = git.getRepository();
             ObjectId id = repository.resolve(sha);
             RevWalk walk = new RevWalk(repository);
@@ -644,10 +646,12 @@ public class GitUtil {
     /**
      * 本地删除tag
      *
-     * @param git git repo
-     * @throws GitAPIException push error
+     * @param git     git repo
+     * @param sshKey  ssh私钥
+     * @param tagName 要删除的tag的名称
+     * @throws CommonException push error
      */
-    public static void deleteTag(Git git, String sshKey, String tagName) {
+    public static void deleteTagAndPush(Git git, String sshKey, String tagName) {
         try {
             PushCommand pushCommand = git.push();
             List<Ref> refs = git.tagList().call();
@@ -663,35 +667,35 @@ public class GitUtil {
         } catch (GitAPIException e) {
             throw new CommonException("delete tag fail", e);
         }
-
     }
 
     /**
      * 本地删除tag
      *
-     * @param git git repo
-     * @throws GitAPIException push error
+     * @param git     git repo
+     * @param tagName tag名称
+     * @throws CommonException push error
      */
     public static void deleteTag(Git git, String tagName) {
         try {
+            // 删除不存在的tag时jgit不会报错
             git.tagDelete().setTags(tagName).call();
         } catch (GitAPIException e) {
             throw new CommonException("delete tag fail", e);
         }
-
     }
 
     /**
      * 本地删除tag后，创建新tag推送至远程仓库
      *
-     * @param git
-     * @param sshKey
-     * @param tagName
-     * @param sha
+     * @param git     本地git仓库的引用
+     * @param sshKey  ssh私钥
+     * @param tagName tag名称
+     * @param sha     要打tag的commit的散列值
      */
     public static void pushTag(Git git, String sshKey, String tagName, String sha) {
         deleteTag(git, tagName);
-        createTag(git, sshKey, tagName, sha);
+        createTagAndPush(git, sshKey, tagName, sha);
     }
 
     /**

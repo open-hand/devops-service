@@ -49,7 +49,6 @@ import io.choerodon.devops.infra.feign.operator.AgileServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
-import io.choerodon.devops.infra.message.ResourceBundleHandler;
 import io.choerodon.devops.infra.util.*;
 
 import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
@@ -576,12 +575,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 handler.handlerRelations(objectPath, beforeSyncFileResource, v, resourceKindMap.get(V1Endpoints.class), envId, projectId, path, userId);
             });
             LOGGER.info("k8s对象转换平台对象成功！");
-            //处理文件
+            // 处理文件
             handleFiles(operationFiles, deletedFiles, devopsEnvironmentDTO, devopsEnvCommitDTO, path);
 
-            //删除tag
-
-            handleTag(git,devopsEnvironmentDTO.getEnvIdRsa(),pushWebHookVO, devopsEnvCommitDTO, tagNotExist);
+            // 更新远程仓库的DevOps相关的tag
+            handleTag(git, devopsEnvironmentDTO.getEnvIdRsa(), pushWebHookVO, devopsEnvCommitDTO, tagNotExist);
 
             devopsEnvironmentDTO.setDevopsSyncCommit(devopsEnvCommitDTO.getId());
             //更新环境 解释commit
@@ -670,11 +668,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private void handleTag(Git git, String sshKey, PushWebHookVO pushWebHookVO,
                            DevopsEnvCommitDTO devopsEnvCommitDTO, Boolean tagNotExist) {
         if (tagNotExist) {
-            GitUtil.createTag(git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
+            GitUtil.createTagAndPush(git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
+            if (getDevopsSyncTag(pushWebHookVO)) {
+                GitUtil.createTagAndPush(git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
+            }
         } else {
             GitUtil.pushTag(git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
             if (getDevopsSyncTag(pushWebHookVO)) {
-                GitUtil.createTag(git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
+                GitUtil.createTagAndPush(git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
             }
         }
     }
@@ -1009,7 +1010,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 String localPath = String.format("%s%s", path, GIT_SUFFIX);
                 return GitUtil.pullBySsh(localPath, envIdRsa);
             } else {
-               return gitUtil.cloneBySsh(path, url, envIdRsa);
+                return gitUtil.cloneBySsh(path, url, envIdRsa);
             }
         }
     }
