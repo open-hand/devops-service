@@ -418,6 +418,10 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         if (devopsClusterDTO == null) {
             return;
         }
+
+        // 校验集群是否能够删除
+        checkConnectEnvsAndPV(clusterId);
+
         if (!ObjectUtils.isEmpty(devopsClusterDTO.getClientId())) {
             baseServiceClientOperator.deleteClient(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getClientId());
         }

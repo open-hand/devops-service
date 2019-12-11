@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -35,6 +36,7 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -1625,6 +1627,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return devopsEnvironmentDTO;
     }
 
+    /**
+     * 校验了集群下code唯一和校验了项目下code唯一
+     *
+     * @param devopsEnvironmentDTO 带有 clusterId, code, projectId的对象
+     */
     @Override
     public void baseCheckCode(DevopsEnvironmentDTO devopsEnvironmentDTO) {
         DevopsEnvironmentDTO environmentDTO = new DevopsEnvironmentDTO();
