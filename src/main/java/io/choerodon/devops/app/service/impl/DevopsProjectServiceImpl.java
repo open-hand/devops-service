@@ -25,11 +25,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static io.choerodon.devops.app.service.impl.DevopsNotificationServiceImpl.gson;
 
 /**
  * Created by Sheep on 2019/7/15.
@@ -155,16 +159,24 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     }
 
     @Override
-    public PageInfo<UserVO> listAllOwnerAndMembers(Long projectId, Long selectedIamUserId, Pageable pageable, String params) {
+    public PageInfo<UserVO> listAllOwnerAndMembers(Long projectId, Pageable pageable, String params) {
         List<IamUserDTO> allMember = baseServiceClientOperator.getAllMember(projectId, params);
-
-        if (selectedIamUserId != null) {
-            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(selectedIamUserId);
-            if (allMember.size() != 0) {
-                allMember.remove(iamUserDTO);
-                allMember.add(0, iamUserDTO);
-            } else {
-                allMember.add(iamUserDTO);
+        List<Long> selectedIamUserIds = new ArrayList<>();
+        if (!StringUtils.isEmpty(params)) {
+            Map maps = gson.fromJson(params, Map.class);
+            selectedIamUserIds = TypeUtil.cast(maps.get("ids"));
+        }
+        if (!CollectionUtils.isEmpty(selectedIamUserIds)) {
+            List<IamUserDTO> iamUserDTOList = baseServiceClientOperator.queryUsersByUserIds(selectedIamUserIds);
+            if (!CollectionUtils.isEmpty(iamUserDTOList)) {
+                iamUserDTOList.forEach(iamUserDTO -> {
+                    if (allMember.size() != 0) {
+                        allMember.remove(iamUserDTO);
+                        allMember.add(0, iamUserDTO);
+                    } else {
+                        allMember.add(iamUserDTO);
+                    }
+                });
             }
         }
 

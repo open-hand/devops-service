@@ -122,7 +122,6 @@ public class BaseServiceClientOperator {
             try {
                 userDTOS = baseServiceClient
                         .listUsersByIds(ids.toArray(newIds), false).getBody();
-
             } catch (Exception e) {
                 throw new CommonException("error.users.get", e);
             }
@@ -138,6 +137,10 @@ public class BaseServiceClientOperator {
             return userES.get(0);
         }
         return null;
+    }
+
+    public List<IamUserDTO> queryUsersByUserIds(List<Long> ids) {
+        return this.listUsersByIds(ids);
     }
 
     public PageInfo<IamUserDTO> pagingQueryUsersByRoleIdOnProjectLevel(Pageable pageable,
