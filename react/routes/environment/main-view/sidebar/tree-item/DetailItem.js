@@ -76,6 +76,11 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
       deleteModal.update({
         children: formatMessage({ id: `${intlPrefix}.status.change` }),
         onOk: refresh,
+        footer: ((okBtn, cancelBtn) => (
+          <Fragment>
+            {okBtn}
+          </Fragment>
+        )),
       });
     }
   }
@@ -156,7 +161,6 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     if (res) {
       try {
         const result = await mainStore.checkEffect(projectId, envId);
-
         if (handlePromptError(result)) {
           effectModal.update({
             children: formatMessage({ id: `${intlPrefix}.stop.des` }),
@@ -190,6 +194,11 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
       effectModal.update({
         children: formatMessage({ id: `${intlPrefix}.status.change` }),
         onOk: refresh,
+        footer: (okBtn, cancelBtn) => (
+          <Fragment>
+            {okBtn}
+          </Fragment>
+        ),
       });
     }
   }
