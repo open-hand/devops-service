@@ -292,7 +292,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         if (!StringUtils.isEmpty(devopsServiceDTO.getEndPoints())) {
             devopsServiceMapper.updateAppServiceIdToNull(devopsServiceDTO.getId());
-            devopsServiceDTO.setTargetAppServiceId(null);
+            devopsServiceDTO.setAppServiceId(null);
         }
 
         //更新service对象到数据库
@@ -798,19 +798,41 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             baseUpdateEndPoint(devopsServiceDTO.getId());
             devopsServiceDTO.setEndPoints(null);
         }
+        if (devopsServiceReqVO.getTargetAppServiceId() != null) {
+            devopsServiceDTO.setTargetAppServiceId(devopsServiceReqVO.getTargetAppServiceId());
+        } else {
+            devopsServiceDTO.setTargetAppServiceId(null);
+            baseUpdateTargetAppServiceId(devopsServiceDTO.getId());
+        }
+        if (devopsServiceReqVO.getTargetInstanceCode() != null) {
+            devopsServiceDTO.setTargetInstanceCode(devopsServiceReqVO.getTargetInstanceCode());
+        } else {
+            devopsServiceDTO.setTargetInstanceCode(null);
+            baseUpdateTargetInstanceCode(devopsServiceDTO.getId());
+        }
         if (devopsServiceReqVO.getAppServiceId() == null) {
             if (devopsServiceReqVO.getTargetAppServiceId() != null) {
                 devopsServiceDTO.setAppServiceId(devopsServiceReqVO.getTargetAppServiceId());
             }
             if (devopsServiceReqVO.getTargetInstanceCode() != null) {
                 AppServiceInstanceDTO instanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(devopsServiceReqVO.getTargetInstanceCode(), devopsServiceReqVO.getEnvId());
-                devopsServiceDTO.setAppServiceId(instanceDTO.getAppServiceId());
+                if (instanceDTO != null) {
+                    devopsServiceDTO.setAppServiceId(instanceDTO.getAppServiceId());
+                }
             }
         }
         devopsServiceDTO.setPorts(gson.toJson(devopsServiceReqVO.getPorts()));
         devopsServiceDTO.setType(devopsServiceReqVO.getType() == null ? "ClusterIP" : devopsServiceReqVO.getType());
         devopsServiceDTO.setStatus(ServiceStatus.OPERATIING.getStatus());
         return devopsServiceDTO;
+    }
+
+    private void baseUpdateTargetAppServiceId(Long devopsServiceId) {
+        devopsServiceMapper.updateTargetAppServiceIdToNull(devopsServiceId);
+    }
+
+    private void baseUpdateTargetInstanceCode(Long devopsServiceId) {
+        devopsServiceMapper.updateTargetInstanceCodeToNull(devopsServiceId);
     }
 
     private DevopsServiceDTO handlerUpdateService(DevopsServiceReqVO devopsServiceReqVO, DevopsServiceDTO devopsServiceDTO) {
