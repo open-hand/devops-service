@@ -1572,7 +1572,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (!StringUtils.isEmpty(params)) {
             Map maps = gson.fromJson(params, Map.class);
             Map<String, Object> searchParamMap = Optional.ofNullable((Map) TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM))).orElse(new HashMap<>());
-            List<String> paramList = Optional.of((List) TypeUtil.cast(maps.get(TypeUtil.PARAMS))).orElse(new ArrayList());
+            List<String> paramList = Optional.ofNullable((List) TypeUtil.cast(maps.get(TypeUtil.PARAMS))).orElse(new ArrayList());
 
             roleAssignmentSearchVO.setParam(CollectionUtils.isEmpty(paramList) ? null : paramList.toArray(new String[1]));
             if (searchParamMap.get(LOGIN_NAME) != null) {
