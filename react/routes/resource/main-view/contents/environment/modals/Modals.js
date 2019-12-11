@@ -44,6 +44,7 @@ const EnvModals = observer(() => {
     tabs: {
       SYNC_TAB,
       ASSIGN_TAB,
+      CONFIG_TAB,
     },
     permissionsDs,
     gitopsLogDs,
@@ -74,6 +75,8 @@ const EnvModals = observer(() => {
       gitopsLogDs.query();
     } else if (tabKey === ASSIGN_TAB) {
       permissionsDs.query();
+    } else if (tabKey === CONFIG_TAB) {
+      configDs.query();
     }
   }
 
@@ -185,7 +188,6 @@ const EnvModals = observer(() => {
       afterClose: () => {
         configFormDs.reset();
         envStore.setValue('');
-        configDs.query();
       },
       okText: formatMessage({ id: 'create' }),
     });
