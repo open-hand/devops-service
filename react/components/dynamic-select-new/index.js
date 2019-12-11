@@ -1,33 +1,12 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { useLocalStore } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import { Form, Select, Button } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';
 import { forEach, map, debounce, some } from 'lodash';
+import useStore from './stores/useStore';
 
 import './index.less';
-
-function useStore() {
-  return useLocalStore(() => ({
-    optionMap: [],
-    oldOptionsData: null,
-
-    setOptionMap(data) {
-      this.optionMap = data;
-    },
-    setOldOptionsData(data) {
-      this.oldOptionsData = data;
-    },
-    get getOptionMap() {
-      return this.optionMap;
-    },
-    get getOldOptionsData() {
-      return this.oldOptionsData;
-    },
-  }));
-}
-
 
 const DynamicSelect = injectIntl(observer((props) => {
   const { intl: { formatMessage }, selectDataSet, optionsFilter, optionsRenderer, optionsDataSet, addText, selectName, loadMore, renderer, optionKeyName = selectName } = props;
@@ -80,7 +59,7 @@ const DynamicSelect = injectIntl(observer((props) => {
         ...tempMap,
       });
 
-      if (!res.isFirstPage) {
+      if (!res.isFirstPage && res.list && res.list.length) {
         optionsDataSet.unshift(...store.oldOptionsData);
       }
       const item = optionsDataSet.find((r) => r.get(optionKeyName) === 'More');
