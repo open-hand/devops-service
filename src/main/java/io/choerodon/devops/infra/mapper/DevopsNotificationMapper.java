@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
+import io.choerodon.devops.api.vo.DevopsNotificationVO;
 import io.choerodon.devops.api.vo.NotificationEventVO;
 import io.choerodon.devops.infra.dto.DevopsNotificationDTO;
 import io.choerodon.mybatis.common.Mapper;
@@ -33,4 +34,5 @@ public interface DevopsNotificationMapper extends Mapper<DevopsNotificationDTO> 
 
     List<DevopsNotificationDTO> listOldNotificationDTO();
 
+    List<DevopsNotificationVO> transferData();
 }

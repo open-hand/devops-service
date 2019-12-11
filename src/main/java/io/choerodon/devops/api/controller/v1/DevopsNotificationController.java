@@ -10,6 +10,7 @@ import io.choerodon.devops.api.vo.NotificationEventVO;
 import io.choerodon.devops.api.vo.NotifyEventVO;
 import io.choerodon.devops.api.vo.ResourceCheckVO;
 import io.choerodon.devops.app.service.DevopsNotificationService;
+import io.choerodon.devops.infra.dto.DevopsNotificationDTO;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -264,4 +265,18 @@ public class DevopsNotificationController {
         notificationService.batchUpdateNotifyEvent(projectId, notificationEventList);
         return ResponseEntity.noContent().build();
     }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @GetMapping(value = "/transfer/data")
+    public ResponseEntity<List<DevopsNotificationVO>> transferDate(
+            @ApiParam(value = "项目ID")
+            @PathVariable(value = "project_id") Long projectId) {
+        notificationService.transferDate();
+        return Optional.ofNullable(notificationService.transferDate())
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.transfer.data"));
+    }
+
+
+
 }

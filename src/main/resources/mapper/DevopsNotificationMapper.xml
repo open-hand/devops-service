@@ -72,6 +72,12 @@
         </collection>
     </resultMap>
 
+    <select id="transferData" resultMap="notificationEventVOMap">
+         SELECT *
+         FROM `devops_notification` dn, devops_notification_user_rel dnur
+         WHERE dnur.notification_id=dn.id
+    </select>
+
 
     <sql id="sqlparam">
         <if test='searchParam != null'>

@@ -108,4 +108,6 @@ public interface DevopsNotificationService {
     void batchUpdateNotifyEvent(Long projectId, List<NotificationEventVO> notificationEventList);
 
     void deleteNotifyEventByProjectIdAndEnvId(Long projectId, Long envId);
+
+    List<DevopsNotificationVO> transferDate();
 }

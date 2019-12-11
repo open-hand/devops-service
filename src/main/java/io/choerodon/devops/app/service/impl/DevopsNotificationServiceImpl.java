@@ -432,6 +432,11 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
     }
 
+    @Override
+    public List<DevopsNotificationVO> transferDate() {
+        return devopsNotificationMapper.transferData();
+    }
+
     public DevopsNotificationDTO baseCreateOrUpdate(DevopsNotificationDTO devopsNotificationDTO) {
         if (devopsNotificationDTO.getId() == null) {
             if (devopsNotificationMapper.insert(devopsNotificationDTO) != 1) {
