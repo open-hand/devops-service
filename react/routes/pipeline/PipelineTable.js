@@ -128,7 +128,7 @@ const PiplelineTable = withRouter(observer((props) => {
     pipelineCreateStore.setEditId(id);
     const result = await pipelineCreateStore.loadDetail(projectId, id);
     if (result) {
-      pipelineCreateStore.loadUser(projectId);
+      pipelineCreateStore.loadUser(projectId, 1, '', result.pipelineUserRels);
       pipelineCreateStore.setEditVisible(true);
     }
   }

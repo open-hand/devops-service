@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { useLocalStore } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import { Form, Select, Button } from 'choerodon-ui/pro';
@@ -6,6 +7,26 @@ import { observer } from 'mobx-react-lite';
 import { forEach, map, debounce, some } from 'lodash';
 
 import './index.less';
+
+function useStore() {
+  return useLocalStore(() => ({
+    optionMap: [],
+    oldOptionsData: null,
+
+    setOptionMap(data) {
+      this.optionMap = data;
+    },
+    setOldOptionsData(data) {
+      this.oldOptionsData = data;
+    },
+    get getOptionMap() {
+      return this.optionMap;
+    },
+    get getOldOptionsData() {
+      return this.oldOptionsData;
+    },
+  }));
+}
 
 
 const DynamicSelect = injectIntl(observer((props) => {
@@ -15,8 +36,7 @@ const DynamicSelect = injectIntl(observer((props) => {
   const valueField = selectField.get('valueField');
   const textField = selectField.get('textField');
 
-  const [optionMap, setOptionMap] = useState({});
-  const [oldOptionsData, setOldOptionsData] = useState([]);
+  const store = useStore();
   const [searchParam, setSearchParam] = useState(null);
 
   useEffect(() => {
@@ -40,12 +60,35 @@ const DynamicSelect = injectIntl(observer((props) => {
   async function loadData(searchPage = 1) {
     const res = await optionsDataSet.query(searchPage);
     if (res && !res.failed) {
+      // 将记录以 id=>record的形式缓存起来，方便做map的快速查询
+      const tempMap = {};
+      forEach(optionsDataSet.data, (r) => {
+        tempMap[r.get(valueField)] = r;
+      });
+
+      // 将已选中的数据拼接到现有数据 optionMap是上次的缓存数据，tempMap是本次的数据
+      // 如果选中的数据已经在此次获取到的数据里，不做拼接操作
+      forEach(selectDataSet.data, (r) => {
+        const value = r.get(selectName);
+        if (store.optionMap[value] && !tempMap[value]) {
+          optionsDataSet.push(store.optionMap[value]);
+        }
+      });
+
+      store.setOptionMap({
+        ...store.optionMap,
+        ...tempMap,
+      });
+
       if (!res.isFirstPage) {
-        optionsDataSet.unshift(...oldOptionsData);
+        optionsDataSet.unshift(...store.oldOptionsData);
       }
       const item = optionsDataSet.find((r) => r.get(optionKeyName) === 'More');
       item && optionsDataSet.remove(item);
-      setOldOptionsData(optionsDataSet.records);
+      store.setOldOptionsData(optionsDataSet.records);
+
+
+      // 手动加入加载更多的选项
       if (res.hasNextPage) {
         const loadMoreRecord = optionsDataSet.create({
           [valueField]: 'More',
@@ -53,12 +96,6 @@ const DynamicSelect = injectIntl(observer((props) => {
         });
         optionsDataSet.push(loadMoreRecord);
       }
-
-      const tempMap = optionMap;
-      forEach(optionsDataSet.data, (r) => {
-        tempMap[r.get(valueField)] = r;
-      });
-      setOptionMap(tempMap);
       
       return res;
     } else {
@@ -102,11 +139,9 @@ const DynamicSelect = injectIntl(observer((props) => {
     searchData(e.target.value);
   }
 
-  function handleBlur(record) {
-    const url = optionsDataSet.transport.read.url.split('?')[0];
+  function handleBlur() {
     optionsDataSet.transport.read.data = null;
-    optionsDataSet.transport.read.url = `${url}${record.get(selectName) ? `?${optionKeyName}=${record.get(selectName)}` : ''}`;
-    searchData();
+    loadData();
   }
 
   function optionRendererWraper({ record, text, value }) {
@@ -123,9 +158,9 @@ const DynamicSelect = injectIntl(observer((props) => {
   }
 
   function rendererWraper({ record, text, value }) {
-    if (!value || !optionMap[value]) return;
+    if (!value || !store.optionMap[value]) return;
     if (!renderer) return text;
-    return <div className="renderer-wraper">{renderer({ valueRecord: record, text, value, optionRecord: optionMap[value] })}</div>;
+    return <div className="renderer-wraper">{renderer({ valueRecord: record, text, value, optionRecord: store.optionMap[value] })}</div>;
   }
 
 
