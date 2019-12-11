@@ -1,21 +1,16 @@
 package io.choerodon.devops.infra.util;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.regex.Pattern;
+
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.GitConfigVO;
-import io.choerodon.devops.api.vo.GitEnvConfigVO;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.infra.dto.DevopsClusterDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.EnvironmentType;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
-
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -37,12 +32,17 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.regex.Pattern;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.GitConfigVO;
+import io.choerodon.devops.api.vo.GitEnvConfigVO;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.EnvironmentType;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 
 /**
  * Created by younger on 2018/3/29.
@@ -618,11 +618,16 @@ public class GitUtil {
     /**
      * 本地创建tag并推送远程仓库
      *
-     * @param git git repo
-     * @throws GitAPIException push error
+     * @param git     git repo
+     * @param sshKey  ssh私钥
+     * @param tagName tag名称
+     * @param sha     要打tag的散列值
+     * @throws CommonException push error
      */
-    public static void createTag(Git git, String sshKey, String tagName, String sha) {
+    public static void createTagAndPush(Git git, String sshKey, String tagName, String sha) {
         try {
+            // 创建之前删除，保证本地不存在要创建的tag
+            deleteTag(git, tagName);
             Repository repository = git.getRepository();
             ObjectId id = repository.resolve(sha);
             RevWalk walk = new RevWalk(repository);
@@ -631,19 +636,22 @@ public class GitUtil {
             PushCommand pushCommand = git.push();
             pushCommand.add(tagName);
             pushCommand.setRemote("origin");
+            pushCommand.setForce(true);
             pushCommand.setTransportConfigCallback(getTransportConfigCallback(sshKey)).call();
         } catch (Exception e) {
-            LOGGER.info("error create tag ", e);
+            throw new CommonException("create tag fail", e);
         }
     }
 
     /**
-     * 本地删除tag并推送远程仓库
+     * 本地删除tag
      *
-     * @param git git repo
-     * @throws GitAPIException push error
+     * @param git     git repo
+     * @param sshKey  ssh私钥
+     * @param tagName 要删除的tag的名称
+     * @throws CommonException push error
      */
-    public static void deleteTag(Git git, String sshKey, String tagName) {
+    public static void deleteTagAndPush(Git git, String sshKey, String tagName) {
         try {
             PushCommand pushCommand = git.push();
             List<Ref> refs = git.tagList().call();
@@ -657,9 +665,37 @@ public class GitUtil {
             pushCommand.setTransportConfigCallback(getTransportConfigCallback(sshKey)).call();
             git.tagDelete().setTags(tagName).call();
         } catch (GitAPIException e) {
-            LOGGER.info("error delete tag ", e);
+            throw new CommonException("delete tag fail", e);
         }
+    }
 
+    /**
+     * 本地删除tag
+     *
+     * @param git     git repo
+     * @param tagName tag名称
+     * @throws CommonException push error
+     */
+    public static void deleteTag(Git git, String tagName) {
+        try {
+            // 删除不存在的tag时jgit不会报错
+            git.tagDelete().setTags(tagName).call();
+        } catch (GitAPIException e) {
+            throw new CommonException("delete tag fail", e);
+        }
+    }
+
+    /**
+     * 本地删除tag后，创建新tag推送至远程仓库
+     *
+     * @param git     本地git仓库的引用
+     * @param sshKey  ssh私钥
+     * @param tagName tag名称
+     * @param sha     要打tag的commit的散列值
+     */
+    public static void pushTag(Git git, String sshKey, String tagName, String sha) {
+        deleteTag(git, tagName);
+        createTagAndPush(git, sshKey, tagName, sha);
     }
 
     /**
