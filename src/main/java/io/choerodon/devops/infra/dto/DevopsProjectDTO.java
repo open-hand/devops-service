@@ -113,4 +113,15 @@ public class DevopsProjectDTO extends BaseDTO {
     public void setDevopsClusterEnvGroupId(Long devopsClusterEnvGroupId) {
         this.devopsClusterEnvGroupId = devopsClusterEnvGroupId;
     }
+
+    @Override
+    public String toString() {
+        return "DevopsProjectDTO{" +
+                "iamProjectId=" + iamProjectId +
+                ", devopsAppGroupId=" + devopsAppGroupId +
+                ", devopsEnvGroupId=" + devopsEnvGroupId +
+                ", devopsClusterEnvGroupId=" + devopsClusterEnvGroupId +
+                ", objectVersionNumber" + getObjectVersionNumber() +
+                '}';
+    }
 }

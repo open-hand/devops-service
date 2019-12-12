@@ -86,10 +86,12 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         payload.setProjectName(projectDTO.getName());
         payload.setProjectId(projectDTO.getId());
         payload.setUserId(userAttrDTO.getIamUserId());
+        LOGGER.info("1111111111111111111111111");
         createGroup(payload, CLUSTER_ENV_GROUP_SUFFIX);
 
         List<Long> ownerIds = baseServiceClientOperator.getAllOwnerIds(projectDTO.getId());
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
+        LOGGER.info("5555555555555555555555555555{}", projectDTO);
         if (devopsProjectDTO.getDevopsClusterEnvGroupId() == null) {
             throw new CommonException("error.cluster.env.group.create");
         }
@@ -120,7 +122,9 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         if (groupDTO == null) {
             groupDTO = gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            LOGGER.info("2222222222222222222222222222222:{}", groupDTO);
             LOGGER.info("group类型:{}创建完成 gitlabGroupId:{}", suffix, groupDTO.getId());
+            LOGGER.info("----------------------------------");
         }
 
 
