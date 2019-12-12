@@ -1,10 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.devops.api.vo.DevopsNotificationVO;
-import io.choerodon.devops.api.vo.NotificationEventVO;
-import io.choerodon.devops.api.vo.NotifyEventVO;
-import io.choerodon.devops.api.vo.ResourceCheckVO;
+import io.choerodon.devops.api.vo.*;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -109,5 +106,5 @@ public interface DevopsNotificationService {
 
     void deleteNotifyEventByProjectIdAndEnvId(Long projectId, Long envId);
 
-    List<NotificationEventVO> transferDate();
+    List<DevopsNotificationTransferDataVO> transferDate();
 }

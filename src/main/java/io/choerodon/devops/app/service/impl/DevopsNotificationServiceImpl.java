@@ -430,11 +430,10 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             }
 
         });
-
     }
 
     @Override
-    public List<NotificationEventVO> transferDate() {
+    public List<DevopsNotificationTransferDataVO> transferDate() {
         return devopsNotificationMapper.transferData();
     }
 

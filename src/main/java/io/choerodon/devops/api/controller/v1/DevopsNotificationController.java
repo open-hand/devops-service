@@ -5,10 +5,7 @@ import io.choerodon.core.annotation.Permission;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsNotificationVO;
-import io.choerodon.devops.api.vo.NotificationEventVO;
-import io.choerodon.devops.api.vo.NotifyEventVO;
-import io.choerodon.devops.api.vo.ResourceCheckVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsNotificationService;
 import io.choerodon.devops.infra.dto.DevopsNotificationDTO;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -268,10 +265,9 @@ public class DevopsNotificationController {
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/transfer/data")
-    public ResponseEntity<List<NotificationEventVO>> transferDate(
+    public ResponseEntity<List<DevopsNotificationTransferDataVO>> transferDate(
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId) {
-        notificationService.transferDate();
         return Optional.ofNullable(notificationService.transferDate())
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.transfer.data"));
