@@ -433,7 +433,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     }
 
     @Override
-    public List<DevopsNotificationVO> transferDate() {
+    public List<NotificationEventVO> transferDate() {
         return devopsNotificationMapper.transferData();
     }
 

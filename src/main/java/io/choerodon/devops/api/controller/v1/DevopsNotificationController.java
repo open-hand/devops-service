@@ -268,7 +268,7 @@ public class DevopsNotificationController {
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/transfer/data")
-    public ResponseEntity<List<DevopsNotificationVO>> transferDate(
+    public ResponseEntity<List<NotificationEventVO>> transferDate(
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId) {
         notificationService.transferDate();
