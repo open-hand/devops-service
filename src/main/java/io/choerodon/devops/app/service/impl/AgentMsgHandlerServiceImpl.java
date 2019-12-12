@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -35,6 +34,7 @@ import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.TestReleaseStatusPayload;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -1180,7 +1180,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private List<DevopsEnvFileErrorDTO> getEnvFileErrors(Long envId, GitOpsSyncDTO gitOpsSyncDTO, DevopsEnvironmentDTO devopsEnvironmentDTO) {
         List<DevopsEnvFileErrorDTO> errorDevopsFiles = new ArrayList<>();
         if (gitOpsSyncDTO.getMetadata().getErrors() != null) {
-            gitOpsSyncDTO.getMetadata().getErrors().stream().forEach(error -> {
+            gitOpsSyncDTO.getMetadata().getErrors().forEach(error -> {
                 DevopsEnvFileErrorDTO devopsEnvFileErrorDTO = devopsEnvFileErrorService.baseQueryByEnvIdAndFilePath(envId, error.getPath());
                 if (devopsEnvFileErrorDTO == null) {
                     devopsEnvFileErrorDTO = new DevopsEnvFileErrorDTO();
@@ -1382,8 +1382,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         List<Command> commands = getCommandsToSync(envId);
 
-        agentCommandService.gitopsSyncCommandStatus(clusterId, devopsEnvironmentDTO.getCode(), envId, commands);
-
+        String namespace = GitOpsUtil.getEnvNamespace(devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getType());
+        agentCommandService.gitopsSyncCommandStatus(clusterId, namespace, envId, commands);
     }
 
     /**
@@ -1562,9 +1562,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         if (status.equals("Running")) {
             PodUpdateVO podUpdateVO = new PodUpdateVO();
             Optional<V1Container> container = v1Pod.getSpec().getContainers().stream().filter(v1Container -> v1Container.getName().contains("automation-test")).findFirst();
-            if (container.isPresent()) {
-                podUpdateVO.setConName(container.get().getName());
-            }
+            container.ifPresent(v1Container -> podUpdateVO.setConName(v1Container.getName()));
             podUpdateVO.setPodName(v1Pod.getMetadata().getName());
             podUpdateVO.setReleaseNames(KeyParseUtil.getReleaseName(key));
             podUpdateVO.setStatus(0L);
@@ -1878,8 +1876,23 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         if (StringUtils.isEmpty(namespace)) {
             return null;
         }
+
+        // choerodon namespace对应的环境的code并不是choerodon，要进行特殊处理
+        if (GitOpsConstants.SYSTEM_NAMESPACE.equals(namespace)) {
+            DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+            if (devopsClusterDTO == null) {
+                LogUtil.loggerWarnObjectNullWithId("Cluster", clusterId, logger);
+                return null;
+            }
+            namespace = GitOpsUtil.getSystemEnvCode(devopsClusterDTO.getCode());
+        }
+
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByClusterIdAndCode(clusterId, namespace);
-        return devopsEnvironmentDTO == null ? null : devopsEnvironmentDTO.getId();
+        if (devopsEnvironmentDTO == null) {
+            logger.warn("Environment with cluster id {} and code {} is null.", clusterId, namespace);
+            return null;
+        }
+        return devopsEnvironmentDTO.getId();
     }
 
     @Override

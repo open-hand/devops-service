@@ -57,4 +57,15 @@ public class LogUtil {
     public static void loggerInfoObjectNullWithId(String objectType, Long objectId, Logger logger) {
         logger.info("{} is null with id {}", objectType, objectId);
     }
+
+    /**
+     * log that the object with a certain id is null in warn level.
+     *
+     * @param objectType objectType (AppService, Project, DevopsEnvCommand)
+     * @param objectId   id
+     * @param logger     LOGGER
+     */
+    public static void loggerWarnObjectNullWithId(String objectType, Long objectId, Logger logger) {
+        logger.warn("{} is null with id {}", objectType, objectId);
+    }
 }

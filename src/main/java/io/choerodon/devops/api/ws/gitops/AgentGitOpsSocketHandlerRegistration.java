@@ -30,6 +30,7 @@ import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.KeyParseUtil;
+import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.websocket.connect.SocketHandlerRegistration;
 import io.choerodon.websocket.helper.WebSocketHelper;
@@ -103,8 +104,13 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
         }
         //检验连接过来的agent和集群是否匹配
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(TypeUtil.objToLong(clusterId));
-        if (devopsClusterDTO == null || !token.equals(devopsClusterDTO.getToken())) {
-            throw new HandshakeFailureException("agent token not match");
+        if (devopsClusterDTO == null) {
+            LogUtil.loggerWarnObjectNullWithId("Cluster", TypeUtil.objToLong(clusterId), logger);
+            return false;
+        }
+        if (!token.equals(devopsClusterDTO.getToken())) {
+            logger.warn("Cluster with id {} exists but its token doesn't match the token that agent offers as {}", clusterId, token);
+            return false;
         }
 
         return true;

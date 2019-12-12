@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 import com.jcraft.jsch.JSch;
@@ -139,9 +138,6 @@ public class GitUtil {
 
     public static String getGitlabSshUrl(Pattern pattern, String url, String orgCode, String proCode, String envCode, EnvironmentType environmentType, String clusterCode) {
         final String groupSuffix = GitOpsUtil.getGroupSuffixByEnvType(environmentType);
-        if (environmentType == EnvironmentType.SYSTEM) {
-            envCode = GitOpsUtil.getSystemEnvProjectCode(clusterCode, envCode);
-        }
         String result = "";
         if (url.contains("@")) {
             String[] urls = url.split(":");
@@ -754,7 +750,7 @@ public class GitUtil {
             gitEnvConfigVO.setEnvId(devopsEnvironmentE.getId());
             gitEnvConfigVO.setGitRsaKey(devopsEnvironmentE.getEnvIdRsa());
             gitEnvConfigVO.setGitUrl(repoUrl);
-            gitEnvConfigVO.setNamespace(devopsEnvironmentE.getCode());
+            gitEnvConfigVO.setNamespace(GitOpsUtil.getEnvNamespace(devopsEnvironmentE.getCode(), devopsEnvironmentE.getType()));
             gitEnvConfigDTOS.add(gitEnvConfigVO);
         });
         gitConfigVO.setEnvs(gitEnvConfigDTOS);

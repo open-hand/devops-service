@@ -46,4 +46,9 @@ public class GitOpsConstants {
      * release文件对应的gitlab文件前缀
      */
     public static final String RELEASE_PREFIX = "release-";
+
+    /**
+     * 系统环境code
+     */
+    public static final String SYSTEM_NAMESPACE = "choerodon";
 }
