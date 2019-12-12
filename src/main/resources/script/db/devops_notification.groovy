@@ -19,12 +19,4 @@ databaseChangeLog(logicalFilePath: 'dba/devops_notification.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
-    changeSet(id: '2019-12-04-devops-notification-add-column', author: 'wanghao') {
-        addColumn(tableName: 'devops_notification') {
-            column(name: 'is_send_email', type: 'TINYINT UNSIGNED', remarks: '是否发送邮件')
-            column(name: 'is_send_sms', type: 'TINYINT UNSIGNED', remarks: '是否发送短信')
-            column(name: 'is_send_pm', type: 'TINYINT UNSIGNED', remarks: '是否发送站内信')
-            column(name: 'is_default_setting', type: 'TINYINT UNSIGNED', remarks: '是否是默认设置')
-        }
-    }
 }

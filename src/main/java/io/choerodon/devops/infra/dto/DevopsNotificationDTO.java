@@ -20,23 +20,6 @@ public class DevopsNotificationDTO extends BaseDTO {
     private String notifyTriggerEvent;
     private String notifyObject;
     private String notifyType;
-
-    @ApiModelProperty(value = "是否发送邮件")
-    @Column(name = "is_send_email")
-    private Boolean sendEmail;
-
-    @ApiModelProperty(value = "是否发送短信")
-    @Column(name = "is_send_sms")
-    private Boolean sendSms;
-
-    @ApiModelProperty(value = "是否发送站内信")
-    @Column(name = "is_send_pm")
-    private Boolean sendPm;
-
-    @ApiModelProperty(value = "是否是默认设置")
-    @Column(name = "is_default_setting")
-    private Boolean defaultSetting;
-
     @Transient
     private String envName;
 
@@ -96,35 +79,4 @@ public class DevopsNotificationDTO extends BaseDTO {
         this.notifyType = notifyType;
     }
 
-    public Boolean getSendEmail() {
-        return sendEmail;
-    }
-
-    public void setSendEmail(Boolean sendEmail) {
-        this.sendEmail = sendEmail;
-    }
-
-    public Boolean getSendSms() {
-        return sendSms;
-    }
-
-    public void setSendSms(Boolean sendSms) {
-        this.sendSms = sendSms;
-    }
-
-    public Boolean getSendPm() {
-        return sendPm;
-    }
-
-    public void setSendPm(Boolean sendPm) {
-        this.sendPm = sendPm;
-    }
-
-    public Boolean getDefaultSetting() {
-        return defaultSetting;
-    }
-
-    public void setDefaultSetting(Boolean defaultSetting) {
-        this.defaultSetting = defaultSetting;
-    }
 }
