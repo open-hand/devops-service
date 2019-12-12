@@ -91,7 +91,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
 
         List<Long> ownerIds = baseServiceClientOperator.getAllOwnerIds(projectDTO.getId());
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
-        LOGGER.info("5555555555555555555555555555{}", projectDTO);
+        LOGGER.info("5555555555555555555555555555{}", devopsProjectDTO);
         if (devopsProjectDTO.getDevopsClusterEnvGroupId() == null) {
             throw new CommonException("error.cluster.env.group.create");
         }
