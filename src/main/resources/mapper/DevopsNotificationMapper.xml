@@ -74,8 +74,8 @@
 
     <select id="transferData" resultMap="notificationEventVOMap">
          SELECT *
-         FROM `devops_notification` dn, devops_notification_user_rel dnur
-         WHERE dnur.notification_id=dn.id
+          FROM `devops_notification` dn LEFT JOIN devops_notification_user_rel dnur
+         ON dnur.notification_id=dn.id
     </select>
 
 
