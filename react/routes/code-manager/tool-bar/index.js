@@ -149,9 +149,9 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
         <Button
           funcType="raised"
           disabled={!(currentApp && currentApp.repoUrl)}
-          style={{ width: '1.4rem', height: '.36rem' }}
+          className="c7ncd-copyBtn"
         >
-          <span style={{ color: '#3f51b5', display: 'flex' }}>
+          <span>
             {formatMessage({ id: 'repository.copyUrl' })}
             <Icon
               style={{ marginLeft: '.18rem' }}
