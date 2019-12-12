@@ -25,11 +25,19 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     treeDs,
     AppState: { currentMenuType: { id: projectId } },
     envStore,
+    itemType: {
+      DETAIL_ITEM,
+      GROUP_ITEM,
+    },
   } = useEnvironmentStore();
   const { mainStore } = useMainStore();
+  const { getSelectedMenu: { itemType, key } } = envStore;
 
   function refresh() {
     treeDs.query();
+    if (itemType === GROUP_ITEM && key === record.get('parentId')) {
+      envStore.setUpTarget(key);
+    }
   }
 
   async function handleDelete() {
