@@ -26,7 +26,6 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     AppState: { currentMenuType: { id: projectId } },
     envStore,
     itemType: {
-      DETAIL_ITEM,
       GROUP_ITEM,
     },
   } = useEnvironmentStore();
