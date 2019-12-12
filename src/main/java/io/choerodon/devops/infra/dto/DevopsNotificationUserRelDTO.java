@@ -12,7 +12,6 @@ public class DevopsNotificationUserRelDTO {
 
     private Long userId;
     private Long notificationId;
-    private String userType;
 
     public DevopsNotificationUserRelDTO() {
     }
@@ -38,11 +37,4 @@ public class DevopsNotificationUserRelDTO {
         this.notificationId = notificationId;
     }
 
-    public String getUserType() {
-        return userType;
-    }
-
-    public void setUserType(String userType) {
-        this.userType = userType;
-    }
 }
