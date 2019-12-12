@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.web.server.ui.LoginPageGeneratingWebFilter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -126,8 +127,10 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
                 devopsProjectMapper.updateByPrimaryKeySelective(devopsProjectDTO);
             }
         } else {
+            logger.info("333333333333333333333333{}",devopsProjectDTO);
             devopsProjectDTO.setObjectVersionNumber(oldDevopsProjectDTO.getObjectVersionNumber());
             MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsProjectMapper, devopsProjectDTO, "error.project.update", (Object[]) null);
+            logger.info("444444444444444444444444{}",devopsProjectDTO);
         }
     }
 

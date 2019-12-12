@@ -106,4 +106,21 @@ public class GroupDTO {
     public void setSharedRunnersMinutesLimit(Integer sharedRunnersMinutesLimit) {
         this.sharedRunnersMinutesLimit = sharedRunnersMinutesLimit;
     }
+
+    @Override
+    public String toString() {
+        return "GroupDTO{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", path='" + path + '\'' +
+                ", description='" + description + '\'' +
+                ", membershipLock=" + membershipLock +
+                ", shareWithGroupLock=" + shareWithGroupLock +
+                ", visibility=" + visibility +
+                ", lfsEnabled=" + lfsEnabled +
+                ", requestAccessEnabled=" + requestAccessEnabled +
+                ", parentId=" + parentId +
+                ", sharedRunnersMinutesLimit=" + sharedRunnersMinutesLimit +
+                '}';
+    }
 }
