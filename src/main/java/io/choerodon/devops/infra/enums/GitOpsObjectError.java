@@ -19,6 +19,7 @@ public enum GitOpsObjectError {
     SERVICE_TYPE_NOT_FOUND("service.type.not.found"),
     SERVICE_API_VERSION_NOT_FOUND("service.api.version.not.found"),
     SERVICE_RELATED_INGRESS_NOT_FOUND("service.related.ingress.not.found"),
+    SERVICE_ANNOTATED_NOT_SUPPORTED_ANY_MORE("service.not.supported.any.more"),
     INGRESS_META_DATA_NOT_FOUND("ingress.meta.data.not.found"),
     INGRESS_NAME_NOT_FOUND("ingress.name.not.found"),
     INGRESS_SPEC_NOT_FOUND("ingress.spec.not.found"),

@@ -51,4 +51,9 @@ public class GitOpsConstants {
      * 系统环境code
      */
     public static final String SYSTEM_NAMESPACE = "choerodon";
+
+    /**
+     * 0.20版本之前用于实现实例类型网络的注解键值
+     */
+    public static final String SERVICE_INSTANCE_ANNOTATION_KEY = "choerodon.io/network-service-instances";
 }
