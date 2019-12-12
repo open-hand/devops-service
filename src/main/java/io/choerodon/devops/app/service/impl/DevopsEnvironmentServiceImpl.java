@@ -1642,6 +1642,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
         environmentDTO.setClusterId(null);
         environmentDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
+        environmentDTO.setType(EnvironmentType.USER.getValue());
         if (!devopsEnvironmentMapper.select(environmentDTO).isEmpty()) {
             throw new CommonException(ERROR_CODE_EXIST);
         }
