@@ -5,6 +5,15 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import com.alibaba.fastjson.JSONArray;
+import io.codearte.props2yaml.Props2YAML;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.web.socket.TextMessage;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
@@ -15,7 +24,10 @@ import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.choerodon.devops.app.eventhandler.payload.OperationPodPayload;
 import io.choerodon.devops.app.eventhandler.payload.SecretPayLoad;
 import io.choerodon.devops.app.service.AgentCommandService;
-import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.EnvironmentType;
@@ -24,20 +36,11 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.util.FileUtil;
+import io.choerodon.devops.infra.util.GitOpsUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.websocket.helper.WebSocketHelper;
 import io.choerodon.websocket.send.SendMessagePayload;
 import io.choerodon.websocket.send.relationship.BrokerKeySessionMapper;
-
-import io.codearte.props2yaml.Props2YAML;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.web.socket.TextMessage;
 
 
 /**
@@ -100,7 +103,8 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     @Override
     public void sendCommand(DevopsEnvironmentDTO devopsEnvironmentDTO) {
         AgentMsgVO msg = new AgentMsgVO();
-        msg.setKey(CLUSTER + devopsEnvironmentDTO.getClusterId() + ".env:" + devopsEnvironmentDTO.getCode() + ".envId:" + devopsEnvironmentDTO.getId());
+        String namespace = GitOpsUtil.getEnvNamespace(Objects.requireNonNull(devopsEnvironmentDTO.getCode()), Objects.requireNonNull(devopsEnvironmentDTO.getType()));
+        msg.setKey(CLUSTER + devopsEnvironmentDTO.getClusterId() + ".env:" + namespace + ".envId:" + devopsEnvironmentDTO.getId());
         msg.setType("git_ops_sync");
         msg.setPayload("");
         sendToWebsocket(devopsEnvironmentDTO.getClusterId(), msg);

@@ -31,14 +31,24 @@ public class GitOpsUtil {
     }
 
     /**
-     * 获取系统环境所对应的GitLab项目code
+     * 获取系统环境的code
      *
      * @param clusterCode 集群code
-     * @param envCode     环境code
      * @return 系统环境所对应的GitLab项目code
      */
-    public static String getSystemEnvProjectCode(String clusterCode, String envCode) {
-        return String.format(GitOpsConstants.SYSTEM_ENV_GITLAB_PROJECT_CODE_FORMAT, clusterCode, envCode);
+    public static String getSystemEnvCode(String clusterCode) {
+        return String.format(GitOpsConstants.SYSTEM_ENV_GITLAB_PROJECT_CODE_FORMAT, clusterCode, GitOpsConstants.SYSTEM_NAMESPACE);
+    }
+
+    /**
+     * 获取环境对应的kubernetes的namespace
+     *
+     * @param envCode 环境的code
+     * @param envType 环境的type
+     * @return namespace
+     */
+    public static String getEnvNamespace(String envCode, String envType) {
+        return EnvironmentType.SYSTEM.getValue().equals(envType) ? GitOpsConstants.SYSTEM_NAMESPACE : envCode;
     }
 
     /**
