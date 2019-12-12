@@ -146,8 +146,18 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
         overlay={copyMenu}
         placement="bottomRight"
       >
-        <Button funcType="raised" disabled={!(currentApp && currentApp.repoUrl)}>
-          {formatMessage({ id: 'repository.copyUrl' })}<Icon type="arrow_drop_down" />
+        <Button
+          funcType="raised"
+          disabled={!(currentApp && currentApp.repoUrl)}
+          style={{ width: '1.4rem', height: '.36rem' }}
+        >
+          <span style={{ color: '#3f51b5', display: 'flex' }}>
+            {formatMessage({ id: 'repository.copyUrl' })}
+            <Icon
+              style={{ marginLeft: '.18rem' }}
+              type="arrow_drop_down"
+            />
+          </span>
         </Button>
       </Dropdown>
     </Form>
