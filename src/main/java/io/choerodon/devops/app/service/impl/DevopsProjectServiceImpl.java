@@ -109,7 +109,6 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
      *
      * @param devopsProjectDTO 项目相关信息
      */
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
     public void baseUpdate(DevopsProjectDTO devopsProjectDTO) {
         // 查询纪录是否存在
