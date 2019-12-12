@@ -22,6 +22,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.TriggerObject;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.feign.HarborClient;
+import io.choerodon.devops.infra.feign.NotifyTransferDataClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
@@ -102,6 +103,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Autowired
     private DevopsNotificationUserRelMapper devopsNotificationUserRelMapper;
 
+    @Autowired
+    private NotifyTransferDataClient notifyTransferDataClient;
+
 
     @Override
     public void checkLog(String version) {
@@ -133,6 +137,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     syncHarborUser();
                     // 资源删除验证通知数据迁移
                     syncNotificationAndNotificationUserRel();
+                    //调接消息接口迁移数据
+                    notifyTransferDataClient.checkLog("0.20.0", "devops");
                 } else if ("0.19.0".equals(version)) {
                     syncEnvAppRelevance(logs);
                     // 0.20.0删除此方法
@@ -625,7 +631,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
      * @return true 有，反之没有
      */
     private boolean hasOwners(Long projectId, Long ownerRoleId) {
-        return !ObjectUtils.isEmpty(baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(1,1), new RoleAssignmentSearchVO(), ownerRoleId,
+        return !ObjectUtils.isEmpty(baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(1, 1), new RoleAssignmentSearchVO(), ownerRoleId,
                 projectId, true).getList());
     }
 
@@ -669,7 +675,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
 
     private void createHarborUser(ProjectDTO projectDTO, DevopsProjectDTO devopsProjectDTO, Boolean isPush) {
-        User user = harborService.convertUser(projectDTO, isPush,null);
+        User user = harborService.convertUser(projectDTO, isPush, null);
         HarborUserDTO harborUserDTO = new HarborUserDTO();
         harborUserDTO.setHarborProjectUserName(user.getUsername());
         harborUserDTO.setHarborProjectUserEmail(user.getEmail());
