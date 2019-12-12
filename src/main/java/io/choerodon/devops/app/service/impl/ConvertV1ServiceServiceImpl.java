@@ -7,9 +7,11 @@ import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1ServicePort;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsServiceService;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
@@ -70,6 +72,10 @@ public class ConvertV1ServiceServiceImpl extends ConvertK8sObjectService<V1Servi
         }
         if (v1Service.getApiVersion() == null) {
             throw new GitOpsExplainException(GitOpsObjectError.SERVICE_API_VERSION_NOT_FOUND.getError(), filePath);
+        }
+        // 0.20版本不再兼容带有名为choerodon.io/network-service-instances的Annotation的网络的创建和更新，以前创建的不进行修改和更新是可以继续生效的
+        if (!CollectionUtils.isEmpty(v1Service.getMetadata().getAnnotations()) && v1Service.getMetadata().getAnnotations().containsKey(GitOpsConstants.SERVICE_INSTANCE_ANNOTATION_KEY)) {
+            throw new GitOpsExplainException(GitOpsObjectError.SERVICE_ANNOTATED_NOT_SUPPORTED_ANY_MORE.getError(), filePath);
         }
     }
 
