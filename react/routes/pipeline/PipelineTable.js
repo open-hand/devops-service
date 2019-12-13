@@ -281,14 +281,19 @@ const PiplelineTable = withRouter(observer((props) => {
 
     myModal.update({
       okCancel: true,
-      okText: !envName ? <FormattedMessage id="submit" /> : <FormattedMessage id="iknow" />,
-      onOk: () => (!envName ? executeFun(id, myModal) : true),
+      okText: !envName && executeStatus !== 'failed' ? <FormattedMessage id="submit" /> : <FormattedMessage id="iknow" />,
+      onOk: () => (!envName && executeStatus !== 'failed' ? executeFun(id, myModal) : true),
       children: (envName
         ? <FormattedMessage
           id="pipeline.execute.no.permission"
           values={{ envName }}
         />
         : <FormattedMessage id={`pipeline.execute.${executeStatus}`} />
+      ),
+      footer: (okBtn, cancelBtn) => (
+        <Fragment>
+          {executeStatus !== 'failed' && cancelBtn}{okBtn}
+        </Fragment>
       ),
     });
   }
