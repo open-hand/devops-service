@@ -317,24 +317,9 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         notifyVO.setParams(params);
         try {
             //根据不同的通知方式发送验证码
-            triggerTypes.forEach(triggerType -> {
-                if (triggerType.equals(TriggerType.EMAIL.getType())) {
-                    notifyVO.setSourceId(devopsEnvironmentDTO.getProjectId());
-                    notifyVO.setCode(RESOURCE_DELETE_CONFIRMATION);
-                    notifyVO.setCustomizedSendingTypes(Arrays.asList("email"));
-                    notifyClient.sendMessage(notifyVO);
-                } else if (triggerType.equals(TriggerType.PM.getType())) {
-                    notifyVO.setSourceId(devopsEnvironmentDTO.getProjectId());
-                    notifyVO.setCode(RESOURCE_DELETE_CONFIRMATION);
-                    notifyVO.setCustomizedSendingTypes(Arrays.asList("siteMessage"));
-                    notifyClient.sendMessage(notifyVO);
-                } else {
-                    notifyVO.setSourceId(0L);
-                    notifyVO.setCode(DEVOPS_DELETE_INSTANCE_4_SMS);
-                    notifyVO.setCustomizedSendingTypes(Arrays.asList("sms"));
-                    notifyClient.sendMessage(notifyVO);
-                }
-            });
+            notifyVO.setSourceId(devopsEnvironmentDTO.getProjectId());
+            notifyVO.setCode(RESOURCE_DELETE_CONFIRMATION);
+            notifyClient.sendMessage(notifyVO);
         } catch (Exception e) {
             redisTemplate.delete(resendKey);
             throw new CommonException("error.msg.send.failed");
