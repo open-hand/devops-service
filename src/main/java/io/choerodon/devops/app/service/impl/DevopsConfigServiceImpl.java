@@ -6,6 +6,7 @@ import java.util.*;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -45,6 +46,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
  */
 @Service
 public class DevopsConfigServiceImpl implements DevopsConfigService {
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(DevopsConfigServiceImpl.class);
 
     public static final String APP_SERVICE = "appService";
     private static final String HARBOR = "harbor";
@@ -328,16 +330,25 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
                 ConfigVO configVO = gson.fromJson(defaultConfig.getConfig(), ConfigVO.class);
                 HarborUserDTO harborUserDTO = new HarborUserDTO();
-                if (operateType.equals(AUTHTYPE_PUSH)) {
-                    harborUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborUserId());
-                } else if (operateType.equals(AUTHTYPE_PULL)) {
-                    harborUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborPullUserId());
-                }
-                configVO.setUserName(harborUserDTO.getHarborProjectUserName());
-                configVO.setPassword(harborUserDTO.getHarborProjectUserPassword());
-                configVO.setEmail(harborUserDTO.getHarborProjectUserEmail());
+
                 if (devopsProjectDTO.getHarborProjectIsPrivate() != null && devopsProjectDTO.getHarborProjectIsPrivate()) {
                     configVO.setPrivate(true);
+                    if (operateType.equals(AUTHTYPE_PUSH)) {
+                        harborUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborUserId());
+                    } else if (operateType.equals(AUTHTYPE_PULL)) {
+                        harborUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborPullUserId());
+                    }
+                    if (harborUserDTO != null) {
+                        configVO.setUserName(harborUserDTO.getHarborProjectUserName());
+                        configVO.setPassword(harborUserDTO.getHarborProjectUserPassword());
+                        configVO.setEmail(harborUserDTO.getHarborProjectUserEmail());
+                    } else {
+                        LOGGER.error("Failed to get harbor user");
+                    }
+                } else {
+                    configVO.setUserName(null);
+                    configVO.setPassword(null);
+                    configVO.setEmail(null);
                 }
                 defaultConfig.setConfig(gson.toJson(configVO));
             }
