@@ -86,20 +86,15 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         payload.setProjectName(projectDTO.getName());
         payload.setProjectId(projectDTO.getId());
         payload.setUserId(userAttrDTO.getIamUserId());
-        LOGGER.info("1111111111111111111111111");
         createGroup(payload, CLUSTER_ENV_GROUP_SUFFIX);
 
         List<Long> ownerIds = baseServiceClientOperator.getAllOwnerIds(projectDTO.getId());
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
-        LOGGER.info("5555555555555555555555555555{}", devopsProjectDTO);
         if (devopsProjectDTO.getDevopsClusterEnvGroupId() == null) {
             throw new CommonException("error.cluster.env.group.create");
         }
         ownerIds.forEach(id -> {
                     UserAttrDTO ownerAttrDTO = userAttrService.baseQueryById(id);
-                    LOGGER.info("666666666666666666666{}", devopsProjectDTO);
-                    LOGGER.info("777777777777777777{}", devopsProjectDTO.getDevopsClusterEnvGroupId());
-                    LOGGER.info("88888888888888888888{}", devopsProjectDTO.getDevopsClusterEnvGroupId().intValue());
                     MemberDTO memberDTO = new MemberDTO(ownerAttrDTO.getGitlabUserId().intValue(), AccessLevel.MASTER.value, "");
                     MemberDTO groupMember = gitlabServiceClientOperator.queryGroupMember(devopsProjectDTO.getDevopsClusterEnvGroupId().intValue(), memberDTO.getId());
                     if (groupMember == null) {
@@ -126,12 +121,8 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
             throw new CommonException("error.gitlab.user.sync.failed");
         }
         GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        LOGGER.info("zzzzzzzzzzzzzzzzzzzzzzzzzzzzGroupDTO:{}", groupDTO);
         if (groupDTO == null) {
             groupDTO = gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-            LOGGER.info("2222222222222222222222222222222:{}", groupDTO);
-            LOGGER.info("group类型:{}创建完成 gitlabGroupId:{}", suffix, groupDTO.getId());
-            LOGGER.info("----------------------------------");
         }
 
 
