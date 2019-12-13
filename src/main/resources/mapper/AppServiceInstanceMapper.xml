@@ -17,6 +17,14 @@
                ins.app_service_id,
                ins.app_service_version_id,
                ins.effect_command_id,
+               effect.status AS effect_command_status,
+               (
+                SELECT
+                effect_version.version
+                FROM
+                devops_app_service_version  effect_version
+                WHERE effect_version.id = effect.object_version_id
+               ) AS effect_command_version,
                version.version as version_name,
                das.name as app_service_name,
                ins.env_id,
@@ -39,6 +47,7 @@
                  LEFT JOIN devops_app_service das ON ins.app_service_id = das.id
                  LEFT JOIN devops_env env ON ins.env_id = env.id
                  LEFT JOIN devops_env_command cmd ON cmd.id = ins.command_id
+                 LEFT JOIN devops_env_command effect ON ins.effect_command_id = effect.id
         WHERE ins.id = #{instanceId}
     </select>
 

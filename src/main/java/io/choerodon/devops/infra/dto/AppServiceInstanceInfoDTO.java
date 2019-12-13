@@ -29,8 +29,12 @@ public class AppServiceInstanceInfoDTO {
     private String commandStatus;
     private String error;
     private Long projectId;
-    @ApiModelProperty("当前实例生效的commandId")
+    @ApiModelProperty("当前实例生效的commandId/可能为null")
     private Long effectCommandId;
+    @ApiModelProperty("当前实例生效的版本/可能为null")
+    private String effectCommandVersion;
+    @ApiModelProperty("当前实例生效的command的状态/可能为null，为")
+    private String effectCommandStatus;
 
 
     public Long getId() {
@@ -191,5 +195,21 @@ public class AppServiceInstanceInfoDTO {
 
     public void setEffectCommandId(Long effectCommandId) {
         this.effectCommandId = effectCommandId;
+    }
+
+    public String getEffectCommandVersion() {
+        return effectCommandVersion;
+    }
+
+    public void setEffectCommandVersion(String effectCommandVersion) {
+        this.effectCommandVersion = effectCommandVersion;
+    }
+
+    public String getEffectCommandStatus() {
+        return effectCommandStatus;
+    }
+
+    public void setEffectCommandStatus(String effectCommandStatus) {
+        this.effectCommandStatus = effectCommandStatus;
     }
 }
