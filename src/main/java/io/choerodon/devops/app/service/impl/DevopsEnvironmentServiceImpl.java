@@ -1456,7 +1456,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnvironmentDTO.setToken(GenerateUUID.generateUUID());
         devopsEnvironmentDTO.setProjectId(projectId);
 
-        LOGGER.info("9999999999999999999999999{}", devopsProjectDTO);
         MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(
                 TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()),
                 TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
