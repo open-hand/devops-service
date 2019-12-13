@@ -171,7 +171,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
      */
     private void deleteAboutCluster(Long projectId, Integer gitlabUserId, Long userId) {
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-        gitlabServiceClientOperator.deleteProjectMember(devopsProjectDTO.getDevopsClusterEnvGroupId().intValue(), gitlabUserId);
+        gitlabServiceClientOperator.deleteGroupMember(devopsProjectDTO.getDevopsClusterEnvGroupId().intValue(), gitlabUserId);
     }
 
     @Override
