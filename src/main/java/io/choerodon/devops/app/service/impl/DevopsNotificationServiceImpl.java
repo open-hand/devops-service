@@ -7,14 +7,13 @@ import com.google.gson.Gson;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.notify.MessageSettingVO;
 import io.choerodon.devops.api.vo.notify.SendSettingDTO;
+import io.choerodon.devops.api.vo.notify.TargetUserDTO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.enums.NotifyEventEnum;
-import io.choerodon.devops.infra.enums.ObjectType;
-import io.choerodon.devops.infra.enums.RoleLabel;
-import io.choerodon.devops.infra.enums.TriggerObject;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -23,6 +22,7 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +35,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -47,6 +48,9 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     public static final String RESOURCE_DELETE_CONFIRMATION = "resourceDeleteConfirmation";
     public static final String DEVOPS_DELETE_INSTANCE_4_SMS = "devopsDeleteInstance4Sms";
     public static final String NOTIFY_RESOURCE_DELETE_CONFIRMATION = "resourceDeleteConfirmation";
+    private static final String PROJECT_OWNER = "role/project/default/project-owner";
+    private static final String CODE = "resourceDeleteConfirmation";
+    private static final String NOTIFY_TYPE = "resourceDelete";
     public static final Gson gson = new Gson();
     private static final Long TIMEOUT = 600L;
     private static final String MOBILE = "mobile";
@@ -166,155 +170,174 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
     @Override
     public ResourceCheckVO checkResourceDelete(Long envId, String objectType) {
-//        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-//        ResourceCheckVO resourceCheckVO = new ResourceCheckVO();
-//
-//        DevopsNotificationDTO devopsNotificationDTO = queryNotifyEventByProjectIdAndEnvIdAndType(devopsEnvironmentDTO.getProjectId(), envId, objectType);
-//        if (devopsNotificationDTO == null) {
-//            return resourceCheckVO;
-//        }
-//        resourceCheckVO.setNotificationId(devopsNotificationDTO.getId());
-//        //返回删除对象时,获取验证码方式和所通知的目标人群
-//        List<String> notifyType = new ArrayList<>();
-//        if (Boolean.TRUE.equals(devopsNotificationDTO.getSendEmail())) {
-//            notifyType.add("邮件");
-//        }
-//        if (Boolean.TRUE.equals(devopsNotificationDTO.getSendPm())) {
-//            notifyType.add("站内信");
-//        }
-//        if (Boolean.TRUE.equals(devopsNotificationDTO.getSendSms())) {
-//            notifyType.add("短消息");
-//        }
-//        resourceCheckVO.setMethod(StringUtils.join(notifyType, ","));
-//        List<String> notifyUserList = new ArrayList<>();
-//        List<DevopsNotificationUserRelDTO> devopsNotificationUserRelDTOList = devopsNotificationUserRelService.baseListByNotificationId(devopsNotificationDTO.getId());
-//        if (CollectionUtils.isEmpty(devopsNotificationUserRelDTOList)) {
-//            return resourceCheckVO;
-//        }
-//        // 添加项目所有者
-//        if (devopsNotificationUserRelDTOList.stream().anyMatch(v -> TriggerObject.OWNER.getObject().equals(v.getUserType()))) {
-//            notifyUserList.add("项目所有者");
-//        }
-//        // 添加指定用户
-//        List<Long> userIds = new ArrayList<>();
-//        if (devopsNotificationUserRelDTOList.stream().anyMatch(v -> TriggerObject.SPECIFIER.getObject().equals(v.getUserType()))) {
-//            userIds = devopsNotificationUserRelDTOList.stream().filter(user -> TriggerObject.SPECIFIER.getObject().equals(user.getUserType()))
-//                    .map(DevopsNotificationUserRelDTO::getUserId)
-//                    .collect(Collectors.toList());
-//            List<IamUserDTO> iamUserDTOList = baseServiceClientOperator.listUsersByIds(userIds);
-//            iamUserDTOList.forEach(user -> {
-//                if (user.getRealName() != null) {
-//                    notifyUserList.add(user.getRealName());
-//                } else {
-//                    notifyUserList.add(user.getLoginName());
-//                }
-//            });
-//        }
-//        if (devopsNotificationUserRelDTOList.stream().anyMatch(v -> TriggerObject.HANDLER.getObject().equals(v.getUserType()))
-//                && !userIds.contains(GitUserNameUtil.getUserId().longValue())) {
-//            // 去除指定用户中已经包含当前操作用户
-//            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
-//            if (iamUserDTO.getRealName() != null) {
-//                notifyUserList.add(iamUserDTO.getRealName());
-//            } else {
-//                notifyUserList.add(iamUserDTO.getLoginName());
-//            }
-//
-//        }
-//        resourceCheckVO.setUser(StringUtils.join(notifyUserList, ","));
-//        return resourceCheckVO;
-        return null;
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        ResourceCheckVO resourceCheckVO = new ResourceCheckVO();
+        MessageSettingVO messageSettingVO = notifyClient.queryByEnvIdAndEventNameAndProjectIdAndCode(NOTIFY_TYPE, devopsEnvironmentDTO.getProjectId(), CODE, envId, objectType);
+        if (Objects.isNull(messageSettingVO)) {
+            return resourceCheckVO;
+        }
+        //返回删除对象时,获取验证码方式和所通知的目标人群
+        StringBuilder stringBuilder = new StringBuilder();
+        if (messageSettingVO.getPmEnable()) {
+            stringBuilder.append("站内信");
+        }
+        if (messageSettingVO.getEmailEnable()) {
+            stringBuilder.append(",邮件");
+        }
+        if (messageSettingVO.getSmsEnable()) {
+            stringBuilder.append(",短消息");
+        }
+        resourceCheckVO.setMethod(stringBuilder.toString());
+        resourceCheckVO.setNotificationId(messageSettingVO.getId());
+        List<TargetUserDTO> targetUserDTOS = messageSettingVO.getTargetUserDTOS();
+        if (targetUserDTOS == null || targetUserDTOS.size() == 0) {
+            return resourceCheckVO;
+        }
+        StringBuilder notifyTargetUser = new StringBuilder();
+        targetUserDTOS.stream().forEach(e -> {
+            if (TriggerObject.OWNER.getObject().equals(e.getType())) {
+                notifyTargetUser.append("项目所有者");
+            }
+            if (TriggerObject.HANDLER.getObject().equals(e.getType())) {
+                List<IamUserDTO> users = baseServiceClientOperator.listUsersByIds(Arrays.asList(GitUserNameUtil.getUserId().longValue()));
+                if (!users.isEmpty()) {
+                    if (users.get(0).getRealName() != null) {
+                        notifyTargetUser.append("," + users.get(0).getRealName());
+                    } else {
+                        notifyTargetUser.append("," + users.get(0).getLoginName());
+                    }
+                }
+            }
+            if (TriggerObject.SPECIFIER.getObject().equals(e.getType())) {
+                notifyTargetUser.append(",");
+            }
+            if (TriggerObject.SPECIFIER.getObject().equals(e.getType())) {
+                List<Long> userIds = Stream.of(e.getUserId()).collect(Collectors.toList());
+                baseServiceClientOperator.listUsersByIds(userIds).stream().map(IamUserDTO::getRealName).collect(Collectors.toList());
+                notifyTargetUser.append(StringUtils.join(baseServiceClientOperator.listUsersByIds(userIds).stream().map(userDTO -> {
+                    if (userDTO.getRealName() != null) {
+                        return userDTO.getRealName();
+                    } else {
+                        return userDTO.getLoginName();
+                    }
+                }).toArray(), ","));
+            }
+        });
+        resourceCheckVO.setUser(notifyTargetUser.toString());
+        return resourceCheckVO;
     }
 
 
     @Override
     public void sendMessage(Long envId, Long notificationId, Long objectId, String objectType) {
-//        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-//        String objectCode = getObjectCode(objectId, objectType);
-//
-//        //生成验证码，存放在redis
-//        String resendKey = String.format("choerodon:devops:env:%s:%s:%s", devopsEnvironmentDTO.getCode(), objectType, objectCode);
-//        String captcha = String.valueOf(new Random().nextInt(899999) + 100000);
-//        redisTemplate.opsForValue().set(resendKey, captcha, TIMEOUT, TimeUnit.SECONDS);
-//
-//
-//        //生成发送消息需要的模板对象
-//        DevopsNotificationDTO devopsNotificationDTO = baseQuery(notificationId);
-//        NotifyVO notifyVO = new NotifyVO();
-//        Map<String, Object> params = new HashMap<>();
-//        IamUserDTO userDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
-//        if (userDTO != null) {
-//            if (userDTO.getRealName() != null) {
-//                params.put("user", userDTO.getRealName());
-//            } else {
-//                params.put("user", userDTO.getLoginName());
-//            }
-//        }
-//
-//        params.put("env", devopsEnvironmentDTO.getName());
-//        params.put("object", getObjectType(objectType));
-//        params.put("objectName", objectCode);
-//        params.put("captcha", captcha);
-//        params.put("timeout", "10");
-//        //由于短信模板内容的问题，暂时需要传入此instance,后续统一改成object和objectType
-//        params.put("instance", objectCode);
-//
-//        Set<Long> notifyUserIds = new HashSet<>();
-//        List<DevopsNotificationUserRelDTO> devopsNotificationUserRelDTOList = devopsNotificationUserRelService.baseListByNotificationId(devopsNotificationDTO.getId());
-//        if (CollectionUtils.isEmpty(devopsNotificationUserRelDTOList)) {
-//            return;
-//        }
-//        // 添加要通知的指定用户
-//        Set<Long> specifierUserIdList = devopsNotificationUserRelDTOList.stream().filter(v -> TriggerObject.SPECIFIER.getObject().equals(v.getUserType()))
-//                .map(DevopsNotificationUserRelDTO::getUserId).collect(Collectors.toSet());
-//        notifyUserIds.addAll(specifierUserIdList);
-//        // 添加操作者
-//        if (devopsNotificationUserRelDTOList.stream().anyMatch(v -> TriggerObject.HANDLER.getObject().equals(v.getUserType()))) {
-//            notifyUserIds.add(GitUserNameUtil.getUserId().longValue());
-//        }
-//        // 添加项目所有者
-//        if (devopsNotificationUserRelDTOList.stream().anyMatch(v -> TriggerObject.OWNER.getObject().equals(v.getUserType()))) {
-//            List<IamUserDTO> ownerList = baseServiceClientOperator.listProjectUsersByPorjectIdAndRoleLable(devopsNotificationDTO.getProjectId(), RoleLabel.PROJECT_OWNER.value());
-//            if (!CollectionUtils.isEmpty(ownerList)) {
-//                Set<Long> ownerIds = ownerList.stream().map(IamUserDTO::getId).collect(Collectors.toSet());
-//                notifyUserIds.addAll(ownerIds);
-//            }
-//        }
-//        List<IamUserDTO> iamUserDTOList = baseServiceClientOperator.listUsersByIds(new ArrayList<>(notifyUserIds));
-//        List<String> phoneList = iamUserDTOList.stream().map(IamUserDTO::getPhone).collect(Collectors.toList());
-//        params.put(MOBILE, StringUtils.join(phoneList, ","));
-//        List<NoticeSendDTO.User> userList = iamUserDTOList.stream().map(v -> {
-//            NoticeSendDTO.User user = new NoticeSendDTO.User();
-//            user.setId(v.getId());
-//            user.setEmail(v.getEmail());
-//            return user;
-//        }).collect(Collectors.toList());
-//        notifyVO.setTargetUsers(userList);
-//
-//        try {
-//            //根据不同的通知方式发送验证码
-//            if (Boolean.TRUE.equals(devopsNotificationDTO.getSendEmail())) {
-//                notifyVO.setSourceId(devopsEnvironmentDTO.getProjectId());
-//                notifyVO.setCode(RESOURCE_DELETE_CONFIRMATION);
-//                notifyVO.setCustomizedSendingTypes(Arrays.asList("email"));
-//                notifyClient.sendMessage(notifyVO);
-//            }
-//            if (Boolean.TRUE.equals(devopsNotificationDTO.getSendSms())) {
-//                notifyVO.setSourceId(0L);
-//                notifyVO.setCode(DEVOPS_DELETE_INSTANCE_4_SMS);
-//                notifyVO.setCustomizedSendingTypes(Arrays.asList("sms"));
-//                notifyClient.sendMessage(notifyVO);
-//            }
-//            if (Boolean.TRUE.equals(devopsNotificationDTO.getSendPm())) {
-//                notifyVO.setSourceId(devopsEnvironmentDTO.getProjectId());
-//                notifyVO.setCode(RESOURCE_DELETE_CONFIRMATION);
-//                notifyVO.setCustomizedSendingTypes(Arrays.asList("siteMessage"));
-//                notifyClient.sendMessage(notifyVO);
-//            }
-//        } catch (Exception e) {
-//            redisTemplate.delete(resendKey);
-//            throw new CommonException("error.msg.send.failed");
-//        }
+        //notificationId为messmageSettingVO 的ID
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        String objectCode = getObjectCode(objectId, objectType);
+
+        //生成验证码，存放在redis
+        String resendKey = String.format("choerodon:devops:env:%s:%s:%s", devopsEnvironmentDTO.getCode(), objectType, objectCode);
+        String captcha = String.valueOf(new Random().nextInt(899999) + 100000);
+        redisTemplate.opsForValue().set(resendKey, captcha, TIMEOUT, TimeUnit.SECONDS);
+
+
+        //生成发送消息需要的模板对象
+        MessageSettingVO messageSettingVO = notifyClient.queryByEnvIdAndEventNameAndProjectIdAndCode(NOTIFY_TYPE, devopsEnvironmentDTO.getProjectId(), CODE, envId, objectType);
+        List<String> triggerTypes = new ArrayList<>();
+        if (messageSettingVO.getSmsEnable()) {
+            triggerTypes.add("sms");
+        }
+        if (messageSettingVO.getEmailEnable()) {
+            triggerTypes.add("email");
+        }
+        if (messageSettingVO.getPmEnable()) {
+            triggerTypes.add("pm");
+        }
+        NotifyVO notifyVO = new NotifyVO();
+        Map<String, Object> params = new HashMap<>();
+        List<IamUserDTO> userES = baseServiceClientOperator.listUsersByIds(Arrays.asList(GitUserNameUtil.getUserId().longValue()));
+        if (!userES.isEmpty()) {
+            if (userES.get(0).getRealName() != null) {
+                params.put("user", userES.get(0).getRealName());
+            } else {
+                params.put("user", userES.get(0).getLoginName());
+            }
+        }
+        params.put("env", devopsEnvironmentDTO.getName());
+        params.put("object", getObjectType(objectType));
+        params.put("objectName", objectCode);
+        params.put("captcha", captcha);
+        params.put("timeout", "10");
+        //由于短信模板内容的问题，暂时需要传入此instance,后续统一改成object和objectType
+        params.put("instance", objectCode);
+        List<TargetUserDTO> targetUserDTOS = messageSettingVO.getTargetUserDTOS();
+        //通知对象为null，则不发消息
+        if (targetUserDTOS == null || targetUserDTOS.size() == 0) {
+            return;
+        }
+        List<NoticeSendDTO.User> users = new ArrayList<>();
+        List<String> phones = new ArrayList<>();
+        targetUserDTOS.stream().forEach(e -> {
+            if (TriggerObject.HANDLER.getObject().equals(e.getType())) {
+                NoticeSendDTO.User user = new NoticeSendDTO.User();
+                phones.add(userES.get(0).getPhone());
+                user.setEmail(GitUserNameUtil.getEmail());
+                user.setId(GitUserNameUtil.getUserId().longValue());
+                users.add(user);
+            }
+            if (TriggerObject.OWNER.getObject().equals(e.getType())) {
+                Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
+                PageInfo<IamUserDTO> allOwnerUsersPage = baseServiceClientOperator
+                        .pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), new RoleAssignmentSearchVO(),
+                                ownerId, devopsEnvironmentDTO.getProjectId(), false);
+                if (!allOwnerUsersPage.getList().isEmpty()) {
+                    allOwnerUsersPage.getList().stream().forEach(v->{
+                        NoticeSendDTO.User user = new NoticeSendDTO.User();
+                        user.setEmail(v.getEmail());
+                        user.setId(v.getId());
+                        users.add(user);
+                        phones.add(v.getPhone());
+                    });
+                }
+            }
+            if (TriggerObject.SPECIFIER.getObject().equals(e.getType())) {
+                List<Long> userIds = new ArrayList<>();
+                userIds.add(e.getUserId());
+                baseServiceClientOperator.listUsersByIds(userIds).stream().forEach(k->{
+                    NoticeSendDTO.User user = new NoticeSendDTO.User();
+                    user.setEmail(k.getEmail());
+                    user.setId(k.getId());
+                    users.add(user);
+                    phones.add(k.getPhone());
+                });
+            }
+        });
+        params.put(MOBILE,StringUtils.join(phones, ","));
+        notifyVO.setTargetUsers(users);
+        notifyVO.setParams(params);
+        try {
+            //根据不同的通知方式发送验证码
+            triggerTypes.forEach(triggerType -> {
+                if (triggerType.equals(TriggerType.EMAIL.getType())) {
+                    notifyVO.setSourceId(devopsEnvironmentDTO.getProjectId());
+                    notifyVO.setCode(RESOURCE_DELETE_CONFIRMATION);
+                    notifyVO.setCustomizedSendingTypes(Arrays.asList("email"));
+                    notifyClient.sendMessage(notifyVO);
+                } else if (triggerType.equals(TriggerType.PM.getType())) {
+                    notifyVO.setSourceId(devopsEnvironmentDTO.getProjectId());
+                    notifyVO.setCode(RESOURCE_DELETE_CONFIRMATION);
+                    notifyVO.setCustomizedSendingTypes(Arrays.asList("siteMessage"));
+                    notifyClient.sendMessage(notifyVO);
+                } else {
+                    notifyVO.setSourceId(0L);
+                    notifyVO.setCode(DEVOPS_DELETE_INSTANCE_4_SMS);
+                    notifyVO.setCustomizedSendingTypes(Arrays.asList("sms"));
+                    notifyClient.sendMessage(notifyVO);
+                }
+            });
+        } catch (Exception e) {
+            redisTemplate.delete(resendKey);
+            throw new CommonException("error.msg.send.failed");
+        }
     }
 
 
@@ -375,7 +398,6 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         calEventName(notifyEventVO.getDevopsNotificationList());
         return notifyEventVO;
     }
-
 
 
     @Override
@@ -473,6 +495,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         devopsNotificationDTO.setEnvId(envId);
         return devopsNotificationMapper.select(devopsNotificationDTO);
     }
+
     private void calEventName(List<NotificationEventVO> devopsNotificationList) {
         devopsNotificationList.forEach(notificationEventVO -> {
             if (NotifyEventEnum.INSTANCE.value().equals(notificationEventVO.getNotifyTriggerEvent())) {
