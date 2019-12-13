@@ -503,7 +503,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         if (devopsPvDTO.getStatus().equals(PvStatus.BOUND.getStatus())) {
             devopsPvDTO.setPvcName(pv.getSpec().getClaimRef().getName());
         }
-        devopsPvMapper.updateByPrimaryKeySelective(devopsPvDTO);
+
+        CustomContextUtil.executeRunnableInCertainContext(devopsPvDTO.getLastUpdatedBy(), () -> devopsPvMapper.updateByPrimaryKeySelective(devopsPvDTO));
     }
 
     /**
@@ -538,7 +539,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
         V1PersistentVolumeClaim pv = json.deserialize(msg, V1PersistentVolumeClaim.class);
         devopsPvcDTO.setStatus(pv.getStatus().getPhase());
-        devopsPvcMapper.updateByPrimaryKeySelective(devopsPvcDTO);
+        CustomContextUtil.executeRunnableInCertainContext(devopsPvcDTO.getLastUpdatedBy(), () -> devopsPvcMapper.updateByPrimaryKeySelective(devopsPvcDTO));
 
         // TODO 0.20 发版前删除
 //        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
