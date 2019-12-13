@@ -1560,6 +1560,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public void testPodUpdate(String key, String msg, Long clusterId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
         String status = K8sUtil.changePodStatus(v1Pod);
+        logger.debug("Test Pod UPDATE: key: {}, payload: {}", key, msg);
         if (status.equals("Running")) {
             PodUpdateVO podUpdateVO = new PodUpdateVO();
             Optional<V1Container> container = v1Pod.getSpec().getContainers().stream().filter(v1Container -> v1Container.getName().contains("automation-test")).findFirst();
@@ -1585,6 +1586,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Saga(code = SagaTopicCodeConstants.TEST_JOB_LOG_SAGA,
             description = "测试Job日志(test job log saga)", inputSchema = "{}")
     public void testJobLog(String key, String msg, Long clusterId) {
+        logger.debug("Test JOB LOG SAGA: key: {}, payload: {}", key, msg);
         JobLogVO jobLogVO = json.deserialize(msg, JobLogVO.class);
         PodUpdateVO podUpdateVO = new PodUpdateVO();
         podUpdateVO.setReleaseNames(KeyParseUtil.getReleaseName(key));
@@ -1612,7 +1614,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Saga(code = SagaTopicCodeConstants.TEST_STATUS_SAGA,
             description = "测试Release状态(test status saga)", inputSchema = "{}")
     public void getTestAppStatus(String key, String msg, Long clusterId) {
-        logger.info(msg);
+        logger.debug("Test STATUS SAGA: key: {}, payload: {}", key, msg);
         List<TestReleaseStatusPayload> testReleaseStatusPayloads = JSONArray.parseArray(msg, TestReleaseStatusPayload.class);
         List<PodUpdateVO> podUpdateVOS = new ArrayList<>();
         for (TestReleaseStatusPayload testReleaseStatu : testReleaseStatusPayloads) {
