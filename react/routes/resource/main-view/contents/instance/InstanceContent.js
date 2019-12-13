@@ -110,7 +110,7 @@ const InstanceContent = observer(() => {
       const podRunningCount = record.get('podRunningCount');
       const podCount = record.get('podCount');
       const error = record.get('error');
-      const versionName = record.get('versionName');
+      const versionName = record.get('effectCommandVersion');
       return {
         id,
         status,

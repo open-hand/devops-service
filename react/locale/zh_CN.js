@@ -366,7 +366,7 @@ const deployment = {
   'c7ncd.deployment.node': '节点',
   'c7ncd.deployment.delete.ingress': '删除域名',
   'c7ncd.deployment.delete.ingress.tips': '确定要删除该域名吗？',
-  'c7ncd.deployment.modal.redeploy.tips': '确定要重新部署该实例吗？',
+  'c7ncd.deployment.modal.redeploy.tips': '确定要重新部署该实例吗？此次部署版本为 “{versionName}”',
   'c7ncd.deployment.instance.version.failed': '升级至版本 “{text}” 失败',
   'c7ncd.deployment.configMap.head': '配置映射',
   'c7ncd.deployment.configMap.create': '创建配置映射',

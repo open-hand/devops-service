@@ -96,7 +96,7 @@ export default class Details extends Component {
     let connect;
     const record = baseDs.current;
     if (record) {
-      status = record.get('status');
+      status = record.get('effectCommandStatus');
       connect = record.get('connect');
     }
     const { isDisabled } = this.state;
