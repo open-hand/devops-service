@@ -1,11 +1,10 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.Id;
-import javax.persistence.Table;
-
+import io.choerodon.mybatis.entity.BaseDTO;
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * Created by younger on 2018/3/29.
@@ -112,16 +111,5 @@ public class DevopsProjectDTO extends BaseDTO {
 
     public void setDevopsClusterEnvGroupId(Long devopsClusterEnvGroupId) {
         this.devopsClusterEnvGroupId = devopsClusterEnvGroupId;
-    }
-
-    @Override
-    public String toString() {
-        return "DevopsProjectDTO{" +
-                "iamProjectId=" + iamProjectId +
-                ", devopsAppGroupId=" + devopsAppGroupId +
-                ", devopsEnvGroupId=" + devopsEnvGroupId +
-                ", devopsClusterEnvGroupId=" + devopsClusterEnvGroupId +
-                ", objectVersionNumber" + getObjectVersionNumber() +
-                '}';
     }
 }

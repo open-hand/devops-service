@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -36,7 +35,6 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -1336,6 +1334,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public void deleteEnvSaga(Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
+        LOGGER.info("env{}", devopsEnvironmentDTO);
         // 删除对应的环境-应用服务关联关系
         DevopsEnvAppServiceDTO deleteCondition = new DevopsEnvAppServiceDTO();
         deleteCondition.setEnvId(envId);

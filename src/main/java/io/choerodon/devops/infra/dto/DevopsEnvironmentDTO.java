@@ -1,22 +1,21 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.*;
-
+import io.choerodon.mybatis.entity.BaseDTO;
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import javax.persistence.*;
 
 /**
  * if (!isSynchro) {
- *     // 处理中
+ * // 处理中
  * } else {
- *     if (isFailed) {
- *         // 失败
- *     } else {
- *         // 成功
- *     }
+ * if (isFailed) {
+ * // 失败
+ * } else {
+ * // 成功
  * }
- *
+ * }
+ * <p>
  * Created by younger on 2018/4/9.
  */
 @Table(name = "devops_env")
@@ -247,5 +246,35 @@ public class DevopsEnvironmentDTO extends BaseDTO {
 
     public void setClusterCode(String clusterCode) {
         this.clusterCode = clusterCode;
+    }
+
+    @Override
+    public String toString() {
+        return "DevopsEnvironmentDTO{" +
+                "id=" + id +
+                ", projectId=" + projectId +
+                ", clusterId=" + clusterId +
+                ", gitlabEnvProjectId=" + gitlabEnvProjectId +
+                ", hookId=" + hookId +
+                ", envIdRsa='" + envIdRsa + '\'' +
+                ", envIdRsaPub='" + envIdRsaPub + '\'' +
+                ", name='" + name + '\'' +
+                ", code='" + code + '\'' +
+                ", token='" + token + '\'' +
+                ", type='" + type + '\'' +
+                ", description='" + description + '\'' +
+                ", isActive=" + isActive +
+                ", devopsEnvGroupId=" + devopsEnvGroupId +
+                ", sagaSyncCommit=" + sagaSyncCommit +
+                ", devopsSyncCommit=" + devopsSyncCommit +
+                ", agentSyncCommit=" + agentSyncCommit +
+                ", isSynchro=" + isSynchro +
+                ", isFailed=" + isFailed +
+                ", isSkipCheckPermission=" + isSkipCheckPermission +
+                ", connected=" + connected +
+                ", permission=" + permission +
+                ", clusterName='" + clusterName + '\'' +
+                ", clusterCode='" + clusterCode + '\'' +
+                '}';
     }
 }
