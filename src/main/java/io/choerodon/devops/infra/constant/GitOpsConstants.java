@@ -56,4 +56,11 @@ public class GitOpsConstants {
      * 0.20版本之前用于实现实例类型网络的注解键值
      */
     public static final String SERVICE_INSTANCE_ANNOTATION_KEY = "choerodon.io/network-service-instances";
+
+    /**
+     * 分支删除时的after字段会是这个值
+     */
+    public static final String NO_COMMIT_SHA = "0000000000000000000000000000000000000000";
+
+    public static final String MASTER_REF = "refs/heads/master";
 }
