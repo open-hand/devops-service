@@ -267,6 +267,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         params.put("objectName", objectCode);
         params.put("captcha", captcha);
         params.put("timeout", "10");
+        params.put("notifyType",NOTIFY_TYPE);
         //由于短信模板内容的问题，暂时需要传入此instance,后续统一改成object和objectType
         params.put("instance", objectCode);
         List<TargetUserDTO> targetUserDTOS = messageSettingVO.getTargetUserDTOS();
@@ -316,24 +317,9 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         notifyVO.setParams(params);
         try {
             //根据不同的通知方式发送验证码
-            triggerTypes.forEach(triggerType -> {
-                if (triggerType.equals(TriggerType.EMAIL.getType())) {
-                    notifyVO.setSourceId(devopsEnvironmentDTO.getProjectId());
-                    notifyVO.setCode(RESOURCE_DELETE_CONFIRMATION);
-                    notifyVO.setCustomizedSendingTypes(Arrays.asList("email"));
-                    notifyClient.sendMessage(notifyVO);
-                } else if (triggerType.equals(TriggerType.PM.getType())) {
-                    notifyVO.setSourceId(devopsEnvironmentDTO.getProjectId());
-                    notifyVO.setCode(RESOURCE_DELETE_CONFIRMATION);
-                    notifyVO.setCustomizedSendingTypes(Arrays.asList("siteMessage"));
-                    notifyClient.sendMessage(notifyVO);
-                } else {
-                    notifyVO.setSourceId(0L);
-                    notifyVO.setCode(DEVOPS_DELETE_INSTANCE_4_SMS);
-                    notifyVO.setCustomizedSendingTypes(Arrays.asList("sms"));
-                    notifyClient.sendMessage(notifyVO);
-                }
-            });
+            notifyVO.setSourceId(devopsEnvironmentDTO.getProjectId());
+            notifyVO.setCode(RESOURCE_DELETE_CONFIRMATION);
+            notifyClient.sendMessage(notifyVO);
         } catch (Exception e) {
             redisTemplate.delete(resendKey);
             throw new CommonException("error.msg.send.failed");
