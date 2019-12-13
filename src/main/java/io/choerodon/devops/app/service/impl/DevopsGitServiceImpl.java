@@ -34,6 +34,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.agile.IssueDTO;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
@@ -62,7 +63,6 @@ import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
  */
 @Service
 public class DevopsGitServiceImpl implements DevopsGitService {
-    private static final String NO_COMMIT_SHA = "0000000000000000000000000000000000000000";
     private static final String REF_HEADS = "refs/heads/";
     private static final String GIT_SUFFIX = "/.git";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
@@ -429,10 +429,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public void branchSync(PushWebHookVO pushWebHookVO, String token) {
         AppServiceDTO applicationDTO = appServiceService.baseQueryByToken(token);
-        if (NO_COMMIT_SHA.equals(pushWebHookVO.getBefore())) {
+        if (GitOpsConstants.NO_COMMIT_SHA.equals(pushWebHookVO.getBefore())) {
             createBranchSync(pushWebHookVO, applicationDTO.getId());
             devopsGitlabCommitService.create(pushWebHookVO, token);
-        } else if (NO_COMMIT_SHA.equals(pushWebHookVO.getAfter())) {
+        } else if (GitOpsConstants.NO_COMMIT_SHA.equals(pushWebHookVO.getAfter())) {
             deleteBranchSync(pushWebHookVO, applicationDTO.getId());
         } else {
             commitBranchSync(pushWebHookVO, applicationDTO.getId());
