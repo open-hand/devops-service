@@ -127,7 +127,8 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
             }
         } else {
             devopsProjectDTO.setObjectVersionNumber(oldDevopsProjectDTO.getObjectVersionNumber());
-            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsProjectMapper, devopsProjectDTO, "error.project.update", (Object[]) null);
+            MapperUtil.resultJudgedUpdateByPrimaryKey(devopsProjectMapper, devopsProjectDTO, "error.project.update", (Object[]) null);
+            logger.info("444444444444444444444444{}",devopsProjectDTO);
         }
     }
 
