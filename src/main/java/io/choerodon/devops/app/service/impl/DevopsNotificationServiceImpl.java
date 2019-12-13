@@ -191,7 +191,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         resourceCheckVO.setNotificationId(messageSettingVO.getId());
         List<TargetUserDTO> targetUserDTOS = messageSettingVO.getTargetUserDTOS();
         if (targetUserDTOS == null || targetUserDTOS.size() == 0) {
-            return resourceCheckVO;
+            return new ResourceCheckVO();
         }
         StringBuilder notifyTargetUser = new StringBuilder();
         targetUserDTOS.stream().forEach(e -> {
