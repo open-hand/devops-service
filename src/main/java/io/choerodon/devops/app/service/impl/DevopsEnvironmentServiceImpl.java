@@ -1334,7 +1334,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public void deleteEnvSaga(Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
-        LOGGER.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAA====envId:{},envDTO:{}", envId, devopsEnvironmentDTO);
         // 删除对应的环境-应用服务关联关系
         DevopsEnvAppServiceDTO deleteCondition = new DevopsEnvAppServiceDTO();
         deleteCondition.setEnvId(envId);
