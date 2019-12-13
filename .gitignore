@@ -1,5 +1,6 @@
 /target/
 !.mvn/wrapper/maven-wrapper.jar
+src/main/java/io/choerodon/devops/api/controller/v1/TestController.java
 
 ### STS ###
 .apt_generated

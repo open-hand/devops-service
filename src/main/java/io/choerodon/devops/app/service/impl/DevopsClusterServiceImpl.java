@@ -425,9 +425,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         if (!ObjectUtils.isEmpty(devopsClusterDTO.getClientId())) {
             baseServiceClientOperator.deleteClient(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getClientId());
         }
-        baseDelete(clusterId);
-
         devopsEnvironmentService.deleteSystemEnv(devopsClusterDTO.getProjectId(), devopsClusterDTO.getId(), devopsClusterDTO.getCode(), devopsClusterDTO.getSystemEnvId());
+
+        baseDelete(clusterId);
     }
 
     @Override
