@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageInfo;
 import com.zaxxer.hikari.util.UtilityElf;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.kubernetes.CheckLog;
@@ -26,12 +27,14 @@ import io.choerodon.devops.infra.feign.NotifyTransferDataClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import retrofit2.Response;
@@ -102,6 +105,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsNotificationMapper devopsNotificationMapper;
     @Autowired
     private DevopsNotificationUserRelMapper devopsNotificationUserRelMapper;
+    @Autowired
+    private HarborUserMapper harborUserMapper;
 
     @Autowired
     private NotifyTransferDataClient notifyTransferDataClient;
@@ -134,15 +139,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 List<CheckLog> logs = new ArrayList<>();
                 devopsCheckLogDTO.setBeginCheckDate(new Date());
                 if ("0.20.0".equals(version)) {
-                    syncHarborUser();
-                    // 资源删除验证通知数据迁移
-                    syncNotificationAndNotificationUserRel();
+                    syncHarborUser(logs);
                     //调接消息接口迁移数据
                     notifyTransferDataClient.checkLog("0.20.0", "devops");
                 } else if ("0.19.0".equals(version)) {
                     syncEnvAppRelevance(logs);
-                    // 0.20.0删除此方法
-                    // syncAppShare(logs);
                     syncDeployRecord(logs);
                     // devops-service启动时不再迁移集群和证书，让用户升级时在总前端部署之后去界面调接口传入 0.19.5 迁移集群和证书
 //                    syncClusterAndCertifications(logs);
@@ -174,86 +175,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 LOGGER.warn("Exception occurred when applying data migration. The ex is: {}", ex);
             }
         }
-
-        private void syncNotificationAndNotificationUserRel() {
-
-            List<DevopsNotificationDTO> devopsNotificationDTOList = devopsNotificationMapper.listOldNotificationDTO();
-
-//            devopsNotificationDTOList.forEach(v -> {
-//                DevopsNotificationDTO notificationDTO = new DevopsNotificationDTO();
-//                notificationDTO.setProjectId(v.getProjectId());
-//                notificationDTO.setEnvId(v.getEnvId());
-//                notificationDTO.setDefaultSetting(false);
-//                if (v.getNotifyType().contains("sms")) {
-//                    notificationDTO.setSendSms(true);
-//                } else {
-//                    notificationDTO.setSendSms(false);
-//                }
-//
-//                if (v.getNotifyType().contains("email")) {
-//                    notificationDTO.setSendEmail(true);
-//                } else {
-//                    notificationDTO.setSendEmail(false);
-//                }
-//
-//                if (v.getNotifyType().contains("pm")) {
-//                    notificationDTO.setSendPm(true);
-//                } else {
-//                    notificationDTO.setSendPm(false);
-//                }
-//                String[] triggerEvents = v.getNotifyTriggerEvent().split(",");
-//                // 查询原来指定用户列表
-//                DevopsNotificationUserRelDTO notificationUserRelDTORecord = new DevopsNotificationUserRelDTO();
-//                notificationUserRelDTORecord.setNotificationId(v.getId());
-//                List<DevopsNotificationUserRelDTO> devopsNotificationUserRelDTOList = devopsNotificationUserRelMapper.select(notificationUserRelDTORecord);
-//                // 删除指定用户列表旧数据
-//                devopsNotificationUserRelDTOList.forEach(user -> {
-//                    if (devopsNotificationUserRelMapper.delete(user) != 1) {
-//                        throw new CommonException("error.delete.user.rel");
-//                    }
-//                });
-//                for (String triggerEvent : triggerEvents) {
-//                    notificationDTO.setId(null);
-//                    notificationDTO.setNotifyTriggerEvent(triggerEvent);
-//                    if (devopsNotificationMapper.insertSelective(notificationDTO) != 1) {
-//                        throw new CommonException("error.insert.notification");
-//                    }
-//                    if (TriggerObject.HANDLER.getObject().equals(v.getNotifyObject())) {
-//                        DevopsNotificationUserRelDTO devopsNotificationUserRelDTO = new DevopsNotificationUserRelDTO();
-//                        devopsNotificationUserRelDTO.setNotificationId(notificationDTO.getId());
-//                        devopsNotificationUserRelDTO.setUserType(TriggerObject.HANDLER.getObject());
-//                        if (devopsNotificationUserRelMapper.insertSelective(devopsNotificationUserRelDTO) != 1) {
-//                            throw new CommonException("error.insert.user.rel");
-//                        }
-//                    }
-//                    if (TriggerObject.OWNER.getObject().equals(v.getNotifyObject())) {
-//                        DevopsNotificationUserRelDTO devopsNotificationUserRelDTO = new DevopsNotificationUserRelDTO();
-//                        devopsNotificationUserRelDTO.setNotificationId(notificationDTO.getId());
-//                        devopsNotificationUserRelDTO.setUserType(TriggerObject.OWNER.getObject());
-//                        if (devopsNotificationUserRelMapper.insertSelective(devopsNotificationUserRelDTO) != 1) {
-//                            throw new CommonException("error.insert.user.rel");
-//                        }
-//                    }
-//
-//                    if (TriggerObject.SPECIFIER.getObject().equals(v.getNotifyObject())) {
-//                        devopsNotificationUserRelDTOList.forEach(user -> {
-//                            user.setNotificationId(notificationDTO.getId());
-//                            user.setUserType(TriggerObject.SPECIFIER.getObject());
-//                            if (devopsNotificationUserRelMapper.insertSelective(user) != 1) {
-//                                throw new CommonException("error.insert.user.rel");
-//                            }
-//                        });
-//                    }
-//
-//                }
-//                if (devopsNotificationMapper.deleteByPrimaryKey(v.getId()) != 1) {
-//                    throw new CommonException("error.delete.notification");
-//                }
-//            });
-
-
-        }
-
 
         private void syncBranch() {
             LOGGER.info("Start syncing branches.");
@@ -649,51 +570,65 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         LOGGER.info("Successfully add organization administrators to this project with id {}", projectId);
     }
 
-    private void syncHarborUser() {
+    private void syncHarborUser(List<CheckLog> logs) {
         LOGGER.info("sync harbor user start");
         List<DevopsProjectDTO> projectDTOLists = devopsProjectService.listAll();
         projectDTOLists.forEach(devopsProjectDTO -> {
             Boolean harbor = (!ObjectUtils.isEmpty(devopsProjectDTO.getHarborProjectUserName()) && !ObjectUtils.isEmpty(devopsProjectDTO.getHarborProjectUserPassword()) && !ObjectUtils.isEmpty(devopsProjectDTO.getHarborProjectUserEmail()));
             Boolean idIsExist = (!ObjectUtils.isEmpty(devopsProjectDTO.getHarborUserId()) && !ObjectUtils.isEmpty(devopsProjectDTO.getHarborPullUserId()));
             if (harbor && !idIsExist) {
-                // 迁移本地存在的用户
-                HarborUserDTO harborUserDTO = new HarborUserDTO();
-                harborUserDTO.setHarborProjectUserName(devopsProjectDTO.getHarborProjectUserName());
-                harborUserDTO.setHarborProjectUserPassword(devopsProjectDTO.getHarborProjectUserPassword());
-                harborUserDTO.setHarborProjectUserEmail(devopsProjectDTO.getHarborProjectUserEmail());
-                harborUserDTO.setPush(true);
-                devopsHarborUserService.baseCreate(harborUserDTO);
-                devopsProjectDTO.setHarborUserId(harborUserDTO.getId());
+                CheckLog checkLog = new CheckLog();
+                checkLog.setContent("begin to sync harbor user, projectId:" + devopsProjectDTO.getIamProjectId());
+                try {
+                    // 迁移本地存在的用户
+                    HarborUserDTO harborUserDTO = new HarborUserDTO();
+                    harborUserDTO.setHarborProjectUserName(devopsProjectDTO.getHarborProjectUserName());
+                    harborUserDTO.setHarborProjectUserPassword(devopsProjectDTO.getHarborProjectUserPassword());
+                    harborUserDTO.setHarborProjectUserEmail(devopsProjectDTO.getHarborProjectUserEmail());
+                    harborUserDTO.setPush(true);
 
-                // 创建pull用户
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
-                createHarborUser(projectDTO, devopsProjectDTO, false);
+                    HarborUserDTO queryDTO = harborUserMapper.selectOne(harborUserDTO);
+                    if (queryDTO == null) {
+                        devopsHarborUserService.baseCreate(harborUserDTO);
+                        devopsProjectDTO.setHarborUserId(harborUserDTO.getId());
+                    } else {
+                        devopsProjectDTO.setHarborUserId(queryDTO.getId());
+                    }
+                    // 创建pull用户
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
+                    createHarborUser(projectDTO, devopsProjectDTO);
+                    checkLog.setResult("Success!");
+                } catch (Exception e) {
+                    checkLog.setResult("Failed!Reason:" + e.getMessage());
+                    e.printStackTrace();
+                }
+                logs.add(checkLog);
             }
         });
         LOGGER.info("sync harbor user success");
     }
 
 
-    private void createHarborUser(ProjectDTO projectDTO, DevopsProjectDTO devopsProjectDTO, Boolean isPush) {
-        User user = harborService.convertUser(projectDTO, isPush, null);
+    private void createHarborUser(ProjectDTO projectDTO, DevopsProjectDTO devopsProjectDTO) {
+        User user = harborService.convertUser(projectDTO, false, null);
         HarborUserDTO harborUserDTO = new HarborUserDTO();
         harborUserDTO.setHarborProjectUserName(user.getUsername());
         harborUserDTO.setHarborProjectUserEmail(user.getEmail());
         harborUserDTO.setHarborProjectUserPassword(user.getPassword());
-        harborUserDTO.setPush(isPush);
-        // 检查是否自定义harbor仓库
+        harborUserDTO.setPush(false);
+
+        HarborUserDTO queryDTO = harborUserMapper.selectOne(harborUserDTO);
+        if (queryDTO == null) {
+            devopsHarborUserService.baseCreate(harborUserDTO);
+            devopsProjectDTO.setHarborPullUserId(harborUserDTO.getId());
+        } else {
+            devopsProjectDTO.setHarborPullUserId(queryDTO.getId());
+        }
+
         HarborPayload harborPayload = new HarborPayload();
         DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
         devopsConfigDTO.setProjectId(projectDTO.getId());
-        devopsHarborUserService.baseCreate(harborUserDTO);
-        if (isPush) {
-            devopsProjectDTO.setHarborUserId(harborUserDTO.getId());
-            harborService.createHarborUser(harborPayload, user, projectDTO, Arrays.asList(1));
-        } else {
-            devopsProjectDTO.setHarborPullUserId(harborUserDTO.getId());
-            harborService.createHarborUser(harborPayload, user, projectDTO, Arrays.asList(3));
-        }
-
+        harborService.createHarborUser(harborPayload, user, projectDTO, Arrays.asList(3));
         devopsProjectService.baseUpdate(devopsProjectDTO);
     }
 }
