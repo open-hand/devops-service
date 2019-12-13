@@ -97,8 +97,11 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         }
         ownerIds.forEach(id -> {
                     UserAttrDTO ownerAttrDTO = userAttrService.baseQueryById(id);
-                    gitlabServiceClientOperator.createGroupMember(devopsProjectDTO.getDevopsClusterEnvGroupId().intValue(),
-                            new MemberDTO(ownerAttrDTO.getGitlabUserId().intValue(), AccessLevel.MASTER.value, ""));
+                    MemberDTO memberDTO = new MemberDTO(ownerAttrDTO.getGitlabUserId().intValue(), AccessLevel.MASTER.value, "");
+                    MemberDTO groupMember = gitlabServiceClientOperator.queryGroupMember(devopsProjectDTO.getDevopsClusterEnvGroupId().intValue(), memberDTO.getId());
+                    if (groupMember == null) {
+                        gitlabServiceClientOperator.createGroupMember(devopsProjectDTO.getDevopsClusterEnvGroupId().intValue(), memberDTO);
+                    }
                 }
         );
     }
@@ -120,6 +123,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
             throw new CommonException("error.gitlab.user.sync.failed");
         }
         GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        LOGGER.info("zzzzzzzzzzzzzzzzzzzzzzzzzzzzGroupDTO:{}", groupDTO);
         if (groupDTO == null) {
             groupDTO = gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             LOGGER.info("2222222222222222222222222222222:{}", groupDTO);
