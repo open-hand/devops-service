@@ -156,10 +156,15 @@ const IstModals = injectIntl(observer(() => {
   }
 
   function openRedeploy() {
+    const record = baseDs.current;
+    if (!record) return;
+
+    const versionName = record.get('commandVersion');
+
     Modal.open({
       key: redeployKey,
       title: formatMessage({ id: `${intlPrefix}.modal.redeploy` }),
-      children: <FormattedMessage id={`${intlPrefix}.modal.redeploy.tips`} />,
+      children: <FormattedMessage id={`${intlPrefix}.modal.redeploy.tips`} values={{ versionName }} />,
       onOk: redeploy,
     });
   }

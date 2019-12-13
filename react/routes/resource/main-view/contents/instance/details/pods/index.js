@@ -155,11 +155,11 @@ export default class Pods extends PureComponent {
     const show = textDisplay
       && sum !== currentPodTargetCount
       && connect
-      && status === 'running';
+      && status === 'success';
     const descIsEnable = btnDisable
       || !connect
       || currentPodTargetCount <= 1
-      || status !== 'running';
+      || status !== 'success';
 
     return (
       <div className="c7ncd-pod">
@@ -170,7 +170,7 @@ export default class Pods extends PureComponent {
           {podType === 'deploymentVOS' && (
             <div className="c7ncd-pod-content c7ncd-pod-btn-wrap">
               <Button
-                disabled={!(connect && status === 'running')}
+                disabled={!(connect && status === 'success')}
                 className="c7ncd-pod-btn"
                 size="small"
                 icon="expand_less"
