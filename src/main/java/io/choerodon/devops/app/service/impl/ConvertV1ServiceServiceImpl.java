@@ -5,6 +5,8 @@ import java.util.Map;
 
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1ServicePort;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -21,6 +23,8 @@ import io.choerodon.devops.infra.util.TypeUtil;
 
 @Component
 public class ConvertV1ServiceServiceImpl extends ConvertK8sObjectService<V1Service> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConvertV1ServiceServiceImpl.class);
+
     @Autowired
     private DevopsServiceService devopsServiceService;
     @Autowired
@@ -74,6 +78,7 @@ public class ConvertV1ServiceServiceImpl extends ConvertK8sObjectService<V1Servi
             throw new GitOpsExplainException(GitOpsObjectError.SERVICE_API_VERSION_NOT_FOUND.getError(), filePath);
         }
         // 0.20版本不再兼容带有名为choerodon.io/network-service-instances的Annotation的网络的创建和更新，以前创建的不进行修改和更新是可以继续生效的
+        LOGGER.debug("v1Service with name {} has annotations: {}", v1Service.getMetadata().getName(), v1Service.getMetadata().getAnnotations());
         if (!CollectionUtils.isEmpty(v1Service.getMetadata().getAnnotations()) && v1Service.getMetadata().getAnnotations().containsKey(GitOpsConstants.SERVICE_INSTANCE_ANNOTATION_KEY)) {
             throw new GitOpsExplainException(GitOpsObjectError.SERVICE_ANNOTATED_NOT_SUPPORTED_ANY_MORE.getError(), filePath);
         }
