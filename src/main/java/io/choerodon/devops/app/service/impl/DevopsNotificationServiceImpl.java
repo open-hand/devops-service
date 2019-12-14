@@ -267,9 +267,11 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         params.put("objectName", objectCode);
         params.put("captcha", captcha);
         params.put("timeout", "10");
-        params.put("notifyType",NOTIFY_TYPE);
         //由于短信模板内容的问题，暂时需要传入此instance,后续统一改成object和objectType
         params.put("instance", objectCode);
+        notifyVO.setEnvId(envId);
+        notifyVO.setEventName(objectType);
+        notifyVO.setNotifyType(CODE);
         List<TargetUserDTO> targetUserDTOS = messageSettingVO.getTargetUserDTOS();
         //通知对象为null，则不发消息
         if (targetUserDTOS == null || targetUserDTOS.size() == 0) {
