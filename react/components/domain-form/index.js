@@ -10,6 +10,7 @@ import Tips from '../new-tips';
 
 import '../../routes/main.less';
 import './index.less';
+import MouserOverWrapper from '../MouseOverWrapper';
 
 const { Item: FormItem } = Form;
 const { Group: RadioGroup } = Radio;
@@ -53,10 +54,11 @@ export default class DomainForm extends Component {
       DomainStore.loadDataById(projectId, ingressId)
         .then((data) => {
           const { pathList, envId: domainEnv, certId, certName, domain } = data;
-          const deletedService = _.map(pathList, ({ serviceStatus, serviceName, serviceId }) => (serviceStatus !== 'running' ? {
+          const deletedService = _.map(pathList, ({ serviceStatus, serviceName, serviceId, serviceError }) => (serviceStatus !== 'running' ? {
             name: serviceName,
             id: serviceId,
             status: serviceStatus,
+            serviceError,
           } : {}));
           this.setState({
             deletedService,
@@ -424,12 +426,14 @@ export default class DomainForm extends Component {
     const pathItem = _.map(paths, (k, index) => {
       let delNetOption = null;
       if (deletedService[k] && !_.isEmpty(deletedService[k])) {
-        const { id, status, name: delNetName } = deletedService[k];
+        const { id, status, name: delNetName, serviceError } = deletedService[k];
         delNetOption = (
           <Option value={id} key={`${id}-network-error`}>
-            {delNetName}
-            <Tooltip title={formatMessage({ id: 'deleted' })}>
-              <Icon type="cancel" className="c7ncd-domain-network-status-icon" />
+            <Tooltip title={delNetName}>
+              <span className="c7ncd-domain-network-text">{delNetName}</span>
+            </Tooltip>
+            <Tooltip title={formatMessage({ id: serviceError ? `failed: ${serviceError}` : status })}>
+              <Icon type="error" className="c7ncd-domain-network-status-icon" />
             </Tooltip>
           </Option>
         );
@@ -456,7 +460,10 @@ export default class DomainForm extends Component {
       // 生成网络选项
       const networkOption = _.map(network, ({ id, name: networkName }) => (
         <Option value={id} key={`${id}-network`}>
-          <Tooltip title={networkName}>{networkName}</Tooltip>
+          <Tooltip title={networkName}>
+            <span className="c7ncd-domain-network-text">{networkName}</span>
+          </Tooltip>
+          <Icon type="" />
         </Option>
       ));
       return (
@@ -511,7 +518,7 @@ export default class DomainForm extends Component {
                 size="default"
                 optionFilterProp="children"
                 optionLabelProp="children"
-                filterOption={(input, option) => option.props.children.props.children
+                filterOption={(input, option) => option.props.children[0].props.children.props.children
                   .toLowerCase()
                   .indexOf(input.toLowerCase()) >= 0}
               >
