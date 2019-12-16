@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { forEach, isEmpty, map, keys } from 'lodash';
 import { DataSet } from 'choerodon-ui/pro';
+import { axios } from '@choerodon/boot';
 import CreateFormDataSet, { transFormData } from './CreateFormDataSet';
 import PortDataSet from './PortDataSet';
 import AppInstanceOptionsDataSet from './AppInstanceOptionsDataSet';
@@ -25,6 +26,7 @@ function StoreProvider(props) {
     envId,
     store: networkStore,
     netId: networkId,
+    appServiceId,
   } = props;
 
 
@@ -46,20 +48,23 @@ function StoreProvider(props) {
         url: `/devops/v1/projects/${projectId}/service/${networkId}`,
         data: transFormData(data, formatMessage, envId),
       });
-      networkInfoDs.query().then(res => {
-        const { type, target, target: { instances, targetAppServiceId } } = res;
-        loadInfo({ data: res, formatMessage, targetLabelsDs, portDs, endPointsDs, formDs, networkInfoDs });
-        // 这里做兼容旧数据的处理 一个网络对应部分实例（>=1）
-        if (instances && instances.length && instances.length >= 2) {
-          forEach(instances, (item, index) => {
-            // 过滤重复的选项
-            if (appInstanceOptionsDs.findIndex((record) => record.get('code') === item.code) < 0) {
-              // 保证所有实例的选项在第一位
-              appInstanceOptionsDs.create(item, appInstanceOptionsDs.length ? 1 + index : index);
-            }
-          });
-        }
-      });
+      if (appServiceId) {
+        appInstanceOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service_instances/list_running_instance?env_id=${envId}&app_service_id=${appServiceId}`;
+      }
+      axios.all([networkInfoDs.query(), appInstanceOptionsDs.query()])
+        .then(([res]) => {
+          const { type, target, target: { instances, targetAppServiceId } } = res;
+          loadInfo({ data: res, formatMessage, targetLabelsDs, portDs, endPointsDs, formDs, networkInfoDs });
+          // 这里做兼容旧数据的处理 一个网络对应部分实例
+          if (!targetAppServiceId && instances && instances.length) {
+            forEach(instances, (item, index) => {
+              if (!appInstanceOptionsDs.find((record) => record.get('code') === item.code)) {
+                const record = appInstanceOptionsDs.create(item);
+                appInstanceOptionsDs.push(record);
+              }
+            });
+          }
+        });
     }
   }, [networkId, formDs.current]);
   
@@ -71,13 +76,6 @@ function StoreProvider(props) {
     }
   }, []);
 
-  useEffect(() => {
-    const appServiceId = formDs.current.get('appServiceId');
-    if (appServiceId) {
-      appInstanceOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service_instances/list_running_instance?env_id=${envId}&app_service_id=${appServiceId}`;
-      appInstanceOptionsDs.query();
-    }
-  }, [formDs.current.get('appServiceId')]);
 
   const value = {
     ...props,
@@ -136,7 +134,7 @@ function initTargetLabel({ targetLabelsDs, type, record, networkInfoDs, formatMe
       if (instances.length > 1) {
         return map(instances, (item) => item.code).join(',');
       }
-      return instances[0];
+      return instances[0].code;
     }
   } else {
     targetLabelsDs.reset();

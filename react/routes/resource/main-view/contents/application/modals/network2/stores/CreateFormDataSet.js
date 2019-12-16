@@ -1,4 +1,4 @@
-import { map, forOwn, isEmpty } from 'lodash';
+import _, { map, forOwn, isEmpty } from 'lodash';
 
 export default ({ formatMessage, portDs, targetLabelsDs, appInstanceOptionsDs, networkStore, projectId, envId, appId, networkEdit }) => {
   const { networkInfoDs, networkId, initTargetLabel, initPorts } = networkEdit;
@@ -43,11 +43,23 @@ export default ({ formatMessage, portDs, targetLabelsDs, appInstanceOptionsDs, n
 
   function checkInstance(value, name, record) {
     if (!networkId) return;
-    const instance = appInstanceOptionsDs.find((r) => r.get('code') === value);
-    if (!instance) return;
-    const status = instance.get('status');
-    if (!status || status === 'running') return;
-    return formatMessage({ id: 'network.instance.check.failed' });
+    let msg;
+    if (value) {
+      const data = value.split(',');
+      _.forEach(data, (item) => {
+        const instance = appInstanceOptionsDs.find((r) => r.get('code') === item);
+        const status = instance.get('status');
+        if (instance && status && status !== 'running' && !msg) {
+          msg = formatMessage({ id: 'network.instance.check.failed' });
+        }
+      });
+      if (data[1] && !msg) {
+        msg = formatMessage({ id: 'network.instance.check.failed.more' });
+      }
+    }
+    if (msg) {
+      return msg;
+    }
   }
   
   return {

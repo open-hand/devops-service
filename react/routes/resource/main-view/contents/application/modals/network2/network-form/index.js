@@ -19,6 +19,7 @@ function FormContent() {
       formatMessage,
     },
     networkId,
+    appInstanceOptionsDs,
   } = useNetWorkStore();
 
   const current = formDs.current;
@@ -63,7 +64,6 @@ function FormContent() {
   }
 
   function appInstanceOptionRenderer({ record, text, value }) {
-    // 如果数据带有status字段，就是来自网络信息详情的数据
     const status = record.get('status');
     if (status) {
       return <Fragment>
@@ -71,12 +71,35 @@ function FormContent() {
           title={formatMessage({ id: status })}
           placement="right"
         >
-          {text}
+          <span className="c7ncd-network-instance-text">{text}</span>
         </Tooltip>
         { status !== 'running' && (
         <Tooltip title={formatMessage({ id: 'deleted' })} placement="top">
           <Icon type="error" className="c7ncd-instance-status-icon" />
         </Tooltip>
+        )}
+      </Fragment>;
+    } else {
+      return text;
+    }
+  }
+
+  function appInstanceRenderer({ value, text }) {
+    const instance = appInstanceOptionsDs.find((r) => r.get('code') === value);
+
+    if (instance && instance.get('status')) {
+      const status = instance.get('status');
+      return <Fragment>
+        <Tooltip
+          title={formatMessage({ id: status })}
+          placement="right"
+        >
+          <span className="c7ncd-network-instance-text">{text}</span>
+        </Tooltip>
+        { status !== 'running' && (
+          <Tooltip title={formatMessage({ id: 'deleted' })} placement="top">
+            <Icon type="error" className="c7ncd-instance-status-icon" />
+          </Tooltip>
         )}
       </Fragment>;
     } else {
@@ -113,7 +136,7 @@ function FormContent() {
           <div colSpan={3} className="target-form">
             {
               (current && current.get('target') === 'instance')
-                ? <Select name="appInstance" colSpan={3} className="app-instance-select" optionRenderer={appInstanceOptionRenderer} />
+                ? <Select searchable name="appInstance" colSpan={3} className="app-instance-select" optionRenderer={appInstanceOptionRenderer} renderer={appInstanceRenderer} />
                 : <div className="label-form">
                   {
                     map(targetLabelsDs.created, (record, index) => (<Form record={record} key={`target-label-record-${index}`} columns={4}>

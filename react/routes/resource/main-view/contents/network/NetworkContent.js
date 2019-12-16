@@ -291,6 +291,7 @@ const NetworkContent = observer(() => {
       children: <EditNetwork2
         netId={networkDs.current.get('id')}
         envId={parentId}
+        appServiceId={networkDs.current.get('appServiceId')}
         store={networkStore}
         refresh={refresh}
       />,

@@ -49,13 +49,12 @@ function StoreProvider(props) {
       networkInfoDs.query().then(res => {
         const { type, target, target: { instances, targetAppServiceId } } = res;
         loadInfo({ data: res, formatMessage, targetLabelsDs, portDs, formDs, networkInfoDs });
-        // 这里做兼容旧数据的处理 一个网络对应部分实例（>=1）
-        if (instances && instances.length && instances.length >= 2) {
+        // 这里做兼容旧数据的处理 一个网络对应部分实例
+        if (!targetAppServiceId && instances && instances.length) {
           forEach(instances, (item, index) => {
-            // 过滤重复的选项
-            if (appInstanceOptionsDs.findIndex((record) => record.get('code') === item.code) < 0) {
-              // 保证所有实例的选项在第一位
-              appInstanceOptionsDs.create(item, appInstanceOptionsDs.length ? 1 + index : index);
+            if (!appInstanceOptionsDs.find((record) => record.get('code') === item.code)) {
+              const record = appInstanceOptionsDs.create(item);
+              appInstanceOptionsDs.push(record);
             }
           });
         }
@@ -120,7 +119,7 @@ function initTargetLabel({ targetLabelsDs, type, record, networkInfoDs, formatMe
       if (instances.length > 1) {
         return map(instances, (item) => item.code).join(',');
       }
-      return instances[0];
+      return instances[0].code;
     }
   } else {
     targetLabelsDs.reset();

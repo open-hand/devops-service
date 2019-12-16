@@ -1,4 +1,4 @@
-import { map, forOwn, isEmpty } from 'lodash';
+import _, { map, forOwn, isEmpty } from 'lodash';
 import uuidv1 from 'uuid/v1';
 
 export default ({ formatMessage, portDs, endPointsDs, targetLabelsDs, appInstanceOptionsDs, networkStore, projectId, envId, networkEdit }) => {
@@ -43,12 +43,24 @@ export default ({ formatMessage, portDs, endPointsDs, targetLabelsDs, appInstanc
   
 
   function checkInstance(value, name, record) {
-    if (!networkId) return; initEndPoints;
-    const instance = appInstanceOptionsDs.find((r) => r.get('code') === value);
-    if (!instance) return;
-    const status = instance.get('status');
-    if (!status || status === 'running') return;
-    return formatMessage({ id: 'network.instance.check.failed' });
+    if (!networkId) return;
+    let msg;
+    if (value) {
+      const data = value.split(',');
+      _.forEach(data, (item) => {
+        const instance = appInstanceOptionsDs.find((r) => r.get('code') === item);
+        const status = instance.get('status');
+        if (instance && status && status !== 'running' && !msg) {
+          msg = formatMessage({ id: 'network.instance.check.failed' });
+        }
+      });
+      if (data[1] && !msg) {
+        msg = formatMessage({ id: 'network.instance.check.failed.more' });
+      }
+    }
+    if (msg) {
+      return msg;
+    }
   }
   
   return {
@@ -146,6 +158,11 @@ export default ({ formatMessage, portDs, endPointsDs, targetLabelsDs, appInstanc
             break;
           case 'appServiceId':
             !networkId && handleAppServiceIdChange({ dataSet, record, name, value });
+            if (value) {
+              record.get('appInstance') && record.set('appInstance', null);
+              appInstanceOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service_instances/list_running_instance?env_id=${envId}&app_service_id=${value}`;
+              appInstanceOptionsDs.query();
+            }
             break;
           default:
             break;
