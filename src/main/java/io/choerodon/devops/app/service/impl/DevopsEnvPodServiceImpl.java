@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
 import io.choerodon.devops.api.vo.ContainerVO;
@@ -22,6 +23,7 @@ import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Pod;
 import org.slf4j.Logger;
@@ -213,6 +215,28 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         return devopsEnvPodMapper.selectOne(devopsEnvPodDTO);
     }
 
+    private static Map<String, DevopsEnvResourceDTO> listToMap(List<DevopsEnvResourceDTO> resources) {
+        Map<String, DevopsEnvResourceDTO> map = new HashMap<>();
+        for (DevopsEnvResourceDTO resource : resources) {
+            if (map.get(resource.getName()) == null) {
+                map.put(resource.getName(), resource);
+            } else {
+                map.put(resource.getName(), compareRevision(map.get(resource.getName()), resource));
+            }
+        }
+        return map;
+    }
+
+    private static DevopsEnvResourceDTO compareRevision(DevopsEnvResourceDTO one, DevopsEnvResourceDTO theOther) {
+        if (one == null || one.getReversion() == null) {
+            return theOther;
+        }
+        if (theOther == null || theOther.getReversion() == null) {
+            return one;
+        }
+        return one.getReversion() > theOther.getReversion() ? one : theOther;
+    }
+
     @Override
     public List<DevopsEnvPodInfoVO> queryEnvPodInfo(Long envId, String sort) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
@@ -221,9 +245,9 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
         // 根据devopsEnvPodInfoVOList获取name集合，批量查询devopsEnvResourceDTO和DevopsEnvResourceDetailDTO
         List<String> podNames = devopsEnvPodInfoVOList.stream().map(DevopsEnvPodInfoVO::getName).collect(Collectors.toList());
-        List<DevopsEnvResourceDTO> devopsEnvResourceDTOList = devopsEnvResourceService.listEnvResourceByOptions(envId, ResourceType.POD.getType(),podNames);
+        List<DevopsEnvResourceDTO> devopsEnvResourceDTOList = devopsEnvResourceService.listEnvResourceByOptions(envId, ResourceType.POD.getType(), podNames);
         Set<Long> resourceDetailIds = devopsEnvResourceDTOList.stream().map(DevopsEnvResourceDTO::getResourceDetailId).collect(Collectors.toSet());
-        Map<String, DevopsEnvResourceDTO> devopsEnvResourceMap = devopsEnvResourceDTOList.stream().collect(Collectors.toMap(DevopsEnvResourceDTO::getName, Function.identity()));
+        Map<String, DevopsEnvResourceDTO> devopsEnvResourceMap = listToMap(devopsEnvResourceDTOList);
         List<DevopsEnvResourceDetailDTO> devopsEnvResourceDetailDTOS = devopsEnvResourceDetailService.listByMessageIds(resourceDetailIds);
         Map<Long, DevopsEnvResourceDetailDTO> devopsEnvResourceDetailMap = devopsEnvResourceDetailDTOS.stream().collect(Collectors.toMap(DevopsEnvResourceDetailDTO::getId, Function.identity()));
 
