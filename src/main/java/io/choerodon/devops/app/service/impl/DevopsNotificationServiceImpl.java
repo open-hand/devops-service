@@ -208,7 +208,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                     }
                 }
             }
-            if (TriggerObject.SPECIFIER.getObject().equals(e.getType())) {
+            if (TriggerObject.SPECIFIER.getObject().equals(e.getType()) && StringUtils.isBlank(notifyTargetUser.toString())) {
                 notifyTargetUser.append(",");
             }
             if (TriggerObject.SPECIFIER.getObject().equals(e.getType())) {
@@ -271,7 +271,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         params.put("instance", objectCode);
         notifyVO.setEnvId(envId);
         notifyVO.setEventName(objectType);
-        notifyVO.setNotifyType(CODE);
+        notifyVO.setNotifyType(NOTIFY_TYPE);
         List<TargetUserDTO> targetUserDTOS = messageSettingVO.getTargetUserDTOS();
         //通知对象为null，则不发消息
         if (targetUserDTOS == null || targetUserDTOS.size() == 0) {
