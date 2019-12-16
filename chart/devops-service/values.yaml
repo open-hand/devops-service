@@ -90,7 +90,7 @@ env:
     EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://register-server:8000/eureka/
 
     # 数据库连接地址
-    SPRING_DATASOURCE_URL: jdbc:mysql://localhost/base_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true&serverTimezone=Asia/Shanghai
+    SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true&serverTimezone=Asia/Shanghai
     # 数据库用户名
     SPRING_DATASOURCE_USERNAME: choerodon
     # 数据库密码
@@ -167,7 +167,9 @@ resources:
     # cpu: 100m
     memory: 2Gi
 
+## 插件相关配置
 plugins:
+  # skywalking agent 镜像地址
   skywalkingAgentImage: registry.cn-shanghai.aliyuncs.com/c7n/skywalking-agent:6.5.0
 
 ## service 相关设置
