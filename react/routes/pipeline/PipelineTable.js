@@ -207,7 +207,7 @@ const PiplelineTable = withRouter(observer((props) => {
         action: deletePipeline.bind(this, id, itemName),
       },
       record: {
-        service: [],
+        service: ['devops-service.devops-deploy-record.pageByOptions'],
         text: formatMessage({ id: 'pipeline.all.record' }),
         action: gotoRecord.bind(this, id, itemName),
       },
