@@ -168,7 +168,7 @@ resources:
     memory: 2Gi
 
 plugins:
-  skywalkingAgentImage: registry.cn-shanghai.aliyuncs.com/c7n/skywalking-agent:6.3.0
+  skywalkingAgentImage: registry.cn-shanghai.aliyuncs.com/c7n/skywalking-agent:6.5.0
 
 ## service 相关设置
 ## ref: http://kubernetes.io/docs/user-guide/services/
