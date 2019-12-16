@@ -208,7 +208,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                     }
                 }
             }
-            if (TriggerObject.SPECIFIER.getObject().equals(e.getType()) && StringUtils.isBlank(notifyTargetUser.toString())) {
+            if (TriggerObject.SPECIFIER.getObject().equals(e.getType()) && !StringUtils.isBlank(notifyTargetUser.toString())) {
                 notifyTargetUser.append(",");
             }
             if (TriggerObject.SPECIFIER.getObject().equals(e.getType())) {
