@@ -43,7 +43,7 @@ spec:
           -Dregister.host={{ .Values.preJob.preConfig.registerHost | quote }}
           -Dservice.namespace={{ .Release.Namespace }}
           -Dservice.name={{ .Chart.Name }}
-          -Dservice.version={{ .Chart.Version }}
+          -Dservice.version={{ default (.Chart.Version) .Values.image.tag }}
           -Dconfig.file={{ .Values.preJob.preConfig.configFile }}
           -Dconfig.jar=/{{ .Chart.Name }}.jar
           -jar /var/choerodon/choerodon-tool-config.jar;
