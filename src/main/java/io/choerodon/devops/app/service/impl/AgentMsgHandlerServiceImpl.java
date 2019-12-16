@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
@@ -579,7 +580,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             if (devopsServiceDTO.getType().equals("LoadBalancer") &&
                     v1Service.getStatus() != null &&
                     v1Service.getStatus().getLoadBalancer() != null &&
-                    !v1Service.getStatus().getLoadBalancer().getIngress().isEmpty()) {
+                    !CollectionUtils.isEmpty(v1Service.getStatus().getLoadBalancer().getIngress())) {
 
                 devopsServiceDTO.setLoadBalanceIp(v1Service.getStatus().getLoadBalancer().getIngress().get(0).getIp());
                 List<PortMapVO> portMapVOS = getPortMapES(v1Service);
