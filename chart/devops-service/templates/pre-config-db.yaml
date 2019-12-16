@@ -4,8 +4,8 @@ kind: Job
 metadata:
   name: {{ .Release.Name }}-init-db
   annotations:
-    "helm.sh/hook": pre-install,pre-upgrade
     "helm.sh/hook-weight": "1"
+    "helm.sh/hook": pre-install,pre-upgrade
     "helm.sh/hook-delete-policy": "before-hook-creation"
   labels:
 {{ include "service.labels.standard" . | indent 4 }}
@@ -29,13 +29,18 @@ spec:
           name: tools-jar
       containers:
       - name: {{ .Release.Name }}-init-db
-        image: "{{ .Values.image.repository }}:{{ .Chart.Version }}"
+        image: {{ include "service.image" . }}
         command:
         - /bin/sh
         - -c
-        - '
-          java -Dspring.datasource.url="{{ .Values.preJob.preInitDB.datasource.url }}" -Dspring.datasource.username={{ .Values.preJob.preInitDB.datasource.username }} -Dspring.datasource.password={{ .Values.preJob.preInitDB.datasource.password }} -Ddata.init=true -Ddata.update.exclusion={{ .Values.preJob.preInitDB.datasource.exclusion }} -Ddata.jar=/{{ .Chart.Name }}.jar -jar /var/choerodon/choerodon-tool-liquibase.jar;
-          '
+        - >
+          java -Ddata.init=true
+          -Ddata.update.exclusion={{ .Values.preJob.preInitDB.datasource.exclusion }}
+          -Dspring.datasource.url="{{ .Values.preJob.preInitDB.datasource.url }}"
+          -Dspring.datasource.username={{ .Values.preJob.preInitDB.datasource.username }}
+          -Dspring.datasource.password={{ .Values.preJob.preInitDB.datasource.password }}
+          -Ddata.jar=/{{ .Chart.Name }}.jar
+          -jar /var/choerodon/choerodon-tool-liquibase.jar;
         volumeMounts:
         - mountPath: /var/choerodon
           name: tools-jar
