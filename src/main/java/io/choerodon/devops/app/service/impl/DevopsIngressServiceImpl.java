@@ -905,10 +905,17 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private void setDevopsIngressDTO(DevopsIngressVO devopsIngressVO, DevopsIngressPathDTO devopsIngressPathDTO) {
         //待修改
         DevopsServiceVO devopsServiceVO = devopsServiceService.query(devopsIngressPathDTO.getServiceId());
-        DevopsIngressPathVO devopsIngressPathVO = new DevopsIngressPathVO(
-                devopsIngressPathDTO.getPath(), devopsIngressPathDTO.getServiceId(), devopsIngressPathDTO.getServiceName(),
-                devopsServiceVO == null ? ServiceStatus.DELETED.getStatus() : devopsServiceVO.getStatus());
+        DevopsIngressPathVO devopsIngressPathVO = new DevopsIngressPathVO();
+        devopsIngressPathVO.setPath(devopsIngressPathDTO.getPath());
+        devopsIngressPathVO.setServiceId(devopsIngressPathDTO.getServiceId());
+        devopsIngressPathVO.setServiceName(devopsIngressPathDTO.getServiceName());
         devopsIngressPathVO.setServicePort(devopsIngressPathDTO.getServicePort());
+        if (devopsServiceVO != null) {
+            devopsIngressPathVO.setServiceStatus(devopsServiceVO.getStatus());
+            devopsIngressPathVO.setServiceError(devopsServiceVO.getError());
+        } else {
+            devopsIngressPathVO.setServiceStatus(ServiceStatus.DELETED.getStatus());
+        }
         devopsIngressVO.addDevopsIngressPathDTO(devopsIngressPathVO);
     }
 
