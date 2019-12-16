@@ -202,9 +202,17 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 List<IamUserDTO> users = baseServiceClientOperator.listUsersByIds(Arrays.asList(GitUserNameUtil.getUserId().longValue()));
                 if (!users.isEmpty()) {
                     if (users.get(0).getRealName() != null) {
-                        notifyTargetUser.append("," + users.get(0).getRealName());
+                        if (notifyTargetUser.toString().isEmpty()) {
+                            notifyTargetUser.append(users.get(0).getRealName());
+                        } else {
+                            notifyTargetUser.append("," + users.get(0).getRealName());
+                        }
                     } else {
-                        notifyTargetUser.append("," + users.get(0).getLoginName());
+                        if (notifyTargetUser.toString().isEmpty()) {
+                            notifyTargetUser.append(users.get(0).getLoginName());
+                        } else {
+                            notifyTargetUser.append("," + users.get(0).getLoginName());
+                        }
                     }
                 }
             }
@@ -695,3 +703,5 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         return devopsNotificationVO;
     }
 }
+
+
