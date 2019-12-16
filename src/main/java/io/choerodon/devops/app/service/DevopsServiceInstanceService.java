@@ -15,6 +15,8 @@ public interface DevopsServiceInstanceService {
 
     List<DevopsServiceInstanceDTO> baseListByServiceId(Long serviceId);
 
+    void deleteByServiceId(Long serviceId);
+
     void baseDeleteByOptions(Long serviceId, String instanceCode);
 
     void baseUpdateInstanceId(Long serviceInstanceId, Long instanceId);

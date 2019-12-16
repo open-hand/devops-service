@@ -264,6 +264,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             }
             //在gitops库处理service文件
             operateEnvGitLabFile(v1Service, v1Endpoints, false, devopsServiceDTO, beforeDevopsServiceAppInstanceDTOS, devopsEnvCommandDTO, userAttrDTO, devopsServiceReqVO.getDevopsIngressVO());
+            devopsServiceInstanceService.deleteByServiceId(devopsServiceDTO.getId());
         }
         return true;
     }

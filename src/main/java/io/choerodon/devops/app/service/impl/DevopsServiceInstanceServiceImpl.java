@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,13 @@ public class DevopsServiceInstanceServiceImpl implements DevopsServiceInstanceSe
         devopsServiceInstanceDTO.setServiceId(serviceId);
         return devopsServiceInstanceMapper
                 .select(devopsServiceInstanceDTO);
+    }
+
+    @Override
+    public void deleteByServiceId(Long serviceId) {
+        DevopsServiceInstanceDTO deleteCondition = new DevopsServiceInstanceDTO();
+        deleteCondition.setServiceId(Objects.requireNonNull(serviceId));
+        devopsServiceInstanceMapper.delete(deleteCondition);
     }
 
     @Override

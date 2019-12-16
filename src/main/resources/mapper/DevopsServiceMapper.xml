@@ -95,9 +95,18 @@
         cmd.command_type commandType,
         cmd.error error,
         da.project_id AS app_service_project_id,
-        dai.id AS instance_id,
-        if(dai.code is null and ds.target_instance_code is not null, ds.target_instance_code,dai.code) AS ins_code,
-        if(dai.`status` is null and ds.target_instance_code is not null, 'deleted',dai.status) AS ins_status
+        CASE
+          WHEN ds.target_instance_code IS NULL THEN dsai.id
+          ELSE dai.id
+        END instance_id,
+        CASE
+          WHEN ds.target_instance_code IS NULL THEN dsai.code
+          ELSE ds.target_instance_code
+        END ins_code,
+        CASE
+          WHEN dai.status IS NULL THEN 'deleted'
+          ELSE dai.status
+        END ins_status
         FROM
         (
         SELECT
@@ -152,7 +161,10 @@
         da.`name` AS app_service_name,
         de.id AS env_id,
         de.`name` AS env_name,
-        dai.id AS instance_id,
+        CASE
+          WHEN ds.target_instance_code IS NULL THEN dsai.id
+          ELSE dai.id
+        END instance_id,
         ds.last_update_date,
         ds.creation_date,
         ds.created_by,
@@ -167,7 +179,10 @@
          LIMIT 1
         # 使用LIMIT 1是因为表设计原因，根据多个实例创建的网络会有多条记录，但是message是一样的
         ) AS message,
-        if(dai.code is null and ds.target_instance_code is not null,  ds.target_instance_code, dai.code) AS ins_code,
+        CASE
+          WHEN ds.target_instance_code IS NULL THEN dsai.code
+          ELSE ds.target_instance_code
+        END ins_code,
         (SELECT count(1)
          FROM devops_env_pod dp
          WHERE dp.instance_id = dai.id) pod_count,
@@ -178,7 +193,10 @@
            AND dp.is_ready = TRUE) pod_running_count,
         dai.last_update_date AS ins_last_update_date,
         dai.object_version_number AS ins_object_version_number,
-        if(dai.status is null and ds.target_instance_code is not null, 'deleted', dai.status) AS ins_status,
+        CASE
+          WHEN dai.status IS NULL THEN 'deleted'
+          ELSE dai.status
+        END ins_status,
         command.status AS commandStatus,
         command.command_type AS commandType,
         command.error
