@@ -22,7 +22,6 @@ def set_map_item(follow_list, delta_map, value):
 
 
 def traversal(version_value_map, deploy_value_map, follow_keys, delta_map, update_list, add_list):
-
     for key in deploy_value_map:
         follow_keys_copy = list(follow_keys)
         follow_keys_copy.append(key)
@@ -65,7 +64,7 @@ def traversal(version_value_map, deploy_value_map, follow_keys, delta_map, updat
         elif type(deploy_value_map[key]).__name__ == 'CommentedSeq':
             # check if exist
             if key in version_value_map.keys():
-                if type(version_value_map[key]).__name__ == 'CommentedSeq':
+                if type(version_value_map[key]).__name__ == 'CommentedSeq' and len(version_value_map[key]) != 0:
                     # change list
                     add_list.append(follow_keys_copy)
                     version_value_map[key] = deploy_value_map[key]
