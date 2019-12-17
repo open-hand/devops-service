@@ -18,11 +18,12 @@
     "dist": "choerodon-front-boot dist --config ./react/config.js",
     "lint-staged": "lint-staged",
     "lint-staged:es": "eslint",
-    "compile": "choerodon-front-boot compile"
+    "compile": "choerodon-front-boot compile",
+    "clean-install": "rm -rf node_modules && rm package-lock.json && npm i --registry https://nexus.choerodon.com.cn/repository/choerodon-npm"
   },
   "peerDependencies": {
     "@choerodon/boot": "0.19.x",
-    "@choerodon/master-pro": "0.19.x",
+    "@choerodon/master": "0.20.0",
     "choerodon-ui": "0.8.x"
   },
   "dependencies": {
@@ -51,7 +52,7 @@
   },
   "devDependencies": {
     "@choerodon/boot": "0.19.x",
-    "@choerodon/master-pro": "0.19.x",
+    "@choerodon/master": "0.20.0",
     "babel-preset-env": "^1.7.0",
     "choerodon-ui": "^0.8.33",
     "del": "^4.1.1",

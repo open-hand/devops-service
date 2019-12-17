@@ -1,4 +1,4 @@
-import _, { map, forOwn, isEmpty } from 'lodash';
+import { map, forOwn, isEmpty, forEach } from 'lodash';
 
 export default ({ formatMessage, portDs, targetLabelsDs, appInstanceOptionsDs, networkStore, projectId, envId, appId, networkEdit }) => {
   const { networkInfoDs, networkId, initTargetLabel, initPorts } = networkEdit;
@@ -46,7 +46,7 @@ export default ({ formatMessage, portDs, targetLabelsDs, appInstanceOptionsDs, n
     let msg;
     if (value) {
       const data = value.split(',');
-      _.forEach(data, (item) => {
+      forEach(data, (item) => {
         const instance = appInstanceOptionsDs.find((r) => r.get('code') === item);
         const status = instance.get('status');
         if (instance && status && status !== 'running' && !msg) {
