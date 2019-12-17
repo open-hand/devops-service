@@ -1,5 +1,14 @@
-.c7ncd-repository-form {
+@import '~choerodon-ui/lib/style/themes/default';
 
+.c7ncd-repository-form {
+  width: 38%;
+  .@{c7n-pro-prefix}-select-box {
+    display: flex;
+    align-items: center;
+    .@{c7n-pro-prefix}-radio-wrapper {
+      flex: 1;
+    }
+  }
   &-info {
     color: rgba(0, 0, 0, 0.65);
     margin-bottom: .3rem;

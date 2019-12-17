@@ -104,7 +104,6 @@ export default injectIntl(observer(({
         <Button
           onClick={handleClick}
           funcType="raised"
-          // color="primary"
           className={`${prefixCls}-form-button`}
         >
           <FormattedMessage id={`${intlPrefix}.test`} />
@@ -164,7 +163,7 @@ export default injectIntl(observer(({
         </Form>
         {renderTestButton(record.get('chartStatus'), handleTestChart)}
       </Fragment>)}
-      <div>
+      <div style={{ display: 'flex' }}>
         <Button
           color="primary"
           funcType="raised"
@@ -174,7 +173,9 @@ export default injectIntl(observer(({
         <Button
           funcType="raised"
           onClick={() => refresh()}
-        >{formatMessage({ id: 'cancel' })}</Button>
+        >
+          <span style={{ color: '#3f51b5' }}>{formatMessage({ id: 'cancel' })}</span>
+        </Button>
       </div>
     </div>
   );
