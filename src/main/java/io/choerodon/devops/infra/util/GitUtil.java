@@ -221,7 +221,6 @@ public class GitUtil {
             cloneCommand.setDirectory(new File(path));
             return cloneCommand.call();
         } catch (GitAPIException e) {
-            LOGGER.info("url:{}======sshKeyRsa:{}", url, sshKeyRsa);
             throw new CommonException(e.getMessage(), e);
         }
     }
@@ -237,7 +236,7 @@ public class GitUtil {
         try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
             checkout(commit, repository);
         } catch (IOException e) {
-            LOGGER.info("Get repository error", e);
+            throw new CommonException("error.git.checkout", e);
         }
     }
 
@@ -246,7 +245,7 @@ public class GitUtil {
         try (Git git = new Git(repository)) {
             git.checkout().setName(commit).call();
         } catch (GitAPIException e) {
-            LOGGER.info("Checkout error ", e);
+            throw new CommonException("error.git.checkout", e);
         }
     }
 
@@ -261,9 +260,8 @@ public class GitUtil {
         try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
             return pullBySsh(repository, envRas);
         } catch (IOException e) {
-            LOGGER.info("Get repository error", e);
+            throw new CommonException("error.git.pull", e);
         }
-        return null;
     }
 
     private static Git pullBySsh(Repository repository, String sshKeyRsa) {
@@ -273,10 +271,8 @@ public class GitUtil {
                     .call();
             return git;
         } catch (GitAPIException e) {
-            LOGGER.info("Repository:{}\nsshKeyRsa:{}\n", repository, sshKeyRsa);
-            LOGGER.info("Pull error", e);
+            throw new CommonException("error.git.pull", e);
         }
-        return null;
     }
 
     private static TransportConfigCallback getTransportConfigCallback(String sshKeyRsa) {
