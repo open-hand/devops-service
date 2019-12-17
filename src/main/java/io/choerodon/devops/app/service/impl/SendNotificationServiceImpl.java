@@ -31,6 +31,7 @@ import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
 
 /**
  * 发送DevOps相关通知的实现类
+ * 其中数字类型的参数要转成字符串，否则在notify-service中会被转为逗号分隔的形式，如`11,111` (0.20版本)
  *
  * @author zmf
  * @since 12/5/19
@@ -104,8 +105,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
      */
     private Map<String, Object> makeAppServiceParams(Long organizationId, Long projectId, String projectName, String projectCategory, String appServiceName) {
         Map<String, Object> params = new HashMap<>();
-        params.put("organizationId", organizationId);
-        params.put("projectId", projectId);
+        params.put("organizationId", String.valueOf(organizationId));
+        params.put("projectId", String.valueOf(projectId));
         params.put("projectName", projectName);
         params.put("projectCategory", projectCategory);
         params.put("appServiceName", appServiceName);
@@ -188,7 +189,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     params.put("projectName", projectDTO.getName());
                     params.put("appServiceCode", appServiceDTO.getCode());
                     params.put("appServiceName", appServiceDTO.getName());
-                    params.put("gitlabPipelineId", gitlabPipelineId);
+                    params.put("gitlabPipelineId", String.valueOf(gitlabPipelineId));
 
                     IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(pipelineOperatorUserName);
 
@@ -226,7 +227,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         params.put("appServiceCode", appServiceCode);
         params.put("appServiceName", appServiceName);
         params.put("realName", realName);
-        params.put("mergeRequestId", mergeRequestId);
+        params.put("mergeRequestId", String.valueOf(mergeRequestId));
         return params;
     }
 
