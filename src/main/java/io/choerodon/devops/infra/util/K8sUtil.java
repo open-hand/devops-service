@@ -91,7 +91,8 @@ public class K8sUtil {
         String status = podStatusReason != null ? podStatusReason : podStatusPhase;
         List<V1ContainerStatus> initContainerStatuses = pod.getStatus().getInitContainerStatuses();
         List<V1ContainerStatus> containerStatusList = pod.getStatus().getContainerStatuses();
-        if (!ArrayUtil.isEmpty(initContainerStatuses)) {
+        // 只有Pod是Pending状态才去处理Pod的InitContainers的状态
+        if (!ArrayUtil.isEmpty(initContainerStatuses) && "Pending".equals(podStatusPhase)) {
             V1ContainerState containerState = initContainerStatuses.get(0).getState();
             V1ContainerStateTerminated containerStateTerminated = containerState.getTerminated();
             V1ContainerStateWaiting containerStateWaiting = containerState.getWaiting();
