@@ -1,11 +1,9 @@
 package io.choerodon.devops.app.service;
 
-import com.github.pagehelper.PageInfo;
-import io.choerodon.devops.api.vo.*;
-import org.springframework.data.domain.Pageable;
+import io.choerodon.devops.api.vo.DevopsNotificationTransferDataVO;
+import io.choerodon.devops.api.vo.ResourceCheckVO;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -13,63 +11,6 @@ import java.util.Set;
  * Description:
  */
 public interface DevopsNotificationService {
-
-    /**
-     * 项目下创建通知
-     *
-     * @param projectId
-     * @param notificationDTO
-     * @return
-     */
-    DevopsNotificationVO create(Long projectId, DevopsNotificationVO notificationDTO);
-
-    /**
-     * 项目下更新通知
-     *
-     * @param projectId
-     * @param notificationDTO
-     * @return
-     */
-    DevopsNotificationVO update(Long projectId, DevopsNotificationVO notificationDTO);
-
-    /**
-     * 项目下删除通知
-     *
-     * @param notificationId
-     */
-    void delete(Long notificationId);
-
-    /**
-     * 项目下获取通知详情
-     *
-     * @param notificationId
-     * @return
-     */
-    DevopsNotificationVO queryById(Long notificationId);
-
-    /**
-     * 分页查询通知列表
-     *
-     * @param projectId
-     * @param envId
-     * @param params
-     * @param pageable
-     * @return
-     */
-    PageInfo<DevopsNotificationVO> pageByOptions(Long projectId, Long envId, String params, Pageable pageable);
-
-
-    /**
-     * 项目下校验通知
-     * 环境下每个触发事件只能有一个通知
-     *
-     * @param projectId
-     * @param envId
-     * @return
-     */
-    Set<String> check(Long projectId, Long envId);
-
-
     /**
      * 校验删除对象是否需要发送验证码
      *
@@ -99,12 +40,6 @@ public interface DevopsNotificationService {
      * @return
      */
     void validateCaptcha(Long envId, Long objectId, String objectType, String captcha);
-
-    NotifyEventVO queryNotifyEventGroupByEnv(Long projectId, String envName);
-
-    void batchUpdateNotifyEvent(Long projectId, List<NotificationEventVO> notificationEventList);
-
-    void deleteNotifyEventByProjectIdAndEnvId(Long projectId, Long envId);
 
     List<DevopsNotificationTransferDataVO> transferDate();
 }

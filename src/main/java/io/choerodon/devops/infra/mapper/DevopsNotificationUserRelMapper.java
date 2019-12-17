@@ -12,7 +12,4 @@ import java.util.List;
  * Description:
  */
 public interface DevopsNotificationUserRelMapper extends Mapper<DevopsNotificationUserRelDTO> {
-
-    int batchInsert(@Param("devopsNotificationUserRelDTOS") List<DevopsNotificationUserRelDTO> devopsNotificationUserRelDTOS);
-
 }
