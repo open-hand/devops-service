@@ -172,8 +172,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsPvcService devopsPvcService;
     @Autowired
     private DevopsServiceInstanceService devopsServiceInstanceService;
-    @Autowired
-    private DevopsNotificationService devopsNotificationService;
 
     @PostConstruct
     private void init() {
@@ -1404,8 +1402,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (devopsEnvironmentDTO.getClusterId() != null) {
             agentCommandService.deleteEnv(envId, devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId());
         }
-        // 删除资源删除验证设置
-        devopsNotificationService.deleteNotifyEventByProjectIdAndEnvId(devopsEnvironmentDTO.getProjectId(), envId);
     }
 
     @Override
