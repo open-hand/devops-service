@@ -238,7 +238,6 @@ const EnvModals = observer(() => {
     e.domEvent.stopPropagation();
     const handlerMapping = {
       [ITEM_GROUP]: openGroupModal,
-      [ITEM_SAFETY]: resourceSetting,
     };
 
     const handler = handlerMapping[e.key];
@@ -249,11 +248,6 @@ const EnvModals = observer(() => {
     display: true,
     key: ITEM_GROUP,
     text: formatMessage({ id: `${currentIntlPrefix}.group.create` }),
-  }, {
-    display: true,
-    key: ITEM_SAFETY,
-    text: formatMessage({ id: `${currentIntlPrefix}.resource.setting` }),
-    disabled,
   }]), [disabled]);
 
   return <HeaderButtons items={getButtons()}>
