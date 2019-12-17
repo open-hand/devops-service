@@ -194,31 +194,27 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             //设置为私有后将harbor项目设置为私有
             //创建harbor用户，push用户用于ci推送，pull用户用于部署拉取
             //1.创建用户并更新项目
-            User user = harborService.convertUser(projectDTO, true, null);
-            User pullUser = harborService.convertUser(projectDTO, false, null);
-            createHarborUser(harborClient, user, Arrays.asList(1), organizationDTO, projectDTO);
-            createHarborUser(harborClient, pullUser, Arrays.asList(3), organizationDTO, projectDTO);
-            updateHarborProjectAndProjectMember(harborClient, user, Arrays.asList(1), organizationDTO, projectDTO);
-            updateHarborProjectAndProjectMember(harborClient, pullUser, Arrays.asList(3), organizationDTO, projectDTO);
-
-            HarborUserDTO harborUser = new HarborUserDTO(user.getUsername(), user.getPassword(), user.getEmail(), true);
-            HarborUserDTO pullHarborUser = new HarborUserDTO(pullUser.getUsername(), pullUser.getPassword(), pullUser.getEmail(), false);
             // 1.1 push用户
+            User user = harborService.convertUser(projectDTO, true, null);
+            HarborUserDTO harborUser = new HarborUserDTO(user.getUsername(), null, user.getEmail(), true);
             HarborUserDTO queryHarborUser = harborUserMapper.selectOne(harborUser);
             if (queryHarborUser == null) {
+                createHarborUser(harborClient, user, Arrays.asList(1), organizationDTO, projectDTO);
+                updateHarborProjectAndProjectMember(harborClient, user, Arrays.asList(1), organizationDTO, projectDTO);
                 devopsHarborUserService.baseCreate(harborUser);
                 devopsProjectDTO.setHarborUserId(harborUser.getId());
             } else {
                 devopsProjectDTO.setHarborUserId(queryHarborUser.getId());
             }
+
             //1.2pull用户
-            HarborUserDTO queryPullHarborUser = harborUserMapper.selectOne(pullHarborUser);
-            if (queryPullHarborUser == null) {
-                devopsHarborUserService.baseCreate(pullHarborUser);
-                devopsProjectDTO.setHarborPullUserId(pullHarborUser.getId());
-            } else {
-                devopsProjectDTO.setHarborPullUserId(queryPullHarborUser.getId());
-            }
+            User pullUser = harborService.convertUser(projectDTO, false, null);
+            HarborUserDTO pullHarborUser = new HarborUserDTO(pullUser.getUsername(), pullUser.getPassword(), pullUser.getEmail(), false);
+            createHarborUser(harborClient, pullUser, Arrays.asList(3), organizationDTO, projectDTO);
+            updateHarborProjectAndProjectMember(harborClient, pullUser, Arrays.asList(3), organizationDTO, projectDTO);
+            devopsHarborUserService.baseCreate(pullHarborUser);
+            devopsProjectDTO.setHarborPullUserId(pullHarborUser.getId());
+
             //2.项目设置为私有
             devopsProjectDTO.setHarborProjectIsPrivate(true);
             devopsProjectService.baseUpdate(devopsProjectDTO);
