@@ -55,7 +55,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     private static final String AUTHTYPE_PUSH = "push";
     private static final String CHART = "chart";
     private static final Gson gson = new Gson();
-    private static final String USER_PREFIX = "User%s%s";
+    private static final String USER_PREFIX = "pullUser%s%s";
     private static final String ERROR_CREATE_HARBOR_USER = "error.create.harbor.user";
 
     @Autowired
@@ -249,15 +249,11 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                         }
                         if (!ObjectUtils.isEmpty(users.body())) {
                             if (devopsProjectDTO.getHarborPullUserId() != null) {
-                                HarborUserDTO harborUserDTO = harborUserMapper.selectByPrimaryKey(devopsProjectDTO.getHarborPullUserId());
                                 for (User user : users.body()) {
-                                    if (harborUserDTO.getHarborProjectUserName().equals(user.getUsername())) {
-                                        try {
-                                            harborClient.deleteLowVersionMember(projects.body().get(0).getProjectId(), user.getUserId().intValue()).execute();
-                                        } catch (IOException e) {
-                                            throw new CommonException("error.delete.harbor.member");
-                                        }
-                                        break;
+                                    try {
+                                        harborClient.deleteLowVersionMember(projects.body().get(0).getProjectId(), user.getUserId().intValue()).execute();
+                                    } catch (IOException e) {
+                                        throw new CommonException("error.delete.harbor.member");
                                     }
                                 }
                             }
@@ -269,15 +265,11 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                         }
                         if (!ObjectUtils.isEmpty(projectMembers.body())) {
                             if (devopsProjectDTO.getHarborPullUserId() != null) {
-                                HarborUserDTO harborUserDTO = harborUserMapper.selectByPrimaryKey(devopsProjectDTO.getHarborPullUserId());
                                 for (ProjectMember projectMember : projectMembers.body()) {
-                                    if (projectMember.getMemberUser().getUsername().equals(harborUserDTO.getHarborProjectUserName())) {
-                                        try {
-                                            harborClient.deleteMember(projects.body().get(0).getProjectId(), projectMember.getId()).execute();
-                                        } catch (IOException e) {
-                                            throw new CommonException("error.delete.harbor.member");
-                                        }
-                                        break;
+                                    try {
+                                        harborClient.deleteMember(projects.body().get(0).getProjectId(), projectMember.getId()).execute();
+                                    } catch (IOException e) {
+                                        throw new CommonException("error.delete.harbor.member");
                                     }
                                 }
                             }
