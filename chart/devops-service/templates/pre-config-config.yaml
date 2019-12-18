@@ -1,4 +1,4 @@
-{{- if .Values.preJob.preConfig.enable }}
+{{- if .Values.preJob.preConfig.enabled }}
 apiVersion: batch/v1
 kind: Job
 metadata:

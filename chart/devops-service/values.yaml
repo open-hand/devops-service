@@ -7,7 +7,7 @@ preJob:
   # 初始化配置 job 定义
   preConfig:
     # 是否初始化配置至配置服务
-    enable: true
+    enabled: true
     # 初始化到配置中心文件名
     configFile: application.yml
     # 初始化到配置中心存储方式: k8s/db
@@ -18,18 +18,18 @@ preJob:
     registerHost: http://register-server:8000
     # 当 configType 值为 db 时配置 manager-service 的数据库
     datasource:
-      url: jdbc:mysql://localhost:3306/manager_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
+      url: jdbc:mysql://localhost:3306/manager_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true&serverTimezone=Asia/Shanghai
       username: username
       password: password
   # 初始化数据库定义
   preInitDB:
     # 是否初始化本服务数据库
-    enable: true
+    enabled: true
     datasource:
       # 初始化数据库更新数据的时候忽略的表或列
       exclusion: ~
       # 本服务数据库相关信息
-      url: jdbc:mysql://localhost:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
+      url: jdbc:mysql://localhost:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true&serverTimezone=Asia/Shanghai
       username: username
       password: password
 
