@@ -50,6 +50,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -177,6 +178,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     private DevopsMergeRequestMapper mergeRequestMapper;
     @Autowired
+    @Lazy
     private SendNotificationService sendNotificationService;
 
     @Override

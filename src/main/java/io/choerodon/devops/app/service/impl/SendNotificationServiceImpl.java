@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.notify.NoticeSendDTO;
@@ -138,6 +139,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
     @Override
+    @Async
     public void sendWhenAppServiceEnabled(Long appServiceId) {
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.APP_SERVICE_ENABLED,
@@ -150,6 +152,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
     @Override
+    @Async
     public void sendWhenAppServiceDisabled(Long appServiceId) {
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.APP_SERVICE_DISABLE,
