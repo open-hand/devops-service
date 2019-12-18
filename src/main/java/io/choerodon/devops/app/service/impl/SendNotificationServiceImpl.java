@@ -42,6 +42,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SendNotificationServiceImpl.class);
     private static final String PROJECT = "Project";
     private static final String ORGANIZATION = "Organization";
+    private static final String NOTIFY_TYPE = "devops";
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -462,6 +463,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         noticeSendDTO.setSourceId(Objects.requireNonNull(sourceId));
         noticeSendDTO.setTargetUsers(Objects.requireNonNull(targetUsers));
         noticeSendDTO.setParams(Objects.requireNonNull(params));
+        noticeSendDTO.setNotifyType(NOTIFY_TYPE);
         return noticeSendDTO;
     }
 }
