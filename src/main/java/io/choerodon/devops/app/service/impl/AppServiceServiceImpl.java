@@ -430,7 +430,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         int nonDeleteInstancesCount = appServiceInstanceMapper.countNonDeletedInstances(appServiceId, projectId);
         AppServiceMsgVO appServiceMsgVO = new AppServiceMsgVO(false, false);
         if (nonDeleteInstancesCount > 0) {
-            throw new CommonException("error.disable.application.service", appServiceId);
+            appServiceMsgVO.setCheckResources(true);
         }
 
         int shareRulesCount = appServiceShareRuleMapper.countShareRulesByAppServiceId(appServiceId);
