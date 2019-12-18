@@ -66,6 +66,7 @@ public class PipelineServiceImpl implements PipelineService {
     private static final String STAGE = "stage";
     private static final String TASK = "task";
     private static final String STAGE_NAME = "stageName";
+    private static final String NONTIFY_TYPE = "devops";
 
     private static final Gson gson = new Gson();
     @Autowired
@@ -827,6 +828,7 @@ public class PipelineServiceImpl implements PipelineService {
         params.put("projectName", projectDTO.getName());
         params.put("organizationId", projectDTO.getOrganizationId().toString());
         notifyVO.setParams(params);
+        notifyVO.setNotifyType(NONTIFY_TYPE);
         notifyClient.sendMessage(notifyVO);
     }
 
