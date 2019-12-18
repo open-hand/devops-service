@@ -20,7 +20,6 @@ import io.choerodon.devops.infra.dto.harbor.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.TriggerObject;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.NotifyTransferDataClient;

@@ -89,6 +89,9 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         if (messageSettingVO.getSmsEnable()) {
             stringBuilder.append(",短消息");
         }
+        if (StringUtils.isBlank(stringBuilder.toString())) {
+            return new ResourceCheckVO();
+        }
         resourceCheckVO.setMethod(stringBuilder.toString());
         resourceCheckVO.setNotificationId(messageSettingVO.getId());
         List<TargetUserDTO> targetUserDTOS = messageSettingVO.getTargetUserDTOS();
@@ -97,7 +100,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         }
         StringBuilder notifyTargetUser = new StringBuilder();
         targetUserDTOS.stream().forEach(e -> {
-            if (TriggerObject.OWNER.getObject().equals(e.getType())) {
+            if (TriggerObject.PROJECT_OWNER.getObject().equals(e.getType())) {
                 notifyTargetUser.append("项目所有者");
             }
             if (TriggerObject.HANDLER.getObject().equals(e.getType())) {
@@ -197,13 +200,13 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 user.setId(GitUserNameUtil.getUserId().longValue());
                 users.add(user);
             }
-            if (TriggerObject.OWNER.getObject().equals(e.getType())) {
+            if (TriggerObject.PROJECT_OWNER.getObject().equals(e.getType())) {
                 Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
                 PageInfo<IamUserDTO> allOwnerUsersPage = baseServiceClientOperator
                         .pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), new RoleAssignmentSearchVO(),
                                 ownerId, devopsEnvironmentDTO.getProjectId(), false);
                 if (!allOwnerUsersPage.getList().isEmpty()) {
-                    allOwnerUsersPage.getList().stream().forEach(v->{
+                    allOwnerUsersPage.getList().stream().forEach(v -> {
                         NoticeSendDTO.User user = new NoticeSendDTO.User();
                         user.setEmail(v.getEmail());
                         user.setId(v.getId());
@@ -215,7 +218,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             if (TriggerObject.SPECIFIER.getObject().equals(e.getType())) {
                 List<Long> userIds = new ArrayList<>();
                 userIds.add(e.getUserId());
-                baseServiceClientOperator.listUsersByIds(userIds).stream().forEach(k->{
+                baseServiceClientOperator.listUsersByIds(userIds).stream().forEach(k -> {
                     NoticeSendDTO.User user = new NoticeSendDTO.User();
                     user.setEmail(k.getEmail());
                     user.setId(k.getId());
@@ -224,7 +227,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 });
             }
         });
-        params.put(MOBILE,StringUtils.join(phones, ","));
+        params.put(MOBILE, StringUtils.join(phones, ","));
         notifyVO.setTargetUsers(users);
         notifyVO.setParams(params);
         try {
@@ -249,6 +252,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         }
         redisTemplate.delete(resendKey);
     }
+
     @Override
     public List<DevopsNotificationTransferDataVO> transferDate() {
         return devopsNotificationMapper.transferData();
