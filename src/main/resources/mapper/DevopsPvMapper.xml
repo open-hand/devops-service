@@ -4,18 +4,18 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsPvMapper">
     <select id="listPvByOptions" resultType="io.choerodon.devops.infra.dto.DevopsPvDTO">
         SELECT dpv.id id,
-               dpv.pvc_name pvc_name,
-               dpv.project_id project_id,
-               dpv.cluster_id cluster_id,
-               dpv.name name,
-               dpv.type type,
-               dpv.description description,
-               dpv.status status,
-               dpv.request_resource request_resource,
-               dpv.access_modes access_modes,
-               dpv.command_id command_id,
-               dc.name cluster_name,
-               dpv.skip_check_project_permission skip_check_project_permission
+        dpv.pvc_name pvc_name,
+        dpv.project_id project_id,
+        dpv.cluster_id cluster_id,
+        dpv.name name,
+        dpv.type type,
+        dpv.description description,
+        dpv.status status,
+        dpv.request_resource request_resource,
+        dpv.access_modes access_modes,
+        dpv.command_id command_id,
+        dc.name cluster_name,
+        dpv.skip_check_project_permission skip_check_project_permission
         FROM devops_pv dpv
         LEFT JOIN devops_cluster dc on dpv.cluster_id = dc.id
         <where>
@@ -26,7 +26,7 @@
             <if test="clusterId!=null">
                 AND dpv.cluster_id=#{clusterId}
             </if>
-        <include refid="sqlparams"/>
+            <include refid="sqlparams"/>
         </where>
         ORDER BY
         <if test="orderBy != null and orderBy != ''">
@@ -108,7 +108,7 @@
         dc.name                 cluster_name
         FROM devops_pv dpv
         JOIN devops_cluster dc on dpv.cluster_id = dc.id
-        WHERE dpv.name=#{name} AND dc.id=#{name}
+        WHERE dpv.name=#{name} AND dc.id=#{clusterId}
     </select>
 
     <select id="queryByEnvIdAndName" resultType="io.choerodon.devops.infra.dto.DevopsPvDTO">
