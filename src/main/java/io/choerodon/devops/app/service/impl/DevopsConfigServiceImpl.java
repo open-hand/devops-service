@@ -255,23 +255,23 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     if (result.raw().code() != 200) {
                         throw new CommonException(result.errorBody().toString());
                     }
-                    Response<SystemInfo> systemInfoResponse = harborClient.getSystemInfo().execute();
-                    if (systemInfoResponse.raw().code() != 200) {
-                        throw new CommonException(systemInfoResponse.errorBody().string());
-                    }
-                    if (systemInfoResponse.body().getHarborVersion().equals("v1.4.0")) {
-                        Response<List<User>> users = harborClient.listUser(String.format(USER_PREFIX, organizationDTO.getId(), projectId)).execute();
-                        if (users.raw().code() != 200) {
-                            throw new CommonException(users.errorBody().string());
-                        }
-                        harborClient.deleteLowVersionMember(projects.body().get(0).getProjectId(), users.body().get(0).getUserId().intValue()).execute();
-                    } else {
-                        Response<List<ProjectMember>> projectMembers = harborClient.getProjectMembers(projects.body().get(0).getProjectId(), String.format(USER_PREFIX, organizationDTO.getId(), projectId)).execute();
-                        if (projectMembers.raw().code() != 200) {
-                            throw new CommonException(projectMembers.errorBody().string());
-                        }
-                        harborClient.deleteMember(projects.body().get(0).getProjectId(), projectMembers.body().get(0).getId()).execute();
-                    }
+//                    Response<SystemInfo> systemInfoResponse = harborClient.getSystemInfo().execute();
+//                    if (systemInfoResponse.raw().code() != 200) {
+//                        throw new CommonException(systemInfoResponse.errorBody().string());
+//                    }
+//                    if (systemInfoResponse.body().getHarborVersion().equals("v1.4.0")) {
+//                        Response<List<User>> users = harborClient.listUser(String.format(USER_PREFIX, organizationDTO.getId(), projectId)).execute();
+//                        if (users.raw().code() != 200) {
+//                            throw new CommonException(users.errorBody().string());
+//                        }
+//                        harborClient.deleteLowVersionMember(projects.body().get(0).getProjectId(), users.body().get(0).getUserId().intValue()).execute();
+//                    } else {
+//                        Response<List<ProjectMember>> projectMembers = harborClient.getProjectMembers(projects.body().get(0).getProjectId(), String.format(USER_PREFIX, organizationDTO.getId(), projectId)).execute();
+//                        if (projectMembers.raw().code() != 200) {
+//                            throw new CommonException(projectMembers.errorBody().string());
+//                        }
+//                        harborClient.deleteMember(projects.body().get(0).getProjectId(), projectMembers.body().get(0).getId()).execute();
+//                    }
 
                     DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
                     devopsProjectDTO.setHarborProjectIsPrivate(false);
