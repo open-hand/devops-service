@@ -33,10 +33,10 @@ public class DevopsPvcController {
     /**
      * 分页查询
      *
-     * @param projectId   项目id
-     * @param envId       环境ID
-     * @param pageable 分页参数
-     * @param params      查询参数
+     * @param projectId 项目id
+     * @param envId     环境ID
+     * @param pageable  分页参数
+     * @param params    查询参数
      * @return CertificationDTO page
      */
     @Permission(type = ResourceType.PROJECT,
@@ -52,7 +52,7 @@ public class DevopsPvcController {
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "分页参数")
             @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsPvcService.pageByOptions(projectId, envId, pageable, params))
