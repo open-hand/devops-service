@@ -205,8 +205,8 @@ export default observer((props) => {
     });
     try {
       const res = await contentStore.checkUninstallCert(projectId, clusterId);
-      if (handlePromptError(res)) {
-        if (res) {
+      if (handlePromptError(res, false)) {
+        if (!res) {
           deleteModal.update({
             children: formatMessage({ id: `${intlPrefix}.cert.uninstall.des` }),
             okText: formatMessage({ id: 'uninstall' }),

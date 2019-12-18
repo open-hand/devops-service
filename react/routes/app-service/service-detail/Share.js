@@ -173,7 +173,7 @@ const Share = () => {
       </HeaderButtons>
       <Breadcrumb title={getTitle()} />
       <Content className={`${prefixCls}-detail-content`}>
-        <Table dataSet={shareDs} filter={handleTableFilter}>
+        <Table dataSet={shareDs} filter={handleTableFilter} pristine>
           <Column name="id" renderer={renderNumber} align="left" sortable />
           <Column renderer={renderAction} width="0.7rem" />
           <Column name="versionType" />

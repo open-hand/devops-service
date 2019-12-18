@@ -34,12 +34,8 @@ const EnvModals = observer(() => {
 
   const [showModal, setShowModal] = useState(false);
 
-  const createDisabled = useMemo(() => {
-    async function checkCertManager() {
-      const res = await certStore.checkCertManager(projectId, parentId);
-      return !res;
-    }
-    return checkCertManager();
+  useEffect(() => {
+    certStore.checkCertManager(projectId, parentId);
   }, [projectId, parentId]);
 
   function refresh() {
@@ -59,7 +55,7 @@ const EnvModals = observer(() => {
   function getButtons() {
     const envRecord = treeDs.find((record) => record.get('key') === parentId);
     const connect = envRecord.get('connect');
-    const disabled = !connect || createDisabled;
+    const disabled = !connect || !certStore.getHasCertManager;
 
     return ([{
       name: formatMessage({ id: `${intlPrefix}.create.certificate` }),
