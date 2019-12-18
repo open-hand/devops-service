@@ -48,7 +48,7 @@ public interface DevopsClusterResourceService {
      * @param clusterId
      * @return
      */
-    CertManagerMsgVO checkCertManager(Long clusterId);
+    Boolean checkCertManager(Long clusterId);
 
     Boolean createPrometheus(Long projectId, Long clusterId, DevopsPrometheusVO prometheusVo);
 

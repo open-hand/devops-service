@@ -133,7 +133,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     public Boolean deleteCertManager(Long clusterId) {
-        if (checkCertManager(clusterId).getCheckCert()) {
+        if (checkCertManager(clusterId)) {
             return false;
         }
 
@@ -148,12 +148,10 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
-    public CertManagerMsgVO checkCertManager(Long clusterId) {
-        CertManagerMsgVO certManagerMsgVO = new CertManagerMsgVO(true);
+    public Boolean checkCertManager(Long clusterId) {
         List<CertificationDTO> certificationDTOS = devopsCertificationMapper.listClusterCertification(clusterId);
         if (CollectionUtils.isEmpty(certificationDTOS)) {
-            certManagerMsgVO.setCheckCert(false);
-            return certManagerMsgVO;
+            return false;
         }
         Set<Long> ids = new HashSet<>();
         for (CertificationDTO dto : certificationDTOS) {
@@ -172,10 +170,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 }
             }
         }
-        if (CollectionUtils.isEmpty(ids)) {
-            certManagerMsgVO.setCheckCert(false);
-        }
-        return certManagerMsgVO;
+        return CollectionUtils.isEmpty(ids) ? false : true;
     }
 
 

@@ -72,7 +72,7 @@ public class DevopsClusterResourceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验集群下的环境中是否存在使用CertManager申请或上传的证书")
     @GetMapping("/cert_manager/check")
-    public ResponseEntity<CertManagerMsgVO> checkCertManager(
+    public ResponseEntity<Boolean> checkCertManager(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
