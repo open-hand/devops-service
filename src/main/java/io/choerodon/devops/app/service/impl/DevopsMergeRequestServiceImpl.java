@@ -69,11 +69,12 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
 
     @Override
     public void create(DevopsMergeRequestVO devopsMergeRequestVO) {
-        baseCreate(voToDto(devopsMergeRequestVO));
+        baseCreate(devopsMergeRequestVO);
     }
 
     @Override
-    public void baseCreate(DevopsMergeRequestDTO devopsMergeRequestDTO) {
+    public void baseCreate(DevopsMergeRequestVO devopsMergeRequestVO) {
+        DevopsMergeRequestDTO devopsMergeRequestDTO = voToDto(devopsMergeRequestVO);
         Long gitlabProjectId = devopsMergeRequestDTO.getGitlabProjectId();
         Long gitlabMergeRequestId = devopsMergeRequestDTO.getGitlabMergeRequestId();
         DevopsMergeRequestDTO mergeRequestETemp = baseQueryByAppIdAndMergeRequestId(gitlabProjectId, gitlabMergeRequestId);
@@ -93,13 +94,14 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
         }
 
         // 发送关于Merge Request的相关通知
+        String operatorUserId = devopsMergeRequestVO.getUser() == null ? null : devopsMergeRequestVO.getUser().getUsername();
         Integer gitProjectId = TypeUtil.objToInteger(gitlabProjectId);
         if (MergeRequestState.OPENED.getValue().equals(devopsMergeRequestDTO.getState())) {
             sendNotificationService.sendWhenMergeRequestAuditEvent(gitProjectId, devopsMergeRequestDTO.getGitlabMergeRequestId());
         } else if (MergeRequestState.CLOSED.getValue().equals(devopsMergeRequestDTO.getState())) {
-            sendNotificationService.sendWhenMergeRequestClosed(gitProjectId, devopsMergeRequestDTO.getGitlabMergeRequestId());
+            sendNotificationService.sendWhenMergeRequestClosed(gitProjectId, devopsMergeRequestDTO.getGitlabMergeRequestId(), operatorUserId);
         } else if (MergeRequestState.MERGED.getValue().equals(devopsMergeRequestDTO.getState())) {
-            sendNotificationService.sendWhenMergeRequestPassed(gitProjectId, devopsMergeRequestDTO.getGitlabMergeRequestId());
+            sendNotificationService.sendWhenMergeRequestPassed(gitProjectId, devopsMergeRequestDTO.getGitlabMergeRequestId(), operatorUserId);
         }
     }
 
