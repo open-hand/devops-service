@@ -402,9 +402,11 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         // 如果不相等，且将停用应用服务，检查该应用服务是否可以被停用
         if (!toUpdateValue) {
-            checkCanDisable(appServiceId, projectId);
-            // 如果能停用，删除其和他所属项目下的环境之间的关联关系
-            devopsEnvAppServiceMapper.deleteRelevanceInProject(appServiceId, projectId);
+            AppServiceMsgVO appServiceMsgVO = checkCanDisable(appServiceId, projectId);
+            if (!appServiceMsgVO.getCheckResources() && !appServiceMsgVO.getCheckRule()) {
+                // 如果能停用，删除其和他所属项目下的环境之间的关联关系
+                devopsEnvAppServiceMapper.deleteRelevanceInProject(appServiceId, projectId);
+            }
         }
 
         appServiceDTO.setActive(toUpdateValue);
