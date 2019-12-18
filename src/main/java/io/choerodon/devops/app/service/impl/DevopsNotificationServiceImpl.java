@@ -84,10 +84,18 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             stringBuilder.append("站内信");
         }
         if (messageSettingVO.getEmailEnable()) {
-            stringBuilder.append(",邮件");
+            if (!StringUtils.isBlank(stringBuilder.toString())) {
+                stringBuilder.append(",");
+            } else {
+                stringBuilder.append("邮件");
+            }
         }
         if (messageSettingVO.getSmsEnable()) {
-            stringBuilder.append(",短消息");
+            if (!StringUtils.isBlank(stringBuilder.toString())) {
+                stringBuilder.append(",");
+            } else {
+                stringBuilder.append("短消息");
+            }
         }
         if (StringUtils.isBlank(stringBuilder.toString())) {
             return new ResourceCheckVO();
