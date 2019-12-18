@@ -46,14 +46,11 @@ public class DevopsPvController {
     public ResponseEntity<PageInfo<DevopsPvVO>> queryAll(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "是否需要分页")
-            @RequestParam(value = "doPage", required = false)
-                    Boolean doPage,
             @ApiParam(value = "分页参数")
             @ApiIgnore Pageable pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvService.pageByOptions(projectId, doPage, pageable, params))
+        return Optional.ofNullable(devopsPvService.pageByOptions(projectId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
     }

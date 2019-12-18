@@ -86,7 +86,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     private Gson gson = new Gson();
 
     @Override
-    public PageInfo<DevopsPvDTO> basePagePvByOptions(Long projectId, Boolean doPage, Pageable pageable, String params) {
+    public PageInfo<DevopsPvDTO> basePagePvByOptions(Long projectId, Pageable pageable, String params) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         // search_param 根据确定的键值对查询
         // params 是遍历字段模糊查询
@@ -104,8 +104,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     }
 
     @Override
-    public PageInfo<DevopsPvVO> pageByOptions(Long projectId, Boolean doPage, Pageable pageable, String params) {
-        return ConvertUtils.convertPage(basePagePvByOptions(projectId, doPage, pageable, params), DevopsPvVO.class);
+    public PageInfo<DevopsPvVO> pageByOptions(Long projectId, Pageable pageable, String params) {
+        return ConvertUtils.convertPage(basePagePvByOptions(projectId, pageable, params), DevopsPvVO.class);
     }
 
     @Override

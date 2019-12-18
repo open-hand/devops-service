@@ -28,17 +28,16 @@ public interface DevopsPvService {
     /**
      * 根据条件分页查询PV
      */
-    PageInfo<DevopsPvDTO> basePagePvByOptions(Long projectId, Boolean doPage, Pageable pageable, String params);
+    PageInfo<DevopsPvDTO> basePagePvByOptions(Long projectId, Pageable pageable, String params);
 
     /**
      * 分页查询pv以及关联的集群和PVC
      *
-     * @param doPage
      * @param pageable
      * @param params
      * @return
      */
-    PageInfo<DevopsPvVO> pageByOptions(Long projectId, Boolean doPage, Pageable pageable, String params);
+    PageInfo<DevopsPvVO> pageByOptions(Long projectId, Pageable pageable, String params);
 
     /**
      * 创建PV
@@ -155,6 +154,7 @@ public interface DevopsPvService {
 
     /**
      * 供创建pvc时查询可用pv时用
+     *
      * @param projectId
      * @param envId
      * @param clusterId

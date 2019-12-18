@@ -33,10 +33,10 @@ public class DevopsPvcController {
     /**
      * 分页查询
      *
-     * @param projectId   项目id
-     * @param envId       环境ID
-     * @param pageable 分页参数
-     * @param params      查询参数
+     * @param projectId 项目id
+     * @param envId     环境ID
+     * @param pageable  分页参数
+     * @param params    查询参数
      * @return CertificationDTO page
      */
     @Permission(type = ResourceType.PROJECT,
