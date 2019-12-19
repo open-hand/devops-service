@@ -53,6 +53,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -310,9 +311,12 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public void deleteAppServiceSage(Long projectId, Long appServiceId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        if (appServiceDTO == null) {
+            LogUtil.loggerWarnObjectNullWithId("AppService", appServiceId, LOGGER);
+        }
         // 删除应用服务的分支,合并请求，pipeline,commit
         devopsBranchService.deleteAllBaranch(appServiceId);
         gitlabCommitMapper.deleteByAppServiceId(appServiceId);
