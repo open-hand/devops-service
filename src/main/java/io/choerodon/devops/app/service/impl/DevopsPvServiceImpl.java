@@ -685,7 +685,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
         Map<String, String> map = (Map) searchParamMap.get(TypeUtil.SEARCH_PARAM);
-        LOGGER.info("{}", searchParamMap);
+
         List<DevopsPvVO> devopsPvVOList = ConvertUtils.convertList(devopsPvMapper.listPvByOptions(
                 projectDTO.getOrganizationId(),
                 null,
@@ -693,15 +693,19 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 null,
                 TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))), DevopsPvVO.class);
+        List<Long> devopsPvVOIdList = devopsPvVOList.stream().map(DevopsPvVO::getId).collect(Collectors.toList());
 
         if (devopsPvVOList == null) {
             throw new CommonException("error.pv.query");
         }
 
-        List<Long> projectRelatedPvIdsList = new ArrayList<>();
+        List<Long> projectRelatedPvIdsList;
 
-        //获得不跳过权限的与本项目有关联的pv
-        projectRelatedPvIdsList.addAll(devopsPvProPermissionService.baseListPvIdsByProjectId(projectId));
+        // 获得不跳过权限的与本项目有关联的pv并过滤掉不符合条件的pv
+        projectRelatedPvIdsList = devopsPvProPermissionService.baseListPvIdsByProjectId(projectId)
+                .stream()
+                .filter(devopsPvVOIdList::contains)
+                .collect(Collectors.toList());
 
         devopsPvVOList.forEach(pv -> {
             CustomPageRequest customPageRequest = CustomPageRequest.of(1, 0);
