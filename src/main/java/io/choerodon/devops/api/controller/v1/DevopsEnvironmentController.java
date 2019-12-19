@@ -293,7 +293,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvironmentService.queryEnvSyncStatus(projectId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.sync.get"));
+                .orElse(new ResponseEntity<>(new EnvSyncStatusVO(), HttpStatus.OK));
     }
 
 
