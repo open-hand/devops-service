@@ -201,6 +201,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             if (queryHarborUser == null) {
                 createHarborUser(harborClient, user, Arrays.asList(1), organizationDTO, projectDTO);
                 updateHarborProjectAndProjectMember(harborClient, user, Arrays.asList(1), organizationDTO, projectDTO);
+                harborUser.setHarborProjectUserPassword(user.getPassword());
                 devopsHarborUserService.baseCreate(harborUser);
                 devopsProjectDTO.setHarborUserId(harborUser.getId());
             } else {
