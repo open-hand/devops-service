@@ -3,8 +3,8 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-
 import org.springframework.data.domain.Pageable;
+
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.api.vo.DevopsServiceVO;
 import io.choerodon.devops.app.eventhandler.payload.ServiceSagaPayLoad;
@@ -84,11 +84,11 @@ public interface DevopsServiceService {
     /**
      * 分页查询网络列表
      *
-     * @param envId 参数
+     * @param envId        参数
      * @param appServiceId app应用id
      * @return List of DevopsServiceVO
      */
-    List<DevopsServiceVO> listByEnvIdAndAppServiceId(Long envId,Long appServiceId);
+    List<DevopsServiceVO> listByEnvIdAndAppServiceId(Long envId, Long appServiceId);
 
     /**
      * 查询单个网络
@@ -103,7 +103,7 @@ public interface DevopsServiceService {
      *
      * @param projectId    项目id
      * @param envId        环境id
-     * @param pageable  分页参数
+     * @param pageable     分页参数
      * @param searchParam  查询参数
      * @param appServiceId 应用服务id（如果有就是查询应用下的网络域名）
      * @return Page of DevopsServiceVO
@@ -126,7 +126,7 @@ public interface DevopsServiceService {
      * @param projectId    项目id
      * @param envId        环境id
      * @param instanceId   实例Id
-     * @param pageable  分页参数
+     * @param pageable     分页参数
      * @param appServiceId 应用id
      * @param searchParam  查询参数
      * @return Page of DevopsServiceVO
