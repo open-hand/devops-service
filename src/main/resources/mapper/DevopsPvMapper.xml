@@ -51,7 +51,7 @@
             </if>
             <if test='searchParam.accessmodes != null and searchParam.accessmodes.length > 0'>
                 AND
-                dpv.access_modes LIKE CONCAT(CONCAT('%', #{searchParam.accessmodes, jdbcType=VARCHAR}),'%')
+                dpv.access_modes = #{searchParam.accessmodes, jdbcType=VARCHAR}
             </if>
             <if test='searchParam.status != null and searchParam.status.length > 0'>
                 AND
@@ -65,10 +65,12 @@
         <if test='params != null and params.size > 0'>
             AND
             <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                (
                 dpv.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 OR dpv.type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                OR dpv.access_modes LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dpv.access_modes = #{param, jdbcType=VARCHAR}
                 OR dpv.status LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                )
             </foreach>
         </if>
     </sql>

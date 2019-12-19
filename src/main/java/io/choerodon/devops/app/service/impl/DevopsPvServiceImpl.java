@@ -685,7 +685,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
         Map<String, String> map = (Map) searchParamMap.get(TypeUtil.SEARCH_PARAM);
-
+        LOGGER.info("{}", searchParamMap);
         List<DevopsPvVO> devopsPvVOList = ConvertUtils.convertList(devopsPvMapper.listPvByOptions(
                 projectDTO.getOrganizationId(),
                 null,
