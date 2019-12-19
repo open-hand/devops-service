@@ -609,15 +609,15 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         HarborUserDTO harborUserDTO = new HarborUserDTO();
         harborUserDTO.setHarborProjectUserName(user.getUsername());
         harborUserDTO.setHarborProjectUserEmail(user.getEmail());
-        harborUserDTO.setHarborProjectUserPassword(user.getPassword());
         harborUserDTO.setPush(false);
-
         HarborUserDTO queryDTO = harborUserMapper.selectOne(harborUserDTO);
         if (queryDTO == null) {
+            harborUserDTO.setHarborProjectUserPassword(user.getPassword());
             devopsHarborUserService.baseCreate(harborUserDTO);
             devopsProjectDTO.setHarborPullUserId(harborUserDTO.getId());
         } else {
             devopsProjectDTO.setHarborPullUserId(queryDTO.getId());
+            user.setPassword(queryDTO.getHarborProjectUserPassword());
         }
 
         HarborPayload harborPayload = new HarborPayload();
