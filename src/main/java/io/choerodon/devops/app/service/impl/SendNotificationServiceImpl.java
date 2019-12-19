@@ -318,7 +318,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     }
 
                     // merge request的操作者
-                    IamUserDTO authorUser = baseServiceClientOperator.queryUserByUserId(TypeUtil.objToLong(userIdFromGitlab));
+                    IamUserDTO authorUser = baseServiceClientOperator.queryUserByLoginName(TypeUtil.objToString(userIdFromGitlab));
                     if (authorUser == null) {
                         LogUtil.loggerInfoObjectNullWithId("IamUser", TypeUtil.objToLong(userIdFromGitlab), LOGGER);
                         return;
@@ -363,14 +363,14 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
     @Override
-    public void sendWhenMergeRequestClosed(Integer gitlabProjectId, Long mergeRequestId, String userIdFromGitlab) {
-        doSendWhenMergeRequestClosedOrMerged(NoticeCodeConstants.MERGE_REQUEST_CLOSED, gitlabProjectId, mergeRequestId, userIdFromGitlab);
+    public void sendWhenMergeRequestClosed(Integer gitlabProjectId, Long mergeRequestId, String userLoginName) {
+        doSendWhenMergeRequestClosedOrMerged(NoticeCodeConstants.MERGE_REQUEST_CLOSED, gitlabProjectId, mergeRequestId, userLoginName);
     }
 
 
     @Override
-    public void sendWhenMergeRequestPassed(Integer gitlabProjectId, Long mergeRequestId, String userIdFromGitlab) {
-        doSendWhenMergeRequestClosedOrMerged(NoticeCodeConstants.MERGE_REQUEST_PASSED, gitlabProjectId, mergeRequestId, userIdFromGitlab);
+    public void sendWhenMergeRequestPassed(Integer gitlabProjectId, Long mergeRequestId, String userLoginName) {
+        doSendWhenMergeRequestClosedOrMerged(NoticeCodeConstants.MERGE_REQUEST_PASSED, gitlabProjectId, mergeRequestId, userLoginName);
     }
 
     /**
