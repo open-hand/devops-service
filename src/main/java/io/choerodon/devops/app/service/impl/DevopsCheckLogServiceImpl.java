@@ -260,7 +260,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             if (devopsProjectDTO != null) {
                                 String username = devopsProjectDTO.getHarborProjectUserName() == null ? String.format("user%s%s", organization.getId(), projectDTO.getId()) : devopsProjectDTO.getHarborProjectUserName();
                                 String email = devopsProjectDTO.getHarborProjectUserEmail() == null ? String.format("%s@harbor.com", username) : devopsProjectDTO.getHarborProjectUserEmail();
-                                String password = devopsProjectDTO.getHarborProjectUserPassword() == null ? String.format("%spassword", username) : devopsProjectDTO.getHarborProjectUserPassword();
+                                String password = devopsProjectDTO.getHarborProjectUserPassword() == null ? String.format("%sAAA", username) : devopsProjectDTO.getHarborProjectUserPassword();
                                 User user = new User(username, email, password, username);
                                 //创建用户
                                 Response<Void> result = null;
