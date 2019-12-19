@@ -965,14 +965,20 @@ public class PipelineServiceImpl implements PipelineService {
     private PipelineStageDTO createOrUpdateStage(PipelineStageVO stageDTO, Long pipelineId, Long projectId) {
         PipelineStageDTO stageE = ConvertUtils.convertObject(stageDTO, PipelineStageDTO.class);
         if (stageE.getId() != null) {
-            pipelineStageService.baseUpdate(stageE);
+            // 先删除在创建，用于曲线解决编辑过后排序异常问题；最好的解决方式，用于添加index字段，进行阶段间排序
+            pipelineStageService.baseDelete(stageE.getId());
+            PipelineUserRelationshipDTO userRelationshipDTO = new PipelineUserRelationshipDTO();
+            userRelationshipDTO.setStageId(stageE.getId());
+            userRelationshipService.baseDelete(userRelationshipDTO);
+
+            stageE.setId(null);
+            stageE=pipelineStageService.baseCreate(stageE);
         } else {
             stageE.setPipelineId(pipelineId);
             stageE.setProjectId(projectId);
             stageE = pipelineStageService.baseCreate(stageE);
-            createUserRel(stageDTO.getStageUserRels(), null, stageE.getId(), null);
         }
-        updateUserRel(stageDTO.getStageUserRels(), null, stageE.getId(), null);
+        createUserRel(stageDTO.getStageUserRels(), null, stageE.getId(), null);
         return stageE;
     }
 
@@ -981,9 +987,16 @@ public class PipelineServiceImpl implements PipelineService {
             if (AUTO.equals(taskDTO.getType())) {
                 taskDTO.setAppServiceDeployId(pipelineAppDeployService.baseUpdate(ConvertUtils.convertObject(taskDTO.getPipelineAppServiceDeployVO(), PipelineAppServiceDeployDTO.class)).getId());
             }
-            Long taskId = pipelineTaskService.baseUpdateTask(ConvertUtils.convertObject(taskDTO, PipelineTaskDTO.class)).getId();
+            // 先删除在创建，用于曲线解决编辑过后排序异常问题；最好的解决方式，用于添加index字段，进行任务间排序
+            pipelineTaskService.baseDeleteTaskById(taskDTO.getId());
+            taskDTO.setId(null);
+            taskDTO.setStageId(stageId);
+            Long taskId = pipelineTaskService.baseCreateTask(ConvertUtils.convertObject(taskDTO, PipelineTaskDTO.class)).getId();
             if (MANUAL.equals(taskDTO.getType())) {
-                updateUserRel(taskDTO.getTaskUserRels(), null, null, taskId);
+                PipelineUserRelationshipDTO userRelationshipDTO = new PipelineUserRelationshipDTO();
+                userRelationshipDTO.setTaskId(taskId);
+                userRelationshipService.baseDelete(userRelationshipDTO);
+                createUserRel(taskDTO.getTaskUserRels(), null, null, taskId);
             }
         } else {
             createPipelineTask(taskDTO, projectId, stageId);
