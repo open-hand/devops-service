@@ -278,7 +278,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     devopsHarborUserService.baseDelete(devopsProjectDTO.getHarborPullUserId());
                     devopsProjectDTO.setHarborProjectIsPrivate(false);
                     devopsProjectDTO.setHarborPullUserId(null);
-                    devopsProjectService.baseUpdate(devopsProjectDTO);
+                    devopsProjectService.baseUpdateByPrimaryKey(devopsProjectDTO);
                 } else {
                     throw new CommonException("error.harbor.get.project");
                 }

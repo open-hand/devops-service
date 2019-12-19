@@ -26,14 +26,17 @@ public interface DevopsProjectService {
 
     void baseUpdate(DevopsProjectDTO devopsProjectDTO);
 
-    /**
-     * 分页查询与该项目在同一组织的项目列表（包含自身）
-     *
-     * @param projectId    项目id
-     * @param pageable     分页参数
-     * @param searchParams 查询参数
-     * @return 项目信息
-     */
+    void baseUpdateByPrimaryKey(DevopsProjectDTO devopsProjectDTO);
+
+
+        /**
+         * 分页查询与该项目在同一组织的项目列表（包含自身）
+         *
+         * @param projectId    项目id
+         * @param pageable     分页参数
+         * @param searchParams 查询参数
+         * @return 项目信息
+         */
     PageInfo<ProjectReqVO> pageProjects(Long projectId, Pageable pageable, String searchParams);
 
     /**
