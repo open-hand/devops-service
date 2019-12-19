@@ -113,8 +113,8 @@ export default class TaskCreate extends Component {
       intl: { formatMessage },
       form: { setFields },
     } = this.props;
-    const { getTaskList, getStageList } = PipelineCreateStore;
-    const { pipelineAppServiceDeployVO, type } = _.find(getTaskList[stageId], ['index', taskId]) || {};
+    const { getTaskList, getStageList, getUser } = PipelineCreateStore;
+    const { pipelineAppServiceDeployVO, type, taskUserRels } = _.find(getTaskList[stageId], ['index', taskId]) || {};
     const { appServiceId, envId, instanceId, valueId, instanceName } = pipelineAppServiceDeployVO || {};
     this.setState({
       initIstName: instanceName,
@@ -488,17 +488,17 @@ export default class TaskCreate extends Component {
 
   loadMoreWrap = (e) => {
     e.stopPropagation();
-    const { page } = this.state;
-    const { 
+    const {
       AppState: {
         currentMenuType: { id: projectId },
       },
     } = this.props;
-    this.setState({ 
-      page: page + 1,
-    });
-    PipelineCreateStore.loadUser(projectId, page + 1);
-  }
+    const {
+      getPageInfo,
+    } = PipelineCreateStore;
+    const { pageNum } = getPageInfo || {};
+    PipelineCreateStore.loadUser(projectId, pageNum + 1);
+  };
 
   handleSearch = _.debounce((value) => {
     const { 
@@ -507,7 +507,17 @@ export default class TaskCreate extends Component {
       },
     } = this.props;
     PipelineCreateStore.loadUser(projectId, 1, value);
-  }, 700)
+  }, 700);
+
+  handleUserChange = (value) => {
+    const {
+      form: { setFieldsValue },
+    } = this.props;
+    if (_.includes(value, 'pipeline-create-user-select-more-key')) {
+      const realValue = _.remove(value, (item) => item === 'pipeline-create-user-select-more-key');
+      setFieldsValue({ users: realValue });
+    }
+  };
 
   render() {
     const {
@@ -835,6 +845,7 @@ export default class TaskCreate extends Component {
               className="c7n-select_512"
               label={<FormattedMessage id="pipeline.task.auditor" />}
               onSearch={this.handleSearch}
+              onChange={this.handleUserChange}
             >
               {userOptions}
             </Select>,
