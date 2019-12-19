@@ -20,7 +20,7 @@ databaseChangeLog(logicalFilePath: 'devops_harbor_user.groovy') {
     }
         changeSet(id: '2019-10-25-add-table-devops_harbor_user', author: 'scp') {
             addUniqueConstraint(tableName: 'devops_harbor_user',
-                    constraintName: 'uk_USERNAME', columnNames: 'harbor_project_user_name')
+                    constraintName: 'uk_user_name', columnNames: 'harbor_project_user_name')
     }
 
 }
