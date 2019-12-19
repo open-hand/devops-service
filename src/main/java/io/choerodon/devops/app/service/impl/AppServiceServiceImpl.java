@@ -2373,9 +2373,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         String type = null;
         if (appServiceDTO.getProjectId() == null && appServiceDTO.getMktAppId() != null) {
             type = AppServiceType.MARKET_SERVICE.getType();
-        } else if (appServiceDTO.getProjectId() != projectId) {
+        } else if (!appServiceDTO.getProjectId().equals(projectId)) {
             type = AppServiceType.SHARE_SERVICE.getType();
-        } else if (appServiceDTO.getProjectId() == projectId) {
+        } else if (appServiceDTO.getProjectId().equals(projectId)) {
             type = AppServiceType.NORMAL_SERVICE.getType();
         }
         return type;
