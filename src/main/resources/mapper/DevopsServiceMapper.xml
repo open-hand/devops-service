@@ -32,6 +32,7 @@
         INNER JOIN devops_env denv ON ds.env_id = denv.id
         WHERE
         denv.project_id = #{projectId}
+        AND denv.type = 'user'
         AND ds.`status` != 'deleted'
         <if test="envId != null">
             AND ds.env_id = #{envId}
@@ -40,7 +41,12 @@
         JOIN devops_env de ON ds.env_id = de.id
         LEFT JOIN devops_app_service da ON da.id = ds.app_service_id
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
-        LEFT JOIN devops_app_service_instance dai ON dai.id = dsai.instance_id
+        LEFT JOIN devops_app_service_instance dai
+        ON (
+        dai.id = dsai.instance_id
+        or (dai.code = ds.target_instance_code and dai.env_id = ds.env_id)
+        or (dai.app_service_id = ds.target_app_service_id and dai.env_id = ds.env_id)
+        )
         WHERE
         1=1
         <if test="instanceId != null">
@@ -73,11 +79,12 @@
         ds.id,
         ds.`name`,
         ds.external_ip,
+        ds.target_app_service_id,
         ds.load_balance_ip,
         ds.ports,
         ds.`status`,
         ds.`type`,
-        ds.labels,
+        ds.selectors,
         ds.end_points,
         da.id AS app_service_id,
         da.`name` AS app_service_name,
@@ -88,9 +95,18 @@
         cmd.command_type commandType,
         cmd.error error,
         da.project_id AS app_service_project_id,
-        dsai.instance_id AS instance_id,
-        dsai.code AS ins_code,
-        dai.`status` AS ins_status
+        CASE
+          WHEN ds.target_instance_code IS NULL THEN dsai.id
+          ELSE dai.id
+        END instance_id,
+        CASE
+          WHEN ds.target_instance_code IS NULL THEN dsai.code
+          ELSE ds.target_instance_code
+        END ins_code,
+        CASE
+          WHEN dai.status IS NULL THEN 'deleted'
+          ELSE dai.status
+        END ins_status
         FROM
         (
         SELECT
@@ -100,19 +116,22 @@
         INNER JOIN devops_env denv ON devs.env_id = denv.id
         WHERE
         denv.project_id = #{projectId}
+        AND denv.type = 'user'
         AND devs.`status` != 'deleted'
         <if test="envId != null">
             AND devs.env_id = #{envId}
         </if>
-        <if test="sort != null and !sort.isEmpty()">
-            ORDER BY #{sort}
-        </if>
         ) ds
         JOIN devops_env de ON ds.env_id = de.id
         LEFT JOIN devops_env_command cmd ON ds.command_id = cmd.id
-        LEFT JOIN devops_app_service da ON da.id = ds.app_service_id
+        LEFT JOIN devops_app_service da ON (da.id = ds.app_service_id or da.id=ds.app_service_id)
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
-        LEFT JOIN devops_app_service_instance dai ON dai.id = dsai.instance_id
+        LEFT JOIN devops_app_service_instance dai
+        ON (
+        dai.id = dsai.instance_id
+        or (dai.code = ds.target_instance_code and dai.env_id = ds.env_id)
+        or dai.app_service_id = ds.target_app_service_id
+        )
         WHERE 1
         <if test="instanceId != null">
             AND dai.id = #{instanceId}
@@ -121,6 +140,9 @@
             AND ds.app_service_id = #{appServiceId}
         </if>
         <include refid="sqlparam"/>
+        <if test="sort != null and !sort.isEmpty()">
+            ORDER BY ${sort}
+        </if>
     </select>
 
     <select id="queryById" resultMap="devopsServiceResult">
@@ -128,7 +150,8 @@
         ds.id,
         ds.`name`,
         ds.external_ip,
-        ds.labels,
+        ds.selectors,
+        ds.target_app_service_id,
         da.project_id app_service_project_id,
         ds. ports,
         ds.end_points,
@@ -138,7 +161,10 @@
         da.`name` AS app_service_name,
         de.id AS env_id,
         de.`name` AS env_name,
-        dsai.instance_id AS instance_id,
+        CASE
+          WHEN ds.target_instance_code IS NULL THEN dsai.id
+          ELSE dai.id
+        END instance_id,
         ds.last_update_date,
         ds.creation_date,
         ds.created_by,
@@ -153,7 +179,10 @@
          LIMIT 1
         # 使用LIMIT 1是因为表设计原因，根据多个实例创建的网络会有多条记录，但是message是一样的
         ) AS message,
-        dsai.code AS ins_code,
+        CASE
+          WHEN ds.target_instance_code IS NULL THEN dsai.code
+          ELSE ds.target_instance_code
+        END ins_code,
         (SELECT count(1)
          FROM devops_env_pod dp
          WHERE dp.instance_id = dai.id) pod_count,
@@ -164,7 +193,10 @@
            AND dp.is_ready = TRUE) pod_running_count,
         dai.last_update_date AS ins_last_update_date,
         dai.object_version_number AS ins_object_version_number,
-        dai.status AS ins_status,
+        CASE
+          WHEN dai.status IS NULL THEN 'deleted'
+          ELSE dai.status
+        END ins_status,
         command.status AS commandStatus,
         command.command_type AS commandType,
         command.error
@@ -172,8 +204,13 @@
         devops_service ds
         INNER JOIN devops_env de ON ds.env_id = de.id
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
-        LEFT JOIN devops_app_service_instance dai ON dai.id = dsai.instance_id
-        LEFT JOIN devops_app_service da ON da.id = dai.app_service_id
+        LEFT JOIN devops_app_service_instance dai
+                ON (
+                dai.id = dsai.instance_id
+                or (dai.code = ds.target_instance_code and dai.env_id = ds.env_id)
+                or (dai.app_service_id = ds.target_app_service_id and dai.env_id = ds.env_id)
+                )
+        LEFT JOIN devops_app_service da ON (da.id = dai.app_service_id or da.id=ds.app_service_id)
         LEFT JOIN devops_env_command command ON ds.command_id = command.id
         WHERE
         ds.id = #{id}
@@ -197,6 +234,7 @@
         <result property="status" column="status"/>
         <result property="appServiceId" column="app_service_id"/>
         <result property="appServiceName" column="app_service_name"/>
+        <result property="targetAppServiceId" column="target_app_service_id"/>
         <result property="appServiceProjectId" column="app_service_project_id"/>
         <result property="loadBalanceIp" column="load_balance_ip"/>
         <result property="type" column="type"/>
@@ -206,7 +244,7 @@
         <result property="error" column="error"/>
         <result property="envName" column="env_name"/>
         <result property="envCode" column="env_code"/>
-        <result property="labels" column="labels"/>
+        <result property="selectors" column="selectors"/>
         <result property="endPoints" column="end_points"/>
         <result property="createdBy" column="created_by"/>
         <result property="creationDate" column="creation_date"/>
@@ -279,15 +317,27 @@
     </select>
 
 
-    <update id="updateLabelsToNull">
+    <update id="updateSelectorsToNull">
         UPDATE devops_service ds
-        SET ds.labels = null
+        SET ds.selectors = null
         WHERE ds.id = #{serviceId}
     </update>
 
     <update id="updateEndPointToNull">
         UPDATE devops_service ds
         SET ds.end_points = null
+        WHERE ds.id = #{serviceId}
+    </update>
+
+    <update id="updateTargetAppServiceIdToNull">
+        UPDATE devops_service ds
+        SET ds.target_app_service_id = null
+        WHERE ds.id = #{serviceId}
+    </update>
+
+    <update id="updateTargetInstanceCodeToNull">
+        UPDATE devops_service ds
+        SET ds.target_instance_code = null
         WHERE ds.id = #{serviceId}
     </update>
 

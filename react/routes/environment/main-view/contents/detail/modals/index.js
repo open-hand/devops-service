@@ -9,14 +9,14 @@ import { useEnvironmentStore } from '../../../../stores';
 import { useMainStore } from '../../../stores';
 import { useDetailStore } from '../stores';
 import useStore from './useStore';
-import ResourceSetting from './resource-setting/notificationsHome';
+import ResourceSecurity from './resource-security';
 import EnvCreateForm from '../../../modals/env-create';
 import GroupForm from '../../../modals/GroupForm';
 import DeployConfigForm from './deploy-config';
 import { isNotRunning } from '../../../../util';
+import Tips from '../../../../../../components/new-tips';
 
 import '../../../../../../components/dynamic-select/style/index.less';
-import Tips from '../../../../../../components/new-tips';
 
 const detailKey = Modal.key();
 const envKey = Modal.key();
@@ -48,7 +48,7 @@ const EnvModals = observer(() => {
   } = useEnvironmentStore();
   const { groupFormDs } = useMainStore();
   const {
-    intl: { formatMessage },
+    formatMessage,
     intlPrefix,
     prefixCls,
     detailStore,
@@ -64,6 +64,7 @@ const EnvModals = observer(() => {
     configFormDs,
     checkEnvExist,
     baseDs,
+    nonePermissionDs,
   } = useDetailStore();
 
   function refresh() {
@@ -135,20 +136,18 @@ const EnvModals = observer(() => {
     });
   }
 
-  async function addUsers(data) {
-    const { id, objectVersionNumber } = getSelectedMenu;
-    const users = {
-      projectId,
-      envId: id,
-      objectVersionNumber,
-      ...data,
-    };
-    return modalStore.addUsers(users);
-  }
-
   function openPermission() {
-    const { id, skipCheckPermission } = getSelectedMenu;
-    modalStore.loadUsers(projectId, id);
+    const modalPorps = {
+      dataSet: permissionsDs,
+      nonePermissionDs,
+      formatMessage,
+      store: modalStore,
+      baseDs,
+      intlPrefix,
+      prefixCls,
+      refresh,
+      projectId,
+    };
     Modal.open({
       key: permissionKey,
       title: <Tips
@@ -159,16 +158,8 @@ const EnvModals = observer(() => {
       className: 'c7ncd-modal-wrapper',
       style: modalStyle,
       children: <Permission
-        store={modalStore}
-        onOk={addUsers}
-        intlPrefix={intlPrefix}
-        prefixCls={prefixCls}
-        skipPermission={skipCheckPermission}
-        refresh={toPermissionTab}
+        {...modalPorps}
       />,
-      afterClose: () => {
-        modalStore.setUsers([]);
-      },
     });
   }
 
@@ -177,7 +168,7 @@ const EnvModals = observer(() => {
     Modal.open({
       key: resourceKey,
       title: formatMessage({ id: `${currentIntlPrefix}.resource.setting` }),
-      children: <ResourceSetting envId={id} />,
+      children: <ResourceSecurity envId={id} />,
       drawer: true,
       style: configModalStyle,
     });
@@ -247,7 +238,6 @@ const EnvModals = observer(() => {
     e.domEvent.stopPropagation();
     const handlerMapping = {
       [ITEM_GROUP]: openGroupModal,
-      [ITEM_SAFETY]: resourceSetting,
     };
 
     const handler = handlerMapping[e.key];
@@ -258,11 +248,6 @@ const EnvModals = observer(() => {
     display: true,
     key: ITEM_GROUP,
     text: formatMessage({ id: `${currentIntlPrefix}.group.create` }),
-  }, {
-    display: true,
-    key: ITEM_SAFETY,
-    text: formatMessage({ id: `${currentIntlPrefix}.resource.setting` }),
-    disabled,
   }]), [disabled]);
 
   return <HeaderButtons items={getButtons()}>

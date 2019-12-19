@@ -96,7 +96,7 @@ export default class Details extends Component {
     let connect;
     const record = baseDs.current;
     if (record) {
-      status = record.get('status');
+      status = record.get('effectCommandStatus');
       connect = record.get('connect');
     }
     const { isDisabled } = this.state;
@@ -199,6 +199,7 @@ export default class Details extends Component {
             </div>
             <Button
               className="c7ncd-detail-btn"
+              type="primary"
               onClick={isDisabled ? null : () => this.handleClick(podType, instanceId, name)}
             >
               <FormattedMessage id="detailMore" />

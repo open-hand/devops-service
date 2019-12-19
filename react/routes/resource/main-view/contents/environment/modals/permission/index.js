@@ -1,107 +1,95 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { injectIntl } from 'react-intl';
-import { Choerodon } from '@choerodon/boot';
-import { Select, Radio, Form, Tooltip } from 'choerodon-ui';
-import omit from 'lodash/omit';
 import map from 'lodash/map';
-import DynamicSelect from '../../../../../../../components/dynamic-select';
+import { SelectBox, Select, Form } from 'choerodon-ui/pro';
 import { handlePromptError } from '../../../../../../../utils';
+import DynamicSelect from '../../../../../../../components/dynamic-select-new';
+import UserInfo from '../../../../../../../components/userInfo';
 
-import './index.less';
 
-const FormItem = Form.Item;
 const { Option } = Select;
-const RadioGroup = Radio.Group;
 
-const Permission = observer(({ modal, form, store, onOk, skipPermission, refresh, intlPrefix, prefixCls, intl: { formatMessage } }) => {
-  const { getFieldDecorator } = form;
-  const { getUsers } = store;
-  const [isSkip, setIsSkip] = useState(skipPermission);
+export default observer((props) => {
+  const { dataSet, nonePermissionDs, refresh, baseDs, store, projectId, formatMessage, prefixCls, intlPrefix, modal } = props;
+  
+
+  const record = useMemo(() => baseDs.current, [baseDs.current]);
 
   modal.handleOk(async () => {
-    let users = null;
-    form.validateFields((err, values) => {
-      if (!err) {
-        const selectedUsers = omit(values, ['keys', 'skipCheckPermission']);
-        const skipCheckPermission = values.skipCheckPermission;
-        const userIds = Object.values(selectedUsers);
-        users = {
-          skipCheckPermission,
-          userIds,
-        };
+    const skipCheckPermission = record.get('skipCheckPermission');
+    const baseData = {
+      envId: record.get('id'),
+      objectVersionNumber: record.get('objectVersionNumber'),
+      skipCheckPermission,
+    };
+    if (skipCheckPermission) { 
+      const res = await store.addUsers({
+        projectId,
+        userIds: [],
+        ...baseData,
+      });
+      if (handlePromptError(res, false)) {
+        refresh();
+        return true;
+      } else {
+        return false;
       }
-    });
-
-    if (!users || !users.userIds) return false;
-
+    }
+    dataSet.transport.create = ({ data }) => {
+      const res = {
+        userIds: map(data, 'iamUserId'),
+        ...baseData,
+      };
+      return {
+        url: `/devops/v1/projects/${projectId}/envs/${record.get('id')}/permission`,
+        method: 'post',
+        data: res,
+      };
+    }; 
     try {
-      const res = await onOk(users);
-      if (!handlePromptError(res, false)) return false;
-      refresh();
+      if (await dataSet.submit() !== false) {
+        refresh();
+      } else {
+        return false;
+      }
     } catch (e) {
-      Choerodon.handleResponseError(e);
       return false;
     }
   });
 
-  function handleChange(e) {
-    setIsSkip(e.target.value);
+  modal.handleCancel(() => {
+    record.reset();
+    dataSet.reset();
+  });
+  
+
+  function renderUserOption({ record: optionRecord }) {
+    return <UserInfo name={optionRecord.get('realName') || ''} id={record.get('loginName')} />;
+  }
+  
+
+  function renderer({ optionRecord }) {
+    return <UserInfo name={optionRecord.get('realName') || ''} id={record.get('loginName')} />;
   }
 
-  function getSelector() {
-    if (isSkip) return null;
-
-    const { getFieldsValue } = form;
-    const data = getFieldsValue();
-
-    const options = map(getUsers, ({ iamUserId, realName, loginName }) => {
-      const selectedValues = Object.values(omit(data, 'keys'));
-      return (
-        <Option
-          disabled={selectedValues.includes(iamUserId)}
-          key={iamUserId}
-          value={iamUserId}
-        >
-          <Tooltip title={loginName}>{realName}</Tooltip>
-        </Option>
-      );
-    });
-
-    return <DynamicSelect
-      options={options}
-      form={form}
-      fieldKeys={data}
-      requireText={formatMessage({ id: `${intlPrefix}.project.member.require` })}
-      notFoundContent={formatMessage({ id: `${intlPrefix}.project.member.empty` })}
-      label={formatMessage({ id: `${intlPrefix}.project.member` })}
-      addText={formatMessage({ id: `${intlPrefix}.add.member` })}
-    />;
-  }
-
-  form.getFieldDecorator('keys', { initialValue: ['key0'] });
   return (
     <Fragment>
-      <div className={`${prefixCls}-modal-head`}>{formatMessage({ id: `${intlPrefix}.set-operator` })}</div>
-      <Form>
-        <div className={`${prefixCls}-modal-selectbox`}>
-          <FormItem>
-            {getFieldDecorator('skipCheckPermission', { initialValue: isSkip })(
-              <RadioGroup onChange={handleChange}>
-                <Radio value>
-                  {formatMessage({ id: `${intlPrefix}.member.all` })}
-                </Radio>
-                <Radio value={false}>
-                  {formatMessage({ id: `${intlPrefix}.member.specific` })}
-                </Radio>
-              </RadioGroup>
-            )}
-          </FormItem>
-        </div>
-        {getSelector()}
+      <Form record={record}>
+        <SelectBox name="skipCheckPermission">
+          <Option value>{formatMessage({ id: `${intlPrefix}.member.all` })}</Option>
+          <Option value={false}>{formatMessage({ id: `${intlPrefix}.member.specific` })}</Option>
+        </SelectBox>
       </Form>
+      {record && !record.get('skipCheckPermission') && (
+        <DynamicSelect
+          selectDataSet={dataSet} 
+          optionsRenderer={renderUserOption}
+          optionsDataSet={nonePermissionDs}
+          renderer={renderer}
+          selectName="iamUserId"
+          addText={formatMessage({ id: `${intlPrefix}.add.member` })}
+        />
+      )}
     </Fragment>
   );
 });
-
-export default Form.create()(injectIntl(Permission));

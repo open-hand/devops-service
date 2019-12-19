@@ -133,6 +133,11 @@ const PodDetail = memo(() => {
         text: intl.formatMessage({ id: `${intlPrefix}.instance.term` }),
         action: () => openShell(),
       },
+      {
+        service: [],
+        text: intl.formatMessage({ id: 'delete' }),
+        action: () => deletePod(),
+      },
     ];
     return <Action data={buttons} />;
   }
@@ -154,6 +159,19 @@ const PodDetail = memo(() => {
   function closeShell() {
     setShellVisible(false);
   }
+  /**
+   * 删除Pod
+   */
+  function deletePod() {
+    const modalProps = {
+      title: intl.formatMessage({ id: `${intlPrefix}.instance.pod.delete.title` }),
+      children: intl.formatMessage({ id: `${intlPrefix}.instance.pod.delete.des` }),
+      okText: intl.formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    podsDs.delete(podsDs.current, modalProps);
+  }
 
   return (
     <Fragment>
@@ -168,7 +186,7 @@ const PodDetail = memo(() => {
           <Column renderer={renderAction} width="0.7rem" />
           <Column name="containers" renderer={renderContainers} />
           <Column name="ip" width="1.2rem" />
-          <Column name="creationDate" renderer={renderDate} width="1rem" />
+          <Column name="creationDate" sortable renderer={renderDate} width="1rem" />
           <Column name="status" renderer={renderStatus} width="1rem" />
         </Table>
       </div>

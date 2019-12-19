@@ -16,12 +16,13 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.Stage;
@@ -32,6 +33,7 @@ import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper;
@@ -64,7 +66,8 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     @Autowired
     private TransactionalProducer transactionalProducer;
     @Autowired
-    private DevopsProjectService devopsProjectService;
+    @Lazy
+    private SendNotificationService sendNotificationService;
 
 
     @Override
@@ -158,6 +161,11 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 devopsGitlabPipelineDTO.setCommitId(devopsGitlabCommitDTO.getId());
             }
             baseUpdate(devopsGitlabPipelineDTO);
+        }
+
+        // 发送流水线失败的通知
+        if (PipelineStatus.FAILED.toValue().equals(pipelineWebHookVO.getObjectAttributes().getStatus())) {
+            sendNotificationService.sendWhenCDFailure(pipelineWebHookVO.getObjectAttributes().getId(), applicationDTO, pipelineWebHookVO.getUser().getUsername());
         }
     }
 
@@ -282,7 +290,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     }
 
     @Override
-    public PageInfo<DevopsGitlabPipelineVO> pageByOptions(Long appServiceId, String branch, PageRequest pageRequest, Date startTime, Date endTime) {
+    public PageInfo<DevopsGitlabPipelineVO> pageByOptions(Long appServiceId, String branch, Pageable pageable, Date startTime, Date endTime) {
         if (appServiceId == null) {
             return new PageInfo<>();
         }
@@ -290,7 +298,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         List<DevopsGitlabPipelineVO> devopsGiltabPipelineDTOS = new ArrayList<>();
         PageInfo<DevopsGitlabPipelineDTO> devopsGitlabPipelineDOS = new PageInfo<>();
         if (branch == null) {
-            devopsGitlabPipelineDOS = basePageByApplicationId(appServiceId, pageRequest, startTime, endTime);
+            devopsGitlabPipelineDOS = basePageByApplicationId(appServiceId, pageable, startTime, endTime);
         } else {
             devopsGitlabPipelineDOS.setList(baseListByAppIdAndBranch(appServiceId, branch));
         }
@@ -410,8 +418,8 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
 
 
     @Override
-    public PageInfo<DevopsGitlabPipelineDTO> basePageByApplicationId(Long appServiceId, PageRequest pageRequest, Date startTime, Date endTime) {
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+    public PageInfo<DevopsGitlabPipelineDTO> basePageByApplicationId(Long appServiceId, Pageable pageable, Date startTime, Date endTime) {
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
                 devopsGitlabPipelineMapper.listDevopsGitlabPipeline(appServiceId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
     }
 

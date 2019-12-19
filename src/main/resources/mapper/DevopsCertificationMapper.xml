@@ -34,6 +34,10 @@
                 AND
                     dc.`name` LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
             </if>
+            <if test='searchParam.certName != null and searchParam.certName.length > 0'>
+                AND
+                dc.`name` LIKE CONCAT(CONCAT('%', #{searchParam.certName, jdbcType=VARCHAR}),'%')
+            </if>
             <if test='searchParam.envName != null and searchParam.envName.length > 0'>
                 AND
                     de.`name` LIKE CONCAT(CONCAT('%', #{searchParam.envName, jdbcType=VARCHAR}),'%')
@@ -115,5 +119,14 @@
         FROM devops_certification dc
         WHERE dc.organization_id IS NOT NULL
         AND dc.project_id IS NULL
+    </select>
+    <select id="listClusterCertification" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
+        SELECT
+            dc.*
+        FROM
+            devops_certification dc
+            LEFT JOIN devops_env env ON env.id = dc.env_id
+        WHERE
+            env.cluster_id = #{clusterId}
     </select>
 </mapper>

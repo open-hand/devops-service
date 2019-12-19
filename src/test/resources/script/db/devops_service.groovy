@@ -100,4 +100,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
     changeSet(author: 'scp', id: '2019-07-29-rename-column') {
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_id', oldColumnName: 'app_id', tableName: 'devops_service')
     }
+
+    changeSet(author: 'zmf', id: '2019-10-15-add-columns') {
+        renameColumn(columnDataType: 'VARCHAR(1000)', newColumnName: 'selectors', oldColumnName: 'labels', tableName: 'devops_service')
+        addColumn(tableName: 'devops_service') {
+            column(name: 'target_instance_code', type: 'VARCHAR(64)', remarks: '目标实例的code', afterColumn: 'name')
+            column(name: 'target_app_service_id', type: 'BIGINT UNSIGNED', remarks: '目标应用服务ID,不为空代表选择此应用服务下所有实例', afterColumn: 'name')
+        }
+    }
 }

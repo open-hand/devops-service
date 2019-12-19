@@ -1,17 +1,36 @@
 package io.choerodon.devops.api.vo.kubernetes;
 
 
-public class ReleasePayloadVO {
+import io.swagger.annotations.ApiModelProperty;
 
+public class ReleasePayloadVO {
+    @ApiModelProperty("helm release的名称")
     private String name;
+
+    @ApiModelProperty("helm release的revision")
     private Long revision;
+
+    @ApiModelProperty("命名空间")
     private String namespace;
+
+    @ApiModelProperty("release的状态")
     private String status;
+
+    @ApiModelProperty("release的chart名称")
     private String chartName;
+
+    @ApiModelProperty("release的chart版本")
     private String chartVersion;
+
     private String config;
+
+    // 这个字段没有在返回的消息中看见
     private String hooks;
+
     private String resources;
+
+    @ApiModelProperty("实例对应的commandId")
+    private Long command;
 
     public String getName() {
         return name;
@@ -83,5 +102,13 @@ public class ReleasePayloadVO {
 
     public void setResources(String resources) {
         this.resources = resources;
+    }
+
+    public Long getCommand() {
+        return command;
+    }
+
+    public void setCommand(Long command) {
+        this.command = command;
     }
 }

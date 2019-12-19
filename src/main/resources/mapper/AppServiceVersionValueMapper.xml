@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.AppServiceVersionValueMapper">
+    <delete id="deleteByIds">
+        DELETE FROM devops_app_service_version_value
+        where id in
+        <foreach collection="valueIds" item="valueId" open="(" separator=" , " close=")">
+            #{valueId}
+        </foreach>
+    </delete>
+</mapper>

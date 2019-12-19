@@ -36,5 +36,11 @@ export default (formatMessage) => ({
       label: formatMessage({ id: 'updateDate' }),
     },
   ],
-  queryFields: [],
+  queryFields: [
+    {
+      name: 'name',
+      type: 'string',
+      label: formatMessage({ id: 'name' }),
+    },
+  ],
 });

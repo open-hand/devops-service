@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.List;
 
 /**
@@ -18,6 +20,15 @@ public class DevopsNotificationVO {
     private List<DevopsNotificationUserRelVO> userRelDTOS;
     private Long objectVersionNumber;
     private List<Long> userRelIds;
+
+    @ApiModelProperty(value = "是否发送邮件")
+    private Boolean sendEmail;
+
+    @ApiModelProperty(value = "是否发送短信")
+    private Boolean sendSms;
+
+    @ApiModelProperty(value = "是否发送站内信")
+    private Boolean sendPm;
 
     public List<Long> getUserRelIds() {
         return userRelIds;
@@ -97,5 +108,29 @@ public class DevopsNotificationVO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public Boolean getSendEmail() {
+        return sendEmail;
+    }
+
+    public void setSendEmail(Boolean sendEmail) {
+        this.sendEmail = sendEmail;
+    }
+
+    public Boolean getSendSms() {
+        return sendSms;
+    }
+
+    public void setSendSms(Boolean sendSms) {
+        this.sendSms = sendSms;
+    }
+
+    public Boolean getSendPm() {
+        return sendPm;
+    }
+
+    public void setSendPm(Boolean sendPm) {
+        this.sendPm = sendPm;
     }
 }

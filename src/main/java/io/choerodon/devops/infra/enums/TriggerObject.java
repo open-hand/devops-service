@@ -6,7 +6,7 @@ package io.choerodon.devops.infra.enums;
 public enum TriggerObject {
 
     HANDLER("handler"),
-    OWNER("owner"),
+    PROJECT_OWNER("projectOwner"),
     SPECIFIER("specifier");
 
     private String object;

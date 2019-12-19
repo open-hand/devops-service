@@ -8,7 +8,6 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -19,7 +18,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.AppInstanceValidator;
@@ -49,7 +49,7 @@ import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
-import io.choerodon.devops.infra.mapper.PipelineAppServiceDeployMapper;
+import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import io.choerodon.devops.infra.util.*;
 
 
@@ -62,6 +62,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private static final String UPDATE = "update";
     private static final String CHOERODON = "choerodon-test";
     private static final String HARBOR = "harbor";
+    private static final String AUTHTYPE = "pull";
     private static final String MANUAL = "manual";
     private static final String APP_SERVICE = "appService";
     private static final String HELM_RELEASE = "C7NHelmRelease";
@@ -92,8 +93,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
-    @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private AppServiceVersionService appServiceVersionService;
@@ -122,21 +121,20 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     private PipelineAppDeployService pipelineAppDeployService;
     @Autowired
-    private AppServiceVersionValueService appServiceVersionValueService;
-    @Autowired
-    private AppServiceVersionReadmeService appServiceVersionReadmeService;
-    @Autowired
     private ResourceFileCheckHandler resourceFileCheckHandler;
     @Autowired
     private DevopsEnvAppServiceMapper devopsEnvAppServiceMapper;
-    @Autowired
-    private DevopsIngressService devopsIngressService;
     @Autowired
     private DevopsServiceService devopsServiceService;
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired
-    private PipelineAppServiceDeployMapper pipelineAppServiceDeployMapper;
+    private DevopsProjectMapper devopsProjectMapper;
+    @Autowired
+    private DevopsHarborUserService devopsHarborUserService;
+    @Autowired
+    @Lazy
+    private SendNotificationService sendNotificationService;
 
     @Override
     public AppServiceInstanceInfoVO queryInfoById(Long instanceId) {
@@ -152,21 +150,24 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public PageInfo<AppServiceInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<AppServiceInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, Pageable pageable, String params) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
-        PageInfo<AppServiceInstanceInfoVO> pageInfo = ConvertUtils.convertPage(PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
+        PageInfo<AppServiceInstanceInfoVO> pageInfo = ConvertUtils.convertPage(PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable))
                         .doSelectPageInfo(() -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(
                                 envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
                 AppServiceInstanceInfoVO.class);
         List<Long> updatedEnv = clusterConnectionHandler.getUpdatedClusterList();
-        pageInfo.getList().forEach(appServiceInstanceInfoVO ->
-                appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoVO.getClusterId()))
+        pageInfo.getList().forEach(appServiceInstanceInfoVO -> {
+                    AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceInstanceInfoVO.getAppServiceId());
+                    appServiceInstanceInfoVO.setAppServiceType(applicationService.checkAppServiceType(projectId, appServiceDTO));
+                    appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoVO.getClusterId()));
+                }
         );
         return pageInfo;
     }
 
     @Override
-    public PageInfo<DevopsEnvPreviewInstanceVO> pageByOptions(Long projectId, PageRequest pageRequest,
+    public PageInfo<DevopsEnvPreviewInstanceVO> pageByOptions(Long projectId, Pageable pageable,
                                                               Long envId, Long appServiceVersionId, Long appServiceId, Long instanceId, String params) {
 
         PageInfo<DevopsEnvPreviewInstanceVO> devopsEnvPreviewInstanceDTOPageInfo = new PageInfo<>();
@@ -174,7 +175,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-        PageInfo<AppServiceInstanceDTO> applicationInstanceDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+        PageInfo<AppServiceInstanceDTO> applicationInstanceDTOPageInfo = PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
                 appServiceInstanceMapper
                         .listApplicationInstance(projectId, envId, appServiceVersionId, appServiceId, instanceId, searchParamMap, paramList));
 
@@ -317,25 +318,25 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public PageInfo<DeployDetailTableVO> pageDeployFrequencyTable(Long projectId, PageRequest pageRequest, Long[] envIds,
+    public PageInfo<DeployDetailTableVO> pageDeployFrequencyTable(Long projectId, Pageable pageable, Long[] envIds,
                                                                   Long appServiceId, Date startTime, Date endTime) {
         if (envIds.length == 0) {
             return new PageInfo<>();
         }
-        PageInfo<DeployDTO> deployDTOPageInfo = basePageDeployFrequencyTable(projectId, pageRequest,
+        PageInfo<DeployDTO> deployDTOPageInfo = basePageDeployFrequencyTable(projectId, pageable,
                 envIds, appServiceId, startTime, endTime);
         return getDeployDetailDTOS(deployDTOPageInfo);
     }
 
 
     @Override
-    public PageInfo<DeployDetailTableVO> pageDeployTimeTable(Long projectId, PageRequest pageRequest,
+    public PageInfo<DeployDetailTableVO> pageDeployTimeTable(Long projectId, Pageable pageable,
                                                              Long[] appServiceIds, Long envId,
                                                              Date startTime, Date endTime) {
         if (appServiceIds.length == 0) {
             return new PageInfo<>();
         }
-        PageInfo<DeployDTO> deployDTOS = basePageDeployTimeTable(projectId, pageRequest, envId,
+        PageInfo<DeployDTO> deployDTOS = basePageDeployTimeTable(projectId, pageable, envId,
                 appServiceIds, startTime, endTime);
         return getDeployDetailDTOS(deployDTOS);
     }
@@ -350,7 +351,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
         devopsEnvironmentDTO.setCode(CHOERODON);
         devopsEnvironmentDTO.setClusterId(appServiceDeployVO.getEnvironmentId());
-        String secretCode = getSecret(applicationDTO, null, devopsEnvironmentDTO);
+        String secretCode = getSecret(applicationDTO, appServiceDeployVO.getAppServiceVersionId(), devopsEnvironmentDTO);
 
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceDeployVO.getAppServiceVersionId());
         FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
@@ -508,7 +509,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         //校验values
         FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
 
-        AppServiceDTO applicationDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
+        AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
         AppServiceVersionDTO appServiceVersionDTO =
                 appServiceVersionService.baseQuery(appServiceDeployVO.getAppServiceVersionId());
 
@@ -517,15 +518,14 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(appServiceDeployVO);
         DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = initDevopsEnvCommandValueDTO(appServiceDeployVO);
 
-        String secretCode = null;
         //获取部署实例时授权secret的code
-        secretCode = getSecret(applicationDTO, secretCode, devopsEnvironmentDTO);
+        String secretCode = getSecret(appServiceDTO, appServiceDeployVO.getAppServiceVersionId(), devopsEnvironmentDTO);
 
         // 初始化自定义实例名
         String code;
         if (appServiceDeployVO.getType().equals(CREATE)) {
             if (appServiceDeployVO.getInstanceName() == null || appServiceDeployVO.getInstanceName().trim().equals("")) {
-                code = String.format("%s-%s", applicationDTO.getCode(), GenerateUUID.generateUUID().substring(0, 5));
+                code = String.format("%s-%s", appServiceDTO.getCode(), GenerateUUID.generateUUID().substring(0, 5));
             } else {
                 checkNameInternal(appServiceDeployVO.getInstanceName(), appServiceDeployVO.getEnvironmentId(), isFromPipeline);
                 code = appServiceDeployVO.getInstanceName();
@@ -536,14 +536,14 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             resourceFileCheckHandler.check(devopsEnvironmentDTO, appServiceDeployVO.getInstanceId(), code, C7NHELM_RELEASE);
 
             //从未关联部署配置到关联部署配置，或者从一个部署配置关联另外一个部署配置，如果values是一样的，虽然getIsNotChange为false,但是此时也应该直接设置为isNotChange为true
-            AppServiceInstanceDTO oldAppServiceInstanceDTO = appServiceInstanceMapper.selectByPrimaryKey(appServiceInstanceDTO.getId());
+            AppServiceInstanceDTO oldAppServiceInstanceDTO = baseQuery(appServiceDeployVO.getInstanceId());
             String deployValue = baseQueryValueByInstanceId(appServiceInstanceDTO.getId());
             if (appServiceDeployVO.getAppServiceVersionId().equals(oldAppServiceInstanceDTO.getAppServiceVersionId()) && deployValue.equals(appServiceDeployVO.getValues())) {
                 appServiceDeployVO.setIsNotChange(true);
             }
         }
 
-        //更新时候，如果isNotChange的值为true，则直接向agent发送更新指令，不走gitops,否则走操作gitops库文件逻辑
+        //更新时候，如果isNotChange的值为true，则直接return,否则走操作gitops库文件逻辑
         if (!appServiceDeployVO.getIsNotChange()) {
             //存储数据
             if (appServiceDeployVO.getType().equals(CREATE)) {
@@ -565,16 +565,20 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             if (!isFromPipeline) {
                 DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), MANUAL, devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
                 devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
-                LOGGER.info("++++++++++++非流水线创建实例devopsDeployRecordDTO+++++，deployId：{}", devopsEnvCommandDTO.getId());
             }
 
             appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
             appServiceDeployVO.setInstanceName(code);
+            if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
+                appServiceDeployVO.getDevopsServiceReqVO().setDevopsIngressVO(appServiceDeployVO.getDevopsIngressVO());
+            }
             InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId().intValue());
-            instanceSagaPayload.setApplicationDTO(applicationDTO);
+            instanceSagaPayload.setApplicationDTO(appServiceDTO);
             instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
             instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
             instanceSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+            instanceSagaPayload.setDevopsIngressVO(appServiceDeployVO.getDevopsIngressVO());
+            instanceSagaPayload.setDevopsServiceReqVO(appServiceDeployVO.getDevopsServiceReqVO());
 
             producer.apply(
                     StartSagaBuilder
@@ -586,24 +590,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                             .withPayloadAndSerialize(instanceSagaPayload)
                             .withRefId(devopsEnvironmentDTO.getId().toString()));
 
-            // 0.19版本暂时不支持，后续优化
-            //如果部署时，也指定了创建网络和域名，目前的实现方式会导致创文件同步问题，后续更改逻辑
-//            if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
-//                appServiceDeployVO.getDevopsServiceReqVO().setAppServiceId(applicationDTO.getId());
-//                devopsServiceService.create(devopsEnvironmentDTO.getProjectId(), appServiceDeployVO.getDevopsServiceReqVO());
-//            }
-//            if (appServiceDeployVO.getDevopsIngressVO() != null) {
-//                appServiceDeployVO.getDevopsIngressVO().setAppServiceId(applicationDTO.getId());
-//                List<DevopsIngressPathVO> devopsIngressPathVOS = appServiceDeployVO.getDevopsIngressVO().getPathList();
-//                devopsIngressPathVOS.forEach(devopsIngressPathVO -> {
-//                    DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(devopsIngressPathVO.getServiceName(), appServiceDeployVO.getEnvironmentId());
-//                    if (devopsServiceDTO != null) {
-//                        devopsIngressPathVO.setServiceId(devopsServiceDTO.getId());
-//                    }
-//                });
-//                appServiceDeployVO.getDevopsIngressVO().setPathList(devopsIngressPathVOS);
-//                devopsIngressService.createIngress(devopsEnvironmentDTO.getProjectId(), appServiceDeployVO.getDevopsIngressVO());
-//            }
 
         }
 
@@ -630,18 +616,25 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String filePath = null;
         try {
             if (instanceSagaPayload.getAppServiceDeployVO().getType().equals(UPDATE)) {
-                filePath = clusterConnectionHandler.handDevopsEnvGitRepository(instanceSagaPayload.getProjectId(), instanceSagaPayload.getDevopsEnvironmentDTO().getCode(), instanceSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa());
+                filePath = clusterConnectionHandler.handDevopsEnvGitRepository(
+                        instanceSagaPayload.getProjectId(),
+                        instanceSagaPayload.getDevopsEnvironmentDTO().getCode(),
+                        instanceSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa(),
+                        instanceSagaPayload.getDevopsEnvironmentDTO().getType(),
+                        instanceSagaPayload.getDevopsEnvironmentDTO().getClusterCode());
             }
         } catch (Exception ex) {
             String exceptionContent = LogUtil.readContentOfThrowable(ex);
             LOGGER.info("Failed to clone repository, the ex is {}", exceptionContent);
             AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceSagaPayload.getAppServiceDeployVO().getInstanceId());
-            appServiceInstanceDTO.setStatus(CommandStatus.FAILED.getStatus());
+            appServiceInstanceDTO.setStatus(InstanceStatus.FAILED.getStatus());
             baseUpdate(appServiceInstanceDTO);
             DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
             devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
             devopsEnvCommandDTO.setError(LogUtil.cutOutString("Clone repository failed. The exception is: " + exceptionContent, 5000));
             devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+
+            // 这里不需要发送创建实例失败的通知，因为只用update才可能导致抛异常
             return;
         }
 
@@ -649,7 +642,16 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             //在gitops库处理instance文件
             ResourceConvertToYamlHandler<C7nHelmRelease> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
             resourceConvertToYamlHandler.setType(getC7NHelmRelease(
-                    instanceSagaPayload.getAppServiceDeployVO().getInstanceName(), instanceSagaPayload.getAppServiceVersionDTO().getRepository(), instanceSagaPayload.getCommandId(), instanceSagaPayload.getApplicationDTO().getCode(), instanceSagaPayload.getAppServiceVersionDTO().getVersion(), instanceSagaPayload.getAppServiceDeployVO().getValues(), instanceSagaPayload.getAppServiceDeployVO().getAppServiceVersionId(), instanceSagaPayload.getSecretCode()));
+                    instanceSagaPayload.getAppServiceDeployVO().getInstanceName(),
+                    instanceSagaPayload.getAppServiceVersionDTO().getRepository(),
+                    instanceSagaPayload.getApplicationDTO().getId(),
+                    instanceSagaPayload.getCommandId(),
+                    instanceSagaPayload.getApplicationDTO().getCode(),
+                    instanceSagaPayload.getAppServiceVersionDTO().getVersion(),
+                    instanceSagaPayload.getAppServiceDeployVO().getValues(),
+                    instanceSagaPayload.getAppServiceDeployVO().getAppServiceVersionId(),
+                    instanceSagaPayload.getSecretCode(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO()));
 
             resourceConvertToYamlHandler.operationEnvGitlabFile(
                     RELEASE_PREFIX + instanceSagaPayload.getAppServiceDeployVO().getInstanceName(),
@@ -657,6 +659,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     instanceSagaPayload.getAppServiceDeployVO().getType(),
                     instanceSagaPayload.getGitlabUserId(),
                     instanceSagaPayload.getAppServiceDeployVO().getInstanceId(), C7NHELM_RELEASE, null, false, instanceSagaPayload.getDevopsEnvironmentDTO().getId(), filePath);
+
+            //创建实例时，如果选择了创建网络
+            if (instanceSagaPayload.getDevopsServiceReqVO() != null) {
+                instanceSagaPayload.getDevopsServiceReqVO().setAppServiceId(instanceSagaPayload.getApplicationDTO().getId());
+                devopsServiceService.create(instanceSagaPayload.getDevopsEnvironmentDTO().getProjectId(), instanceSagaPayload.getDevopsServiceReqVO());
+            }
+
         } catch (Exception e) {
             //有异常更新实例以及command的状态
             AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceSagaPayload.getAppServiceDeployVO().getInstanceId());
@@ -675,6 +684,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 devopsEnvCommandDTO.setError(LogUtil.cutOutString("create or update gitOps file failed! The exception is: " + exceptionContent, 5000));
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
                 LOGGER.info("Successfully update the status of instance with name {} to failed after exception occurred.", appServiceInstanceDTO.getCode());
+
+                // 已经判断了是创建时失败，直接发送实例创建失败通知
+                sendNotificationService.sendWhenInstanceCreationFailure(appServiceInstanceDTO.getEnvId(), appServiceInstanceDTO.getCode(), appServiceInstanceDTO.getCreatedBy(), null);
             } else {
                 // 更新的超时情况暂未处理
                 throw e;
@@ -729,7 +741,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         //插入部署记录
         DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), MANUAL, devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
         devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
-        LOGGER.info("++++++++++++非流水线创建实例gitOps+++gitOps+++devopsDeployRecordDTO+++++，deployId：{}", devopsEnvCommandDTO.getId());
 
 
         return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
@@ -786,12 +797,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATING.getStatus());
 
         //获取授权secret
-        String secretCode = getSecret(applicationDTO, null, devopsEnvironmentDTO);
+        String secretCode = getSecret(applicationDTO, appServiceVersionDTO.getId(), devopsEnvironmentDTO);
 
         //插入部署记录
         DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), MANUAL, devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
         devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
-        LOGGER.info("++++++++++++非流水线创建实例重试+++重试+++devopsDeployRecordDTO+++++，deployId：{}", devopsEnvCommandDTO.getId());
 
 
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
@@ -820,7 +830,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteInstance(Long instanceId) {
+    public void deleteInstance(Long instanceId, Boolean deletePrometheus) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
 
         if (appServiceInstanceDTO == null) {
@@ -845,11 +855,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
 
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(), instanceId, C7NHELM_RELEASE);
-
         //如果文件对象对应关系不存在，证明没有部署成功，删掉gitops文件,删掉资源
         if (devopsEnvFileResourceDTO == null) {
             appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
@@ -950,10 +959,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private void checkNameInternal(String code, Long envId, boolean isFromPipeline) {
         AppInstanceValidator.checkName(code);
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-        List<Long> envIds = devopsEnvironmentService.baseListByClusterId(devopsEnvironmentDTO.getClusterId()).stream().map(DevopsEnvironmentDTO::getId).collect(Collectors.toList());
         // 这里校验集群下code唯一而不是环境下code唯一是因为helm的release是需要集群下唯一的
-        if (appServiceInstanceMapper.checkCodeExist(code, envIds)) {
+        if (appServiceInstanceMapper.checkCodeExist(code, envId)) {
             throw new CommonException("error.app.instance.name.already.exist");
         }
 
@@ -1065,18 +1072,18 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public PageInfo<DeployDTO> basePageDeployFrequencyTable(Long projectId, PageRequest pageRequest, Long[] envIds, Long appServiceId,
+    public PageInfo<DeployDTO> basePageDeployFrequencyTable(Long projectId, Pageable pageable, Long[] envIds, Long appServiceId,
                                                             Date startTime, Date endTime) {
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
                 appServiceInstanceMapper
                         .listDeployFrequency(projectId, envIds, appServiceId, new java.sql.Date(startTime.getTime()),
                                 new java.sql.Date(endTime.getTime())));
     }
 
     @Override
-    public PageInfo<DeployDTO> basePageDeployTimeTable(Long projectId, PageRequest pageRequest, Long envId, Long[] appServiceIds,
+    public PageInfo<DeployDTO> basePageDeployTimeTable(Long projectId, Pageable pageable, Long envId, Long[] appServiceIds,
                                                        Date startTime, Date endTime) {
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
                 appServiceInstanceMapper
                         .listDeployTime(projectId, envId, appServiceIds, new java.sql.Date(startTime.getTime()),
                                 new java.sql.Date(endTime.getTime())));
@@ -1108,6 +1115,19 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     public String baseGetInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType) {
         return appServiceInstanceMapper.getInstanceResourceDetailJson(instanceId, resourceName, resourceType.getType());
     }
+
+    @Override
+    public ConfigVO queryDefaultConfig(Long projectId, ConfigVO configVO) {
+        DevopsProjectDTO devopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(projectId);
+        if (devopsProjectDTO.getHarborProjectIsPrivate()) {
+            configVO.setPrivate(true);
+            HarborUserDTO harborUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborPullUserId());
+            configVO.setUserName(harborUserDTO.getHarborProjectUserName());
+            configVO.setPassword(harborUserDTO.getHarborProjectUserPassword());
+        }
+        return configVO;
+    }
+
 
     private void handleStartOrStopInstance(Long instanceId, String type) {
 
@@ -1155,85 +1175,85 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
 
-    private void initInstanceOverView(AppServiceInstanceOverViewVO appServiceInstanceOverViewVO, AppServiceInstanceOverViewDTO appServiceInstanceOverViewDTO,
-                                      Long latestVersionId) {
-        EnvVersionVO envVersionVO = new EnvVersionVO(
-                appServiceInstanceOverViewDTO.getVersionId(),
-                appServiceInstanceOverViewDTO.getVersion(),
-                appServiceInstanceOverViewDTO.getInstanceId(),
-                appServiceInstanceOverViewDTO.getInstanceCode(),
-                appServiceInstanceOverViewDTO.getInstanceStatus());
-        EnvInstanceVO envInstanceVO = new EnvInstanceVO(appServiceInstanceOverViewDTO.getEnvId());
-        if (appServiceInstanceOverViewDTO.getVersionId().equals(latestVersionId)) {
-            envVersionVO.setLatest(true);
-        }
-        envInstanceVO.addEnvVersionDTOS(envVersionVO);
-        appServiceInstanceOverViewVO.appendEnvInstanceVOS(envInstanceVO);
-        if (appServiceInstanceOverViewVO.getLatestVersionId().equals(appServiceInstanceOverViewDTO.getVersionId())) {
-            appServiceInstanceOverViewVO.appendInstances(new EnvInstancesVO(
-                    appServiceInstanceOverViewDTO.getInstanceId(), appServiceInstanceOverViewDTO.getInstanceCode(), appServiceInstanceOverViewDTO.getInstanceStatus()));
-        }
-    }
-
-
-    private void initInstanceOverViewIfNotExist(AppServiceInstanceOverViewVO appServiceInstanceOverViewVO,
-                                                AppServiceInstanceOverViewDTO appServiceInstanceOverViewDTO) {
-        EnvInstanceVO envInstanceVO = appServiceInstanceOverViewVO.queryLastEnvInstanceVO();
-        if (appServiceInstanceOverViewVO.getLatestVersionId().equals(appServiceInstanceOverViewDTO.getVersionId())) {
-            appServiceInstanceOverViewVO.appendInstances(new EnvInstancesVO(
-                    appServiceInstanceOverViewDTO.getInstanceId(), appServiceInstanceOverViewDTO.getInstanceCode(), appServiceInstanceOverViewDTO.getInstanceStatus()));
-        }
-        if (envInstanceVO.getEnvId().equals(appServiceInstanceOverViewDTO.getEnvId())) {
-            EnvVersionVO envVersionVO = envInstanceVO.queryLastEnvVersionVO();
-            if (envVersionVO.getVersion().equals(appServiceInstanceOverViewDTO.getVersion())) {
-                envVersionVO.appendInstanceList(
-                        appServiceInstanceOverViewDTO.getInstanceId(),
-                        appServiceInstanceOverViewDTO.getInstanceCode(),
-                        appServiceInstanceOverViewDTO.getInstanceStatus());
-            } else {
-                envInstanceVO.addEnvVersionDTOS(new EnvVersionVO(
-                        appServiceInstanceOverViewDTO.getVersionId(),
-                        appServiceInstanceOverViewDTO.getVersion(),
-                        appServiceInstanceOverViewDTO.getInstanceId(),
-                        appServiceInstanceOverViewDTO.getInstanceCode(),
-                        appServiceInstanceOverViewDTO.getInstanceStatus()));
-            }
-        } else {
-            EnvVersionVO envVersionVO = new EnvVersionVO(
-                    appServiceInstanceOverViewDTO.getVersionId(),
-                    appServiceInstanceOverViewDTO.getVersion(),
-                    appServiceInstanceOverViewDTO.getInstanceId(),
-                    appServiceInstanceOverViewDTO.getInstanceCode(),
-                    appServiceInstanceOverViewDTO.getInstanceStatus());
-            envInstanceVO = new EnvInstanceVO(appServiceInstanceOverViewDTO.getEnvId());
-            if (appServiceInstanceOverViewDTO.getVersionId().equals(appServiceInstanceOverViewVO.getLatestVersionId())) {
-                envVersionVO.setLatest(true);
-            }
-            envInstanceVO.addEnvVersionDTOS(envVersionVO);
-            appServiceInstanceOverViewVO.appendEnvInstanceVOS(envInstanceVO);
-        }
-    }
-
-    /**
-     * 创建远程配置
-     *
-     * @param type
-     * @param code
-     * @param configVO
-     * @return
-     */
-    private DevopsConfigDTO createConfig(String type, String code, ConfigVO configVO) {
-        String name = code + "-" + type;
-        DevopsConfigDTO devopsConfigDTO = devopsConfigService.baseCheckByName(name);
-        if (devopsConfigDTO == null) {
-            devopsConfigDTO = new DevopsConfigDTO();
-            devopsConfigDTO.setConfig(gson.toJson(configVO));
-            devopsConfigDTO.setName(name);
-            devopsConfigDTO.setType(type);
-            return devopsConfigService.baseCreate(devopsConfigDTO);
-        }
-        return devopsConfigDTO;
-    }
+//    private void initInstanceOverView(AppServiceInstanceOverViewVO appServiceInstanceOverViewVO, AppServiceInstanceOverViewDTO appServiceInstanceOverViewDTO,
+//                                      Long latestVersionId) {
+//        EnvVersionVO envVersionVO = new EnvVersionVO(
+//                appServiceInstanceOverViewDTO.getVersionId(),
+//                appServiceInstanceOverViewDTO.getVersion(),
+//                appServiceInstanceOverViewDTO.getInstanceId(),
+//                appServiceInstanceOverViewDTO.getInstanceCode(),
+//                appServiceInstanceOverViewDTO.getInstanceStatus());
+//        EnvInstanceVO envInstanceVO = new EnvInstanceVO(appServiceInstanceOverViewDTO.getEnvId());
+//        if (appServiceInstanceOverViewDTO.getVersionId().equals(latestVersionId)) {
+//            envVersionVO.setLatest(true);
+//        }
+//        envInstanceVO.addEnvVersionDTOS(envVersionVO);
+//        appServiceInstanceOverViewVO.appendEnvInstanceVOS(envInstanceVO);
+//        if (appServiceInstanceOverViewVO.getLatestVersionId().equals(appServiceInstanceOverViewDTO.getVersionId())) {
+//            appServiceInstanceOverViewVO.appendInstances(new EnvInstancesVO(
+//                    appServiceInstanceOverViewDTO.getInstanceId(), appServiceInstanceOverViewDTO.getInstanceCode(), appServiceInstanceOverViewDTO.getInstanceStatus()));
+//        }
+//    }
+//
+//
+//    private void initInstanceOverViewIfNotExist(AppServiceInstanceOverViewVO appServiceInstanceOverViewVO,
+//                                                AppServiceInstanceOverViewDTO appServiceInstanceOverViewDTO) {
+//        EnvInstanceVO envInstanceVO = appServiceInstanceOverViewVO.queryLastEnvInstanceVO();
+//        if (appServiceInstanceOverViewVO.getLatestVersionId().equals(appServiceInstanceOverViewDTO.getVersionId())) {
+//            appServiceInstanceOverViewVO.appendInstances(new EnvInstancesVO(
+//                    appServiceInstanceOverViewDTO.getInstanceId(), appServiceInstanceOverViewDTO.getInstanceCode(), appServiceInstanceOverViewDTO.getInstanceStatus()));
+//        }
+//        if (envInstanceVO.getEnvId().equals(appServiceInstanceOverViewDTO.getEnvId())) {
+//            EnvVersionVO envVersionVO = envInstanceVO.queryLastEnvVersionVO();
+//            if (envVersionVO.getVersion().equals(appServiceInstanceOverViewDTO.getVersion())) {
+//                envVersionVO.appendInstanceList(
+//                        appServiceInstanceOverViewDTO.getInstanceId(),
+//                        appServiceInstanceOverViewDTO.getInstanceCode(),
+//                        appServiceInstanceOverViewDTO.getInstanceStatus());
+//            } else {
+//                envInstanceVO.addEnvVersionDTOS(new EnvVersionVO(
+//                        appServiceInstanceOverViewDTO.getVersionId(),
+//                        appServiceInstanceOverViewDTO.getVersion(),
+//                        appServiceInstanceOverViewDTO.getInstanceId(),
+//                        appServiceInstanceOverViewDTO.getInstanceCode(),
+//                        appServiceInstanceOverViewDTO.getInstanceStatus()));
+//            }
+//        } else {
+//            EnvVersionVO envVersionVO = new EnvVersionVO(
+//                    appServiceInstanceOverViewDTO.getVersionId(),
+//                    appServiceInstanceOverViewDTO.getVersion(),
+//                    appServiceInstanceOverViewDTO.getInstanceId(),
+//                    appServiceInstanceOverViewDTO.getInstanceCode(),
+//                    appServiceInstanceOverViewDTO.getInstanceStatus());
+//            envInstanceVO = new EnvInstanceVO(appServiceInstanceOverViewDTO.getEnvId());
+//            if (appServiceInstanceOverViewDTO.getVersionId().equals(appServiceInstanceOverViewVO.getLatestVersionId())) {
+//                envVersionVO.setLatest(true);
+//            }
+//            envInstanceVO.addEnvVersionDTOS(envVersionVO);
+//            appServiceInstanceOverViewVO.appendEnvInstanceVOS(envInstanceVO);
+//        }
+//    }
+//
+//    /**
+//     * 创建远程配置
+//     *
+//     * @param type
+//     * @param code
+//     * @param configVO
+//     * @return
+//     */
+//    private DevopsConfigDTO createConfig(String type, String code, ConfigVO configVO) {
+//        String name = code + "-" + type;
+//        DevopsConfigDTO devopsConfigDTO = devopsConfigService.baseCheckByName(name);
+//        if (devopsConfigDTO == null) {
+//            devopsConfigDTO = new DevopsConfigDTO();
+//            devopsConfigDTO.setConfig(gson.toJson(configVO));
+//            devopsConfigDTO.setName(name);
+//            devopsConfigDTO.setType(type);
+//            return devopsConfigService.baseCreate(devopsConfigDTO);
+//        }
+//        return devopsConfigDTO;
+//    }
 
 
     private void updateInstanceStatus(Long instanceId, Long commandId, String status) {
@@ -1265,11 +1285,16 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return errorLines;
     }
 
-    private C7nHelmRelease getC7NHelmRelease(String code, String repository, Integer commandId, String appServiceCode,
+    private C7nHelmRelease getC7NHelmRelease(String code, String repository,
+                                             Long appServiceId,
+                                             Integer commandId, String appServiceCode,
                                              String version, String deployValue,
-                                             Long deployVersionId, String secretName) {
+                                             Long deployVersionId, String secretName,
+                                             DevopsEnvironmentDTO devopsEnvironmentDTO) {
         C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
         c7nHelmRelease.getMetadata().setName(code);
+        // 设置这个app-service-id是防止不同项目的应用服务被网络根据应用服务code误选择，要以id作为标签保证准确性
+        c7nHelmRelease.getSpec().setAppServiceId(appServiceId);
         c7nHelmRelease.getSpec().setRepoUrl(repository);
         c7nHelmRelease.getSpec().setChartName(appServiceCode);
         c7nHelmRelease.getSpec().setChartVersion(version);
@@ -1277,9 +1302,20 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (secretName != null) {
             c7nHelmRelease.getSpec().setImagePullSecrets(Arrays.asList(new ImagePullSecret(secretName)));
         }
+
+        // 如果是组件的实例进行部署
+        String versionValue;
+        if (EnvironmentType.SYSTEM.getValue().equals(devopsEnvironmentDTO.getType())) {
+            // 设置集群组件的特殊元数据
+            c7nHelmRelease.getMetadata().setType(C7NHelmReleaseMetadataType.CLUSTER_COMPONENT.getType());
+
+            versionValue = ComponentVersionUtil.getComponentVersion(appServiceCode).getValues();
+        } else {
+            versionValue = appServiceVersionService.baseQueryValue(deployVersionId);
+        }
+
         c7nHelmRelease.getSpec().setValues(
-                getReplaceResult(appServiceVersionService.baseQueryValue(deployVersionId),
-                        deployValue).getDeltaYaml().trim());
+                getReplaceResult(versionValue, deployValue).getDeltaYaml().trim());
         return c7nHelmRelease;
     }
 
@@ -1332,11 +1368,21 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return devopsEnvCommandValueDTO;
     }
 
-    private String getSecret(AppServiceDTO appServiceDTO, String secretCode, DevopsEnvironmentDTO devopsEnvironmentDTO) {
+    private String getSecret(AppServiceDTO appServiceDTO, Long appServiceVersionId, DevopsEnvironmentDTO devopsEnvironmentDTO) {
+        String secretCode = null;
         //如果应用绑定了私有镜像库,则处理secret
-        DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR);
+        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceVersionId);
+        DevopsConfigDTO devopsConfigDTO;
+        if (appServiceVersionDTO.getHarborConfigId() != null) {
+            devopsConfigDTO = devopsConfigService.baseQuery(appServiceVersionDTO.getHarborConfigId());
+        } else {
+            devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR, AUTHTYPE);
+        }
         if (devopsConfigDTO != null) {
             ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+            if (devopsConfigDTO.getName() != null && devopsConfigDTO.getName().equals("harbor_default") && appServiceDTO.getProjectId() != null) {
+                configVO = queryDefaultConfig(appServiceDTO.getProjectId(), configVO);
+            }
             if (configVO.getPrivate() != null && configVO.getPrivate()) {
                 DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndId(devopsEnvironmentDTO.getCode(), devopsConfigDTO.getId());
                 if (devopsRegistrySecretDTO == null) {

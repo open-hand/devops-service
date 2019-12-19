@@ -12,5 +12,8 @@ export default ({ formatMessage }) => ({
     { name: 'commandStatus', type: 'string' },
     { name: 'lastUpdateDate', type: 'string', label: formatMessage({ id: 'updateDate' }) },
   ],
-  queryFields: [],
+  queryFields: [
+    { name: 'name', type: 'string', label: formatMessage({ id: 'name' }) },
+
+  ],
 });

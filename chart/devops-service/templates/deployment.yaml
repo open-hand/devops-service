@@ -1,4 +1,4 @@
-apiVersion: apps/v1beta2
+apiVersion: {{ include "app.deployment.apiVersion" . }}
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}
@@ -6,6 +6,15 @@ metadata:
 {{ include "service.labels.standard" . | indent 4 }}
 {{ include "service.logging.deployment.label" . | indent 4 }}
 spec:
+  strategy:
+    type: {{ .Values.deploymentUpdate.type }}
+    {{- if eq .Values.deploymentUpdate.type "RollingUpdate" }}
+    rollingUpdate:
+      maxSurge: {{ .Values.deploymentUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.deploymentUpdate.maxUnavailable }}
+    {{- else }}
+    rollingUpdate: null
+    {{- end}}
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
@@ -13,38 +22,92 @@ spec:
   template:
     metadata:
       annotations:
+{{- if .Values.podAnnotations }}
+{{ toYaml .Values.podAnnotations | trimSuffix "\n" | indent 8 }}
+{{- end }}
 {{ include "service.monitoring.pod.annotations" . | indent 8 }}
       labels:
+{{- if .Values.podLabels }}
+{{ toYaml .Values.podLabels | indent 8 }}
+{{- end }}
 {{ include "service.microservice.labels" . | indent 8 }}
 {{ include "service.labels.standard" . | indent 8 }}
     spec:
+  {{- if .Values.priorityClassName }}
+      priorityClassName: "{{ .Values.priorityClassName }}"
+  {{- end }}
+      initContainers:
+      - name: skywalking-agent
+        image: {{ .Values.plugins.skywalkingAgentImage }}
+        imagePullPolicy: IfNotPresent
+        command:
+        - sh
+        - -c
+        - cp -rf /skywalking/agent/* /agent
+        volumeMounts:
+        - name: skywalking-agent
+          mountPath: /agent
       containers:
-        - name: {{ .Release.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Chart.Version }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          env:
+      - name: {{ .Release.Name }}
+        image: {{ include "service.image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
 {{- range $name, $value := .Values.env.open }}
-{{- if not (empty $value) }}
-          - name: {{ $name | quote }}
-            value: {{ $value | quote }}
+{{- if ne (len ($value | quote)) 0 }}
+        - name: {{ $name | quote }}
+          value: {{ $value | quote }}
 {{- end }}
 {{- end }}
-          ports:
-            - name: http
-              containerPort: {{ .Values.service.port }}
-              protocol: TCP
-          # readinessProbe:
-          #   httpGet:
-          #     path: /health
-          #     port: {{ .Values.deployment.managementPort }}
-          #     scheme: HTTP
-          readinessProbe:
-            exec:
-              command: ["/bin/sh","-c","curl -s localhost:{{ .Values.deployment.managementPort }}/actuator/health --fail && nc -z localhost {{ .Values.service.port }}"]
-            failureThreshold: 3
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            successThreshold: 1
-            timeoutSeconds: 60
-          resources:
-{{ toYaml .Values.resources | indent 12 }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.env.open.SERVER_PORT }}
+          protocol: TCP
+        - name: actuator
+          containerPort: {{ .Values.env.open.MANAGEMENT_SERVER_PORT }}
+          protocol: TCP
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        volumeMounts:
+        - name: skywalking-agent
+          mountPath: /agent
+        livenessProbe:
+          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+          exec:
+            command: 
+            - /bin/sh
+            - -c
+            - >
+              nc -z localhost {{ .Values.env.open.SERVER_PORT }}
+              && curl -s --fail localhost:{{ .Values.env.open.MANAGEMENT_SERVER_PORT }}/actuator/health
+        readinessProbe:
+          initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          exec:
+            command: 
+            - /bin/sh
+            - -c
+            - >
+              nc -z localhost {{ .Values.env.open.SERVER_PORT }}
+              && curl -s --fail localhost:{{ .Values.env.open.MANAGEMENT_SERVER_PORT }}/actuator/health
+{{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}
+      volumes:
+      - name: skywalking-agent
+        emptyDir: {}

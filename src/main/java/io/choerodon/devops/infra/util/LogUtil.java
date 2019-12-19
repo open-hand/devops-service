@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.util;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
+import org.slf4j.Logger;
 import org.springframework.util.StringUtils;
 
 /**
@@ -44,5 +45,27 @@ public class LogUtil {
         throwable.printStackTrace(ps);
         ps.flush();
         return new String(byteArrayOutputStream.toByteArray());
+    }
+
+    /**
+     * log that the object with a certain id is null in info level.
+     *
+     * @param objectType objectType (AppService, Project, DevopsEnvCommand)
+     * @param objectId   id
+     * @param logger     LOGGER
+     */
+    public static void loggerInfoObjectNullWithId(String objectType, Long objectId, Logger logger) {
+        logger.info("{} is null with id {}", objectType, objectId);
+    }
+
+    /**
+     * log that the object with a certain id is null in warn level.
+     *
+     * @param objectType objectType (AppService, Project, DevopsEnvCommand)
+     * @param objectId   id
+     * @param logger     LOGGER
+     */
+    public static void loggerWarnObjectNullWithId(String objectType, Long objectId, Logger logger) {
+        logger.warn("{} is null with id {}", objectType, objectId);
     }
 }

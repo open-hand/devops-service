@@ -4,12 +4,12 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.api.ws.WebSocketTool;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.websocket.helper.WebSocketHelper;
@@ -18,18 +18,14 @@ import io.choerodon.websocket.send.SendBinaryMessagePayload;
 /**
  * Created by Sheep on 2019/8/19.
  */
-
+@Component
 public class ExecMessageHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(ExecMessageHandler.class);
     public static final String AGENT_EXEC = "AgentExec";
 
-
+    @Autowired
+    @Lazy
     private WebSocketHelper webSocketHelper;
 
-    public ExecMessageHandler() {
-        this.webSocketHelper = ApplicationContextHelper.getSpringFactory().getBean(WebSocketHelper.class);
-    }
 
     public void handle(WebSocketSession webSocketSession, BinaryMessage message) {
 

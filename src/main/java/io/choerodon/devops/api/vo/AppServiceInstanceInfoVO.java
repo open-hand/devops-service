@@ -11,28 +11,63 @@ import org.nutz.json.JsonIgnore;
  * @author zmf
  */
 public class AppServiceInstanceInfoVO {
+    @ApiModelProperty("实例id")
     private Long id;
+    @ApiModelProperty("实例code")
     private String code;
     private String status;
+    @ApiModelProperty("实例的所有pod数量")
     private Long podCount;
+    @ApiModelProperty("实例的运行中的pod的数量")
     private Long podRunningCount;
+    @ApiModelProperty("实例所属应用服务id")
     private Long appServiceId;
+    @ApiModelProperty("实例所属应用服务的名称")
     private String appServiceName;
+    /**
+     * {@link io.choerodon.devops.infra.enums.AppServiceType}
+     */
+    @ApiModelProperty("实例所属应用服务的类型/normal_service,share_service,market_service")
+    private String appServiceType;
     private Long appServiceVersionId;
     private String versionName;
+
+    @ApiModelProperty("最后更新时间")
     private Date lastUpdateDate;
+    @ApiModelProperty("实例纪录版本号")
     private Long objectVersionNumber;
+    @ApiModelProperty("实例所属环境是否连接")
     private Boolean connect;
+    @ApiModelProperty("实例最新的command的版本id")
     private Long commandVersionId;
+    @ApiModelProperty("实例最新的command所对应的应用服务版本")
     private String commandVersion;
+    @ApiModelProperty("实例最新的command所对应的操作类型")
     private String commandType;
+    @ApiModelProperty("实例最新的command的状态")
     private String commandStatus;
+    @ApiModelProperty("实例最新的command的错误信息")
     private String error;
+    @ApiModelProperty("实例所属项目id")
     private Long projectId;
+    @ApiModelProperty("当前实例生效的commandId/可能为null")
+    private Long effectCommandId;
+    @ApiModelProperty("当前实例生效的版本/可能为null")
+    private String effectCommandVersion;
+    @ApiModelProperty("当前实例生效的command的状态/可能为null，为")
+    private String effectCommandStatus;
 
     @JsonIgnore
     @ApiModelProperty("集群id")
     private Long clusterId;
+
+    public Long getEffectCommandId() {
+        return effectCommandId;
+    }
+
+    public void setEffectCommandId(Long effectCommandId) {
+        this.effectCommandId = effectCommandId;
+    }
 
     public Long getClusterId() {
         return clusterId;
@@ -184,5 +219,29 @@ public class AppServiceInstanceInfoVO {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
+    }
+
+    public String getAppServiceType() {
+        return appServiceType;
+    }
+
+    public void setAppServiceType(String appServiceType) {
+        this.appServiceType = appServiceType;
+    }
+
+    public String getEffectCommandVersion() {
+        return effectCommandVersion;
+    }
+
+    public void setEffectCommandVersion(String effectCommandVersion) {
+        this.effectCommandVersion = effectCommandVersion;
+    }
+
+    public String getEffectCommandStatus() {
+        return effectCommandStatus;
+    }
+
+    public void setEffectCommandStatus(String effectCommandStatus) {
+        this.effectCommandStatus = effectCommandStatus;
     }
 }

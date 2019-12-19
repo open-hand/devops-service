@@ -20,7 +20,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const {
       intlPrefix,
       envStore: {
-        getSelectedMenu: { id },
+        getSelectedMenu: { id, key },
+        getUpTarget,
+        setUpTarget,
       },
       treeDs,
     } = useEnvironmentStore();
@@ -57,6 +59,13 @@ export const StoreProvider = injectIntl(inject('AppState')(
         }
       });
     }, [id, projectId]);
+
+    useEffect(() => {
+      if (getUpTarget === key) {
+        groupDs.query();
+        setUpTarget(null);
+      }
+    }, [getUpTarget]);
 
     const value = {
       ...props,

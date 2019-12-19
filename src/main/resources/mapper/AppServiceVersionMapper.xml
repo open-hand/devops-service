@@ -144,6 +144,7 @@
         AND de.project_id = #{projectId}
         AND de.id = #{envId}
         AND da.id = #{appServiceId}
+        AND de.type ='user'
         GROUP BY
         dav.id,dav.version
     </select>
@@ -164,7 +165,7 @@
         *
         FROM (
         <if test="appServiceVersionId != null">
-            (SELECT ver.id, ver.version, ver.publish_time, ver.creation_date
+            (SELECT ver.id, ver.version, ver.creation_date
             FROM devops_app_service_version ver
             WHERE ver.id = #{appServiceVersionId,jdbcType=BIGINT})
             UNION ALL
@@ -173,7 +174,6 @@
         SELECT distinct
         dav.id,
         dav.version,
-        dav.publish_time,
         dav.creation_date
         FROM
         devops_app_service_version dav
@@ -304,6 +304,7 @@
         de.project_id = #{projectId}
         AND dav.repository IS NOT NULL
         AND dav.app_service_id = #{appServiceId}
+        AND de.type ='user'
         ORDER BY
         dav.id DESC
     </select>
@@ -585,6 +586,14 @@
         </foreach>
         END
     </select>
+    <delete id="deleteByIds">
+        DELETE  FROM devops_app_service_version
+        where id in
+        <foreach collection="versionIds" item="versionId"
+                 open="(" separator="," close=")">
+            #{versionId}
+        </foreach>
+    </delete>
 
     <select id="queryByShareVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
          select * from ((SELECT version.*

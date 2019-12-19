@@ -2,7 +2,8 @@ import React, { Fragment, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Action } from '@choerodon/boot';
-import { Modal, Table } from 'choerodon-ui/pro';
+import { Modal, Table, Icon } from 'choerodon-ui/pro';
+import { Tooltip } from 'choerodon-ui';
 import map from 'lodash/map';
 import StatusIcon from '../../../../../components/StatusIcon';
 import StatusTags from '../../../../../components/status-tag';
@@ -95,19 +96,23 @@ const IngressContent = observer(() => {
 
   function renderService({ record }) {
     return (
-      map(record.get('pathList'), ({ serviceStatus, serviceName }) => (
+      map(record.get('pathList'), ({ serviceStatus, serviceName, serviceError }) => (
         <div
           className="c7n-network-service"
           key={record.get('id')}
         >
-          <StatusTags
-            colorCode={serviceStatus}
-            name={formatMessage({ id: serviceStatus })}
-            style={serviceStyle}
-          />
-          <MouserOverWrapper text={serviceName} width={0.1}>
-            {serviceName}
+          <MouserOverWrapper
+            text={serviceName}
+            width={0.1}
+            className="c7n-status-text"
+          >
+            <span className={serviceStatus === 'deleted' ? 'c7n-status-deleted' : ''}>{serviceName}</span>
           </MouserOverWrapper>
+          {(serviceStatus === 'deleted' || serviceStatus === 'failed') && (
+            <Tooltip title={formatMessage({ id: serviceError ? `failed: ${serviceError}` : serviceStatus })}>
+              <Icon type="error" className="c7n-status-failed" />
+            </Tooltip>
+          )}
         </div>
       ))
     );
@@ -159,7 +164,7 @@ const IngressContent = observer(() => {
         queryBar="bar"
         rowHeight="auto"
       >
-        <Column name="name" renderer={renderName} />
+        <Column name="name" renderer={renderName} sortable />
         <Column renderer={renderAction} width="0.7rem" />
         <Column name="domain" renderer={renderDomain} />
         <Column name="pathList" renderer={renderPath} />

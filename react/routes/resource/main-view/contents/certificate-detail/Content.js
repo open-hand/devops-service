@@ -14,6 +14,7 @@ const Content = observer(() => {
   const {
     prefixCls,
     intlPrefix,
+    intl: { formatMessage },
   } = useResourceStore();
   const { detailDs } = useCertDetailStore();
 
@@ -33,12 +34,12 @@ const Content = observer(() => {
         <span className="detail-section-li-text">DNSNames:&nbsp;</span>
         <span>{item}</span>
       </li>
-    )) : '暂无数据';
+    )) : <span style={{ color: 'rgba(0,0,0,.65)' }}>{formatMessage({ id: 'nodata' })}</span>;
     const ingressNode = ingresses ? map(ingresses, (item) => (
       <li className={`${prefixCls}-detail-section-li`}>
         <span>{item}</span>
       </li>
-    )) : '暂无数据';
+    )) : <span style={{ color: 'rgba(0,0,0,.65)' }}>{formatMessage({ id: 'nodata' })}</span>;
 
     return <Fragment>
       <div>

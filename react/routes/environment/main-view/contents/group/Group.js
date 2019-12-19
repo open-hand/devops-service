@@ -1,8 +1,9 @@
 import React, { Fragment, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Action, Choerodon } from '@choerodon/boot';
-import { Modal, Table } from 'choerodon-ui/pro';
+import { Modal, Table, Spin } from 'choerodon-ui/pro';
 import StatusTag from '../../../../../components/status-tag';
+import eventStopProp from '../../../../../utils/eventStopProp';
 import { getEnvStatus, statusMappings } from '../../../../../components/status-dot';
 import ClickText from '../../../../../components/click-text';
 import { handlePromptError } from '../../../../../utils';
@@ -16,6 +17,8 @@ const { Column } = Table;
 const envKey = Modal.key;
 const modalKey = Modal.key;
 const deleteKey = Modal.key;
+const effectKey = Modal.key;
+const formKey = Modal.key;
 
 const Group = observer(() => {
   const modalStyle = useMemo(() => ({
@@ -39,17 +42,44 @@ const Group = observer(() => {
     treeDs.query();
   }
 
-  function openDelete() {
-    const envName = groupDs.current ? groupDs.current.get('name') : '';
-    Modal.open({
+  async function openDelete(record) {
+    const envId = record.get('id');
+
+    const deleteModal = Modal.open({
       key: deleteKey,
-      title: formatMessage({ id: `${intlPrefix}.delete.title` }, { name: envName }),
-      children: formatMessage({ id: `${intlPrefix}.delete.des` }),
-      okText: formatMessage({ id: 'delete' }),
-      okProps: { color: 'red' },
-      cancelProps: { color: 'dark' },
-      onOk: handleDelete,
+      title: formatMessage({ id: `${intlPrefix}.delete.title` }, { name }),
+      children: <Spin />,
+      footer: null,
     });
+
+    const res = await checkStatus(record);
+
+    if (res) {
+      const result = await mainStore.checkEffect(projectId, envId);
+      const message = formatMessage({ id: handlePromptError(result) ? `${intlPrefix}.delete.des` : `${intlPrefix}.delete.des.resource.confirm` });
+      deleteModal.update({
+        children: message,
+        okText: formatMessage({ id: 'delete' }),
+        okProps: { color: 'red' },
+        cancelProps: { color: 'dark' },
+        onOk: handleDelete,
+        footer: ((okBtn, cancelBtn) => (
+          <Fragment>
+            {cancelBtn}{okBtn}
+          </Fragment>
+        )),
+      });
+    } else {
+      deleteModal.update({
+        children: formatMessage({ id: `${intlPrefix}.status.change` }),
+        onOk: refresh,
+        footer: ((okBtn, cancelBtn) => (
+          <Fragment>
+            {okBtn}
+          </Fragment>
+        )),
+      });
+    }
   }
 
   async function handleDelete() {
@@ -75,53 +105,106 @@ const Group = observer(() => {
     }
   }
 
-  async function openEffectModal(envId) {
-    let children;
-    let title;
-    let disabled = true;
-    try {
-      const res = await mainStore.checkEffect(projectId, envId);
-      if (handlePromptError(res)) {
-        title = '确认停用';
-        children = '当你点击确认后，该环境将被停用！';
-        disabled = false;
-      } else {
-        title = '不可停用';
-        children = '该环境下已有实例，且此环境正在运行中，无法停用！';
-      }
-    } catch (e) {
-      title = '出错了';
-      children = '请稍后重试。';
-      Choerodon.handleResponseError(e);
-    }
-    Modal.open({
-      movable: false,
-      closable: false,
-      header: true,
-      key: modalKey,
-      title,
-      children,
-      onOk: () => handleEffect(envId, false),
-      okProps: {
-        disabled,
-      },
+  function checkStatus(record) {
+    const envId = record.get('id');
+    const oldStatus = getStatusInRecord(record);
+    return new Promise((resolve) => {
+      mainStore.checkStatus(projectId, envId).then((res) => {
+        if (handlePromptError(res)) {
+          const newStatus = getEnvStatus(res);
+          resolve(newStatus === oldStatus);
+        }
+      });
     });
   }
 
-  function openModifyModal(record) {
-    Modal.open({
-      key: envKey,
-      title: formatMessage({ id: `${intlPrefix}.modify` }),
-      children: <EnvModifyForm
-        record={record}
-        intlPrefix={intlPrefix}
-        refresh={refresh}
-        store={envStore}
-      />,
-      drawer: true,
-      style: modalStyle,
-      okText: formatMessage({ id: 'save' }),
+  async function openEffectModal(record) {
+    const envId = record.get('id');
+    const effectModal = Modal.open({
+      key: effectKey,
+      title: formatMessage({ id: `${intlPrefix}.stop.title` }, { name }),
+      children: <Spin />,
+      footer: null,
     });
+    const res = await checkStatus(record);
+    if (res) {
+      try {
+        const result = await mainStore.checkEffect(projectId, envId);
+        if (handlePromptError(result)) {
+          effectModal.update({
+            children: formatMessage({ id: `${intlPrefix}.stop.des` }),
+            okText: formatMessage({ id: 'ok' }),
+            okCancel: true,
+            onOk: () => handleEffect(envId, false),
+            footer: ((okBtn, cancelBtn) => (
+              <Fragment>
+                {okBtn}{cancelBtn}
+              </Fragment>
+            )),
+          });
+        } else if (!result.failed) {
+          effectModal.update({
+            children: formatMessage({ id: `${intlPrefix}.no.stop.des` }),
+            okText: formatMessage({ id: 'iknow' }),
+            footer: ((okBtn, cancelBtn) => (
+              <Fragment>
+                {okBtn}
+              </Fragment>
+            )),
+          });
+        } else {
+          effectModal.close();
+        }
+      } catch (error) {
+        Choerodon.handleResponseError(error);
+        effectModal.close();
+      }
+    } else {
+      effectModal.update({
+        children: formatMessage({ id: `${intlPrefix}.status.change` }),
+        onOk: refresh,
+        footer: (okBtn, cancelBtn) => (
+          <Fragment>
+            {okBtn}
+          </Fragment>
+        ),
+      });
+    }
+  }
+
+  async function openModifyModal(record) {
+    const modifyModal = Modal.open({
+      key: formKey,
+      title: formatMessage({ id: `${intlPrefix}.modify` }),
+      style: modalStyle,
+      children: <Spin />,
+      drawer: true,
+      okCancel: false,
+      okText: formatMessage({ id: 'iknow' }),
+    });
+    try {
+      const res = await checkStatus(record);
+      if (res) {
+        modifyModal.update({
+          okCancel: true,
+          children: <EnvModifyForm
+            intlPrefix={intlPrefix}
+            refresh={refresh}
+            record={record}
+            store={envStore}
+          />,
+          okText: formatMessage({ id: 'save' }),
+        });
+      } else {
+        modifyModal.update({
+          children: formatMessage({ id: `${intlPrefix}.status.change` }),
+          onOk: refresh,
+        });
+      }
+    } catch (error) {
+      Choerodon.handlePromptError(error);
+      modifyModal.close();
+    }
   }
 
   function getStatusInRecord(record) {
@@ -149,7 +232,7 @@ const Group = observer(() => {
         <ClickText
           value={value}
           clickAble={status === RUNNING || status === DISCONNECTED}
-          onClick={openModifyModal}
+          onClick={openModifyModal.bind(this, record)}
           record={record}
         />
       </Fragment>
@@ -158,43 +241,62 @@ const Group = observer(() => {
 
   function renderActions({ record }) {
     const { RUNNING, DISCONNECTED, FAILED, OPERATING, STOPPED } = statusMappings;
-    const envId = record.get('id');
-    const status = getStatusInRecord(record);
 
+    const status = getStatusInRecord(record);
+    const envId = record.get('id');
     if (status === OPERATING) return null;
 
     let actionData = [];
+
     switch (status) {
       case RUNNING:
+        actionData = [{
+          service: [],
+          text: formatMessage({ id: `${intlPrefix}.modal.detail.stop` }),
+          action: () => openEffectModal(record),
+        }, {
+          service: [],
+          text: formatMessage({ id: `${intlPrefix}.modal.detail.modify` }),
+          action: openModifyModal.bind(this, record),
+        }];
+        break;
       case DISCONNECTED:
         actionData = [{
           service: [],
-          text: formatMessage({ id: 'stop' }),
-          action: () => openEffectModal(envId),
+          text: formatMessage({ id: `${intlPrefix}.modal.detail.modify` }),
+          action: () => openModifyModal(record),
+        }, {
+          service: [],
+          text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
+          action: () => openDelete(record),
         }];
         break;
       case STOPPED:
         actionData = [{
           service: [],
-          text: formatMessage({ id: 'active' }),
+          text: formatMessage({ id: `${intlPrefix}.modal.detail.start` }),
           action: () => handleEffect(envId, true),
         }, {
           service: [],
-          text: formatMessage({ id: 'delete' }),
-          action: openDelete,
+          text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
+          action: () => openDelete(record),
         }];
         break;
       case FAILED:
         actionData = [{
           service: [],
-          text: formatMessage({ id: 'delete' }),
-          action: openDelete,
+          text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
+          action: () => openDelete(record),
         }];
         break;
       default:
     }
 
-    return <Action data={actionData} />;
+    return <Action
+      placement="bottomRight"
+      data={actionData}
+      onClick={eventStopProp}
+    />;
   }
 
   return (
@@ -206,7 +308,7 @@ const Group = observer(() => {
         queryBar="none"
       >
         <Column name="name" renderer={renderName} />
-        <Column renderer={renderActions} width={70} />
+        <Column renderer={renderActions} width={100} />
         <Column name="description" />
         <Column name="clusterName" />
       </Table>

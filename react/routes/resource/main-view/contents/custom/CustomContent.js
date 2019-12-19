@@ -119,10 +119,10 @@ const CustomContent = observer(() => {
         border={false}
         queryBar="bar"
       >
-        <Column name="name" renderer={renderName} />
+        <Column name="name" renderer={renderName} sortable />
         <Column renderer={renderAction} width="0.7rem" />
         <Column name="k8sKind" />
-        <Column name="lastUpdateDate" renderer={renderTime} width="1rem" />
+        <Column name="lastUpdateDate" renderer={renderTime} width="1rem" sortable />
       </Table>
     </div>
   );

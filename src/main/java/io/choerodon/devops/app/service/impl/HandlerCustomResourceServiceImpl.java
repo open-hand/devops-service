@@ -85,6 +85,11 @@ public class HandlerCustomResourceServiceImpl implements HandlerObjectFileRelati
         });
     }
 
+    @Override
+    public Class<DevopsCustomizeResourceDTO> getTarget() {
+        return DevopsCustomizeResourceDTO.class;
+    }
+
 
     private void updateDevopsCustomResource(Map<String, String> objectPath, Long projectId, Long
             envId, List<DevopsCustomizeResourceDTO> devopsCustomizeResourceDTOS, String path, Long userId) {

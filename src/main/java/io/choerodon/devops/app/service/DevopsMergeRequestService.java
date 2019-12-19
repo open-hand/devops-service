@@ -3,7 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.DevopsMergeRequestVO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
 
@@ -16,7 +16,7 @@ public interface DevopsMergeRequestService {
 
     DevopsMergeRequestDTO baseQueryByAppIdAndMergeRequestId(Long projectId, Long gitlabMergeRequestId);
 
-    PageInfo<DevopsMergeRequestDTO> basePageByOptions(Integer gitlabProjectId, String state, PageRequest pageRequest);
+    PageInfo<DevopsMergeRequestDTO> basePageByOptions(Integer gitlabProjectId, String state, Pageable pageable);
 
     List<DevopsMergeRequestDTO> baseQueryByGitlabProjectId(Integer gitlabProjectId);
 
@@ -24,7 +24,7 @@ public interface DevopsMergeRequestService {
 
     void create(DevopsMergeRequestVO devopsMergeRequestVO);
 
-    void baseCreate(DevopsMergeRequestDTO devopsMergeRequestDTO);
+    void baseCreate(DevopsMergeRequestVO devopsMergeRequestVO);
 
     DevopsMergeRequestDTO baseCountMergeRequest(Integer gitlabProjectId);
 }

@@ -41,9 +41,14 @@ export default ({ formatMessage, intlPrefix }) => ({
       label: formatMessage({ id: 'name' }),
     },
     {
-      name: 'description',
+      name: 'appServiceName',
       type: 'string',
-      label: formatMessage({ id: 'description' }),
+      label: formatMessage({ id: `${intlPrefix}.config.app` }),
+    },
+    {
+      name: 'envName',
+      type: 'string',
+      label: formatMessage({ id: 'environment' }),
     },
   ],
 });

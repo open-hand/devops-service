@@ -12,10 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
@@ -37,6 +38,7 @@ import io.choerodon.devops.infra.feign.BaseServiceClient;
  * Date:  11:00 2019/7/11
  * Description:
  */
+@Deprecated
 @Service
 public class IamServiceImpl implements IamService {
     private static final Logger LOGGER = LoggerFactory.getLogger(IamServiceImpl.class);
@@ -128,11 +130,11 @@ public class IamServiceImpl implements IamService {
     }
 
     @Override
-    public PageInfo<IamUserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
+    public PageInfo<IamUserDTO> pagingQueryUsersByRoleIdOnProjectLevel(Pageable pageable,
                                                                        RoleAssignmentSearchVO roleAssignmentSearchVO,
                                                                        Long roleId, Long projectId, Boolean doPage) {
         try {
-            return baseServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(pageRequest.getPage(), pageRequest.getSize(), roleId,
+            return baseServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(pageable.getPageNumber(), pageable.getPageSize(), roleId,
                     projectId, doPage, roleAssignmentSearchVO).getBody();
         } catch (FeignException e) {
             LOGGER.error("get users by role id {} and project id {} error", roleId, projectId);
@@ -141,13 +143,13 @@ public class IamServiceImpl implements IamService {
     }
 
     @Override
-    public PageInfo<UserWithRoleVO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest,
+    public PageInfo<UserWithRoleVO> queryUserPermissionByProjectId(Long projectId, Pageable pageable,
                                                                    Boolean doPage) {
         try {
             RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
             ResponseEntity<PageInfo<UserWithRoleVO>> userEPageResponseEntity = baseServiceClient
                     .queryUserByProjectId(projectId,
-                            pageRequest.getPage(), pageRequest.getSize(), doPage, roleAssignmentSearchVO);
+                            pageable.getPageNumber(), pageable.getPageSize(), doPage, roleAssignmentSearchVO);
             return userEPageResponseEntity.getBody();
         } catch (FeignException e) {
             LOGGER.error("get user permission by project id {} error", projectId);
@@ -189,11 +191,11 @@ public class IamServiceImpl implements IamService {
         // 项目下所有项目成员
         List<Long> memberIds =
 
-                this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchVO(), memberId,
+                this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), new RoleAssignmentSearchVO(), memberId,
                         projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
         List<Long> ownerIds =
-                this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchVO(), ownerId,
+                this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), new RoleAssignmentSearchVO(), ownerId,
 
                         projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
         return memberIds.stream().filter(e -> !ownerIds.contains(e)).collect(Collectors.toList());
@@ -207,11 +209,11 @@ public class IamServiceImpl implements IamService {
         Long ownerId = this.queryRoleIdByCode(PROJECT_OWNER);
         // 项目下所有项目成员
 
-        List<IamUserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchVO(), memberId,
+        List<IamUserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), new RoleAssignmentSearchVO(), memberId,
                 projectId, false).getList();
         List<Long> memberIds = list.stream().filter(IamUserDTO::getEnabled).map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
-        this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchVO(), ownerId,
+        this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), new RoleAssignmentSearchVO(), ownerId,
 
                 projectId, false).getList().stream().filter(IamUserDTO::getEnabled).forEach(t -> {
             if (!memberIds.contains(t.getId())) {

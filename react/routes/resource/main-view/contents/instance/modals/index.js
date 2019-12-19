@@ -7,7 +7,7 @@ import { handlePromptError } from '../../../../../../utils';
 import HeaderButtons from '../../../../../../components/header-buttons';
 import DetailsModal from './details';
 import ValueModalContent from './values/Config';
-import UpgradeModalContent from './values/Upgrade';
+import UpgradeModalContent from './upgrade';
 import { useResourceStore } from '../../../../stores';
 import { useInstanceStore } from '../stores';
 
@@ -156,10 +156,15 @@ const IstModals = injectIntl(observer(() => {
   }
 
   function openRedeploy() {
+    const record = baseDs.current;
+    if (!record) return;
+
+    const versionName = record.get('commandVersion');
+
     Modal.open({
       key: redeployKey,
       title: formatMessage({ id: `${intlPrefix}.modal.redeploy` }),
-      children: <FormattedMessage id={`${intlPrefix}.modal.redeploy.tips`} />,
+      children: <FormattedMessage id={`${intlPrefix}.modal.redeploy.tips`} values={{ versionName }} />,
       onOk: redeploy,
     });
   }
@@ -204,13 +209,6 @@ const IstModals = injectIntl(observer(() => {
       display: true,
       group: 1,
       disabled: btnDisabled,
-    }, {
-      name: formatMessage({ id: `${intlPrefix}.modal.detail` }),
-      icon: 'find_in_page',
-      handler: openDetailModal,
-      display: true,
-      group: 2,
-      disabled: !status,
     }, {
       name: formatMessage({ id: 'refresh' }),
       icon: 'refresh',

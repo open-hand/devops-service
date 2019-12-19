@@ -34,6 +34,10 @@ const EnvModals = observer(() => {
 
   const [showModal, setShowModal] = useState(false);
 
+  useEffect(() => {
+    certStore.checkCertManager(projectId, parentId);
+  }, [projectId, parentId]);
+
   function refresh() {
     treeDs.query();
     certificateDs.query();
@@ -51,7 +55,7 @@ const EnvModals = observer(() => {
   function getButtons() {
     const envRecord = treeDs.find((record) => record.get('key') === parentId);
     const connect = envRecord.get('connect');
-    const disabled = !connect;
+    const disabled = !connect || !certStore.getHasCertManager;
 
     return ([{
       name: formatMessage({ id: `${intlPrefix}.create.certificate` }),

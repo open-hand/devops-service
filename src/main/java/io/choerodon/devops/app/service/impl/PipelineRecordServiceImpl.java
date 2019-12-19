@@ -9,7 +9,7 @@ import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.PipelineRecordService;
 import io.choerodon.devops.infra.dto.PipelineRecordDTO;
@@ -30,11 +30,11 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
     private PipelineRecordMapper pipelineRecordMapper;
 
     @Override
-    public PageInfo<PipelineRecordDTO> basePageByOptions(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Map<String, Object> classifyParam) {
+    public PageInfo<PipelineRecordDTO> basePageByOptions(Long projectId, Long pipelineId, Pageable pageable, String params, Map<String, Object> classifyParam) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
                 pipelineRecordMapper.listByOptions(projectId, pipelineId, searchParamMap, paramList, classifyParam));
     }
 

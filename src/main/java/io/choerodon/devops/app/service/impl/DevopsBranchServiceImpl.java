@@ -8,10 +8,10 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.domain.Sort;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
@@ -50,7 +50,8 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
             throw new CommonException("error.query.branch.by.name");
         }
         oldDevopsBranchDTO.setIssueId(devopsBranchDTO.getIssueId());
-        devopsBranchMapper.updateByPrimaryKey(oldDevopsBranchDTO);
+        oldDevopsBranchDTO.setObjectVersionNumber(devopsBranchDTO.getObjectVersionNumber());
+        devopsBranchMapper.updateByPrimaryKeySelective(oldDevopsBranchDTO);
     }
 
     @Override
@@ -92,29 +93,32 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
 
 
     @Override
-    public PageInfo<DevopsBranchDTO> basePageBranch(Long appServiceId, PageRequest pageRequest, String params) {
-
-        PageInfo<DevopsBranchDTO> devopsBranchDTOPageInfo;
+    public PageInfo<DevopsBranchDTO> basePageBranch(Long appServiceId, Pageable pageable, String params) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
-        Sort sort = pageRequest.getSort();
+        Sort sort = pageable.getSort();
         String sortResult = "";
         if (sort != null) {
-            sortResult = Lists.newArrayList(pageRequest.getSort().iterator()).stream()
+            sortResult = Lists.newArrayList(pageable.getSort().iterator()).stream()
                     .map(t -> {
                         String property = t.getProperty();
                         if ("branchName".equals(property)) {
                             property = "db.branch_name";
+                        } if ("creation_date".equals(property)) {
+                            property = "db.creation_date";
+                        } else {
+                            throw new CommonException("error.field.not.supported.for.sort", t.getProperty());
                         }
                         return property + " " + t.getDirection();
                     })
                     .collect(Collectors.joining(","));
         }
-        devopsBranchDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult)
+        String sortString = sortResult;
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize())
                 .doSelectPageInfo(
                         () -> devopsBranchMapper.list(appServiceId,
+                                sortString,
                                 TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                                 TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
-        return devopsBranchDTOPageInfo;
     }
 
 
@@ -124,5 +128,10 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
         if (devopsBranchDTO != null) {
             devopsBranchMapper.delete(devopsBranchDTO);
         }
+    }
+
+    @Override
+    public void deleteAllBaranch(Long appServiceId) {
+        devopsBranchMapper.deleteByAppServiceId(appServiceId);
     }
 }

@@ -14,7 +14,9 @@ export default function useStore() {
     checkEffect(projectId, id) {
       return axios.get(`/devops/v1/projects/${projectId}/envs/${id}/delete_check`);
     },
-
+    checkStatus(projectId, id) {
+      return axios.get(`/devops/v1/projects/${projectId}/envs/${id}/info`);
+    },
     effectEnv(projectId, id, target) {
       return axios.put(`/devops/v1/projects/${projectId}/envs/${id}/active?active=${target}`);
     },

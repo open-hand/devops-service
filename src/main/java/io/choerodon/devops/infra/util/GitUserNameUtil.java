@@ -1,11 +1,34 @@
 package io.choerodon.devops.infra.util;
 
+import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 
 public class GitUserNameUtil {
 
     private GitUserNameUtil() {
+    }
+
+    private static int adminId = -1;
+
+    /**
+     * 获得gitlab管理员id
+     */
+    public static int getAdminId() {
+        if (adminId == -1) {
+            synchronized (GitUserNameUtil.class) {
+                if (adminId == -1) {
+                    GitlabServiceClientOperator gitlabServiceClientOperator = (GitlabServiceClientOperator) ApplicationContextHelper.getContext().getBean("gitlabServiceClientOperator");
+                    GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryAdminUser();
+                    adminId = gitLabUserDTO.getId();
+                }
+                return adminId;
+            }
+        } else {
+            return adminId;
+        }
     }
 
     /**

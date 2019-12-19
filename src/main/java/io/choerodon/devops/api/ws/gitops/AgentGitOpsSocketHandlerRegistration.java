@@ -5,6 +5,7 @@ import static io.choerodon.devops.infra.handler.ClusterConnectionHandler.CLUSTER
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
@@ -22,7 +23,6 @@ import org.springframework.web.socket.PingMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.server.HandshakeFailureException;
 
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ClusterSessionVO;
 import io.choerodon.devops.api.ws.WebSocketTool;
 import io.choerodon.devops.app.service.AgentCommandService;
@@ -30,6 +30,7 @@ import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.KeyParseUtil;
+import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.websocket.connect.SocketHandlerRegistration;
 import io.choerodon.websocket.helper.WebSocketHelper;
@@ -43,7 +44,9 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
 
     private static final String CLUSTER_ID = "clusterId";
     private static final Logger logger = LoggerFactory.getLogger(AgentGitOpsSocketHandlerRegistration.class);
+    // TODO 这个是否导致内存泄露？
     private ConcurrentHashMap<String, Map<String, Object>> attributes = new ConcurrentHashMap<>();
+    // TODO 是否需要考虑并发？
     private Set<WebSocketSession> webSocketSessions = new HashSet<>();
 
 
@@ -101,8 +104,13 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
         }
         //检验连接过来的agent和集群是否匹配
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(TypeUtil.objToLong(clusterId));
-        if (devopsClusterDTO == null || !token.equals(devopsClusterDTO.getToken())) {
-            throw new HandshakeFailureException("agent token not match");
+        if (devopsClusterDTO == null) {
+            LogUtil.loggerWarnObjectNullWithId("Cluster", TypeUtil.objToLong(clusterId), logger);
+            return false;
+        }
+        if (!token.equals(devopsClusterDTO.getToken())) {
+            logger.warn("Cluster with id {} exists but its token doesn't match the token that agent offers as {}", clusterId, token);
+            return false;
         }
 
         return true;
@@ -146,24 +154,7 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
         Map<String, Object> attribute = attributes.get(webSocketSession.getId());
         String registerKey = TypeUtil.objToString(attribute.get("key"));
 
-        Object registerKeyValue = redisTemplate.opsForHash().get(CLUSTER_SESSION, registerKey);
-        if (registerKeyValue != null) {
-            if (registerKeyValue instanceof ClusterSessionVO) {
-                ClusterSessionVO clusterSessionVO = (ClusterSessionVO) registerKeyValue;
-                // 只有这个registerKey的值中webSocketSessionId和当前sessionId一致时才删除key，避免旧的超时的连接
-                // 误将新连接的key删掉（两者是同一个key）
-                if (Objects.equals(webSocketSession.getId(), clusterSessionVO.getWebSocketSessionId())) {
-                    //移除关联关系
-                    redisTemplate.opsForHash().delete(CLUSTER_SESSION, registerKey);
-                } else {
-                    logger.info("This is an elder session whose registerKey value was updated by a new session. the session cluster id is {}", TypeUtil.objToLong(attribute.get(CLUSTER_ID)));
-                }
-            } else {
-                // 这个逻辑不应该进的
-                logger.warn("Value of register key is not of Class 'io.choerodon.devops.api.vo.ClusterSessionVO', and its real class is {}", registerKeyValue.getClass());
-                redisTemplate.opsForHash().delete(CLUSTER_SESSION, registerKey);
-            }
-        }
+        removeRedisValueByRegisterKeyAndSessionId(registerKey, webSocketSession.getId(), TypeUtil.objToLong(attribute.get(CLUSTER_ID)));
 
         logger.info("After connection closed, the cluster session with key {} is to be closed.", registerKey);
         try {
@@ -174,6 +165,56 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
         }
     }
 
+    private void removeRedisValueByRegisterKeyAndSessionId(String registerKey, String sessionId, Object clusterId) {
+        Object registerKeyValue = redisTemplate.opsForHash().get(CLUSTER_SESSION, registerKey);
+        if (registerKeyValue != null) {
+            if (registerKeyValue instanceof ClusterSessionVO) {
+                ClusterSessionVO clusterSessionVO = (ClusterSessionVO) registerKeyValue;
+                // 只有这个registerKey的值中webSocketSessionId和当前sessionId一致时才删除key，避免旧的超时的连接
+                // 误将新连接的key删掉（两者是同一个key）
+                if (Objects.equals(sessionId, clusterSessionVO.getWebSocketSessionId())) {
+                    //移除关联关系
+                    redisTemplate.opsForHash().delete(CLUSTER_SESSION, registerKey);
+                } else {
+                    logger.info("This is an elder session whose registerKey value was updated by a new session. the session cluster id is {}", clusterId);
+                }
+            } else {
+                // 这个逻辑不应该进的
+                logger.warn("Value of register key is not of Class 'io.choerodon.devops.api.vo.ClusterSessionVO', and its real class is {}", registerKeyValue.getClass());
+                redisTemplate.opsForHash().delete(CLUSTER_SESSION, registerKey);
+            }
+        }
+    }
+
+
+    private void doRemoveRedisKeyOfThisMicroService() {
+        List<String> sessionIds = webSocketSessions.stream().map(WebSocketSession::getId).collect(Collectors.toList());
+        Map<Object, Object> entries = redisTemplate.opsForHash().entries(CLUSTER_SESSION);
+        entries.forEach((k, v) -> {
+            if (sessionIds.contains(((ClusterSessionVO) v).getWebSocketSessionId())) {
+                String registerKey = TypeUtil.objToString(k);
+                removeRedisValueByRegisterKeyAndSessionId(registerKey, ((ClusterSessionVO) v).getWebSocketSessionId(), getClusterIdFromRegisterKey(registerKey));
+            }
+        });
+
+        webSocketSessions.clear();
+    }
+
+    private Long getClusterIdFromRegisterKey(String registerKey) {
+        String[] pairs = registerKey.split("\\.");
+        String[] content = pairs[0].split(":");
+        return TypeUtil.objToLong(content[1]);
+    }
+
+    /**
+     * 释放这个微服务实例所持有的redis的键
+     */
+    public void removeRedisKeyOfThisMicroService() {
+        logger.info("The agent connection information in redis of this devops-service instance is to be removed.");
+        doRemoveRedisKeyOfThisMicroService();
+        logger.info("The agent connection information in redis of this devops-service instance was successfully removed.");
+    }
+
     /**
      * DevOps会定时发送Ping消息以保持连接。目前由于基础包的问题（2019/10/11），
      * 并没有对返回的Pong消息进行处理，（Agent发送的Ping消息DevOps没有处理）
@@ -181,6 +222,7 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
      */
     @Scheduled(initialDelay = 10 * 1000, fixedRate = 10 * 1000)
     public void sendPing() {
+        logger.info("Sending ping message...");
         for (WebSocketSession session : webSocketSessions) {
             try {
                 session.sendMessage(new PingMessage());

@@ -1,0 +1,50 @@
+# 集群名
+global:
+  clusterName: {{clusterName}}
+alertmanager:
+  alertmanagerSpec:
+    storage:
+      volumeClaimTemplate:
+        spec:
+          # 你们现在不支持 sc,所以注释了
+          #storageClassName: standard
+          accessModes:
+          - {{altermanagerAccesssMode}}
+          resources:
+            requests:
+              storage: {{altermanagerStorage}}
+          # 通过 seletor 选择绑定的 pv
+          selector:
+            matchLabels:
+              choerodon.io/name: {{alertmanager-pv}}
+grafana:
+  adminPassword: {{adminPassword}}
+  ingress:
+    enabled: true
+    hosts:
+    - {{host}}
+  persistence:
+    enabled: true
+    existingClaim: c7n-grafana-pvc
+    accessModes:
+    - {{grafanaAccessMode}}
+    size: {{grafanaStorage}}
+    # 选择 PVC 绑定的 PV
+    selector:
+      matchLabels:
+        choerodon.io/name: {{grafana-pv}}
+
+prometheus:
+  prometheusSpec:
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+          - {{prometheusAccessMode}}
+          resources:
+            requests:
+              storage: {{prometheusStorage}}
+          # 通过 seletor 选择绑定的 pv
+          selector:
+            matchLabels:
+              choerodon.io/name: {{prometheus-pv}}

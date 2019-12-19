@@ -85,6 +85,11 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
         });
     }
 
+    @Override
+    public Class<V1ConfigMap> getTarget() {
+        return V1ConfigMap.class;
+    }
+
 
     private void updateConfigMap(Map<String, String> objectPath, Long envId, List<V1ConfigMap> updateConfigMap, String path, Long userId) {
         updateConfigMap.stream()

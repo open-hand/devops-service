@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
+import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 import io.kubernetes.client.models.V1Endpoints;
@@ -17,6 +18,7 @@ public class ServiceSagaPayLoad {
     private DevopsServiceDTO devopsServiceDTO;
     private V1Service v1Service;
     private V1Endpoints v1Endpoints;
+    private DevopsIngressVO devopsIngressVO;
 
     public ServiceSagaPayLoad() {
     }
@@ -80,5 +82,13 @@ public class ServiceSagaPayLoad {
 
     public void setCreated(Boolean created) {
         this.created = created;
+    }
+
+    public DevopsIngressVO getDevopsIngressVO() {
+        return devopsIngressVO;
+    }
+
+    public void setDevopsIngressVO(DevopsIngressVO devopsIngressVO) {
+        this.devopsIngressVO = devopsIngressVO;
     }
 }

@@ -1,10 +1,11 @@
-
+@import '~choerodon-ui/lib/style/themes/default';
 .c7n-ciPipeline {
-
   .c7n-content {
     padding-left: 0;
   }
-
+  .@{c7n-pro-prefix}-table-cell-inner {
+    height: auto !important;
+  }
   .c7n-status {
     display: flex;
     align-items: center;
@@ -41,7 +42,7 @@
       vertical-align: baseline;
       border-radius: 0.25em;
       width: 40px;
-      margin-top: 5px;
+      margin-top: -5px;
     }
   }
 
@@ -57,7 +58,7 @@
     .c7n-des-commit {
       display: flex;
       align-items: center;
-      margin-top: 3px;
+      margin-top: -14px;
     }
   }
 
@@ -176,4 +177,7 @@
 .c7n-app-select_512 {
   width: 512px;
   margin-bottom: 16px;
+}
+.c7n-pipineline-table {
+  margin-top: .16rem;
 }

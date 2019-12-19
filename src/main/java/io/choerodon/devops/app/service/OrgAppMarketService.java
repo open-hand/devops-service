@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.iam.AppServiceAndVersionVO;
 import io.choerodon.devops.app.eventhandler.payload.*;
 
@@ -18,12 +18,12 @@ public interface OrgAppMarketService {
      * 根据appId 查询应用服务
      *
      * @param appId
-     * @param pageRequest
+     * @param pageable
      * @param params
      * @return
      */
     PageInfo<AppServiceUploadPayload> pageByAppId(Long appId,
-                                                  PageRequest pageRequest,
+                                                  Pageable pageable,
                                                   String params);
 
     /**
@@ -57,9 +57,15 @@ public interface OrgAppMarketService {
     void downLoadApp(AppMarketDownloadPayload appServicePayload);
 
     /**
-     * 根据versionId查询应用服务版本
-     * 保留原排序
-     * @param versionVOList
+     * 应用市场下载失败删除gitlab相关项目
+     * @param marketDelGitlabProPayload
      */
+    void deleteGitlabProject(MarketDelGitlabProPayload marketDelGitlabProPayload) ;
+
+        /**
+         * 根据versionId查询应用服务版本
+         * 保留原排序
+         * @param versionVOList
+         */
     List<AppServiceAndVersionVO> listVersions(List<AppServiceAndVersionVO> versionVOList);
 }

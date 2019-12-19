@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.mapper;
 import java.sql.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
@@ -58,7 +59,7 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
 
     void deleteInstanceRelInfo(@Param("instanceId") Long instanceId);
 
-    Boolean checkCodeExist(@Param("code") String code, @Param("envIds") List<Long> envIds);
+    Boolean checkCodeExist(@Param("code") String code, @Param("envId") Long envId);
 
     int countNonDeletedInstances(@Param("appServiceId") Long appServiceId,
                                  @Nullable @Param("projectId") Long projectId);
@@ -68,4 +69,11 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
     void updateStatus(@Param("instanceId") Long instanceId, @Param("status") String status);
 
     List<DevopsEnvAppServiceDTO> listAllDistinctWithoutDeleted();
+
+    List<AppServiceInstanceDTO> listByProjectIdsAndAppServiceId(@Param("projectIds") Set<Long> projectIds,@Param("appServiceId") Long appServiceId);
+
+    boolean isOtherComponentDeployed(
+            @Param("envId") Long envId,
+            @Param("instanceCode") String instanceCode,
+            @Param("componentChartName") String componentChartName);
 }

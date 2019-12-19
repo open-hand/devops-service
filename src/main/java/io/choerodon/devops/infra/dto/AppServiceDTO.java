@@ -2,6 +2,8 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.*;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
@@ -49,6 +51,11 @@ public class AppServiceDTO extends BaseDTO {
     private String description;
     @Transient
     private String repoUrl;
+
+    @Transient
+    @ApiModelProperty("应用服务对应的gitlab的仓库的ssh协议克隆地址")
+    private String sshRepositoryUrl;
+
     @Transient
     private String sonarUrl;
     @Transient
@@ -268,5 +275,13 @@ public class AppServiceDTO extends BaseDTO {
 
     public void setEmptyRepository(Boolean emptyRepository) {
         this.emptyRepository = emptyRepository;
+    }
+
+    public String getSshRepositoryUrl() {
+        return sshRepositoryUrl;
+    }
+
+    public void setSshRepositoryUrl(String sshRepositoryUrl) {
+        this.sshRepositoryUrl = sshRepositoryUrl;
     }
 }

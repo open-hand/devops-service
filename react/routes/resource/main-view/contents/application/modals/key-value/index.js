@@ -216,7 +216,7 @@ export default class FormView extends Component {
    * @param data
    * @returns {boolean}
    */
-  checkErrorData = (data = null) => {
+  checkErrorData = (data = null, isSubmit = false) => {
     const {
       title,
       intl: {
@@ -246,7 +246,7 @@ export default class FormView extends Component {
       this.setState({
         warningMes: '',
         hasItemError: false,
-      }, () => this.checkButtonDisabled());
+      }, () => this.checkButtonDisabled(isSubmit));
       return false;
     }
 
@@ -300,7 +300,7 @@ export default class FormView extends Component {
     return new Promise((resolve) => {
       validateFields((err, { name, description }) => {
         if (!isYamlEdit) {
-          hasKVError = this.checkErrorData();
+          hasKVError = this.checkErrorData(null, true);
           const allData = [...dataSource.filter(item => !_.isEmpty(item.key))];
           configData = _.uniqBy(allData, 'index');
         } else {
@@ -599,14 +599,14 @@ export default class FormView extends Component {
     }
   };
 
-  checkButtonDisabled = () => {
+  checkButtonDisabled = (isSubmit = false) => {
     const { modal } = this.props;
     const {
       hasYamlError,
       hasValueError,
       hasItemError,
     } = this.state;
-    modal.update({ okProps: { disabled: hasYamlError || hasValueError || hasItemError }})
+    !isSubmit && modal.update({ okProps: { disabled: hasYamlError || hasValueError || hasItemError }})
   };
 
   render() {

@@ -49,6 +49,7 @@ export default function Permissions() {
 
   function getActionColumn() {
     const envRecord = baseInfoDs.current;
+    if (!envRecord) return null;
     const isSkip = envRecord.get('skipCheckPermission');
     return !isSkip && <Column renderer={renderActions} />;
   }
@@ -59,12 +60,13 @@ export default function Permissions() {
         dataSet={tableDs}
         border={false}
         queryBar="bar"
+        pristine
       >
-        <Column name="realName" />
+        <Column name="realName" sortable />
         {getActionColumn()}
-        <Column name="loginName" />
+        <Column name="loginName" sortable />
         <Column name="role" renderer={renderRole} />
-        <Column name="creationDate" renderer={renderDate} />
+        <Column name="creationDate" renderer={renderDate} sortable />
       </Table>
     </div>
   );

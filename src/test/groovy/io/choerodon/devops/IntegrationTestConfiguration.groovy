@@ -113,7 +113,7 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     @Bean("mockTransactionalProducer")
     @Primary
     TransactionalProducer transactionalProducer() {
-        detachedMockFactory.Mock(TransactionalProducer)
+        PowerMockito.mock(TransactionalProducer)
     }
 
     @Bean("mockProjectConfigHarborService")

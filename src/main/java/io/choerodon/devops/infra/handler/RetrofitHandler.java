@@ -43,12 +43,11 @@ public class RetrofitHandler {
 
         OkHttpClient okHttpClient = getOkHttpClient(configurationProperties.getInsecureSkipTlsVerify(), configurationProperties.getType(), token);
 
-        Retrofit retrofit = new Retrofit.Builder()
+        return new Retrofit.Builder()
                 .baseUrl(configurationProperties.getBaseUrl())
                 .client(okHttpClient)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
-        return retrofit;
     }
 
     private static OkHttpClient getOkHttpClient(Boolean insecureSkipTlsVerify, String type, String token) {
@@ -146,9 +145,9 @@ public class RetrofitHandler {
         return retrofit.create(SonarClient.class);
     }
 
-    public static MarketServicePublicClient getMarketServiceClient(String getawayUrl, String type) {
+    public static MarketServicePublicClient getMarketServiceClient(String gatewayUrl, String type) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
-        configurationProperties.setBaseUrl(getawayUrl);
+        configurationProperties.setBaseUrl(gatewayUrl);
         configurationProperties.setInsecureSkipTlsVerify(false);
         configurationProperties.setType(type);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);

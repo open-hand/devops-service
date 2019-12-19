@@ -6,6 +6,8 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCertificationProRelationshipService;
 import io.choerodon.devops.infra.dto.DevopsCertificationProRelationshipDTO;
 import io.choerodon.devops.infra.mapper.DevopsCertificationProRelMapper;
+import io.choerodon.devops.infra.util.MapperUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -57,7 +59,7 @@ public class DevopsCertificationProRelationshipServiceImpl implements DevopsCert
         projectIds.forEach(p -> {
             permission.setProjectId(p);
             if (devopsCertificationProRelMapper.selectOne(permission) == null) {
-                devopsCertificationProRelMapper.insert(permission);
+                MapperUtil.resultJudgedInsert(devopsCertificationProRelMapper, permission, "error.insert.certification.pro.rel");
             }
         });
     }

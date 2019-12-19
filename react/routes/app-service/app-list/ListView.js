@@ -4,27 +4,33 @@ import { observer } from 'mobx-react-lite';
 import { FormattedMessage } from 'react-intl';
 import { withRouter, Link } from 'react-router-dom';
 import { Page, Content, Header, Permission, Action, Breadcrumb, Choerodon } from '@choerodon/boot';
-import { Button } from 'choerodon-ui';
+import { Button, Spin } from 'choerodon-ui';
 import pick from 'lodash/pick';
 import TimePopover from '../../../components/timePopover';
 import { useAppTopStore } from '../stores';
 import { useAppServiceStore } from './stores';
 import CreateForm from '../modals/creat-form';
+import EditForm from '../modals/edit-form';
 import ImportForm from './modal/import-form';
 import StatusTag from '../components/status-tag';
 
 import './index.less';
+import { handlePromptError } from '../../../utils';
 
 const { Column } = Table;
 const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
 const modalKey3 = Modal.key();
+const createModalKey = Modal.key();
+const editModalKey = Modal.key();
 const modalStyle1 = {
   width: 380,
 };
 const modalStyle2 = {
   width: 'calc(100vw - 3.52rem)',
 };
+
+// let stopModal;
 
 const ListView = withRouter(observer((props) => {
   const {
@@ -53,7 +59,7 @@ const ListView = withRouter(observer((props) => {
     if (isInit && listDs.status === 'ready') {
       const { location: { state } } = props;
       if (state && state.openCreate) {
-        openModal(listDs.create());
+        openCreate();
       }
       setIsInit(false);
     }
@@ -119,7 +125,7 @@ const ListView = withRouter(observer((props) => {
       stop: {
         service: ['devops-service.app-service.updateActive'],
         text: formatMessage({ id: 'stop' }),
-        action: () => changeActive(false),
+        action: openStop.bind(this, record),
       },
       run: {
         service: ['devops-service.app-service.updateActive'],
@@ -141,7 +147,7 @@ const ListView = withRouter(observer((props) => {
     } else if (record.get('active')) {
       return;
     } else {
-      actionItems = pick(actionData, ['run']);
+      actionItems = pick(actionData, ['run', 'delete']);
     }
     return <Action data={Object.values(actionItems)} />;
   }
@@ -155,23 +161,18 @@ const ListView = withRouter(observer((props) => {
     }
   }
 
-  function openModal(record) {
-    const isModify = record.status !== 'add';
+  function openCreate() {
     Modal.open({
-      key: modalKey1,
+      key: createModalKey,
       drawer: true,
       style: modalStyle1,
-      title: <FormattedMessage id={`${intlPrefix}.${isModify ? 'edit' : 'create'}`} />,
+      title: formatMessage({ id: `${intlPrefix}.create` }),
       children: <CreateForm
-        dataSet={listDs}
-        record={record}
-        appServiceStore={appServiceStore}
-        projectId={projectId}
+        refresh={refresh}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
       />,
-      okText: formatMessage({ id: isModify ? 'save' : 'create' }),
-      onCancel: () => handleCancel(listDs),
+      okText: formatMessage({ id: 'create' }),
     });
   }
 
@@ -201,8 +202,21 @@ const ListView = withRouter(observer((props) => {
   }
 
   function openEdit() {
-    appServiceStore.setAppServiceId(listDs.current.get('id'));
-    openModal(listDs.current);
+    const appServiceId = listDs.current.get('id');
+
+    Modal.open({
+      key: editModalKey,
+      drawer: true,
+      style: modalStyle1,
+      title: formatMessage({ id: `${intlPrefix}.edit` }),
+      children: <EditForm
+        refresh={refresh}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+        appServiceId={appServiceId}
+      />,
+      okText: formatMessage({ id: 'save' }),
+    });
   }
 
   function handleDelete() {
@@ -244,6 +258,57 @@ const ListView = withRouter(observer((props) => {
     }
   }
 
+  function openStop(record) {
+    const id = record.get('id');
+
+    const stopModal = Modal.open({
+      key: modalKey3,
+      title: formatMessage({ id: `${intlPrefix}.check` }),
+      children: <Spin />,
+      footer: null,
+    });
+
+    appServiceStore.checkAppService(projectId, id).then((res) => {
+      if (handlePromptError(res)) {
+        const { checkResources, checkRule } = res;
+        const status = checkResources || checkRule;
+        let childrenContent;
+
+        if (!status) {
+          childrenContent = <FormattedMessage id={`${intlPrefix}.stop.tips`} />;
+        } else if (checkResources && !checkRule) {
+          childrenContent = formatMessage({ id: `${intlPrefix}.has.resource` });
+        } else if (!checkResources && checkRule) {
+          childrenContent = formatMessage({ id: `${intlPrefix}.has.rules` });
+        } else {
+          childrenContent = formatMessage({ id: `${intlPrefix}.has.both` });
+        }
+
+        const statusObj = {
+          title: status ? formatMessage({ id: `${intlPrefix}.cannot.stop` }, { name: listDs.current.get('name') }) : formatMessage({ id: `${intlPrefix}.stop` }, { name: listDs.current.get('name') }),
+          // eslint-disable-next-line no-nested-ternary
+          children: childrenContent,
+          okCancel: !status,
+          onOk: () => (status ? stopModal.close() : handleChangeActive(false)),
+          okText: status ? formatMessage({ id: 'iknow' }) : formatMessage({ id: 'stop' }),
+          footer: ((okBtn, cancelBtn) => (
+            <Fragment>
+              {okBtn}
+              {!status && cancelBtn}
+            </Fragment>
+          )),
+        };
+        stopModal.update(statusObj);
+      } else {
+        stopModal.close();
+      }
+    }).catch((err) => {
+      stopModal.close();
+      Choerodon.handleResponseError(err);
+    });
+  }
+
+
   function getHeader() {
     return <Header title={<FormattedMessage id="app.head" />}>
       <Permission
@@ -251,7 +316,7 @@ const ListView = withRouter(observer((props) => {
       >
         <Button
           icon="playlist_add"
-          onClick={() => openModal(listDs.create())}
+          onClick={openCreate}
         >
           <FormattedMessage id={`${intlPrefix}.create`} />
         </Button>
@@ -293,7 +358,7 @@ const ListView = withRouter(observer((props) => {
           <Column name="code" sortable />
           <Column name="type" renderer={renderType} />
           <Column name="repoUrl" renderer={renderUrl} />
-          <Column name="creationDate" renderer={renderDate} />
+          <Column name="creationDate" renderer={renderDate} sortable />
           <Column name="active" renderer={renderStatus} width="0.7rem" align="left" />
         </Table>
       </Content>

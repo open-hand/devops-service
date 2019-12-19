@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsPrometheusMapper">
+
+    <select id="queryPrometheusWithPvById" resultType="io.choerodon.devops.api.vo.DevopsPrometheusVO">
+        SELECT
+        dpro.id,
+        dpro.admin_password,
+        dpro.grafana_domain,
+        dpro.object_version_number,
+        (SELECT dpv.name FROM devops_pv dpv
+        WHERE dpv.id = dpro.prometheus_pv_id and dpv.status='Available') AS PROMETHEUS_PV_NAME,
+        (SELECT dpv.name FROM devops_pv dpv
+        WHERE dpv.id = dpro.grafana_pv_id and dpv.status='Available') AS GRAFANA_PV_NAME,
+        (SELECT dpv.name FROM devops_pv dpv
+        WHERE dpv.id = dpro.alertmanager_pv_id and dpv.status='Available') AS ALERTMANAGER_PV_NAME
+        FROM devops_prometheus dpro
+        WHERE dpro.id = #{id}
+    </select>
+</mapper>

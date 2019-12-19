@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.enums;
 
 public enum GitOpsObjectError {
+    RELEASE_APP_SERVICE_ID_MISMATCH("release.app.service.id.not.matched"),
     RELEASE_META_DATA_NOT_FOUND("release.meta.data.not.found"),
     RELEASE_NAME_NOT_FOUND("release.name.not.found"),
     RELEASE_SPEC_NOT_FOUND("release.spec.not.found"),
@@ -18,6 +19,7 @@ public enum GitOpsObjectError {
     SERVICE_TYPE_NOT_FOUND("service.type.not.found"),
     SERVICE_API_VERSION_NOT_FOUND("service.api.version.not.found"),
     SERVICE_RELATED_INGRESS_NOT_FOUND("service.related.ingress.not.found"),
+    SERVICE_ANNOTATED_NOT_SUPPORTED_ANY_MORE("service.not.supported.any.more"),
     INGRESS_META_DATA_NOT_FOUND("ingress.meta.data.not.found"),
     INGRESS_NAME_NOT_FOUND("ingress.name.not.found"),
     INGRESS_SPEC_NOT_FOUND("ingress.spec.not.found"),
@@ -69,8 +71,29 @@ public enum GitOpsObjectError {
     CUSTOM_RESOURCE_NAME_NOT_FOUND("custom.resource.name.not.found"),
     CUSTOM_RESOURCE_KIND_NOT_FOUND("custom.resource.kind.not.found"),
     CUSTOM_RESOURCE_METADATA_NOT_FOUND("custom.resource.metadata.not.found"),
+    PERSISTENT_VOLUME_CLAIM_METADATA_NOT_FOUND("pvc.metadata.not.found"),
+    PERSISTENT_VOLUME_CLAIM_NAME_NOT_FOUND("pvc.name.not.found"),
+    PERSISTENT_VOLUME_CLAIM_ACCESS_MODE_NOT_FOUND("pvc.access.mode.not.found"),
+    PERSISTENT_VOLUME_CLAIM_ACCESS_MODE_SIZE_NOT_SUPPORTED("pvc.access.mode.size.not.supported"),
+    PERSISTENT_VOLUME_CLAIM_RESOURCE_REQUEST_NOT_FOUND("pvc.resource.request.not.found"),
+    PERSISTENT_VOLUME_CLAIM_UNMODIFIED("pvc.is.unmodified"),
+    PERSISTENT_VOLUME_METADATA_NOT_FOUND("pv.metadata.not.found"),
+    PERSISTENT_VOLUME_NAME_NOT_FOUND("pv.name.not.found"),
+    PERSISTENT_VOLUME_CAPACITY_NOT_FOUND("pv.capacity.not.found"),
+    PERSISTENT_VOLUME_STORAGE_NOT_FOUND("pv.storage.not.found"),
+    PERSISTENT_VOLUME_ACCESS_MODE_NOT_FOUND("pv.access.mode.not.found"),
+    PERSISTENT_VOLUME_ACCESS_MODE_SIZE_NOT_SUPPORTED("pv.access.mode.size.not.supported"),
+    PERSISTENT_VOLUME_TYPE_NOT_FOUND("pv.type.not.found"),
+    PERSISTENT_VOLUME_TYPE_MULTI("multi.pv.type.not.valid"),
+    PERSISTENT_VOLUME_NFS_PATH_NOT_FOUND("pv.nfs.path.not.found"),
+    PERSISTENT_VOLUME_NFS_SERVER_NOT_FOUND("pv.nfs.server.not.found"),
+    PERSISTENT_VOLUME_NFS_SERVER_NOT_IP("pv.nfs.server.not.ip"),
+    PERSISTENT_VOLUME_HOSTPATH_PATH_NOT_FOUND("pv.hostpath.path.not.found"),
+    PERSISTENT_VOLUME_UNMODIFIED("pv.is.unmodified"),
     OBJECT_EXIST("object.exist"),
-    FILE_NOT_YAML("error.file.not.yaml.format");
+    FILE_NOT_YAML("error.file.not.yaml.format"),
+    DUPLICATED_CLUSTER_COMPONENT("duplicated.cluster.component"),
+    RESOURCE_TYPE_NOT_SUPPORTED("resource.type.not.supported");
 
     private String error;
 

@@ -11,7 +11,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
 import io.choerodon.devops.api.vo.CommitFormUserVO;
@@ -137,8 +137,8 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     @Override
-    public PageInfo<CommitFormRecordVO> pageRecordCommits(Long projectId, String appServiceIds, PageRequest
-            pageRequest,
+    public PageInfo<CommitFormRecordVO> pageRecordCommits(Long projectId, String appServiceIds, Pageable
+            pageable,
                                                           Date startDate, Date endDate) {
 
         List<Long> appServiceIdsMap = gson.fromJson(appServiceIds, new TypeToken<List<Long>>() {
@@ -152,7 +152,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                 .baseListByOptions(projectId, appServiceIdsMap, startDate, endDate);
         Map<Long, IamUserDTO> userMap = getUserDOMap(devopsGitlabCommitES);
         // 获取最近的commit(返回所有的commit记录，按时间先后排序，分页查询)
-        return getCommitFormRecordDTOS(projectId, appServiceIdsMap, pageRequest, userMap, startDate, endDate);
+        return getCommitFormRecordDTOS(projectId, appServiceIdsMap, pageable, userMap, startDate, endDate);
     }
 
     private Map<Long, IamUserDTO> getUserDOMap(List<DevopsGitlabCommitDTO> devopsGitlabCommitDTOS) {
@@ -200,9 +200,9 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         return commitFormUserVOS;
     }
 
-    private PageInfo<CommitFormRecordVO> getCommitFormRecordDTOS(Long projectId, List<Long> appServiceIds, PageRequest pageRequest,
+    private PageInfo<CommitFormRecordVO> getCommitFormRecordDTOS(Long projectId, List<Long> appServiceIds, Pageable pageable,
                                                                  Map<Long, IamUserDTO> userMap, Date startDate, Date endDate) {
-        return devopsGitlabCommitService.basePageByOptions(projectId, appServiceIds, pageRequest, userMap, startDate, endDate);
+        return devopsGitlabCommitService.basePageByOptions(projectId, appServiceIds, pageable, userMap, startDate, endDate);
     }
 
     private List<Date> getTotalDates(List<CommitFormUserVO> commitFormUserVOS) {
@@ -242,12 +242,12 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
 
     @Override
     public PageInfo<CommitFormRecordVO> basePageByOptions(Long projectId, List<Long> appServiceIds,
-                                                          PageRequest pageRequest, Map<Long, IamUserDTO> userMap,
+                                                          Pageable pageable, Map<Long, IamUserDTO> userMap,
                                                           Date startDate, Date endDate) {
         List<CommitFormRecordVO> commitFormRecordVOList = new ArrayList<>();
 
-        PageInfo<DevopsGitlabCommitDTO> devopsGitlabCommitDTOPage = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(),
-                PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
+        PageInfo<DevopsGitlabCommitDTO> devopsGitlabCommitDTOPage = PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(),
+                PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(
                 () -> devopsGitlabCommitMapper.listCommits(projectId, appServiceIds, new java.sql.Date(startDate.getTime()), new java.sql.Date(endDate.getTime())));
 
         devopsGitlabCommitDTOPage.getList().forEach(e -> {

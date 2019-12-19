@@ -29,12 +29,16 @@
                 AND
                     dasr.version LIKE CONCAT(CONCAT('%', #{searchParam.version, jdbcType=VARCHAR}),'%')
             </if>
+            <if test="searchParam.id != null">
+                AND dasr.id = #{searchParam.id}
+            </if>
         </if>
         <if test='params != null and params.size > 0'>
             AND
             <foreach collection="params" item="param" open="(" separator=" OR " close=")">
                 (dasr.version_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 OR dasr.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dasr.id = #{param}
                 )
             </foreach>
         </if>

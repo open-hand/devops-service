@@ -1,32 +1,41 @@
 package io.choerodon.devops.infra.util;
 
+import org.springframework.util.StringUtils;
+
 /**
+ * 驼峰转下划线工具类
+ *
  * @author: 25499
  * @date: 2019/9/4 9:35
- * @description:
  */
 public final class HumpToUnderlineUtil {
+    private static final String UNDERLINE = "_";
+
     private HumpToUnderlineUtil() {
     }
 
-    public static String toUnderLine(String str) {
-        if (str == null || str.isEmpty()) {
-            return null;
+    /**
+     * 驼峰转下划线格式
+     *
+     * @param camelCase 驼峰格式字符串
+     * @return 下划线格式字符串
+     */
+    public static String toUnderLine(String camelCase) {
+        if (StringUtils.isEmpty(camelCase)) {
+            return camelCase;
         }
-        StringBuffer newString = new StringBuffer();
-        String[] split = str.split("\\s+");
-        String splitString = split[0];
-        for (int i = 0; i < splitString.length(); i++) {
-            if (splitString.charAt(i) >= 'A' && splitString.charAt(i) <= 'Z') {
-                char a = Character.toLowerCase(splitString.charAt(i));
-                String s = "_" + a;
-                newString.append(s);
-            } else {
-                String s = String.valueOf(splitString.charAt(i));
-                newString.append(s);
+        StringBuilder builder = new StringBuilder(camelCase);
+        int upperCaseCharNumber = 0;
+        for (int i = 0; i < camelCase.length(); i++) {
+            if (Character.isUpperCase(camelCase.charAt(i))) {
+                builder.insert(i + upperCaseCharNumber, UNDERLINE);
+                // 删除大写字母
+                builder.deleteCharAt(i + upperCaseCharNumber + 1);
+                // 插入小写字母
+                builder.insert(i + upperCaseCharNumber + 1, Character.toLowerCase(camelCase.charAt(i)));
+                upperCaseCharNumber += 1;
             }
         }
-        newString.append(" ").append(split[1]);
-        return String.valueOf(newString);
+        return builder.toString();
     }
 }

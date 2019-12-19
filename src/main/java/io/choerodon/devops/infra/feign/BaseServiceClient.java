@@ -1,16 +1,6 @@
 package io.choerodon.devops.infra.feign;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.validation.Valid;
-
 import com.github.pagehelper.PageInfo;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import io.choerodon.base.constant.PageConstant;
 import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.*;
@@ -18,6 +8,14 @@ import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by younger on 2018/3/29.
@@ -36,7 +34,7 @@ public interface BaseServiceClient {
     ResponseEntity<OrganizationDTO> queryOrganizationById(@PathVariable("organizationId") Long organizationId);
 
     @GetMapping("v1/organizations")
-    ResponseEntity<PageInfo<OrganizationDTO>>  listOrganizations(@RequestParam("page") Integer page,
+    ResponseEntity<PageInfo<OrganizationDTO>> listOrganizations(@RequestParam("page") Integer page,
                                                                 @RequestParam("size") Integer size);
 
 
@@ -127,7 +125,7 @@ public interface BaseServiceClient {
 
     @GetMapping("/v1/organizations/{organization_id}/projects")
     ResponseEntity<PageInfo<ProjectDTO>> pageProjectsByOrgId(@PathVariable(name = "organization_id") Long organizationId,
-                                                             @RequestParam Map<String, Object> pageRequest,
+                                                             @RequestParam Map<String, Object> pageable,
                                                              @RequestParam(name = "name", required = false) String name,
                                                              @RequestParam(name = "code", required = false) String code,
                                                              @RequestParam(name = "enabled", required = false) Boolean enabled,
@@ -135,8 +133,8 @@ public interface BaseServiceClient {
 
     @PostMapping("/v1/organizations/all")
     ResponseEntity<PageInfo<OrganizationSimplifyVO>> getAllOrgs(
-            @RequestParam(defaultValue = PageConstant.PAGE, required = false, value = "page") final int page,
-            @RequestParam(defaultValue = PageConstant.SIZE, required = false, value = "size") final int size);
+            @RequestParam(required = false, value = "page") final int page,
+            @RequestParam(required = false, value = "size") final int size);
 
 
     @GetMapping(value = "/v1/applications/{id}/project")
@@ -226,4 +224,60 @@ public interface BaseServiceClient {
     ResponseEntity<List<MemberRoleDTO>> assignUsersRolesOnProjectLevel(
             @PathVariable(name = "project_id") Long projectId,
             @RequestBody List<MemberRoleDTO> memberRoleDTOS);
+
+    /**
+     * 组织下创client
+     *
+     * @param organizationId 组织id
+     * @param clientVO       clientVO
+     * @return 分配结果
+     */
+    @PostMapping(value = "/v1/organizations/{organization_id}/clients/wih_type")
+    ResponseEntity<ClientDTO> createClient(@PathVariable("organization_id") Long organizationId,
+                                           @RequestBody @Valid ClientVO clientVO);
+
+    /**
+     * 组织下删除client
+     *
+     * @param organizationId 组织id
+     * @param clientId       clientId
+     * @return 分配结果
+     */
+    @DeleteMapping(value = "/v1/organizations/{organization_id}/clients/{client_id}")
+    ResponseEntity deleteClient(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId);
+
+    /**
+     * 根据集群Id和组织Id查询client
+     *
+     * @param organizationId
+     * @param sourceId
+     * @return
+     */
+    @GetMapping(value = "/v1/organizations/{organization_id}/clients/source/{source_id}")
+    ResponseEntity<ClientDTO> queryClientBySourceId(@PathVariable("organization_id") Long organizationId, @PathVariable("source_id") Long sourceId);
+
+
+    @GetMapping("/v1/users/{id}/projects/{project_id}/check_is_owner")
+    ResponseEntity<Boolean> checkIsProjectOwner(
+            @PathVariable("id") Long id,
+            @PathVariable("project_id") Long projectId);
+
+
+    /**
+     * 根据用户名查询用户信息
+     *
+     * @param loginName 登录名
+     * @return 用户信息
+     */
+    @GetMapping("/v1/users")
+    ResponseEntity<IamUserDTO> query(@RequestParam(name = "login_name") String loginName);
+    /**
+     * 查询项目下指定角色的用户
+     * @param projectId
+     * @param roleLable 角色标签
+     * @return
+     */
+    @GetMapping("/v1/projects/{project_id}/users/{role_lable}")
+    ResponseEntity<List<IamUserDTO>> listProjectUsersByPorjectIdAndRoleLable(@PathVariable("project_id") Long projectId,
+                                                                             @PathVariable("role_lable") String roleLable);
 }

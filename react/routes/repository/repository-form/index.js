@@ -5,7 +5,7 @@ import isEmpty from 'lodash/isEmpty';
 import forEach from 'lodash/forEach';
 import pick from 'lodash/pick';
 import { SelectBox, Select, Form, TextField, UrlField, Password, EmailField, Icon } from 'choerodon-ui/pro';
-import { Button } from 'choerodon-ui';
+import { Button } from 'choerodon-ui/pro';
 import { handlePromptError } from '../../../utils';
 
 import './index.less';
@@ -22,9 +22,17 @@ export default injectIntl(observer(({
   intlPrefix,
   modal,
   isProject,
-  refresh,
+
 }) => {
   useEffect(() => {
+    handleDefault();
+  }, [dataSet.current]);
+
+  async function refresh() {
+    await dataSet.query();
+  }
+
+  function handleDefault() {
     if (!isEmpty(record.get('harbor'))) {
       record.set('harborCustom', 'custom');
       forEach(record.get('harbor').config, (value, key) => {
@@ -43,18 +51,19 @@ export default injectIntl(observer(({
     } else {
       record.set('chartCustom', 'default');
     }
-  }, []);
+  }
 
-  modal.handleOk(async () => {
+  async function handleSave() {
+    const statusDs = await dataSet.submit();
     if (record.get('harborStatus') === 'failed' || record.get('chartStatus') === 'failed') return false;
     const harborTestFailed = record.get('harborCustom') === 'custom' && !record.get('harborStatus') && !await handleTestHarbor();
     const chartTestFailed = record.get('chartCustom') === 'custom' && !record.get('chartStatus') && !await handleTestChart();
-    if (!harborTestFailed && !chartTestFailed && (await dataSet.submit()) !== false) {
+    if (!harborTestFailed && !chartTestFailed && statusDs !== false) {
       refresh();
     } else {
       return false;
     }
-  });
+  }
 
   async function handleTestHarbor() {
     try {
@@ -154,6 +163,20 @@ export default injectIntl(observer(({
         </Form>
         {renderTestButton(record.get('chartStatus'), handleTestChart)}
       </Fragment>)}
+      <div style={{ display: 'flex' }}>
+        <Button
+          color="primary"
+          funcType="raised"
+          onClick={handleSave}
+          style={{ marginRight: '.12rem' }}
+        >{formatMessage({ id: 'save' })}</Button>
+        <Button
+          funcType="raised"
+          onClick={() => refresh()}
+        >
+          <span style={{ color: '#3f51b5' }}>{formatMessage({ id: 'cancel' })}</span>
+        </Button>
+      </div>
     </div>
   );
 }));

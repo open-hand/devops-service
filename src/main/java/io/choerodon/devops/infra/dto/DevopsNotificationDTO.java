@@ -1,8 +1,9 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.*;
-
 import io.choerodon.mybatis.entity.BaseDTO;
+import io.swagger.annotations.ApiModelProperty;
+
+import javax.persistence.*;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -19,7 +20,6 @@ public class DevopsNotificationDTO extends BaseDTO {
     private String notifyTriggerEvent;
     private String notifyObject;
     private String notifyType;
-
     @Transient
     private String envName;
 
@@ -78,4 +78,5 @@ public class DevopsNotificationDTO extends BaseDTO {
     public void setNotifyType(String notifyType) {
         this.notifyType = notifyType;
     }
+
 }

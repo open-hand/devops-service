@@ -13,6 +13,7 @@ public interface DevopsBranchMapper extends Mapper<DevopsBranchDTO> {
     DevopsBranchDTO queryByAppAndBranchName(@Param("appServiceId") Long appServiceId, @Param("branchName") String name);
 
     List<DevopsBranchDTO> list(@Param("appServiceId") Long appServiceId,
+                               @Param("sortString") String sortString,
                                @Param("searchParam") Map<String, Object> searchParam,
                                @Param("params") List<String> params);
 
@@ -20,4 +21,6 @@ public interface DevopsBranchMapper extends Mapper<DevopsBranchDTO> {
     void deleteByIsDelete();
 
     void deleteDuplicateBranch();
+
+    void deleteByAppServiceId(@Param("appServiceId") Long appServiceId);
 }

@@ -56,4 +56,11 @@
         dgp.id DESC
         LIMIT 10
     </select>
+    <delete id="deleteByAppServiceId">
+        DELETE
+            FROM
+                devops_gitlab_pipeline
+            WHERE
+            app_service_id = #{appServiceId}
+    </delete>
 </mapper>

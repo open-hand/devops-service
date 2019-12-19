@@ -2,32 +2,34 @@ package io.choerodon.devops.app.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.domain.PageRequest;
+import com.google.gson.Gson;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
+import io.choerodon.devops.api.vo.iam.RoleVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.DevopsClusterDTO;
-import io.choerodon.devops.infra.dto.DevopsClusterProPermissionDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
+import io.choerodon.devops.infra.mapper.DevopsPvProPermissionMapper;
 import io.choerodon.devops.infra.util.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -36,12 +38,14 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     private static final String UPGRADE_MESSAGE = "Version is too low, please upgrade!";
     private static final String ERROR_CLUSTER_NOT_EXIST = "error.cluster.not.exist";
+    private static final String PROJECT_OWNER = "role/project/default/project-owner";
     @Value("${agent.version}")
     private String agentExpectVersion;
     @Value("${agent.serviceUrl}")
     private String agentServiceUrl;
     @Value("${agent.repoUrl}")
     private String agentRepoUrl;
+    private Gson gson = new Gson();
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
@@ -56,6 +60,10 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private DevopsClusterProPermissionService devopsClusterProPermissionService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DevopsPvService devopsPvService;
+    @Autowired
+    private DevopsPvProPermissionMapper devopsPvProPermissionMapper;
 
 
     @Override
@@ -133,15 +141,16 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public void checkCode(Long projectId, String code) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
-        devopsClusterDTO.setProjectId(projectId);
+        devopsClusterDTO.setOrganizationId(projectDTO.getOrganizationId());
         devopsClusterDTO.setCode(code);
         baseCheckCode(devopsClusterDTO);
     }
 
     @Override
-    public PageInfo<ClusterWithNodesVO> pageClusters(Long projectId, Boolean doPage, PageRequest pageRequest, String params) {
-        PageInfo<DevopsClusterRepVO> devopsClusterRepVOPageInfo = ConvertUtils.convertPage(basePageClustersByOptions(projectId, doPage, pageRequest, params), DevopsClusterRepVO.class);
+    public PageInfo<ClusterWithNodesVO> pageClusters(Long projectId, Boolean doPage, Pageable pageable, String params) {
+        PageInfo<DevopsClusterRepVO> devopsClusterRepVOPageInfo = ConvertUtils.convertPage(basePageClustersByOptions(projectId, doPage, pageable, params), DevopsClusterRepVO.class);
         PageInfo<ClusterWithNodesVO> devopsClusterRepDTOPage = ConvertUtils.convertPage(devopsClusterRepVOPageInfo, ClusterWithNodesVO.class);
 
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedClusterList();
@@ -159,20 +168,28 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public List<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, String params) {
+    public PageInfo<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, Long selectedProjectId, Pageable pageable, String params) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         if (devopsClusterDTO == null) {
             throw new CommonException(ERROR_CLUSTER_NOT_EXIST, clusterId);
         }
 
-        Map<String, Object> searchMap = TypeUtil.castMapParams(params);
-        List<String> paramList = TypeUtil.cast(searchMap.get(TypeUtil.PARAMS));
+        Map<String, String> searchParamMap = new HashMap<>();
+        List<String> paramList = new ArrayList<>();
+        if (!StringUtils.isEmpty(params)) {
+            Map maps = gson.fromJson(params, Map.class);
+            searchParamMap = Optional.ofNullable((Map) TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM))).orElse(new HashMap<>());
+            paramList = Optional.ofNullable((List) TypeUtil.cast(maps.get(TypeUtil.PARAMS))).orElse(new ArrayList<String>());
+        }
 
         ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         // 查出组织下所有符合条件的项目
         List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
-                iamProjectDTO.getOrganizationId(), null, null, paramList == null ? null : paramList.get(0));
+                iamProjectDTO.getOrganizationId(),
+                searchParamMap.get("name"),
+                searchParamMap.get("code"),
+                CollectionUtils.isEmpty(paramList) ? null : paramList.get(0));
 
         // 查出数据库中已经分配权限的项目
         List<Long> permitted = devopsClusterProPermissionService.baseListByClusterId(clusterId)
@@ -181,11 +198,23 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 .collect(Collectors.toList());
 
         // 将已经分配权限的项目过滤
-        return filteredProjects
+        List<ProjectReqVO> projectReqVOS = filteredProjects
                 .stream()
                 .filter(p -> !permitted.contains(p.getId()))
                 .map(p -> new ProjectReqVO(p.getId(), p.getName(), p.getCode()))
                 .collect(Collectors.toList());
+
+        if (selectedProjectId != null) {
+            ProjectDTO selectedProjectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
+            ProjectReqVO projectReqVO = new ProjectReqVO(selectedProjectDTO.getId(), selectedProjectDTO.getName(), selectedProjectDTO.getCode());
+            if (!projectReqVOS.isEmpty()) {
+                projectReqVOS.remove(projectReqVO);
+                projectReqVOS.add(0, projectReqVO);
+            } else {
+                projectReqVOS.add(projectReqVO);
+            }
+        }
+        return PageInfoUtil.createPageFromList(projectReqVOS, pageable);
     }
 
     @Transactional
@@ -209,6 +238,18 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 devopsClusterProPermissionService.batchInsertIgnore(
                         update.getClusterId(),
                         update.getProjectIds());
+
+                //如果在PV里面有未非配权限的项目，则删除
+                List<DevopsPvProPermissionDTO> devopsPvProPermissionDTOList = devopsPvProPermissionMapper.listByClusterId(update.getClusterId());
+                if (!devopsPvProPermissionDTOList.isEmpty()) {
+                    List<DevopsPvProPermissionDTO> devopsPvProPermissionDTOToDeleteList = devopsPvProPermissionDTOList.stream()
+                            .filter(e -> !update.getProjectIds().contains(e.getProjectId()))
+                            .collect(Collectors.toList());
+                    if (!devopsPvProPermissionDTOToDeleteList.isEmpty()) {
+                        devopsPvProPermissionMapper.batchDelete(devopsPvProPermissionDTOToDeleteList);
+                    }
+                }
+
             }
         } else {
             // 原来不跳过，现在跳过，更新集群权限字段，再删除所有数据库中与该集群有关的关联关系
@@ -248,6 +289,14 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         if (clusterId == null || relatedProjectId == null) {
             return;
         }
+        //查出该集群关联的所有PV，删除与relatedProjectId的关联信息
+        List<Long> pvIds = devopsPvService.queryByClusterId(clusterId).stream()
+                .map(DevopsPvDTO::getId)
+                .collect(Collectors.toList());
+        if (!pvIds.isEmpty()) {
+            devopsPvProPermissionMapper.batchDeleteByPvIdsAndProjectId(pvIds, relatedProjectId);
+        }
+
         DevopsClusterProPermissionDTO permission = new DevopsClusterProPermissionDTO();
         permission.setClusterId(clusterId);
         permission.setProjectId(relatedProjectId);
@@ -277,23 +326,41 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long clusterId, PageRequest pageRequest, String params) {
+    public PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long clusterId, Pageable pageable, String params) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         if (devopsClusterDTO == null) {
             throw new CommonException(ERROR_CLUSTER_NOT_EXIST, clusterId);
         }
 
         Map<String, Object> map = TypeUtil.castMapParams(params);
+        Map<String, Object> searchParamsMap = TypeUtil.cast(map.get(TypeUtil.SEARCH_PARAM));
+        String name = null;
+        String code = null;
+        if (!CollectionUtils.isEmpty(searchParamsMap)) {
+            name = TypeUtil.cast(searchParamsMap.get("name"));
+            code = TypeUtil.cast(searchParamsMap.get("code"));
+        }
         List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
         if (CollectionUtils.isEmpty(paramList)) {
-            // 如果不搜索
-            PageInfo<DevopsClusterProPermissionDTO> relationPage = PageHelper.startPage(
-                    pageRequest.getPage(), pageRequest.getSize())
-                    .doSelectPageInfo(() -> devopsClusterProPermissionService.baseListByClusterId(clusterId));
-            return ConvertUtils.convertPage(relationPage, permission -> {
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
-                return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
-            });
+            //如果不分页
+            if (pageable.getPageSize() == 0) {
+                Set<Long> devopsProjectIds = devopsClusterProPermissionService.baseListByClusterId(clusterId).stream()
+                        .map(DevopsClusterProPermissionDTO::getProjectId)
+                        .collect(Collectors.toSet());
+                List<ProjectReqVO> projectReqVOList = baseServiceClientOperator.queryProjectsByIds(devopsProjectIds).stream()
+                        .map(i -> new ProjectReqVO(i.getId(), i.getName(), i.getCode()))
+                        .collect(Collectors.toList());
+                return PageInfoUtil.createPageFromList(projectReqVOList, pageable);
+            } else {
+                // 如果不搜索
+                PageInfo<DevopsClusterProPermissionDTO> relationPage = PageHelper.startPage(
+                        pageable.getPageNumber(), pageable.getPageSize())
+                        .doSelectPageInfo(() -> devopsClusterProPermissionService.baseListByClusterId(clusterId));
+                return ConvertUtils.convertPage(relationPage, permission -> {
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
+                    return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
+                });
+            }
         } else {
             // 如果要搜索，需要手动在程序内分页
             ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
@@ -301,7 +368,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             // 手动查出所有组织下的项目
             List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
                     iamProjectDTO.getOrganizationId(),
-                    null, null,
+                    name, code,
                     paramList.get(0));
 
             // 数据库中的有权限的项目
@@ -317,7 +384,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                     .map(p -> ConvertUtils.convertObject(p, ProjectReqVO.class))
                     .collect(Collectors.toList());
 
-            return PageInfoUtil.createPageFromList(allMatched, pageRequest);
+            return PageInfoUtil.createPageFromList(allMatched, pageable);
         }
     }
 
@@ -345,27 +412,42 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public void deleteCluster(Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         if (devopsClusterDTO == null) {
             return;
         }
 
-        checkConnectEnvs(clusterId);
+        // 校验集群是否能够删除
+        checkConnectEnvsAndPV(clusterId);
+
+        if (!ObjectUtils.isEmpty(devopsClusterDTO.getClientId())) {
+            baseServiceClientOperator.deleteClient(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getClientId());
+        }
+        devopsEnvironmentService.deleteSystemEnv(devopsClusterDTO.getProjectId(), devopsClusterDTO.getId(), devopsClusterDTO.getCode(), devopsClusterDTO.getSystemEnvId());
+
         baseDelete(clusterId);
     }
 
     @Override
-    public Boolean checkConnectEnvs(Long clusterId) {
+    public ClusterMsgVO checkConnectEnvsAndPV(Long clusterId) {
+        ClusterMsgVO clusterMsgVO = new ClusterMsgVO(false, false);
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedClusterList();
-        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListByClusterId(clusterId);
+        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListUserEnvByClusterId(clusterId);
+
         if (connectedEnvList.contains(clusterId)) {
-            throw new CommonException("error.cluster.connected");
+            clusterMsgVO.setCheckEnv(true);
         }
         if (!devopsEnvironmentDTOS.isEmpty()) {
             throw new CommonException("error.cluster.delete");
         }
-        return true;
+        //集群是否存在PV
+        List<DevopsPvDTO> clusterDTOList = devopsPvService.queryByClusterId(clusterId);
+        if (!Objects.isNull(clusterDTOList) && !clusterDTOList.isEmpty()) {
+            clusterMsgVO.setCheckPV(true);
+        }
+        return clusterMsgVO;
     }
 
 
@@ -385,8 +467,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public PageInfo<DevopsEnvPodVO> pagePodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam) {
-        PageInfo<DevopsEnvPodDTO> devopsEnvPodDTOPageInfo = basePageQueryPodsByNodeName(clusterId, nodeName, pageRequest, searchParam);
+    public PageInfo<DevopsEnvPodVO> pagePodsByNodeName(Long clusterId, String nodeName, Pageable pageable, String searchParam) {
+        PageInfo<DevopsEnvPodDTO> devopsEnvPodDTOPageInfo = basePageQueryPodsByNodeName(clusterId, nodeName, pageable, searchParam);
         PageInfo<DevopsEnvPodVO> envPodVOPageInfo = ConvertUtils.convertPage(devopsEnvPodDTOPageInfo, DevopsEnvPodVO.class);
 
         envPodVOPageInfo.setList(devopsEnvPodDTOPageInfo.getList().stream().map(this::podDTO2VO).collect(Collectors.toList()));
@@ -446,9 +528,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public PageInfo<DevopsClusterDTO> basePageClustersByOptions(Long projectId, Boolean doPage, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsClusterDTO> basePageClustersByOptions(Long projectId, Boolean doPage, Pageable pageable, String params) {
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable))
                 .doSelectPageInfo(
                         () -> devopsClusterMapper.listClusters(
                                 projectId,
@@ -474,9 +556,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public PageInfo<DevopsEnvPodDTO> basePageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam) {
+    public PageInfo<DevopsEnvPodDTO> basePageQueryPodsByNodeName(Long clusterId, String nodeName, Pageable pageable, String searchParam) {
         Map<String, Object> paramMap = TypeUtil.castMapParams(searchParam);
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsClusterMapper.pageQueryPodsByNodeName(
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> devopsClusterMapper.pageQueryPodsByNodeName(
                 clusterId, nodeName,
                 TypeUtil.cast(paramMap.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(paramMap.get(TypeUtil.PARAMS))));
@@ -493,6 +575,42 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     public void baseUpdateProjectId(Long orgId, Long proId) {
         devopsClusterMapper.updateProjectId(orgId, proId);
+    }
+
+    @Override
+    public Boolean checkUserClusterPermission(Long clusterId, Long userId) {
+        DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
+        devopsClusterDTO.setId(clusterId);
+        DevopsClusterDTO devopsClusterDTO1 = devopsClusterMapper.selectByPrimaryKey(devopsClusterDTO);
+        if (ObjectUtils.isEmpty(devopsClusterDTO1)) {
+            throw new CommonException("error.devops.cluster.is.not.exist");
+        }
+        // 获取用户的项目权限为项目所有者的所有项目Ids
+        List<ProjectWithRoleVO> projectWithRoleVOS = baseServiceClientOperator.listProjectWithRole(userId, 0, 0);
+        if (CollectionUtils.isEmpty(projectWithRoleVOS)) {
+            return false;
+        }
+        Set<Long> ownerRoleProjectIds = new HashSet<>();
+        projectWithRoleVOS.stream().forEach(v -> {
+            if (CollectionUtils.isEmpty(v.getRoles())) {
+                return;
+            }
+            Set<Long> collect = v.getRoles().stream().filter(role -> PROJECT_OWNER.equals(role.getCode())).map(RoleVO::getId).collect(Collectors.toSet());
+            if (!CollectionUtils.isEmpty(collect)) {
+                ownerRoleProjectIds.add(v.getId());
+            }
+        });
+        if (CollectionUtils.isEmpty(ownerRoleProjectIds)) {
+            return false;
+        }
+        // 获取集群和集群分配的项目Ids
+        List<DevopsClusterProPermissionDTO> devopsClusterProPermissionDTOS = devopsClusterProPermissionService.baseListByClusterId(clusterId);
+        Set<Long> clusterBelongToProjectIds = devopsClusterProPermissionDTOS.stream().map(DevopsClusterProPermissionDTO::getProjectId).collect(Collectors.toSet());
+        clusterBelongToProjectIds.add(devopsClusterDTO1.getProjectId());
+
+        // 集合做差集处理
+        clusterBelongToProjectIds.retainAll(ownerRoleProjectIds);
+        return !CollectionUtils.isEmpty(clusterBelongToProjectIds);
     }
 
     /**
@@ -516,13 +634,13 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
      */
     private List<ClusterWithNodesVO> fromClusterE2ClusterWithNodesDTO(List<DevopsClusterRepVO> devopsClusterRepVOS, Long projectId) {
         // default three records of nodes in the instance
-        PageRequest pageRequest = new PageRequest(1, 3);
+        Pageable pageable = PageRequest.of(1, 3);
 
         return devopsClusterRepVOS.stream().map(cluster -> {
             ClusterWithNodesVO clusterWithNodesDTO = new ClusterWithNodesVO();
             BeanUtils.copyProperties(cluster, clusterWithNodesDTO);
             if (Boolean.TRUE.equals(clusterWithNodesDTO.getConnect())) {
-                clusterWithNodesDTO.setNodes(clusterNodeInfoService.pageClusterNodeInfo(cluster.getId(), projectId, pageRequest));
+                clusterWithNodesDTO.setNodes(clusterNodeInfoService.pageClusterNodeInfo(cluster.getId(), projectId, pageable));
             }
             return clusterWithNodesDTO;
         }).collect(Collectors.toList());

@@ -20,9 +20,9 @@ def set_map_item(follow_list, delta_map, value):
     inner_map[follow_list[len(follow_list)-1]] = value
 
 
-
+# version_value_map 原来的配置
+# deploy_value_map 现在的配置
 def traversal(version_value_map, deploy_value_map, follow_keys, delta_map, update_list, add_list):
-
     for key in deploy_value_map:
         follow_keys_copy = list(follow_keys)
         follow_keys_copy.append(key)
@@ -31,7 +31,7 @@ def traversal(version_value_map, deploy_value_map, follow_keys, delta_map, updat
         if type(deploy_value_map[key]).__name__ == 'CommentedMap':
             if key in version_value_map.keys():
                 if type(version_value_map[key]).__name__ == 'CommentedMap':
-                    if len(version_value_map[key].keys()) == 0:
+                    if len(version_value_map[key].keys()) == 0 and len(deploy_value_map[key].keys()) != 0:
                         # version exist and is empty
                         version_value_map[key] = deploy_value_map[key]
                         add_list.append(follow_keys_copy)
@@ -66,10 +66,28 @@ def traversal(version_value_map, deploy_value_map, follow_keys, delta_map, updat
             # check if exist
             if key in version_value_map.keys():
                 if type(version_value_map[key]).__name__ == 'CommentedSeq':
-                    # change list
-                    add_list.append(follow_keys_copy)
-                    version_value_map[key] = deploy_value_map[key]
-                    set_map_item(follow_keys_copy, delta_map, deploy_value_map[key])
+                    # 原数组长度为0，现在数组长度大于0，则为增加
+                    if len(version_value_map[key]) == 0 and len(deploy_value_map[key]) != 0:
+                        # 添加
+                        add_list.append(follow_keys_copy)
+                        version_value_map[key] = deploy_value_map[key]
+                        set_map_item(follow_keys_copy, delta_map, deploy_value_map[key])
+
+                    # 原来数组长度与现在数组长度不相等，且原来数组长度不为0则为更新
+                    elif len(version_value_map[key]) != len(deploy_value_map[key]) and len(version_value_map[key]) != 0:
+                        update_list.append(follow_keys_copy)
+                        version_value_map[key] = deploy_value_map[key]
+                        set_map_item(follow_keys_copy, delta_map, deploy_value_map[key])
+
+                    # 原来数组长度与现在数组长度相等，从左往右，只要对应索引位置的元素不同则为更新
+                    elif len(version_value_map[key]) == len(deploy_value_map[key]):
+
+                        for i in range(0, len(version_value_map[key])):
+                            if version_value_map[key][i] != deploy_value_map[key][i]:
+                                update_list.append(follow_keys_copy)
+                                version_value_map[key] = deploy_value_map[key]
+                                set_map_item(follow_keys_copy, delta_map, deploy_value_map[key])
+                                return
             else:
                 # add list
                 add_list.append(follow_keys_copy)

@@ -17,6 +17,7 @@ public enum ResourceType {
     SECRET("Secret"),
     CUSTOM("Custom"),
     MISSTYPE("MissType"),
+    PERSISTENT_VOLUME("PersistentVolume"),
     PERSISTENT_VOLUME_CLAIM("PersistentVolumeClaim");
 
 
@@ -55,6 +56,8 @@ public enum ResourceType {
                 return ResourceType.MISSTYPE;
             case "Secret":
                 return ResourceType.SECRET;
+            case "PersistentVolume":
+                return ResourceType.PERSISTENT_VOLUME;
             case "PersistentVolumeClaim":
                 return ResourceType.PERSISTENT_VOLUME_CLAIM;
             case "Endpoints":

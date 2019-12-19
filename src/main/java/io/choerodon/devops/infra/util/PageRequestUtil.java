@@ -1,10 +1,17 @@
 package io.choerodon.devops.infra.util;
 
-import com.google.common.collect.Lists;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.domain.Sort;
-
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import com.google.common.collect.Lists;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -12,49 +19,82 @@ import java.util.stream.Collectors;
  * Description:
  */
 public class PageRequestUtil {
+    private static final String ONE_SPACE = " ";
+
     private PageRequestUtil() {
     }
 
-    public static String checkSortIsEmpty(PageRequest pageRequest) {
+    public static String checkSortIsEmpty(Pageable pageable) {
         String index = "";
-        if (pageRequest.getSort() == null) {
+        if (pageable.getSort() == null || pageable.getSort().isUnsorted()) {
             index = "true";
         }
         return index;
     }
 
 
-    public static String getOrderBy(PageRequest pageRequest) {
-        Sort sort = pageRequest.getSort();
+    public static String getOrderBy(Pageable pageable) {
+        Sort sort = pageable.getSort();
         if (sort != null) {
-            return Lists.newArrayList(pageRequest.getSort().iterator()).stream()
-                    .map(t -> t.getProperty() + " " + t.getDirection())
+            return Lists.newArrayList(pageable.getSort().iterator()).stream()
+                    .map(t -> HumpToUnderlineUtil.toUnderLine(t.getProperty()) + " " + t.getDirection())
                     .collect(Collectors.joining(","));
         }
         return "";
     }
 
-    public static String getOrderByStrWithUnderline(PageRequest pageRequest) {
-        Sort sort = pageRequest.getSort();
-        if (sort != null) {
-            return Lists.newArrayList(pageRequest.getSort().iterator()).stream()
-                    .map(t -> HumpToUnderline(t.getProperty()) + " " + t.getDirection())
-                    .collect(Collectors.joining(","));
-        }
-        return "";
-    }
-
-    public static String HumpToUnderline(String para) {
-        StringBuilder sb = new StringBuilder(para);
-        int temp = 0;//定位
-        if (!para.contains("_")) {
-            for (int i = 0; i < para.length(); i++) {
-                if (Character.isUpperCase(para.charAt(i))) {
-                    sb.insert(i + temp, "_");
-                    temp += 1;
-                }
+    /**
+     * 获取排序SQL字符串
+     *
+     * @param sort            {@link Pageable#getSort()}中的sort对象
+     * @param orderByFieldMap 前端传入的字段与mybatis中字段的映射。如果前端传入的字段在map中不存在就使用前端传入的字段
+     * @return 排序SQL字段
+     */
+    public static String getOrderString(Sort sort, Map<String, String> orderByFieldMap) {
+        return sort.stream().map(t -> {
+            String field = orderByFieldMap.get(t.getProperty());
+            if (field == null) {
+                throw new CommonException("error.field.not.supported.for.sort", t.getProperty());
             }
+            return field + ONE_SPACE + t.getDirection();
+        }).collect(Collectors.joining(","));
+    }
+
+    public static List<DevopsUserPermissionVO> sortUserPermission(List<DevopsUserPermissionVO> toBeSorted, Sort sort) {
+        if (sort.isSorted()) {
+            // 取第一个
+            Sort.Order order = sort.iterator().next();
+            switch (order.getProperty()) {
+                case "loginName":
+                    return PageRequestUtil.sortByComparableKey(toBeSorted, DevopsUserPermissionVO::getLoginName, order.getDirection());
+                case "realName":
+                    return PageRequestUtil.sortByComparableKey(toBeSorted, DevopsUserPermissionVO::getRealName, order.getDirection());
+                case "creationDate":
+                    return PageRequestUtil.sortByComparableKey(toBeSorted, DevopsUserPermissionVO::getCreationDate, order.getDirection());
+                default:
+                    throw new CommonException("error.field.not.supported.for.sort", order.getProperty());
+            }
+        } else {
+            return toBeSorted;
         }
-        return sb.toString().toLowerCase();
+    }
+
+    /**
+     * 根据Comparable类型的属性对列表进行排序
+     *
+     * @param toBeSorted   待排序的列表
+     * @param keyExtractor 提取Comparable类型属性的逻辑
+     * @param direction    排序的升序或者降序
+     * @param <T>          待排序对象类型
+     * @param <U>          待排序对象用于排序的字段类型
+     * @return 排序完成的列表
+     */
+    public static <T, U extends Comparable<? super U>> List<T> sortByComparableKey(List<T> toBeSorted, Function<? super T, ? extends U> keyExtractor, Sort.Direction direction) {
+        Comparator<T> comparator = Comparator.comparing(keyExtractor);
+        if (direction == Sort.Direction.DESC) {
+            comparator = comparator.reversed();
+        }
+        toBeSorted.sort(comparator);
+        return toBeSorted;
     }
 }

@@ -1,28 +1,20 @@
-import React, { Fragment, useEffect } from 'react';
-import { FormattedMessage } from 'react-intl';
+import React, { Fragment, useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
-import some from 'lodash/some';
+import compact from 'lodash/compact';
 import { SelectBox, Select, Form } from 'choerodon-ui/pro';
-import { Button, Tooltip } from 'choerodon-ui';
+import DynamicSelect from '../../../../../components/dynamic-select-new';
+import UserInfo from '../../../../../components/userInfo';
+
 
 import './index.less';
 
 const { Option } = Select;
 
-export default observer(({ dataSet, refresh, record, store, projectId, formatMessage, prefixCls, intlPrefix, nonePermissionDS, modal }) => {
-  useEffect(() => {
-    dataSet.getField('iamUserId').set('options', nonePermissionDS);
-    nonePermissionDS.query();
-  }, []);
+export default observer((props) => {
+  const { dataSet, nonePermissionDs, refresh, baseDs, store, projectId, formatMessage, prefixCls, intlPrefix, modal } = props;
 
-  useEffect(() => {
-    if (record.get('skipCheckPermission')) {
-      dataSet.reset();
-    } else {
-      handleCreate();
-    }
-  }, [record.get('skipCheckPermission')]);
+  const record = useMemo(() => baseDs.current, [baseDs.current]);
 
   modal.handleOk(async () => {
     if (record.get('skipCheckPermission')) {
@@ -43,7 +35,7 @@ export default observer(({ dataSet, refresh, record, store, projectId, formatMes
       dataSet.transport.create = ({ data }) => {
         const res = {
           skipCheckPermission: false,
-          userIds: map(data, 'iamUserId'),
+          userIds: compact(map(data, 'iamUserId') || []),
         };
         return {
           url: `/devops/v1/projects/${projectId}/app_service/${record.get('id')}/update_permission`,
@@ -68,57 +60,33 @@ export default observer(({ dataSet, refresh, record, store, projectId, formatMes
     dataSet.reset();
   });
 
-  function handleDelete(current) {
-    dataSet.remove(current);
-  }
-
-  function handleCreate() {
-    dataSet.create();
-  }
-
-  function handleUserFilter(optionRecord) {
-    const flag = some(dataSet.created, (creatRecord) => creatRecord.get('iamUserId') === optionRecord.get('iamUserId'));
-    return !flag;
-  }
-
   function renderUserOption({ record: optionRecord }) {
-    return <Tooltip title={optionRecord.get('loginName')}>{optionRecord.get('realName')}</Tooltip>;
+    return <UserInfo name={optionRecord.get('realName') || ''} id={record.get('loginName')} />;
+  }
+  
+
+  function renderer({ optionRecord }) {
+    return <UserInfo name={optionRecord.get('realName') || ''} id={record.get('loginName')} />;
   }
 
   return (
-    <div className={`${prefixCls}-permission-form`}>
+    <Fragment>
       <Form record={record}>
         <SelectBox name="skipCheckPermission">
-          <Option value>{formatMessage({ id: `${intlPrefix}.user.all` })}</Option>
-          <Option value={false}>{formatMessage({ id: `${intlPrefix}.user.some` })}</Option>
+          <Option value>{formatMessage({ id: `${intlPrefix}.member.all` })}</Option>
+          <Option value={false}>{formatMessage({ id: `${intlPrefix}.member.specific` })}</Option>
         </SelectBox>
       </Form>
-      {!record.get('skipCheckPermission') && (
-        <Fragment>
-          {map(dataSet.created, (userRecord) => (
-            <div className={`${prefixCls}-permission-form-item`}>
-              <Form record={userRecord}>
-                <Select name="iamUserId" optionsFilter={handleUserFilter} searchable optionRenderer={renderUserOption} />
-              </Form>
-              <Button
-                icon="delete"
-                shape="circle"
-                onClick={() => handleDelete(userRecord)}
-                disabled={dataSet.created.length === 1}
-                className={`${prefixCls}-permission-form-button`}
-              />
-            </div>
-          ))}
-          <Button
-            icon="add"
-            type="primary"
-            onClick={handleCreate}
-          >
-            <FormattedMessage id={`${intlPrefix}.add.mbr`} />
-          </Button>
-        </Fragment>
+      {record && !record.get('skipCheckPermission') && (
+        <DynamicSelect
+          selectDataSet={dataSet} 
+          optionsRenderer={renderUserOption}
+          optionsDataSet={nonePermissionDs}
+          renderer={renderer}
+          selectName="iamUserId"
+          addText={formatMessage({ id: `${intlPrefix}.add.member` })}
+        />
       )}
-    </div>
-
+    </Fragment>
   );
 });

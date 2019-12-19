@@ -40,6 +40,17 @@ public class DevopsResourceEnvOverviewVO {
     @ApiModelProperty("自定义资源基本信息")
     private List<DevopsResourceBasicInfoVO> customResources;
 
+    @ApiModelProperty("PVC基本信息")
+    private List<DevopsResourceBasicInfoVO> pvcs;
+
+    public List<DevopsResourceBasicInfoVO> getPvcs() {
+        return pvcs;
+    }
+
+    public void setPvcs(List<DevopsResourceBasicInfoVO> pvcs) {
+        this.pvcs = pvcs;
+    }
+
     public Long getId() {
         return id;
     }

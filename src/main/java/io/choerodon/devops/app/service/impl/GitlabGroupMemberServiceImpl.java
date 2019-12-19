@@ -1,13 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitlabGroupMemberVO;
 import io.choerodon.devops.api.vo.kubernetes.MemberHelper;
@@ -23,6 +16,13 @@ import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -56,7 +56,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     @Override
     public void createGitlabGroupMemberRole(List<GitlabGroupMemberVO> gitlabGroupMemberVOList) {
         gitlabGroupMemberVOList.stream()
-                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(PROJECT))
+                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceType.PROJECT.value()))
                 .forEach(gitlabGroupMemberVO -> {
                     try {
                         List<String> userMemberRoleList = gitlabGroupMemberVO.getRoleLabels();
@@ -109,6 +109,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
                     deleteAboutApplicationService(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
                     deleteAboutEnvironment(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
+                    deleteAboutCluster(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
                 });
     }
 
@@ -159,6 +160,18 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         gitlabServiceClientOperator.deleteProjectMember(env.getGitlabEnvProjectId().intValue(), gitlabUserId);
                     }
                 });
+    }
+
+    /**
+     * 删除角色时处理集群相关的操作
+     *
+     * @param projectId    项目id
+     * @param gitlabUserId gitlab 用户id
+     * @param userId       用户id
+     */
+    private void deleteAboutCluster(Long projectId, Integer gitlabUserId, Long userId) {
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+        gitlabServiceClientOperator.deleteGroupMember(devopsProjectDTO.getDevopsClusterEnvGroupId().intValue(), gitlabUserId);
     }
 
     @Override
@@ -299,6 +312,13 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 addOrUpdateGitlabRole(accessLevel, memberDTO,
                         TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()), userAttrDTO);
 
+                //给gitlab集群组分配owner角色
+                memberDTO = gitlabServiceClientOperator.queryGroupMember(
+                        TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()),
+                        (TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
+                addOrUpdateGitlabRole(accessLevel, memberDTO,
+                        TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()), userAttrDTO);
+
             } catch (Exception e) {
                 LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
             }
@@ -395,7 +415,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             case DEVELOPER:
             case MASTER:
             case OWNER:
-                MemberDTO requestMember = new MemberDTO((TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())),level.toValue(),"");
+                MemberDTO requestMember = new MemberDTO((TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())), level.toValue(), "");
                 if (memberDTO == null) {
                     gitlabServiceClientOperator.createGroupMember(groupId, requestMember);
                 } else {

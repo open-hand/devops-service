@@ -92,4 +92,10 @@
         WHERE project_id IS NULL
     </select>
 
+    <select id="queryClusterForUpdate" resultType="io.choerodon.devops.infra.dto.DevopsClusterDTO">
+        SELECT *
+        FROM devops_cluster
+        WHERE id = #{clusterId,jdbcType=BIGINT}
+        FOR UPDATE;
+    </select>
 </mapper>

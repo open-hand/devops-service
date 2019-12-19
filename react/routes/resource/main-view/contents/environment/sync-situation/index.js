@@ -5,6 +5,7 @@ import TimePopover from '../../../../../../components/time-popover';
 import SyncSituation from './SyncSituation';
 import { useResourceStore } from '../../../../stores';
 import { useEnvironmentStore } from '../stores';
+import Tips from '../../../../../../components/new-tips';
 
 import './index.less';
 
@@ -56,7 +57,10 @@ export default function Situation() {
     <div className={`${prefixCls}-environment-sync`}>
       <SyncSituation />
       <div className={`${prefixCls}-environment-sync-table-title`}>
-        {formatMessage({ id: `${intlPrefix}.environment.error.logs` })}
+        <Tips
+          title={formatMessage({ id: `${intlPrefix}.environment.error.logs` })}
+          helpText={formatMessage({ id: `${intlPrefix}.environment.error.tips` })}
+        />
       </div>
       <Table
         locale={{

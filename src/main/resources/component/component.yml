@@ -1,0 +1,14 @@
+---
+componentName: cert-manager
+chartName: cert-manager-0.10.1
+version: 0.10.1
+chartRepo: http://example.com
+valuesFile: cert-manager.yml
+image: http://registry.com/cert-manager
+---
+componentName: prometheus
+chartName: prometheus-operator
+version: 0.1.0
+chartRepo: http://chart.choerodon.com.cn/choerodon/infra/
+valuesFile: prometheus.yml
+image: http://registry.com/prometheus

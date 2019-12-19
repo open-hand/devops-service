@@ -32,7 +32,7 @@ public interface UserAttrService {
 
     UserAttrDTO baseQueryByGitlabUserId(Long gitlabUserId);
 
-    int baseInsert(UserAttrDTO userAttrDTO);
+    void baseInsert(UserAttrDTO userAttrDTO);
 
     UserAttrDTO baseQueryById(Long id);
 

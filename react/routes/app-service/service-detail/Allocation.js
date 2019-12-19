@@ -70,10 +70,10 @@ const Allocation = observer(() => {
       />,
       children: <ServicePermission
         dataSet={permissionDs}
-        record={detailDs.current}
+        baseDs={detailDs}
         store={appServiceStore}
-        nonePermissionDS={nonePermissionDs}
-        intlPrefix={intlPrefix}
+        nonePermissionDs={nonePermissionDs}
+        intlPrefix="c7ncd.deployment"
         prefixCls={prefixCls}
         formatMessage={formatMessage}
         projectId={id}

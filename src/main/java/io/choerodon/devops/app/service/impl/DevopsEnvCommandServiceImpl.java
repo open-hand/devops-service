@@ -6,10 +6,11 @@ import java.util.List;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.kubernetes.Command;
 import io.choerodon.devops.app.service.DevopsCommandEventService;
 import io.choerodon.devops.app.service.DevopsEnvCommandLogService;
 import io.choerodon.devops.app.service.DevopsEnvCommandService;
@@ -85,8 +86,8 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
     }
 
     @Override
-    public PageInfo<DevopsEnvCommandDTO> basePageByObject(PageRequest pageRequest, String objectType, Long objectId, Date startTime, Date endTime) {
-        return PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+    public PageInfo<DevopsEnvCommandDTO> basePageByObject(Pageable pageable, String objectType, Long objectId, Date startTime, Date endTime) {
+        return PageHelper.startPage(pageable.getPageNumber(),pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
                 devopsEnvCommandMapper.listByObject(objectType, objectId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
     }
 
@@ -113,5 +114,10 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
         devopsEnvCommandLogService.baseDeleteByCommandId(devopsEnvCommandDTO.getId());
         devopsCommandEventService.baseDeleteByCommandId(devopsEnvCommandDTO.getId());
         devopsEnvCommandMapper.deleteByPrimaryKey(devopsEnvCommandDTO.getId());
+    }
+
+    @Override
+    public List<Command> listCommandsToSync(Long envId, String beforeDate) {
+        return devopsEnvCommandMapper.listCommandsToSync(envId, beforeDate);
     }
 }

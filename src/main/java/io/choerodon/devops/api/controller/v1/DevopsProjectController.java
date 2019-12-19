@@ -5,9 +5,9 @@ import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
 
-import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.annotation.Permission;
+import org.springframework.data.domain.Pageable;
+import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.ProjectReqVO;
@@ -64,10 +64,10 @@ public class DevopsProjectController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsProjectService.pageProjects(projectId, pageRequest, params))
+        return Optional.ofNullable(devopsProjectService.pageProjects(projectId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.project.query"));
     }
@@ -76,15 +76,22 @@ public class DevopsProjectController {
      * 列出项目下的所有项目所有者和项目成员
      *
      * @param projectId 项目id
+     * @param pageable  分页参数
+     * @param params    查询参数
      * @return 项目所有者和项目成员
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取所有项目成员和项目所有者")
-    @GetMapping(value = "/users/list_users")
-    public ResponseEntity<List<UserVO>> getAllUsers(
+    @PostMapping(value = "/users/list_users")
+    public ResponseEntity<PageInfo<UserVO>> getAllUsers(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(devopsProjectService.listAllOwnerAndMembers(projectId))
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore Pageable pageable,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params
+    ) {
+        return Optional.ofNullable(devopsProjectService.listAllOwnerAndMembers(projectId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.users.all.list"));
     }

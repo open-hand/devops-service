@@ -12,6 +12,7 @@ import io.choerodon.devops.api.vo.JobWebHookVO;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
 import io.choerodon.devops.api.vo.PushWebHookVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.util.FastjsonParserConfigProvider;
 
 @Service
@@ -79,6 +80,16 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
             PushWebHookVO pushWebHookVO = JSONArray.parseObject(body, PushWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(pushWebHookVO.toString());
+            }
+            // 不处理删除环境库的分支的情况
+            if (GitOpsConstants.NO_COMMIT_SHA.equals(pushWebHookVO.getAfter())) {
+                LOGGER.debug("GitOps PushWebHook is ignored due to branch deleting. Ref: {}", pushWebHookVO.getRef());
+                return;
+            }
+            // 只处理master分支的commit, 不处理其他分支的commit
+            if (!GitOpsConstants.MASTER_REF.equals(pushWebHookVO.getRef())) {
+                LOGGER.debug("GitOps PushWebHook of ref {} is ignored because the ref is not master.", pushWebHookVO.getRef());
+                return;
             }
             devopsGitService.fileResourceSyncSaga(pushWebHookVO, token);
         }

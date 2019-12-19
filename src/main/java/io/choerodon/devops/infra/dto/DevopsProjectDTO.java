@@ -1,9 +1,10 @@
 package io.choerodon.devops.infra.dto;
 
+import io.choerodon.mybatis.entity.BaseDTO;
+import io.swagger.annotations.ApiModelProperty;
+
 import javax.persistence.Id;
 import javax.persistence.Table;
-
-import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * Created by younger on 2018/3/29.
@@ -14,10 +15,16 @@ public class DevopsProjectDTO extends BaseDTO {
     private Long iamProjectId;
     private Long devopsAppGroupId;
     private Long devopsEnvGroupId;
+
+    @ApiModelProperty("集群对应的环境所属的GitLab组ID")
+    private Long devopsClusterEnvGroupId;
+
     private Boolean harborProjectIsPrivate;
     private String harborProjectUserName;
     private String harborProjectUserPassword;
     private String harborProjectUserEmail;
+    private Long harborUserId;
+    private Long harborPullUserId;
 
     public DevopsProjectDTO() {
     }
@@ -80,5 +87,29 @@ public class DevopsProjectDTO extends BaseDTO {
 
     public void setHarborProjectIsPrivate(Boolean harborProjectIsPrivate) {
         this.harborProjectIsPrivate = harborProjectIsPrivate;
+    }
+
+    public Long getHarborPullUserId() {
+        return harborPullUserId;
+    }
+
+    public void setHarborPullUserId(Long harborPullUserId) {
+        this.harborPullUserId = harborPullUserId;
+    }
+
+    public Long getHarborUserId() {
+        return harborUserId;
+    }
+
+    public void setHarborUserId(Long harborUserId) {
+        this.harborUserId = harborUserId;
+    }
+
+    public Long getDevopsClusterEnvGroupId() {
+        return devopsClusterEnvGroupId;
+    }
+
+    public void setDevopsClusterEnvGroupId(Long devopsClusterEnvGroupId) {
+        this.devopsClusterEnvGroupId = devopsClusterEnvGroupId;
     }
 }

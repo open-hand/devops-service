@@ -20,6 +20,8 @@ export GROUP_NAME={{ GROUP_NAME }}
 export SONAR_URL={{ SONAR_URL }}
 # SONARQUBE的token
 export SONAR_LOGIN={{ SONAR_LOGIN }}
+# HARBOR配置Id
+export HARBOR_CONFIG_ID={{ HARBOR_CONFIG_ID }}
 # 设置docekr认证配置文件目录
 export DOCKER_CONFIG=$PWD/.choerodon/.docker
 
@@ -148,6 +150,7 @@ function chart_build(){
     # 通过Choerodon API上传chart包到devops-service
     result_upload_to_devops=`curl -X POST \
         -F "token=${Token}" \
+        -F "harbor_config_id=${HARBOR_CONFIG_ID}" \
         -F "version=${CI_COMMIT_TAG}" \
         -F "file=@${FILE_NAME}-${CI_COMMIT_TAG}.tgz" \
         -F "commit=${CI_COMMIT_SHA}" \

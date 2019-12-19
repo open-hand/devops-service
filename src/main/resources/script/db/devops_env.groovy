@@ -143,4 +143,50 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
     changeSet(author: 'sheep', id: '2019-09-29-updateDataType') {
         modifyDataType(tableName: 'devops_env', columnName: 'description', newDataType: 'VARCHAR(500)')
     }
+
+    changeSet(author: 'scp', id: '2019-10-23-addColumn') {
+        addColumn(tableName: 'devops_env') {
+            column(name: 'type', type: 'varchar(10)', defaultValue: 'user', remarks: '环境类型', afterColumn: 'is_failed')
+        }
+    }
+
+    changeSet(author: 'zmf', id: '2019-12-12-add-project-code-type-constraint') {
+        preConditions(onFail: 'MARK_RAN') {
+            columnExists(tableName: "devops_env", columnName:"project_id")
+            columnExists(tableName: "devops_env", columnName:"code")
+            columnExists(tableName: "devops_env", columnName:"type")
+            sqlCheck(expectedResult: "0", sql: """
+                SELECT COUNT(1)
+                FROM (SELECT 1
+                FROM devops_env duplication
+                GROUP BY duplication.project_id, duplication.code, duplication.type
+                HAVING COUNT(1) > 1) tmp""")
+        }
+        addUniqueConstraint(tableName: 'devops_env',
+                constraintName: 'devops_env_uk_project_code_type', columnNames: 'project_id,code,type')
+    }
+
+    changeSet(author: 'zmf', id: '2019-12-12-add-cluster-code-constraint') {
+        preConditions(onFail: 'MARK_RAN') {
+            columnExists(tableName: "devops_env", columnName:"cluster_id")
+            columnExists(tableName: "devops_env", columnName:"code")
+            sqlCheck(expectedResult: "0", sql: """
+                SELECT COUNT(1)
+                FROM (SELECT 1
+                FROM devops_env duplication
+                GROUP BY duplication.cluster_id, duplication.code
+                HAVING COUNT(1) > 1) tmp""")
+        }
+        addUniqueConstraint(tableName: 'devops_env',
+                constraintName: 'devops_env_uk_cluster_code', columnNames: 'cluster_id,code')
+    }
+
+    changeSet(author: 'zmf', id: '2019-12-12-drop-devops-env-constraint') {
+        preConditions(onFail: 'MARK_RAN') {
+            indexExists(tableName: "devops_env", indexName: "devops_envs_uk_cluster_and_project_code")
+            indexExists(tableName: "devops_env", indexName: "devops_env_uk_project_code_type")
+            indexExists(tableName: "devops_env", indexName: "devops_env_uk_cluster_code")
+        }
+        dropUniqueConstraint(constraintName: "devops_envs_uk_cluster_and_project_code", tableName: "devops_env")
+    }
 }

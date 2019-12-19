@@ -2,65 +2,21 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsNotificationMapper">
-    <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.DevopsNotificationDTO">
-        SELECT
-        dn.id,
-        dn.env_id,
-        dn.notify_object,
-        dn.notify_trigger_event,
-        dn.notify_type,
-        de.`name` as envName
-        FROM
-        devops_notification dn
-        JOIN devops_env de ON dn.env_id = de.id
-        WHERE
-        dn.project_id=#{projectId}
-        <if test="envId != null">
-            AND dn.env_id = #{envId}
-        </if>
-        <include refid="sqlparam"/>
+    <resultMap id="devopsNotificationTransferDataVO" type="io.choerodon.devops.api.vo.DevopsNotificationTransferDataVO">
+        <id column="id" property="id"/>
+        <result column="env_id" property="envId"/>
+        <result column="project_id" property="projectId"/>
+        <result column="notify_trigger_event" property="notifyTriggerEvent"/>
+        <result column="notify_object" property="notifyObject"/>
+        <result column="notify_type" property="notifyType"/>
+        <collection property="userRelDTOS" ofType="io.choerodon.devops.api.vo.DevopsNotificationUserRelVO">
+            <id column="user_id" property="userId" />
+            <result column="notification_id" property="notificationId"/>
+        </collection>
+    </resultMap>
+    <select id="transferData" resultMap="devopsNotificationTransferDataVO">
+         SELECT *
+          FROM `devops_notification` dn LEFT JOIN devops_notification_user_rel dnur
+         ON dnur.notification_id=dn.id
     </select>
-
-    <select id="queryByEnvIdAndEvent" parameterType="java.util.ArrayList" resultType="java.lang.Integer">
-        SELECT
-        COUNT(1)
-        FROM
-        devops_notification dn
-        WHERE
-        dn.project_id=#{projectId}
-        AND dn.env_id = #{envId}
-        AND
-        <foreach collection="notifyTriggerEvent" item="notifyTriggerEvent" separator="OR" >
-             dn.notify_trigger_event LIKE CONCAT(CONCAT('%', #{notifyTriggerEvent, jdbcType=VARCHAR}),'%')
-        </foreach>
-    </select>
-
-
-    <sql id="sqlparam">
-        <if test='searchParam != null'>
-            <if test='searchParam.notifyType != null and searchParam.notifyType.length > 0'>
-                AND
-                    dn.notify_type LIKE CONCAT(CONCAT('%', #{searchParam.notifyType, jdbcType=VARCHAR}),'%')
-            </if>
-            <if test='searchParam.notifyTriggerEvent != null and searchParam.notifyTriggerEvent.length > 0'>
-                AND
-                    dn.notify_trigger_event LIKE CONCAT(CONCAT('%', #{searchParam.notifyTriggerEvent, jdbcType=VARCHAR}),'%')
-            </if>
-            <if test='searchParam.notifyObject != null and searchParam.notifyObject.length > 0'>
-                AND
-                    dn.notify_object=#{searchParam.notifyObject}
-            </if>
-        </if>
-        <if test='params != null and params.size > 0'>
-            AND
-            <foreach collection="params" item="param" separator=" OR " >
-                (dn.notify_object LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                OR dn.notify_trigger_event LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                OR dn.notify_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                )
-            </foreach>
-        </if>
-    </sql>
-
-
 </mapper>

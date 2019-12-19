@@ -34,5 +34,8 @@ export default function useStore({ SYNC_TAB }) {
     checkDelete(projectId, id) {
       return axios.get(`/devops/v1/projects/${projectId}/deploy_value/check_delete?value_id=${id}`);
     },
+    deleteRecord(projectId, id) {
+      return axios.delete(`/devops/v1/projects/${projectId}/deploy_value?value_id=${id}`);
+    },
   }));
 }

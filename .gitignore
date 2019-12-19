@@ -1,5 +1,6 @@
-target/
+/target/
 !.mvn/wrapper/maven-wrapper.jar
+src/main/java/io/choerodon/devops/api/controller/v1/TestController.java
 
 ### STS ###
 .apt_generated
@@ -11,23 +12,23 @@ target/
 .sts4-cache
 
 ### unit test
-gitops/
+/gitops/
 application-localtest.yml
 
 ### IntelliJ IDEA ###
-.idea
+/.idea
 *.iws
 *.iml
 *.ipr
 .vscode
 
 ### NetBeans ###
-nbproject/private/
-build/
-nbbuild/
-dist/
-nbdist/
-.nb-gradle/
+/nbproject/private/
+/build/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
 application-default.*
 init-local-database.sh
 values_yaml.spec
@@ -39,11 +40,11 @@ values_yaml.spec
 rebel.xml
 
 ### liquibase
-choerodon_temp/*
+/choerodon_temp/*
 
 ### native temp files
-deployfile
-tmp
+/deployfile
+/tmp
 
 ~$micro-service-init-data.xlsx
 
@@ -52,13 +53,13 @@ tmp
 config-local.js
 
 # npm
-node_modules
-npm-debug.log
-yarn-error.log
-yarn-lock.json
-package-lock.json
-yarn.lock
+/node_modules
+/npm-debug.log
+/yarn-error.log
+/yarn-lock.json
+/package-lock.json
+/yarn.lock
 
 # folder
-dist
-lib
+/dist
+/lib

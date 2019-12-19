@@ -1,10 +1,9 @@
 export default (() => ({
-  autoQuery: false,
-  selection: false,
-  paging: false,
+  paging: true,
+  pageSize: 20,
   transport: {
     read: {
-      method: 'get',
+      data: null,
     },
   },
 }));

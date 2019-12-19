@@ -13,11 +13,14 @@ import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
 import DomainModal from '../modals/domain';
 import EditNetwork from '../modals/network/network-edit';
+import EditNetwork2 from '../modals/network2';
 import { useMainStore } from '../../../stores';
 
 import './index.less';
 
+
 const { Column } = Table;
+const editNetWorkKey = Modal.key();
 
 const Networking = observer(() => {
   const {
@@ -66,13 +69,15 @@ const Networking = observer(() => {
   }
 
   function renderTargetType({ record }) {
-    const { instances, labels } = record.get('target') || {};
+    const { instances, selectors, targetAppServiceId } = record.get('target') || {};
     const appId = record.get('appServiceId');
 
     let type = 'EndPoints';
-    if (appId && instances && instances.length) {
+    if (targetAppServiceId) {
+      type = formatMessage({ id: 'all_instance' });
+    } else if (instances && instances.length) {
       type = formatMessage({ id: 'instance' });
-    } else if (labels) {
+    } else if (selectors) {
       type = formatMessage({ id: 'label' });
     }
 
@@ -80,11 +85,17 @@ const Networking = observer(() => {
   }
 
   function renderTarget({ record }) {
-    const { instances, labels, endPoints } = record.get('target') || {};
+    const { instances, selectors, endPoints, targetAppServiceId, targetAppServiceName } = record.get('target') || {};
     const node = [];
     const port = [];
     const len = endPoints ? 2 : 1;
-    if (instances && instances.length) {
+    if (targetAppServiceId && targetAppServiceName) {
+      node.push(
+        <div className="net-target-item">
+          <span>{targetAppServiceName}</span>
+        </div>
+      );
+    } else if (instances && instances.length) {
       _.forEach(instances, ({ id: itemId, code, status }) => {
         const targetClass = classnames({
           'net-target-item': true,
@@ -104,8 +115,8 @@ const Networking = observer(() => {
         }
       });
     }
-    if (!_.isEmpty(labels)) {
-      _.forEach(labels, (value, key) => node.push(
+    if (!_.isEmpty(selectors)) {
+      _.forEach(selectors, (value, key) => node.push(
         <div className="net-target-item" key={key}>
           <span>{key}</span>=<span>{value}</span>
         </div>,
@@ -279,9 +290,22 @@ const Networking = observer(() => {
   }
 
   function openNetworkEdit() {
-    setShowNetwork(true);
+    Modal.open({
+      key: editNetWorkKey,
+      title: formatMessage({ id: 'network.header.create' }),
+      style: { width: 740 },
+      okText: formatMessage({ id: 'edit' }),
+      drawer: true,
+      children: <EditNetwork2 
+        envId={parentId}
+        appId={id} 
+        networkStore={networkStore}
+        refresh={refresh}
+        networkId={netDs.current.get('id')}
+      />,
+    });
   }
-
+ 
   function closeNetworkEdit(isLoad) {
     setShowNetwork(false);
     isLoad && refresh();

@@ -79,7 +79,7 @@ export default function EmptyShown() {
         describe={formatMessage({ id: `empty.tips.app.${access ? 'owner' : 'member'}` })}
         pathname="/devops/app-service"
         access={access}
-        btnText={formatMessage({ id: 'empty.create.app' })}
+        btnText={formatMessage({ id: 'empty.link.app' })}
       /> : <Loading display />}
     </Content>
   </Fragment>;

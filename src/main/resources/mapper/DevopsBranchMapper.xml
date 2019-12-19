@@ -33,6 +33,12 @@
                 db.branch_name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             </foreach>
         </if>
+        ORDER BY
+        <if test="sortString != null and sortString != ''">
+            ${sortString},
+        </if>
+        db.branch_name='master' DESC,
+        db.id DESC
     </select>
 
     <delete id="deleteByIsDelete">
@@ -59,6 +65,12 @@ FROM
 	)
     </delete>
 
-
+   <delete id="deleteByAppServiceId">
+        DELETE
+            FROM
+                devops_branch
+            WHERE
+            app_service_id = #{appServiceId}
+   </delete>
 
 </mapper>

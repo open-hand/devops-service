@@ -5,7 +5,6 @@ import { Button, Tooltip } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
-import map from 'lodash/map';
 import { useDeployStore } from './stores';
 import StatusTag from '../../components/status-tag';
 import TimePopover from '../../components/timePopover/TimePopover';
@@ -47,12 +46,9 @@ const Deployment = withRouter(observer((props) => {
     prefixCls,
     permissions,
     listDs,
-    pipelineDs,
     detailDs,
     deployStore,
     pipelineStore,
-    manualDeployDs,
-    tableSelectDs,
     envOptionsDs,
     pipelineOptionsDs,
   } = useDeployStore();
@@ -67,6 +63,7 @@ const Deployment = withRouter(observer((props) => {
       openDetail(newDeployId, 'auto');
     }
   }, []);
+  
 
   function refresh() {
     envOptionsDs.query();
@@ -84,15 +81,12 @@ const Deployment = withRouter(observer((props) => {
         title={formatMessage({ id: `${intlPrefix}.start` })}
       />,
       children: <Process
-        store={deployStore}
+        deployStore={deployStore}
         refresh={refresh}
-        projectId={id}
-        dataSet={pipelineDs}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
       />,
       okText: formatMessage({ id: 'startUp' }),
-      afterClose: () => pipelineDs.clearCachedSelected(),
     });
   }
 
@@ -170,24 +164,18 @@ const Deployment = withRouter(observer((props) => {
   }
 
   function openDeploy() {
-    manualDeployDs.reset();
-    manualDeployDs.create();
     Modal.open({
       key: modalKey4,
       style: modalStyle2,
       drawer: true,
       title: formatMessage({ id: `${intlPrefix}.manual` }),
       children: <Deploy
-        dataSet={manualDeployDs}
-        store={deployStore}
-        refresh={refresh}
-        projectId={id}
+        deployStore={deployStore}
+        refresh={deployAfter}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
-        record={manualDeployDs.current}
       />,
       afterClose: () => {
-        manualDeployDs.reset();
         deployStore.setCertificates([]);
         deployStore.setAppService([]);
         deployStore.setConfigValue('');
@@ -213,6 +201,22 @@ const Deployment = withRouter(observer((props) => {
       });
     }
     history.push(`/devops/resource${search}`);
+  }
+
+  function deployAfter(instance) {
+    const { history, location: { search } } = props;
+
+    if (!instance) history.push(`/devops/resource${search}`);
+
+    history.push({
+      pathname: '/devops/resource',
+      search,
+      state: {
+        instanceId: instance.id,
+        appServiceId: instance.appServiceId,
+        envId: instance.envId,
+      },
+    });
   }
 
   function renderNumber({ value, record }) {
@@ -313,11 +317,17 @@ const Deployment = withRouter(observer((props) => {
     isLoad && refresh();
   }
 
+  function getBackPath() {
+    const { location: { state } } = props;
+    const { backPath } = state || {};
+    return backPath || '';
+  }
+
   return (
     <Page
       service={permissions}
     >
-      <Header title={<FormattedMessage id="app.head" />}>
+      <Header title={<FormattedMessage id="app.head" />} backPath={getBackPath()}>
         <Permission
           service={['devops-service.app-service-instance.deploy']}
         >

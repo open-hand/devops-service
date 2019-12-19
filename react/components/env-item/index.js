@@ -4,7 +4,7 @@ import StatusDot from '../status-dot';
 
 import './index.less';
 
-const EnvironmentItem = memo(({ name, connect, synchronize, active, failed, isTitle }) => <Fragment>
+const EnvironmentItem = memo(({ name, connect, synchronize, active, clusterName, failed, isTitle, formatMessage }) => <Fragment>
   <StatusDot
     active={active}
     connect={connect}
@@ -13,6 +13,9 @@ const EnvironmentItem = memo(({ name, connect, synchronize, active, failed, isTi
     size={isTitle ? 'normal' : 'small'}
   />
   {isTitle ? <span className="c7ncd-env-title">{name}</span> : name}
+  {clusterName ? <span className="c7ncd-env-cluster">
+    ({formatMessage({ id: 'c7ncd.env.cluster' })}:  {clusterName})
+  </span> : null}
 </Fragment>);
 
 EnvironmentItem.propTypes = {

@@ -17,7 +17,6 @@ const modalStyle = {
 };
 
 export default injectIntl(observer(({
-  record,
   dataSet,
   allProjectDs,
   permissionProjectDs,
@@ -29,6 +28,8 @@ export default injectIntl(observer(({
   modal,
   refresh,
 }) => {
+  const record = dataSet.current;
+
   useEffect(() => {
     permissionProjectDs.transport.read.url = `/devops/v1/projects/${projectId}/certs/${record.get('id')}/permission/page_related`;
     optionsDs.transport.read.url = `/devops/v1/projects/${projectId}/certs/${record.get('id')}/permission/list_non_related`;
@@ -59,6 +60,7 @@ export default injectIntl(observer(({
         optionsDs={optionsDs}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
+        detailDs={dataSet}
       />,
       okText: formatMessage({ id: 'add' }),
       onCancel: handleCancel,
@@ -70,7 +72,14 @@ export default injectIntl(observer(({
   }
 
   function handleDelete() {
-    permissionProjectDs.delete(permissionProjectDs.current);
+    const modalProps = {
+      title: formatMessage({ id: 'c7ncd.deployment.permission.delete.title' }),
+      children: formatMessage({ id: 'c7ncd.deployment.permission.project.delete.des' }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    permissionProjectDs.delete(permissionProjectDs.current, modalProps);
   }
 
   function renderAction() {
@@ -88,7 +97,7 @@ export default injectIntl(observer(({
         helpText={formatMessage({ id: `${intlPrefix}.share.tips` })}
         title={formatMessage({ id: `${intlPrefix}.share` })}
       />
-      <Form record={record}>
+      <Form dataSet={dataSet}>
         <SelectBox name="skipCheckProjectPermission">
           <Option value>
             <span className={`${prefixCls}-permission-wrap-radio`}>{formatMessage({ id: `${intlPrefix}.project.all` })}</span>
@@ -103,7 +112,7 @@ export default injectIntl(observer(({
           </Option>
         </SelectBox>
       </Form>
-      {!record.get('skipCheckProjectPermission') ? (
+      {record && !record.get('skipCheckProjectPermission') ? (
         <Fragment>
           <Button
             type="primary"
@@ -113,7 +122,7 @@ export default injectIntl(observer(({
           >
             <FormattedMessage id={`${intlPrefix}.project.add`} />
           </Button>
-          <Table dataSet={permissionProjectDs}>
+          <Table dataSet={permissionProjectDs} pristine>
             <Column name="name" sortable />
             <Column renderer={renderAction} />
             <Column name="code" sortable />

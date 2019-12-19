@@ -30,6 +30,5 @@ export default ((intlPrefix, formatMessage, projectId) => ({
   ],
   queryFields: [
     { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }) },
-    { name: 'domain', type: 'string', label: formatMessage({ id: `${intlPrefix}.domain` }) },
   ],
 }));

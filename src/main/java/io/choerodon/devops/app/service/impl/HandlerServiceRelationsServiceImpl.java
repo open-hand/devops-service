@@ -39,6 +39,8 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
+    private AppServiceService appServiceService;
+    @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
     private DevopsServiceInstanceService devopsServiceInstanceService;
@@ -84,6 +86,11 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         });
     }
 
+    @Override
+    public Class<V1Service> getTarget() {
+        return V1Service.class;
+    }
+
 
     private void updateService(Map<String, String> objectPath, Long envId, Long projectId, List<V1Service> updateV1Service, List<V1Endpoints> v1Endpoints, String path, Long userId) {
         updateV1Service.stream()
@@ -100,14 +107,8 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                                 v1Service,
                                 v1Endpoints,
                                 envId);
-                        Boolean isNotChange = checkIsNotChange(devopsServiceDTO, devopsServiceReqVO);
                         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsServiceDTO.getCommandId());
-                        if (!isNotChange) {
-                            devopsServiceService.updateDevopsServiceByGitOps(projectId, devopsServiceDTO.getId(), devopsServiceReqVO, userId);
-                            DevopsServiceDTO newDevopsServiceE = devopsServiceService
-                                    .baseQueryByNameAndEnvId(v1Service.getMetadata().getName(), envId);
-                            devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(newDevopsServiceE.getCommandId());
-                        }
+                        devopsServiceService.updateDevopsServiceByGitOps(projectId, devopsServiceDTO.getId(), devopsServiceReqVO, userId);
 
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
@@ -212,21 +213,19 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 }).collect(Collectors.toList());
         devopsServiceReqVO.setPorts(portMapList);
 
-        if (v1Service.getMetadata().getAnnotations() != null) {
-            String instancesCode = v1Service.getMetadata().getAnnotations()
-                    .get("choerodon.io/network-service-instances");
-            if (instancesCode != null) {
-                List<String> instanceIdList = Arrays.stream(instancesCode.split("\\+")).parallel().peek(t -> {
-                    AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(t, envId);
-                    if (appServiceInstanceDTO != null) {
-                        devopsServiceReqVO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
-                    }
-                }).collect(Collectors.toList());
-                devopsServiceReqVO.setInstances(instanceIdList);
+        Map<String, String> selector = v1Service.getSpec().getSelector();
+        if (selector != null) {
+            // 判断是实例的选择器还是其它
+            String value;
+            if ((value = selector.get(AppServiceInstanceService.INSTANCE_LABEL_RELEASE)) != null) {
+                devopsServiceReqVO.setTargetInstanceCode(value);
             }
-        }
-        if (v1Service.getSpec().getSelector() != null) {
-            devopsServiceReqVO.setLabel(v1Service.getSpec().getSelector());
+            if ((value = selector.get(AppServiceInstanceService.INSTANCE_LABEL_APP_SERVICE_ID)) != null) {
+                AppServiceDTO appServiceDTO = appServiceService.baseQuery(TypeUtil.objToLong(value));
+                devopsServiceReqVO.setTargetAppServiceId(appServiceDTO.getId());
+                devopsServiceReqVO.setTargetInstanceCode(appServiceDTO.getCode());
+            }
+            devopsServiceReqVO.setSelectors(v1Service.getSpec().getSelector());
         }
         return devopsServiceReqVO;
     }
@@ -247,9 +246,16 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         List<DevopsServiceInstanceDTO> devopsServiceInstanceDTOS =
                 devopsServiceInstanceService.baseListByServiceId(devopsServiceDTO.getId());
         Boolean isUpdate = false;
-        if (devopsServiceReqVO.getAppServiceId() != null && devopsServiceDTO.getAppServiceId() != null && devopsServiceReqVO.getInstances() != null) {
-            List<String> newInstanceCode = devopsServiceReqVO.getInstances();
-            List<String> oldInstanceCode = devopsServiceInstanceDTOS.stream().map(DevopsServiceInstanceDTO::getCode).collect(Collectors.toList());
+        // 如果都是实例类型的网络，比较实例对象是否有区别
+        if (devopsServiceReqVO.getAppServiceId() != null && devopsServiceDTO.getAppServiceId() != null && devopsServiceReqVO.getTargetInstanceCode() != null) {
+            List<String> newInstanceCode = new ArrayList<>();
+            newInstanceCode.add(devopsServiceReqVO.getTargetInstanceCode());
+            List<String> oldInstanceCode = new ArrayList<>();
+            if (devopsServiceDTO.getTargetInstanceCode() == null && devopsServiceDTO.getTargetAppServiceId() == null) {
+                oldInstanceCode = devopsServiceInstanceDTOS.stream().map(DevopsServiceInstanceDTO::getCode).collect(Collectors.toList());
+            } else {
+                oldInstanceCode.add(devopsServiceDTO.getTargetInstanceCode());
+            }
             for (String instanceCode : newInstanceCode) {
                 if (!oldInstanceCode.contains(instanceCode)) {
                     isUpdate = true;
@@ -258,8 +264,8 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         }
 
         if (devopsServiceReqVO.getAppServiceId() == null && devopsServiceDTO.getAppServiceId() == null) {
-            if (devopsServiceReqVO.getLabel() != null && devopsServiceDTO.getLabels() != null) {
-                if (!gson.toJson(devopsServiceReqVO.getLabel()).equals(devopsServiceDTO.getLabels())) {
+            if (devopsServiceReqVO.getSelectors() != null && devopsServiceDTO.getSelectors() != null) {
+                if (!gson.toJson(devopsServiceReqVO.getSelectors()).equals(devopsServiceDTO.getSelectors())) {
                     isUpdate = true;
                 }
             } else if (devopsServiceReqVO.getEndPoints() != null && devopsServiceDTO.getEndPoints() != null) {

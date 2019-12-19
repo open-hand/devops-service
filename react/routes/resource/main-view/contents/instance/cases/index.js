@@ -2,7 +2,7 @@ import React, { Fragment, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FormattedMessage } from 'react-intl';
 import { Tooltip, Icon, Progress, Modal } from 'choerodon-ui/pro';
-import { Spin } from 'choerodon-ui';
+import { Button, Spin } from 'choerodon-ui';
 import _ from 'lodash';
 import ReactCodeMirror from 'react-codemirror';
 import Operation from './op-record';
@@ -25,6 +25,53 @@ const logOptions = {
 };
 
 const InstanceEvent = ({ index, jobPodStatus, name, log, flag, event, intlPrefix, formatMessage, showMore }) => {
+  const [fullScreen, setFullScreen] = useState(false);
+  let editorLog;
+
+  /**
+   *  全屏查看日志
+   */
+  function openFullScreen() {
+    const cm = editorLog.getCodeMirror();
+    const wrap = cm.getWrapperElement();
+    cm.state.fullScreenRestore = {
+      scrollTop: window.pageYOffset,
+      scrollLeft: window.pageXOffset,
+      width: wrap.style.width,
+      height: wrap.style.height,
+    };
+    wrap.style.width = '';
+    wrap.style.height = 'auto';
+    wrap.className += ' CodeMirror-fullScreen';
+    setFullScreen(true);
+    document.documentElement.style.overflow = 'hidden';
+    cm.refresh();
+    window.addEventListener('keydown', (e) => {
+      setNormal(e.which);
+    });
+  }
+
+  /**
+   * 任意键退出全屏查看
+   */
+  function setNormal() {
+    if (!editorLog) return;
+
+    const cm = editorLog.getCodeMirror();
+    const wrap = cm.getWrapperElement();
+    wrap.className = wrap.className.replace(/\s*CodeMirror-fullScreen\b/, '');
+    setFullScreen(false);
+    document.documentElement.style.overflow = '';
+    const info = cm.state.fullScreenRestore;
+    wrap.style.width = info.width;
+    wrap.style.height = info.height;
+    window.scrollTo(info.scrollLeft, info.scrollTop);
+    cm.refresh();
+    window.removeEventListener('keydown', (e) => {
+      setNormal(e.which);
+    });
+  }
+
   function openLogDetail() {
     Modal.open({
       key: logKey,
@@ -35,11 +82,28 @@ const InstanceEvent = ({ index, jobPodStatus, name, log, flag, event, intlPrefix
       style: {
         width: 1000,
       },
-      children: <div className="c7n-term-wrap"><ReactCodeMirror
-        value={log}
-        options={logOptions}
-        className="c7n-log-editor"
-      /></div>,
+      children: <div className={fullScreen ? 'c7ncd-log-sidebar-content_full' : 'c7ncd-log-sidebar-content'}>
+        <div className="c7ncd-term-fullscreen">
+          <Tooltip title={formatMessage({ id: `${intlPrefix}.instance.cases.fullScreen` })}>
+            <Button
+              className="c7ncd-term-fullscreen-button"
+              type="primary"
+              funcType="flat"
+              shape="circle"
+              icon="fullscreen"
+              onClick={openFullScreen}
+            />
+          </Tooltip>
+        </div>
+        <div className="c7n-term-wrap">
+          <ReactCodeMirror
+            ref={editor => { editorLog = editor; }}
+            value={log}
+            options={logOptions}
+            className="c7n-log-editor"
+          />
+        </div>
+      </div>,
     });
   }
 
@@ -51,7 +115,7 @@ const InstanceEvent = ({ index, jobPodStatus, name, log, flag, event, intlPrefix
     <div key={index} className="operation-content-step">
       <div className="content-step-title">
         {jobPodStatus === 'running'
-          ? <Progress strokeWidth={10} width={13} type="loading" />
+          ? <Progress type="loading" />
           : <Icon
             type="wait_circle"
             className={`content-step-icon-${jobPodStatus}`}
@@ -87,17 +151,17 @@ const Cases = observer(() => {
     intl: { formatMessage },
     casesDs,
   } = useInstanceStore();
-  const [podTime, setPodTime] = useState('');
+  const [currentCommandId, setCurrentCommandId] = useState(null);
   const [expandKeys, setExpandKeys] = useState([]);
   const [ignore, setIgnore] = useState(false);
   const loading = casesDs.status === 'loading';
 
   useEffect(() => {
-    setPodTime('');
+    setCurrentCommandId(null);
   }, [id, parentId]);
 
   function changeEvent(data, isIgnore) {
-    setPodTime(data);
+    setCurrentCommandId(data);
     setIgnore(isIgnore);
   }
 
@@ -140,18 +204,20 @@ const Cases = observer(() => {
     const record = casesDs.data;
     if (record.length) {
       const currentPod = casesDs.find((data) => {
-        const time = data.get('createTime');
-        return time === podTime;
+        const commandId = data.get('commandId');
+        return commandId === currentCommandId;
       });
       const data = currentPod || casesDs.get(0);
       return (
         <Fragment>
           <Operation
             handleClick={changeEvent}
-            active={podTime}
+            active={currentCommandId}
           />
           <div className="cases-operation-content">
-            {istEventDom(data)}
+            <div className="case-operation-main">
+              {istEventDom(data)}
+            </div>
           </div>
         </Fragment>
       );

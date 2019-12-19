@@ -1,12 +1,14 @@
 package io.choerodon.devops.infra.mapper;
 
-import java.util.List;
-
 import io.choerodon.devops.api.vo.DevopsEnvResourceCountVO;
-import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentInfoDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentViewDTO;
+import io.choerodon.devops.infra.dto.DevopsResourceEnvOverviewDTO;
 import io.choerodon.mybatis.common.Mapper;
-
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * Created by younger on 2018/4/9.
@@ -16,6 +18,10 @@ public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDTO> {
     void updateDevopsEnvGroupId(@Param("envId") Long envId);
 
     DevopsEnvironmentDTO queryByToken(@Param("token") String token);
+
+    DevopsEnvironmentDTO queryByTokenWithClusterCode(@Param("token") String token);
+
+    DevopsEnvironmentDTO queryByIdWithClusterCode(@Param("id") Long id);
 
     void updateSagaSyncEnvCommit(@Param("envId") Long envId, @Param("sagaSyncCommit") Long sagaSyncCommit);
 
@@ -94,4 +100,6 @@ public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDTO> {
     int updateIsActiveNullToTrue();
 
     List<Long> listGitlabProjectIdByEnvPermission(@Param("gitlabGroupId") Long gitlabGroupId, @Param("iamUserId") Long iamUserId);
+
+    List<DevopsEnvironmentDTO> listByProjectIdAndName(@Param("projectId")Long projectId, @Param("envName") String envName);
 }

@@ -11,6 +11,7 @@ public class DevopsNotificationUserRelVO {
     private String realName;
     private Long notificationId;
     private String imageUrl;
+    private String userType;
 
     public String getLoginName() {
         return loginName;
@@ -50,5 +51,13 @@ public class DevopsNotificationUserRelVO {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getUserType() {
+        return userType;
+    }
+
+    public void setUserType(String userType) {
+        this.userType = userType;
     }
 }

@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,13 +28,16 @@ import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.iam.*;
 import io.choerodon.devops.api.vo.kubernetes.MockMultipartFile;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
@@ -128,6 +132,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private GitlabGroupService gitlabGroupService;
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
+    @Autowired
+    private AppServiceInstanceService appServiceInstanceService;
 
     /**
      * 执行pull/push脚本
@@ -168,14 +174,14 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
     @Override
     public PageInfo<AppServiceUploadPayload> pageByAppId(Long appId,
-                                                         PageRequest pageRequest,
+                                                         Pageable pageable,
                                                          String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         List<String> paramList = TypeUtil.cast(mapParams.get(TypeUtil.PARAMS));
         PageInfo<AppServiceDTO> appServiceDTOPageInfo = PageHelper.startPage(
-                pageRequest.getPage(),
-                pageRequest.getSize(),
-                PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listByProjectId(appId, TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)), paramList));
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> appServiceMapper.listByProjectId(appId, TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)), paramList));
 
         PageInfo<AppServiceUploadPayload> appServiceMarketVOPageInfo = ConvertUtils.convertPage(appServiceDTOPageInfo, this::dtoToMarketVO);
         List<AppServiceUploadPayload> list = appServiceMarketVOPageInfo.getList();
@@ -238,10 +244,10 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     public void downLoadApp(AppMarketDownloadPayload appMarketDownloadVO) {
         List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS = new ArrayList<>();
         String groupPath = String.format(SITE_APP_GROUP_NAME_FORMAT, appMarketDownloadVO.getAppCode());
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
         try {
             // 创建应用
             GroupDTO groupDTO = gitlabGroupService.createSiteAppGroup(appMarketDownloadVO.getIamUserId(), groupPath);
-            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
             // 分配所在gitlab group 用户权限
             MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(TypeUtil.objToInteger(groupDTO.getId()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (memberDTO == null || memberDTO.getId() == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
@@ -273,8 +279,41 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appMarketDownloadVO.getOrganizationId(), appDownloadDevopsReqVOS);
         } catch (Exception e) {
             baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appMarketDownloadVO.getOrganizationId());
+            MarketDelGitlabProPayload marketDelGitlabProPayload = new MarketDelGitlabProPayload();
+            marketDelGitlabProPayload.setAppCode(appMarketDownloadVO.getAppCode());
+            marketDelGitlabProPayload.setListAppServiceCode(appMarketDownloadVO.getAppServiceDownloadPayloads().stream().map(AppServiceDownloadPayload::getAppServiceCode).collect(Collectors.toList()));
+            marketDelGitlabProPayload.setGitlabUserId(userAttrDTO.getGitlabUserId());
+            marketDelGitlabProPayload.setMktAppId(appMarketDownloadVO.getAppId());
+            producer.applyAndReturn(
+                    StartSagaBuilder
+                            .newBuilder()
+                            .withLevel(ResourceLevel.SITE)
+                            .withRefType("appDownload")
+                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_MARKET_DELETE_GITLAB_PRO),
+                    builder -> builder
+                            .withPayloadAndSerialize(marketDelGitlabProPayload)
+                            .withRefId(appMarketDownloadVO.getAppId().toString()));
+
             throw new CommonException("error.download.app", e);
         }
+    }
+
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_MARKET_DELETE_GITLAB_PRO,
+            description = "应用市场下载失败,删除gitlab中的项目", inputSchemaClass = MarketDelGitlabProPayload.class)
+    @Override
+    public void deleteGitlabProject(MarketDelGitlabProPayload marketDelGitlabProPayload) {
+        marketDelGitlabProPayload.getListAppServiceCode().forEach(appServiceCode -> {
+            AppServiceDTO appServiceDTO = appServiceService.baseQueryByMktAppId(appServiceCode, marketDelGitlabProPayload.getMktAppId());
+            if (appServiceDTO == null) {
+                GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(
+                        String.format(SITE_APP_GROUP_NAME_FORMAT, marketDelGitlabProPayload.getAppCode()),
+                        appServiceCode,
+                        TypeUtil.objToInteger(marketDelGitlabProPayload.getGitlabUserId()));
+                if (gitlabProjectDTO != null && gitlabProjectDTO.getId() != null) {
+                    gitlabServiceClientOperator.deleteProjectById(gitlabProjectDTO.getId(), TypeUtil.objToInteger(marketDelGitlabProPayload.getGitlabUserId()));
+                }
+            }
+        });
     }
 
     @Override
@@ -308,7 +347,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     TypeUtil.objToInteger(gitlabUserId),
                     true);
         } else {
-            gitlabServiceClientOperator.deleteProjectById(gitlabProjectDTO.getId(), TypeUtil.objToInteger(gitlabUserId));
             throw new CommonException("error.gitlab.project.already.exit");
         }
         appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
@@ -670,19 +708,31 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             appServiceImageVO.setServiceCode(String.format("%s_%s", appServiceMarketVO.getAppServiceId(), appServiceMarketVO.getAppServiceCode()));
             List<MarketAppServiceVersionImageVO> appServiceVersionImageVOS = new ArrayList<>();
 
-            //获取原仓库配置
-            ConfigVO configVO = devopsConfigService.queryRealConfigVO(appServiceMarketVO.getAppServiceId(), APP_SERVICE, "harbor").getConfig();
-            User sourceUser = new User();
-            BeanUtils.copyProperties(configVO, sourceUser);
-            sourceUser.setUsername(configVO.getUserName());
 
-            User targetUser = new User();
-            targetUser.setUsername(appMarketUploadVO.getUser().getRobotName());
-            targetUser.setPassword(appMarketUploadVO.getUser().getRobotToken());
-
-            //准备认证json
-            String configStr = createConfigJson(sourceUser, getDomain(configVO.getUrl()), targetUser, getDomain(appServiceMarketVO.getHarborUrl()));
             appServiceMarketVO.getAppServiceVersionUploadPayloads().forEach(t -> {
+                AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(t.getId());
+                ConfigVO configVO;
+                if (appServiceVersionDTO.getHarborConfigId() != null) {
+                    DevopsConfigDTO devopsConfigDTO=devopsConfigService.baseQuery(appServiceVersionDTO.getHarborConfigId());
+                    configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+                    AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceVersionDTO.getAppServiceId());
+                    if (devopsConfigDTO.getName().equals(HARBOR_NAME) && appServiceDTO.getProjectId() != null) {
+                        configVO = appServiceInstanceService.queryDefaultConfig(appServiceDTO.getProjectId(), configVO);
+                    }
+                } else {
+                    configVO = devopsConfigService.queryRealConfigVO(appServiceMarketVO.getAppServiceId(), APP_SERVICE, "harbor").getConfig();
+                }
+                //获取原仓库配置
+                User sourceUser = new User();
+                BeanUtils.copyProperties(configVO, sourceUser);
+                sourceUser.setUsername(configVO.getUserName());
+
+                User targetUser = new User();
+                targetUser.setUsername(appMarketUploadVO.getUser().getRobotName());
+                targetUser.setPassword(appMarketUploadVO.getUser().getRobotToken());
+
+                //准备认证json
+                String configStr = createConfigJson(sourceUser, getDomain(configVO.getUrl()), targetUser, getDomain(appServiceMarketVO.getHarborUrl()));
                 //推送镜像
                 String targetImageUrl = String.format("%s:%s", appServiceMarketVO.getHarborUrl(), t.getVersion());
 //                pushImageScript(appServiceVersionService.baseQuery(t.getId()).getImage(), targetImageUrl, configStr);
@@ -732,8 +782,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             result = marketServiceClientOperator.uploadFile(appMarketUploadVO.getAppVersion(), files, mapJson);
         } else {
             List<MultipartBody.Part> files = createMultipartBody(zipFileList);
-            String getawayUrl = appMarketUploadVO.getSaasGetawayUrl().endsWith("/") ? appMarketUploadVO.getSaasGetawayUrl() : appMarketUploadVO.getSaasGetawayUrl() + "/";
-            MarketServicePublicClient marketServiceClient = RetrofitHandler.getMarketServiceClient(getawayUrl, MARKET);
+            String gatewayUrl = appMarketUploadVO.getSaasGetawayUrl().endsWith("/") ? appMarketUploadVO.getSaasGetawayUrl() : appMarketUploadVO.getSaasGetawayUrl() + "/";
+            MarketServicePublicClient marketServiceClient = RetrofitHandler.getMarketServiceClient(gatewayUrl, MARKET);
 
             String remoteToken = baseServiceClientOperator.checkLatestToken();
             Call<ResponseBody> responseCall = marketServiceClient.uploadFile(remoteToken, appMarketUploadVO.getAppVersion(), files, mapJson);
@@ -760,8 +810,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             String imageJson = marketImageUrlVO != null ? gson.toJson(marketImageUrlVO) : null;
             List<MultipartBody.Part> files = createMultipartBody(zipFileList);
 
-            String getawayUrl = appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl().endsWith("/") ? appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl() : appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl() + "/";
-            MarketServicePublicClient marketServiceClient = RetrofitHandler.getMarketServiceClient(getawayUrl, MARKET);
+            String gatewayUrl = appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl().endsWith("/") ? appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl() : appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl() + "/";
+            MarketServicePublicClient marketServiceClient = RetrofitHandler.getMarketServiceClient(gatewayUrl, MARKET);
             String remoteToken = baseServiceClientOperator.checkLatestToken();
             Call<ResponseBody> responseCall = marketServiceClient.updateAppPublishInfoFix(
                     remoteToken,

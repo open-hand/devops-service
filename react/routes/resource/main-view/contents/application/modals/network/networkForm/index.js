@@ -51,7 +51,7 @@ export default class CreateNetwork extends Component {
       initName: '',
       validIp: {},
       targetIp: {},
-      initIst: [],
+      initIst: '',
       initIstOption: [],
       selectEnv: props.envId,
     };
@@ -71,26 +71,24 @@ export default class CreateNetwork extends Component {
     store.loadInstance(projectId, envId, appServiceId)
       .then((data) => {
         if (data) {
-          const initIst = [];
+          const initIst = '';
           // 将默认选项直接生成，避免加载带来的异步问题
           const initIstOption = [];
           if (data && data.length) {
             _.forEach(data, (item) => {
               const { id: istIds, code } = item;
               initIstOption.push(
-                <Option key={istIds} value={[code]}>
+                <Option key={istIds} value={code}>
                   {code}
                 </Option>,
               );
             });
-            if (data.length > 1) {
-              initIstOption.unshift(
-                <Option key="all_instance" value="all_instance">
-                  {formatMessage({ id: 'all_instance' })}
-                </Option>
-              );
-            }
           }
+          initIstOption.unshift(
+            <Option key="all_instance" value="all_instance">
+              {formatMessage({ id: 'all_instance' })}
+            </Option>
+          );
           this.setState({
             initIst,
             initIstOption,
@@ -137,11 +135,10 @@ export default class CreateNetwork extends Component {
    * @param value
    * @param callback
    */
-  checkIP = (rule, value, callback, type) => {
+  checkIP = (value, name, record) => {
     const { intl: { formatMessage } } = this.props;
     const p = /^((\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.){3}(\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])$/;
     const validIp = {};
-    const data = type === 'targetIps' ? 'targetIp' : 'validIp';
     let errorMsg;
     if (value && value.length) {
       _.forEach(value, (item) => {
@@ -150,10 +147,7 @@ export default class CreateNetwork extends Component {
           validIp[item] = true;
         }
       });
-      this.setState({ [data]: validIp });
-      callback(errorMsg);
-    } else {
-      callback();
+      return errorMsg;
     }
   };
 
@@ -786,7 +780,7 @@ export default class CreateNetwork extends Component {
               {...formItemLayout}
             >
               {getFieldDecorator('appInstance', {
-                initialValue: initIst.length ? initIst : undefined,
+                initialValue: initIst || undefined,
                 trigger: ['onChange', 'onSubmit'],
                 rules: [
                   {

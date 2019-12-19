@@ -18,7 +18,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import io.choerodon.base.domain.PageRequest
+import org.springframework.data.domain.PageRequest
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.*
@@ -406,7 +406,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
         mockQueryUsersByIds()
 
-        PowerMockito.when(mockBaseServiceClientOperator.isProjectOwner(anyLong(), any(ProjectDTO))).thenReturn(true)
+        PowerMockito.when(mockBaseServiceClientOperator.isProjectOwner(anyLong(), anyLong())).thenReturn(true)
 
         mockQueryUsersByRoleId()
 

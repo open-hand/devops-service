@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.infra.dto.DevopsCustomizeResourceContentDTO;
 
+import java.util.List;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  9:10 2019/7/12
@@ -15,4 +17,6 @@ public interface DevopsCustomizeResourceContentService {
     void baseUpdate(DevopsCustomizeResourceContentDTO devopsCustomizeResourceContentVO);
 
     void baseDelete(Long contentId);
+
+    void baseDeleteByContentIds(List<Long> contentIds);
 }

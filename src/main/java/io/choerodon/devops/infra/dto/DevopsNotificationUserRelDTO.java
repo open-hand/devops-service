@@ -36,4 +36,5 @@ public class DevopsNotificationUserRelDTO {
     public void setNotificationId(Long notificationId) {
         this.notificationId = notificationId;
     }
+
 }

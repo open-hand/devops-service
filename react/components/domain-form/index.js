@@ -5,11 +5,12 @@ import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Choerodon } from '@choerodon/boot';
 import _ from 'lodash';
-import { Button, Tooltip, Radio, Input, Form, Select } from 'choerodon-ui';
+import { Button, Tooltip, Radio, Input, Form, Select, Icon } from 'choerodon-ui';
 import Tips from '../new-tips';
 
 import '../../routes/main.less';
 import './index.less';
+import MouserOverWrapper from '../MouseOverWrapper';
 
 const { Item: FormItem } = Form;
 const { Group: RadioGroup } = Radio;
@@ -53,10 +54,11 @@ export default class DomainForm extends Component {
       DomainStore.loadDataById(projectId, ingressId)
         .then((data) => {
           const { pathList, envId: domainEnv, certId, certName, domain } = data;
-          const deletedService = _.map(pathList, ({ serviceStatus, serviceName, serviceId }) => (serviceStatus !== 'running' ? {
+          const deletedService = _.map(pathList, ({ serviceStatus, serviceName, serviceId, serviceError }) => (serviceStatus !== 'running' ? {
             name: serviceName,
             id: serviceId,
             status: serviceStatus,
+            serviceError,
           } : {}));
           this.setState({
             deletedService,
@@ -424,15 +426,15 @@ export default class DomainForm extends Component {
     const pathItem = _.map(paths, (k, index) => {
       let delNetOption = null;
       if (deletedService[k] && !_.isEmpty(deletedService[k])) {
-        const { id, status, name: delNetName } = deletedService[k];
+        const { id, status, name: delNetName, serviceError } = deletedService[k];
         delNetOption = (
           <Option value={id} key={`${id}-network-error`}>
-            <div
-              className={`c7n-domain-create-status c7n-domain-create-status_${status}`}
-            >
-              <div>{formatMessage({ id: status })}</div>
-            </div>
-            {delNetName}
+            <Tooltip title={delNetName}>
+              <span className="c7ncd-domain-network-text">{delNetName}</span>
+            </Tooltip>
+            <Tooltip title={formatMessage({ id: serviceError ? `failed: ${serviceError}` : status })}>
+              <Icon type="error" className="c7ncd-domain-network-status-icon" />
+            </Tooltip>
           </Option>
         );
       }
@@ -458,10 +460,10 @@ export default class DomainForm extends Component {
       // 生成网络选项
       const networkOption = _.map(network, ({ id, name: networkName }) => (
         <Option value={id} key={`${id}-network`}>
-          <div className="c7n-domain-create-status c7n-domain-create-status_running">
-            <div>{formatMessage({ id: 'running' })}</div>
-          </div>
-          <Tooltip title={networkName}>{networkName}</Tooltip>
+          <Tooltip title={networkName}>
+            <span className="c7ncd-domain-network-text">{networkName}</span>
+          </Tooltip>
+          <Icon type="" />
         </Option>
       ));
       return (
@@ -507,7 +509,6 @@ export default class DomainForm extends Component {
               initialValue: networkOption.length ? initNetwork : undefined,
             })(
               <Select
-                getPopupContainer={(triggerNode) => triggerNode.parentNode}
                 disabled={!envId}
                 filter
                 label={formatMessage({ id: 'domain.column.network' })}
@@ -517,7 +518,7 @@ export default class DomainForm extends Component {
                 size="default"
                 optionFilterProp="children"
                 optionLabelProp="children"
-                filterOption={(input, option) => option.props.children[1].props.children
+                filterOption={(input, option) => option.props.children[0].props.children.props.children
                   .toLowerCase()
                   .indexOf(input.toLowerCase()) >= 0}
               >
