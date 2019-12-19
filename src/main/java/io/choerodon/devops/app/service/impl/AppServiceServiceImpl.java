@@ -314,14 +314,9 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public void deleteAppServiceSage(Long projectId, Long appServiceId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-        if (appServiceDTO == null) {
-            LogUtil.loggerWarnObjectNullWithId("AppService", appServiceId, LOGGER);
-        }
         // 删除应用服务的分支,合并请求，pipeline,commit
         devopsBranchService.deleteAllBaranch(appServiceId);
         gitlabCommitMapper.deleteByAppServiceId(appServiceId);
-        LOGGER.info("AppService: {}", appServiceDTO);
-        LOGGER.info("mergeRequestMapper is null: {}", mergeRequestMapper == null);
         mergeRequestMapper.deleteByProjectId(appServiceDTO.getGitlabProjectId());
         gitlabPipelineMapper.deleteByAppServiceId(appServiceId);
         // 删除应用服务的版本
