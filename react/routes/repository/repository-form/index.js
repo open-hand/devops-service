@@ -100,7 +100,7 @@ export default injectIntl(observer(({
 
   function renderTestButton(status, handleClick) {
     return (
-      <Fragment>
+      <div className={`${prefixCls}-form-btnContent`}>
         <Button
           onClick={handleClick}
           funcType="raised"
@@ -117,7 +117,7 @@ export default injectIntl(observer(({
             {formatMessage({ id: `${intlPrefix}.test.${status}` })}
           </span>
         )}
-      </Fragment>
+      </div>
     );
   }
 
