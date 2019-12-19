@@ -257,10 +257,10 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = devopsEnvResourceDetailMap.get(devopsEnvResourceDTO.getResourceDetailId());
             V1Pod v1Pod = json.deserialize(devopsEnvResourceDetailDTO.getMessage(), V1Pod.class);
             devopsEnvPodInfoVO.setStatus(K8sUtil.changePodStatus(v1Pod));
+            devopsEnvPodInfoVO.setPodIp(v1Pod == null ? null : v1Pod.getStatus().getPodIP());
             if (podMetricsRedisInfoVO != null) {
                 devopsEnvPodInfoVO.setCpuUsed(podMetricsRedisInfoVO.getCpu());
                 devopsEnvPodInfoVO.setMemoryUsed(podMetricsRedisInfoVO.getMemory());
-                devopsEnvPodInfoVO.setPodIp(v1Pod == null ? null : v1Pod.getStatus().getPodIP());
             }
         });
 

@@ -94,14 +94,14 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
         }
 
         // 发送关于Merge Request的相关通知
-        String operatorUserId = devopsMergeRequestVO.getUser() == null ? null : devopsMergeRequestVO.getUser().getUsername();
+        String operatorUserLoginName = devopsMergeRequestVO.getUser() == null ? null : devopsMergeRequestVO.getUser().getUsername();
         Integer gitProjectId = TypeUtil.objToInteger(gitlabProjectId);
         if (MergeRequestState.OPENED.getValue().equals(devopsMergeRequestDTO.getState())) {
             sendNotificationService.sendWhenMergeRequestAuditEvent(gitProjectId, devopsMergeRequestDTO.getGitlabMergeRequestId());
         } else if (MergeRequestState.CLOSED.getValue().equals(devopsMergeRequestDTO.getState())) {
-            sendNotificationService.sendWhenMergeRequestClosed(gitProjectId, devopsMergeRequestDTO.getGitlabMergeRequestId(), operatorUserId);
+            sendNotificationService.sendWhenMergeRequestClosed(gitProjectId, devopsMergeRequestDTO.getGitlabMergeRequestId(), operatorUserLoginName);
         } else if (MergeRequestState.MERGED.getValue().equals(devopsMergeRequestDTO.getState())) {
-            sendNotificationService.sendWhenMergeRequestPassed(gitProjectId, devopsMergeRequestDTO.getGitlabMergeRequestId(), operatorUserId);
+            sendNotificationService.sendWhenMergeRequestPassed(gitProjectId, devopsMergeRequestDTO.getGitlabMergeRequestId(), operatorUserLoginName);
         }
     }
 

@@ -24,6 +24,7 @@ import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.api.vo.DevopsConfigRepVO;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.app.task.DevopsCommandRunner;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
@@ -201,6 +202,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             if (queryHarborUser == null) {
                 createHarborUser(harborClient, user, Arrays.asList(1), organizationDTO, projectDTO);
                 updateHarborProjectAndProjectMember(harborClient, user, Arrays.asList(1), organizationDTO, projectDTO);
+                harborUser.setHarborProjectUserPassword(user.getPassword());
                 devopsHarborUserService.baseCreate(harborUser);
                 devopsProjectDTO.setHarborUserId(harborUser.getId());
             } else {
@@ -456,7 +458,13 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
 
 
     public DevopsConfigDTO baseQueryDefaultConfig(String type) {
-        return devopsConfigMapper.queryDefaultConfig(type);
+        DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
+        if (type.equals("harbor")) {
+            devopsConfigDTO.setName(DevopsCommandRunner.HARBOR_NAME);
+        } else {
+            devopsConfigDTO.setName(DevopsCommandRunner.CHART_NAME);
+        }
+        return devopsConfigMapper.selectOne(devopsConfigDTO);
     }
 
     private void setResourceId(Long resourceId, String resourceType, DevopsConfigDTO devopsConfigDTO) {
@@ -526,7 +534,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             configVOS.add(harbor);
         } else {
             harbor = devopsConfigRepVO.getHarbor();
-            harbor.setHarborPrivate(devopsConfigRepVO.getHarborPrivate());
+            harbor.setHarborPrivate(true);
             configVOS.add(harbor);
         }
 

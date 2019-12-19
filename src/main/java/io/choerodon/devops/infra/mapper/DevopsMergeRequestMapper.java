@@ -2,10 +2,10 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 
-import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * Created with IntelliJ IDEA.
@@ -18,9 +18,9 @@ public interface DevopsMergeRequestMapper extends Mapper<DevopsMergeRequestDTO> 
     List<DevopsMergeRequestDTO> getByProjectIdAndState(@Param("projectId") Integer gitLabProjectId,
                                                        @Param("state") String state);
 
-    List<DevopsMergeRequestDTO> listBySourceBranch(@Param("projectId")Integer gitLabProjectId, @Param("branchName") String branchName);
+    List<DevopsMergeRequestDTO> listBySourceBranch(@Param("projectId") Integer gitLabProjectId, @Param("branchName") String branchName);
 
     DevopsMergeRequestDTO countMergeRequest(@Param("projectId") Integer gitlabProjectId);
 
-    void deleteByProjectId(@Param("projectId")int projectId);
+    void deleteByProjectId(@Param("projectId") Integer projectId);
 }

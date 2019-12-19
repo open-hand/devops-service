@@ -1743,6 +1743,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 && devopsEnvResourceCountVO.getCertificationCount() == 0
                 && devopsEnvResourceCountVO.getSecretCount() == 0
                 && devopsEnvResourceCountVO.getConfigMapCount() == 0
+                && devopsEnvResourceCountVO.getPvcCount() == 0
+                && devopsEnvResourceCountVO.getCustomCount() == 0
                 && pipeLineAppDeployEmpty;
     }
 

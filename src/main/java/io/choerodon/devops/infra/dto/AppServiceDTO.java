@@ -284,4 +284,36 @@ public class AppServiceDTO extends BaseDTO {
     public void setSshRepositoryUrl(String sshRepositoryUrl) {
         this.sshRepositoryUrl = sshRepositoryUrl;
     }
+
+    @Override
+    public String toString() {
+        return "AppServiceDTO{" +
+                "id=" + id +
+                ", projectId=" + projectId +
+                ", name='" + name + '\'' +
+                ", code='" + code + '\'' +
+                ", gitlabProjectId=" + gitlabProjectId +
+                ", harborConfigId=" + harborConfigId +
+                ", chartConfigId=" + chartConfigId +
+                ", isActive=" + isActive +
+                ", isSynchro=" + isSynchro +
+                ", uuid='" + uuid + '\'' +
+                ", token='" + token + '\'' +
+                ", hookId=" + hookId +
+                ", isFailed=" + isFailed +
+                ", type='" + type + '\'' +
+                ", isSkipCheckPermission=" + isSkipCheckPermission +
+                ", imgUrl='" + imgUrl + '\'' +
+                ", mktAppId=" + mktAppId +
+                ", publishLevel='" + publishLevel + '\'' +
+                ", contributor='" + contributor + '\'' +
+                ", description='" + description + '\'' +
+                ", repoUrl='" + repoUrl + '\'' +
+                ", sshRepositoryUrl='" + sshRepositoryUrl + '\'' +
+                ", sonarUrl='" + sonarUrl + '\'' +
+                ", gitlabProjectUrl='" + gitlabProjectUrl + '\'' +
+                ", version='" + version + '\'' +
+                ", emptyRepository=" + emptyRepository +
+                '}';
+    }
 }

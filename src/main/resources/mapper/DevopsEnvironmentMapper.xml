@@ -230,6 +230,7 @@
                (SELECT COUNT(1) FROM devops_certification certification WHERE certification.env_id = env.id AND certification.status!='deleting') AS certification_count,
                (SELECT COUNT(1) FROM devops_config_map cm WHERE cm.env_id = env.id ) AS config_map_count,
                (SELECT COUNT(1) FROM devops_secret secret WHERE secret.env_id = env.id) AS secret_count,
+               (SELECT COUNT(1) FROM devops_customize_resource dcr WHERE dcr.env_id = env.id) as custom_count,
                (SELECT COUNT(1) FROM devops_app_service_instance ins WHERE ins.env_id = env.id AND status = 'running') AS running_instance_count,
                (SELECT COUNT(1) FROM devops_app_service_instance ins WHERE ins.env_id = env.id AND status = 'stopped') AS stopped_instance_count,
                (SELECT COUNT(1) FROM devops_app_service_instance ins WHERE ins.env_id = env.id AND status = 'operating') AS operating_instance_count,
