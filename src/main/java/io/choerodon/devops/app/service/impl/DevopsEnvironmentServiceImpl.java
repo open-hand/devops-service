@@ -488,9 +488,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 DevopsAppServiceViewVO appVO = new DevopsAppServiceViewVO();
                 BeanUtils.copyProperties(app, appVO, "instances");
                 AppServiceDTO appServiceDTO = appServiceService.baseQuery(app.getId());
-                LOGGER.info("appId:{}", app.getId());
-                LOGGER.info("appServiceId:{},appService-ProjectId:{}", appServiceDTO.getId(), appServiceDTO.getProjectId());
                 appVO.setType(appServiceService.checkAppServiceType(projectId, appServiceDTO));
+                LOGGER.info("name:{},appId:{},appServiceId:{},appService-ProjectId:{},type:{}", app.getName(), app.getId(), appServiceDTO.getId(), appServiceDTO.getProjectId(), appVO.getType());
                 appVO.setInstances(app.getInstances().stream().map(ins -> {
                     DevopsAppServiceInstanceViewVO insVO = new DevopsAppServiceInstanceViewVO();
                     BeanUtils.copyProperties(ins, insVO);
