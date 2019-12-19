@@ -470,4 +470,11 @@
         </where>
     </select>
 
+    <update id="updateDevopsEnvGroupIdNullByProjectIdAndGroupId">
+        UPDATE devops_env
+        SET devops_env_group_id = NULL
+        WHERE project_id = #{project_id}
+        AND devops_env_group_id = #{env_group_id}
+    </update>
+
 </mapper>
