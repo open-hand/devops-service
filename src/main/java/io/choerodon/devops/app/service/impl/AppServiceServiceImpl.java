@@ -409,6 +409,8 @@ public class AppServiceServiceImpl implements AppServiceService {
             if (!appServiceMsgVO.getCheckResources() && !appServiceMsgVO.getCheckRule()) {
                 // 如果能停用，删除其和他所属项目下的环境之间的关联关系
                 devopsEnvAppServiceMapper.deleteRelevanceInProject(appServiceId, projectId);
+            } else {
+                throw new CommonException("error.disable.or.enable.application.service");
             }
         }
 
