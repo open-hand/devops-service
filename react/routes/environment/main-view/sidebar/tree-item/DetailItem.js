@@ -114,7 +114,7 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
       children: <Spin />,
       drawer: true,
       okCancel: false,
-      okText: formatMessage({ id: 'iknow' }),
+      okText: formatMessage({ id: 'close' }),
     });
     try {
       const res = await checkStatus();
@@ -132,6 +132,7 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
       } else {
         modifyModal.update({
           children: formatMessage({ id: `${intlPrefix}.status.change` }),
+          okText: formatMessage({ id: 'iknow' }),
           onOk: refresh,
         });
       }

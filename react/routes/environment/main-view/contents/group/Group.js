@@ -180,7 +180,7 @@ const Group = observer(() => {
       children: <Spin />,
       drawer: true,
       okCancel: false,
-      okText: formatMessage({ id: 'iknow' }),
+      okText: formatMessage({ id: 'close' }),
     });
     try {
       const res = await checkStatus(record);
@@ -198,6 +198,7 @@ const Group = observer(() => {
       } else {
         modifyModal.update({
           children: formatMessage({ id: `${intlPrefix}.status.change` }),
+          okText: formatMessage({ id: 'iknow' }),
           onOk: refresh,
         });
       }
