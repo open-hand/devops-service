@@ -489,7 +489,7 @@ const appService = {
   'c7ncd.appService.stop': '停用服务"{name}"',
   'c7ncd.appService.stop.tips': '确定要停用该应用服务吗？',
   'c7ncd.appService.cannot.stop': '无法停用',
-  'c7ncd.appService.has.both': '该服务下存在实例、网络....',
+  'c7ncd.appService.has.both': '该应用服务下存在实例、网络、域名等关联资源，无法停用。',
   'c7ncd.appService.has.resource': '该应用服务下存在实例、网络、域名等关联资源，无法停用。',
   'c7ncd.appService.has.rules': '该应用服务存在共享规则，无法停用。',
   'c7ncd.appService.check': '正在校验...',

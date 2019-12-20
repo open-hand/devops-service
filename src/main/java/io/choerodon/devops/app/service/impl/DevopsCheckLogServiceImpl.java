@@ -260,7 +260,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             if (devopsProjectDTO != null) {
                                 String username = devopsProjectDTO.getHarborProjectUserName() == null ? String.format("user%s%s", organization.getId(), projectDTO.getId()) : devopsProjectDTO.getHarborProjectUserName();
                                 String email = devopsProjectDTO.getHarborProjectUserEmail() == null ? String.format("%s@harbor.com", username) : devopsProjectDTO.getHarborProjectUserEmail();
-                                String password = devopsProjectDTO.getHarborProjectUserPassword() == null ? String.format("%sAAA", username) : devopsProjectDTO.getHarborProjectUserPassword();
+                                String password = devopsProjectDTO.getHarborProjectUserPassword() == null ? String.format("%sPWD", username) : devopsProjectDTO.getHarborProjectUserPassword();
                                 User user = new User(username, email, password, username);
                                 //创建用户
                                 Response<Void> result = null;
@@ -567,11 +567,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     private void syncHarborUser(List<CheckLog> logs) {
         LOGGER.info("sync harbor user start");
-        List<DevopsProjectDTO> projectDTOLists = devopsProjectService.listAll();
+        List<DevopsProjectDTO> projectDTOLists = devopsProjectService.listAll().stream()
+                .filter(t -> t.getDevopsAppGroupId() != null && t.getDevopsEnvGroupId() != null).collect(Collectors.toList());
         projectDTOLists.forEach(devopsProjectDTO -> {
             Boolean harbor = (!ObjectUtils.isEmpty(devopsProjectDTO.getHarborProjectUserName()) && !ObjectUtils.isEmpty(devopsProjectDTO.getHarborProjectUserPassword()) && !ObjectUtils.isEmpty(devopsProjectDTO.getHarborProjectUserEmail()));
-            Boolean idIsExist = (!ObjectUtils.isEmpty(devopsProjectDTO.getHarborUserId()) && !ObjectUtils.isEmpty(devopsProjectDTO.getHarborPullUserId()));
-            if (harbor && !idIsExist) {
+            if (harbor) {
                 CheckLog checkLog = new CheckLog();
                 checkLog.setContent("begin to sync harbor user, projectId:" + devopsProjectDTO.getIamProjectId());
                 try {
@@ -581,17 +581,14 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     harborUserDTO.setHarborProjectUserPassword(devopsProjectDTO.getHarborProjectUserPassword());
                     harborUserDTO.setHarborProjectUserEmail(devopsProjectDTO.getHarborProjectUserEmail());
                     harborUserDTO.setPush(true);
+                    devopsHarborUserService.baseCreateOrUpdate(harborUserDTO);
+                    devopsProjectDTO.setHarborUserId(harborUserDTO.getId());
 
-                    HarborUserDTO queryDTO = harborUserMapper.selectOne(harborUserDTO);
-                    if (queryDTO == null) {
-                        devopsHarborUserService.baseCreate(harborUserDTO);
-                        devopsProjectDTO.setHarborUserId(harborUserDTO.getId());
-                    } else {
-                        devopsProjectDTO.setHarborUserId(queryDTO.getId());
-                    }
                     // 创建pull用户
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
-                    createHarborUser(projectDTO, devopsProjectDTO);
+                    if (devopsProjectDTO.getHarborProjectIsPrivate() != null && devopsProjectDTO.getHarborProjectIsPrivate()) {
+                        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
+                        createHarborUser(projectDTO, devopsProjectDTO);
+                    }
                     checkLog.setResult("Success!");
                 } catch (Exception e) {
                     checkLog.setResult("Failed!Reason:" + e.getMessage());
@@ -605,25 +602,17 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
 
     private void createHarborUser(ProjectDTO projectDTO, DevopsProjectDTO devopsProjectDTO) {
-        User user = harborService.convertUser(projectDTO, false, null);
+        User user = harborService.convertHarborUser(projectDTO, false, null);
         HarborUserDTO harborUserDTO = new HarborUserDTO();
         harborUserDTO.setHarborProjectUserName(user.getUsername());
         harborUserDTO.setHarborProjectUserEmail(user.getEmail());
+        harborUserDTO.setHarborProjectUserPassword(user.getPassword());
         harborUserDTO.setPush(false);
-        HarborUserDTO queryDTO = harborUserMapper.selectOne(harborUserDTO);
-        if (queryDTO == null) {
-            harborUserDTO.setHarborProjectUserPassword(user.getPassword());
-            devopsHarborUserService.baseCreate(harborUserDTO);
-            devopsProjectDTO.setHarborPullUserId(harborUserDTO.getId());
-        } else {
-            devopsProjectDTO.setHarborPullUserId(queryDTO.getId());
-            user.setPassword(queryDTO.getHarborProjectUserPassword());
-        }
+        devopsHarborUserService.baseCreateOrUpdate(harborUserDTO);
+        devopsProjectDTO.setHarborPullUserId(harborUserDTO.getId());
 
         HarborPayload harborPayload = new HarborPayload();
-        DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
-        devopsConfigDTO.setProjectId(projectDTO.getId());
-        harborService.createHarborUser(harborPayload, user, projectDTO, Arrays.asList(3));
+        harborService.createHarborUserByClient(harborPayload, user, projectDTO, Arrays.asList(3));
         devopsProjectService.baseUpdate(devopsProjectDTO);
     }
 }

@@ -8,6 +8,8 @@ import io.choerodon.devops.infra.dto.HarborUserDTO;
  * @description:
  */
 public interface DevopsHarborUserService {
+    void baseCreateOrUpdate(HarborUserDTO harborUser);
+
     void baseCreate(HarborUserDTO harborUser);
 
     HarborUserDTO queryHarborUserById(Long id);
