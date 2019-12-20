@@ -32,6 +32,6 @@ public class ResourceDeleteEmailTemplate implements EmailTemplate {
 
     @Override
     public String content() {
-        return "<p>${user}正在${env}环境下执行删除${object}\"${objectName}\"的操作，验证码为：${captcha}；确认后，需将此验证码提供给操作者${user}完成删除操作。验证码11分钟内有效。</p>";
+        return "<p>${user}正在${env}环境下执行删除${object}\"${objectName}\"的操作，验证码为：${captcha}；确认后，需将此验证码提供给操作者${user}完成删除操作。验证码10分钟内有效。</p>";
     }
 }
