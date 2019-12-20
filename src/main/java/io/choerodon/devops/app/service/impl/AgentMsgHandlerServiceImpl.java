@@ -292,15 +292,46 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 } else {
                     appServiceInstanceDTO.setComponentVersion(releasePayloadVO.getChartVersion());
                 }
-                if (releasePayloadVO.getCommand() == null) {
-                    logger.warn("Unexpected empty value '{}' for command of release payload.", releasePayloadVO.getCommand());
+
+                logger.info("ReleasePayLoad: {}", msg);
+                if (StringUtils.isEmpty(releasePayloadVO.getCommit())) {
+                    logger.warn("Unexpected empty value '{}' for command of release payload.", releasePayloadVO.getCommit());
                 } else {
-                    appServiceInstanceDTO.setEffectCommandId(releasePayloadVO.getCommand());
+                    Long effectCommandId = getEffectCommandId(appServiceInstanceDTO.getId(), releasePayloadVO.getCommit());
+                    if (effectCommandId != null) {
+                        appServiceInstanceDTO.setEffectCommandId(effectCommandId);
+                        logger.info("Found command by sha. command id: {}", effectCommandId);
+                    }
+                }
+
+                // 如果通过sha查不到
+                if (appServiceInstanceDTO.getEffectCommandId() == null) {
+                    if (releasePayloadVO.getCommand() == null) {
+                        logger.warn("Unexpected empty value '{}' for command of release payload.", releasePayloadVO.getCommand());
+                    } else {
+                        logger.info("Getting command from payload. command: {}", releasePayloadVO.getCommand());
+                        appServiceInstanceDTO.setEffectCommandId(releasePayloadVO.getCommand());
+                    }
                 }
                 appServiceInstanceDTO.setStatus(InstanceStatus.RUNNING.getStatus());
                 appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
                 installResource(resources, appServiceInstanceDTO);
             }
+        }
+    }
+
+    private Long getEffectCommandId(Long instanceId, String releaseCommit) {
+        try {
+            DevopsEnvCommandDTO result = devopsEnvCommandService.queryByInstanceIdAndCommitSha(instanceId, releaseCommit);
+            return result == null ? null : result.getId();
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Failed to query effect command. instanceId: {}, releaseCommit: {}", instanceId, releaseCommit);
+                logger.debug("The ex is: {}", e);
+            } else if (logger.isInfoEnabled()) {
+                logger.info("Failed to query effect command. instanceId: {}, releaseCommit: {}, the exception class is {}", instanceId, releaseCommit, e.getClass());
+            }
+            return null;
         }
     }
 
