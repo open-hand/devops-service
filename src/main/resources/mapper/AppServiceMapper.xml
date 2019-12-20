@@ -231,7 +231,6 @@
 
     <select id="listAll" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT DISTINCT
-        dam.share_level publishLevel,
         da.*
         FROM
         devops_app_service da
@@ -242,7 +241,6 @@
                 da.is_active
           AND de.project_id = #{projectId}
         ORDER BY
-        dam.share_level ASC,
         da.id DESC
     </select>
 
