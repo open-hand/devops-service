@@ -81,15 +81,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         }
         //返回删除对象时,获取验证码方式和所通知的目标人群
         List<String> method = new ArrayList<>();
-        if (messageSettingVO.getPmEnable()) {
-            method.add("站内信");
-        }
-        if (messageSettingVO.getEmailEnable()) {
-            method.add("邮件");
-        }
-        if (messageSettingVO.getSmsEnable()) {
-            method.add("短消息");
-        }
+        fillMetod(method, messageSettingVO);
         if (CollectionUtils.isEmpty(method)) {
             return new ResourceCheckVO();
         }
@@ -100,34 +92,45 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             return new ResourceCheckVO();
         }
         List<String> userList = new ArrayList<>();
-        targetUserDTOS.stream().forEach(e -> {
-            if (TriggerObject.PROJECT_OWNER.getObject().equals(e.getType())) {
-                userList.add("项目所有者");
-            }
-            if (TriggerObject.HANDLER.getObject().equals(e.getType())) {
-                List<IamUserDTO> users = baseServiceClientOperator.listUsersByIds(Arrays.asList(GitUserNameUtil.getUserId().longValue()));
-                if (!users.isEmpty()) {
-                    if (users.get(0).getRealName() != null) {
-                        userList.add(users.get(0).getRealName());
-                    } else {
-                        userList.add(users.get(0).getLoginName());
-                    }
-                }
-            }
-            if (TriggerObject.SPECIFIER.getObject().equals(e.getType())) {
-                List<Long> userIds = Stream.of(e.getUserId()).collect(Collectors.toList());
-                baseServiceClientOperator.listUsersByIds(userIds).stream().map(IamUserDTO::getRealName).collect(Collectors.toList());
-                userList.add(StringUtils.join(baseServiceClientOperator.listUsersByIds(userIds).stream().map(userDTO -> {
-                    if (userDTO.getRealName() != null) {
-                        return userDTO.getRealName();
-                    } else {
-                        return userDTO.getLoginName();
-                    }
-                }).toArray(), ","));
-            }
-        });
+        fillTargetUser(userList, targetUserDTOS);
         resourceCheckVO.setUser(userList.stream().collect(Collectors.joining(",")));
         return resourceCheckVO;
+    }
+
+    private void fillTargetUser(List<String> userList, List<TargetUserDTO> targetUserDTOS) {
+        Set<Long> userIdsSet = new HashSet<>();
+        for (TargetUserDTO targetUserDTO : targetUserDTOS) {
+            if (TriggerObject.PROJECT_OWNER.getObject().equals(targetUserDTO.getType())) {
+                userList.add("项目所有者");
+            }
+
+            if (TriggerObject.HANDLER.getObject().equals(targetUserDTO.getType())) {
+                userIdsSet.add(GitUserNameUtil.getUserId().longValue());
+            }
+            if (TriggerObject.SPECIFIER.getObject().equals(targetUserDTO.getType())) {
+                userIdsSet.add(targetUserDTO.getUserId());
+            }
+        }
+        List<Long> userIds = new ArrayList<>(userIdsSet);
+        userList.add(StringUtils.join(baseServiceClientOperator.listUsersByIds(userIds).stream().map(userDTO -> {
+            if (userDTO.getRealName() != null) {
+                return userDTO.getRealName();
+            } else {
+                return userDTO.getLoginName();
+            }
+        }).toArray(), ","));
+    }
+
+    private void fillMetod(List<String> method, MessageSettingVO messageSettingVO) {
+        if (messageSettingVO.getPmEnable()) {
+            method.add("站内信");
+        }
+        if (messageSettingVO.getEmailEnable()) {
+            method.add("邮件");
+        }
+        if (messageSettingVO.getSmsEnable()) {
+            method.add("短消息");
+        }
     }
 
 
