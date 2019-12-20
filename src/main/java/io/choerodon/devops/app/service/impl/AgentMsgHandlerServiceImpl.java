@@ -1047,6 +1047,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                             String[] objects) {
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO;
         DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = devopsCustomizeResourceService.queryByEnvIdAndKindAndName(envId, objects[0], objects[1]);
+        if (devopsCustomizeResourceDTO == null) {
+            logger.info("Non custom resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
+            return;
+        }
         devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(envId, devopsCustomizeResourceDTO.getId(), ObjectType.CUSTOM.getType());
         updateEnvCommandStatus(resourceCommitVO, devopsCustomizeResourceDTO.getCommandId(), devopsEnvFileResourceDTO,

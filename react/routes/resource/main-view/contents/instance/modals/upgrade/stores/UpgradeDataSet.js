@@ -34,7 +34,7 @@ export default ({ formatMessage, intlPrefix, projectId, versionsDs, valueDs }) =
       },
     },
     fields: [
-      { name: 'appServiceVersionId', type: 'number', textField: 'version', valueField: 'id', label: '版本', options: versionsDs },
+      { name: 'appServiceVersionId', type: 'number', textField: 'version', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.choose.version` }), options: versionsDs },
       { name: 'appServiceVersionName', type: 'string' },
       { name: 'appServiceId', type: 'number' },
       { name: 'environmentId', type: 'number' },

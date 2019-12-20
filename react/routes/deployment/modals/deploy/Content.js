@@ -120,8 +120,7 @@ const DeployModal = injectIntl(observer(({ form }) => {
 
             const networkData = {
               name: networkName,
-              appServiceId: Number(record.get('appServiceId').split('__')[0]),
-              instances: [record.get('instanceName')],
+              targetInstanceCode: record.get('instanceName'),
               envId: record.get('environmentId'),
               externalIp: externalIps && externalIps.length ? externalIps.join(',') : null,
               ports,

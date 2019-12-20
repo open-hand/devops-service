@@ -119,6 +119,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                             organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                         }
                         harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode(), false, devopsConfigVO.getHarborPrivate());
+                        devopsConfigVO.getConfig().setPrivate(devopsConfigVO.getHarborPrivate());
                     }
                 }
                 //根据配置所在的资源层级，查询出数据库中是否存在
@@ -534,7 +535,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             configVOS.add(harbor);
         } else {
             harbor = devopsConfigRepVO.getHarbor();
-            harbor.setHarborPrivate(true);
+            harbor.setHarborPrivate(devopsConfigRepVO.getHarborPrivate());
             configVOS.add(harbor);
         }
 

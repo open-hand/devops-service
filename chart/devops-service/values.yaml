@@ -134,7 +134,7 @@ env:
     # 模板库的版本
     TEMPLATE_VERSION: 0.19.0
 
-    CHOERODON_RESOURCE_JWT_IGNORE: /workflow/**, /sonar/**, /ci, /sonar/info, /v2/api-docs, /agent/**, /ws/**, /gitlab/email, WEBHOOK_ALL, /v2/choerodon/**, /choerodon/**, /actuator/**, /prometheus, /devops/**, /pre_stop
+    CHOERODON_RESOURCE_JWT_IGNORE: /workflow/**, /sonar/**, /ci, /sonar/info, /v2/api-docs, /agent/**, /ws/**, /gitlab/email, /webhook/**, /v2/choerodon/**, /choerodon/**, /actuator/**, /prometheus, /devops/**, /pre_stop
 
     ## Skywalking 配置参数
     # SKYWALKING_OPTS: >-

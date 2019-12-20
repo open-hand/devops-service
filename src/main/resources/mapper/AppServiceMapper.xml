@@ -491,6 +491,7 @@
         JOIN devops_app_service da ON dasr.app_service_id = da.id
         WHERE
         dasr.share_level = 'organization'
+        AND da.is_active = TRUE
         <include refid="appServiceSqlParam"/>
         ) UNION
         (
@@ -507,6 +508,7 @@
         ) dasr ON da.id = dasr.app_service_id
     WHERE
         dasr.app_service_id IS NOT NULL
+        AND da.is_active = TRUE
         <if test="projectId != null and projectId !=''">
             AND dasr.project_id = #{projectId}
         </if>

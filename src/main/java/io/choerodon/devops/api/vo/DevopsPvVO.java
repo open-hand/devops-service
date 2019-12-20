@@ -146,4 +146,23 @@ public class DevopsPvVO {
     public void setObjectVersionNumber(Long objectVersionNumber) {
         ObjectVersionNumber = objectVersionNumber;
     }
+
+    @Override
+    public String toString() {
+        return "DevopsPvVO{" +
+                "id=" + id +
+                ", clusterId=" + clusterId +
+                ", projectId=" + projectId +
+                ", name='" + name + '\'' +
+                ", status='" + status + '\'' +
+                ", description='" + description + '\'' +
+                ", clusterName='" + clusterName + '\'' +
+                ", type='" + type + '\'' +
+                ", pvcName='" + pvcName + '\'' +
+                ", accessModes='" + accessModes + '\'' +
+                ", requestResource='" + requestResource + '\'' +
+                ", skipCheckProjectPermission=" + skipCheckProjectPermission +
+                ", ObjectVersionNumber=" + ObjectVersionNumber +
+                '}';
+    }
 }

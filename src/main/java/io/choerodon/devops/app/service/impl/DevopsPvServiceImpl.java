@@ -693,21 +693,24 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 null,
                 TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))), DevopsPvVO.class);
+        List<Long> devopsPvVOIdList = devopsPvVOList.stream().map(DevopsPvVO::getId).collect(Collectors.toList());
+        LOGGER.info("=============================devopsPvVOList:{}", devopsPvVOList);
+        LOGGER.info("=============================devopsPvVOIdList:{}", devopsPvVOIdList);
+        List<Long> projectRelatedPvIdsList;
 
-        if (devopsPvVOList == null) {
-            throw new CommonException("error.pv.query");
-        }
-
-        List<Long> projectRelatedPvIdsList = new ArrayList<>();
-
-        //获得不跳过权限的与本项目有关联的pv
-        projectRelatedPvIdsList.addAll(devopsPvProPermissionService.baseListPvIdsByProjectId(projectId));
-
+        LOGGER.info("=============================跳过权限的pv:{}", devopsPvProPermissionService.baseListPvIdsByProjectId(projectId));
+        // 获得不跳过权限的与本项目有关联的pv并过滤掉不符合条件的pv
+        projectRelatedPvIdsList = devopsPvProPermissionService.baseListPvIdsByProjectId(projectId)
+                .stream()
+                .filter(devopsPvVOIdList::contains)
+                .collect(Collectors.toList());
+        LOGGER.info("=============================过滤后的pv:{}", projectRelatedPvIdsList);
         devopsPvVOList.forEach(pv -> {
             CustomPageRequest customPageRequest = CustomPageRequest.of(1, 0);
             //获得跳过权限的与本项目有关联的pv
             if (pv.getSkipCheckProjectPermission()) {
                 List<ProjectReqVO> list = new ArrayList<>(Optional.ofNullable(pageProjects(pv.getProjectId(), pv.getId(), customPageRequest, params).getList()).orElse(new ArrayList<>()));
+                LOGGER.info("=============================pv:{},projects:{}", pv, list);
                 if (list.stream().map(ProjectReqVO::getId).collect(Collectors.toList()).contains(projectId)) {
                     projectRelatedPvIdsList.add(pv.getId());
                 }

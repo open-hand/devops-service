@@ -415,6 +415,7 @@ const deployment = {
   'c7ncd.deployment.pvc.delete.title': '删除PVC“{name}”',
   'c7ncd.deployment.pvc.delete.des': '确定要删除该PVC吗？',
   'c7ncd.deployment.active': '生效',
+  'c7ncd.deployment.choose.version': '选择版本',
 
 };
 

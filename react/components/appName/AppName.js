@@ -23,7 +23,7 @@ export default function AppName(props) {
       type = 'project';
     }
   } else {
-    icon = self ? 'project' : 'apps';
+    icon = self ? 'widgets' : 'apps';
     type = self ? 'project' : 'market';
   }
 

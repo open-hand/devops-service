@@ -99,7 +99,7 @@ const HeaderButtons = observer(({ children }) => {
         } else if (!checkResources && checkRule) {
           childrenContent = formatMessage({ id: `${intlPrefix}.has.rules` });
         } else {
-          childrenContent = formatMessage({ isd: `${intlPrefix}.has.both` });
+          childrenContent = formatMessage({ id: `${intlPrefix}.has.both` });
         }
 
         const statusObj = {

@@ -26,7 +26,8 @@
     </select>
 
     <delete id="batchDelete">
-        DELETE FROM devops_pv_project_rel dppr
+        DELETE dppr.*
+        FROM devops_pv_project_rel dppr
         WHERE
         <foreach collection="devopsPvProPermissionDTOS" item="devopsPvProPermissionDTO" open="(" close=")" separator="OR">
             dppr.pv_id=#{devopsPvProPermissionDTO.pvId} AND dppr.project_id=#{devopsPvProPermissionDTO.projectId}
