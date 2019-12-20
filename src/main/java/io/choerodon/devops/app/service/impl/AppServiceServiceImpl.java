@@ -535,7 +535,15 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public List<AppServiceRepVO> listAll(Long projectId) {
-        return ConvertUtils.convertList(baseListAll(projectId), AppServiceRepVO.class);
+        List<AppServiceRepVO> appServiceRepVOList = ConvertUtils.convertList(baseListAll(projectId), AppServiceRepVO.class);
+        appServiceRepVOList.forEach(appServiceRepVO -> {
+            if (appServiceRepVO.getProjectId() != null && appServiceRepVO.getProjectId().equals(projectId)) {
+                appServiceRepVO.setServiceType(NORMAL_SERVICE);
+            } else {
+                appServiceRepVO.setServiceType(SHARE_SERVICE);
+            }
+        });
+        return appServiceRepVOList;
     }
 
     @Override
