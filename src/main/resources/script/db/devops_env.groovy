@@ -159,6 +159,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
                 SELECT COUNT(1)
                 FROM (SELECT 1
                 FROM devops_env duplication
+                WHERE duplication.project_id IS NOT NULL
+                AND duplication.code IS NOT NULL
+                AND duplication.type IS NOT NULL
                 GROUP BY duplication.project_id, duplication.code, duplication.type
                 HAVING COUNT(1) > 1) tmp""")
         }
@@ -174,6 +177,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
                 SELECT COUNT(1)
                 FROM (SELECT 1
                 FROM devops_env duplication
+                WHERE duplication.cluster_id IS NOT NULL
+                AND duplication.code IS NOT NULL
                 GROUP BY duplication.cluster_id, duplication.code
                 HAVING COUNT(1) > 1) tmp""")
         }
