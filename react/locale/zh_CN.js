@@ -1271,7 +1271,7 @@ const cluster = {
   'c7ncd.cluster.monitor.uninstall.des': '确定要卸载监控组件吗？',
   'c7ncd.cluster.cert.uninstall': '卸载CertManager',
   'c7ncd.cluster.cert.uninstall.des': '确定要卸载该组件？卸载后，将不能在该集群关联的环境中使用申请证书与上传证书的功能。',
-  'c7ncd.cluster.cert.uninstall.disabled': '无法卸载CertManager',
+  'c7ncd.cluster.cert.uninstall.disabled': '该集群关联的环境下存在申请或上传的证书，无法卸载',
   'c7ncd.cluster.install.step.parserPvc': '创建PVC',
   'c7ncd.cluster.install.step.boundPvc': '绑定PV',
   'c7ncd.cluster.install.step.parserPrometheus': '生成配置库',
