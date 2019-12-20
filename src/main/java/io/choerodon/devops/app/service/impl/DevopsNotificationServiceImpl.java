@@ -21,6 +21,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsNotificationMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -79,61 +80,44 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             return resourceCheckVO;
         }
         //返回删除对象时,获取验证码方式和所通知的目标人群
-        StringBuilder stringBuilder = new StringBuilder();
+        List<String> method = new ArrayList<>();
         if (messageSettingVO.getPmEnable()) {
-            stringBuilder.append("站内信");
+            method.add("站内信");
         }
         if (messageSettingVO.getEmailEnable()) {
-            if (!StringUtils.isBlank(stringBuilder.toString())) {
-                stringBuilder.append(",");
-            }
-            stringBuilder.append("邮件");
+            method.add("邮件");
         }
         if (messageSettingVO.getSmsEnable()) {
-            if (!StringUtils.isBlank(stringBuilder.toString())) {
-                stringBuilder.append(",");
-            }
-            stringBuilder.append("短消息");
+            method.add("短消息");
         }
-        if (StringUtils.isBlank(stringBuilder.toString())) {
+        if (CollectionUtils.isEmpty(method)) {
             return new ResourceCheckVO();
         }
-        resourceCheckVO.setMethod(stringBuilder.toString());
+        resourceCheckVO.setMethod(method.stream().collect(Collectors.joining(",")));
         resourceCheckVO.setNotificationId(messageSettingVO.getId());
         List<TargetUserDTO> targetUserDTOS = messageSettingVO.getTargetUserDTOS();
         if (targetUserDTOS == null || targetUserDTOS.size() == 0) {
             return new ResourceCheckVO();
         }
-        StringBuilder notifyTargetUser = new StringBuilder();
+        List<String> userList = new ArrayList<>();
         targetUserDTOS.stream().forEach(e -> {
             if (TriggerObject.PROJECT_OWNER.getObject().equals(e.getType())) {
-                notifyTargetUser.append("项目所有者");
+                userList.add("项目所有者");
             }
             if (TriggerObject.HANDLER.getObject().equals(e.getType())) {
                 List<IamUserDTO> users = baseServiceClientOperator.listUsersByIds(Arrays.asList(GitUserNameUtil.getUserId().longValue()));
                 if (!users.isEmpty()) {
                     if (users.get(0).getRealName() != null) {
-                        if (notifyTargetUser.toString().isEmpty()) {
-                            notifyTargetUser.append(users.get(0).getRealName());
-                        } else {
-                            notifyTargetUser.append("," + users.get(0).getRealName());
-                        }
+                        userList.add(users.get(0).getRealName());
                     } else {
-                        if (notifyTargetUser.toString().isEmpty()) {
-                            notifyTargetUser.append(users.get(0).getLoginName());
-                        } else {
-                            notifyTargetUser.append("," + users.get(0).getLoginName());
-                        }
+                        userList.add(users.get(0).getLoginName());
                     }
                 }
-            }
-            if (TriggerObject.SPECIFIER.getObject().equals(e.getType()) && !StringUtils.isBlank(notifyTargetUser.toString())) {
-                notifyTargetUser.append(",");
             }
             if (TriggerObject.SPECIFIER.getObject().equals(e.getType())) {
                 List<Long> userIds = Stream.of(e.getUserId()).collect(Collectors.toList());
                 baseServiceClientOperator.listUsersByIds(userIds).stream().map(IamUserDTO::getRealName).collect(Collectors.toList());
-                notifyTargetUser.append(StringUtils.join(baseServiceClientOperator.listUsersByIds(userIds).stream().map(userDTO -> {
+                userList.add(StringUtils.join(baseServiceClientOperator.listUsersByIds(userIds).stream().map(userDTO -> {
                     if (userDTO.getRealName() != null) {
                         return userDTO.getRealName();
                     } else {
@@ -142,7 +126,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 }).toArray(), ","));
             }
         });
-        resourceCheckVO.setUser(notifyTargetUser.toString());
+        resourceCheckVO.setUser(userList.stream().collect(Collectors.joining(",")));
         return resourceCheckVO;
     }
 
