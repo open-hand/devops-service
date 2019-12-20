@@ -19,12 +19,26 @@ public class DevopsHarborUserServiceImpl implements DevopsHarborUserService {
     private HarborUserMapper harborUserMapper;
 
     @Override
-    public void baseCreate(HarborUserDTO harborUser) {
-        if (harborUserMapper.insertSelective(harborUser) != 1) {
-            throw new CommonException("erroe.inster.harbor.user");
+    public void baseCreateOrUpdate(HarborUserDTO harborUser) {
+        HarborUserDTO oldHarborUserDTO = harborUserMapper.selectOne(harborUser);
+        if (oldHarborUserDTO == null) {
+            if (harborUserMapper.insertSelective(harborUser) != 1) {
+                throw new CommonException("error.insert.harbor.user");
+            }
+        } else {
+            harborUser.setObjectVersionNumber(oldHarborUserDTO.getObjectVersionNumber());
+            if (harborUserMapper.updateByPrimaryKeySelective(harborUser) != 1) {
+                throw new CommonException("error.update.harbor.user");
+            }
         }
     }
 
+    @Override
+    public void baseCreate(HarborUserDTO harborUser) {
+        if (harborUserMapper.insertSelective(harborUser) != 1) {
+            throw new CommonException("error.insert.harbor.user");
+        }
+    }
 
     @Override
     public HarborUserDTO queryHarborUserById(Long id) {
