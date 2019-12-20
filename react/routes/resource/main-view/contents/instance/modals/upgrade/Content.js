@@ -167,6 +167,7 @@ export default injectIntl(observer(() => {
           renderer={handleRenderer}
           optionRenderer={handleOptionRenderer}
           clearButton={false}
+          className={`${prefixCls}-instance-upgrade-select`}
         />
       </Form>
       <Spin spinning={valueDs.status === 'loading'}>

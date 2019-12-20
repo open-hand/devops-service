@@ -4,6 +4,8 @@ import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -196,10 +198,10 @@ public class DevopsIngressController {
     /**
      * 环境总览域名查询
      *
-     * @param projectId   项目id
-     * @param envId       环境Id
-     * @param pageable 分页参数
-     * @param params      搜索参数
+     * @param projectId 项目id
+     * @param envId     环境Id
+     * @param pageable  分页参数
+     * @param params    搜索参数
      * @return Page
      */
     @Permission(type = ResourceType.PROJECT,
@@ -212,6 +214,7 @@ public class DevopsIngressController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiParam(value = "分页参数") Pageable pageable,
             @ApiParam(value = "env_id", required = true)
             @PathVariable(value = "env_id") Long envId,

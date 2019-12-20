@@ -125,7 +125,7 @@
     <update id="updateResourceId">
         UPDATE devops_config
         SET app_service_id=null,project_id=null,organization_id=null
-        WHERE id=#{config_id}
+        WHERE id=#{configId}
     </update>
 
     <select id="listByConfigs" resultType="io.choerodon.devops.infra.dto.DevopsConfigDTO">

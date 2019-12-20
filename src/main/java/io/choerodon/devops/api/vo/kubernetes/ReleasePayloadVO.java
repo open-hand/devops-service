@@ -32,6 +32,9 @@ public class ReleasePayloadVO {
     @ApiModelProperty("实例对应的commandId")
     private Long command;
 
+    @ApiModelProperty("C7nHelmRelease的Annotation中的commit sha值")
+    private String commit;
+
     public String getName() {
         return name;
     }
@@ -110,5 +113,13 @@ public class ReleasePayloadVO {
 
     public void setCommand(Long command) {
         this.command = command;
+    }
+
+    public String getCommit() {
+        return commit;
+    }
+
+    public void setCommit(String commit) {
+        this.commit = commit;
     }
 }

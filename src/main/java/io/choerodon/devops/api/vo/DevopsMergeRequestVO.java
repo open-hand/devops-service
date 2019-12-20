@@ -4,6 +4,8 @@ public class DevopsMergeRequestVO {
 
     private String objectKind;
 
+    private GitlabUserVO user;
+
     private ProjectReqVO project;
 
     private ObjectAttributesVO objectAttributes;
@@ -30,5 +32,13 @@ public class DevopsMergeRequestVO {
 
     public void setObjectKind(String objectKind) {
         this.objectKind = objectKind;
+    }
+
+    public GitlabUserVO getUser() {
+        return user;
+    }
+
+    public void setUser(GitlabUserVO user) {
+        this.user = user;
     }
 }

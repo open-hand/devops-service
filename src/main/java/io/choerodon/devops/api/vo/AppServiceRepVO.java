@@ -88,6 +88,9 @@ public class AppServiceRepVO {
     @ApiModelProperty("是否是空仓库(是否没有分支)")
     private Boolean emptyRepository;
 
+    @ApiModelProperty("应用服务类型")
+    private String serviceType;
+
     public DevopsConfigVO getHarbor() {
         return harbor;
     }
@@ -302,5 +305,13 @@ public class AppServiceRepVO {
 
     public void setSshRepositoryUrl(String sshRepositoryUrl) {
         this.sshRepositoryUrl = sshRepositoryUrl;
+    }
+
+    public String getServiceType() {
+        return serviceType;
+    }
+
+    public void setServiceType(String serviceType) {
+        this.serviceType = serviceType;
     }
 }

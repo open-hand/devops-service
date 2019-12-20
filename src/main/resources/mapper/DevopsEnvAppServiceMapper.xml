@@ -68,7 +68,8 @@
         <if test="projectId != null">
             INNER JOIN devops_env de ON ds.env_id = de.id
         </if>
-        WHERE ds.app_service_id = #{appServiceId}
+        WHERE (ds.app_service_id = #{appServiceId}
+        OR ds.target_app_service_id = #{appServiceId})
         <if test="envId != null">
             AND ds.env_id = #{envId}
         </if>

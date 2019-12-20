@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.notify.NoticeSendDTO;
@@ -31,6 +32,7 @@ import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
 
 /**
  * 发送DevOps相关通知的实现类
+ * 其中数字类型的参数要转成字符串，否则在notify-service中会被转为逗号分隔的形式，如`11,111` (0.20版本)
  *
  * @author zmf
  * @since 12/5/19
@@ -40,6 +42,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SendNotificationServiceImpl.class);
     private static final String PROJECT = "Project";
     private static final String ORGANIZATION = "Organization";
+    private static final String NOTIFY_TYPE = "devops";
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -104,8 +107,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
      */
     private Map<String, Object> makeAppServiceParams(Long organizationId, Long projectId, String projectName, String projectCategory, String appServiceName) {
         Map<String, Object> params = new HashMap<>();
-        params.put("organizationId", organizationId);
-        params.put("projectId", projectId);
+        params.put("organizationId", String.valueOf(organizationId));
+        params.put("projectId", String.valueOf(projectId));
         params.put("projectName", projectName);
         params.put("projectCategory", projectCategory);
         params.put("appServiceName", appServiceName);
@@ -137,6 +140,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
     @Override
+    @Async
     public void sendWhenAppServiceEnabled(Long appServiceId) {
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.APP_SERVICE_ENABLED,
@@ -149,6 +153,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
     @Override
+    @Async
     public void sendWhenAppServiceDisabled(Long appServiceId) {
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.APP_SERVICE_DISABLE,
@@ -188,7 +193,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     params.put("projectName", projectDTO.getName());
                     params.put("appServiceCode", appServiceDTO.getCode());
                     params.put("appServiceName", appServiceDTO.getName());
-                    params.put("gitlabPipelineId", gitlabPipelineId);
+                    params.put("gitlabPipelineId", String.valueOf(gitlabPipelineId));
 
                     IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(pipelineOperatorUserName);
 
@@ -226,7 +231,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         params.put("appServiceCode", appServiceCode);
         params.put("appServiceName", appServiceName);
         params.put("realName", realName);
-        params.put("mergeRequestId", mergeRequestId);
+        params.put("mergeRequestId", String.valueOf(mergeRequestId));
         return params;
     }
 
@@ -237,6 +242,19 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     DevopsMergeRequestDTO devopsMergeRequestDTO = devopsMergeRequestService.baseQueryByAppIdAndMergeRequestId(TypeUtil.objToLong(gitlabProjectId), mergeRequestId);
                     if (devopsMergeRequestDTO == null) {
                         LOGGER.info("Merge Request with id {} and gitlab project id {} is null", mergeRequestId, gitlabProjectId);
+                        return;
+                    }
+
+                    // merge request的发起者
+                    UserAttrDTO author = userAttrService.baseQueryByGitlabUserId(devopsMergeRequestDTO.getAuthorId());
+                    if (author == null) {
+                        LOGGER.info("DevopsUser with gitlab user id {} is null.", devopsMergeRequestDTO.getAuthorId());
+                        return;
+                    }
+
+                    IamUserDTO authorUser = baseServiceClientOperator.queryUserByUserId(author.getIamUserId());
+                    if (authorUser == null) {
+                        LogUtil.loggerInfoObjectNullWithId("IamUser", author.getIamUserId(), LOGGER);
                         return;
                     }
 
@@ -270,7 +288,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                         return;
                     }
 
-                    Map<String, Object> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getCode(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), iamUserDTO.getRealName(), mergeRequestId);
+                    Map<String, Object> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getCode(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), authorUser.getRealName(), mergeRequestId);
 
                     sendNotices(NoticeCodeConstants.AUDIT_MERGE_REQUEST, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params);
                 },
@@ -290,7 +308,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
      * @param gitlabProjectId merge request 所属gitlab项目id
      * @param mergeRequestId  merge request id
      */
-    private void doSendWhenMergeRequestClosedOrMerged(String sendSettingCode, Integer gitlabProjectId, Long mergeRequestId) {
+    private void doSendWhenMergeRequestClosedOrMerged(String sendSettingCode, Integer gitlabProjectId, Long mergeRequestId, String userIdFromGitlab) {
         doWithTryCatchAndLog(
                 () -> {
                     DevopsMergeRequestDTO devopsMergeRequestDTO = devopsMergeRequestService.baseQueryByAppIdAndMergeRequestId(TypeUtil.objToLong(gitlabProjectId), mergeRequestId);
@@ -299,7 +317,14 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                         return;
                     }
 
-                    // merge request的发起者
+                    // merge request的操作者
+                    IamUserDTO authorUser = baseServiceClientOperator.queryUserByLoginName(TypeUtil.objToString(userIdFromGitlab));
+                    if (authorUser == null) {
+                        LogUtil.loggerInfoObjectNullWithId("IamUser", TypeUtil.objToLong(userIdFromGitlab), LOGGER);
+                        return;
+                    }
+
+                    // merge request的接收者
                     UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(devopsMergeRequestDTO.getAuthorId());
                     if (userAttrDTO == null) {
                         LOGGER.info("DevopsUser with gitlab user id {} is null.", devopsMergeRequestDTO.getAuthorId());
@@ -330,7 +355,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                         return;
                     }
 
-                    Map<String, Object> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getCode(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), iamUserDTO.getRealName(), mergeRequestId);
+                    Map<String, Object> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getCode(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), authorUser.getRealName(), mergeRequestId);
 
                     sendNotices(sendSettingCode, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params);
                 },
@@ -338,14 +363,14 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
     @Override
-    public void sendWhenMergeRequestClosed(Integer gitlabProjectId, Long mergeRequestId) {
-        doSendWhenMergeRequestClosedOrMerged(NoticeCodeConstants.MERGE_REQUEST_CLOSED, gitlabProjectId, mergeRequestId);
+    public void sendWhenMergeRequestClosed(Integer gitlabProjectId, Long mergeRequestId, String userLoginName) {
+        doSendWhenMergeRequestClosedOrMerged(NoticeCodeConstants.MERGE_REQUEST_CLOSED, gitlabProjectId, mergeRequestId, userLoginName);
     }
 
 
     @Override
-    public void sendWhenMergeRequestPassed(Integer gitlabProjectId, Long mergeRequestId) {
-        doSendWhenMergeRequestClosedOrMerged(NoticeCodeConstants.MERGE_REQUEST_PASSED, gitlabProjectId, mergeRequestId);
+    public void sendWhenMergeRequestPassed(Integer gitlabProjectId, Long mergeRequestId, String userLoginName) {
+        doSendWhenMergeRequestClosedOrMerged(NoticeCodeConstants.MERGE_REQUEST_PASSED, gitlabProjectId, mergeRequestId, userLoginName);
     }
 
     /**
@@ -458,6 +483,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         noticeSendDTO.setSourceId(Objects.requireNonNull(sourceId));
         noticeSendDTO.setTargetUsers(Objects.requireNonNull(targetUsers));
         noticeSendDTO.setParams(Objects.requireNonNull(params));
+        noticeSendDTO.setNotifyType(NOTIFY_TYPE);
         return noticeSendDTO;
     }
 }

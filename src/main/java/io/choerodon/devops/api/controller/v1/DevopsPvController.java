@@ -14,6 +14,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,14 +48,11 @@ public class DevopsPvController {
     public ResponseEntity<PageInfo<DevopsPvVO>> queryAll(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "是否需要分页")
-            @RequestParam(value = "doPage", required = false)
-                    Boolean doPage,
             @ApiParam(value = "分页参数")
-            @ApiIgnore Pageable pageable,
+            @ApiIgnore @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvService.pageByOptions(projectId, doPage, pageable, params))
+        return Optional.ofNullable(devopsPvService.pageByOptions(projectId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
     }

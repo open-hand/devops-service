@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -151,6 +152,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Autowired
     private DevopsCertManagerMapper devopsCertManagerMapper;
     @Autowired
+    @Lazy
     private SendNotificationService sendNotificationService;
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
@@ -290,15 +292,45 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 } else {
                     appServiceInstanceDTO.setComponentVersion(releasePayloadVO.getChartVersion());
                 }
-                if (releasePayloadVO.getCommand() == null) {
-                    logger.warn("Unexpected empty value '{}' for command of release payload.", releasePayloadVO.getCommand());
+
+                if (StringUtils.isEmpty(releasePayloadVO.getCommit())) {
+                    logger.warn("Unexpected empty value '{}' for command of release payload.", releasePayloadVO.getCommit());
                 } else {
-                    appServiceInstanceDTO.setEffectCommandId(releasePayloadVO.getCommand());
+                    Long effectCommandId = getEffectCommandId(appServiceInstanceDTO.getId(), releasePayloadVO.getCommit());
+                    if (effectCommandId != null) {
+                        appServiceInstanceDTO.setEffectCommandId(effectCommandId);
+                        logger.info("Found command by sha. command id: {}", effectCommandId);
+                    }
+                }
+
+                // 如果通过sha查不到
+                if (appServiceInstanceDTO.getEffectCommandId() == null) {
+                    if (releasePayloadVO.getCommand() == null) {
+                        logger.warn("Unexpected empty value '{}' for command of release payload.", releasePayloadVO.getCommand());
+                    } else {
+                        logger.info("Getting command from payload. command: {}", releasePayloadVO.getCommand());
+                        appServiceInstanceDTO.setEffectCommandId(releasePayloadVO.getCommand());
+                    }
                 }
                 appServiceInstanceDTO.setStatus(InstanceStatus.RUNNING.getStatus());
                 appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
                 installResource(resources, appServiceInstanceDTO);
             }
+        }
+    }
+
+    private Long getEffectCommandId(Long instanceId, String releaseCommit) {
+        try {
+            DevopsEnvCommandDTO result = devopsEnvCommandService.queryByInstanceIdAndCommitSha(instanceId, releaseCommit);
+            return result == null ? null : result.getId();
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Failed to query effect command. instanceId: {}, releaseCommit: {}", instanceId, releaseCommit);
+                logger.debug("The ex is: {}", e);
+            } else if (logger.isInfoEnabled()) {
+                logger.info("Failed to query effect command. instanceId: {}, releaseCommit: {}, the exception class is {}", instanceId, releaseCommit, e.getClass());
+            }
+            return null;
         }
     }
 
@@ -1014,6 +1046,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     private void syncPersistentVolumeClaim(Long envId, List<DevopsEnvFileErrorDTO> envFileErrorFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
         DevopsPvcDTO devopsPvcDTO = devopsPvcService.queryByEnvIdAndName(envId, objects[1]);
+        if (devopsPvcDTO == null) {
+            try {
+                if (devopsCustomizeResourceService.queryByEnvIdAndKindAndName(envId, ResourceType.PERSISTENT_VOLUME_CLAIM.getType(), objects[1]) != null) {
+                    syncCustom(envId, envFileErrorFiles, resourceCommitVO, objects);
+                }
+            } catch (Exception e) {
+                logger.info("Exception occurred when process resource {} as custom", objects[1]);
+                logger.info("The exception is {}", e);
+            }
+        }
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(envId, devopsPvcDTO.getId(), ObjectType.PERSISTENTVOLUMECLAIM.getType());
         if (updateEnvCommandStatus(resourceCommitVO,
@@ -1045,6 +1087,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                             String[] objects) {
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO;
         DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = devopsCustomizeResourceService.queryByEnvIdAndKindAndName(envId, objects[0], objects[1]);
+        if (devopsCustomizeResourceDTO == null) {
+            logger.info("Non custom resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
+            return;
+        }
         devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(envId, devopsCustomizeResourceDTO.getId(), ObjectType.CUSTOM.getType());
         updateEnvCommandStatus(resourceCommitVO, devopsCustomizeResourceDTO.getCommandId(), devopsEnvFileResourceDTO,

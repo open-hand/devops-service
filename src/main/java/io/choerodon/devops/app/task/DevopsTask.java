@@ -25,12 +25,12 @@ public class DevopsTask {
     /**
      * 升级0.18.0-0.19.0，迁移数据
      */
-    @JobTask(maxRetryCount = 3, code = "upgradeVersionTo19", params = {}, description = "升级0.18.0-0.19.0，迁移数据")
-    @TimedTask(name = "upgradeVersionTo19", description = "升级0.18.0-0.19.0，迁移数据", oneExecution = true,
+    @JobTask(maxRetryCount = 3, code = "upgradeVersionTo20", description = "升级0.19.0-0.20.0，迁移数据")
+    @TimedTask(name = "upgradeVersionTo20", description = "升级0.19.0-0.20.0，迁移数据", oneExecution = true,
             repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
     public void syncEnvAppRelevance(Map<String, Object> map) {
-        logger.info("begin to upgrade 0.18.0 to 0.19.0 without Cluster and Certification migration.");
-        devopsCheckLogService.checkLog("0.19.0");
+        logger.info("begin to upgrade 0.19.0 to 0.20.0 without Cluster and Certification migration.");
+        devopsCheckLogService.checkLog("0.20.0");
     }
 
 }

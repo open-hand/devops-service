@@ -215,6 +215,28 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         return devopsEnvPodMapper.selectOne(devopsEnvPodDTO);
     }
 
+    private static Map<String, DevopsEnvResourceDTO> listToMap(List<DevopsEnvResourceDTO> resources) {
+        Map<String, DevopsEnvResourceDTO> map = new HashMap<>();
+        for (DevopsEnvResourceDTO resource : resources) {
+            if (map.get(resource.getName()) == null) {
+                map.put(resource.getName(), resource);
+            } else {
+                map.put(resource.getName(), compareRevision(map.get(resource.getName()), resource));
+            }
+        }
+        return map;
+    }
+
+    private static DevopsEnvResourceDTO compareRevision(DevopsEnvResourceDTO one, DevopsEnvResourceDTO theOther) {
+        if (one == null || one.getReversion() == null) {
+            return theOther;
+        }
+        if (theOther == null || theOther.getReversion() == null) {
+            return one;
+        }
+        return one.getReversion() > theOther.getReversion() ? one : theOther;
+    }
+
     @Override
     public List<DevopsEnvPodInfoVO> queryEnvPodInfo(Long envId, String sort) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
@@ -225,7 +247,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         List<String> podNames = devopsEnvPodInfoVOList.stream().map(DevopsEnvPodInfoVO::getName).collect(Collectors.toList());
         List<DevopsEnvResourceDTO> devopsEnvResourceDTOList = devopsEnvResourceService.listEnvResourceByOptions(envId, ResourceType.POD.getType(), podNames);
         Set<Long> resourceDetailIds = devopsEnvResourceDTOList.stream().map(DevopsEnvResourceDTO::getResourceDetailId).collect(Collectors.toSet());
-        Map<String, DevopsEnvResourceDTO> devopsEnvResourceMap = devopsEnvResourceDTOList.stream().collect(Collectors.toMap(DevopsEnvResourceDTO::getName, Function.identity()));
+        Map<String, DevopsEnvResourceDTO> devopsEnvResourceMap = listToMap(devopsEnvResourceDTOList);
         List<DevopsEnvResourceDetailDTO> devopsEnvResourceDetailDTOS = devopsEnvResourceDetailService.listByMessageIds(resourceDetailIds);
         Map<Long, DevopsEnvResourceDetailDTO> devopsEnvResourceDetailMap = devopsEnvResourceDetailDTOS.stream().collect(Collectors.toMap(DevopsEnvResourceDetailDTO::getId, Function.identity()));
 
@@ -235,10 +257,10 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = devopsEnvResourceDetailMap.get(devopsEnvResourceDTO.getResourceDetailId());
             V1Pod v1Pod = json.deserialize(devopsEnvResourceDetailDTO.getMessage(), V1Pod.class);
             devopsEnvPodInfoVO.setStatus(K8sUtil.changePodStatus(v1Pod));
+            devopsEnvPodInfoVO.setPodIp(v1Pod == null ? null : v1Pod.getStatus().getPodIP());
             if (podMetricsRedisInfoVO != null) {
                 devopsEnvPodInfoVO.setCpuUsed(podMetricsRedisInfoVO.getCpu());
                 devopsEnvPodInfoVO.setMemoryUsed(podMetricsRedisInfoVO.getMemory());
-                devopsEnvPodInfoVO.setPodIp(v1Pod == null ? null : v1Pod.getStatus().getPodIP());
             }
         });
 

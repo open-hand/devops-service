@@ -1,8 +1,46 @@
 package io.choerodon.devops.app.service.impl;
 
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.kubernetes.client.JSON;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -38,41 +76,6 @@ import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
-import io.kubernetes.client.JSON;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.*;
 
 
 /**
@@ -177,6 +180,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     private DevopsMergeRequestMapper mergeRequestMapper;
     @Autowired
+    @Lazy
     private SendNotificationService sendNotificationService;
 
     @Override
@@ -278,6 +282,14 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         // 验证改应用服务在其他项目是否被生成实例
         checkAppserviceIsShareDeploy(projectId, appServiceId);
+        AppServiceMsgVO checkResult = checkCanDisable(appServiceId, projectId);
+        if (checkResult.getCheckResources()) {
+            throw new CommonException("error.delete.application.service.due.to.share");
+        }
+        if (checkResult.getCheckRule()) {
+            throw new CommonException("error.delete.application.service.due.to.resources");
+        }
+
         appServiceDTO.setSynchro(Boolean.FALSE);
         appServiceMapper.updateByPrimaryKey(appServiceDTO);
 
@@ -308,9 +320,13 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public void deleteAppServiceSage(Long projectId, Long appServiceId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        if (appServiceDTO == null) {
+            LogUtil.loggerInfoObjectNullWithId("AppService", appServiceId, LOGGER);
+            return;
+        }
         // 删除应用服务的分支,合并请求，pipeline,commit
         devopsBranchService.deleteAllBaranch(appServiceId);
         gitlabCommitMapper.deleteByAppServiceId(appServiceId);
@@ -402,9 +418,13 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         // 如果不相等，且将停用应用服务，检查该应用服务是否可以被停用
         if (!toUpdateValue) {
-            checkCanDisable(appServiceId, projectId);
-            // 如果能停用，删除其和他所属项目下的环境之间的关联关系
-            devopsEnvAppServiceMapper.deleteRelevanceInProject(appServiceId, projectId);
+            AppServiceMsgVO appServiceMsgVO = checkCanDisable(appServiceId, projectId);
+            if (!appServiceMsgVO.getCheckResources() && !appServiceMsgVO.getCheckRule()) {
+                // 如果能停用，删除其和他所属项目下的环境之间的关联关系
+                devopsEnvAppServiceMapper.deleteRelevanceInProject(appServiceId, projectId);
+            } else {
+                throw new CommonException("error.disable.or.enable.application.service");
+            }
         }
 
         appServiceDTO.setActive(toUpdateValue);
@@ -430,7 +450,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         int nonDeleteInstancesCount = appServiceInstanceMapper.countNonDeletedInstances(appServiceId, projectId);
         AppServiceMsgVO appServiceMsgVO = new AppServiceMsgVO(false, false);
         if (nonDeleteInstancesCount > 0) {
-            throw new CommonException("error.disable.application.service", appServiceId);
+            appServiceMsgVO.setCheckResources(true);
         }
 
         int shareRulesCount = appServiceShareRuleMapper.countShareRulesByAppServiceId(appServiceId);
@@ -515,7 +535,15 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public List<AppServiceRepVO> listAll(Long projectId) {
-        return ConvertUtils.convertList(baseListAll(projectId), AppServiceRepVO.class);
+        List<AppServiceRepVO> appServiceRepVOList = ConvertUtils.convertList(baseListAll(projectId), AppServiceRepVO.class);
+        appServiceRepVOList.forEach(appServiceRepVO -> {
+            if (appServiceRepVO.getProjectId() != null && appServiceRepVO.getProjectId().equals(projectId)) {
+                appServiceRepVO.setServiceType(NORMAL_SERVICE);
+            } else {
+                appServiceRepVO.setServiceType(SHARE_SERVICE);
+            }
+        });
+        return appServiceRepVOList;
     }
 
     @Override
@@ -2225,7 +2253,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         switch (type) {
             case NORMAL_SERVICE: {
-                list.addAll(appServiceMapper.list(projectId, null, true, serviceType, null, params, ""));
+                list.addAll(appServiceMapper.list(projectId, Boolean.TRUE, true, serviceType, null, params, ""));
                 AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
                 appServiceGroupVO.setAppServiceList(ConvertUtils.convertList(list, this::dtoToGroupInfoVO));
                 appServiceGroupList.add(appServiceGroupVO);
@@ -2285,9 +2313,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private List<AppServiceDTO> baseListAll(Long projectId) {
-        AppServiceDTO appServiceDTO = new AppServiceDTO();
-        appServiceDTO.setProjectId(projectId);
-        return appServiceMapper.select(appServiceDTO);
+        return appServiceMapper.listAll(projectId);
     }
 
     private AppServiceDTO fromImportVoToDto(AppServiceImportVO appServiceImportVO) {
@@ -2364,9 +2390,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         String type = null;
         if (appServiceDTO.getProjectId() == null && appServiceDTO.getMktAppId() != null) {
             type = AppServiceType.MARKET_SERVICE.getType();
-        } else if (appServiceDTO.getProjectId() != projectId) {
+        } else if (!appServiceDTO.getProjectId().equals(projectId)) {
             type = AppServiceType.SHARE_SERVICE.getType();
-        } else if (appServiceDTO.getProjectId() == projectId) {
+        } else if (appServiceDTO.getProjectId().equals(projectId)) {
             type = AppServiceType.NORMAL_SERVICE.getType();
         }
         return type;

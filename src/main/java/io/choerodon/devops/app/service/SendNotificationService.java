@@ -70,19 +70,21 @@ public interface SendNotificationService {
     /**
      * 当合并请求被关闭时
      *
-     * @param gitlabProjectId gitlab项目id
-     * @param mergeRequestId  合并请求的id
+     * @param gitlabProjectId  gitlab项目id
+     * @param mergeRequestId   合并请求的id
+     * @param userLoginName iam_user login_name
      */
-    void sendWhenMergeRequestClosed(Integer gitlabProjectId, Long mergeRequestId);
+    void sendWhenMergeRequestClosed(Integer gitlabProjectId, Long mergeRequestId, String userLoginName);
 
 
     /**
      * 当合并请求被通过时
      *
-     * @param gitlabProjectId gitlab项目id
-     * @param mergeRequestId  合并请求的id
+     * @param gitlabProjectId  gitlab项目id
+     * @param mergeRequestId   合并请求的id
+     * @param userLoginName iam_user login_name
      */
-    void sendWhenMergeRequestPassed(Integer gitlabProjectId, Long mergeRequestId);
+    void sendWhenMergeRequestPassed(Integer gitlabProjectId, Long mergeRequestId, String userLoginName);
 
     /**
      * 当创建实例失败后

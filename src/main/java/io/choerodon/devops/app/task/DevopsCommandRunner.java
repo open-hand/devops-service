@@ -33,10 +33,10 @@ import retrofit2.Call;
 public class DevopsCommandRunner implements CommandLineRunner {
     public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCommandRunner.class);
 
-    private static final String HARBOR_NAME = "harbor_default";
-    private static final String CHART_NAME = "chart_default";
-    private static final String SONAR_NAME = "sonar_default";
-    private static final String SONAR = "sonar";
+    public static final String HARBOR_NAME = "harbor_default";
+    public static final String CHART_NAME = "chart_default";
+    public static final String SONAR_NAME = "sonar_default";
+    public static final String SONAR = "sonar";
 
     private Gson gson = new Gson();
 

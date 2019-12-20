@@ -39,8 +39,9 @@ export default observer((props) => {
 
   function getContent() {
     const { getComponentList } = contentStore;
-    const length = getComponentList.length;
-    const content = map(getComponentList, ({ message, type, status, operate }, index) => {
+    const data = getComponentList.filter(({ type }) => type !== 'prometheus');
+    const length = data.length;
+    const content = map(data, ({ message, type, status, operate }, index) => {
       const componentType = type === 'prometheus' ? 'monitor' : 'cert';
       return (
         <ComponentCard
@@ -205,8 +206,8 @@ export default observer((props) => {
     });
     try {
       const res = await contentStore.checkUninstallCert(projectId, clusterId);
-      if (handlePromptError(res)) {
-        if (res) {
+      if (handlePromptError(res, false)) {
+        if (!res) {
           deleteModal.update({
             children: formatMessage({ id: `${intlPrefix}.cert.uninstall.des` }),
             okText: formatMessage({ id: 'uninstall' }),

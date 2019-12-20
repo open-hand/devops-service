@@ -12,6 +12,14 @@ export default function useCertStore() {
       return this.cert;
     },
 
+    hasCertManager: false,
+    get getHasCertManager() {
+      return this.hasCertManager;
+    },
+    setHasCertManager(flag) {
+      this.hasCertManager = flag;
+    },
+
     async loadCert(projectId) {
       try {
         const res = await axios.get(`/devops/v1/projects/${projectId}/certifications/list_org_cert`);
@@ -42,10 +50,10 @@ export default function useCertStore() {
     async checkCertManager(projectId, envId) {
       try {
         const res = await axios.get(`/devops/v1/projects/${projectId}/cluster_resource/cert_manager/check_by_env_id?env_id=${envId}`);
-        return handlePromptError(res);
+        this.setHasCertManager(handlePromptError(res));
       } catch (e) {
         Choerodon.handleResponseError(e);
-        return false;
+        this.setHasCertManager(false);
       }
     },
 

@@ -184,7 +184,7 @@ class BuildTable extends Component {
           </a>
         </Tooltip>
       </div>
-      <div className="c7n-des-commit">
+      <div className="c7n-des-commit" style={{ marginTop: '0' }}>
         <UserInfo name={record.commitUserName || '?'} avatar={record.commitUserUrl} id={record.commitUserLoginName} showName={false} />
         <MouserOverWrapper text={record.commitContent} width={0.2}>
           <a

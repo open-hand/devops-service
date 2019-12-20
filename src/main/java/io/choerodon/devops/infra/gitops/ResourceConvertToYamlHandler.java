@@ -33,10 +33,10 @@ public class ResourceConvertToYamlHandler<T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceConvertToYamlHandler.class);
 
     public static final String UPDATE = "update";
-    private static final String C7NTAG = "!!io.choerodon.devops.domain.application.valueobject.C7nHelmRelease";
+    private static final String C7NTAG = "!!io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease";
     private static final String INGTAG = "!!io.kubernetes.client.models.V1beta1Ingress";
     private static final String SVCTAG = "!!io.kubernetes.client.models.V1Service";
-    private static final String CERTTAG = "!!io.choerodon.devops.domain.application.valueobject.C7nCertification";
+    private static final String CERTTAG = "!!io.choerodon.devops.api.vo.kubernetes.C7nCertification";
     private static final String CONFIGMAPTAG = "!!io.kubernetes.client.models.V1ConfigMap";
     private static final String SECRET = "!!io.kubernetes.client.models.V1Secret";
     private static final String ENDPOINTS = "!!io.kubernetes.client.models.V1Endpoints";

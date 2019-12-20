@@ -12,7 +12,7 @@ export default ({ formatMessage, intlPrefix, projectId, groupOptionDs }) => ({
       maxLength: 10,
     },
     {
-      maxLength: 60,
+      maxLength: 200,
       name: 'description',
       type: 'string',
       label: '环境描述',

@@ -53,7 +53,7 @@ const Content = observer(() => {
     } else if (appServiceType === 'market_service') {
       iconType = 'application_market';
     } else {
-      iconType = 'project';
+      iconType = 'widgets';
     }
     return (
       <AppName

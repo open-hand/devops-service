@@ -62,11 +62,11 @@ function AppItem({ name, record, intl: { formatMessage }, intlPrefix }) {
   }
   function renderIcon() {
     const type = record.get('type');
-    let iconType = 'application_market';
-    let message = 'market';
-    if (type === 'normal_server') {
-      iconType = 'widgets';
-      message = 'project';
+    let iconType = 'widgets';
+    let message = 'project';
+    if (type === 'market_service') {
+      iconType = 'application_market';
+      message = 'market';
     } else if (type === 'share_service') {
       iconType = 'share';
       message = 'share';

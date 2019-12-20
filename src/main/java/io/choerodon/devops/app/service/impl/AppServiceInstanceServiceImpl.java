@@ -18,6 +18,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -132,6 +133,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     private DevopsHarborUserService devopsHarborUserService;
     @Autowired
+    @Lazy
     private SendNotificationService sendNotificationService;
 
     @Override
@@ -735,6 +737,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         appServiceInstanceDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
         baseUpdate(appServiceInstanceDTO);
 
+        // 插入应用服务和环境的关联关系
+        createEnvAppRelationShipIfNon(appServiceInstanceDTO.getId(), devopsEnvironmentDTO.getId());
 
         //插入部署记录
         DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), MANUAL, devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());

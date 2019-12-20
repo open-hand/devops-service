@@ -65,6 +65,7 @@ import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
 public class DevopsGitServiceImpl implements DevopsGitService {
     private static final String REF_HEADS = "refs/heads/";
     private static final String GIT_SUFFIX = "/.git";
+    private static final String ERROR_GITLAB_USER_SYNC_FAILED = "error.gitlab.user.sync.failed";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
     private Pattern pattern = Pattern.compile("^[-+]?[\\d]*$");
 
@@ -175,6 +176,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     private Integer getGitlabUserId() {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        if (userAttrDTO == null) {
+            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+        }
         return TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
     }
 
@@ -285,8 +289,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
+        if (applicationDTO == null) {
+            return null;
+        }
         // 查询用户是否在该gitlab project下
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        if (userAttrDTO == null) {
+            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+        }
         if (!baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectId)) {
             MemberDTO memberDTO = gitlabServiceClientOperator.getProjectMember(applicationDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (memberDTO == null) {

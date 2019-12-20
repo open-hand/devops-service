@@ -320,7 +320,6 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         }
 
         devopsPvcDTO.setPvName(devopsPvDTO.getName());
-        devopsPvcDTO.setRequestResource(devopsPvDTO.getRequestResource());
         devopsPvcDTO.setAccessModes(devopsPvDTO.getAccessModes());
         return devopsPvcDTO;
     }

@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
@@ -17,6 +18,7 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.PageInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -127,8 +129,18 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
             }
         } else {
             devopsProjectDTO.setObjectVersionNumber(oldDevopsProjectDTO.getObjectVersionNumber());
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsProjectMapper, devopsProjectDTO, "error.project.update", (Object[]) null);
+        }
+    }
+
+    @Override
+    public void baseUpdateByPrimaryKey(DevopsProjectDTO devopsProjectDTO) {
+        DevopsProjectDTO oldDevopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(devopsProjectDTO);
+        if (oldDevopsProjectDTO == null) {
+            MapperUtil.resultJudgedInsertSelective(devopsProjectMapper, devopsProjectDTO, "error.project.insert", (Object[]) null);
+        } else {
+            devopsProjectDTO.setObjectVersionNumber(oldDevopsProjectDTO.getObjectVersionNumber());
             MapperUtil.resultJudgedUpdateByPrimaryKey(devopsProjectMapper, devopsProjectDTO, "error.project.update", (Object[]) null);
-            logger.info("444444444444444444444444{}",devopsProjectDTO);
         }
     }
 

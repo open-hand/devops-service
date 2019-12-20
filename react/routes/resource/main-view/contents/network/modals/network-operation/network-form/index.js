@@ -122,11 +122,29 @@ function FormContent() {
     return meaning && meaning.indexOf(':') >= 0;
   }
 
+  function appServiceRenderer({ record, text, value }) {
+    const serviceType = record.get('serviceType') || 'normal_service';
+    let iconType = 'widgets';
+    let message = 'project';
+    if (serviceType === 'share_service') {
+      iconType = 'share';
+      message = 'share';
+    }
+    return (
+      <div className="c7ncd-create-network-appService">
+        <Tooltip title={formatMessage({ id: message })}>
+          <Icon type={iconType} />
+        </Tooltip>
+        <span className="c7ncd-create-network-appService-text">{text}</span>
+      </div>
+    );
+  }
+
   let targetForm = null;
   if (current) {
     if (current.get('target') === 'instance') {
       targetForm = <Fragment> 
-        <Select name="appServiceId" colSpan={3} className="app-service-select" />
+        <Select name="appServiceId" colSpan={3} className="app-service-select" optionRenderer={appServiceRenderer} />
         <Select name="appInstance" colSpan={3} className="app-instance-select" optionRenderer={appInstanceOptionRenderer} renderer={appInstanceRenderer} />
       </Fragment>;
     } else if (current.get('target') === 'param') {

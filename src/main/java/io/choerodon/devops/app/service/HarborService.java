@@ -20,7 +20,7 @@ public interface HarborService {
 
     void createHarbor(HarborClient harborClient, Long projectId, String projectCode, Boolean createUser, Boolean harborPrivate);
 
-    void createHarborUser(HarborPayload harborPayload, User user, ProjectDTO projectDTO, List<Integer> roles);
+    void createHarborUserByClient(HarborPayload harborPayload, User user, ProjectDTO projectDTO, List<Integer> roles);
 
-    User convertUser(ProjectDTO projectDTO, Boolean isPush,String username);
+    User convertHarborUser(ProjectDTO projectDTO, Boolean isPush, String username);
 }

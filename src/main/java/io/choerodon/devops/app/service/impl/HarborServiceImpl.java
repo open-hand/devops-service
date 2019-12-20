@@ -35,7 +35,6 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
-import io.choerodon.devops.infra.util.GenerateUUID;
 
 /**
  * Created with IntelliJ IDEA.
@@ -97,16 +96,16 @@ public class HarborServiceImpl implements HarborService {
                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
                 OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                 DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-                User user = convertUser(projectDTO, true, null);
-                User pullUser = convertUser(projectDTO, false, null);
+                User user = convertHarborUser(projectDTO, true, null);
+                User pullUser = convertHarborUser(projectDTO, false, null);
                 //创建用户,绑定角色
-                createUser(harborClient, user, Arrays.asList(1), organizationDTO, projectDTO);
-                createUser(harborClient, pullUser, Arrays.asList(3), organizationDTO, projectDTO);
+                createHarborUser(harborClient, user, Arrays.asList(1), organizationDTO, projectDTO);
+                createHarborUser(harborClient, pullUser, Arrays.asList(3), organizationDTO, projectDTO);
 
                 HarborUserDTO harborUserDTO = new HarborUserDTO(user.getUsername(), user.getPassword(), user.getEmail(), true);
                 HarborUserDTO pullHarborUserDTO = new HarborUserDTO(pullUser.getUsername(), pullUser.getPassword(), pullUser.getEmail(), false);
-                devopsHarborUserService.baseCreate(harborUserDTO);
-                devopsHarborUserService.baseCreate(pullHarborUserDTO);
+                devopsHarborUserService.baseCreateOrUpdate(harborUserDTO);
+                devopsHarborUserService.baseCreateOrUpdate(pullHarborUserDTO);
 
                 devopsProjectDTO.setHarborProjectIsPrivate(true);
                 devopsProjectDTO.setHarborUserId(harborUserDTO.getId());
@@ -121,14 +120,14 @@ public class HarborServiceImpl implements HarborService {
     }
 
     @Override
-    public void createHarborUser(HarborPayload harborPayload, User user, ProjectDTO projectDTO, List<Integer> roles) {
+    public void createHarborUserByClient(HarborPayload harborPayload, User user, ProjectDTO projectDTO, List<Integer> roles) {
         HarborClient harborClient = initHarborClient(harborPayload);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        createUser(harborClient, user, roles, organizationDTO, projectDTO);
+        createHarborUser(harborClient, user, roles, organizationDTO, projectDTO);
     }
 
     @Override
-    public User convertUser(ProjectDTO projectDTO, Boolean isPush, String name) {
+    public User convertHarborUser(ProjectDTO projectDTO, Boolean isPush, String name) {
         String pull = "";
         if (!isPush) {
             pull = "pull";
@@ -140,11 +139,11 @@ public class HarborServiceImpl implements HarborService {
             userName = name;
         }
         String userEmail = String.format("%s@harbor.com", userName);
-        String pwd = String.format("%s%s", userName, GenerateUUID.generateUUID().substring(0, 3));
+        String pwd = String.format("%sPWD", userName);
         return new User(userName, userEmail, pwd, userName);
     }
 
-    private void createUser(HarborClient harborClient, User user, List<Integer> roles, OrganizationDTO organizationDTO, ProjectDTO projectDTO) {
+    private void createHarborUser(HarborClient harborClient, User user, List<Integer> roles, OrganizationDTO organizationDTO, ProjectDTO projectDTO) {
         Response<Void> result = null;
         try {
             result = harborClient.insertUser(user).execute();

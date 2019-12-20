@@ -415,6 +415,7 @@ const deployment = {
   'c7ncd.deployment.pvc.delete.title': '删除PVC“{name}”',
   'c7ncd.deployment.pvc.delete.des': '确定要删除该PVC吗？',
   'c7ncd.deployment.active': '生效',
+  'c7ncd.deployment.choose.version': '选择版本',
 
 };
 
@@ -488,7 +489,7 @@ const appService = {
   'c7ncd.appService.stop': '停用服务"{name}"',
   'c7ncd.appService.stop.tips': '确定要停用该应用服务吗？',
   'c7ncd.appService.cannot.stop': '无法停用',
-  'c7ncd.appService.has.both': '该服务下存在实例、网络....',
+  'c7ncd.appService.has.both': '该应用服务下存在实例、网络、域名等关联资源，无法停用。',
   'c7ncd.appService.has.resource': '该应用服务下存在实例、网络、域名等关联资源，无法停用。',
   'c7ncd.appService.has.rules': '该应用服务存在共享规则，无法停用。',
   'c7ncd.appService.check': '正在校验...',
@@ -1270,7 +1271,7 @@ const cluster = {
   'c7ncd.cluster.monitor.uninstall.des': '确定要卸载监控组件吗？',
   'c7ncd.cluster.cert.uninstall': '卸载CertManager',
   'c7ncd.cluster.cert.uninstall.des': '确定要卸载该组件？卸载后，将不能在该集群关联的环境中使用申请证书与上传证书的功能。',
-  'c7ncd.cluster.cert.uninstall.disabled': '无法卸载CertManager',
+  'c7ncd.cluster.cert.uninstall.disabled': '该集群关联的环境下存在申请或上传的证书，无法卸载',
   'c7ncd.cluster.install.step.parserPvc': '创建PVC',
   'c7ncd.cluster.install.step.boundPvc': '绑定PV',
   'c7ncd.cluster.install.step.parserPrometheus': '生成配置库',

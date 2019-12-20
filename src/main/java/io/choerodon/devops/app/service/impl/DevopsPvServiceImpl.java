@@ -86,7 +86,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     private Gson gson = new Gson();
 
     @Override
-    public PageInfo<DevopsPvDTO> basePagePvByOptions(Long projectId, Boolean doPage, Pageable pageable, String params) {
+    public PageInfo<DevopsPvDTO> basePagePvByOptions(Long projectId, Pageable pageable, String params) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         // search_param 根据确定的键值对查询
         // params 是遍历字段模糊查询
@@ -104,8 +104,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     }
 
     @Override
-    public PageInfo<DevopsPvVO> pageByOptions(Long projectId, Boolean doPage, Pageable pageable, String params) {
-        return ConvertUtils.convertPage(basePagePvByOptions(projectId, doPage, pageable, params), DevopsPvVO.class);
+    public PageInfo<DevopsPvVO> pageByOptions(Long projectId, Pageable pageable, String params) {
+        return ConvertUtils.convertPage(basePagePvByOptions(projectId, pageable, params), DevopsPvVO.class);
     }
 
     @Override
@@ -693,16 +693,14 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 null,
                 TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))), DevopsPvVO.class);
+        List<Long> devopsPvVOIdList = devopsPvVOList.stream().map(DevopsPvVO::getId).collect(Collectors.toList());
+        List<Long> projectRelatedPvIdsList;
 
-        if (devopsPvVOList == null) {
-            throw new CommonException("error.pv.query");
-        }
-
-        List<Long> projectRelatedPvIdsList = new ArrayList<>();
-
-        //获得不跳过权限的与本项目有关联的pv
-        projectRelatedPvIdsList.addAll(devopsPvProPermissionService.baseListPvIdsByProjectId(projectId));
-
+        // 获得不跳过权限的与本项目有关联的pv并过滤掉不符合条件的pv
+        projectRelatedPvIdsList = devopsPvProPermissionService.baseListPvIdsByProjectId(projectId)
+                .stream()
+                .filter(devopsPvVOIdList::contains)
+                .collect(Collectors.toList());
         devopsPvVOList.forEach(pv -> {
             CustomPageRequest customPageRequest = CustomPageRequest.of(1, 0);
             //获得跳过权限的与本项目有关联的pv

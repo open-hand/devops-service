@@ -3,6 +3,8 @@ package io.choerodon.devops.app.service;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.github.pagehelper.PageInfo;
 
 import org.springframework.data.domain.Pageable;
@@ -40,9 +42,20 @@ public interface DevopsEnvCommandService {
 
     /**
      * 列出三分钟以上还在处理中状态的各种资源相关的command
-     * @param envId 环境id
+     *
+     * @param envId      环境id
      * @param beforeDate 特定时间字符串，格式为：'yyyy-MM-dd HH:mm:ss'
      * @return commands
      */
     List<Command> listCommandsToSync(Long envId, String beforeDate);
+
+    /**
+     * 根据实例的id和commit sha值查询实例
+     *
+     * @param instanceId 实例id
+     * @param sha        散列值
+     * @return command
+     */
+    @Nullable
+    DevopsEnvCommandDTO queryByInstanceIdAndCommitSha(Long instanceId, String sha);
 }

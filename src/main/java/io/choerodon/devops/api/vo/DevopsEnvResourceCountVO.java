@@ -20,6 +20,8 @@ public class DevopsEnvResourceCountVO {
 
     private Long secretCount;
 
+    private Long customCount;
+
     private Long runningInstanceCount;
 
     private Long operatingInstanceCount;
@@ -100,6 +102,14 @@ public class DevopsEnvResourceCountVO {
 
     public void setRunningInstanceCount(Long runningInstanceCount) {
         this.runningInstanceCount = runningInstanceCount;
+    }
+
+    public Long getCustomCount() {
+        return customCount;
+    }
+
+    public void setCustomCount(Long customCount) {
+        this.customCount = customCount;
     }
 
     public Long getOperatingInstanceCount() {

@@ -111,7 +111,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
                                                              @Param("userId") Long userId);
 
     Integer countProjectMembersAppServiceByActive(@Param("projectId") Long projectId,
-                                                             @Param("userId") Long userId);
+                                                  @Param("userId") Long userId);
 
     List<AppServiceDTO> pageServiceByProjectId(@Param("projectId") Long projectId,
                                                @Param("searchParam") Map<String, Object> searchParam,
@@ -124,6 +124,8 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
     int updateIsSynchroToTrueWhenFailed();
 
     int updateIsActiveNullToTrue();
+
+    List<AppServiceDTO> listAll(@Param("projectId") Long projectId);
 
     /**
      * 根据gitlabGroupId和iamUserId获取
