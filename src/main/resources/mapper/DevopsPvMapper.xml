@@ -43,15 +43,15 @@
             </if>
             <if test='searchParam.type != null and searchParam.type.length > 0'>
                 AND
-                dpv.type LIKE CONCAT(CONCAT('%', #{searchParam.type, jdbcType=VARCHAR}),'%')
+                dpv.type = #{searchParam.type, jdbcType=VARCHAR}
             </if>
             <if test='searchParam.cluster != null and searchParam.cluster.length > 0'>
                 AND
                 dc.name LIKE CONCAT(CONCAT('%', #{searchParam.cluster, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.accessmodes != null and searchParam.accessmodes.length > 0'>
+            <if test='searchParam.accessModes != null and searchParam.accessModes.length > 0'>
                 AND
-                dpv.access_modes = #{searchParam.accessmodes, jdbcType=VARCHAR}
+                dpv.access_modes = #{searchParam.accessModes, jdbcType=VARCHAR}
             </if>
             <if test='searchParam.status != null and searchParam.status.length > 0'>
                 AND
