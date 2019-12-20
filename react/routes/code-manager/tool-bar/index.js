@@ -150,7 +150,7 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
         funcType="raised"
         disabled={!(currentApp && currentApp.repoUrl)}
         className="c7ncd-copyBtn"
-        style={{ margin: '-0.1rem 0 0 0.2rem' }}
+        style={{ margin: '-0.15rem 0 0 0.2rem' }}
       >
         <span>
           {formatMessage({ id: 'repository.copyUrl' })}
