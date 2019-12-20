@@ -217,15 +217,23 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         if (selector != null) {
             // 判断是实例的选择器还是其它
             String value;
-            if ((value = selector.get(AppServiceInstanceService.INSTANCE_LABEL_RELEASE)) != null) {
-                devopsServiceReqVO.setTargetInstanceCode(value);
+            if (selector.size() == 1) {
+                // 如果有且只有一个具体实例的选择器
+                if ((value = selector.get(AppServiceInstanceService.INSTANCE_LABEL_RELEASE)) != null) {
+                    devopsServiceReqVO.setTargetInstanceCode(value);
+                    // 如果有且只有一个具体应用的选择器
+                } else if ((value = selector.get(AppServiceInstanceService.INSTANCE_LABEL_APP_SERVICE_ID)) != null) {
+                    AppServiceDTO appServiceDTO = appServiceService.baseQuery(TypeUtil.objToLong(value));
+                    devopsServiceReqVO.setTargetAppServiceId(appServiceDTO.getId());
+                    devopsServiceReqVO.setTargetInstanceCode(appServiceDTO.getCode());
+                    // 如果是一个选择器但不是具体应用，网络为选择器类型
+                } else {
+                    devopsServiceReqVO.setSelectors(v1Service.getSpec().getSelector());
+                }
+            } else {
+                // 如果超过一个选择器，即使包含实例和应用服务的选择器也判断为选择器类型
+                devopsServiceReqVO.setSelectors(v1Service.getSpec().getSelector());
             }
-            if ((value = selector.get(AppServiceInstanceService.INSTANCE_LABEL_APP_SERVICE_ID)) != null) {
-                AppServiceDTO appServiceDTO = appServiceService.baseQuery(TypeUtil.objToLong(value));
-                devopsServiceReqVO.setTargetAppServiceId(appServiceDTO.getId());
-                devopsServiceReqVO.setTargetInstanceCode(appServiceDTO.getCode());
-            }
-            devopsServiceReqVO.setSelectors(v1Service.getSpec().getSelector());
         }
         return devopsServiceReqVO;
     }
