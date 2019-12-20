@@ -100,8 +100,8 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
     </div>
   );
 
-  return <div style={{ paddingLeft: 24 }}>
-    <Form columns={2} style={{ width: '70%' }}>
+  return <div style={{ paddingLeft: 24, display: 'flex', alignItems: 'center' }}>
+    <Form columns={2} style={{ maxWidth: '3.5rem' }}>
       <Select
         colSpan={1}
         className="c7ncd-cm-select"
@@ -140,26 +140,26 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
         </OptGroup>
 
       </Select>
-
-      <Dropdown
-        trigger={['click', 'focus']}
-        overlay={copyMenu}
-        placement="bottomRight"
-      >
-        <Button
-          funcType="raised"
-          disabled={!(currentApp && currentApp.repoUrl)}
-          className="c7ncd-copyBtn"
-        >
-          <span>
-            {formatMessage({ id: 'repository.copyUrl' })}
-            <Icon
-              style={{ marginLeft: '.18rem' }}
-              type="arrow_drop_down"
-            />
-          </span>
-        </Button>
-      </Dropdown>
     </Form>
+    <Dropdown
+      trigger={['click', 'focus']}
+      overlay={copyMenu}
+      placement="bottomRight"
+    >
+      <Button
+        funcType="raised"
+        disabled={!(currentApp && currentApp.repoUrl)}
+        className="c7ncd-copyBtn"
+        style={{ margin: '-0.1rem 0 0 0.2rem' }}
+      >
+        <span>
+          {formatMessage({ id: 'repository.copyUrl' })}
+          <Icon
+            style={{ marginLeft: '.18rem' }}
+            type="arrow_drop_down"
+          />
+        </span>
+      </Button>
+    </Dropdown>
   </div>;
 })));
