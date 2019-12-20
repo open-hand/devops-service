@@ -293,7 +293,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     appServiceInstanceDTO.setComponentVersion(releasePayloadVO.getChartVersion());
                 }
 
-                logger.info("ReleasePayLoad: {}", msg);
                 if (StringUtils.isEmpty(releasePayloadVO.getCommit())) {
                     logger.warn("Unexpected empty value '{}' for command of release payload.", releasePayloadVO.getCommit());
                 } else {
@@ -1047,6 +1046,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     private void syncPersistentVolumeClaim(Long envId, List<DevopsEnvFileErrorDTO> envFileErrorFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
         DevopsPvcDTO devopsPvcDTO = devopsPvcService.queryByEnvIdAndName(envId, objects[1]);
+        if (devopsPvcDTO == null) {
+            try {
+                if (devopsCustomizeResourceService.queryByEnvIdAndKindAndName(envId, ResourceType.PERSISTENT_VOLUME_CLAIM.getType(), objects[1]) != null) {
+                    syncCustom(envId, envFileErrorFiles, resourceCommitVO, objects);
+                }
+            } catch (Exception e) {
+                logger.info("Exception occurred when process resource {} as custom", objects[1]);
+                logger.info("The exception is {}", e);
+            }
+        }
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(envId, devopsPvcDTO.getId(), ObjectType.PERSISTENTVOLUMECLAIM.getType());
         if (updateEnvCommandStatus(resourceCommitVO,
