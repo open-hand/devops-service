@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.validation.Valid;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.FileCreationVO;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
@@ -20,6 +21,21 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class GitlabServiceClientFallback implements GitlabServiceClient {
+
+    @Override
+    public ResponseEntity<RepositoryFileDTO> createFile(Integer projectId, FileCreationVO fileCreationVO) {
+        throw new CommonException("error.file.create");
+    }
+
+    @Override
+    public ResponseEntity<RepositoryFileDTO> updateFile(Integer projectId, FileCreationVO fileCreationVO) {
+        throw new CommonException("error.file.update");
+    }
+
+    @Override
+    public ResponseEntity deleteFile(Integer projectId, FileCreationVO fileCreationVO) {
+        throw new CommonException("error.file.delete");
+    }
 
     @Override
     public ResponseEntity<GitLabUserDTO> queryUserById(Integer userId) {
@@ -176,29 +192,6 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<GroupDTO> queryGroupByName(String groupName, Integer userId) {
         throw new CommonException("error.group.get");
-    }
-
-    @Override
-    public ResponseEntity<RepositoryFileDTO> createFile(Integer projectId, String path, String content, String
-            commitMessage, Integer userId) {
-        throw new CommonException("error.file.create");
-    }
-
-    @Override
-    public ResponseEntity<RepositoryFileDTO> createFile(Integer projectId, String path, String content, String
-            commitMessage, Integer userId, String branchName) {
-        throw new CommonException("error.file.create");
-    }
-
-    @Override
-    public ResponseEntity<RepositoryFileDTO> updateFile(Integer projectId, String path, String content, String
-            commitMessage, Integer userId) {
-        throw new CommonException("error.file.update");
-    }
-
-    @Override
-    public ResponseEntity deleteFile(Integer projectId, String path, String commitMessage, Integer userId) {
-        throw new CommonException("error.file.delete");
     }
 
     @Override

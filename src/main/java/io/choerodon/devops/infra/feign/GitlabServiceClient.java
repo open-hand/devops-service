@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 
+import io.choerodon.devops.api.vo.FileCreationVO;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
@@ -11,7 +12,6 @@ import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 
 
 /**
@@ -140,8 +140,9 @@ public interface GitlabServiceClient {
 
     /**
      * 根据组的path查询组
+     *
      * @param groupName 组的path
-     * @param userId 用户id
+     * @param userId    用户id
      * @return 组
      */
     @GetMapping(value = "/v1/groups/{groupName}")
@@ -150,31 +151,15 @@ public interface GitlabServiceClient {
 
     @PostMapping(value = "/v1/projects/{projectId}/repository/file")
     ResponseEntity<RepositoryFileDTO> createFile(@PathVariable("projectId") Integer projectId,
-                                                 @RequestParam("path") String path,
-                                                 @RequestParam("content") String content,
-                                                 @RequestParam("commitMessage") String commitMessage,
-                                                 @RequestParam("userId") Integer userId);
-
-    @PostMapping(value = "/v1/projects/{projectId}/repository/file")
-    ResponseEntity<RepositoryFileDTO> createFile(@PathVariable("projectId") Integer projectId,
-                                              @RequestParam("path") String path,
-                                              @RequestParam("content") String content,
-                                              @RequestParam("commitMessage") String commitMessage,
-                                              @RequestParam("userId") Integer userId,
-                                              @RequestParam("branch_name") String branchName);
+                                                 @RequestBody FileCreationVO fileCreationVO);
 
     @PutMapping(value = "/v1/projects/{projectId}/repository/file")
     ResponseEntity<RepositoryFileDTO> updateFile(@PathVariable("projectId") Integer projectId,
-                                              @RequestParam("path") String path,
-                                              @RequestParam("content") String content,
-                                              @RequestParam("commitMessage") String commitMessage,
-                                              @RequestParam("userId") Integer userId);
+                                                 @RequestBody FileCreationVO fileCreationVO);
 
     @DeleteMapping(value = "/v1/projects/{projectId}/repository/file")
     ResponseEntity deleteFile(@PathVariable("projectId") Integer projectId,
-                              @RequestParam("path") String path,
-                              @RequestParam("commitMessage") String commitMessage,
-                              @RequestParam("userId") Integer userId);
+                              @RequestBody FileCreationVO fileCreationVO);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/{commit}/file")
     ResponseEntity<RepositoryFileDTO> getFile(@PathVariable("projectId") Integer projectId,
@@ -394,7 +379,7 @@ public interface GitlabServiceClient {
             @PathVariable("projectId") Integer projectId,
             @PathVariable("branchName") String branchName);
 
-
+    //todo 如果name里面有&字符，&后面的部分会被丢弃
     /**
      * 创建新分支的接口
      *

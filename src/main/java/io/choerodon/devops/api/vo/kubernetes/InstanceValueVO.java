@@ -100,4 +100,21 @@ public class InstanceValueVO {
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
     }
+
+    @Override
+    public String toString() {
+        return "InstanceValueVO{" +
+                "yaml='" + yaml + '\'' +
+                ", highlightMarkers=" + highlightMarkers +
+                ", totalLine=" + totalLine +
+                ", errorMsg='" + errorMsg + '\'' +
+                ", errorLines=" + errorLines +
+                ", newLines=" + newLines +
+                ", deltaYaml='" + deltaYaml + '\'' +
+                ", name='" + name + '\'' +
+                ", id=" + id +
+                ", objectVersionNumber=" + objectVersionNumber +
+                '}';
+    }
+
 }
