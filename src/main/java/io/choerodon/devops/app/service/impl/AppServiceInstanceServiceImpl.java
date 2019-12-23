@@ -1318,13 +1318,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             versionValue = appServiceVersionService.baseQueryValue(deployVersionId);
         }
 
-
-        LOGGER.info("version values: {}", versionValue);
-        LOGGER.info("deploy values: {}", deployValue);
-        InstanceValueVO valueVO = getReplaceResult(versionValue, deployValue);
-        LOGGER.info("result values: {}", valueVO);
-
-        c7nHelmRelease.getSpec().setValues(valueVO.getDeltaYaml().trim());
+        c7nHelmRelease.getSpec().setValues(
+                getReplaceResult(versionValue, deployValue).getDeltaYaml().trim());
         return c7nHelmRelease;
     }
 
