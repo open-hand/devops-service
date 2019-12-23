@@ -56,7 +56,9 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                 break;
             case "pipeline":
                 PipelineWebHookVO pipelineWebHookVO = JSONArray.parseObject(body, PipelineWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());
-
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info(pipelineWebHookVO.toString());
+                }
                 devopsGitlabPipelineService.create(pipelineWebHookVO, token);
                 break;
             case "build":
