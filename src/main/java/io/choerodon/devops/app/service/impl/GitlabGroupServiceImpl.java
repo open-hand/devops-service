@@ -95,7 +95,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         }
         ownerIds.forEach(id -> {
                     UserAttrDTO ownerAttrDTO = userAttrService.baseQueryById(id);
-                    MemberDTO memberDTO = new MemberDTO(ownerAttrDTO.getGitlabUserId().intValue(), AccessLevel.MASTER.value, "");
+                    MemberDTO memberDTO = new MemberDTO(ownerAttrDTO.getGitlabUserId().intValue(), AccessLevel.OWNER.value, "");
                     MemberDTO groupMember = gitlabServiceClientOperator.queryGroupMember(devopsProjectDTO.getDevopsClusterEnvGroupId().intValue(), memberDTO.getId());
                     if (groupMember == null) {
                         gitlabServiceClientOperator.createGroupMember(devopsProjectDTO.getDevopsClusterEnvGroupId().intValue(), memberDTO);
