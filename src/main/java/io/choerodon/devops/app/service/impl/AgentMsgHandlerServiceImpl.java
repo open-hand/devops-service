@@ -301,7 +301,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         appServiceInstanceDTO.setEffectCommandId(effectCommandId);
                         logger.info("Found command by sha. command id: {}", effectCommandId);
                     } else {
-                        logger.info("Command with object id {} and sha {}", appServiceInstanceDTO.getId(), releasePayloadVO.getCommit());
+                        logger.info("Command with object id {} and sha {} is not found", appServiceInstanceDTO.getId(), releasePayloadVO.getCommit());
                     }
                 }
 
