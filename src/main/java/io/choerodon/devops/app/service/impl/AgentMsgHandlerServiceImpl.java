@@ -1367,7 +1367,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 .baseQueryByKindAndName(event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
 
         if (devopsEnvResourceDTO == null) {
-            logger.warn("DevopsEnvResourceDTO is null with involved object kind {} and involved object name {}", event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
+            // TODO 0.21版本修复Agent没有过滤非平台的Pod和Job的问题
+            // logger.warn("DevopsEnvResourceDTO is null with involved object kind {} and involved object name {}", event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
             return;
         }
 
