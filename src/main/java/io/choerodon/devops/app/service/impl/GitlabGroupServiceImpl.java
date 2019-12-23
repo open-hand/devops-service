@@ -6,6 +6,7 @@ import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
 import java.util.List;
 
 import feign.FeignException;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,7 +121,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         if (userAttrDTO == null) {
             throw new CommonException("error.gitlab.user.sync.failed");
         }
-        GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), TypeUtil.objToInteger(GitUserNameUtil.getAdminId()));
         if (groupDTO == null) {
             groupDTO = gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
