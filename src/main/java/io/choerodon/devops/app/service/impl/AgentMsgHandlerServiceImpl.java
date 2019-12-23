@@ -491,7 +491,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     break;
             }
         } catch (IOException e) {
-            logger.info(e.toString());
+            logger.info("Unexpected exception occurred when processing resourceUpdate. The exception is {}", e.toString());
         }
     }
 
@@ -573,36 +573,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         V1PersistentVolumeClaim pv = json.deserialize(msg, V1PersistentVolumeClaim.class);
         devopsPvcDTO.setStatus(pv.getStatus().getPhase());
         CustomContextUtil.executeRunnableInCertainContext(devopsPvcDTO.getLastUpdatedBy(), () -> devopsPvcMapper.updateByPrimaryKeySelective(devopsPvcDTO));
-
-        // TODO 0.20 发版前删除
-//        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-//        DevopsPrometheusDTO devopsPrometheusDTO = devopsClusterResourceService.baseQueryPrometheusDTO(devopsEnvironmentDTO.getClusterId());
-//        if (devopsPrometheusDTO != null) {
-//            Long prometheusPvId = devopsPrometheusDTO.getPrometheusPvId();
-//            Long grafanaPvId = devopsPrometheusDTO.getGrafanaPvId();
-//            Long alertmanagerPvId = devopsPrometheusDTO.getAlertmanagerPvId();
-//            Long pvId = devopsPvcDTO.getPvId();
-//            if (pvId.equals(prometheusPvId) || pvId.equals(grafanaPvId) || pvId.equals(alertmanagerPvId)) {
-//                List<DevopsPvcDTO> devopsPvcDTOS = new ArrayList<>();
-//                addBoundPVC(devopsPvcDTOS, prometheusPvId);
-//                addBoundPVC(devopsPvcDTOS, grafanaPvId);
-//                addBoundPVC(devopsPvcDTOS, alertmanagerPvId);
-//
-//                if (devopsPvcDTOS.size() == 3) {
-//                    logger.info("Start to install prometheus, clusterId : {} ", devopsEnvironmentDTO.getClusterId());
-//                    devopsPrometheusDTO.setDevopsPvcList(devopsPvcDTOS);
-//                    devopsClusterResourceService.installPrometheus(devopsEnvironmentDTO.getClusterId(), devopsPrometheusDTO);
-//                }
-//            }
-//        }
     }
-
-//    private void addBoundPVC(List<DevopsPvcDTO> devopsPvcDTOS, Long pvId) {
-//        DevopsPvcDTO devopsPvc = devopsPvcService.queryByPvId(pvId);
-//        if (PvcStatus.BOUND.getStatus().equals(devopsPvc.getStatus())) {
-//            devopsPvcDTOS.add(devopsPvc);
-//        }
-//    }
 
     private void handleUpdateServiceMsg(String key, Long envId, String msg, DevopsEnvResourceDTO devopsEnvResourceDTO) {
         AppServiceInstanceDTO appServiceInstanceDTO;
@@ -813,7 +784,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Override
     public void helmReleaseRollBackFail(String key, String msg) {
-        logger.info(key);
+        logger.info("Helm release rollback failed. The key is {}, and the msg is {}", key, msg);
     }
 
     @Override
@@ -1347,7 +1318,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 }
             }
         } catch (Exception e) {
-            logger.info(e.getMessage());
+            logger.info("Exception occurred when processing installResource. It is: ", e);
         }
     }
 
@@ -1385,7 +1356,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             devopsCommandEventDTO.setType(type);
             devopsCommandEventService.baseCreate(devopsCommandEventDTO);
         } catch (Exception e) {
-            logger.info(e.getMessage());
+            logger.info("Exception occurred when calling insertDevopsCommandEvent(), it is: {}", e);
         }
     }
 
@@ -1553,7 +1524,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             newDevopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
             devopsEnvCommandService.baseUpdate(newDevopsEnvCommandDTO);
         } catch (Exception e) {
-            logger.info(e.getMessage());
+            logger.info("Exception occurred when calling handlerServiceCreateMessage(). It is: {}", e);
         }
     }
 
