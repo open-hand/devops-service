@@ -121,11 +121,12 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         if (userAttrDTO == null) {
             throw new CommonException("error.gitlab.user.sync.failed");
         }
+        LOGGER.info("groupPath:{},adminId:{}", group.getPath(), GitUserNameUtil.getAdminId());
         GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), TypeUtil.objToInteger(GitUserNameUtil.getAdminId()));
         if (groupDTO == null) {
             groupDTO = gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
-
+        LOGGER.info("groupDTO:{}", groupDTO);
 
         DevopsProjectDTO devopsProjectDO = new DevopsProjectDTO(gitlabGroupPayload.getProjectId());
         setCertainGroupIdBySuffix(suffix, TypeUtil.objToLong(groupDTO.getId()), devopsProjectDO);
