@@ -300,6 +300,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     if (effectCommandId != null) {
                         appServiceInstanceDTO.setEffectCommandId(effectCommandId);
                         logger.info("Found command by sha. command id: {}", effectCommandId);
+                    } else {
+                        logger.info("Command with object id {} and sha {}", appServiceInstanceDTO.getId(), releasePayloadVO.getCommit());
                     }
                 }
 
@@ -309,9 +311,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         logger.warn("Unexpected empty value '{}' for command of release payload.", releasePayloadVO.getCommand());
                     } else {
                         logger.info("Getting command from payload. command: {}", releasePayloadVO.getCommand());
-                        appServiceInstanceDTO.setEffectCommandId(releasePayloadVO.getCommand());
+                        DevopsEnvCommandDTO effectCommand = devopsEnvCommandService.baseQuery(releasePayloadVO.getCommand());
+                        if (effectCommand != null && Objects.equals(effectCommand.getObjectId(), appServiceInstanceDTO.getId())) {
+                            appServiceInstanceDTO.setEffectCommandId(releasePayloadVO.getCommand());
+                            logger.info("Set the effect command from agent. The instance id is {} and the command id is {}", appServiceInstanceDTO.getId(), releasePayloadVO.getCommand());
+                        } else {
+                            logger.info("The effect command from agent is invalid for instance {}. It is {}", appServiceInstanceDTO.getId(),releasePayloadVO.getCommand());
+                        }
                     }
                 }
+
                 appServiceInstanceDTO.setStatus(InstanceStatus.RUNNING.getStatus());
                 appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
                 installResource(resources, appServiceInstanceDTO);
