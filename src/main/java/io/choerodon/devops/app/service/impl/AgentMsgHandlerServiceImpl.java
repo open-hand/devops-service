@@ -994,12 +994,21 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     private void syncPersistentVolume(Long envId, List<DevopsEnvFileErrorDTO> envFileErrorFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
+        // 外层已经判断了环境id一定是从数据库中查出来的，所以不可能为空，不考虑处理的同时用户删除环境的情况
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+
         DevopsPvDTO devopsPvDTO = devopsPvService.queryByEnvIdAndName(envId, objects[1]);
         if (devopsPvDTO == null) {
-            // 目前用户环境是支持PVC而不支持PV，如果PV在非系统环境创建，应该被视为自定义资源
-            syncCustom(envId, envFileErrorFiles, resourceCommitVO, objects);
+            if (devopsEnvironmentDTO != null
+                    && EnvironmentType.USER.getValue().equals(devopsEnvironmentDTO.getType())) {
+                // 目前用户环境是支持PVC而不支持PV，如果PV在非系统环境创建，应该被视为自定义资源
+                syncCustom(envId, envFileErrorFiles, resourceCommitVO, objects);
+            } else {
+                logger.warn("The devopsPvDTO is null with envId: {} and name: {}.", envId, objects[1]);
+            }
             return;
         }
+
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(envId, devopsPvDTO.getId(), ObjectType.PERSISTENTVOLUME.getType());
         if (updateEnvCommandStatus(resourceCommitVO,
@@ -1017,6 +1026,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     private void syncPersistentVolumeClaim(Long envId, List<DevopsEnvFileErrorDTO> envFileErrorFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
         DevopsPvcDTO devopsPvcDTO = devopsPvcService.queryByEnvIdAndName(envId, objects[1]);
+
+        // 兼容0.20版本之前的作为自定义资源的PVC
         if (devopsPvcDTO == null) {
             try {
                 if (devopsCustomizeResourceService.queryByEnvIdAndKindAndName(envId, ResourceType.PERSISTENT_VOLUME_CLAIM.getType(), objects[1]) != null) {
@@ -1026,7 +1037,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 logger.info("Exception occurred when process resource {} as custom", objects[1]);
                 logger.info("The exception is {}", e);
             }
+            return;
         }
+
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(envId, devopsPvcDTO.getId(), ObjectType.PERSISTENTVOLUMECLAIM.getType());
         if (updateEnvCommandStatus(resourceCommitVO,
