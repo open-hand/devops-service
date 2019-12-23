@@ -1397,7 +1397,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             return;
         }
 
-        logger.info("sync command status!");
+        logger.debug("sync command status!");
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         List<Command> commands = getCommandsToSync(envId);
 
@@ -1433,7 +1433,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             return;
         }
 
-        logger.info("sync command status result: {}.", msg);
+        logger.debug("sync command status result: {}.", msg);
 
         Map<Long, Command> syncCommandMap = JSONArray.parseArray(msg, Command.class)
                 .stream()
