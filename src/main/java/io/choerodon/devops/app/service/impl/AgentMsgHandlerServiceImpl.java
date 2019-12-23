@@ -1356,6 +1356,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private void insertDevopsCommandEvent(Event event, String type) {
         DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService
                 .baseQueryByKindAndName(event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
+
+        if (devopsEnvResourceDTO == null) {
+            logger.warn("DevopsEnvResourceDTO is null with involved object kind {} and involved object name {}", event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
+            return;
+        }
+
         try {
             DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
                     .baseQueryByObject(ObjectType.INSTANCE.getType(), devopsEnvResourceDTO.getInstanceId());
