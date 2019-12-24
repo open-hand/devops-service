@@ -44,13 +44,13 @@ public class DevopsPvVO {
     private Long ObjectVersionNumber;
 
     @ApiModelProperty("集群连接状态")
-    private Long clusterConnect;
+    private Boolean clusterConnect;
 
-    public Long getClusterConnect() {
+    public Boolean getClusterConnect() {
         return clusterConnect;
     }
 
-    public void setClusterConnect(Long clusterConnect) {
+    public void setClusterConnect(Boolean clusterConnect) {
         this.clusterConnect = clusterConnect;
     }
 

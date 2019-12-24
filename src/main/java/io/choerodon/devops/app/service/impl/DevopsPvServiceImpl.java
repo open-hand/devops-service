@@ -103,25 +103,19 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 ));
 
         List<Long> connectedClusterList = clusterConnectionHandler.getConnectedClusterList();
-        LOGGER.info("connectedCluster:{}", connectedClusterList);
         pvDTOPageInfo.getList().forEach(i -> {
             if (connectedClusterList.contains(i.getClusterId())) {
                 i.setClusterConnect(true);
+            } else {
+                i.setClusterConnect(false);
             }
-        });
-        pvDTOPageInfo.getList().forEach(i -> {
-            LOGGER.info("{}", i.getClusterConnect());
         });
         return pvDTOPageInfo;
     }
 
     @Override
     public PageInfo<DevopsPvVO> pageByOptions(Long projectId, Pageable pageable, String params) {
-        PageInfo<DevopsPvVO> pageInfo = ConvertUtils.convertPage(basePagePvByOptions(projectId, pageable, params), DevopsPvVO.class);
-        pageInfo.getList().forEach(i -> {
-            LOGGER.info("{}", i.getClusterConnect());
-        });
-        return pageInfo;
+        return ConvertUtils.convertPage(basePagePvByOptions(projectId, pageable, params), DevopsPvVO.class);
     }
 
     @Override
