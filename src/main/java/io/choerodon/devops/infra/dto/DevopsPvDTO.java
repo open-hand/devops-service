@@ -34,6 +34,9 @@ public class DevopsPvDTO extends BaseDTO {
     @Transient
     private String clusterName;
 
+    @Transient
+    private Boolean clusterConnect;
+
     @ApiModelProperty("关联的clusterId")
     private Long clusterId;
 
@@ -174,5 +177,13 @@ public class DevopsPvDTO extends BaseDTO {
 
     public void setValueConfig(String valueConfig) {
         this.valueConfig = valueConfig;
+    }
+
+    public Boolean getClusterConnect() {
+        return clusterConnect;
+    }
+
+    public void setClusterConnect(Boolean clusterConnect) {
+        this.clusterConnect = clusterConnect;
     }
 }
