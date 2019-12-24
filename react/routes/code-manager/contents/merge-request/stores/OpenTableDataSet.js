@@ -19,21 +19,12 @@ export default ((projectId, formatMessage, mergedRequestStore, appId, tabKey) =>
         transformResponse: (data) => {
           if (handlePromptError(JSON.parse(data))) {
             const { closeCount, mergeCount, openCount, totalCount, mergeRequestVOPageInfo } = JSON.parse(data);
-            const { list } = mergeRequestVOPageInfo || {};
             changeCount({
               closeCount,
               mergeCount,
               openCount,
               totalCount,
             });
-            if (mergedRequestStore.getTabKey === 'opened' || mergedRequestStore.getTabKey === 'assignee') {
-              const assignee = mergeRequestVOPageInfo
-                ? _.filter(list, (a) => a.assignee && a.assignee.id === mergedRequestStore.getUserId) : [];
-              mergedRequestStore.setAssigneeCount(assignee.length);
-              if (mergedRequestStore.getTabKey === 'assignee') {
-                return assignee;
-              }
-            }
             return mergeRequestVOPageInfo && mergeRequestVOPageInfo.list;
           }
         },
