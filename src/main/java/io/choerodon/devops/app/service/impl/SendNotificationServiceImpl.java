@@ -247,7 +247,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     // 如果没有指定审核人，不发送通知
                     if (devopsMergeRequestDTO.getAssigneeId() == null) {
-                        LOGGER.info("Abort sending merge request (gitlab merge request id : {}) audit notification due to the null assigneeId", mergeRequestId);
+                        LOGGER.info("Abort sending merge request (gitlab project id: {}, gitlab merge request id : {}) audit notification due to the null assigneeId", gitlabProjectId, mergeRequestId);
                         return;
                     }
 
