@@ -34,6 +34,7 @@ const RequestPanel = withRouter(observer((props) => {
     getCount: { closeCount, mergeCount, openCount, totalCount },
     getTabKey,
     setTabKey,
+    getAssigneeCount,
   } = mergedRequestStore;
 
 
@@ -210,6 +211,19 @@ const RequestPanel = withRouter(observer((props) => {
                 <Column name="updatedAt" renderer={renderUpdateDate} />
               </Table>
             </TabPane>
+            {
+              getAssigneeCount === 0 ? <TabPane tab={`${formatMessage({ id: 'merge.tab5' })}(${getAssigneeCount || 0})`} key="assignee">
+                <Table dataSet={openTableDS} queryBar="none" pagination={false}>
+                  <Column name="title" renderer={renderTitle} />
+                  <Column name="iid" renderer={renderIid} width={100} align="left" />
+                  <Column name="targetBranch" renderer={renderTargetBranch} />
+                  <Column name="createdAt" renderer={renderCreatedAt} />
+                  <Column name="commits" renderer={renderCommit} />
+                  <Column name="updatedAt" renderer={renderUpdateDate} />
+                  <Column name="assignee" renderer={renderAssignee} />
+                </Table>
+              </TabPane> : null
+            }
           </Tabs>
         </Fragment>}
     </Page>

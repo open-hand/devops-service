@@ -8,6 +8,8 @@ public class JobWebHookVO {
     private String buildStage;
     private String buildStatus;
 
+    private JobCommitVO commit;
+
     public String getSha() {
         return sha;
     }
@@ -46,5 +48,25 @@ public class JobWebHookVO {
 
     public void setRef(String ref) {
         this.ref = ref;
+    }
+
+    public JobCommitVO getCommit() {
+        return commit;
+    }
+
+    public void setCommit(JobCommitVO commit) {
+        this.commit = commit;
+    }
+
+    @Override
+    public String toString() {
+        return "JobWebHookVO{" +
+                "sha='" + sha + '\'' +
+                ", ref='" + ref + '\'' +
+                ", buildName='" + buildName + '\'' +
+                ", buildStage='" + buildStage + '\'' +
+                ", buildStatus='" + buildStatus + '\'' +
+                ", commit=" + commit +
+                '}';
     }
 }

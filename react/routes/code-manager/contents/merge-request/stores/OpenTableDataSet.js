@@ -1,5 +1,8 @@
 import React from 'react';
+import _ from 'lodash';
+
 import Tips from '../../../../../components/Tips';
+import { handlePromptError } from '../../../../../utils';
 
 export default ((projectId, formatMessage, mergedRequestStore, appId, tabKey) => {
   function changeCount(count) {
@@ -14,14 +17,23 @@ export default ((projectId, formatMessage, mergedRequestStore, appId, tabKey) =>
       read: {
         method: 'get',
         transformResponse: (data) => {
-          const { closeCount, mergeCount, openCount, totalCount, mergeRequestVOPageInfo } = JSON.parse(data);
-          changeCount({
-            closeCount,
-            mergeCount,
-            openCount,
-            totalCount,
-          });
-          return mergeRequestVOPageInfo.list;
+          if (handlePromptError(JSON.parse(data))) {
+            const { closeCount, mergeCount, openCount, totalCount, mergeRequestVOPageInfo } = JSON.parse(data);
+            const { list } = mergeRequestVOPageInfo || {};
+            changeCount({
+              closeCount,
+              mergeCount,
+              openCount,
+              totalCount,
+            });
+            if (mergedRequestStore.getTabKey === 'assignee') {
+              const assignee = mergeRequestVOPageInfo
+                ? _.filter(list, (a) => a.assignee && a.assignee.id === mergedRequestStore.getUserId) : [];
+              mergedRequestStore.setAssigneeCount(assignee.length);
+              return assignee;
+            }
+            return mergeRequestVOPageInfo && mergeRequestVOPageInfo.list;
+          }
         },
       },
     },

@@ -30,6 +30,13 @@ export default function useStore() {
       return this.count;
     },
 
+    assigneeCount: 0,
+    setAssigneeCount(assigneeCount) {
+      this.assigneeCount = assigneeCount;
+    },
+    get getAssigneeCount() {
+      return this.assigneeCount;
+    },
 
     tabKey: 'opened',
     setTabKey(key) {

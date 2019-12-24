@@ -9,6 +9,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.PipelineUserRelationshipService;
 import io.choerodon.devops.infra.dto.PipelineUserRelationshipDTO;
 import io.choerodon.devops.infra.mapper.PipelineUserRelMapper;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -35,6 +36,15 @@ public class PipelineUserRelationshipServiceImpl implements PipelineUserRelation
 
     @Override
     public void baseDelete(PipelineUserRelationshipDTO pipelineUserRelationShipDTO) {
+        if (TypeUtil.checkObjAllFieldsIsNull(pipelineUserRelationShipDTO) ||
+                (pipelineUserRelationShipDTO.getId() == null
+                        && pipelineUserRelationShipDTO.getStageId() == null
+                        && pipelineUserRelationShipDTO.getTaskId() == null
+                        && pipelineUserRelationShipDTO.getUserId() == null
+                        && pipelineUserRelationShipDTO.getPipelineId() == null
+                )) {
+            throw new CommonException("error.delete.pipeline.user.relation");
+        }
         userRelMapper.delete(pipelineUserRelationShipDTO);
     }
 }

@@ -137,6 +137,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     //调接消息接口迁移数据
                     notifyTransferDataClient.checkLog("0.20.0", "devops");
                     LOGGER.info("修复数据完成");
+                } else if ("0.20.1".equals(version)) {
+                    syncHarborUser(logs);
                 } else if ("0.19.0".equals(version)) {
                     syncEnvAppRelevance(logs);
                     syncDeployRecord(logs);
