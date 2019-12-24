@@ -13,6 +13,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,6 +44,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
 public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitlabPipelineServiceImpl.class);
 
     private static final Integer ADMIN = 1;
     private static final String SONARQUBE = "sonarqube";
@@ -189,15 +192,24 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     public void updateStages(JobWebHookVO jobWebHookVO) {
         //按照job的状态实时更新pipeline阶段的状态
         DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.baseQueryByShaAndRef(jobWebHookVO.getSha(), jobWebHookVO.getRef());
+
+        if (jobWebHookVO.getCommit() == null || jobWebHookVO.getCommit().getId() == null) {
+            LOGGER.info("The commit attribute or the commit.id attribute is null of jobWebHook {}", jobWebHookVO.getBuildName());
+            return;
+        }
+
         if (devopsGitlabCommitDTO != null && !"created".equals(jobWebHookVO.getBuildStatus())) {
-            DevopsGitlabPipelineDTO devopsGitlabPipelineDTO = baseQueryByCommitId(devopsGitlabCommitDTO.getId());
+            DevopsGitlabPipelineDTO devopsGitlabPipelineDTO = baseQueryByGitlabPipelineId(jobWebHookVO.getCommit().getId());
             if (devopsGitlabPipelineDTO != null) {
+                LOGGER.info("Found gitlab pipeline by id {}", jobWebHookVO.getCommit().getId());
                 List<Stage> stages = JSONArray.parseArray(devopsGitlabPipelineDTO.getStage(), Stage.class);
                 stages.stream().filter(stage -> jobWebHookVO.getBuildName().equals(stage.getName())).forEach(stage ->
                         stage.setStatus(jobWebHookVO.getBuildStatus())
                 );
                 devopsGitlabPipelineDTO.setStage(JSONArray.toJSONString(stages));
                 baseUpdate(devopsGitlabPipelineDTO);
+            } else {
+                LOGGER.info("Not Found gitlab pipeline by id {}", jobWebHookVO.getCommit().getId());
             }
         }
     }
@@ -392,7 +404,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     @Override
     public DevopsGitlabPipelineDTO baseQueryByGitlabPipelineId(Long id) {
         DevopsGitlabPipelineDTO devopsGitlabPipelineDTO = new DevopsGitlabPipelineDTO();
-        devopsGitlabPipelineDTO.setPipelineId(id);
+        devopsGitlabPipelineDTO.setPipelineId(Objects.requireNonNull(id));
         return devopsGitlabPipelineMapper.selectOne(devopsGitlabPipelineDTO);
     }
 
