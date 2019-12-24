@@ -26,11 +26,13 @@ export default ((projectId, formatMessage, mergedRequestStore, appId, tabKey) =>
               openCount,
               totalCount,
             });
-            if (mergedRequestStore.getTabKey === 'assignee') {
+            if (mergedRequestStore.getTabKey === 'opened' || mergedRequestStore.getTabKey === 'assignee') {
               const assignee = mergeRequestVOPageInfo
                 ? _.filter(list, (a) => a.assignee && a.assignee.id === mergedRequestStore.getUserId) : [];
               mergedRequestStore.setAssigneeCount(assignee.length);
-              return assignee;
+              if (mergedRequestStore.getTabKey === 'assignee') {
+                return assignee;
+              }
             }
             return mergeRequestVOPageInfo && mergeRequestVOPageInfo.list;
           }

@@ -38,6 +38,14 @@ export default function useStore() {
       return this.assigneeCount;
     },
 
+    assignee: {},
+    setAssignee(value) {
+      this.assignee = value;
+    },
+    get getAssignee() {
+      return this.assignee.slice();
+    },
+
     tabKey: 'opened',
     setTabKey(key) {
       this.tabKey = key;
