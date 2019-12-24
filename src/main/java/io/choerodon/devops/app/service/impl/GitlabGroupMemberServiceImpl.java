@@ -109,6 +109,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     }
                     memberDTO = gitlabServiceClientOperator.queryGroupMember(
                             TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()), gitlabUserId);
+                    LOGGER.info("memberDTO:{}", memberDTO);
                     if (memberDTO != null && memberDTO.getId() != null) {
                         deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, GitlabGroupType.CLUSTER_GITOPS);
                     }
@@ -177,6 +178,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
      */
     private void deleteAboutCluster(Long projectId, Integer gitlabUserId, Long userId) {
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+        LOGGER.info("devopsProjectDTO:{}", devopsProjectDTO);
         if (devopsProjectDTO.getDevopsClusterEnvGroupId() != null) {
             gitlabServiceClientOperator.deleteGroupMember(devopsProjectDTO.getDevopsClusterEnvGroupId().intValue(), gitlabUserId);
         }
@@ -291,6 +293,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             memberDTO = gitlabServiceClientOperator.queryGroupMember(
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()),
                     (TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
+            LOGGER.info("memberDTO:{}", memberDTO);
             if (memberDTO != null && AccessLevel.OWNER.toValue().equals(memberDTO.getAccessLevel())) {
                 deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, GitlabGroupType.CLUSTER_GITOPS);
             }
@@ -330,6 +333,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 memberDTO = gitlabServiceClientOperator.queryGroupMember(
                         TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()),
                         (TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
+                LOGGER.info("memberDTO:{}", memberDTO);
                 addOrUpdateGitlabRole(accessLevel, memberDTO,
                         TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()), userAttrDTO);
 
