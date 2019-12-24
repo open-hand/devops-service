@@ -212,7 +212,7 @@ const RequestPanel = withRouter(observer((props) => {
               </Table>
             </TabPane>
             {
-              getAssigneeCount === 0 ? <TabPane tab={`${formatMessage({ id: 'merge.tab5' })}(${getAssigneeCount || 0})`} key="assignee">
+              getAssigneeCount !== 0 ? <TabPane tab={`${formatMessage({ id: 'merge.tab5' })}(${getAssigneeCount || 0})`} key="assignee">
                 <Table dataSet={openTableDS} queryBar="none" pagination={false}>
                   <Column name="title" renderer={renderTitle} />
                   <Column name="iid" renderer={renderIid} width={100} align="left" />
