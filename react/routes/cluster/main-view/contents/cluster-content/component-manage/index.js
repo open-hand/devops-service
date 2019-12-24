@@ -1,7 +1,6 @@
-import React, { Fragment, useEffect, useMemo } from 'react';
+import React from 'react';
 import { Modal, Spin } from 'choerodon-ui/pro';
 import map from 'lodash/map';
-import find from 'lodash/find';
 import { Choerodon } from '@choerodon/boot';
 import { observer } from 'mobx-react-lite';
 import { useClusterMainStore } from '../../../stores';
@@ -39,9 +38,8 @@ export default observer((props) => {
 
   function getContent() {
     const { getComponentList } = contentStore;
-    const data = getComponentList.filter(({ type }) => type !== 'prometheus');
-    const length = data.length;
-    const content = map(data, ({ message, type, status, operate }, index) => {
+    const length = getComponentList.length;
+    const content = map(getComponentList, ({ message, type, status, operate }, index) => {
       const componentType = type === 'prometheus' ? 'monitor' : 'cert';
       return (
         <ComponentCard
