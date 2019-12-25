@@ -38,11 +38,7 @@ const StoreProvider = injectIntl(inject('AppState')(observer(((props) => {
   useEffect(() => {
     let url;
     if (tabKey !== 'all') {
-      if (tabKey === 'assignee') {
-        url = `/devops/v1/projects/${projectId}/app_service/${appId}/git/list_merge_request?state=opened`;
-      } else {
-        url = `/devops/v1/projects/${projectId}/app_service/${appId}/git/list_merge_request?state=${tabKey}`;
-      }
+      url = `/devops/v1/projects/${projectId}/app_service/${appId}/git/list_merge_request?state=${tabKey}`;
     } else {
       url = `/devops/v1/projects/${projectId}/app_service/${appId}/git/list_merge_request`;
     }
