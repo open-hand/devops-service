@@ -1376,6 +1376,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         try {
             DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
                     .baseQueryByObject(ObjectType.INSTANCE.getType(), devopsEnvResourceDTO.getInstanceId());
+            if (devopsEnvCommandDTO == null) {
+                logger.info("InsertCommandEvent: EnvCommand with instance type and instance id: {} is not found.", devopsEnvResourceDTO.getInstanceId());
+                return;
+            }
             // 删除实例事件记录
             devopsCommandEventService.baseDeletePreInstanceCommandEvent(devopsEnvCommandDTO.getObjectId());
             DevopsCommandEventDTO devopsCommandEventDTO = new DevopsCommandEventDTO();
