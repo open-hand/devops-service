@@ -75,7 +75,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                                 memberHelper,
                                 gitlabGroupMemberVO.getUserId());
                     } catch (Exception e) {
-                        e.printStackTrace();
                         if (e.getMessage().equals(ERROR_GITLAB_GROUP_ID_SELECT)) {
                             LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
                             return;
@@ -368,8 +367,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 }
 
             } catch (Exception e) {
-                e.printStackTrace();
-                LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
+                throw e;
             }
         }
     }
