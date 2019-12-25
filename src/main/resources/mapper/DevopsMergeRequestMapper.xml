@@ -31,7 +31,8 @@
 	count(id) total,
 	count( CASE WHEN dmr.state = 'merged' THEN 'merged' END ) merged,
 	count( CASE WHEN dmr.state = 'closed' THEN 'closed' END ) closed,
-	count( CASE WHEN dmr.state = 'opened' THEN 'opened' END ) opened
+	count( CASE WHEN dmr.state = 'opened' THEN 'opened' END ) opened,
+        (SELECT COUNT(1) FROM devops_merge_request tmp LEFT JOIN devops_user du ON tmp.assignee_id = du.gitlab_user_id WHERE du.iam_user_id = #{iamUserId} AND tmp.gitlab_project_id = #{projectId} AND tmp.state = 'opened') AS audit_count
     FROM
 	devops_merge_request dmr
 	where dmr.gitlab_project_id = #{projectId}
@@ -44,6 +45,15 @@
             WHERE
             gitlab_project_id = #{projectId}
     </delete>
+
+    <select id="listToBeAuditedByThisUser" resultType="io.choerodon.devops.infra.dto.DevopsMergeRequestDTO">
+        SELECT dmr.*
+        FROM devops_merge_request dmr
+        LEFT JOIN devops_user du ON dmr.assignee_id = du.gitlab_user_id
+        WHERE du.iam_user_id = #{iamUserId}
+        AND dmr.gitlab_project_id = #{projectId}
+        AND dmr.state = 'opened'
+    </select>
 </mapper>
 
 

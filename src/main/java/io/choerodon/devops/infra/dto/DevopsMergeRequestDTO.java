@@ -3,6 +3,8 @@ package io.choerodon.devops.infra.dto;
 import javax.persistence.*;
 import java.util.Date;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.mybatis.entity.BaseDTO;
 
 
@@ -52,6 +54,10 @@ public class DevopsMergeRequestDTO extends BaseDTO {
 
     @Transient
     private Long opened;
+
+    @Transient
+    @ApiModelProperty("待这个用户审核的merge request的数量")
+    private Long auditCount;
 
     public DevopsMergeRequestDTO() {
     }
@@ -188,5 +194,13 @@ public class DevopsMergeRequestDTO extends BaseDTO {
 
     public void setOpened(Long opened) {
         this.opened = opened;
+    }
+
+    public Long getAuditCount() {
+        return auditCount;
+    }
+
+    public void setAuditCount(Long auditCount) {
+        this.auditCount = auditCount;
     }
 }

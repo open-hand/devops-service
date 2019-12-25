@@ -201,7 +201,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         if (devopsGitlabCommitDTO != null && !"created".equals(jobWebHookVO.getBuildStatus())) {
             DevopsGitlabPipelineDTO devopsGitlabPipelineDTO = baseQueryByGitlabPipelineId(jobWebHookVO.getCommit().getId());
             if (devopsGitlabPipelineDTO != null) {
-                LOGGER.info("Found gitlab pipeline by id {}", jobWebHookVO.getCommit().getId());
+                LOGGER.debug("Found gitlab pipeline by id {}", jobWebHookVO.getCommit().getId());
                 List<Stage> stages = JSONArray.parseArray(devopsGitlabPipelineDTO.getStage(), Stage.class);
                 stages.stream().filter(stage -> jobWebHookVO.getBuildName().equals(stage.getName())).forEach(stage ->
                         stage.setStatus(jobWebHookVO.getBuildStatus())
@@ -209,7 +209,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 devopsGitlabPipelineDTO.setStage(JSONArray.toJSONString(stages));
                 baseUpdate(devopsGitlabPipelineDTO);
             } else {
-                LOGGER.info("Not Found gitlab pipeline by id {}", jobWebHookVO.getCommit().getId());
+                LOGGER.debug("Not Found gitlab pipeline by id {}", jobWebHookVO.getCommit().getId());
             }
         }
     }
