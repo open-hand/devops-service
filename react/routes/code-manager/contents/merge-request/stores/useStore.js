@@ -22,6 +22,7 @@ export default function useStore() {
       mergeCount: 0,
       openCount: 0,
       totalCount: 0,
+      auditCount: 0,
     },
     setCount(data) {
       this.count = data;

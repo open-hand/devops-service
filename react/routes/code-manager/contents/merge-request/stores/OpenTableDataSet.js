@@ -17,16 +17,15 @@ export default ((projectId, formatMessage, mergedRequestStore, appId, tabKey) =>
       read: {
         method: 'get',
         transformResponse: (data) => {
-          if (handlePromptError(JSON.parse(data))) {
-            const { closeCount, mergeCount, openCount, totalCount, mergeRequestVOPageInfo } = JSON.parse(data);
-            changeCount({
-              closeCount,
-              mergeCount,
-              openCount,
-              totalCount,
-            });
-            return mergeRequestVOPageInfo && mergeRequestVOPageInfo.list;
-          }
+          const { closeCount, mergeCount, openCount, totalCount, auditCount, mergeRequestVOPageInfo } = JSON.parse(data);
+          changeCount({
+            closeCount,
+            mergeCount,
+            openCount,
+            totalCount,
+            auditCount,
+          });
+          return mergeRequestVOPageInfo.list;
         },
       },
     },
