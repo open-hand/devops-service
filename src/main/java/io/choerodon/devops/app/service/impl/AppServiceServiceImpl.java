@@ -2062,6 +2062,14 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
+    public List<AppServiceDTO> baseListByProjectIdWithNoSkipCheck(Long projectId) {
+        AppServiceDTO appServiceDTO = new AppServiceDTO();
+        appServiceDTO.setProjectId(projectId);
+        appServiceDTO.setSkipCheckPermission(false);
+        return appServiceMapper.select(appServiceDTO);
+    }
+
+    @Override
     public List<AppServiceDTO> baseListByProjectId(Long projectId) {
         AppServiceDTO appServiceDTO = new AppServiceDTO();
         appServiceDTO.setProjectId(projectId);

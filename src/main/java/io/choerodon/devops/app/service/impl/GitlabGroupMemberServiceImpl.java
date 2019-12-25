@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -305,7 +306,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             memberDTO = gitlabServiceClientOperator.queryGroupMember(
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()),
                     (TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
-            LOGGER.info("347:memberDTO:{}", memberDTO);
             if (memberDTO != null && AccessLevel.OWNER.toValue().equals(memberDTO.getAccessLevel())) {
                 deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, GitlabGroupType.CLUSTER_GITOPS);
             }
@@ -326,8 +326,13 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         gitlabServiceClientOperator.deleteProjectMember(e, gitlabUserId);
                     }
                 });
-                // 给gitlab应用组分配owner角色
+
                 devopsProjectDTO = devopsProjectService.baseQueryByProjectId(resourceId);
+
+                // 用户此时为项目所有者角色，删除应用服务权限关联表和环境权限关联表中的数据
+                deletePermissionUserRelation(devopsProjectDTO.getIamProjectId(), userId);
+
+                // 给gitlab应用组分配owner角色
                 memberDTO = gitlabServiceClientOperator.queryGroupMember(
                         TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
                         (TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
@@ -345,13 +350,37 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 memberDTO = gitlabServiceClientOperator.queryGroupMember(
                         TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()),
                         (TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
-                LOGGER.info("347:memberDTO:{}", memberDTO);
                 addOrUpdateGitlabRole(accessLevel, memberDTO,
                         TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()), userAttrDTO);
 
             } catch (Exception e) {
                 LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
             }
+        }
+    }
+
+    private void deletePermissionUserRelation(Long projectId, Long userId) {
+        // 查出项目下不跳过权限的所有应用服务
+        List<Long> appServiceIdsWithNoSkipCheck = applicationService.baseListByProjectIdWithNoSkipCheck(projectId)
+                .stream().map(AppServiceDTO::getId)
+                .collect(Collectors.toList());
+
+        if (!CollectionUtils.isEmpty(appServiceIdsWithNoSkipCheck)) {
+            appServiceUserPermissionService.batchDelete(appServiceIdsWithNoSkipCheck, userId);
+        }
+
+        // 查出项目下不跳过权限的所有环境
+        DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
+        devopsEnvironmentDTO.setProjectId(projectId);
+        devopsEnvironmentDTO.setSkipCheckPermission(false);
+        devopsEnvironmentDTO.setType(EnvironmentType.USER.getValue());
+        List<Long> envIdsWithNoSkipCheck = devopsEnvironmentMapper.select(devopsEnvironmentDTO)
+                .stream()
+                .map(DevopsEnvironmentDTO::getId)
+                .collect(Collectors.toList());
+
+        if (!CollectionUtils.isEmpty(envIdsWithNoSkipCheck)) {
+            devopsEnvUserPermissionService.batchDelete(envIdsWithNoSkipCheck, userId);
         }
     }
 
