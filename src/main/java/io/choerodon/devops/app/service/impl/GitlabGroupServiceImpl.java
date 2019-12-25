@@ -156,6 +156,10 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
 
         Integer groupId = getCertainGroupIdBySuffix(suffix, devopsProjectDTO);
 
+        if (groupId == null) {
+            throw new CommonException("error.group.id.get");
+        }
+
         try {
             gitlabServiceClientOperator.updateGroup(groupId, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), group);
         } catch (FeignException e) {
