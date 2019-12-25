@@ -82,6 +82,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     DevopsClusterMapper devopsClusterMapper;
     @Autowired
     TransactionalProducer producer;
+    @Autowired
+    DevopsEnvUserPermissionService devopsEnvUserPermissionService;
 
     private Gson gson = new Gson();
 
@@ -128,7 +130,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         //校验环境信息
-        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+        checkEnv(devopsEnvironmentDTO);
 
         //将pvDTO转换成pv文件对象
         V1PersistentVolume v1PersistentVolume = initV1PersistentVolume(devopsPvDTO);
@@ -139,6 +141,15 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         //创建pv
         operatePVGitlabFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                 v1PersistentVolume, devopsPvDTO, devopsEnvCommandDTO, devopsEnvironmentDTO, userAttrDTO);
+
+    }
+
+    private void checkEnv(DevopsEnvironmentDTO devopsEnvironmentDTO) {
+        //校验用户是否有环境的权限
+        devopsEnvUserPermissionService.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsEnvironmentDTO.getId());
+
+        //校验环境是否连接
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
     }
 
