@@ -407,6 +407,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         mergeRequestTotalVO.setCloseCount(devopsMergeRequestDTO.getClosed());
         mergeRequestTotalVO.setMergeCount(devopsMergeRequestDTO.getMerged());
         mergeRequestTotalVO.setOpenCount(devopsMergeRequestDTO.getOpened());
+        mergeRequestTotalVO.setAuditCount(devopsMergeRequestDTO.getAuditCount());
 
         return mergeRequestTotalVO;
     }
