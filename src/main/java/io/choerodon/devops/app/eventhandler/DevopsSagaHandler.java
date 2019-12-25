@@ -201,6 +201,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String updateGitlabUser(String data) {
+        LOGGER.info("DevopsSagaHandler.DEVOPS_UPDATE_GITLAB_USERS:{}",data);
         DevOpsUserPayload devOpsUserPayload = gson.fromJson(data, DevOpsUserPayload.class);
         try {
             UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
