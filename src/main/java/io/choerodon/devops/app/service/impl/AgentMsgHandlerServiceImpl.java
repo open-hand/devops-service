@@ -1341,6 +1341,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             }
         } catch (Exception e) {
             logger.info("Exception occurred when processing installResource. It is: ", e);
+            logger.info("And the resources is : {}", resources);
         }
     }
 
