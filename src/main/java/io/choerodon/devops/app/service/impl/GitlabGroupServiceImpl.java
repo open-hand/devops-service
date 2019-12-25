@@ -157,6 +157,9 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         Integer groupId = getCertainGroupIdBySuffix(suffix, devopsProjectDTO);
 
         if (groupId == null) {
+            if (suffix.equals(CLUSTER_ENV_GROUP_SUFFIX)) {
+                return;
+            }
             throw new CommonException("error.group.id.get");
         }
 
