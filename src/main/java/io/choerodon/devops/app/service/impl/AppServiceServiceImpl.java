@@ -229,10 +229,10 @@ public class AppServiceServiceImpl implements AppServiceService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
-                        .withRefType("")
+                        .withRefType("app-service")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE)
                         .withPayloadAndSerialize(devOpsAppServicePayload)
-                        .withRefId("")
+                        .withRefId(String.valueOf(appServiceDTO.getId()))
                         .withSourceId(projectId),
                 builder -> {
                 });
