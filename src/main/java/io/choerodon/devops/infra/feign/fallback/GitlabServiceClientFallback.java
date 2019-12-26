@@ -393,6 +393,21 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<Boolean> checkIsAdmin(Integer userId) {
+        return new ResponseEntity<>(Boolean.FALSE, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<Boolean> assignAdmin(Integer userId) {
+        return new ResponseEntity<>(Boolean.FALSE, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<Boolean> deleteAdmin(Integer userId) {
+        return new ResponseEntity<>(Boolean.FALSE, HttpStatus.OK);
+    }
+
+    @Override
     public ResponseEntity<GitLabUserDTO> queryAdminUser() {
         throw new CommonException("error.gitlab.admin.id.query");
     }

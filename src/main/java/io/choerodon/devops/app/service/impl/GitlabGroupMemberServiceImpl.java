@@ -85,7 +85,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(PROJECT))
                 .forEach(gitlabGroupMemberVO -> {
                     UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupMemberVO.getUserId());
-                    userAttrService.checkUserSync(userAttrDTO);
+                    userAttrService.checkUserSync(userAttrDTO, gitlabGroupMemberVO.getUserId());
                     Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
                     GitLabUserDTO gitlabUserDTO = gitlabServiceClientOperator.queryUserById(
                             TypeUtil.objToInteger(gitlabUserId));

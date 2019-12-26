@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.api.vo.GitlabUserRequestVO;
 
 /**
@@ -17,4 +19,7 @@ public interface GitlabUserService {
 
     Boolean doesEmailExists(String email);
 
+    void assignAdmins(List<Long> iamUserIds);
+
+    void deleteAdmin(Long iamUserId);
 }
