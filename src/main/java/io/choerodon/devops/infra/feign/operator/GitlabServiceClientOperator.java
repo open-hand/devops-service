@@ -804,4 +804,33 @@ public class GitlabServiceClientOperator {
         }
 
     }
+
+    public void assignAdmin(Long iamUserId, Integer gitlabUserId) {
+        Boolean result;
+        try {
+            ResponseEntity<Boolean> responseEntity = gitlabServiceClient.assignAdmin(Objects.requireNonNull(gitlabUserId));
+            result = responseEntity == null ? Boolean.FALSE : responseEntity.getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+
+        if (!Boolean.TRUE.equals(result)) {
+            throw new CommonException("failed.to.set.user.gitlab.admin", Objects.requireNonNull(iamUserId));
+        }
+    }
+
+    public void deleteAdmin(Long iamUserId, Integer gitlabUserId) {
+        Boolean result;
+
+        try {
+            ResponseEntity<Boolean> responseEntity = gitlabServiceClient.deleteAdmin(Objects.requireNonNull(gitlabUserId));
+            result = responseEntity == null ? Boolean.FALSE : responseEntity.getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+
+        if (!Boolean.TRUE.equals(result)) {
+            throw new CommonException("failed.to.delete.user.gitlab.admin", Objects.requireNonNull(iamUserId));
+        }
+    }
 }

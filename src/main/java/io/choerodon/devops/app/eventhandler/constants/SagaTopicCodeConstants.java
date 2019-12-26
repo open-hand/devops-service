@@ -227,6 +227,17 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_MARKET_DELETE_GITLAB_PRO = "devops-market-failed-delete-gitlab-pro";
 
 
+    /**
+     * 批量为用户分配Root权限
+     */
+    public static final String ASSIGN_ADMIN = "base-assign-admin";
+
+    /**
+     * 删除单个用户Root权限
+     */
+    public static final String DELETE_ADMIN = "base-delete-admin";
+
+
     private SagaTopicCodeConstants() {
     }
 }
