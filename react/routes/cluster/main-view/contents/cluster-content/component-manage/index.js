@@ -85,12 +85,12 @@ export default observer((props) => {
                 text: formatMessage({ id: 'edit' }),
                 loading: operate === 'upgrade',
                 onClick: () => installMonitor('edit'),
-                disabled,
+                disabled: true,
               },
               {
                 text: formatMessage({ id: 'uninstall' }),
                 loading: operate !== 'upgrade',
-                disabled,
+                disabled: true,
               },
             ];
           }
