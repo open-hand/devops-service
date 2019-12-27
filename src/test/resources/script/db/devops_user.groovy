@@ -43,4 +43,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_user.groovy') {
         }
     }
 
+    changeSet(author: 'zmf', id: '2019-12-27-add-is-gitlab-admin') {
+        addColumn(tableName: 'devops_user') {
+            column(name: 'is_gitlab_admin', type: 'TINYINT UNSIGNED', remarks: '是否是gitlab的admin', defaultValue: '0')
+        }
+    }
 }

@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -93,5 +94,10 @@ public class UserAttrServiceImpl implements UserAttrService {
         UserAttrDTO userAttrDTO = new UserAttrDTO();
         userAttrDTO.setGitlabUserName(gitlabUserName);
         return userAttrMapper.selectOne(userAttrDTO);
+    }
+
+    @Override
+    public void updateAdmin(Long iamUserId, Boolean isGitlabAdmin) {
+        userAttrMapper.updateIsGitlabAdmin(Objects.requireNonNull(iamUserId), Objects.requireNonNull(isGitlabAdmin));
     }
 }

@@ -109,7 +109,10 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
         iamUserIds.stream()
                 .map(iamUserId -> userAttrService.checkUserSync(userAttrService.baseQueryById(iamUserId), iamUserId))
-                .forEach(user -> gitlabServiceClientOperator.assignAdmin(user.getIamUserId(), TypeUtil.objToInteger(user.getGitlabUserId())));
+                .forEach(user -> {
+                    gitlabServiceClientOperator.assignAdmin(user.getIamUserId(), TypeUtil.objToInteger(user.getGitlabUserId()));
+                    userAttrService.updateAdmin(user.getIamUserId(), Boolean.TRUE);
+                });
     }
 
     @Override
@@ -120,6 +123,6 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
         UserAttrDTO userAttrDTO = userAttrService.checkUserSync(userAttrService.baseQueryById(iamUserId), iamUserId);
         gitlabServiceClientOperator.deleteAdmin(iamUserId, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        userAttrService.updateAdmin(iamUserId, Boolean.FALSE);
     }
-
 }
