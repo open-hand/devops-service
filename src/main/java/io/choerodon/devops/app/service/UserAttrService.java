@@ -18,8 +18,10 @@ public interface UserAttrService {
      * 如果传入的参数是null，抛出异常
      *
      * @param userAttrDTO 用户信息
+     * @param iamUserId   这个对象所对应的iamUserId，抛异常需要
+     * @return 通过校验后返回原封不动的入参
      */
-    void checkUserSync(UserAttrDTO userAttrDTO);
+    UserAttrDTO checkUserSync(UserAttrDTO userAttrDTO, Long iamUserId);
 
     /**
      * 根据gitlab用户id查询平台用户id

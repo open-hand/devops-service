@@ -29,10 +29,7 @@ import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.kubernetes.CheckLog;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.app.eventhandler.payload.HarborPayload;
-import io.choerodon.devops.app.service.DevopsCheckLogService;
-import io.choerodon.devops.app.service.DevopsHarborUserService;
-import io.choerodon.devops.app.service.DevopsProjectService;
-import io.choerodon.devops.app.service.HarborService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dto.*;
@@ -44,8 +41,10 @@ import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.NotifyTransferDataClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 
 @Service
@@ -99,7 +98,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Autowired
     private HarborService harborService;
     @Autowired
-    private HarborUserMapper harborUserMapper;
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    private UserAttrService userAttrService;
 
     @Autowired
     private NotifyTransferDataClient notifyTransferDataClient;
@@ -109,6 +110,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     public void checkLog(String version) {
         LOGGER.info("start upgrade task");
         executorService.execute(new UpgradeTask(version));
+    }
+
+    private static void printRetryNotice() {
+        LOGGER.error("===============================================================");
+        LOGGER.error("Please retry data migration later after cheorodon-front upgrade");
+        LOGGER.error("===============================================================");
     }
 
 
@@ -131,7 +138,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 DevopsCheckLogDTO devopsCheckLogDTO = new DevopsCheckLogDTO();
                 List<CheckLog> logs = new ArrayList<>();
                 devopsCheckLogDTO.setBeginCheckDate(new Date());
-                if ("0.20.0".equals(version)) {
+                if ("0.21.0".equals(version)) {
+                    LOGGER.info("修复数据开始");
+                    syncRoot();
+                    LOGGER.info("修复数据完成");
+                } else if ("0.20.0".equals(version)) {
                     LOGGER.info("修复数据开始");
                     syncHarborUser(logs);
                     //调接消息接口迁移数据
@@ -169,9 +180,35 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
                 devopsCheckLogMapper.insert(devopsCheckLogDTO);
             } catch (Throwable ex) {
+                printRetryNotice();
                 LOGGER.warn("Exception occurred when applying data migration. The ex is: {}", ex);
             }
         }
+
+
+        private void syncRoot() {
+            LOGGER.info("Start to sync root users to gitlab");
+            List<IamUserDTO> rootUsers = baseServiceClientOperator.queryAllRootUsers();
+
+            if (CollectionUtils.isEmpty(rootUsers)) {
+                LOGGER.warn("Root users got is null. Please check whether it is right later in cheorodon-front.");
+                LOGGER.info("Root user migration is Skipped...");
+                return;
+            }
+
+            rootUsers.forEach(user -> {
+                UserAttrDTO userAttrDTO = userAttrService.baseQueryById(user.getId());
+                if (userAttrDTO == null || userAttrDTO.getGitlabUserId() == null) {
+                    LOGGER.warn("User with iamUserId {} is not created successfully, therefore not sync", user.getId());
+                    return;
+                }
+
+                gitlabServiceClientOperator.assignAdmin(userAttrDTO.getIamUserId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            });
+
+            LOGGER.info("Finish syncing root users to gitlab");
+        }
+
 
         private void syncBranch() {
             LOGGER.info("Start syncing branches.");

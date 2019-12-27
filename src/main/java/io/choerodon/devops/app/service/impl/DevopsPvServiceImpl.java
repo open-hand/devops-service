@@ -94,7 +94,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         // params 是遍历字段模糊查询
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
         String orderBy = PageRequestUtil.getOrderBy(pageable);
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize())
+        PageInfo<DevopsPvDTO> pvDTOPageInfo = PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize())
                 .doSelectPageInfo(() -> devopsPvMapper.listPvByOptions(
                         projectDTO.getOrganizationId(),
                         projectId,
@@ -103,6 +103,16 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                         TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))
                 ));
+
+        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedClusterList();
+        pvDTOPageInfo.getList().forEach(i -> {
+            if (connectedClusterList.contains(i.getClusterId())) {
+                i.setClusterConnect(true);
+            } else {
+                i.setClusterConnect(false);
+            }
+        });
+        return pvDTOPageInfo;
     }
 
     @Override

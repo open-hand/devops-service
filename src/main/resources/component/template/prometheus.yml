@@ -18,7 +18,7 @@ alertmanager:
             matchLabels:
               choerodon.io/name: {{alertmanager-pv}}
 grafana:
-  adminPassword: {{adminPassword}}
+  adminPassword: "{{adminPassword}}"
   ingress:
     enabled: true
     hosts:

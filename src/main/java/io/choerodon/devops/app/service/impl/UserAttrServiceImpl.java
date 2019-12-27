@@ -26,10 +26,11 @@ public class UserAttrServiceImpl implements UserAttrService {
     }
 
     @Override
-    public void checkUserSync(UserAttrDTO userAttrDTO) {
-        if (userAttrDTO == null) {
-            throw new CommonException("error.gitlab.user.sync.failed");
+    public UserAttrDTO checkUserSync(UserAttrDTO userAttrDTO, Long iamUserId) {
+        if (userAttrDTO == null || userAttrDTO.getGitlabUserId() == null) {
+            throw new CommonException("error.iam.user.sync.to.gitlab", iamUserId);
         }
+        return userAttrDTO;
     }
 
     @Override
