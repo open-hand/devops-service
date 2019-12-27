@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.feign.operator;
 
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ExceptionResponse;
 import io.choerodon.core.exception.FeignException;
@@ -18,6 +19,7 @@ import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.util.FeignParamUtils;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -568,5 +570,10 @@ public class BaseServiceClientOperator {
         } catch (Exception ex) {
             throw new CommonException("error.query.user.by.login.name", loginName);
         }
+    }
+
+    public List<IamUserDTO> queryAllRootUsers() {
+        ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.queryAllAdminUsers();
+        return responseEntity == null ? Collections.emptyList() : responseEntity.getBody();
     }
 }
