@@ -351,7 +351,6 @@ const PiplelineTable = withRouter(observer((props) => {
           <Column name="isEnabled" renderer={renderStatus} />
           <Column name="action" renderer={renderAction} width={60} />
           <Column name="triggerType" renderer={renderTrigger} />
-          <Column name="name" />
           <Column name="createUserRealName" renderer={renderUser} />
           <Column name="lastUpdateDate" renderer={renderDate} />
         </Table>
