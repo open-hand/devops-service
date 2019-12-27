@@ -805,6 +805,13 @@ public class GitlabServiceClientOperator {
 
     }
 
+    /**
+     * 为一个已经是admin的gitlab用户再设置admin也不会报错且返回的是正常的false，
+     * 所以没有在对用户赋予admin权限前判断他是不是admin
+     *
+     * @param iamUserId    iamUserId
+     * @param gitlabUserId gitlabUserId
+     */
     public void assignAdmin(Long iamUserId, Integer gitlabUserId) {
         Boolean result;
         try {
