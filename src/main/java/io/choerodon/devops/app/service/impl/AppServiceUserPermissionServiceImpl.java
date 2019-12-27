@@ -74,4 +74,8 @@ public class AppServiceUserPermissionServiceImpl implements AppServiceUserPermis
         });
     }
 
+    @Override
+    public void batchDelete(List<Long> appServiceIds, Long userId) {
+        appServiceUserRelMapper.batchDelete(appServiceIds, userId);
+    }
 }

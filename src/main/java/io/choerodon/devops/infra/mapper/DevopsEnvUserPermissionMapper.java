@@ -25,4 +25,6 @@ public interface DevopsEnvUserPermissionMapper extends Mapper<DevopsEnvUserPermi
     List<DevopsEnvUserPermissionDTO> listAll(@Param("envId") Long envId);
 
     List<Long> listUserIdsByEnvId(@Param("envId") Long envId);
+
+    void batchDelete(@Param("envIds") List<Long> envIds, @Param("userId") Long userId);
 }

@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageInfo;
 import feign.FeignException;
 import feign.RetryableException;
+import io.choerodon.devops.api.vo.FileCreationVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -220,8 +221,13 @@ public class GitlabServiceClientOperator {
 
     public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
         try {
+            FileCreationVO fileCreationVO = new FileCreationVO();
+            fileCreationVO.setPath(path);
+            fileCreationVO.setContent(content);
+            fileCreationVO.setCommitMessage(commitMessage);
+            fileCreationVO.setUserId(userId);
             ResponseEntity<RepositoryFileDTO> result = gitlabServiceClient
-                    .createFile(projectId, path, content, commitMessage, userId);
+                    .createFile(projectId, fileCreationVO);
             if (result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.create");
             }
@@ -233,8 +239,14 @@ public class GitlabServiceClientOperator {
 
     public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId, String branch) {
         try {
+            FileCreationVO fileCreationVO = new FileCreationVO();
+            fileCreationVO.setPath(path);
+            fileCreationVO.setContent(content);
+            fileCreationVO.setCommitMessage(commitMessage);
+            fileCreationVO.setUserId(userId);
+            fileCreationVO.setBranchName(branch);
             ResponseEntity<RepositoryFileDTO> result = gitlabServiceClient
-                    .createFile(projectId, path, content, commitMessage, userId, branch);
+                    .createFile(projectId, fileCreationVO);
             if (result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.create");
             }
@@ -245,8 +257,13 @@ public class GitlabServiceClientOperator {
 
     public void updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
         try {
+            FileCreationVO fileCreationVO = new FileCreationVO();
+            fileCreationVO.setUserId(userId);
+            fileCreationVO.setPath(path);
+            fileCreationVO.setContent(content);
+            fileCreationVO.setCommitMessage(commitMessage);
             ResponseEntity<RepositoryFileDTO> result = gitlabServiceClient
-                    .updateFile(projectId, path, content, commitMessage, userId);
+                    .updateFile(projectId, fileCreationVO);
             if (result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.update");
             }
@@ -257,7 +274,11 @@ public class GitlabServiceClientOperator {
 
     public void deleteFile(Integer projectId, String path, String commitMessage, Integer userId) {
         try {
-            gitlabServiceClient.deleteFile(projectId, path, commitMessage, userId);
+            FileCreationVO fileCreationVO = new FileCreationVO();
+            fileCreationVO.setPath(path);
+            fileCreationVO.setCommitMessage(commitMessage);
+            fileCreationVO.setUserId(userId);
+            gitlabServiceClient.deleteFile(projectId, fileCreationVO);
         } catch (FeignException e) {
             throw new CommonException("error.file.delete", e);
         }

@@ -25,7 +25,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       match: { params: { id } },
       children,
     } = props;
-    const emptyDataSetConfig = { transport: { read: { method: 'get' } } };
+    const emptyDataSetConfig = { transport: { read: { method: 'get' } }, paging: false };
     const { appServiceStore, intlPrefix } = useAppTopStore();
     const shareVersionsDs = useMemo(() => new DataSet(emptyDataSetConfig), []);
     const shareLevelDs = useMemo(() => new DataSet(emptyDataSetConfig), []);

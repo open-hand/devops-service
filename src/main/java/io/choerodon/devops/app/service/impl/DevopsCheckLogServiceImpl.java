@@ -148,6 +148,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     //调接消息接口迁移数据
                     notifyTransferDataClient.checkLog("0.20.0", "devops");
                     LOGGER.info("修复数据完成");
+                } else if ("0.20.1".equals(version)) {
+                    syncHarborUser(logs);
                 } else if ("0.19.0".equals(version)) {
                     syncEnvAppRelevance(logs);
                     syncDeployRecord(logs);
@@ -626,6 +628,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
                         createHarborUser(projectDTO, devopsProjectDTO);
                     }
+                    devopsProjectService.baseUpdate(devopsProjectDTO);
                     checkLog.setResult("Success!");
                 } catch (Exception e) {
                     checkLog.setResult("Failed!Reason:" + e.getMessage());
@@ -650,6 +653,5 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         HarborPayload harborPayload = new HarborPayload();
         harborService.createHarborUserByClient(harborPayload, user, projectDTO, Arrays.asList(3));
-        devopsProjectService.baseUpdate(devopsProjectDTO);
     }
 }

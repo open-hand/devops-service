@@ -300,6 +300,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     if (effectCommandId != null) {
                         appServiceInstanceDTO.setEffectCommandId(effectCommandId);
                         logger.info("Found command by sha. command id: {}", effectCommandId);
+                    } else {
+                        logger.info("Command with object id {} and sha {} is not found", appServiceInstanceDTO.getId(), releasePayloadVO.getCommit());
                     }
                 }
 
@@ -309,9 +311,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         logger.warn("Unexpected empty value '{}' for command of release payload.", releasePayloadVO.getCommand());
                     } else {
                         logger.info("Getting command from payload. command: {}", releasePayloadVO.getCommand());
-                        appServiceInstanceDTO.setEffectCommandId(releasePayloadVO.getCommand());
+                        DevopsEnvCommandDTO effectCommand = devopsEnvCommandService.baseQuery(releasePayloadVO.getCommand());
+                        if (effectCommand != null && Objects.equals(effectCommand.getObjectId(), appServiceInstanceDTO.getId())) {
+                            appServiceInstanceDTO.setEffectCommandId(releasePayloadVO.getCommand());
+                            logger.info("Set the effect command from agent. The instance id is {} and the command id is {}", appServiceInstanceDTO.getId(), releasePayloadVO.getCommand());
+                        } else {
+                            logger.info("The effect command from agent is invalid for instance {}. It is {}", appServiceInstanceDTO.getId(),releasePayloadVO.getCommand());
+                        }
                     }
                 }
+
                 appServiceInstanceDTO.setStatus(InstanceStatus.RUNNING.getStatus());
                 appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
                 installResource(resources, appServiceInstanceDTO);
@@ -491,7 +500,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     break;
             }
         } catch (IOException e) {
-            logger.info(e.toString());
+            logger.info("Unexpected exception occurred when processing resourceUpdate. The exception is {}", e.toString());
         }
     }
 
@@ -573,36 +582,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         V1PersistentVolumeClaim pv = json.deserialize(msg, V1PersistentVolumeClaim.class);
         devopsPvcDTO.setStatus(pv.getStatus().getPhase());
         CustomContextUtil.executeRunnableInCertainContext(devopsPvcDTO.getLastUpdatedBy(), () -> devopsPvcMapper.updateByPrimaryKeySelective(devopsPvcDTO));
-
-        // TODO 0.20 发版前删除
-//        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-//        DevopsPrometheusDTO devopsPrometheusDTO = devopsClusterResourceService.baseQueryPrometheusDTO(devopsEnvironmentDTO.getClusterId());
-//        if (devopsPrometheusDTO != null) {
-//            Long prometheusPvId = devopsPrometheusDTO.getPrometheusPvId();
-//            Long grafanaPvId = devopsPrometheusDTO.getGrafanaPvId();
-//            Long alertmanagerPvId = devopsPrometheusDTO.getAlertmanagerPvId();
-//            Long pvId = devopsPvcDTO.getPvId();
-//            if (pvId.equals(prometheusPvId) || pvId.equals(grafanaPvId) || pvId.equals(alertmanagerPvId)) {
-//                List<DevopsPvcDTO> devopsPvcDTOS = new ArrayList<>();
-//                addBoundPVC(devopsPvcDTOS, prometheusPvId);
-//                addBoundPVC(devopsPvcDTOS, grafanaPvId);
-//                addBoundPVC(devopsPvcDTOS, alertmanagerPvId);
-//
-//                if (devopsPvcDTOS.size() == 3) {
-//                    logger.info("Start to install prometheus, clusterId : {} ", devopsEnvironmentDTO.getClusterId());
-//                    devopsPrometheusDTO.setDevopsPvcList(devopsPvcDTOS);
-//                    devopsClusterResourceService.installPrometheus(devopsEnvironmentDTO.getClusterId(), devopsPrometheusDTO);
-//                }
-//            }
-//        }
     }
-
-//    private void addBoundPVC(List<DevopsPvcDTO> devopsPvcDTOS, Long pvId) {
-//        DevopsPvcDTO devopsPvc = devopsPvcService.queryByPvId(pvId);
-//        if (PvcStatus.BOUND.getStatus().equals(devopsPvc.getStatus())) {
-//            devopsPvcDTOS.add(devopsPvc);
-//        }
-//    }
 
     private void handleUpdateServiceMsg(String key, Long envId, String msg, DevopsEnvResourceDTO devopsEnvResourceDTO) {
         AppServiceInstanceDTO appServiceInstanceDTO;
@@ -813,7 +793,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Override
     public void helmReleaseRollBackFail(String key, String msg) {
-        logger.info(key);
+        logger.info("Helm release rollback failed. The key is {}, and the msg is {}", key, msg);
     }
 
     @Override
@@ -1023,12 +1003,21 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     private void syncPersistentVolume(Long envId, List<DevopsEnvFileErrorDTO> envFileErrorFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
+        // 外层已经判断了环境id一定是从数据库中查出来的，所以不可能为空，不考虑处理的同时用户删除环境的情况
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+
         DevopsPvDTO devopsPvDTO = devopsPvService.queryByEnvIdAndName(envId, objects[1]);
         if (devopsPvDTO == null) {
-            // 目前用户环境是支持PVC而不支持PV，如果PV在非系统环境创建，应该被视为自定义资源
-            syncCustom(envId, envFileErrorFiles, resourceCommitVO, objects);
+            if (devopsEnvironmentDTO != null
+                    && EnvironmentType.USER.getValue().equals(devopsEnvironmentDTO.getType())) {
+                // 目前用户环境是支持PVC而不支持PV，如果PV在非系统环境创建，应该被视为自定义资源
+                syncCustom(envId, envFileErrorFiles, resourceCommitVO, objects);
+            } else {
+                logger.warn("The devopsPvDTO is null with envId: {} and name: {}.", envId, objects[1]);
+            }
             return;
         }
+
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(envId, devopsPvDTO.getId(), ObjectType.PERSISTENTVOLUME.getType());
         if (updateEnvCommandStatus(resourceCommitVO,
@@ -1046,6 +1035,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     private void syncPersistentVolumeClaim(Long envId, List<DevopsEnvFileErrorDTO> envFileErrorFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
         DevopsPvcDTO devopsPvcDTO = devopsPvcService.queryByEnvIdAndName(envId, objects[1]);
+
+        // 兼容0.20版本之前的作为自定义资源的PVC
         if (devopsPvcDTO == null) {
             try {
                 if (devopsCustomizeResourceService.queryByEnvIdAndKindAndName(envId, ResourceType.PERSISTENT_VOLUME_CLAIM.getType(), objects[1]) != null) {
@@ -1055,7 +1046,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 logger.info("Exception occurred when process resource {} as custom", objects[1]);
                 logger.info("The exception is {}", e);
             }
+            return;
         }
+
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(envId, devopsPvcDTO.getId(), ObjectType.PERSISTENTVOLUMECLAIM.getType());
         if (updateEnvCommandStatus(resourceCommitVO,
@@ -1347,7 +1340,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 }
             }
         } catch (Exception e) {
-            logger.info(e.getMessage());
+            logger.info("Exception occurred when processing installResource. It is: ", e);
+            logger.info("And the resources is : {}", resources);
         }
     }
 
@@ -1372,9 +1366,20 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private void insertDevopsCommandEvent(Event event, String type) {
         DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService
                 .baseQueryByKindAndName(event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
+
+        if (devopsEnvResourceDTO == null) {
+            // TODO 0.21版本修复Agent没有过滤非平台的Pod和Job的问题
+            // logger.warn("DevopsEnvResourceDTO is null with involved object kind {} and involved object name {}", event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
+            return;
+        }
+
         try {
             DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
                     .baseQueryByObject(ObjectType.INSTANCE.getType(), devopsEnvResourceDTO.getInstanceId());
+            if (devopsEnvCommandDTO == null) {
+                logger.info("InsertCommandEvent: EnvCommand with instance type and instance id: {} is not found.", devopsEnvResourceDTO.getInstanceId());
+                return;
+            }
             // 删除实例事件记录
             devopsCommandEventService.baseDeletePreInstanceCommandEvent(devopsEnvCommandDTO.getObjectId());
             DevopsCommandEventDTO devopsCommandEventDTO = new DevopsCommandEventDTO();
@@ -1385,7 +1390,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             devopsCommandEventDTO.setType(type);
             devopsCommandEventService.baseCreate(devopsCommandEventDTO);
         } catch (Exception e) {
-            logger.info(e.getMessage());
+            logger.info("Exception occurred when calling insertDevopsCommandEvent(), it is: {}", e);
         }
     }
 
@@ -1426,7 +1431,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             return;
         }
 
-        logger.info("sync command status!");
+        logger.debug("sync command status!");
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         List<Command> commands = getCommandsToSync(envId);
 
@@ -1462,7 +1467,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             return;
         }
 
-        logger.info("sync command status result: {}.", msg);
+        logger.debug("sync command status result: {}.", msg);
 
         Map<Long, Command> syncCommandMap = JSONArray.parseArray(msg, Command.class)
                 .stream()
@@ -1553,7 +1558,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             newDevopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
             devopsEnvCommandService.baseUpdate(newDevopsEnvCommandDTO);
         } catch (Exception e) {
-            logger.info(e.getMessage());
+            logger.info("Exception occurred when calling handlerServiceCreateMessage(). It is: {}", e);
         }
     }
 

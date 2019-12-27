@@ -98,7 +98,7 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     const oldStatus = getEnvStatus(status);
     return new Promise((resolve) => {
       mainStore.checkStatus(projectId, envId).then((res) => {
-        if (handlePromptError(res)) {
+        if (res && res.id) {
           const newStatus = getEnvStatus(res);
           resolve(newStatus === oldStatus);
         }

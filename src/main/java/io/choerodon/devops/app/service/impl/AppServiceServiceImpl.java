@@ -229,10 +229,10 @@ public class AppServiceServiceImpl implements AppServiceService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
-                        .withRefType("")
+                        .withRefType("app-service")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE)
                         .withPayloadAndSerialize(devOpsAppServicePayload)
-                        .withRefId("")
+                        .withRefId(String.valueOf(appServiceDTO.getId()))
                         .withSourceId(projectId),
                 builder -> {
                 });
@@ -2062,6 +2062,14 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
+    public List<AppServiceDTO> baseListByProjectIdWithNoSkipCheck(Long projectId) {
+        AppServiceDTO appServiceDTO = new AppServiceDTO();
+        appServiceDTO.setProjectId(Objects.requireNonNull(projectId));
+        appServiceDTO.setSkipCheckPermission(false);
+        return appServiceMapper.select(appServiceDTO);
+    }
+
+    @Override
     public List<AppServiceDTO> baseListByProjectId(Long projectId) {
         AppServiceDTO appServiceDTO = new AppServiceDTO();
         appServiceDTO.setProjectId(projectId);
@@ -2268,7 +2276,6 @@ public class AppServiceServiceImpl implements AppServiceService {
                         );
                 list.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, serviceType, params));
                 Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()
-                        .filter(v -> !projectId.equals(v.getProjectId()))
                         .map(this::dtoToGroupInfoVO)
                         .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getProjectId));
 

@@ -242,8 +242,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                         .withLevel(ResourceLevel.PROJECT)
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_ENV)
                         .withPayloadAndSerialize(gitlabProjectPayload)
-                        .withRefId("")
-                        .withRefType("")
+                        .withRefId(String.valueOf(devopsEnvironmentDTO.getId()))
+                        .withRefType("env")
                         .withSourceId(projectId),
                 builder -> {
                 }

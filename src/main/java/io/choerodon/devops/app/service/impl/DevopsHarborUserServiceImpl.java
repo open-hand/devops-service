@@ -26,6 +26,7 @@ public class DevopsHarborUserServiceImpl implements DevopsHarborUserService {
                 throw new CommonException("error.insert.harbor.user");
             }
         } else {
+            harborUser.setId(oldHarborUserDTO.getId());
             harborUser.setObjectVersionNumber(oldHarborUserDTO.getObjectVersionNumber());
             if (harborUserMapper.updateByPrimaryKeySelective(harborUser) != 1) {
                 throw new CommonException("error.update.harbor.user");

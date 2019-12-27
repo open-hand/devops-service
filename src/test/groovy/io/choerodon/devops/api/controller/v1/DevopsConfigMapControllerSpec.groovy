@@ -5,6 +5,7 @@ import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsConfigMapRespVO
 import io.choerodon.devops.api.vo.DevopsConfigMapVO
+import io.choerodon.devops.api.vo.FileCreationVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
 import io.choerodon.devops.app.service.GitlabGroupMemberService
@@ -120,9 +121,19 @@ class DevopsConfigMapControllerSpec extends Specification {
         RepositoryFileDTO file = new RepositoryFileDTO()
         file.setFilePath("filePath")
         ResponseEntity<RepositoryFileDTO> responseEntity2 = new ResponseEntity<>(file, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.createFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity2)
 
-        Mockito.when(gitlabServiceClient.updateFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity2)
+
+        FileCreationVO fileCreationVO = new FileCreationVO()
+        fileCreationVO.setBranchName(anyString())
+        fileCreationVO.setCommitMessage(anyString())
+        fileCreationVO.setContent(anyString())
+        fileCreationVO.setUserId(anyInt())
+        fileCreationVO.setProjectId(anyInt())
+        fileCreationVO.setPath(anyString())
+
+        Mockito.when(gitlabServiceClient.createFile(anyInt(), fileCreationVO)).thenReturn(responseEntity2)
+
+        Mockito.when(gitlabServiceClient.updateFile(anyInt(), fileCreationVO)).thenReturn(responseEntity2)
     }
 
     def cleanup() {

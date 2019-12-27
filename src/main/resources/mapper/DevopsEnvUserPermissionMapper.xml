@@ -65,4 +65,13 @@
             </foreach>
         </if>
     </sql>
+
+    <delete id="batchDelete">
+        DELETE FROM devops_env_user_permission
+        WHERE env_id IN
+        <foreach collection="envIds" item="envId" open="(" separator=" , " close=")">
+            #{envId}
+        </foreach>
+        AND iam_user_id = #{userId}
+    </delete>
 </mapper>

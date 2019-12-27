@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsMergeRequestVO;
 import io.choerodon.devops.app.service.DevopsMergeRequestService;
 import io.choerodon.devops.app.service.SendNotificationService;
@@ -47,11 +48,18 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
 
     @Override
     public PageInfo<DevopsMergeRequestDTO> basePageByOptions(Integer gitlabProjectId, String state, Pageable pageable) {
-        DevopsMergeRequestDTO devopsMergeRequestDTO = new DevopsMergeRequestDTO();
-        devopsMergeRequestDTO.setGitlabProjectId(gitlabProjectId.longValue());
-        devopsMergeRequestDTO.setState(state);
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
-                devopsMergeRequestMapper.select(devopsMergeRequestDTO));
+        // 如果传入的state字段是这个值，表明的是查询待这个用户审核的MergeRequest
+        if ("assignee".equals(state)) {
+            return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
+                    devopsMergeRequestMapper.listToBeAuditedByThisUser(gitlabProjectId, DetailsHelper.getUserDetails() == null ? 0L : DetailsHelper.getUserDetails().getUserId()));
+        } else {
+            // 否则的话按照state字段查询
+            DevopsMergeRequestDTO devopsMergeRequestDTO = new DevopsMergeRequestDTO();
+            devopsMergeRequestDTO.setGitlabProjectId(gitlabProjectId.longValue());
+            devopsMergeRequestDTO.setState(state);
+            return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
+                    devopsMergeRequestMapper.select(devopsMergeRequestDTO));
+        }
     }
 
     @Override
@@ -107,7 +115,7 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
 
     @Override
     public DevopsMergeRequestDTO baseCountMergeRequest(Integer gitlabProjectId) {
-        return devopsMergeRequestMapper.countMergeRequest(gitlabProjectId);
+        return devopsMergeRequestMapper.countMergeRequest(gitlabProjectId, DetailsHelper.getUserDetails() == null ? 0L : DetailsHelper.getUserDetails().getUserId());
     }
 
     private DevopsMergeRequestDTO voToDto(DevopsMergeRequestVO devopsMergeRequestVO) {

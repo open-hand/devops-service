@@ -738,7 +738,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         baseUpdate(appServiceInstanceDTO);
 
         // 插入应用服务和环境的关联关系
-        createEnvAppRelationShipIfNon(appServiceInstanceDTO.getId(), devopsEnvironmentDTO.getId());
+        if (appServiceInstanceDTO.getAppServiceId() != null) {
+            createEnvAppRelationShipIfNon(appServiceInstanceDTO.getAppServiceId(), devopsEnvironmentDTO.getId());
+        }
 
         //插入部署记录
         DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), MANUAL, devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());

@@ -22,6 +22,7 @@ export default function useStore() {
       mergeCount: 0,
       openCount: 0,
       totalCount: 0,
+      auditCount: 0,
     },
     setCount(data) {
       this.count = data;
@@ -29,7 +30,6 @@ export default function useStore() {
     get getCount() {
       return this.count;
     },
-
 
     tabKey: 'opened',
     setTabKey(key) {

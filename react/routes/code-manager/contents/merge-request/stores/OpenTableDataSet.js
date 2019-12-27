@@ -1,4 +1,5 @@
 import React from 'react';
+
 import Tips from '../../../../../components/Tips';
 
 export default ((projectId, formatMessage, mergedRequestStore, appId, tabKey) => {
@@ -9,19 +10,29 @@ export default ((projectId, formatMessage, mergedRequestStore, appId, tabKey) =>
   return {
     selection: null,
     autoQuery: false,
-    paging: false,
+    paging: true,
     transport: {
       read: {
         method: 'get',
-        transformResponse: (data) => {
-          const { closeCount, mergeCount, openCount, totalCount, mergeRequestVOPageInfo } = JSON.parse(data);
-          changeCount({
-            closeCount,
-            mergeCount,
-            openCount,
-            totalCount,
-          });
-          return mergeRequestVOPageInfo.list;
+        transformResponse: (response) => {
+          try {
+            const data = JSON.parse(response);
+            if (data && data.failed) {
+              return data;
+            } else {
+              const { closeCount, mergeCount, openCount, totalCount, auditCount, mergeRequestVOPageInfo } = data;
+              changeCount({
+                closeCount,
+                mergeCount,
+                openCount,
+                totalCount,
+                auditCount,
+              });
+              return mergeRequestVOPageInfo;
+            }
+          } catch (e) {
+            return response;
+          }
         },
       },
     },

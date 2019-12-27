@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
+import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -51,9 +54,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
 import io.choerodon.devops.infra.util.*;
-
-import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
-import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
 
 /**
  * Creator: Runge
@@ -407,6 +407,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         mergeRequestTotalVO.setCloseCount(devopsMergeRequestDTO.getClosed());
         mergeRequestTotalVO.setMergeCount(devopsMergeRequestDTO.getMerged());
         mergeRequestTotalVO.setOpenCount(devopsMergeRequestDTO.getOpened());
+        mergeRequestTotalVO.setAuditCount(devopsMergeRequestDTO.getAuditCount());
 
         return mergeRequestTotalVO;
     }

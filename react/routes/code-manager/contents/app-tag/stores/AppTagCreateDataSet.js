@@ -1,16 +1,20 @@
-import _ from 'lodash';
-
 export default (formatMessage, projectId, appServiceId, AppTagStore) => {
-  const checkTagName = (value, name, revord) => {
+  const checkTagName = async (value, name, revord) => {
     const pa = /^\d+(\.\d+){2}$/;
     const SemanticVersion = /^\d+(\.\d+){2}-[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*$/;
     if (value && (pa.test(value) || SemanticVersion.test(value))) {
-      AppTagStore.checkTagName(projectId, value, appServiceId)
-        .then((data) => {
-          if (!data) {
-            return formatMessage({ id: 'apptag.checkName' });
-          }
-        });
+      try {
+        const res = await AppTagStore.checkTagName(projectId, value, appServiceId);
+        if (res && res.failed) {
+          return formatMessage({ id: 'checkCodeFailed' });
+        } else if (!res) {
+          return formatMessage({ id: 'apptag.checkName' });
+        } else {
+          return true;
+        }
+      } catch (err) {
+        return formatMessage({ id: 'checkNameFailed' });
+      }
     } else {
       return formatMessage({ id: 'apptag.checkNameReg' });
     }

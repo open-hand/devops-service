@@ -56,4 +56,16 @@ public class Resource {
     public void setObject(String object) {
         this.object = object;
     }
+
+    @Override
+    public String toString() {
+        return "Resource{" +
+                "kind='" + kind + '\'' +
+                ", resourceVersion='" + resourceVersion + '\'' +
+                ", name='" + name + '\'' +
+                ", version='" + version + '\'' +
+                ", group='" + group + '\'' +
+                ", object='" + object + '\'' +
+                '}';
+    }
 }

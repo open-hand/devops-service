@@ -6,6 +6,7 @@ import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
 import java.util.List;
 
 import feign.FeignException;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,7 +96,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         }
         ownerIds.forEach(id -> {
                     UserAttrDTO ownerAttrDTO = userAttrService.baseQueryById(id);
-                    MemberDTO memberDTO = new MemberDTO(ownerAttrDTO.getGitlabUserId().intValue(), AccessLevel.MASTER.value, "");
+                    MemberDTO memberDTO = new MemberDTO(ownerAttrDTO.getGitlabUserId().intValue(), AccessLevel.OWNER.value, "");
                     MemberDTO groupMember = gitlabServiceClientOperator.queryGroupMember(devopsProjectDTO.getDevopsClusterEnvGroupId().intValue(), memberDTO.getId());
                     if (groupMember == null) {
                         gitlabServiceClientOperator.createGroupMember(devopsProjectDTO.getDevopsClusterEnvGroupId().intValue(), memberDTO);
@@ -120,11 +121,12 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         if (userAttrDTO == null) {
             throw new CommonException("error.gitlab.user.sync.failed");
         }
-        GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        LOGGER.info("groupPath:{},adminId:{}", group.getPath(), GitUserNameUtil.getAdminId());
+        GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), TypeUtil.objToInteger(GitUserNameUtil.getAdminId()));
         if (groupDTO == null) {
             groupDTO = gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
-
+        LOGGER.info("groupDTO:{}", groupDTO);
 
         DevopsProjectDTO devopsProjectDO = new DevopsProjectDTO(gitlabGroupPayload.getProjectId());
         setCertainGroupIdBySuffix(suffix, TypeUtil.objToLong(groupDTO.getId()), devopsProjectDO);
@@ -153,6 +155,13 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(gitlabGroupPayload.getProjectId());
 
         Integer groupId = getCertainGroupIdBySuffix(suffix, devopsProjectDTO);
+
+        if (groupId == null) {
+            if (suffix.equals(CLUSTER_ENV_GROUP_SUFFIX)) {
+                return;
+            }
+            throw new CommonException("error.group.id.get");
+        }
 
         try {
             gitlabServiceClientOperator.updateGroup(groupId, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), group);

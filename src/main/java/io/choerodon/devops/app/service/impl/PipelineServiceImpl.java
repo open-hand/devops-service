@@ -209,17 +209,17 @@ public class PipelineServiceImpl implements PipelineService {
             t.setStatus(WorkFlowStatus.DELETED.toValue());
             pipelineRecordService.baseUpdate(t);
         });
-        userRelationshipService.baseListByOptions(pipelineId, null, null).forEach(t -> userRelationshipService.baseDelete(t));
+        userRelationshipService.baseListByOptions(pipelineId, null, null).stream().filter(Objects::nonNull).forEach(t -> userRelationshipService.baseDelete(t));
         pipelineStageService.baseListByPipelineId(pipelineId).forEach(stage -> {
             pipelineTaskService.baseQueryTaskByStageId(stage.getId()).forEach(task -> {
                 if (task.getAppServiceDeployId() != null) {
                     pipelineAppDeployService.baseDeleteById(task.getAppServiceDeployId());
                 }
                 pipelineTaskService.baseDeleteTaskById(task.getId());
-                userRelationshipService.baseListByOptions(null, null, task.getId()).forEach(t -> userRelationshipService.baseDelete(t));
+                userRelationshipService.baseListByOptions(null, null, task.getId()).stream().filter(Objects::nonNull).forEach(t -> userRelationshipService.baseDelete(t));
             });
             pipelineStageService.baseDelete(stage.getId());
-            userRelationshipService.baseListByOptions(null, stage.getId(), null).forEach(t -> userRelationshipService.baseDelete(t));
+            userRelationshipService.baseListByOptions(null, stage.getId(), null).stream().filter(Objects::nonNull).forEach(t -> userRelationshipService.baseDelete(t));
         });
         baseDelete(pipelineId);
     }
@@ -817,9 +817,9 @@ public class PipelineServiceImpl implements PipelineService {
     public void sendSiteMessage(Long pipelineRecordId, String type, List<NoticeSendDTO.User> users, Map<String, Object> params) {
         NotifyVO notifyVO = new NotifyVO();
         notifyVO.setTargetUsers(users);
-        notifyVO.setSourceId(pipelineRecordId);
         notifyVO.setCode(type);
         PipelineRecordDTO record = pipelineRecordService.baseQueryById(pipelineRecordId);
+        notifyVO.setSourceId(record.getProjectId());
         params.put("pipelineId", record.getPipelineId().toString());
         params.put("pipelineName", record.getPipelineName());
         params.put("pipelineRecordId", pipelineRecordId.toString());
