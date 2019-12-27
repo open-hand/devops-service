@@ -152,7 +152,7 @@ const RequestPanel = withRouter(observer((props) => {
   }
 
   function renderAssignee({ value }) {
-    value ? (
+    return value ? (
       <UserInfo name={value.name || ''} id={value.username} avatar={value.avatarUrl} />
     ) : formatMessage({ id: 'merge.noAssignee' });
   }
@@ -161,11 +161,11 @@ const RequestPanel = withRouter(observer((props) => {
     return (
       <Table dataSet={openTableDS} queryBar="none">
         <Column name="title" renderer={renderTitle} />
-        <Column name="iid" renderer={renderIid} width={100} align="left" />
+        <Column name="iid" renderer={renderIid} width={80} align="left" />
         <Column name="targetBranch" renderer={renderTargetBranch} />
         <Column name="createdAt" renderer={renderCreatedAt} />
         <Column name="commits" renderer={renderCommit} />
-        <Column name="updatedAt" renderer={renderUpdateDate} />
+        <Column name="updatedAt" renderer={renderUpdateDate} width={100} />
       </Table>
     );
   }
@@ -185,11 +185,11 @@ const RequestPanel = withRouter(observer((props) => {
             <TabPane tab={`${formatMessage({ id: 'merge.tab1' })}(${openCount || 0})`} key="opened">
               <Table dataSet={openTableDS} queryBar="none">
                 <Column name="title" renderer={renderTitle} />
-                <Column name="iid" renderer={renderIid} width={100} align="left" />
+                <Column name="iid" renderer={renderIid} width={80} align="left" />
                 <Column name="targetBranch" renderer={renderTargetBranch} />
                 <Column name="createdAt" renderer={renderCreatedAt} />
                 <Column name="commits" renderer={renderCommit} />
-                <Column name="updatedAt" renderer={renderUpdateDate} />
+                <Column name="updatedAt" renderer={renderUpdateDate} width={100} />
                 <Column name="assignee" renderer={renderAssignee} />
               </Table>
             </TabPane>
@@ -202,23 +202,23 @@ const RequestPanel = withRouter(observer((props) => {
             <TabPane tab={`${formatMessage({ id: 'merge.tab4' })}(${totalCount || 0})`} key="all">
               <Table dataSet={openTableDS} queryBar="none">
                 <Column name="title" renderer={renderTitle} />
-                <Column name="iid" renderer={renderIid} align="left" width={100} />
+                <Column name="iid" renderer={renderIid} align="left" width={80} />
                 <Column name="targetBranch" renderer={renderTargetBranch} />
-                <Column name="state" />
+                <Column name="state" width={90} />
                 <Column name="createdAt" renderer={renderCreatedAt} />
                 <Column name="commits" renderer={renderCommit} />
-                <Column name="updatedAt" renderer={renderUpdateDate} />
+                <Column name="updatedAt" renderer={renderUpdateDate} width={100} />
               </Table>
             </TabPane>
             {
               auditCount > 0 ? <TabPane tab={`${formatMessage({ id: 'merge.tab5' })}(${auditCount || 0})`} key="assignee">
-                <Table dataSet={openTableDS} queryBar="none" pagination={false}>
+                <Table dataSet={openTableDS} queryBar="none">
                   <Column name="title" renderer={renderTitle} />
-                  <Column name="iid" renderer={renderIid} width={100} align="left" />
+                  <Column name="iid" renderer={renderIid} width={80} align="left" />
                   <Column name="targetBranch" renderer={renderTargetBranch} />
                   <Column name="createdAt" renderer={renderCreatedAt} />
                   <Column name="commits" renderer={renderCommit} />
-                  <Column name="updatedAt" renderer={renderUpdateDate} />
+                  <Column name="updatedAt" renderer={renderUpdateDate} width={100} />
                   <Column name="assignee" renderer={renderAssignee} />
                 </Table>
               </TabPane> : null

@@ -43,7 +43,6 @@ const StoreProvider = injectIntl(inject('AppState')(observer(((props) => {
       url = `/devops/v1/projects/${projectId}/app_service/${appId}/git/list_merge_request`;
     }
     if (appId) { openTableDS.transport.read.url = url; }
-    openTableDS.paging = tabKey !== 'opened';
   }, [appId, tabKey, projectId]);
 
   useEffect(() => {

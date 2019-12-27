@@ -10,7 +10,7 @@ export default ((projectId, formatMessage, mergedRequestStore, appId, tabKey) =>
   return {
     selection: null,
     autoQuery: false,
-    paging: false,
+    paging: true,
     transport: {
       read: {
         method: 'get',
