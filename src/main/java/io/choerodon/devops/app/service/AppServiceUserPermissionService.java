@@ -21,4 +21,6 @@ public interface AppServiceUserPermissionService {
     List<AppServiceUserRelDTO> baseListByUserId(Long userId);
 
     void baseUpdate(Long appServiceId, List<Long> addUserIds, List<Long> deleteUserIds);
+
+    void batchDelete(List<Long> appServiceIds, Long userId);
 }

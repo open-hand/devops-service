@@ -1,8 +1,6 @@
 import React from 'react';
-import _ from 'lodash';
 
 import Tips from '../../../../../components/Tips';
-import { handlePromptError } from '../../../../../utils';
 
 export default ((projectId, formatMessage, mergedRequestStore, appId, tabKey) => {
   function changeCount(count) {
@@ -12,20 +10,29 @@ export default ((projectId, formatMessage, mergedRequestStore, appId, tabKey) =>
   return {
     selection: null,
     autoQuery: false,
-    paging: false,
+    paging: true,
     transport: {
       read: {
         method: 'get',
-        transformResponse: (data) => {
-          const { closeCount, mergeCount, openCount, totalCount, auditCount, mergeRequestVOPageInfo } = JSON.parse(data);
-          changeCount({
-            closeCount,
-            mergeCount,
-            openCount,
-            totalCount,
-            auditCount,
-          });
-          return mergeRequestVOPageInfo.list;
+        transformResponse: (response) => {
+          try {
+            const data = JSON.parse(response);
+            if (data && data.failed) {
+              return data;
+            } else {
+              const { closeCount, mergeCount, openCount, totalCount, auditCount, mergeRequestVOPageInfo } = data;
+              changeCount({
+                closeCount,
+                mergeCount,
+                openCount,
+                totalCount,
+                auditCount,
+              });
+              return mergeRequestVOPageInfo;
+            }
+          } catch (e) {
+            return response;
+          }
         },
       },
     },

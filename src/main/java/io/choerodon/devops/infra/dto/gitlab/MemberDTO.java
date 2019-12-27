@@ -47,13 +47,4 @@ public class MemberDTO {
     public void setExpiresAt(String expiresAt) {
         this.expiresAt = expiresAt;
     }
-
-    @Override
-    public String toString() {
-        return "MemberDTO{" +
-                "id=" + id +
-                ", accessLevel=" + accessLevel +
-                ", expiresAt='" + expiresAt + '\'' +
-                '}';
-    }
 }

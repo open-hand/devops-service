@@ -395,6 +395,8 @@ public interface AppServiceService {
 
     List<AppServiceDTO> baseListByProjectIdAndSkipCheck(Long projectId);
 
+    List<AppServiceDTO> baseListByProjectIdWithNoSkipCheck(Long projectId);
+
     List<AppServiceDTO> baseListByProjectId(Long projectId);
 
     void baseUpdateHarborConfig(Long projectId, Long newConfigId, Long oldConfigId, boolean harborPrivate);

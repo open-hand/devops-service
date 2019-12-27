@@ -24,4 +24,13 @@
             </otherwise>
         </choose>
     </delete>
+
+    <delete id="batchDelete">
+        DELETE FROM devops_app_service_user_rel
+        WHERE app_service_id IN
+        <foreach collection="appServiceIds" item="appServiceId" open="(" separator=" , " close=")">
+            #{appServiceId}
+        </foreach>
+        AND iam_user_id = #{userId}
+    </delete>
 </mapper>

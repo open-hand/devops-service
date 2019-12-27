@@ -18,4 +18,6 @@ public interface AppServiceUserRelMapper extends Mapper<AppServiceUserRelDTO> {
     List<AppServiceUserRelDTO> listAllUserPermissionByAppId(@Param("appServiceId") Long appServiceId);
 
     void deleteByUserIdWithAppIds(@Param("appServiceIds") List<Long> appServiceIds, @Param("userId") Long userId);
+
+    void batchDelete(@Param("appServiceIds") List<Long> appServiceIds, @Param("userId") Long userId);
 }
