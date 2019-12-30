@@ -116,6 +116,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Autowired
     private DevopsCustomizeResourceService devopsCustomizeResourceService;
     @Autowired
+    private PermissionHelper permissionHelper;
+    @Autowired
     private MessageSource messageSource;
 
     @Autowired
@@ -297,7 +299,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (userAttrDTO == null) {
             throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
         }
-        if (!baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectId)) {
+        if (!permissionHelper.isProjectOwnerOrRoot(projectId)) {
             MemberDTO memberDTO = gitlabServiceClientOperator.getProjectMember(applicationDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (memberDTO == null) {
                 throw new CommonException("error.user.not.in.gitlab.project");
@@ -787,7 +789,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
                 // 之前都是对数据进行校验的阶段
                 String type = jsonObject.get("kind").toString();
-
 
                 // 处理当前资源的处理逻辑
                 ConvertK8sObjectService currentHandler;

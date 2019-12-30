@@ -19,6 +19,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -41,6 +42,8 @@ public class GitlabServiceClientOperator {
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private GitUtil gitUtil;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
 
     public GitLabUserDTO createUser(String password, Integer projectsLimit, GitlabUserReqDTO userReqDTO) {
@@ -500,7 +503,6 @@ public class GitlabServiceClientOperator {
             responseEntity = gitlabServiceClient.listBranch(projectId, userId);
         } catch (FeignException e) {
             throw new CommonException("error.branch.get", e);
-
         }
         List<BranchDTO> branches = responseEntity.getBody();
         branches.forEach(t -> t.getCommit().setUrl(
@@ -510,8 +512,7 @@ public class GitlabServiceClientOperator {
 
 
     public PageInfo<TagDTO> pageTag(ProjectDTO projectDTO, Integer gitlabProjectId, String path, Integer page, String params, Integer size, Integer userId) {
-
-        if (!baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO.getId())) {
+        if (!permissionHelper.isProjectOwnerOrRoot(projectDTO.getId())) {
             MemberDTO memberDTO = getProjectMember(
                     gitlabProjectId,
                     userId);
