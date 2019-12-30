@@ -46,6 +46,7 @@ import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.sonar.*;
@@ -182,6 +183,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     @Lazy
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE,
@@ -486,13 +489,13 @@ public class AppServiceServiceImpl implements AppServiceService {
     public PageInfo<AppServiceRepVO> pageCodeRepository(Long projectId, Pageable pageable, String params) {
         UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Boolean isProjectOwner = baseServiceClientOperator.isProjectOwner(userAttrDTO.getIamUserId(), projectDTO.getId());
+        Boolean isProjectOwnerOrRoot = permissionHelper.isProjectOwnerOrRoot(projectId, userAttrDTO);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         Map maps = gson.fromJson(params, Map.class);
         PageInfo<AppServiceDTO> applicationServiceDTOPageInfo = PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> appServiceMapper.listCodeRepository(projectId,
                 TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                TypeUtil.cast(maps.get(TypeUtil.PARAMS)), isProjectOwner, userAttrDTO.getIamUserId()));
+                TypeUtil.cast(maps.get(TypeUtil.PARAMS)), isProjectOwnerOrRoot, userAttrDTO.getIamUserId()));
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
 
         initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOPageInfo.getList(), urlSlash);
@@ -502,9 +505,9 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public List<AppServiceRepVO> listByActive(Long projectId) {
-        Long userId = TypeUtil.objToLong(GitUserNameUtil.getUserId());
+        Long userId = DetailsHelper.getUserDetails().getUserId();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, projectDTO.getId());
+        boolean projectOwner = permissionHelper.isProjectOwnerOrRoot(projectId, userId);
         List<AppServiceDTO> applicationDTOServiceList;
         if (projectOwner) {
             applicationDTOServiceList = appServiceMapper.listByActive(projectId);
@@ -521,10 +524,10 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public Integer countByActive(Long projectId) {
-        Long userId = TypeUtil.objToLong(GitUserNameUtil.getUserId());
-        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, projectId);
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        boolean projectOwnerOrRoot = permissionHelper.isProjectOwnerOrRoot(projectId, userId);
         int count;
-        if (projectOwner) {
+        if (projectOwnerOrRoot) {
             count = appServiceMapper.countByActive(projectId);
         } else {
             count = appServiceMapper.countProjectMembersAppServiceByActive(projectId, userId);
@@ -1933,11 +1936,10 @@ public class AppServiceServiceImpl implements AppServiceService {
             appMarket, String type, Boolean doPage, Pageable pageable, String params) {
 
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
-        Long userId = GitUserNameUtil.getUserId().longValue();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, projectDTO.getId());
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        boolean projectOwnerOrRoot = permissionHelper.isProjectOwnerOrRoot(projectId, userId);
         List<AppServiceDTO> list;
-        if (projectOwner) {
+        if (projectOwnerOrRoot) {
             //是否需要分页
             if (doPage == null || doPage) {
                 return PageHelper

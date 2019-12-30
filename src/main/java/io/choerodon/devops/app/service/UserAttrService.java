@@ -45,4 +45,12 @@ public interface UserAttrService {
     void baseUpdate(UserAttrDTO userAttrDTO);
 
     UserAttrDTO baseQueryByGitlabUserName(String gitlabUserName);
+
+    /**
+     * 更改用户 is_gitlab_admin字段的值
+     *
+     * @param iamUserId     iam用户id
+     * @param isGitlabAdmin 是否是gitlab管理员
+     */
+    void updateAdmin(Long iamUserId, Boolean isGitlabAdmin);
 }

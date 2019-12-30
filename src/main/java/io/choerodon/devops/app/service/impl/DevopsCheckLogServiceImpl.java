@@ -197,6 +197,13 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             }
 
             rootUsers.forEach(user -> {
+                // 跳过停用的用户
+                if (!Boolean.TRUE.equals(user.getEnabled())) {
+                    LOGGER.info("Skip disabled user with id {} and name {}.", user.getId(), user.getRealName());
+                    return;
+                }
+
+                // 跳过创建时同步失败的用户
                 UserAttrDTO userAttrDTO = userAttrService.baseQueryById(user.getId());
                 if (userAttrDTO == null || userAttrDTO.getGitlabUserId() == null) {
                     LOGGER.warn("User with iamUserId {} is not created successfully, therefore not sync", user.getId());
@@ -204,6 +211,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 }
 
                 gitlabServiceClientOperator.assignAdmin(userAttrDTO.getIamUserId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                userAttrService.updateAdmin(user.getId(), Boolean.TRUE);
+                LOGGER.info("Successfully sync the user with id {} and name {} to the gitlab as an admin.", user.getId(), user.getRealName());
             });
 
             LOGGER.info("Finish syncing root users to gitlab");
