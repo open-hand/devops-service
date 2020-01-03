@@ -34,8 +34,6 @@ grafana:
       matchLabels:
         choerodon.io/name: {{grafana-pv}}
   grafana.ini:
-    server:
-      root_url: {{host}}
     auth.generic_oauth:
       auth_url: {{api-host}}/oauth/oauth/authorize
       token_url: {{api-host}}/oauth/oauth/token
