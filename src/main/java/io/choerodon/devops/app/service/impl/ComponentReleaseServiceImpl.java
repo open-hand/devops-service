@@ -41,7 +41,7 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ComponentReleaseServiceImpl.class);
 
-    @Value("servicesGatewayUrl")
+    @Value("${servicesGatewayUrl}")
     private String apiHost;
 
     @Autowired
