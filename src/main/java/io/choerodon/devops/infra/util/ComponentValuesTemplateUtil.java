@@ -15,12 +15,12 @@ public class ComponentValuesTemplateUtil {
     private ComponentValuesTemplateUtil() {
     }
 
-    public static String convert(ClusterResourceType type, Object object) {
+    public static String convert(ClusterResourceType type, Object object, Map<String, Object> extraData) {
         InputStream in = Optional.ofNullable(ComponentValuesTemplateUtil.class.getResourceAsStream(String.format(TEMPLATE, type.getType())))
                 .orElseThrow(() -> new CommonException("error.template.config.file.not.exist"));
         switch (type) {
             case PROMETHEUS:
-                return convertPrometheus((DevopsPrometheusDTO) object, in);
+                return convertPrometheus((DevopsPrometheusDTO) object, in, extraData);
         }
         return null;
     }
@@ -31,7 +31,8 @@ public class ComponentValuesTemplateUtil {
      * @param in                  yaml文件输入流
      * @return 替换完毕的values文件
      */
-    public static String convertPrometheus(DevopsPrometheusDTO devopsPrometheusDTO, InputStream in) {
+    public static String convertPrometheus(DevopsPrometheusDTO devopsPrometheusDTO, InputStream in, Map<String, Object> extraData) {
+        String apiHost = (String) Optional.ofNullable(extraData.get("apiHost")).orElseThrow(() -> new CommonException("error.api.host"));
         Map<String, String> map = new HashMap<>();
         map.put("{{adminPassword}}", devopsPrometheusDTO.getAdminPassword());
         map.put("{{host}}", devopsPrometheusDTO.getGrafanaDomain());
@@ -49,6 +50,8 @@ public class ComponentValuesTemplateUtil {
         map.put("{{grafana-pv}}", devopsPrometheusDTO.getGrafanaPv().getName());
         map.put("{{grafanaAccessMode}}", devopsPrometheusDTO.getGrafanaPv().getAccessModes());
         map.put("{{grafanaStorage}}", devopsPrometheusDTO.getGrafanaPv().getRequestResource());
+
+        map.put("{{api-host}}", apiHost);
 
         return FileUtil.replaceReturnString(in, map);
     }
