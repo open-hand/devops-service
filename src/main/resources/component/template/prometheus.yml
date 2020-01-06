@@ -37,7 +37,7 @@ grafana:
     auth.generic_oauth:
       auth_url: {{api-host}}/oauth/oauth/authorize
       token_url: {{api-host}}/oauth/oauth/token
-      api_url: {{api-host}}/iam/v1/users/self
+      api_url: {{api-host}}/base/v1/users/self
     server:
       root_url: http://{{host}}
 
