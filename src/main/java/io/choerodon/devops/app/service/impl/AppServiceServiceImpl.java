@@ -191,7 +191,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             description = "Devops创建应用服务", inputSchema = "{}")
     @Transactional
     public AppServiceRepVO create(Long projectId, AppServiceReqVO appServiceReqVO) {
-        UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplicationService(appServiceReqVO.getCode());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
@@ -205,12 +205,23 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         // 查询创建应用服务所在的gitlab应用组
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-        MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
-                TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
-                TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
-        if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
-            throw new CommonException(ERROR_USER_NOT_OWNER);
+
+        boolean isGitlabRoot = false;
+
+        if (Boolean.TRUE == userAttrDTO.getGitlabAdmin()) {
+            // 如果这边表存了gitlabAdmin这个字段,那么gitlabUserId就不会为空,所以不判断此字段为空
+            isGitlabRoot = gitlabServiceClientOperator.isGitlabAdmin(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
+
+        if (!isGitlabRoot) {
+            MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
+                    TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
+                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
+                throw new CommonException(ERROR_USER_NOT_OWNER);
+            }
+        }
+
         AppServiceDTO appServiceDTO = getApplicationServiceDTO(projectId, appServiceReqVO);
         //默认权限为项目下所有
         appServiceDTO.setIsSkipCheckPermission(true);
@@ -220,7 +231,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
         devOpsAppServicePayload.setPath(appServiceDTO.getCode());
         devOpsAppServicePayload.setOrganizationId(projectDTO.getOrganizationId());
-        devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
+        devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         devOpsAppServicePayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
         devOpsAppServicePayload.setSkipCheckPermission(true);
         devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
@@ -887,7 +898,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Transactional(rollbackFor = Exception.class)
     public AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO, Boolean isTemplate) {
         // 获取当前操作的用户的信息
-        UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         // 校验application信息的格式
         ApplicationValidator.checkApplicationService(appServiceImportVO.getCode());
@@ -920,13 +931,23 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         // 查询创建应用所在的gitlab应用组
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(appServiceDTO.getProjectId());
-        MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
-                TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
-                TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
 
-        // 校验用户的gitlab权限
-        if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
-            throw new CommonException(ERROR_USER_NOT_OWNER);
+        boolean isGitlabRoot = false;
+
+        if (Boolean.TRUE == userAttrDTO.getGitlabAdmin()) {
+            // 如果这边表存了gitlabAdmin这个字段,那么gitlabUserId就不会为空,所以不判断此字段为空
+            isGitlabRoot = gitlabServiceClientOperator.isGitlabAdmin(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        }
+
+        if (!isGitlabRoot) {
+            MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
+                    TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
+                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+
+            // 校验用户的gitlab权限
+            if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
+                throw new CommonException(ERROR_USER_NOT_OWNER);
+            }
         }
 
         // 创建应用服务
@@ -937,7 +958,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         DevOpsAppImportServicePayload devOpsAppImportServicePayload = new DevOpsAppImportServicePayload();
         devOpsAppImportServicePayload.setPath(appServiceDTO.getCode());
         devOpsAppImportServicePayload.setOrganizationId(projectDTO.getOrganizationId());
-        devOpsAppImportServicePayload.setUserId(TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
+        devOpsAppImportServicePayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         devOpsAppImportServicePayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
         devOpsAppImportServicePayload.setUserIds(Collections.emptyList());
         devOpsAppImportServicePayload.setSkipCheckPermission(appServiceDTO.getSkipCheckPermission());
@@ -1774,7 +1795,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public void importAppServiceInternal(Long projectId, List<ApplicationImportInternalVO> importInternalVOS) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         List<AppServiceImportPayload> importPayloadList = new ArrayList<>();
         importInternalVOS.forEach(importInternalVO -> {
             AppServiceDTO appServiceDTO = new AppServiceDTO();
@@ -1806,12 +1827,23 @@ public class AppServiceServiceImpl implements AppServiceService {
 
             // 查询创建应用所在的gitlab应用组
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-            // 查询创建应用所在的gitlab应用组 用户权限
-            MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
-                    TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
-                    TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
-            if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
-                throw new CommonException(ERROR_USER_NOT_OWNER);
+
+            boolean isGitlabRoot = false;
+
+            if (Boolean.TRUE == userAttrDTO.getGitlabAdmin()) {
+                // 如果这边表存了gitlabAdmin这个字段,那么gitlabUserId就不会为空,所以不判断此字段为空
+                isGitlabRoot = gitlabServiceClientOperator.isGitlabAdmin(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            }
+
+            if (!isGitlabRoot) {
+                // 查询创建应用所在的gitlab应用组 用户权限
+                MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
+                        TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+
+                if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
+                    throw new CommonException(ERROR_USER_NOT_OWNER);
+                }
             }
 
             AppServiceImportPayload appServiceImportPayload = new AppServiceImportPayload();
