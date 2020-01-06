@@ -81,7 +81,7 @@ function ClusterItem({
             className={`${prefixCls}-delete-input`}
           >
             <Input
-              value={`helm del choerodon-cluster-agent-code ${code || ''} --purge`}
+              value={`helm del choerodon-cluster-agent-${code || ''} --purge`}
               readOnly
               copy
             />
