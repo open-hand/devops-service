@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,10 +27,11 @@ public class UserAttrServiceImpl implements UserAttrService {
     }
 
     @Override
-    public void checkUserSync(UserAttrDTO userAttrDTO) {
-        if (userAttrDTO == null) {
-            throw new CommonException("error.gitlab.user.sync.failed");
+    public UserAttrDTO checkUserSync(UserAttrDTO userAttrDTO, Long iamUserId) {
+        if (userAttrDTO == null || userAttrDTO.getGitlabUserId() == null) {
+            throw new CommonException("error.iam.user.sync.to.gitlab", iamUserId);
         }
+        return userAttrDTO;
     }
 
     @Override
@@ -92,5 +94,10 @@ public class UserAttrServiceImpl implements UserAttrService {
         UserAttrDTO userAttrDTO = new UserAttrDTO();
         userAttrDTO.setGitlabUserName(gitlabUserName);
         return userAttrMapper.selectOne(userAttrDTO);
+    }
+
+    @Override
+    public void updateAdmin(Long iamUserId, Boolean isGitlabAdmin) {
+        userAttrMapper.updateIsGitlabAdmin(Objects.requireNonNull(iamUserId), Objects.requireNonNull(isGitlabAdmin));
     }
 }

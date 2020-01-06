@@ -18,7 +18,7 @@ alertmanager:
             matchLabels:
               choerodon.io/name: {{alertmanager-pv}}
 grafana:
-  adminPassword: {{adminPassword}}
+  adminPassword: "{{adminPassword}}"
   ingress:
     enabled: true
     hosts:
@@ -33,6 +33,11 @@ grafana:
     selector:
       matchLabels:
         choerodon.io/name: {{grafana-pv}}
+  grafana.ini:
+    auth.generic_oauth:
+      auth_url: {{api-host}}/oauth/oauth/authorize
+      token_url: {{api-host}}/oauth/oauth/token
+      api_url: {{api-host}}/iam/v1/users/self
 
 prometheus:
   prometheusSpec:

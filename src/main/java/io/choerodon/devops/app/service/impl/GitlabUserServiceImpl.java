@@ -1,9 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.GitlabUserRequestVO;
 import io.choerodon.devops.app.service.GitlabUserService;
@@ -99,4 +101,28 @@ public class GitlabUserServiceImpl implements GitlabUserService {
         return gitlabServiceClientOperator.checkEmail(email);
     }
 
+    @Override
+    public void assignAdmins(List<Long> iamUserIds) {
+        if (CollectionUtils.isEmpty(iamUserIds)) {
+            return;
+        }
+
+        iamUserIds.stream()
+                .map(iamUserId -> userAttrService.checkUserSync(userAttrService.baseQueryById(iamUserId), iamUserId))
+                .forEach(user -> {
+                    gitlabServiceClientOperator.assignAdmin(user.getIamUserId(), TypeUtil.objToInteger(user.getGitlabUserId()));
+                    userAttrService.updateAdmin(user.getIamUserId(), Boolean.TRUE);
+                });
+    }
+
+    @Override
+    public void deleteAdmin(Long iamUserId) {
+        if (iamUserId == null) {
+            return;
+        }
+
+        UserAttrDTO userAttrDTO = userAttrService.checkUserSync(userAttrService.baseQueryById(iamUserId), iamUserId);
+        gitlabServiceClientOperator.deleteAdmin(iamUserId, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        userAttrService.updateAdmin(iamUserId, Boolean.FALSE);
+    }
 }

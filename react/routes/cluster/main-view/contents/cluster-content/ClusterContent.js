@@ -99,6 +99,15 @@ export default observer((props) => {
             <ComponentManage />
           </Suspense>
         </TabPane>
+        <TabPane
+          key={MONITOR_TAB}
+          tab={formatMessage({ id: `${intlPrefix}.monitor` })}
+        >
+          <Suspense fallback={<Spin />}>
+            <Monitor />
+          </Suspense>
+        </TabPane>
+
       </Tabs>
     </Fragment>);
 });

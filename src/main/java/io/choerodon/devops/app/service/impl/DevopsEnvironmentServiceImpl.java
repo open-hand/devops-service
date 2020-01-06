@@ -168,11 +168,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Autowired
     private DevopsCustomizeResourceService devopsCustomizeResourceService;
     @Autowired
-    private DevopsCustomizeResourceContentService devopsCustomizeResourceContentService;
-    @Autowired
     private DevopsPvcService devopsPvcService;
     @Autowired
-    private DevopsServiceInstanceService devopsServiceInstanceService;
+    private PermissionHelper permissionHelper;
 
     @PostConstruct
     private void init() {
@@ -447,15 +445,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .filter(DevopsEnvUserPermissionDTO::getPermitted)
                 .map(DevopsEnvUserPermissionDTO::getEnvId).collect(Collectors.toList());
         // 查询当前用户是否为项目所有者
-        Boolean isProjectOwner = baseServiceClientOperator
-                .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectId);
+        Boolean projectOwnerOrRoot = permissionHelper.isProjectOwnerOrRoot(projectId);
 
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = baseListByProjectIdAndActive(projectId, active).stream()
                 .filter(devopsEnvironmentE -> !devopsEnvironmentE.getFailed()).peek(t -> {
                     setEnvStatus(upgradeClusterList, t);
                     // 项目成员返回拥有对应权限的环境，项目所有者返回所有环境
-                    setPermission(t, permissionEnvIds, isProjectOwner);
+                    setPermission(t, permissionEnvIds, projectOwnerOrRoot);
                 })
                 .collect(Collectors.toList());
         return ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class);
@@ -468,10 +465,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsEnvironmentViewVO> connectedEnvs = new ArrayList<>();
         List<DevopsEnvironmentViewVO> unConnectedEnvs = new ArrayList<>();
 
-        boolean isOwner = baseServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectId);
+        boolean projectOwnerOrRoot = permissionHelper.isProjectOwnerOrRoot(projectId);
 
         List<DevopsEnvironmentViewDTO> views;
-        if (isOwner) {
+        if (projectOwnerOrRoot) {
             views = devopsEnvironmentMapper.listAllInstanceEnvTree(projectId);
         } else {
             views = devopsEnvironmentMapper.listMemberInstanceEnvTree(projectId, DetailsHelper.getUserDetails().getUserId());
@@ -517,10 +514,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsResourceEnvOverviewVO> connectedEnvs = new ArrayList<>();
         List<DevopsResourceEnvOverviewVO> unConnectedEnvs = new ArrayList<>();
 
-        boolean isOwner = baseServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectId);
+        boolean projectOwnerOrRoot = permissionHelper.isProjectOwnerOrRoot(projectId);
 
         List<DevopsResourceEnvOverviewDTO> views;
-        if (isOwner) {
+        if (projectOwnerOrRoot) {
             views = devopsEnvironmentMapper.listAllResourceEnvTree(projectId);
         } else {
             views = devopsEnvironmentMapper.listMemberResourceEnvTree(projectId, DetailsHelper.getUserDetails().getUserId());

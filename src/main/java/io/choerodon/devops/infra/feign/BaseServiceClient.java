@@ -1,6 +1,8 @@
 package io.choerodon.devops.infra.feign;
 
 import com.github.pagehelper.PageInfo;
+
+import io.choerodon.core.annotation.Permission;
 import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.*;
@@ -8,7 +10,10 @@ import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
+
+import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -271,8 +276,10 @@ public interface BaseServiceClient {
      */
     @GetMapping("/v1/users")
     ResponseEntity<IamUserDTO> query(@RequestParam(name = "login_name") String loginName);
+
     /**
      * 查询项目下指定角色的用户
+     *
      * @param projectId
      * @param roleLable 角色标签
      * @return
@@ -280,4 +287,9 @@ public interface BaseServiceClient {
     @GetMapping("/v1/projects/{project_id}/users/{role_lable}")
     ResponseEntity<List<IamUserDTO>> listProjectUsersByPorjectIdAndRoleLable(@PathVariable("project_id") Long projectId,
                                                                              @PathVariable("role_lable") String roleLable);
+
+
+    @ApiOperation(value = "查询所有的Root用户 / DevOps服务迁移数据需要")
+    @GetMapping("/v1/users/admin_all")
+    ResponseEntity<List<IamUserDTO>> queryAllAdminUsers();
 }
