@@ -177,4 +177,24 @@ public class ClientDTO extends BaseDTO {
     public void setSourceType(String sourceType) {
         this.sourceType = sourceType;
     }
+
+    @Override
+    public String toString() {
+        return "ClientDTO{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", organizationId=" + organizationId +
+                ", resourceIds='" + resourceIds + '\'' +
+                ", secret='" + secret + '\'' +
+                ", scope='" + scope + '\'' +
+                ", authorizedGrantTypes='" + authorizedGrantTypes + '\'' +
+                ", webServerRedirectUri='" + webServerRedirectUri + '\'' +
+                ", accessTokenValidity=" + accessTokenValidity +
+                ", refreshTokenValidity=" + refreshTokenValidity +
+                ", additionalInformation='" + additionalInformation + '\'' +
+                ", autoApprove='" + autoApprove + '\'' +
+                ", sourceId=" + sourceId +
+                ", sourceType='" + sourceType + '\'' +
+                '}';
+    }
 }

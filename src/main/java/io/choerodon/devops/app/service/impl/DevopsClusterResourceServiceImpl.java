@@ -251,8 +251,10 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
         // 解决分布式事务问题，注册client成功，更新cluster表client字段失败
+        LOGGER.info("clusterClientId:{}", devopsClusterDTO.getClientId());
         if (devopsClusterDTO.getClientId() == null) {
             ClientDTO clientDTO = baseServiceClientOperator.queryClientBySourceId(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getId());
+            LOGGER.info("clientDTO:{}", clientDTO);
             // 集群未注册client，则先注册
             if (clientDTO == null) {
                 clientDTO = registerClient(devopsClusterDTO);
@@ -579,6 +581,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         clientVO.setAccessTokenValidity(360000L);
         clientVO.setSourceId(devopsClusterDTO.getId());
         clientVO.setSourceType("cluster");
+        LOGGER.info("clientVO:{}", clientVO);
         return baseServiceClientOperator.createClient(devopsClusterDTO.getOrganizationId(), clientVO);
     }
 

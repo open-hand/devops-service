@@ -178,4 +178,24 @@ public class ClientVO {
     public Long getSourceId() {
         return sourceId;
     }
+
+    @Override
+    public String toString() {
+        return "ClientVO{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", organizationId=" + organizationId +
+                ", resourceIds='" + resourceIds + '\'' +
+                ", secret='" + secret + '\'' +
+                ", scope='" + scope + '\'' +
+                ", authorizedGrantTypes='" + authorizedGrantTypes + '\'' +
+                ", webServerRedirectUri='" + webServerRedirectUri + '\'' +
+                ", accessTokenValidity=" + accessTokenValidity +
+                ", refreshTokenValidity=" + refreshTokenValidity +
+                ", additionalInformation='" + additionalInformation + '\'' +
+                ", autoApprove='" + autoApprove + '\'' +
+                ", sourceId=" + sourceId +
+                ", sourceType='" + sourceType + '\'' +
+                '}';
+    }
 }
