@@ -58,4 +58,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pv') {
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '所属项目id')
         }
     }
+
+    changeSet(id: '2020-1-6-update-column', author: 'lihao') {
+        sql("ALTER TABLE devops_pv MODIFY pvc_name varchar(128) null comment '绑定的PVC名称'")
+    }
 }
