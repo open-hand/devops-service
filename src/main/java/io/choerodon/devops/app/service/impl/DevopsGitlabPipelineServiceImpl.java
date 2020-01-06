@@ -324,10 +324,13 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
 
         //获取每个分支上最新的一条pipeline记录，用于后续标记latest
         refWithPipelines.forEach((key, value) -> {
-            Long pipeLineId = Collections.max(value.stream().map(DevopsGitlabPipelineDTO::getPipelineId).collect(Collectors.toList()));
-            refWithPipelineIds.put(key, pipeLineId);
+            //找出每个分支最新的pipline
+            DevopsGitlabPipelineDTO devopsGitlabPipelineDTO = devopsGitlabPipelineMapper.selectLatestPipline(appServiceId, key);
+            List<Long> ids = value.stream().map(DevopsGitlabPipelineDTO::getPipelineId).collect(Collectors.toList());
+            if (ids.contains(devopsGitlabPipelineDTO.getPipelineId())){
+                refWithPipelineIds.put(key, devopsGitlabPipelineDTO.getPipelineId());
+            }
         });
-
         AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceId);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
         OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
