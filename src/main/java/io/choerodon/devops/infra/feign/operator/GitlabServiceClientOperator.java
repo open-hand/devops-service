@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageInfo;
 import feign.FeignException;
 import feign.RetryableException;
-import io.choerodon.devops.api.vo.FileCreationVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +18,17 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.FileCreationVO;
 import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
-import io.choerodon.devops.infra.util.*;
+import io.choerodon.devops.infra.util.FeignResponseStatusCodeParse;
+import io.choerodon.devops.infra.util.GitUtil;
+import io.choerodon.devops.infra.util.PageInfoUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 
 /**
@@ -860,6 +863,29 @@ public class GitlabServiceClientOperator {
 
         if (!Boolean.TRUE.equals(result)) {
             throw new CommonException("failed.to.delete.user.gitlab.admin", Objects.requireNonNull(iamUserId));
+        }
+    }
+
+    /**
+     * 用户是否是gitlab的admin
+     *
+     * @param gitlabUserId gitlab用户id
+     * @return true表明是
+     */
+    public boolean isGitlabAdmin(Integer gitlabUserId) {
+        try {
+            ResponseEntity<Boolean> responseEntity = gitlabServiceClient.checkIsAdmin(Objects.requireNonNull(gitlabUserId));
+            if (responseEntity == null) {
+                return false;
+            }
+            if (responseEntity.getBody() == null) {
+                return false;
+            }
+            return responseEntity.getBody();
+        } catch (Exception e) {
+            LOGGER.info("Error occurred when check whether the user with gitlab id {} is root...", gitlabUserId);
+            LOGGER.info("The exception is {}", e);
+            return false;
         }
     }
 }
