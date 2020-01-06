@@ -9,6 +9,7 @@ export default (projectId, clusterId) => ({
         params: [],
         searchParam: {
           status: 'Available',
+          accessModes: 'ReadWriteOnly',
         },
       },
     },
