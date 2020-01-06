@@ -38,6 +38,8 @@ grafana:
       auth_url: {{api-host}}/oauth/oauth/authorize
       token_url: {{api-host}}/oauth/oauth/token
       api_url: {{api-host}}/iam/v1/users/self
+    server:
+      root_url: http://{{host}}
 
 prometheus:
   prometheusSpec:
