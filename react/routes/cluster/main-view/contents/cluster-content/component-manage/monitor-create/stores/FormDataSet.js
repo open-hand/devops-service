@@ -46,7 +46,6 @@ export default ({ formatMessage, intlPrefix, projectId, clusterId, pvDs }) => ({
       type: 'string',
       label: formatMessage({ id: `${intlPrefix}.monitor.ingress` }),
       required: true,
-      pattern: /[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/,
       validator: (value) => checkDomain({ value, formatMessage }),
     },
     {
