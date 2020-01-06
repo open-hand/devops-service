@@ -1,5 +1,11 @@
 import omit from 'lodash/omit';
-import pick from 'lodash/pick';
+
+function checkDomain({ value, formatMessage }) {
+  const pa = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
+  if (value && !pa.test(value)) {
+    return formatMessage({ id: 'domain.domain.check.failed' });
+  }
+}
 
 export default ({ formatMessage, intlPrefix, projectId, clusterId, pvDs }) => ({
   autoCreate: false,
@@ -40,6 +46,8 @@ export default ({ formatMessage, intlPrefix, projectId, clusterId, pvDs }) => ({
       type: 'string',
       label: formatMessage({ id: `${intlPrefix}.monitor.ingress` }),
       required: true,
+      pattern: /[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/,
+      validator: (value) => checkDomain({ value, formatMessage }),
     },
     {
       name: 'prometheusPvId',
