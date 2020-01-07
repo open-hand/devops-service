@@ -52,33 +52,51 @@ const Group = observer(() => {
       footer: null,
     });
 
-    const res = await checkStatus(record);
+    try {
+      const res = await checkStatus(record);
 
-    if (res) {
-      const result = await mainStore.checkEffect(projectId, envId);
-      const message = formatMessage({ id: handlePromptError(result) ? `${intlPrefix}.delete.des` : `${intlPrefix}.delete.des.resource.confirm` });
-      deleteModal.update({
-        children: message,
-        okText: formatMessage({ id: 'delete' }),
-        okProps: { color: 'red' },
-        cancelProps: { color: 'dark' },
-        onOk: handleDelete,
-        footer: ((okBtn, cancelBtn) => (
-          <Fragment>
-            {cancelBtn}{okBtn}
-          </Fragment>
-        )),
-      });
-    } else {
-      deleteModal.update({
-        children: formatMessage({ id: `${intlPrefix}.status.change` }),
-        onOk: refresh,
-        footer: ((okBtn, cancelBtn) => (
-          <Fragment>
-            {okBtn}
-          </Fragment>
-        )),
-      });
+      if (res) {
+        const result = await mainStore.checkDelete(projectId, envId);
+        if (result && result.failed) {
+          deleteModal.close();
+        } else if (result) {
+          deleteModal.update({
+            children: formatMessage({ id: `${intlPrefix}.delete.des.resource.confirm` }),
+            okText: formatMessage({ id: 'delete' }),
+            okProps: { color: 'red' },
+            cancelProps: { color: 'dark' },
+            onOk: handleDelete,
+            footer: ((okBtn, cancelBtn) => (
+              <Fragment>
+                {cancelBtn}{okBtn}
+              </Fragment>
+            )),
+          });
+        } else {
+          deleteModal.update({
+            children: formatMessage({ id: `${intlPrefix}.delete.des.pipeline.confirm` }),
+            okText: formatMessage({ id: 'iknow' }),
+            footer: ((okBtn) => (
+              <Fragment>
+                {okBtn}
+              </Fragment>
+            )),
+          });
+        }
+      } else {
+        deleteModal.update({
+          children: formatMessage({ id: `${intlPrefix}.status.change` }),
+          onOk: refresh,
+          footer: ((okBtn, cancelBtn) => (
+            <Fragment>
+              {okBtn}
+            </Fragment>
+          )),
+        });
+      }
+    } catch (e) {
+      Choerodon.handlePromptError(e);
+      deleteModal.close();
     }
   }
 
@@ -129,7 +147,7 @@ const Group = observer(() => {
     const res = await checkStatus(record);
     if (res) {
       try {
-        const result = await mainStore.checkEffect(projectId, envId);
+        const result = await mainStore.checkStop(projectId, envId);
         if (handlePromptError(result)) {
           effectModal.update({
             children: formatMessage({ id: `${intlPrefix}.stop.des` }),
