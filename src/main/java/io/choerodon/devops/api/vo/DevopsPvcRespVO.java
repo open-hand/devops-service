@@ -21,6 +21,17 @@ public class DevopsPvcRespVO extends DevopsResourceDataInfoVO {
     @ApiModelProperty("资源申请数量")
     private String requestResource;
 
+    @ApiModelProperty("绑定的PV类型")
+    private String type;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public Long getId() {
         return id;
     }
