@@ -4,18 +4,11 @@ import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 import compact from 'lodash/compact';
 import isEmpty from 'lodash/isEmpty';
-import { Button, Icon, Popover, Tooltip } from 'choerodon-ui';
-import { Modal } from 'choerodon-ui/pro';
-import ReactEcharts from 'echarts-for-react';
+import { Button, Icon, Popover } from 'choerodon-ui';
 import { useResourceStore } from '../../../stores';
 import { useNetworkDetailStore } from './stores';
 import TimePopover from '../../../../../components/timePopover';
 import LogSidebar from '../../../../../components/log-siderbar';
-
-const modalKey = Modal.key();
-const modalStyle = {
-  width: '50%',
-};
 
 const PodList = observer(() => {
   const {
@@ -41,25 +34,6 @@ const PodList = observer(() => {
   function handleLogClick(index, containerIndex) {
     setData({ ...record.get('podLiveInfos')[index], containerIndex });
     openLog();
-  }
-
-
-  function openModal(value, timeList, type) {
-    const name = type === 'cpu' ? 'CPU /m' : 'Memory /MiB';
-    Modal.open({
-      key: modalKey,
-      style: modalStyle,
-      title: formatMessage({ id: `${intlPrefix}.report.${type}` }),
-      children: <div>
-        <ReactEcharts
-          option={getOption(value, timeList, name, true)}
-          style={{ height: '4rem' }}
-        />
-      </div>,
-      okCancel: false,
-      footer: null,
-      maskClosable: true,
-    });
   }
 
   function renderRegistry(containers, index) {
@@ -94,66 +68,6 @@ const PodList = observer(() => {
         )}
       </div>
     );
-  }
-
-  function getOption(value, timeList, name, show = false) {
-    const optionData = show ? {
-      tooltip: {
-        trigger: 'item',
-        backgroundColor: '#fff',
-        textStyle: {
-          color: '#000',
-        },
-        formatter(obj) {
-          return `${formatMessage({ id: `${intlPrefix}.time` })}: ${
-            obj.name
-          }<br/>${formatMessage({ id: `${intlPrefix}.usage` })}: ${
-            obj.value
-          }`;
-        },
-      },
-    } : {
-      grid: {
-        bottom: 30,
-      },
-    };
-    return ({
-      ...optionData,
-      color: '#7885cb',
-      xAxis: {
-        type: 'category',
-        boundaryGap: false,
-        show,
-        data: timeList,
-      },
-      yAxis: {
-        type: 'value',
-        name,
-        nameTextStyle: {
-          fontSize: show ? 13 : 10,
-        },
-        axisLine: {
-          show,
-        },
-        axisTick: {
-          show,
-        },
-        axisLabel: {
-          show,
-        },
-        splitLine: {
-          show: false,
-        },
-      },
-      series: [{
-        data: value,
-        type: 'line',
-        areaStyle: {},
-        itemStyle: {
-          opacity: 0,
-        },
-      }],
-    });
   }
 
   return (<Fragment>
@@ -195,28 +109,6 @@ const PodList = observer(() => {
           <li className="service-detail-pod-item">
             {renderRegistry(containers, index)}
           </li>
-          {timeList && (
-          <Fragment>
-            <li className="service-detail-pod-echarts">
-              <Tooltip title={formatMessage({ id: `${intlPrefix}.report.cpu.click` })}>
-                <div onClick={() => openModal(cpuUsedList, timeList, 'cpu')}>
-                  <ReactEcharts
-                    option={getOption(cpuUsedList, timeList, 'CPU /m')}
-                    style={{ height: '0.42rem', width: '1.2rem' }}
-                  />
-                </div>
-              </Tooltip>
-              <Tooltip title={formatMessage({ id: `${intlPrefix}.report.memory.click` })}>
-                <div onClick={() => openModal(memoryUsedList, timeList, 'memory')}>
-                  <ReactEcharts
-                    option={getOption(memoryUsedList, timeList, 'Memory /MiB')}
-                    style={{ height: '0.42rem', width: '1.2rem' }}
-                  />
-                </div>
-              </Tooltip>
-            </li>
-          </Fragment>
-          )}
         </ul>
       )) : <span style={{ color: 'rgba(0,0,0,.65)' }}>{formatMessage({ id: 'nodata' })}</span>}
     </div>
