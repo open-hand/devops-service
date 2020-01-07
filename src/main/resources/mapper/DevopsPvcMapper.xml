@@ -11,8 +11,11 @@
         dpvc.access_modes,
         dpvc.request_resource,
         dpvc.status,
-        dpvc.object_version_number
+        dpvc.object_version_number,
+        dp.type
         FROM devops_pvc dpvc
+        JOIN devops_pv dp ON
+        dpvc.pv_id=dp.id
         WHERE env_id=#{envId}
         <include refid="sqlparam"/>
     </select>
