@@ -383,7 +383,8 @@ public class PipelineServiceImpl implements PipelineService {
         if ("task".equals(recordRelDTO.getType())) {
             auditUser = pipelineTaskRecordService.baseQueryRecordById(recordRelDTO.getTaskRecordId()).getAuditUser();
         } else {
-            Optional<PipelineStageRecordDTO> optional = pipelineStageRecordService.baseListByRecordAndStageId(recordRelDTO.getPipelineRecordId(), null).stream().filter(t -> t.getId().equals(recordRelDTO.getStageRecordId())).findFirst();
+            Optional<PipelineStageRecordDTO> optional = pipelineStageRecordService.baseListByRecordAndStageId(recordRelDTO.getPipelineRecordId(), null).stream()
+                    .filter(t -> t.getId() < recordRelDTO.getStageRecordId()).max(Comparator.comparingLong(PipelineStageRecordDTO::getId));
             auditUser = optional.isPresent() ? optional.get().getAuditUser() : auditUser;
         }
         status = getAuditResult(recordRelDTO, pipelineRecordE, auditUser, stageRecordDTO.getStageName());
