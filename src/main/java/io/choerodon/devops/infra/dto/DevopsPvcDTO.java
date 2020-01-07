@@ -44,6 +44,7 @@ public class DevopsPvcDTO extends BaseDTO {
     private Long commandId;
 
     @ApiModelProperty("PV类型")
+    @Transient
     private String type;
 
     public String getType() {
