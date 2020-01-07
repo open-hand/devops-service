@@ -24,6 +24,28 @@ public class DevopsPvcRespVO extends DevopsResourceDataInfoVO {
     @ApiModelProperty("绑定的PV类型")
     private String type;
 
+    @ApiModelProperty("绑定的PV名称")
+    private String pvName;
+
+    @ApiModelProperty("PVC状态")
+    private String status;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getPvName() {
+        return pvName;
+    }
+
+    public void setPvName(String pvName) {
+        this.pvName = pvName;
+    }
+
     public String getType() {
         return type;
     }
