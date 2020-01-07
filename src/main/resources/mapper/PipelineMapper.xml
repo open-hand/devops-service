@@ -118,7 +118,7 @@
     </sql>
 
     <select id="listEnvIdByPipelineId" resultType="java.lang.Long">
-        SELECT
+        SELECT distinct
             dpasd.env_id
         FROM
             devops_pipeline dp
