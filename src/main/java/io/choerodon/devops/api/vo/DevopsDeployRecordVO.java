@@ -25,6 +25,7 @@ public class DevopsDeployRecordVO {
     private Date deployTime;
     private List<PipelineStageRecordVO> stageDTOList;
     private PipelineDetailVO pipelineDetailVO;
+    private String errorInfo;
 
     @ApiModelProperty("手动部署生成的实例id, 对于自动部署的纪录此值为空")
     private Long instanceId;
@@ -178,5 +179,13 @@ public class DevopsDeployRecordVO {
 
     public void setUserLoginName(String userLoginName) {
         this.userLoginName = userLoginName;
+    }
+
+    public String getErrorInfo() {
+        return errorInfo;
+    }
+
+    public void setErrorInfo(String errorInfo) {
+        this.errorInfo = errorInfo;
     }
 }

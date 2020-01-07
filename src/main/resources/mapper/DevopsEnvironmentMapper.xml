@@ -478,4 +478,15 @@
         AND devops_env_group_id = #{env_group_id}
     </update>
 
+    <select id="queryEnvConutByEnvIds" resultType="java.lang.Integer">
+        SELECT
+            count(*)
+        FROM
+            devops_env de
+        WHERE
+            de.id IN
+        <foreach collection="envIds" item="envId" open="(" separator="," close=")">
+           #{envId}
+        </foreach>
+    </select>
 </mapper>

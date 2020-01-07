@@ -117,4 +117,15 @@
         <include refid="sqlparamName"/>
     </sql>
 
+    <select id="listEnvIdByPipelineId" resultType="java.lang.Long">
+        SELECT
+            dpasd.env_id
+        FROM
+            devops_pipeline dp
+            JOIN devops_pipeline_stage dps ON dps.pipeline_id = dp.id
+            JOIN devops_pipeline_task dpt ON dpt.stage_id = dps.id
+            JOIN devops_pipeline_app_service_deploy dpasd ON dpasd.id = dpt.app_service_deploy_id
+        WHERE
+            dp.id = #{pipelineId}
+    </select>
 </mapper>

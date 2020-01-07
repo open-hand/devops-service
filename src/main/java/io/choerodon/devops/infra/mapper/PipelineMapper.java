@@ -18,4 +18,6 @@ public interface PipelineMapper extends Mapper<PipelineDTO> {
                                     @Param("pipelineSearchVO") PipelineSearchVO pipelineSearchVO,
                                     @Param("userId") Long userId,
                                     @Param("sort") String sort);
+
+    List<Long> listEnvIdByPipelineId(@Param("pipelineId") Long pipelineId);
 }
