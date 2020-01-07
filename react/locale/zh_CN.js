@@ -408,6 +408,7 @@ const deployment = {
   'c7ncd.deployment.pvc.name': 'PVC名称',
   'pvc.name.failed': 'PVC名称必须以小写字母开头，只能包含小写字母,数字,"."和"-"',
   'c7ncd.deployment.pvc.pv': '绑定PV',
+  'c7ncd.deployment.pvc.pv.type': 'PV类型',
   'c7ncd.deployment.pvc.accessModes': '访问模式',
   'c7ncd.deployment.pvc.requestResource': '总量',
   'c7ncd.deployment.pvc.type': 'PV类型',
