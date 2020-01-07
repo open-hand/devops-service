@@ -19,14 +19,16 @@ const REModals = observer(() => {
   const {
     baseInfoDs,
     resourceCountDs,
-    tableDs,
+    gitopsLogDs,
+    gitopsSyncDs,
   } = useREStore();
 
   function refresh() {
     baseInfoDs.query();
     resourceCountDs.query();
     treeDs.query();
-    tableDs.query();
+    gitopsSyncDs.query();
+    gitopsLogDs.query();
   }
 
   function linkToConfig() {
