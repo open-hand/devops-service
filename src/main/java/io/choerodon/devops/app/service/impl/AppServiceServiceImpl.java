@@ -313,6 +313,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
         List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(organizationId);
         Set<Long> projectIds = projectDTOS.stream().filter(projectDTO -> !projectDTO.getId().equals(projectId)).map(ProjectDTO::getId).collect(toSet());
+        if (CollectionUtils.isEmpty(projectIds)) {
+            return;
+        }
         List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceMapper.listByProjectIdsAndAppServiceId(projectIds, appServiceId);
         if (!CollectionUtils.isEmpty(appServiceInstanceDTOS)) {
             throw new CommonException("error.not.delete.service.by.other.project.deployment");
