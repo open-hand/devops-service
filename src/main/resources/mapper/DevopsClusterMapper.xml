@@ -98,4 +98,7 @@
         WHERE id = #{clusterId,jdbcType=BIGINT}
         FOR UPDATE;
     </select>
+    <select id="queryClusterIdBySystemEnvId" resultType="java.lang.Long">
+        SELECT dc.id FROM devops_cluster dc WHERE dc.system_env_id=#{systemEnvId}
+    </select>
 </mapper>

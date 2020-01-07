@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.devops.infra.mapper.*;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -47,9 +48,6 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
-import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import io.choerodon.devops.infra.util.*;
 
 
@@ -135,6 +133,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     @Lazy
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private DevopsClusterMapper devopsClusterMapper;
+    @Autowired
+    private DevopsClusterResourceMapper devopsClusterResourceMapper;
+    @Autowired
+    private DevopsPrometheusMapper devopsPrometheusMapper;
 
     @Override
     public AppServiceInstanceInfoVO queryInfoById(Long instanceId) {
@@ -945,6 +949,21 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
         appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
         appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
+
+        // 删除prometheus的相关信息
+        if (instanceDTO.getComponentChartName().equals("prometheus-operator")) {
+            Long clusterId = devopsClusterMapper.queryClusterIdBySystemEnvId(instanceDTO.getEnvId());
+            // 删除devopsClusterResource
+            DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
+            devopsClusterResourceDTO.setClusterId(clusterId);
+            devopsClusterResourceDTO.setType("prometheus");
+            devopsClusterResourceMapper.delete(devopsClusterResourceDTO);
+
+            // 删除prometheus配置信息
+            DevopsPrometheusDTO devopsPrometheusDTO = new DevopsPrometheusDTO();
+            devopsPrometheusDTO.setClusterId(clusterId);
+            devopsPrometheusMapper.delete(devopsPrometheusDTO);
+        }
     }
 
 
