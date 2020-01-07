@@ -63,4 +63,27 @@
             WHERE
             app_service_id = #{appServiceId}
     </delete>
+
+    <select id="selectLatestPipline" resultType="io.choerodon.devops.infra.dto.DevopsGitlabPipelineDTO">
+        SELECT
+        dgp.pipeline_id,
+        dgp.app_service_id,
+        dgp.pipeline_create_user_id,
+        dgp.commit_id,
+        dgp.status,
+        dgp.stage,
+        dgp.pipeline_creation_date,
+        dgc.user_id commitUserId,
+        dgc.commit_sha sha,
+        dgc.commit_content content,
+        dgc.ref
+        FROM
+		devops_gitlab_pipeline dgp
+        LEFT JOIN devops_gitlab_commit dgc ON dgp.commit_id = dgc.id
+		WHERE dgc.ref=#{key}
+		AND dgp.app_service_id=#{appServiceId}
+		ORDER BY
+        dgp.pipeline_creation_date DESC
+        LIMIT 1
+    </select>
 </mapper>
