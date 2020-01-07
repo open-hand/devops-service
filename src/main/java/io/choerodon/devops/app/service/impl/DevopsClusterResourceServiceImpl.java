@@ -576,7 +576,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         clientVO.setName("grafana");
         clientVO.setOrganizationId(devopsClusterDTO.getOrganizationId());
         clientVO.setAuthorizedGrantTypes("password,implicit,client_credentials,refresh_token,authorization_code");
-        clientVO.setSecret(GenerateUUID.generateUUID().substring(0, 16).replace("-", "A"));
+        clientVO.setSecret("grafana");
         clientVO.setRefreshTokenValidity(360000L);
         clientVO.setAccessTokenValidity(360000L);
         clientVO.setSourceId(devopsClusterDTO.getId());
