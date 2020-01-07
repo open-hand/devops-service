@@ -21,6 +21,15 @@ public class PipelineVO {
     private Long createdBy;
     private Boolean isExecute;
     private Boolean edit;
+    private String envName;
+
+    public String getEnvName() {
+        return envName;
+    }
+
+    public void setEnvName(String envName) {
+        this.envName = envName;
+    }
 
     public Boolean getEdit() {
         return edit;

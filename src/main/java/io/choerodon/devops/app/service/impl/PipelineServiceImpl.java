@@ -141,6 +141,10 @@ public class PipelineServiceImpl implements PipelineService {
             t.setCreateUserUrl(iamUserDTO.getImageUrl());
             List<Long> pipelineEnvIds = getAllAppDeploy(t.getId()).stream().map(PipelineAppServiceDeployDTO::getEnvId).collect(Collectors.toList());
             t.setEdit(checkPipelineEnvPermission(pipelineEnvIds, projectOwnerOrRoot));
+            List<PipelineDTO> pipelineDTOS = pipelineMapper.selectByProjectId(t.getId());
+            if (!CollectionUtils.isEmpty(pipelineDTOS)){
+                t.setEnvName(pipelineDTOS.stream().map(e->e.getEnvName()).collect(Collectors.joining(",")));
+            }
         }).collect(Collectors.toList()));
 
         return pageInfo;
@@ -888,14 +892,14 @@ public class PipelineServiceImpl implements PipelineService {
                 IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(u);
                 PipelineUserVO userDTO = ConvertUtils.convertObject(iamUserDTO, PipelineUserVO.class);
                 userDTO.setAudit(true);
-                userDTO.setLoginName(iamUserDTO.getLdap()?iamUserDTO.getLoginName():iamUserDTO.getEmail());
+                userDTO.setLoginName(iamUserDTO.getLdap() ? iamUserDTO.getLoginName() : iamUserDTO.getEmail());
                 userDTOS.add(userDTO);
             });
             userListUnExe.forEach(u -> {
                 IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(u);
                 PipelineUserVO userDTO = ConvertUtils.convertObject(iamUserDTO, PipelineUserVO.class);
                 userDTO.setAudit(false);
-                userDTO.setLoginName(iamUserDTO.getLdap()?iamUserDTO.getLoginName():iamUserDTO.getEmail());
+                userDTO.setLoginName(iamUserDTO.getLdap() ? iamUserDTO.getLoginName() : iamUserDTO.getEmail());
                 userDTOS.add(userDTO);
             });
             return false;
@@ -974,7 +978,7 @@ public class PipelineServiceImpl implements PipelineService {
             userRelationshipService.baseDelete(userRelationshipDTO);
 
             stageE.setId(null);
-            stageE=pipelineStageService.baseCreate(stageE);
+            stageE = pipelineStageService.baseCreate(stageE);
         } else {
             stageE.setPipelineId(pipelineId);
             stageE.setProjectId(projectId);
