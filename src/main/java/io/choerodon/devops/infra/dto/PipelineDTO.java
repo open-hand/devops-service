@@ -21,6 +21,16 @@ public class PipelineDTO extends BaseDTO {
 
     @Transient
     private Boolean execute;
+    @Transient
+    private String envName;
+
+    public String getEnvName() {
+        return envName;
+    }
+
+    public void setEnvName(String envName) {
+        this.envName = envName;
+    }
 
     public Boolean getExecute() {
         return execute;
