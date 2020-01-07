@@ -2190,6 +2190,9 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
             if (ObjectUtils.isEmpty(projectDTOS)) return new PageInfo<>();
             //查询组织共享和共享项目的应用服务
+            if (projectIds == null || projectIds.size() == 0) {
+                return new PageInfo<>();
+            }
             List<AppServiceDTO> organizationAppServices = appServiceMapper.queryOrganizationShareApps(projectIds, param, projectId);
             if (organizationAppServices.isEmpty()) return new PageInfo<>();
 
@@ -2231,7 +2234,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             AppServiceGroupInfoVO appServiceGroupInfoVO = dtoToGroupInfoVO(appServiceDTO);
             if (share) {
                 AppServiceVersionDTO appServiceVersionDTO = appServiceVersionMapper.queryByShareVersion(appServiceDTO.getId(), projectId);
-                ProjectDTO projectDTO = projectDTO = finalProjectDTOMap.get(appServiceDTO.getProjectId());
+                ProjectDTO projectDTO  = finalProjectDTOMap.get(appServiceDTO.getProjectId());
                 appServiceGroupInfoVO.setProjectName(projectDTO.getName());
                 appServiceGroupInfoVO.setShare(true);
                 if (ObjectUtils.isEmpty(appServiceVersionDTO)) return;
