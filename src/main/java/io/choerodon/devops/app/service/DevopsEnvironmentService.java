@@ -247,14 +247,22 @@ public interface DevopsEnvironmentService {
     void checkEnv(DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO userAttrDTO);
 
     /**
+     * 检查环境是否可以停用
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @return true表示可以
+     */
+    Boolean disableCheck(Long projectId, Long envId);
+
+    /**
      * 检查环境是否可以删除
      *
      * @param projectId 项目id
      * @param envId     环境id
-     * @return
+     * @return true表示可以
      */
     Boolean deleteCheck(Long projectId, Long envId);
-
 
     /**
      * 检查资源是否存在

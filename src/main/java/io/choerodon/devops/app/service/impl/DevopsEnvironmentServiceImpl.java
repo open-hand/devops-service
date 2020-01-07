@@ -168,11 +168,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Autowired
     private DevopsCustomizeResourceService devopsCustomizeResourceService;
     @Autowired
-    private DevopsCustomizeResourceContentService devopsCustomizeResourceContentService;
-    @Autowired
     private DevopsPvcService devopsPvcService;
     @Autowired
-    private DevopsServiceInstanceService devopsServiceInstanceService;
+    private DevopsDeployValueService devopsDeployValueService;
 
     @PostConstruct
     private void init() {
@@ -1313,6 +1311,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (Boolean.TRUE.equals(devopsEnvironmentDTO.getActive()) && Boolean.FALSE.equals(devopsEnvironmentDTO.getFailed()) && upgradeClusterList.contains(devopsEnvironmentDTO.getClusterId())) {
             throw new CommonException("error.env.delete");
         }
+
+        if (!CollectionUtils.isEmpty(pipelineAppDeployService.baseQueryByEnvId(envId))) {
+            throw new CommonException("error.delete.env.with.pipeline");
+        }
+
         devopsEnvironmentDTO.setSynchro(Boolean.FALSE);
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("envId", envId);
@@ -1321,13 +1324,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
-                        .withRefType("")
+                        .withRefType("env")
+                        .withRefId(String.valueOf(envId))
                         .withJson(jsonObject.toString())
                         .withSourceId(projectId)
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_DELETE_ENV),
                 builder -> {
                 });
-
     }
 
     @Override
@@ -1374,6 +1377,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsCustomizeResourceService.baseListByEnvId(envId).forEach(pvcE ->
                 devopsEnvCommandService.baseListByObject(ObjectType.PERSISTENTVOLUMECLAIM.getType(), pvcE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
         devopsPvcService.baseDeleteByEnvId(envId);
+
+        // 删除环境关联的部署配置
+        devopsDeployValueService.deleteByEnvId(envId);
 
         // 删除环境
         baseDeleteById(envId);
@@ -1731,8 +1737,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public Boolean deleteCheck(Long projectId, Long envId) {
-        //pipeLineAppDeploy为空
+    public Boolean disableCheck(Long projectId, Long envId) {
+        // 停用环境校验资源和流水线
+        // pipeLineAppDeploy为空
         boolean pipeLineAppDeployEmpty = pipelineAppDeployService.baseQueryByEnvId(envId).isEmpty();
 
         DevopsEnvResourceCountVO devopsEnvResourceCountVO = devopsEnvironmentMapper.queryEnvResourceCount(envId);
@@ -1746,6 +1753,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 && devopsEnvResourceCountVO.getPvcCount() == 0
                 && devopsEnvResourceCountVO.getCustomCount() == 0
                 && pipeLineAppDeployEmpty;
+    }
+
+    @Override
+    public Boolean deleteCheck(Long projectId, Long envId) {
+        // 删除环境只校验是否有流水线
+        return CollectionUtils.isEmpty(pipelineAppDeployService.baseQueryByEnvId(envId));
     }
 
     @Override

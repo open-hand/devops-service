@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -205,5 +202,12 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         devopsDeployValueDTO.setAppServiceId(appServiceId);
         devopsDeployValueDTO.setEnvId(envId);
         return devopsDeployValueMapper.select(devopsDeployValueDTO);
+    }
+
+    @Override
+    public void deleteByEnvId(Long envId) {
+        DevopsDeployValueDTO condition = new DevopsDeployValueDTO();
+        condition.setEnvId(Objects.requireNonNull(envId));
+        devopsDeployValueMapper.delete(condition);
     }
 }

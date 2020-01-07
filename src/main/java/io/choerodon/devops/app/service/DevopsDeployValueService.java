@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import com.github.pagehelper.PageInfo;
 
 import org.springframework.data.domain.Pageable;
+
 import io.choerodon.devops.api.vo.DevopsDeployValueVO;
 import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
 
@@ -38,7 +39,7 @@ public interface DevopsDeployValueService {
      * @param projectId    项目id
      * @param appServiceId 应用服务id
      * @param envId        环境id
-     * @param pageable  分页参数
+     * @param pageable     分页参数
      * @param params       查询参数
      * @return 分页的部署配置
      */
@@ -94,4 +95,11 @@ public interface DevopsDeployValueService {
     void baseCheckName(Long projectId, String name, Long deployValueId);
 
     List<DevopsDeployValueDTO> baseQueryByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId);
+
+    /**
+     * 根据环境id删除所有相关的部署配置
+     *
+     * @param envId 环境id
+     */
+    void deleteByEnvId(Long envId);
 }
