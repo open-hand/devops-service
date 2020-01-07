@@ -188,10 +188,10 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     @Override
     public PageInfo<DevopsPvcRespVO> pageByOptions(Long projectId, Long envId, Pageable pageable, String params) {
         Map maps = gson.fromJson(params, Map.class);
-        return PageHelper
+        return ConvertUtils.convertPage(PageHelper
                 .startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> devopsPvcMapper.listByOption(envId,
                         TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
+                        TypeUtil.cast(maps.get(TypeUtil.PARAMS)))), DevopsPvcRespVO.class);
 
     }
 
