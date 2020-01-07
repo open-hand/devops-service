@@ -117,6 +117,7 @@ const pvcContent = observer((props) => {
         <Column name="name" renderer={renderName} sortable />
         <Column renderer={renderAction} width={70} />
         <Column name="pvName" />
+        <Column name="type" />
         <Column name="accessModes" sortable />
         <Column name="requestResource" />
       </Table>

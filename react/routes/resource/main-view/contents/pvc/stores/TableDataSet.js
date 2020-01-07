@@ -26,6 +26,7 @@ export default ({ formatMessage, intlPrefix, projectId, envId }) => ({
     { name: 'pvName', type: 'string', label: formatMessage({ id: `${intlPrefix}.pvc.pv` }) },
     { name: 'accessModes', type: 'string', label: formatMessage({ id: `${intlPrefix}.pvc.accessModes` }) },
     { name: 'requestResource', type: 'string', label: formatMessage({ id: `${intlPrefix}.pvc.requestResource` }) },
+    { name: 'type', type: 'string', label: formatMessage({ id: `${intlPrefix}.pvc.pv.type` }) },
   ],
   queryFields: [
     { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.pvc.name` }) },
