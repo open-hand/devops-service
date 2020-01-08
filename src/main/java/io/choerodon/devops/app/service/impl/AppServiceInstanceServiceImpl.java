@@ -1397,7 +1397,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 configVO = queryDefaultConfig(appServiceDTO.getProjectId(), configVO);
             }
             if (configVO.getPrivate() != null && configVO.getPrivate()) {
-                DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndId(devopsEnvironmentDTO.getCode(), devopsConfigDTO.getId());
+                DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndId(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId());
                 if (devopsRegistrySecretDTO == null) {
                     //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
                     List<DevopsRegistrySecretDTO> devopsRegistrySecretDTOS = devopsRegistrySecretService.baseListByConfig(devopsConfigDTO.getId());
