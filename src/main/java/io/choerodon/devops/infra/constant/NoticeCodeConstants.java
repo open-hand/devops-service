@@ -23,4 +23,5 @@ public class NoticeCodeConstants {
     public static final String SERVICE_CREATION_FAILURE = "serviceFailure";
     public static final String RESOURC_EDELETE_CONFIRMATION = "resourceDeleteConfirmation";
     public static final String INVITE_USER = "inviteUser";
+    public static final String DELETE_APP_SERVICE = "deleteAppService";
 }

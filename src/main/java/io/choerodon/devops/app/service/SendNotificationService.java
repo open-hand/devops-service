@@ -46,6 +46,11 @@ public interface SendNotificationService {
      * @param appServiceId 应用服务id
      */
     void sendWhenAppServiceDisabled(Long appServiceId);
+    /**
+     * 删除应用服务通知
+     * @param appServiceId
+     */
+    void sendWhenAppServiceDelete(Long appServiceId);
 
 
     /**
@@ -125,4 +130,6 @@ public interface SendNotificationService {
      * @param resourceCommandId 资源的command id (不为null时校验command的commandType是不是create)
      */
     void sendWhenCertificationCreationFailure(Long envId, String resourceName, Long creatorId, @Nullable Long resourceCommandId);
+
+
 }
