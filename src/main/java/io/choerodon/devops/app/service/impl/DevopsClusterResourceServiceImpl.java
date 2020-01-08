@@ -73,6 +73,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private DevopsEnvFileErrorService devopsEnvFileErrorService;
     @Autowired
     private UserAttrService userAttrService;
+    @Autowired
+    private DevopsPvMapper devopsPvMapper;
 
     @Override
     public void baseCreate(DevopsClusterResourceDTO devopsClusterResourceDTO) {
@@ -324,8 +326,17 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Override
     public DevopsPrometheusVO queryPrometheus(Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.queryPrometheusByClusterId(clusterId);
+        DevopsPvDTO alertManagerPv = devopsPvMapper.selectByPrimaryKey(devopsPrometheusDTO.getAlertmanagerPvId());
+        DevopsPvDTO grafanaPv = devopsPvMapper.selectByPrimaryKey(devopsPrometheusDTO.getGrafanaPvId());
+        DevopsPvDTO prometheusPv = devopsPvMapper.selectByPrimaryKey(devopsPrometheusDTO.getPrometheusPvId());
 
-        return devopsPrometheusMapper.queryPrometheusWithPvById(devopsClusterResourceDTO.getConfigId());
+        DevopsPrometheusVO devopsPrometheusVO = devopsPrometheusMapper.queryPrometheusWithPvById(devopsClusterResourceDTO.getConfigId());
+        setPvStatus(alertManagerPv, "alertManager", devopsPrometheusVO);
+        setPvStatus(grafanaPv, "grafana", devopsPrometheusVO);
+        setPvStatus(prometheusPv, "prometheus", devopsPrometheusVO);
+
+        return devopsPrometheusVO;
     }
 
     @Override
@@ -611,5 +622,23 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             pvcDTOList.remove(0);
         }
 
+    }
+
+    private void setPvStatus(DevopsPvDTO devopsPvDTO, String type, DevopsPrometheusVO devopsPrometheusVO) {
+        String boundPVCName = devopsPvDTO.getPvcName();
+        if (boundPVCName != null && boundPVCName.contains(type)) {
+            switch (type) {
+                case "alertManager":
+                    devopsPrometheusVO.setAlertmanagerPvStatus(devopsPvDTO.getStatus());
+                    break;
+                case "grafana":
+                    devopsPrometheusVO.setGrafanaPvStatus(devopsPvDTO.getStatus());
+                    break;
+                case "prometheus":
+                    devopsPrometheusVO.setPrometheusPvStatus(devopsPvDTO.getStatus());
+                    break;
+                default:
+            }
+        }
     }
 }

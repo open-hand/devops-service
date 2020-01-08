@@ -18,4 +18,7 @@
         FROM devops_prometheus dpro
         WHERE dpro.id = #{id}
     </select>
+    <select id="queryPrometheusByClusterId" resultType="io.choerodon.devops.infra.dto.DevopsPrometheusDTO">
+        SELECT * FROM devops_prometheus WHERE cluster_id=#{clusterId}
+    </select>
 </mapper>

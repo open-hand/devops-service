@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotNull;
@@ -26,22 +27,22 @@ public class DevopsPrometheusVO {
     @NotNull(message = "error.prometheus.pv.id.null")
     private Long prometheusPvId;
 
-    @ApiModelProperty("PrometheusPv名称")
-    private String prometheusPvName;
+    @ApiModelProperty("PrometheusPv状态")
+    private String prometheusPvStatus;
 
     @ApiModelProperty("GrafanaPvId/必填")
     @NotNull(message = "error.grafana.pv.id.null")
     private Long grafanaPvId;
 
-    @ApiModelProperty("GrafanaPv名称")
-    private String grafanaPvName;
+    @ApiModelProperty("GrafanaPv状态")
+    private String grafanaPvStatus;
 
     @ApiModelProperty("AlertmanagerPvId/必填")
     @NotNull(message = "error.alertmanager.pv.id.null")
     private Long alertmanagerPvId;
 
-    @ApiModelProperty("AlertmanagerPv名称")
-    private String alertmanagerPvName;
+    @ApiModelProperty("AlertmanagerPv状态")
+    private String alertmanagerPvStatus;
 
     @ApiModelProperty("集群id")
     private Long clusterId;
@@ -123,27 +124,27 @@ public class DevopsPrometheusVO {
         this.objectVersionNumber = objectVersionNumber;
     }
 
-    public String getPrometheusPvName() {
-        return prometheusPvName;
+    public String getPrometheusPvStatus() {
+        return prometheusPvStatus;
     }
 
-    public void setPrometheusPvName(String prometheusPvName) {
-        this.prometheusPvName = prometheusPvName;
+    public void setPrometheusPvStatus(String prometheusPvStatus) {
+        this.prometheusPvStatus = prometheusPvStatus;
     }
 
-    public String getGrafanaPvName() {
-        return grafanaPvName;
+    public String getGrafanaPvStatus() {
+        return grafanaPvStatus;
     }
 
-    public void setGrafanaPvName(String grafanaPvName) {
-        this.grafanaPvName = grafanaPvName;
+    public void setGrafanaPvStatus(String grafanaPvStatus) {
+        this.grafanaPvStatus = grafanaPvStatus;
     }
 
-    public String getAlertmanagerPvName() {
-        return alertmanagerPvName;
+    public String getAlertmanagerPvStatus() {
+        return alertmanagerPvStatus;
     }
 
-    public void setAlertmanagerPvName(String alertmanagerPvName) {
-        this.alertmanagerPvName = alertmanagerPvName;
+    public void setAlertmanagerPvStatus(String alertmanagerPvStatus) {
+        this.alertmanagerPvStatus = alertmanagerPvStatus;
     }
 }
