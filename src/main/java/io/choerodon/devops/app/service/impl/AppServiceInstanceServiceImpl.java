@@ -1406,7 +1406,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     } else {
                         secretCode = devopsRegistrySecretDTOS.get(0).getSecretCode();
                     }
-                    devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), secretCode, devopsConfigDTO.getConfig());
+                    devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), secretCode, gson.toJson(configVO));
                     devopsRegistrySecretService.baseCreate(devopsRegistrySecretDTO);
                     agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, configVO, CREATE);
                 } else {
