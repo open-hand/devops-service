@@ -143,7 +143,7 @@ public class PipelineServiceImpl implements PipelineService {
             t.setEdit(checkPipelineEnvPermission(pipelineEnvIds, projectOwnerOrRoot));
             List<PipelineDTO> pipelineDTOS = pipelineMapper.selectByProjectId(t.getId());
             if (!CollectionUtils.isEmpty(pipelineDTOS)){
-                t.setEnvName(pipelineDTOS.stream().map(e->e.getEnvName()).collect(Collectors.joining(",")));
+                t.setEnvName(pipelineDTOS.stream().map(e->e.getEnvName()).distinct().collect(Collectors.joining(",")));
             }
         }).collect(Collectors.toList()));
 
