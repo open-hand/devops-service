@@ -60,6 +60,7 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
       title: formatMessage({ id: `${intlPrefix}.delete.title` }, { name }),
       children: <Spin />,
       footer: null,
+      movable: false,
     });
     try {
       const res = await checkStatus();
@@ -182,6 +183,7 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
       title: formatMessage({ id: `${intlPrefix}.stop.title` }, { name }),
       children: <Spin />,
       footer: null,
+      movable: false,
     });
     const res = await checkStatus();
     if (res) {

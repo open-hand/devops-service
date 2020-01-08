@@ -44,12 +44,14 @@ const Group = observer(() => {
 
   async function openDelete(record) {
     const envId = record.get('id');
+    const envName = record.get('name');
 
     const deleteModal = Modal.open({
       key: deleteKey,
-      title: formatMessage({ id: `${intlPrefix}.delete.title` }, { name }),
+      title: formatMessage({ id: `${intlPrefix}.delete.title` }, { name: envName }),
       children: <Spin />,
       footer: null,
+      movable: false,
     });
 
     try {
@@ -138,11 +140,13 @@ const Group = observer(() => {
 
   async function openEffectModal(record) {
     const envId = record.get('id');
+    const envName = record.get('name');
     const effectModal = Modal.open({
       key: effectKey,
-      title: formatMessage({ id: `${intlPrefix}.stop.title` }, { name }),
+      title: formatMessage({ id: `${intlPrefix}.stop.title` }, { name: envName }),
       children: <Spin />,
       footer: null,
+      movable: false,
     });
     const res = await checkStatus(record);
     if (res) {
