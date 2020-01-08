@@ -65,7 +65,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private DevopsEnvCommandService devopsEnvCommandService;
 
     /**
-     * 发送和应用服务失败、启用和停用的消息(调用此方法时注意在外层捕获异常，此方法不保证无异常抛出)
+     * 发送和应用服务失败、启用和停用和删除的消息(调用此方法时注意在外层捕获异常，此方法不保证无异常抛出)
      *
      * @param appServiceId    应用服务id
      * @param sendSettingCode 消息code
@@ -163,6 +163,19 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                                 .map(p -> constructTargetUser(p.getIamUserId()))
                                 .collect(Collectors.toList())),
                 ex -> LOGGER.info("Error occurred when sending message about app-service-disable. The exception is {}.", ex));
+    }
+
+    @Override
+    @Async
+    public void sendWhenAppServiceDelete(Long appServiceId) {
+        doWithTryCatchAndLog(
+                () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.DELETE_APP_SERVICE,
+                        app -> mapNullListToEmpty(appServiceService.pagePermissionUsers(app.getProjectId(), app.getId(), CustomPageRequest.of(0, 0), null)
+                                .getList())
+                                .stream()
+                                .map(p -> constructTargetUser(p.getIamUserId()))
+                                .collect(Collectors.toList())),
+                ex -> LOGGER.info("Error occurred when sending message about app-service-delete. The exception is {}.", ex));
     }
 
 
