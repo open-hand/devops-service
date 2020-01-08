@@ -2283,6 +2283,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 list.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, serviceType, params));
                 Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()
                         .map(this::dtoToGroupInfoVO)
+                        .filter(v -> !projectId.equals(v.getId()))
                         .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getProjectId));
 
                 for (Map.Entry<Long, List<AppServiceGroupInfoVO>> entry : map.entrySet()) {
