@@ -510,6 +510,15 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
 
         AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
+
+        if (appServiceDTO == null) {
+            throw new CommonException("error.app.service.not.exist");
+        }
+
+        if (!Boolean.TRUE.equals(appServiceDTO.getActive())) {
+            throw new CommonException("error.app.service.disabled");
+        }
+
         AppServiceVersionDTO appServiceVersionDTO =
                 appServiceVersionService.baseQuery(appServiceDeployVO.getAppServiceVersionId());
 
@@ -1388,7 +1397,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 configVO = queryDefaultConfig(appServiceDTO.getProjectId(), configVO);
             }
             if (configVO.getPrivate() != null && configVO.getPrivate()) {
-                DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndId(devopsEnvironmentDTO.getCode(), devopsConfigDTO.getId());
+                DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndId(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId());
                 if (devopsRegistrySecretDTO == null) {
                     //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
                     List<DevopsRegistrySecretDTO> devopsRegistrySecretDTOS = devopsRegistrySecretService.baseListByConfig(devopsConfigDTO.getId());
