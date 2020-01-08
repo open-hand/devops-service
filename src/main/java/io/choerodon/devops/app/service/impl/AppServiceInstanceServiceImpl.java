@@ -510,6 +510,15 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
 
         AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
+
+        if (appServiceDTO == null) {
+            throw new CommonException("error.app.service.not.exist");
+        }
+
+        if (!Boolean.TRUE.equals(appServiceDTO.getActive())) {
+            throw new CommonException("error.app.service.disabled");
+        }
+
         AppServiceVersionDTO appServiceVersionDTO =
                 appServiceVersionService.baseQuery(appServiceDeployVO.getAppServiceVersionId());
 
