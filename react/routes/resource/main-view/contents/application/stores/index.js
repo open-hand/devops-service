@@ -34,12 +34,13 @@ export const StoreProvider = injectIntl(observer((props) => {
     MAPPING_TAB: 'mapping',
     CIPHER_TAB: 'cipher',
   }), []);
+  const appStore = useStore(tabs);
+
   const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet()), []);
-  const netDs = useMemo(() => new DataSet(NetDataSet({ formatMessage, intlPrefix })), []);
+  const netDs = useMemo(() => new DataSet(NetDataSet({ formatMessage, intlPrefix, appStore })), []);
   const mappingDs = useMemo(() => new DataSet(ConfigDataSet(formatMessage)), []);
   const cipherDs = useMemo(() => new DataSet(ConfigDataSet(formatMessage)), []);
 
-  const appStore = useStore(tabs);
   const mappingStore = useConfigMapStore();
   const cipherStore = useSecretStore();
   const domainStore = useDomainStore();
