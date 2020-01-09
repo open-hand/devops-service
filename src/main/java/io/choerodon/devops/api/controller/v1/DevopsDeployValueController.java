@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.annotation.Permission;
+
 import org.springframework.data.domain.Pageable;
+
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -38,9 +40,9 @@ public class DevopsDeployValueController {
     /**
      * 项目下获取部署配置
      *
-     * @param projectId   项目Id
-     * @param pageable 分页参数
-     * @param params      查询参数
+     * @param projectId 项目Id
+     * @param pageable  分页参数
+     * @param params    查询参数
      * @return 部署配置
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -143,23 +145,27 @@ public class DevopsDeployValueController {
 
 
     /**
-     * 名称校验
+     * 校验部署配置的名称在环境下唯一
      *
-     * @param projectId 项目id
-     * @param name      名称
+     * @param projectId     项目id
+     * @param name          名称
+     * @param deployValueId 部署配置id(更新时校验名称需要)
+     * @param envId         环境id
      * @return 没有内容则名称合法
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "名称校验")
+    @ApiOperation(value = "校验部署配置的名称在环境下唯一")
     @GetMapping("/check_name")
     public ResponseEntity checkName(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "名称", required = true)
             @RequestParam(value = "name") String name,
+            @ApiParam(value = "环境id", required = true)
+            @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "配置id")
             @RequestParam(value = "deploy_value_id", required = false) Long deployValueId) {
-        devopsDeployValueService.checkName(projectId, name, deployValueId);
+        devopsDeployValueService.checkName(projectId, name, deployValueId, envId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
