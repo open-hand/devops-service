@@ -47,10 +47,6 @@ public class DevopsPvReqVO {
     @ApiModelProperty("根据存储类型的不同，生成不同的Json数据")
     private String valueConfig;
 
-    @ApiModelProperty("pvId/必填")
-    @NotNull(message = "error.pv.id.null")
-    private Long pvId;
-
     @ApiModelProperty("pv公开范围，指定项目id/必填，可为空数组")
     @NotNull(message = "error.project.ids.null")
     private List<Long> projectIds;
@@ -61,14 +57,6 @@ public class DevopsPvReqVO {
 
     @ApiModelProperty("更新了skipCheckProjectPermission字段")
     private Long objectVersionNumber;
-
-    public Long getPvId() {
-        return pvId;
-    }
-
-    public void setPvId(Long pvId) {
-        this.pvId = pvId;
-    }
 
     public List<Long> getProjectIds() {
         return projectIds;
