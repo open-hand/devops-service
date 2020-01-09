@@ -332,7 +332,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         DevopsPvDTO prometheusPv = devopsPvMapper.selectByPrimaryKey(devopsPrometheusDTO.getPrometheusPvId());
 
         DevopsPrometheusVO devopsPrometheusVO = devopsPrometheusMapper.queryPrometheusWithPvById(devopsClusterResourceDTO.getConfigId());
-        setPvStatus(alertManagerPv, "alertManager", devopsPrometheusVO);
+        setPvStatus(alertManagerPv, "alertmanager", devopsPrometheusVO);
         setPvStatus(grafanaPv, "grafana", devopsPrometheusVO);
         setPvStatus(prometheusPv, "prometheus", devopsPrometheusVO);
 
@@ -628,14 +628,20 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         String boundPVCName = devopsPvDTO.getPvcName();
         if (boundPVCName != null && boundPVCName.contains(type)) {
             switch (type) {
-                case "alertManager":
+                case "alertmanager":
                     devopsPrometheusVO.setAlertmanagerPvStatus(devopsPvDTO.getStatus());
+                    devopsPrometheusVO.setAlertmanagerPvId(devopsPvDTO.getId());
+                    devopsPrometheusVO.setAlertmanagerPvcName(boundPVCName);
                     break;
                 case "grafana":
                     devopsPrometheusVO.setGrafanaPvStatus(devopsPvDTO.getStatus());
+                    devopsPrometheusVO.setGrafanaPvId(devopsPvDTO.getId());
+                    devopsPrometheusVO.setGrafanaPvcName(boundPVCName);
                     break;
                 case "prometheus":
                     devopsPrometheusVO.setPrometheusPvStatus(devopsPvDTO.getStatus());
+                    devopsPrometheusVO.setPrometheusPvId(devopsPvDTO.getId());
+                    devopsPrometheusVO.setPrometheusPvcName(boundPVCName);
                     break;
                 default:
             }
