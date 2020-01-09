@@ -166,9 +166,11 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 ex -> LOGGER.info("Error occurred when sending message about app-service-disable. The exception is {}.", ex));
     }
 
+    /**
+     * 删除数据消息发送同步执行
+     * @param appServiceId
+     */
     @Override
-    @Async
-    @Transactional
     public void sendWhenAppServiceDelete(Long appServiceId) {
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.DELETE_APP_SERVICE,
