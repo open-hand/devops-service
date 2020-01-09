@@ -10,5 +10,13 @@ export default function useStore({ NET_TAB }) {
     get getTabKey() {
       return this.tabKey;
     },
+
+    networkIds: [],
+    setNetworkIds(data) {
+      this.networkIds = data;
+    },
+    get getNetworkIds() {
+      return this.networkIds;
+    },
   }));
 }
