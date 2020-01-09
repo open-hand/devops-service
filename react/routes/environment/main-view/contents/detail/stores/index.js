@@ -48,7 +48,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const gitopsLogDs = useMemo(() => new DataSet(GitopsLogDataSet({ formatMessage, intlPrefix })), []);
     const gitopsSyncDs = useMemo(() => new DataSet(GitopsSyncDataSet()), []);
     const retryDs = useMemo(() => new DataSet(RetryDataSet()), []);
-    const configFormDs = useMemo(() => new DataSet(ConfigFormDataSet({ formatMessage, intlPrefix, projectId, store: detailStore })), [projectId]);
+    const configFormDs = useMemo(() => new DataSet(ConfigFormDataSet({ formatMessage, intlPrefix, projectId, store: detailStore, envId: id })), [projectId]);
     const nonePermissionDs = useMemo(() => new DataSet(OptionsDataSet()), []);
 
     function freshTree() {
