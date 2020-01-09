@@ -724,6 +724,7 @@ const pvManager = {
   'c7ncd.pv.ip': '服务器IP',
   'c7ncd.pv.permission': '权限管理',
   'c7ncd.pv.share': 'PV公开范围',
+  'c7ncd.pv.share.tips': 'PV公开范围仅能在已分配对应集群权限的项目中设置',
   'c7ncd.pv.name.failed': '只能由小写字母、数字、"."和"-"组成，且以小写字母开头，不能以"-"、"."结尾',
   'c7ncd.pv.project': '项目',
   'c7ncd.pv.project.name': '项目名称',
