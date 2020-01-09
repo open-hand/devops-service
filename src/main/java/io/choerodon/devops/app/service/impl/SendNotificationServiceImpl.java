@@ -29,6 +29,7 @@ import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 发送DevOps相关通知的实现类
@@ -167,6 +168,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     @Override
     @Async
+    @Transactional
     public void sendWhenAppServiceDelete(Long appServiceId) {
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.DELETE_APP_SERVICE,
