@@ -10,6 +10,10 @@ import java.util.List;
  */
 public class DevopsPvPermissionUpdateVO {
 
+    public DevopsPvPermissionUpdateVO() {
+
+    }
+
     public DevopsPvPermissionUpdateVO(@NotNull(message = "error.pv.id.null") Long pvId, @NotNull(message = "error.project.ids.null") List<Long> projectIds, @NotNull(message = "error.skip.check.project.permission.null") Boolean skipCheckProjectPermission, Long objectVersionNumber) {
         this.pvId = pvId;
         this.projectIds = projectIds;
