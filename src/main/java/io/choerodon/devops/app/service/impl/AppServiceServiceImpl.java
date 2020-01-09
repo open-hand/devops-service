@@ -310,6 +310,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
         devOpsAppServicePayload.setAppServiceId(appServiceId);
         devOpsAppServicePayload.setIamProjectId(projectId);
+        //删除应用服务后需要发送消息，这里将消息的内容封近paylod
+        List<DevopsUserPermissionVO> list = pagePermissionUsers(appServiceDTO.getProjectId(), appServiceDTO.getId(), CustomPageRequest.of(0, 0), null).getList();
+        devOpsAppServicePayload.setAppServiceDTO(appServiceDTO);
+        devOpsAppServicePayload.setDevopsUserPermissionVOS(list);
         producer.apply(
                 StartSagaBuilder
                         .newBuilder()
