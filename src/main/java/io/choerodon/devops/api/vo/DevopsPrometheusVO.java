@@ -30,6 +30,9 @@ public class DevopsPrometheusVO {
     @ApiModelProperty("PrometheusPv状态")
     private String prometheusPvStatus;
 
+    @ApiModelProperty("PrometheusPvc名称")
+    private String prometheusPvcName;
+
     @ApiModelProperty("GrafanaPvId/必填")
     @NotNull(message = "error.grafana.pv.id.null")
     private Long grafanaPvId;
@@ -37,12 +40,18 @@ public class DevopsPrometheusVO {
     @ApiModelProperty("GrafanaPv状态")
     private String grafanaPvStatus;
 
+    @ApiModelProperty("GrafanaPvc名称")
+    private String grafanaPvcName;
+
     @ApiModelProperty("AlertmanagerPvId/必填")
     @NotNull(message = "error.alertmanager.pv.id.null")
     private Long alertmanagerPvId;
 
     @ApiModelProperty("AlertmanagerPv状态")
     private String alertmanagerPvStatus;
+
+    @ApiModelProperty("AlertmanagerPvc名称")
+    private String alertmanagerPvcName;
 
     @ApiModelProperty("集群id")
     private Long clusterId;
@@ -146,5 +155,29 @@ public class DevopsPrometheusVO {
 
     public void setAlertmanagerPvStatus(String alertmanagerPvStatus) {
         this.alertmanagerPvStatus = alertmanagerPvStatus;
+    }
+
+    public String getPrometheusPvcName() {
+        return prometheusPvcName;
+    }
+
+    public void setPrometheusPvcName(String prometheusPvcName) {
+        this.prometheusPvcName = prometheusPvcName;
+    }
+
+    public String getGrafanaPvcName() {
+        return grafanaPvcName;
+    }
+
+    public void setGrafanaPvcName(String grafanaPvcName) {
+        this.grafanaPvcName = grafanaPvcName;
+    }
+
+    public String getAlertmanagerPvcName() {
+        return alertmanagerPvcName;
+    }
+
+    public void setAlertmanagerPvcName(String alertmanagerPvcName) {
+        this.alertmanagerPvcName = alertmanagerPvcName;
     }
 }
