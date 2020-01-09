@@ -463,6 +463,8 @@ public class DevopsSagaHandler {
             description = "Devops删除应用服务", maxRetryCount = 3,
             seq = 1)
     public void deleteAppService(String data) {
+        LOGGER.info("打印日志");
+        LOGGER.info(data);
         DevOpsAppServicePayload devOpsAppServicePayload = gson.fromJson(data, DevOpsAppServicePayload.class);
         appServiceService.deleteAppServiceSage(devOpsAppServicePayload.getIamProjectId(), devOpsAppServicePayload.getAppServiceId());
         //删除应用服务成功之后，发送消息
