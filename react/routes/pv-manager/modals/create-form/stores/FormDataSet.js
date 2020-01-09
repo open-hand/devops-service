@@ -43,12 +43,11 @@ export default (({ intlPrefix, formatMessage, projectId, typeDs, modeDs, storage
     if (name === 'clusterId' && value) {
       const cluster = clusterDs.find((clusterRecord) => clusterRecord.get('id') === value);
       if (cluster) {
-        // if (cluster.get('skipCheckProjectPermission')) {
-        //   projectOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/page_projects`;
-        // } else {
-        //   projectOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/clusters/${value}/permission/page_related`;
-        // }
-        projectOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/page_projects`;
+        if (cluster.get('skipCheckProjectPermission')) {
+          projectOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/page_projects`;
+        } else {
+          projectOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/clusters/${value}/permission/page_related`;
+        }
       }
     }
   }
