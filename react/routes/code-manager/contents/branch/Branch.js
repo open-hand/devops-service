@@ -1,10 +1,8 @@
 import React, { Fragment, useEffect } from 'react';
 import { Modal as ProModal, Table, Tooltip, Button } from 'choerodon-ui/pro';
 import { Page, Permission, stores, Action } from '@choerodon/boot';
-import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-
 import BranchCreate from './branch-create/index';
 import BranchEdit from './branch-edit';
 import IssueDetail from './issue-detail';
@@ -14,7 +12,6 @@ import TimePopover from '../../../../components/timePopover';
 import Loading from '../../../../components/loading';
 import StatusIcon from '../../../../components/StatusIcon/StatusIcon';
 import handleMapStore from '../../main-view/store/handleMapStore';
-
 import { useTableStore } from './stores';
 
 import '../../../main.less';
@@ -110,12 +107,34 @@ function Branch(props) {
   };
 
   // 打开修改问题模态框
-  function openEditIssueModal(issueId, objectVersionNumber, branchName) {
+  function openEditIssueModal(recordData) {
+    const {
+      issueId,
+      objectVersionNumber,
+      branchName,
+      issueCode: issueNum,
+      issueName: summary,
+      typeCode,
+    } = recordData || {};
+    const initIssue = {
+      issueId,
+      issueNum,
+      summary,
+      typeCode,
+    };
     ProModal.open({
       key: branchEditModalKey,
       title: <FormattedMessage id="branch.edit" />,
       drawer: true,
-      children: <BranchEdit intl={intl} appServiceId={appServiceId} objectVersionNumber={objectVersionNumber} branchName={branchName} issueId={issueId} handleRefresh={handleRefresh} />,
+      children: <BranchEdit
+        intl={intl}
+        appServiceId={appServiceId}
+        objectVersionNumber={objectVersionNumber}
+        branchName={branchName}
+        issueId={issueId}
+        initIssue={initIssue}
+        handleRefresh={handleRefresh}
+      />,
       style: branchCreateModalStyle,
       okText: <FormattedMessage id="save" />,
       cancelText: <FormattedMessage id="cancel" />,
@@ -137,7 +156,7 @@ function Branch(props) {
           name={text}
           width={0.2}
           clickAble={status !== 'operating'}
-          onClick={() => openEditIssueModal(issueId, objectVersionNumber, branchName)}
+          onClick={() => openEditIssueModal(record.toData())}
           record={text}
         />
       </div>

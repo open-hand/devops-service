@@ -1,16 +1,16 @@
-export default ({ projectId, optionsDs, formatMessage, appServiceId, objectVersionNumber, branchName }) => ({
+export default ({ projectId, issueId, formatMessage, appServiceId, objectVersionNumber, branchName }) => ({
   autoCreate: true,
   autoQuery: false,
   selection: 'single',
   paging: false,
   fields: [
     {
-      name: 'issueName',
-      type: 'string',
+      name: 'issue',
+      type: 'object',
       textField: 'summary',
-      label: formatMessage({ id: 'branch.issueName' }),
       valueField: 'issueId',
-      options: optionsDs,
+      label: formatMessage({ id: 'branch.issueName' }),
+      lookupUrl: `/agile/v1/projects/${projectId}/issues/summary?issueId=${issueId || ''}&onlyActiveSprint=false&self=true`,
     },
   ],
   transport: {
@@ -18,9 +18,10 @@ export default ({ projectId, optionsDs, formatMessage, appServiceId, objectVersi
       url: `/devops/v1/projects/${projectId}/app_service/${appServiceId}/git/update_branch_issue`,
       method: 'put',
       transformRequest: () => {
+        const { issueId: currentIssueId } = data.issue || {};
         const postData = {
           appServiceId,
-          issueId: Number(data.issueName),
+          issueId: currentIssueId,
           objectVersionNumber,
           branchName,
         };

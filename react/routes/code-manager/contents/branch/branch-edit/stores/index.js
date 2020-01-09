@@ -1,10 +1,8 @@
-import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
+import React, { createContext, useContext, useMemo, useEffect } from 'react';
 import { inject } from 'mobx-react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
-
-import OptionsDataSet from './OptionsDataSet';
 import SelectDataSet from './SelectDataSet';
 
 const Store = createContext();
@@ -24,16 +22,19 @@ export const StoreProvider = injectIntl(inject('AppState')(
       objectVersionNumber,
       children,
       intlPrefix,
+      initIssue,
     } = props;
 
-    const optionsDs = useMemo(() => new DataSet(OptionsDataSet({ projectId, issueId }), [projectId]));
-    const selectDs = useMemo(() => new DataSet(SelectDataSet({ projectId, optionsDs, formatMessage, appServiceId, objectVersionNumber, branchName }), [projectId]));
+    const selectDs = useMemo(() => new DataSet(SelectDataSet({ projectId, issueId, formatMessage, appServiceId, objectVersionNumber, branchName }), [projectId]));
+
+    useEffect(() => {
+      issueId && selectDs.current.init('issue', initIssue);
+    }, []);
 
     const value = {
       ...props,
       appServiceId,
       selectDs,
-      optionsDs,
       formatMessage,
       intlPrefix,
     };
