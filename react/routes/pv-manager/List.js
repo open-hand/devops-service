@@ -21,7 +21,7 @@ const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
 const deleteKey = Modal.key();
 const modalStyle1 = {
-  width: 380,
+  width: 740,
 };
 const modalStyle2 = {
   width: 'calc(100vw - 3.52rem)',

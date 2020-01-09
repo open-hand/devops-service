@@ -1,7 +1,7 @@
 import React, { Fragment, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Choerodon } from '@choerodon/boot';
-import { map, some } from 'lodash';
+import { map, some, compact } from 'lodash';
 import { SelectBox, Select, Form, Tooltip } from 'choerodon-ui/pro';
 import DynamicSelect from '../../../../../../../components/dynamic-select-new';
 import { handlePromptError } from '../../../../../../../utils';
@@ -18,10 +18,10 @@ const Permission = observer((props) => {
   }, []);
   
   modal.handleOk(async () => {
-    const projectIds = map(PermissionDs.created, ({ data: { projectId } }) => projectId);
+    const projectIds = map(PermissionDs.created, (record) => record.get('projectId')) || [];
     const skipCheckProjectPermission = clusterDetail.get('skipCheckProjectPermission');
     const projects = {
-      projectIds,
+      projectIds: compact(projectIds),
       skipCheckProjectPermission,
     };
     if (!(projects && projects.projectIds)) return false;
