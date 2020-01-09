@@ -357,6 +357,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                         pageable.getPageNumber(), pageable.getPageSize())
                         .doSelectPageInfo(() -> devopsClusterProPermissionService.baseListByClusterId(clusterId));
                 return ConvertUtils.convertPage(relationPage, permission -> {
+                    if (permission.getProjectId() == null) {
+                        return null;
+                    }
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
                     return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
                 });
