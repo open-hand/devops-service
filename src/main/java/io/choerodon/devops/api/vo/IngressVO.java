@@ -1,5 +1,9 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.Set;
+
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Created by younger on 2018/4/25.
  */
@@ -9,6 +13,8 @@ public class IngressVO {
     private String address;
     private String ports;
     private String age;
+    @ApiModelProperty("这个ingress所关联的service的名称集合")
+    private Set<String> services;
 
     public String getName() {
         return name;
@@ -48,5 +54,13 @@ public class IngressVO {
 
     public void setAge(String age) {
         this.age = age;
+    }
+
+    public Set<String> getServices() {
+        return services;
+    }
+
+    public void setServices(Set<String> services) {
+        this.services = services;
     }
 }
