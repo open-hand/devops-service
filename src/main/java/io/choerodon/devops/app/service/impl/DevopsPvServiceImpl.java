@@ -167,9 +167,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsClusterDTO.getSystemEnvId());
 
 
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         //校验环境信息
-        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+        checkEnv(devopsEnvironmentDTO);
 
         //创建删除命令
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(DELETE);
