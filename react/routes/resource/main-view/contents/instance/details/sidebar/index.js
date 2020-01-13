@@ -410,7 +410,7 @@ export default class DetailsSidebar extends Component {
           <FormattedMessage id="close" />
         </Button>,
       ]}
-      title={formatMessage({ id: 'ist.deploy.detail' })}
+      title={formatMessage({ id: `ist.deploy.${detail ? detail.kind : 'deployment'}.detail` })}
     >
       <div className="c7ncd-expand-btn-wrap">
         <Button
