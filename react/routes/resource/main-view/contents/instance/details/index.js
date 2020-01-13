@@ -79,6 +79,7 @@ export default class Details extends Component {
       },
     } = this.context;
     const result = await detailsStore.loadDeploymentsJson(type, projectId, id, name);
+    detailsStore.loadDeploymentsYaml(type, projectId, id, name);
     if (result) {
       this.setState({ visible: true });
     }
