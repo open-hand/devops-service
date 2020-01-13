@@ -1386,6 +1386,8 @@ const zhCN = {
   'ist.deploy.StatefulSet.detail': '查看实例Stateful Set详情',
   'ist.deploy.DaemonSet.detail': '查看实例Daemon Set详情',
   'ist.deploy.title': '查看实例“{name}”的Deployment详情',
+  'ist.deploy.type.json': '列表格式查看',
+  'ist.deploy.type.yaml': 'YAML格式查看',
   'ist.deploy.description': '您可在此查看各个实例Deployment的详情。',
   'ist.deploy.link': `${docServer}/user-guide/deployment-pipeline/instance/`,
   'ist.deploy.container': '容器名称',
