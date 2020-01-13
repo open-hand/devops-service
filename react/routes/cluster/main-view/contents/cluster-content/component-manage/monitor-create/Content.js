@@ -1,14 +1,13 @@
 import React, { useMemo } from 'react';
 import { Choerodon } from '@choerodon/boot';
 import { Form, Password, Select, TextField } from 'choerodon-ui/pro';
-import filter from 'lodash/filter';
-import forEach from 'lodash/forEach';
-import map from 'lodash/map';
+import { filter, forEach, map } from 'lodash';
+import { observer } from 'mobx-react-lite';
 import { usePrometheusStore } from './stores';
 
 import './index.less';
 
-export default (props) => {
+export default observer((props) => {
   const {
     formDs,
     modal,
@@ -72,8 +71,8 @@ export default (props) => {
   return (
     <div>
       <Form dataSet={formDs}>
-        <Password name="adminPassword" autoFocus />
-        <TextField name="grafanaDomain" />
+        <Password name="adminPassword" autoFocus={!isModify} disabled={isModify} />
+        <TextField name="grafanaDomain" autoFocus={isModify} />
       </Form>
       <div className={`${prefixCls}-monitor-create-pv`}>
         <span>{formatMessage({ id: `${intlPrefix}.monitor.pv` })}</span>
@@ -83,4 +82,4 @@ export default (props) => {
       </Form>
     </div>
   );
-};
+});

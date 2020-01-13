@@ -57,7 +57,7 @@ build-combine:
     - npm run dist
     - npm run compile
     - echo '//${NPM_REGISTRY}:_authToken=${NPM_TOKEN}'>.npmrc
-    - npm publish --registry https://nexus.choerodon.com.cn/repository/private-npm/
+    - npm publish --registry ${NPM_PUBLISH_REGISTRY}
     - curl -sX POST -F token=${FRONT_REPOSITORY_TOKEN} -F ref=${REF_NAME} https://code.choerodon.com.cn/api/v4/projects/6643/trigger/pipeline
     - mv src/main/resources/lib/dist docker
     - cp /usr/bin/kaniko $PWD/docker
