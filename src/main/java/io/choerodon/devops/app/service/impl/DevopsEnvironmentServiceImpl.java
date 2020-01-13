@@ -169,6 +169,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsDeployValueService devopsDeployValueService;
     @Autowired
     private PermissionHelper permissionHelper;
+    @Autowired
+    private DevopsRegistrySecretService devopsRegistrySecretService;
 
     @PostConstruct
     private void init() {
@@ -1315,6 +1317,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 删除环境关联的部署配置
         devopsDeployValueService.deleteByEnvId(envId);
+
+        // 删除RegistrySecret
+        devopsRegistrySecretService.deleteByEnvId(envId);
 
         // 删除环境
         baseDeleteById(envId);

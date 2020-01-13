@@ -1,15 +1,17 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.Objects;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsRegistrySecretService;
 import io.choerodon.devops.infra.dto.DevopsRegistrySecretDTO;
 import io.choerodon.devops.infra.mapper.DevopsRegistrySecretMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created by Sheep on 2019/7/15.
@@ -21,6 +23,13 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
 
     @Autowired
     private DevopsRegistrySecretMapper devopsRegistrySecretMapper;
+
+    @Override
+    public void deleteByEnvId(Long envId) {
+        DevopsRegistrySecretDTO deleteCondition = new DevopsRegistrySecretDTO();
+        deleteCondition.setEnvId(Objects.requireNonNull(envId));
+        devopsRegistrySecretMapper.delete(deleteCondition);
+    }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -48,7 +57,7 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
 
     @Override
     public void baseUpdateStatus(Long id, Boolean status) {
-        devopsRegistrySecretMapper.updateStatus(id,status);
+        devopsRegistrySecretMapper.updateStatus(id, status);
     }
 
     @Override
