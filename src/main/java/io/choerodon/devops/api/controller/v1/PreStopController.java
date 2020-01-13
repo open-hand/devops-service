@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,7 @@ public class PreStopController {
      */
     @PostMapping
     @Permission(permissionWithin = true)
+    @ApiOperation(value = "释放这个微服务实例所持有的一些资源(比如redis的键),一般由外部的容器根据生命周期调用")
     public ResponseEntity preStop() {
         LOGGER.info("PreStop API is being called...");
         agentGitOpsSocketHandlerRegistration.removeRedisKeyOfThisMicroService();

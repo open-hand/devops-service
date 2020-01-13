@@ -25,7 +25,7 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DeployVersionVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
-import io.choerodon.devops.app.service.IamService
+
 import io.choerodon.devops.infra.dto.*
 import io.choerodon.devops.infra.dto.iam.IamUserDTO
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO
@@ -68,9 +68,6 @@ class AppServiceVersionControllerSpec extends Specification {
     private DevopsGitlabPipelineMapper devopsGitlabPipelineMapper
     @Autowired
     private DevopsGitlabCommitMapper devopsGitlabCommitMapper
-
-    @Autowired
-    private IamService iamRepository
 
     @Shared
     Long project_id = 1L
@@ -277,13 +274,13 @@ class AppServiceVersionControllerSpec extends Specification {
     }
 
     // 项目下查询应用最新的版本和各环境下部署的版本
-    def "GetDeployVersions"() {
-        when: '项目下查询应用最新的版本和各环境下部署的版本'
-        def dto = restTemplate.getForObject(mapping + "/app_service/{app_service_id}/deployVersions", DeployVersionVO.class, 1L, 1L)
-
-        then: '校验返回结果'
-        dto["latestVersion"] == "0.2.0-dev.20180521111826"
-    }
+//    def "GetDeployVersions"() {
+//        when: '项目下查询应用最新的版本和各环境下部署的版本'
+//        def dto = restTemplate.getForObject(mapping + "/app_service/{app_service_id}/deployVersions", DeployVersionVO.class, 1L, 1L)
+//
+//        then: '校验返回结果'
+//        dto["latestVersion"] == "0.2.0-dev.20180521111826"
+//    }
 
     // 根据版本id获取版本values
     def "GetVersionValue"() {

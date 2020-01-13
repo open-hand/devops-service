@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { Form, Select } from 'choerodon-ui/pro';
 import { injectIntl } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
 import { useSelectStore } from './stores';
 
@@ -11,36 +10,8 @@ function BranchEdit() {
     formatMessage,
     modal,
     handleRefresh,
-    optionsDs,
-    issueId,
     selectDs,
   } = useSelectStore();
-
-  useEffect(() => {
-    optionsDs.query().then(() => {
-      issueId ? selectDs.current.set('issueName', issueId) : null;
-    });
-  }, []);
-
-  const recordData = optionsDs.toData();
-  const optionsData = [];
-  let issueTypeCode;
-  let issueSummry;
-  let issueIusseNum;
-  let issueIssueId;
-  recordData.forEach(item => {
-    issueIssueId = item.issueId;
-    issueTypeCode = item.typeCode;
-    issueSummry = item.summary;
-    issueIusseNum = item.issueNum;
-    const data = {
-      issueId: issueIssueId,
-      typeCode: issueTypeCode,
-      summary: issueSummry,
-      issueNum: issueIusseNum,
-    };
-    optionsData.push(data);
-  });
 
   /**
    * 创建
@@ -110,20 +81,11 @@ function BranchEdit() {
     );
   };
 
-  const issueNameRender = ({ text }) => {
-    let renderTypeCode;
-    let renderIssueNum;
-    let renderSummary;
-    optionsData.forEach(item => {
-      if (item.issueId === Number(text)) {
-        renderTypeCode = item.typeCode;
-        renderIssueNum = item.issueNum;
-        renderSummary = item.summary;
-      }
-    });
+  const issueNameRender = ({ text, value }) => {
+    const { typeCode, issueNum, summary } = value || {};
     return (
       text ? <span>
-        {renderissueName(renderTypeCode, renderIssueNum, renderSummary)}
+        {renderissueName(typeCode, issueNum, summary)}
       </span> : null
     );
   };
@@ -142,7 +104,13 @@ function BranchEdit() {
   return (
     <div style={{ width: '75%' }}>
       <Form dataSet={selectDs}>
-        <Select name="issueName" optionRenderer={issueNameOptionRender} renderer={issueNameRender} />
+        <Select
+          name="issue"
+          optionRenderer={issueNameOptionRender}
+          renderer={issueNameRender}
+          searchable
+          searchMatcher="content"
+        />
       </Form>
     </div>
   );

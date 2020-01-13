@@ -3,18 +3,18 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.annotation.Permission;
-import org.springframework.data.domain.Pageable;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -196,7 +196,7 @@ public class DevopsIngressController {
 
 
     /**
-     * 环境总览域名查询
+     * 环境下分页查询域名
      *
      * @param projectId 项目id
      * @param envId     环境Id
@@ -208,7 +208,7 @@ public class DevopsIngressController {
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest
-    @ApiOperation(value = "环境总览域名查询")
+    @ApiOperation(value = "环境下分页查询域名")
     @PostMapping(value = "/{env_id}/page_by_env")
     public ResponseEntity<PageInfo<DevopsIngressVO>> pageByEnv(
             @ApiParam(value = "项目 ID", required = true)

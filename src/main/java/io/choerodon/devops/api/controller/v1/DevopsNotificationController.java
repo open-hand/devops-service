@@ -1,20 +1,20 @@
 package io.choerodon.devops.api.controller.v1;
 
-import io.choerodon.core.annotation.Permission;
-import io.choerodon.core.enums.ResourceType;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsNotificationTransferDataVO;
-import io.choerodon.devops.api.vo.ResourceCheckVO;
-import io.choerodon.devops.app.service.DevopsNotificationService;
+import java.util.Optional;
+
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
+import io.choerodon.core.annotation.Permission;
+import io.choerodon.core.enums.ResourceType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.vo.ResourceCheckVO;
+import io.choerodon.devops.app.service.DevopsNotificationService;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -33,11 +33,12 @@ public class DevopsNotificationController {
      * @param projectId  项目id
      * @param envId      环境id
      * @param objectType 资源对象类型
-     * @return
+     * @return 校验结果
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/check_delete_resource")
+    @ApiOperation(value = "校验删除对象是否需要发送验证码")
     public ResponseEntity<ResourceCheckVO> checkDeleteResource(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -59,11 +60,11 @@ public class DevopsNotificationController {
      * @param objectId       对象Id
      * @param notificationId 通知Id
      * @param objectType     对象类型
-     * @return
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/send_message")
+    @ApiOperation(value = "发送验证码")
     public void sendMessage(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -87,11 +88,11 @@ public class DevopsNotificationController {
      * @param objectId   对象Id
      * @param captcha    验证码
      * @param objectType 对象类型
-     * @return
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/validate_captcha")
+    @ApiOperation(value = "校验验证码")
     public void validateCaptcha(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -106,16 +107,13 @@ public class DevopsNotificationController {
         notificationService.validateCaptcha(envId, objectId, objectType, captcha);
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @GetMapping(value = "/transfer/data")
-    public ResponseEntity<List<DevopsNotificationTransferDataVO>> transferDate(
-            @ApiParam(value = "项目ID")
-            @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(notificationService.transferDate())
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.transfer.data"));
-    }
-
-
-
+//    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+//    @GetMapping(value = "/transfer/data")
+//    public ResponseEntity<List<DevopsNotificationTransferDataVO>> transferDate(
+//            @ApiParam(value = "项目ID")
+//            @PathVariable(value = "project_id") Long projectId) {
+//        return Optional.ofNullable(notificationService.transferDate())
+//                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+//                .orElseThrow(() -> new CommonException("error.transfer.data"));
+//    }
 }

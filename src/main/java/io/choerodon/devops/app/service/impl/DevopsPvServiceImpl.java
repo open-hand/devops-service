@@ -152,6 +152,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         operatePVGitlabFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                 v1PersistentVolume, devopsPvDTO, devopsEnvCommandDTO, devopsEnvironmentDTO, userAttrDTO);
 
+        DevopsPvPermissionUpdateVO permissionUpdateVO = new DevopsPvPermissionUpdateVO(devopsPvDTO.getId(), devopsPvReqVo.getProjectIds(), devopsPvReqVo.getSkipCheckProjectPermission(), devopsPvReqVo.getObjectVersionNumber());
+        assignPermission(permissionUpdateVO);
     }
 
     private void checkEnv(DevopsEnvironmentDTO devopsEnvironmentDTO) {
@@ -177,9 +179,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsClusterDTO.getSystemEnvId());
 
 
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         //校验环境信息
-        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+        checkEnv(devopsEnvironmentDTO);
 
         //创建删除命令
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(DELETE);

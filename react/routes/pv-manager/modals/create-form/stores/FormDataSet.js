@@ -1,12 +1,11 @@
 import { axios } from '@choerodon/boot';
-import omit from 'lodash/omit';
-import pick from 'lodash/pick';
+import { omit, pick, map, compact } from 'lodash';
 
 function getIpRequired({ record }) {
   return record.get('type') === 'NFS';
 }
 
-export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs, clusterDs) => {
+export default (({ intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs, clusterDs, projectOptionsDs, projectTableDs }) => {
   async function checkName(value, name, record) {
     const pa = /^[a-z]([-.a-z0-9]*[a-z0-9])?$/;
     if (!value) return;
@@ -40,15 +39,32 @@ export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs
     }
   }
 
+  function handleUpdate({ value, record, name }) {
+    if (name === 'clusterId' && value) {
+      const cluster = clusterDs.find((clusterRecord) => clusterRecord.get('id') === value);
+      if (cluster) {
+        if (cluster.get('skipCheckProjectPermission')) {
+          projectOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/page_projects`;
+        } else {
+          projectOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/clusters/${value}/permission/page_related`;
+        }
+      }
+    }
+  }
+
   return ({
     autoCreate: true,
     autoQuery: false,
     selection: false,
+    children: {
+      projects: projectTableDs,
+    },
     transport: {
       create: ({ data: [data] }) => {
-        const res = omit(data, ['__id', '__status', 'storage', 'unit', 'server', 'path']);
+        const res = omit(data, ['__id', '__status', 'storage', 'unit', 'server', 'path', 'projects']);
         res.requestResource = `${data.storage}${data.unit}`;
         res.valueConfig = JSON.stringify(pick(data, ['server', 'path']));
+        res.projectIds = data.skipCheckProjectPermission ? [] : compact(map(data.projects, 'projectId') || []);
         return ({
           url: `/devops/v1/projects/${projectId}/pvs`,
           method: 'post',
@@ -76,5 +92,8 @@ export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs
       { name: 'server', type: 'string', label: formatMessage({ id: `${intlPrefix}.ip` }), validator: checkIp, dynamicProps: { required: getIpRequired } },
       { name: 'skipCheckProjectPermission', type: 'boolean', defaultValue: true },
     ],
+    events: {
+      update: handleUpdate,
+    },
   });
 });

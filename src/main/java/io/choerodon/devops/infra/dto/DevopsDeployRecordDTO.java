@@ -45,6 +45,9 @@ public class DevopsDeployRecordDTO extends BaseDTO {
     private Long appServiceId;
 
     @Transient
+    private String errorInfo;
+
+    @Transient
     private String envName;
 
     public DevopsDeployRecordDTO() {
@@ -171,5 +174,13 @@ public class DevopsDeployRecordDTO extends BaseDTO {
     public String getEnvName() {
 
         return envName;
+    }
+
+    public String getErrorInfo() {
+        return errorInfo;
+    }
+
+    public void setErrorInfo(String errorInfo) {
+        this.errorInfo = errorInfo;
     }
 }

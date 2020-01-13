@@ -42,7 +42,7 @@ public class DevopsPvcController {
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "分页查询")
+    @ApiOperation(value = "分页查询PVC")
     @CustomPageRequest
     @PostMapping("/page_by_options")
     public ResponseEntity<PageInfo<DevopsPvcRespVO>> pageByOptions(
@@ -60,13 +60,6 @@ public class DevopsPvcController {
                 .orElseThrow(() -> new CommonException("error.pvc.page"));
     }
 
-    /**
-     * 创建PVC
-     *
-     * @param projectId
-     * @param devopsPvcReqVO
-     * @return
-     */
     @PostMapping
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -109,7 +102,6 @@ public class DevopsPvcController {
      *
      * @param name  PVC名称
      * @param envId 环境id
-     * @return Boolean
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -124,5 +116,4 @@ public class DevopsPvcController {
             @RequestParam(value = "name") String name) {
         devopsPvcService.baseCheckName(name, envId);
     }
-
 }

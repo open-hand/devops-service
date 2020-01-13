@@ -43,8 +43,6 @@ class GitlabWebHookServiceimplSpec extends Specification {
     @Autowired
     private DevopsGitService devopsGitService
 
-    @Autowired
-    private IamService iamService
 
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService

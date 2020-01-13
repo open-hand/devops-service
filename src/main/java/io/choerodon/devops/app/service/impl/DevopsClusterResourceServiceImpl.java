@@ -626,22 +626,23 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     private void setPvStatus(DevopsPvDTO devopsPvDTO, String type, DevopsPrometheusVO devopsPrometheusVO) {
         String boundPVCName = devopsPvDTO.getPvcName();
+        String pvName = devopsPvDTO.getName();
         if (boundPVCName != null && boundPVCName.contains(type)) {
             switch (type) {
                 case "alertmanager":
                     devopsPrometheusVO.setAlertmanagerPvStatus(devopsPvDTO.getStatus());
                     devopsPrometheusVO.setAlertmanagerPvId(devopsPvDTO.getId());
-                    devopsPrometheusVO.setAlertmanagerPvcName(boundPVCName);
+                    devopsPrometheusVO.setAlertmanagerPvName(pvName);
                     break;
                 case "grafana":
                     devopsPrometheusVO.setGrafanaPvStatus(devopsPvDTO.getStatus());
                     devopsPrometheusVO.setGrafanaPvId(devopsPvDTO.getId());
-                    devopsPrometheusVO.setGrafanaPvcName(boundPVCName);
+                    devopsPrometheusVO.setGrafanaPvName(pvName);
                     break;
                 case "prometheus":
                     devopsPrometheusVO.setPrometheusPvStatus(devopsPvDTO.getStatus());
                     devopsPrometheusVO.setPrometheusPvId(devopsPvDTO.getId());
-                    devopsPrometheusVO.setPrometheusPvcName(boundPVCName);
+                    devopsPrometheusVO.setPrometheusPvName(pvName);
                     break;
                 default:
             }

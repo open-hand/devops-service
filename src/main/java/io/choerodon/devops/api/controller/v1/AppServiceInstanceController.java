@@ -91,43 +91,43 @@ public class AppServiceInstanceController {
     }
 
 
-    /**
-     * 分页查询服务部署
-     *
-     * @param projectId    项目id
-     * @param pageable  分页参数
-     * @param envId        环境id
-     * @param versionId    版本id
-     * @param appServiceId 服务id
-     * @param params       搜索参数
-     * @return page of DevopsEnvPreviewInstanceVO
-     */
-    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "分页查询服务部署")
-    @CustomPageRequest
-    @PostMapping(value = "/page_by_options")
-    public ResponseEntity<PageInfo<DevopsEnvPreviewInstanceVO>> pageByOptions(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiIgnore
-            @ApiParam(value = "分页参数") Pageable pageable,
-            @ApiParam(value = "环境ID")
-            @RequestParam(value = "env_id", required = false) Long envId,
-            @ApiParam(value = "版本ID")
-            @RequestParam(value = "version_id", required = false) Long versionId,
-            @ApiParam(value = "服务ID")
-            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
-            @ApiParam(value = "实例ID")
-            @RequestParam(value = "instance_id", required = false) Long instanceId,
-            @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String params) {
-        return Optional.ofNullable(appServiceInstanceService.pageByOptions(
-                projectId, pageable, envId, versionId, appServiceId, instanceId, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.application.version.query"));
-    }
+//    /**
+//     * 分页查询服务部署
+//     *
+//     * @param projectId    项目id
+//     * @param pageable  分页参数
+//     * @param envId        环境id
+//     * @param versionId    版本id
+//     * @param appServiceId 服务id
+//     * @param params       搜索参数
+//     * @return page of DevopsEnvPreviewInstanceVO
+//     */
+//    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
+//            roles = {InitRoleCode.PROJECT_OWNER,
+//                    InitRoleCode.PROJECT_MEMBER})
+//    @ApiOperation(value = "分页查询服务部署")
+//    @CustomPageRequest
+//    @PostMapping(value = "/page_by_options")
+//    public ResponseEntity<PageInfo<DevopsEnvPreviewInstanceVO>> pageByOptions(
+//            @ApiParam(value = "项目ID", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @ApiIgnore
+//            @ApiParam(value = "分页参数") Pageable pageable,
+//            @ApiParam(value = "环境ID")
+//            @RequestParam(value = "env_id", required = false) Long envId,
+//            @ApiParam(value = "版本ID")
+//            @RequestParam(value = "version_id", required = false) Long versionId,
+//            @ApiParam(value = "服务ID")
+//            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
+//            @ApiParam(value = "实例ID")
+//            @RequestParam(value = "instance_id", required = false) Long instanceId,
+//            @ApiParam(value = "查询参数")
+//            @RequestBody(required = false) String params) {
+//        return Optional.ofNullable(appServiceInstanceService.pageByOptions(
+//                projectId, pageable, envId, versionId, appServiceId, instanceId, params))
+//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+//                .orElseThrow(() -> new CommonException("error.application.version.query"));
+//    }
 
 
     /**
@@ -285,7 +285,7 @@ public class AppServiceInstanceController {
     }
 
     /**
-     * 获取升级Value
+     * 获取当前实例升级到特定版本的Values
      *
      * @param projectId  项目id
      * @param instanceId 实例id
@@ -295,7 +295,7 @@ public class AppServiceInstanceController {
     @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "获取升级Value")
+    @ApiOperation(value = "获取当前实例升级到特定版本的Values")
     @GetMapping(value = "/{instance_id}/appServiceVersion/{version_id}/upgrade_value")
     public ResponseEntity<InstanceValueVO> queryUpgradeValue(
             @ApiParam(value = "项目ID", required = true)
@@ -406,7 +406,7 @@ public class AppServiceInstanceController {
      * @param appServiceDeployUpdateVO 更新信息
      * @return ApplicationInstanceVO
      */
-    @ApiOperation(value = "更新服务")
+    @ApiOperation(value = "更新实例")
     @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
@@ -483,7 +483,7 @@ public class AppServiceInstanceController {
      */
     @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "获取部署实例release相关对象")
+    @ApiOperation(value = "获取部署实例release中的各种资源")
     @GetMapping("/{instance_id}/resources")
     public ResponseEntity<DevopsEnvResourceVO> listResourcesInHelmRelease(
             @ApiParam(value = "项目ID", required = true)

@@ -8,13 +8,13 @@ import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.annotation.Permission;
-import org.springframework.data.domain.Pageable;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -485,7 +485,7 @@ public class DevopsEnvironmentController {
      * @param envId     环境Id
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "重试gitOps")
+    @ApiOperation(value = "重试gitOps解析流程")
     @GetMapping(value = "/{env_id}/retry")
     public void retryByGitOps(
             @ApiParam(value = "项目ID", required = true)
@@ -503,7 +503,7 @@ public class DevopsEnvironmentController {
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下查询环境")
+    @ApiOperation(value = "环境树形目录")
     @GetMapping(value = "/env_tree_menu")
     public ResponseEntity<List<DevopsEnvGroupEnvsVO>> listEnvTreeMenu(
             @ApiParam(value = "项目id", required = true)
@@ -539,7 +539,7 @@ public class DevopsEnvironmentController {
      *
      * @param projectId 项目id
      * @param envId     环境id
-     * @return boolean
+     * @return true表示可以删除
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
@@ -551,6 +551,27 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "环境id")
             @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvironmentService.deleteCheck(projectId, envId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
+    }
+
+    /**
+     * 查询指定环境是否可停用
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @return true表示可以停用
+     */
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "查询指定环境是否可停用")
+    @GetMapping(value = "/{env_id}/disable_check")
+    public ResponseEntity<Boolean> disableCheck(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id")
+            @PathVariable(value = "env_id") Long envId) {
+        return Optional.ofNullable(devopsEnvironmentService.disableCheck(projectId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
     }

@@ -52,10 +52,10 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
     }
 
     @Override
-    public DevopsRegistrySecretDTO baseQueryByEnvAndId(String namespace, Long configId) {
+    public DevopsRegistrySecretDTO baseQueryByEnvAndId(Long envId, Long configId) {
         DevopsRegistrySecretDTO devopsRegistrySecretDTO = new DevopsRegistrySecretDTO();
         devopsRegistrySecretDTO.setConfigId(configId);
-        devopsRegistrySecretDTO.setNamespace(namespace);
+        devopsRegistrySecretDTO.setEnvId(envId);
         return devopsRegistrySecretMapper.selectOne(devopsRegistrySecretDTO);
     }
 

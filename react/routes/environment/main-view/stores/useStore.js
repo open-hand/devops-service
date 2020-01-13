@@ -24,5 +24,11 @@ export default function useStore() {
     deleteEnv(projectId, id) {
       return axios.delete(`/devops/v1/projects/${projectId}/envs/${id}`);
     },
+    checkDelete(projectId, id) {
+      return axios.get(`/devops/v1/projects/${projectId}/envs/${id}/delete_check`);
+    },
+    checkStop(projectId, id) {
+      return axios.get(`/devops/v1/projects/${projectId}/envs/${id}/disable_check`);
+    },
   }));
 }

@@ -76,7 +76,7 @@ class CreateDomain extends Component {
           postData.domainId = id;
           promise = store.updateData(projectId, id, postData);
         }
-        this.handleResponse(promise);
+        this.handleResponse(promise, network);
       } else {
         this.setState({ submitting: false });
       }
@@ -87,12 +87,19 @@ class CreateDomain extends Component {
    * 处理创建修改域名请求返回的数据
    * @param promise
    */
-  handleResponse = (promise) => {
+  handleResponse = (promise, network) => {
+    const {
+      appStore: {
+        getTabKey,
+        setNetworkIds,
+      },
+    } = this.props;
     if (promise) {
       promise
         .then((data) => {
           this.setState({ submitting: false });
           if (data) {
+            getTabKey === 'net' && setNetworkIds(network);
             this.handleClose(true);
           }
         })

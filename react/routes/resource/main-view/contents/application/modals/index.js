@@ -206,6 +206,7 @@ const AppModals = observer(() => {
         type="create"
         store={domainStore}
         onClose={closeDomain}
+        appStore={appStore}
       />
     )}
     {showNetwork && (

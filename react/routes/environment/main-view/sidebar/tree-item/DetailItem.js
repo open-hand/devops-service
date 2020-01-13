@@ -60,35 +60,54 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
       title: formatMessage({ id: `${intlPrefix}.delete.title` }, { name }),
       children: <Spin />,
       footer: null,
+      movable: false,
     });
+    try {
+      const res = await checkStatus();
 
-    const res = await checkStatus();
-
-    if (res) {
-      const result = await mainStore.checkEffect(projectId, envId);
-      const message = formatMessage({ id: handlePromptError(result) ? `${intlPrefix}.delete.des` : `${intlPrefix}.delete.des.resource.confirm` });
-      deleteModal.update({
-        children: message,
-        okText: formatMessage({ id: 'delete' }),
-        okProps: { color: 'red' },
-        cancelProps: { color: 'dark' },
-        onOk: handleDelete,
-        footer: ((okBtn, cancelBtn) => (
-          <Fragment>
-            {cancelBtn}{okBtn}
-          </Fragment>
-        )),
-      });
-    } else {
-      deleteModal.update({
-        children: formatMessage({ id: `${intlPrefix}.status.change` }),
-        onOk: refresh,
-        footer: ((okBtn, cancelBtn) => (
-          <Fragment>
-            {okBtn}
-          </Fragment>
-        )),
-      });
+      if (res) {
+        const result = await mainStore.checkDelete(projectId, envId);
+        if (result && result.failed) {
+          deleteModal.close();
+        } else if (result) {
+          deleteModal.update({
+            children: formatMessage({ id: `${intlPrefix}.delete.des.resource.confirm` }),
+            okText: formatMessage({ id: 'delete' }),
+            okProps: { color: 'red' },
+            cancelProps: { color: 'dark' },
+            onOk: handleDelete,
+            footer: ((okBtn, cancelBtn) => (
+              <Fragment>
+                {cancelBtn}{okBtn}
+              </Fragment>
+            )),
+          });
+        } else {
+          deleteModal.update({
+            children: formatMessage({ id: `${intlPrefix}.delete.des.pipeline.confirm` }),
+            okText: formatMessage({ id: 'iknow' }),
+            footer: ((okBtn) => (
+              <Fragment>
+                {okBtn}
+              </Fragment>
+            )),
+          });
+        }
+      } else {
+        deleteModal.update({
+          children: formatMessage({ id: `${intlPrefix}.status.change` }),
+          okText: formatMessage({ id: 'iknow' }),
+          onOk: refresh,
+          footer: ((okBtn) => (
+            <Fragment>
+              {okBtn}
+            </Fragment>
+          )),
+        });
+      }
+    } catch (e) {
+      Choerodon.handlePromptError(e);
+      deleteModal.close();
     }
   }
 
@@ -164,11 +183,12 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
       title: formatMessage({ id: `${intlPrefix}.stop.title` }, { name }),
       children: <Spin />,
       footer: null,
+      movable: false,
     });
     const res = await checkStatus();
     if (res) {
       try {
-        const result = await mainStore.checkEffect(projectId, envId);
+        const result = await mainStore.checkStop(projectId, envId);
         if (handlePromptError(result)) {
           effectModal.update({
             children: formatMessage({ id: `${intlPrefix}.stop.des` }),

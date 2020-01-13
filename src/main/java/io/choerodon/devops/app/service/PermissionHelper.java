@@ -33,7 +33,7 @@ public interface PermissionHelper {
      * @param projectId 项目id
      * @return true表示是
      */
-    boolean isProjectOwnerOrRoot(Long projectId);
+    boolean isGitlabProjectOwnerOrRoot(Long projectId);
 
     /**
      * 首先判断用户是否同步成功，如果没有同步成功，返回false
@@ -43,7 +43,7 @@ public interface PermissionHelper {
      * @param iamUserId iamUserId
      * @return true表示是
      */
-    boolean isProjectOwnerOrRoot(Long projectId, Long iamUserId);
+    boolean isGitlabProjectOwnerOrRoot(Long projectId, Long iamUserId);
 
     /**
      * 通过已经查询的用户纪录和IamProjectId判断用户是否是项目所有者或者owner
@@ -52,7 +52,7 @@ public interface PermissionHelper {
      * @param userAttrDTO 用户纪录
      * @return true表示是
      */
-    boolean isProjectOwnerOrRoot(Long projectId, @Nullable UserAttrDTO userAttrDTO);
+    boolean isGitlabProjectOwnerOrRoot(Long projectId, @Nullable UserAttrDTO userAttrDTO);
 
     /**
      * 校验用户是否是项目所有者或者Root，如果不是，抛出异常

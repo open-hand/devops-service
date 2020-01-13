@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -86,7 +83,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
         Long userId = DetailsHelper.getUserDetails().getUserId();
         PageInfo<DevopsDeployValueDTO> deployValueDTOPageInfo;
-        boolean projectOwnerOrRoot = permissionHelper.isProjectOwnerOrRoot(projectId, userId);
+        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrRoot(projectId, userId);
 
         if (projectOwnerOrRoot) {
             deployValueDTOPageInfo = basePageByOptionsWithOwner(projectId, appServiceId, envId, userId, pageable, params);
@@ -115,8 +112,19 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public void checkName(Long projectId, String name, Long deployValueId) {
-        baseCheckName(projectId, name, deployValueId);
+    public void checkName(Long projectId, String name, Long deployValueId, Long envId) {
+        DevopsDeployValueDTO devopsDeployValueDTO = new DevopsDeployValueDTO();
+        devopsDeployValueDTO.setEnvId(Objects.requireNonNull(envId));
+        devopsDeployValueDTO.setName(Objects.requireNonNull(name));
+        List<DevopsDeployValueDTO> devopsDeployValueDTOS = devopsDeployValueMapper.select(devopsDeployValueDTO);
+        boolean updateCheck = false;
+        if (deployValueId != null) {
+            updateCheck = devopsDeployValueDTOS.size() == 1 && devopsDeployValueDTOS.get(0).getId().equals(deployValueId);
+        }
+        // 当查询结果不为空且不是更新部署配置时抛出异常
+        if (!devopsDeployValueDTOS.isEmpty() && !updateCheck) {
+            throw new CommonException("error.devops.pipeline.value.name.exit");
+        }
     }
 
     @Override
@@ -183,27 +191,18 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public void baseCheckName(Long projectId, String name, Long deployValueId) {
-        DevopsDeployValueDTO devopsDeployValueDTO = new DevopsDeployValueDTO();
-        devopsDeployValueDTO.setProjectId(projectId);
-        devopsDeployValueDTO.setName(name);
-        List<DevopsDeployValueDTO> devopsDeployValueDTOS = devopsDeployValueMapper.select(devopsDeployValueDTO);
-        boolean updateCheck = false;
-        if (deployValueId != null) {
-            updateCheck = devopsDeployValueDTOS.size() == 1 && devopsDeployValueDTOS.get(0).getId().equals(deployValueId);
-        }
-        // 当查询结果不为空且不是更新部署配置时抛出异常
-        if (!devopsDeployValueDTOS.isEmpty() && !updateCheck) {
-            throw new CommonException("error.devops.pipeline.value.name.exit");
-        }
-    }
-
-    @Override
     public List<DevopsDeployValueDTO> baseQueryByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId) {
         DevopsDeployValueDTO devopsDeployValueDTO = new DevopsDeployValueDTO();
         devopsDeployValueDTO.setProjectId(projectId);
         devopsDeployValueDTO.setAppServiceId(appServiceId);
         devopsDeployValueDTO.setEnvId(envId);
         return devopsDeployValueMapper.select(devopsDeployValueDTO);
+    }
+
+    @Override
+    public void deleteByEnvId(Long envId) {
+        DevopsDeployValueDTO condition = new DevopsDeployValueDTO();
+        condition.setEnvId(Objects.requireNonNull(envId));
+        devopsDeployValueMapper.delete(condition);
     }
 }

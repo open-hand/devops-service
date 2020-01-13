@@ -60,8 +60,6 @@ class GitlabWebHookControllerSpec extends Specification {
     @Autowired
     private DevopsEnvCommitMapper devopsEnvCommitMapper
     @Autowired
-    private IamService iamRepository
-    @Autowired
     private DevopsGitService devopsGitRepository
     @Autowired
     private AgentCommandService deployService

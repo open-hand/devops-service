@@ -1,6 +1,6 @@
 import { axios } from '@choerodon/boot';
 
-export default ({ formatMessage, intlPrefix, projectId, store }) => {
+export default ({ formatMessage, intlPrefix, projectId, store, envId }) => {
   const handleUpdate = ({ name, value }) => {
     if (name === 'appServiceId' && value) {
       if (value) {
@@ -14,7 +14,7 @@ export default ({ formatMessage, intlPrefix, projectId, store }) => {
     const id = record.get('id');
     const param = id ? `&deploy_value_id=${id}` : '';
     try {
-      const res = await axios.get(`/devops/v1/projects/${projectId}/deploy_value/check_name?name=${encodeURIComponent(value)}${param}`);
+      const res = await axios.get(`/devops/v1/projects/${projectId}/deploy_value/check_name?name=${encodeURIComponent(value)}&env_id=${envId}${param}`);
       if (res.failed) {
         if (res.code === 'error.devops.pipeline.value.name.exit') {
           return '名称已存在';

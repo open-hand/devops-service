@@ -30,8 +30,8 @@ public class DevopsPrometheusVO {
     @ApiModelProperty("PrometheusPv状态")
     private String prometheusPvStatus;
 
-    @ApiModelProperty("PrometheusPvc名称")
-    private String prometheusPvcName;
+    @ApiModelProperty("PrometheusPv名称")
+    private String prometheusPvName;
 
     @ApiModelProperty("GrafanaPvId/必填")
     @NotNull(message = "error.grafana.pv.id.null")
@@ -40,8 +40,8 @@ public class DevopsPrometheusVO {
     @ApiModelProperty("GrafanaPv状态")
     private String grafanaPvStatus;
 
-    @ApiModelProperty("GrafanaPvc名称")
-    private String grafanaPvcName;
+    @ApiModelProperty("GrafanaPv名称")
+    private String grafanaPvName;
 
     @ApiModelProperty("AlertmanagerPvId/必填")
     @NotNull(message = "error.alertmanager.pv.id.null")
@@ -50,8 +50,8 @@ public class DevopsPrometheusVO {
     @ApiModelProperty("AlertmanagerPv状态")
     private String alertmanagerPvStatus;
 
-    @ApiModelProperty("AlertmanagerPvc名称")
-    private String alertmanagerPvcName;
+    @ApiModelProperty("AlertmanagerPv名称")
+    private String alertmanagerPvName;
 
     @ApiModelProperty("集群id")
     private Long clusterId;
@@ -157,27 +157,27 @@ public class DevopsPrometheusVO {
         this.alertmanagerPvStatus = alertmanagerPvStatus;
     }
 
-    public String getPrometheusPvcName() {
-        return prometheusPvcName;
+    public String getPrometheusPvName() {
+        return prometheusPvName;
     }
 
-    public void setPrometheusPvcName(String prometheusPvcName) {
-        this.prometheusPvcName = prometheusPvcName;
+    public void setPrometheusPvName(String prometheusPvName) {
+        this.prometheusPvName = prometheusPvName;
     }
 
-    public String getGrafanaPvcName() {
-        return grafanaPvcName;
+    public String getGrafanaPvName() {
+        return grafanaPvName;
     }
 
-    public void setGrafanaPvcName(String grafanaPvcName) {
-        this.grafanaPvcName = grafanaPvcName;
+    public void setGrafanaPvName(String grafanaPvName) {
+        this.grafanaPvName = grafanaPvName;
     }
 
-    public String getAlertmanagerPvcName() {
-        return alertmanagerPvcName;
+    public String getAlertmanagerPvName() {
+        return alertmanagerPvName;
     }
 
-    public void setAlertmanagerPvcName(String alertmanagerPvcName) {
-        this.alertmanagerPvcName = alertmanagerPvcName;
+    public void setAlertmanagerPvName(String alertmanagerPvName) {
+        this.alertmanagerPvName = alertmanagerPvName;
     }
 }

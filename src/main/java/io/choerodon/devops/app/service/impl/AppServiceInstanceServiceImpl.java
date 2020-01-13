@@ -204,12 +204,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             }
             instanceValueVO.setYaml(getReplaceResult(versionValue, baseQueryValueByInstanceId(instanceId)).getYaml());
         } else {
-            try {
-                FileUtil.checkYamlFormat(versionValue);
-            } catch (Exception e) {
-                instanceValueVO.setYaml(versionValue);
-                return instanceValueVO;
-            }
+            // 如果是创建实例,直接返回版本values
             instanceValueVO.setYaml(versionValue);
         }
         return instanceValueVO;
@@ -448,7 +443,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     public DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId) {
-
         // 获取相关的pod
         List<DevopsEnvPodVO> devopsEnvPodDTOS = ConvertUtils.convertList(devopsEnvPodService.baseListByInstanceId(instanceId), DevopsEnvPodVO.class);
 
@@ -514,6 +508,15 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
 
         AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
+
+        if (appServiceDTO == null) {
+            throw new CommonException("error.app.service.not.exist");
+        }
+
+        if (!Boolean.TRUE.equals(appServiceDTO.getActive())) {
+            throw new CommonException("error.app.service.disabled");
+        }
+
         AppServiceVersionDTO appServiceVersionDTO =
                 appServiceVersionService.baseQuery(appServiceDeployVO.getAppServiceVersionId());
 
@@ -1407,7 +1410,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 configVO = queryDefaultConfig(appServiceDTO.getProjectId(), configVO);
             }
             if (configVO.getPrivate() != null && configVO.getPrivate()) {
-                DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndId(devopsEnvironmentDTO.getCode(), devopsConfigDTO.getId());
+                DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndId(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId());
                 if (devopsRegistrySecretDTO == null) {
                     //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
                     List<DevopsRegistrySecretDTO> devopsRegistrySecretDTOS = devopsRegistrySecretService.baseListByConfig(devopsConfigDTO.getId());
@@ -1416,7 +1419,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     } else {
                         secretCode = devopsRegistrySecretDTOS.get(0).getSecretCode();
                     }
-                    devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), secretCode, devopsConfigDTO.getConfig());
+                    devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), secretCode, gson.toJson(configVO));
                     devopsRegistrySecretService.baseCreate(devopsRegistrySecretDTO);
                     agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, configVO, CREATE);
                 } else {
