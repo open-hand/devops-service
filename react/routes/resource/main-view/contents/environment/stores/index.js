@@ -47,7 +47,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const gitopsSyncDs = useMemo(() => new DataSet(GitopsSyncDataSet()), []);
     const retryDs = useMemo(() => new DataSet(RetryDataSet()), []);
     const configDs = useMemo(() => new DataSet(ConfigDataSet({ formatMessage, intlPrefix })), []);
-    const configFormDs = useMemo(() => new DataSet(ConfigFormDataSet({ formatMessage, intlPrefix, projectId, store: envStore, envId: id })), [projectId]);
+    const configFormDs = useMemo(() => new DataSet(ConfigFormDataSet({ formatMessage, intlPrefix, projectId, store: envStore, envId: id })), [projectId, id]);
 
 
     function queryData() {
