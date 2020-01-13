@@ -23,4 +23,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_pro_permission.groovy') {
         renameTable(newTableName: 'devops_cluster_pro_rel', oldTableName: 'devops_cluster_pro_permission')
     }
 
+    changeSet(author: 'zmf', id: '2020-01-13-add-primary-key') {
+        addNotNullConstraint(tableName: "devops_cluster_pro_rel", columnName: "cluster_id", columnDataType: "BIGINT UNSIGNED")
+        addNotNullConstraint(tableName: "devops_cluster_pro_rel", columnName: "project_id", columnDataType: "BIGINT UNSIGNED")
+        addPrimaryKey(tableName: "devops_cluster_pro_rel", columnNames: "cluster_id, project_id")
+    }
 }
