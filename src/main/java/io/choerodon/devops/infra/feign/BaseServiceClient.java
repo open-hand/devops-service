@@ -55,15 +55,6 @@ public interface BaseServiceClient {
     @GetMapping(value = "v1/projects/{project_id}/users?id={id}")
     ResponseEntity<PageInfo<IamUserDTO>> queryInProjectById(@PathVariable("project_id") Long projectId, @PathVariable("id") Long id);
 
-    @GetMapping(value = "/v1/organizations/{organization_id}/applications")
-    ResponseEntity<List<ApplicationDTO>> queryAppsByOrgId(@PathVariable("organization_id") Long organizationId,
-                                                          @RequestParam(value = "doPage", required = false) Boolean doPage,
-                                                          @RequestParam("page") int page,
-                                                          @RequestParam("size") int size,
-                                                          @RequestParam(value = "name", required = false) String name,
-                                                          @RequestParam(value = "code", required = false) String code,
-                                                          @RequestParam(value = "type", required = false) String type,
-                                                          @RequestParam(value = "params", required = false) String[] params);
 
     @PostMapping(value = "/v1/users/ids")
     ResponseEntity<List<IamUserDTO>> listUsersByIds(@RequestBody Long[] ids, @RequestParam(value = "only_enabled") Boolean onlyEnabled);
@@ -112,13 +103,6 @@ public interface BaseServiceClient {
                                         @RequestParam("error_code") String errorCode,
                                         @RequestParam("fix_flag") Boolean fixFlag);
 
-    @GetMapping(value = "/v1/organizations/{organization_id}/projects/projects_with_applications")
-    ResponseEntity<PageInfo<ProjectDTO>> pagingProjectByOptions(@PathVariable("organization_id") Long organizationId,
-                                                                @RequestParam(value = "doPage", defaultValue = "false") Boolean doPage,
-                                                                @RequestParam("page") int page,
-                                                                @RequestParam("size") int size,
-                                                                @RequestParam(value = "params", required = false) String[] params);
-
     @PostMapping(value = "/v1/applications/{app_download_recode_id}/complete_downloading")
     ResponseEntity<String> completeDownloadApplication(@PathVariable("app_download_recode_id") Long appDownloadRecordId,
                                                        @RequestParam("app_version_id") Long appVersionId,
@@ -136,13 +120,7 @@ public interface BaseServiceClient {
     @PostMapping(value = "/v1/projects/ids")
     ResponseEntity<List<ProjectDTO>> queryByIds(@RequestBody Set<Long> ids);
 
-    @GetMapping(value = "/v1/projects/{project_id}/publish_applications/list_by_ids")
-    ResponseEntity<List<ApplicationDTO>> listApplicationInfoByAppIds(@PathVariable("project_id") Long projectId,
-                                                                     @RequestParam(value = "ids") Set<Long> serviceIds);
 
-    @GetMapping(value = "/v1/projects/{project_id}/applications/{application_id}/services/ids")
-    ResponseEntity<Set<Long>> listAppServiceByAppId(@PathVariable("project_id") Long projectId,
-                                                    @PathVariable("application_id") Long applicationId);
 
     /**
      * 根据组织Id及项目code查询项目
@@ -160,30 +138,6 @@ public interface BaseServiceClient {
 
     @GetMapping("/v1/organizations/{organization_id}/services/{app_type}/versions")
     ResponseEntity<Set<Long>> listSvcVersion(@PathVariable("organization_id") Long organizationId, @PathVariable("app_type") String appType);
-
-    @GetMapping("/v1/organizations/{organization_id}/users/search")
-    ResponseEntity<PageInfo<IamUserDTO>> pagingQueryUsersWithRolesOnOrganizationLevel(
-            @PathVariable(name = "organization_id") Long organizationId,
-            @RequestParam("page") int page,
-            @RequestParam("size") int size,
-            @RequestParam(required = false, value = "loginName") String loginName,
-            @RequestParam(required = false, value = "realName") String realName,
-            @RequestParam(required = false, value = "roleName") String roleName,
-            @RequestParam(required = false, value = "enabled") Boolean enabled,
-            @RequestParam(required = false, value = "locked") Boolean locked,
-            @RequestParam(required = false, value = "params") String params);
-
-    /**
-     * 项目层批量分配权限
-     *
-     * @param projectId      项目id
-     * @param memberRoleDTOS 权限分配信息
-     * @return 分配结果
-     */
-    @PostMapping(value = "/v1/projects/{project_id}/users/assign_roles")
-    ResponseEntity<List<MemberRoleDTO>> assignUsersRolesOnProjectLevel(
-            @PathVariable(name = "project_id") Long projectId,
-            @RequestBody List<MemberRoleDTO> memberRoleDTOS);
 
     /**
      * 组织下创client
@@ -231,17 +185,6 @@ public interface BaseServiceClient {
      */
     @GetMapping("/v1/users")
     ResponseEntity<IamUserDTO> query(@RequestParam(name = "login_name") String loginName);
-
-    /**
-     * 查询项目下指定角色的用户
-     *
-     * @param projectId
-     * @param roleLable 角色标签
-     * @return
-     */
-    @GetMapping("/v1/projects/{project_id}/users/{role_lable}")
-    ResponseEntity<List<IamUserDTO>> listProjectUsersByPorjectIdAndRoleLable(@PathVariable("project_id") Long projectId,
-                                                                             @PathVariable("role_lable") String roleLable);
 
 
     @ApiOperation(value = "查询所有的Root用户 / DevOps服务迁移数据需要")

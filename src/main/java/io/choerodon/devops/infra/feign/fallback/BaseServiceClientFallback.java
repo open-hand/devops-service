@@ -66,12 +66,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
         throw new CommonException("error.userInProject.get");
     }
 
-
-    @Override
-    public ResponseEntity<List<ApplicationDTO>> queryAppsByOrgId(Long organizationId, Boolean doPage, int page, int size, String name, String code, String type, String[] params) {
-        throw new CommonException("error.app.query.by.org.id.and.app.name");
-    }
-
     @Override
     public ResponseEntity<List<IamUserDTO>> listUsersByIds(Long[] ids, Boolean onlyEnabled) {
         throw new CommonException("error.user.get.byIds");
@@ -124,12 +118,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
         throw new CommonException("error.publishFail.status.get");
     }
 
-    @Override
-    public ResponseEntity<PageInfo<ProjectDTO>> pagingProjectByOptions(Long organizationId, Boolean doPage, int page, int size, String[] params) {
-        throw new CommonException(ERROR_PROJECT_GET);
-    }
-
-    @Override
     public ResponseEntity<String> completeDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId, List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS) {
         throw new CommonException("error.application.download.complete");
     }
@@ -155,16 +143,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<ApplicationDTO>> listApplicationInfoByAppIds(Long projectId, Set<Long> serviceIds) {
-        throw new CommonException("error.application.query");
-    }
-
-    @Override
-    public ResponseEntity<Set<Long>> listAppServiceByAppId(Long projectId, Long applicationId) {
-        throw new CommonException("error.app.service.id.query");
-    }
-
-    @Override
     public ResponseEntity<Set<Long>> listService(Long organizationId, String appType) {
         throw new CommonException("error.app.service.market.list");
     }
@@ -172,16 +150,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     @Override
     public ResponseEntity<Set<Long>> listSvcVersion(Long organizationId, String appType) {
         throw new CommonException("error.app.service.version.market.list");
-    }
-
-    @Override
-    public ResponseEntity<PageInfo<IamUserDTO>> pagingQueryUsersWithRolesOnOrganizationLevel(Long organizationId, int page, int size, String loginName, String realName, String roleName, Boolean enabled, Boolean locked, String params) {
-        throw new CommonException("error.query.organization.owner");
-    }
-
-    @Override
-    public ResponseEntity<List<MemberRoleDTO>> assignUsersRolesOnProjectLevel(Long projectId, List<MemberRoleDTO> memberRoleDTOS) {
-        throw new CommonException("error.assign.user.roles.on.project.level");
     }
 
     @Override
@@ -202,11 +170,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     @Override
     public ResponseEntity<Boolean> checkIsGitlabProjectOwner(Long id, Long projectId) {
         throw new CommonException("error.check.project.permission");
-    }
-
-    @Override
-    public ResponseEntity<List<IamUserDTO>> listProjectUsersByPorjectIdAndRoleLable(Long projectId, String roleLable) {
-        throw new CommonException("error.query.project.users");
     }
 
     @Override

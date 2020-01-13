@@ -95,16 +95,6 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public List<ApplicationDTO> listAppsByOrgId(Long orgId, String name) {
-        ResponseEntity<List<ApplicationDTO>> apps;
-        try {
-            apps = baseServiceClient.queryAppsByOrgId(orgId, false, 1, 0, name, null, null, null);
-        } catch (Exception e) {
-            throw new CommonException(e);
-        }
-        return apps.getBody();
-    }
-
     public List<ProjectWithRoleVO> listProjectWithRoleDTO(Long userId) {
         List<ProjectWithRoleVO> returnList = new ArrayList<>();
         int page = 0;
@@ -276,13 +266,6 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public PageInfo<ProjectDTO> pagingProjectByOptions(Long organizationId, int page, int size, String[] params) {
-        try {
-            return baseServiceClient.pagingProjectByOptions(organizationId, false, page, size, params).getBody();
-        } catch (Exception e) {
-            return null;
-        }
-    }
 
     public void completeDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId, List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS) {
         try {
@@ -332,21 +315,6 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public List<ApplicationDTO> listApplicationInfoByAppIds(Long projectId, Set<Long> serviceIds) {
-        try {
-            return baseServiceClient.listApplicationInfoByAppIds(projectId, serviceIds).getBody();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public Set<Long> listAppServiceByAppId(Long projectId, Long appId) {
-        try {
-            return baseServiceClient.listAppServiceByAppId(projectId, appId).getBody();
-        } catch (Exception e) {
-            return null;
-        }
-    }
 
     /**
      * 根据组织id和项目code查询项目
@@ -387,35 +355,6 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public List<IamUserDTO> listAllOrganizationOwners(Long organizationId) {
-        try {
-            ResponseEntity<PageInfo<IamUserDTO>> users = baseServiceClient.pagingQueryUsersWithRolesOnOrganizationLevel(organizationId, 0, 0, null, null, "组织管理员", true, false, null);
-            return (users == null || users.getBody() == null) ? Collections.emptyList() : users.getBody().getList();
-        } catch (Exception ex) {
-            LOGGER.info("Exception occurred when listing organization owners of organization with id {}", organizationId);
-            return Collections.emptyList();
-        }
-    }
-
-    /**
-     * 项目层批量分配权限
-     */
-    public void assignProjectOwnerForUsersInProject(
-            Long projectId,
-            Set<Long> userIds,
-            Long projectOwnerId) {
-        List<MemberRoleDTO> memberRoleDTOS = userIds.stream().map(userId -> {
-            MemberRoleDTO memberRoleDTO = new MemberRoleDTO();
-            memberRoleDTO.setMemberId(userId);
-            memberRoleDTO.setMemberType("user");
-            memberRoleDTO.setSourceId(projectId);
-            memberRoleDTO.setSourceType("project");
-            memberRoleDTO.setRoleId(projectOwnerId);
-            return memberRoleDTO;
-        }).collect(Collectors.toList());
-        baseServiceClient.assignUsersRolesOnProjectLevel(projectId, memberRoleDTOS);
-    }
-
     public List<ProjectWithRoleVO> listProjectWithRole(Long userId, int page, int size) {
         try {
             ResponseEntity<PageInfo<ProjectWithRoleVO>> pageInfoResponseEntity = baseServiceClient.listProjectWithRole(userId, page, size);
@@ -452,15 +391,6 @@ public class BaseServiceClientOperator {
             return responseEntity.getBody();
         } catch (Exception ex) {
             throw new CommonException("error.query.client");
-        }
-    }
-
-    public List<IamUserDTO> listProjectUsersByPorjectIdAndRoleLable(Long projectId, String roleLable) {
-        try {
-            ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.listProjectUsersByPorjectIdAndRoleLable(projectId, roleLable);
-            return responseEntity.getBody();
-        } catch (Exception ex) {
-            throw new CommonException("error.query.project.users");
         }
     }
 
