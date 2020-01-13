@@ -75,21 +75,11 @@ public interface BaseServiceClient {
     ResponseEntity<List<RoleVO>> listRolesWithUserCountOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
                                                                       @RequestBody(required = false) @Valid RoleAssignmentSearchVO roleAssignmentSearchVO);
 
-    @PostMapping(value = "/v1/projects/{project_id}/role_members/users")
-    ResponseEntity<PageInfo<IamUserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(
-            @RequestParam("page") int page,
-            @RequestParam("size") int size,
-            @RequestParam(name = "role_id") Long roleId,
-            @PathVariable(name = "project_id") Long sourceId,
-            @RequestParam(name = "doPage") Boolean doPage,
-            @RequestBody RoleAssignmentSearchVO roleAssignmentSearchVO);
-
-    @PostMapping(value = "/v1/projects/{project_id}/role_members/users/roles")
-    ResponseEntity<PageInfo<UserWithRoleVO>> queryUserByProjectId(@PathVariable("project_id") Long projectId,
-                                                                  @RequestParam("page") int page,
-                                                                  @RequestParam("size") int size,
-                                                                  @RequestParam("doPage") Boolean doPage,
-                                                                  @RequestBody @Valid RoleAssignmentSearchVO roleAssignmentSearchVO);
+    @PostMapping(value = "/v1/projects/{project_id}/gitlab_role/users")
+    ResponseEntity<List<IamUserDTO>> listUsersWithGitlabLabel(
+            @PathVariable(name = "project_id") Long projectId,
+            @RequestBody RoleAssignmentSearchVO roleAssignmentSearchVO,
+            @RequestParam(name = "label_name") String labelName);
 
     @GetMapping(value = "/v1/users/{id}/project_roles")
     ResponseEntity<PageInfo<ProjectWithRoleVO>> listProjectWithRole(@PathVariable("id") Long id,
@@ -99,29 +89,6 @@ public interface BaseServiceClient {
     @GetMapping(value = "/v1/roles/search")
     ResponseEntity<PageInfo<RoleVO>> queryRoleIdByCode(@RequestParam(value = "code", required = false) String code);
 
-
-    @PostMapping(value = "/v1/organizations/{organization_id}/applications")
-    ResponseEntity<IamAppDTO> createIamApplication(@PathVariable("organization_id") Long organizationId,
-                                                   @RequestBody @Valid IamAppDTO appDTO);
-
-
-    @PostMapping(value = "/v1/organizations/{organization_id}/applications/{id}")
-    ResponseEntity<IamAppDTO> updateIamApplication(
-            @PathVariable("organization_id") Long organizationId,
-            @PathVariable("id") Long id,
-            @RequestBody @Valid IamAppDTO appDTO);
-
-
-    @PutMapping(value = "/v1/organizations/{organization_id}/applications/{id}/disable")
-    ResponseEntity<IamAppDTO> disableIamApplication(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id);
-
-
-    @PutMapping(value = "/v1/organizations/{organization_id}/applications/{id}/enable")
-    ResponseEntity<IamAppDTO> enableIamApplication(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id);
-
-
-    @GetMapping(value = "/v1/organizations/{organization_id}/applications")
-    ResponseEntity<PageInfo<IamAppDTO>> getIamApplication(@PathVariable("organization_id") Long organizationId, @RequestParam("code") String code);
 
     @PostMapping("/v1/organizations/{organization_id}/projects")
     ResponseEntity<ProjectDTO> createProject(@PathVariable(name = "organization_id") Long organizationId,
@@ -136,20 +103,8 @@ public interface BaseServiceClient {
                                                              @RequestParam(name = "enabled", required = false) Boolean enabled,
                                                              @RequestParam(value = "params", required = false) String params);
 
-    @PostMapping("/v1/organizations/all")
-    ResponseEntity<PageInfo<OrganizationSimplifyVO>> getAllOrgs(
-            @RequestParam(required = false, value = "page") final int page,
-            @RequestParam(required = false, value = "size") final int size);
-
-
-    @GetMapping(value = "/v1/applications/{id}/project")
-    ResponseEntity<ProjectDTO> queryProjectByAppId(@PathVariable("id") Long id);
-
     @GetMapping(value = "/v1/applications/{id}")
     ResponseEntity<ApplicationDTO> queryAppById(@PathVariable(value = "id") Long id);
-
-    @GetMapping(value = "/v1/applications/list")
-    ResponseEntity<List<ApplicationDTO>> getAppByIds(@RequestParam(value = "app_ids") Set<Long> appIds);
 
     @PutMapping(value = "/v1/projects/{project_id}/publish_version_infos/{id}/fail")
     ResponseEntity<Boolean> publishFail(@PathVariable("project_id") Long projectId,
@@ -262,8 +217,8 @@ public interface BaseServiceClient {
     ResponseEntity<ClientDTO> queryClientBySourceId(@PathVariable("organization_id") Long organizationId, @PathVariable("source_id") Long sourceId);
 
 
-    @GetMapping("/v1/users/{id}/projects/{project_id}/check_is_owner")
-    ResponseEntity<Boolean> checkIsProjectOwner(
+    @GetMapping("/v1/users/{id}/projects/{project_id}/check_is_gitlab_owner")
+    ResponseEntity<Boolean> checkIsGitlabProjectOwner(
             @PathVariable("id") Long id,
             @PathVariable("project_id") Long projectId);
 

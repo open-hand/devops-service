@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.dto.iam;
 
 import java.util.Date;
+import java.util.List;
 
 public class IamUserDTO {
 
@@ -23,6 +24,8 @@ public class IamUserDTO {
     private Date lockedUntilAt;
     private Integer passwordAttempt;
     private Boolean projectOwner;
+    private List<RoleDTO> roles;
+    private Date creationDate;
 
     public Boolean getProjectOwner() {
         return projectOwner;
@@ -174,6 +177,22 @@ public class IamUserDTO {
 
     public void setLocked(Boolean locked) {
         isLocked = locked;
+    }
+
+    public List<RoleDTO> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<RoleDTO> roles) {
+        this.roles = roles;
+    }
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
     }
 
     @Override

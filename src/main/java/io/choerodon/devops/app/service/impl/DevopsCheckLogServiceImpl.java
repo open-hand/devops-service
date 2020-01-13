@@ -22,6 +22,15 @@ import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.DevopsCheckLogDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+<<<<<<< 03808cf89844b219f33a0d01ab31dd925952a2df
+=======
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.LabelType;
+import io.choerodon.devops.infra.feign.BaseServiceClient;
+import io.choerodon.devops.infra.feign.HarborClient;
+import io.choerodon.devops.infra.feign.NotifyTransferDataClient;
+>>>>>>> [IMP] 修改应用服务权限查询
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;

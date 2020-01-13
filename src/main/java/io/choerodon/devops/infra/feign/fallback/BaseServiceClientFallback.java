@@ -89,17 +89,8 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<PageInfo<IamUserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(int page, int size, Long roleId,
-                                                                                       Long sourceId,
-                                                                                       Boolean doPage,
-                                                                                       RoleAssignmentSearchVO roleAssignmentSearchVO) {
-        throw new CommonException("error.user.get.byRoleId");
-    }
-
-    @Override
-    public ResponseEntity<PageInfo<UserWithRoleVO>> queryUserByProjectId(Long projectId, int page, int size,
-                                                                         Boolean doPage, RoleAssignmentSearchVO roleAssignmentSearchVO) {
-        throw new CommonException("error.user.get.byProjectId");
+    public ResponseEntity<List<IamUserDTO>> listUsersWithGitlabLabel(Long projectId, RoleAssignmentSearchVO roleAssignmentSearchVO, String labelName) {
+        throw new CommonException("error.user.get.byGitlabLabel");
     }
 
     @Override
@@ -112,30 +103,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
         throw new CommonException("error.roleId.get");
     }
 
-    @Override
-    public ResponseEntity<IamAppDTO> createIamApplication(Long organizationId, @Valid IamAppDTO appDTO) {
-        throw new CommonException("error.iam.app.create");
-    }
-
-    @Override
-    public ResponseEntity<IamAppDTO> updateIamApplication(Long organizationId, Long id, @Valid IamAppDTO appDTO) {
-        throw new CommonException("error.iam.app.update");
-    }
-
-    @Override
-    public ResponseEntity<IamAppDTO> disableIamApplication(Long organizationId, Long id) {
-        throw new CommonException("error.iam.app.disable");
-    }
-
-    @Override
-    public ResponseEntity<IamAppDTO> enableIamApplication(Long organizationId, Long id) {
-        throw new CommonException("error.iam.app.enabled");
-    }
-
-    @Override
-    public ResponseEntity<PageInfo<IamAppDTO>> getIamApplication(Long organizationId, String code) {
-        throw new CommonException("error.iam.app.get");
-    }
 
     @Override
     public ResponseEntity<ProjectDTO> createProject(Long organizationId, @Valid ProjectCreateDTO projectCreateDTO) {
@@ -148,22 +115,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<PageInfo<OrganizationSimplifyVO>> getAllOrgs(int page, int size) {
-        throw new CommonException("error.get.all.organizations");
-    }
-
-    @Override
-    public ResponseEntity<ProjectDTO> queryProjectByAppId(Long id) {
-        throw new CommonException(ERROR_PROJECT_GET);
-    }
-
-    @Override
     public ResponseEntity<ApplicationDTO> queryAppById(Long id) {
-        throw new CommonException("error.application.get");
-    }
-
-    @Override
-    public ResponseEntity<List<ApplicationDTO>> getAppByIds(Set<Long> appIds) {
         throw new CommonException("error.application.get");
     }
 
@@ -248,7 +200,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<Boolean> checkIsProjectOwner(Long id, Long projectId) {
+    public ResponseEntity<Boolean> checkIsGitlabProjectOwner(Long id, Long projectId) {
         throw new CommonException("error.check.project.permission");
     }
 

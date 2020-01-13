@@ -25,7 +25,7 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DeployVersionVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
-import io.choerodon.devops.app.service.IamService
+
 import io.choerodon.devops.infra.dto.*
 import io.choerodon.devops.infra.dto.iam.IamUserDTO
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO
@@ -68,9 +68,6 @@ class AppServiceVersionControllerSpec extends Specification {
     private DevopsGitlabPipelineMapper devopsGitlabPipelineMapper
     @Autowired
     private DevopsGitlabCommitMapper devopsGitlabCommitMapper
-
-    @Autowired
-    private IamService iamRepository
 
     @Shared
     Long project_id = 1L

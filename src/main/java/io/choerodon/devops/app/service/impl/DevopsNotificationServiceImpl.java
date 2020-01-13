@@ -14,6 +14,7 @@ import io.choerodon.devops.api.vo.notify.TargetUserDTO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.enums.LabelType;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.TriggerObject;
 import io.choerodon.devops.infra.feign.NotifyClient;
@@ -41,7 +42,6 @@ import java.util.stream.Stream;
 public class DevopsNotificationServiceImpl implements DevopsNotificationService {
 
     public static final String RESOURCE_DELETE_CONFIRMATION = "resourceDeleteConfirmation";
-    private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private static final String CODE = "resourceDeleteConfirmation";
     private static final String NOTIFY_TYPE = "resourceDelete";
     public static final Gson gson = new Gson();
@@ -194,12 +194,10 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 users.add(user);
             }
             if (TriggerObject.PROJECT_OWNER.getObject().equals(e.getType())) {
-                Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
-                PageInfo<IamUserDTO> allOwnerUsersPage = baseServiceClientOperator
-                        .pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), new RoleAssignmentSearchVO(),
-                                ownerId, devopsEnvironmentDTO.getProjectId(), false);
-                if (!allOwnerUsersPage.getList().isEmpty()) {
-                    allOwnerUsersPage.getList().stream().forEach(v -> {
+                List<IamUserDTO> allOwnerUsersPage = baseServiceClientOperator
+                        .listUsersWithGitlabLabel(devopsEnvironmentDTO.getProjectId(), new RoleAssignmentSearchVO(), LabelType.GITLAB_PROJECT_DEVELOPER.getValue());
+                if (!allOwnerUsersPage.isEmpty()) {
+                    allOwnerUsersPage.stream().forEach(v -> {
                         NoticeSendDTO.User user = new NoticeSendDTO.User();
                         user.setEmail(v.getEmail());
                         user.setId(v.getId());

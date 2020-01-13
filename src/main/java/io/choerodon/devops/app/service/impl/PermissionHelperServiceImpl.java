@@ -38,34 +38,34 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     }
 
     @Override
-    public boolean isProjectOwnerOrRoot(Long projectId) {
+    public boolean isGitlabProjectOwnerOrRoot(Long projectId) {
         Long iamUserId = DetailsHelper.getUserDetails().getUserId();
-        return isRoot(iamUserId) || baseServiceClientOperator.isProjectOwner(iamUserId, projectId);
+        return isRoot(iamUserId) || baseServiceClientOperator.isGitlabProjectOwner(iamUserId, projectId);
     }
 
     @Override
-    public boolean isProjectOwnerOrRoot(Long projectId, Long iamUserId) {
-        return isRoot(iamUserId) || baseServiceClientOperator.isProjectOwner(iamUserId, projectId);
+    public boolean isGitlabProjectOwnerOrRoot(Long projectId, Long iamUserId) {
+        return isRoot(iamUserId) || baseServiceClientOperator.isGitlabProjectOwner(iamUserId, projectId);
     }
 
     @Override
-    public boolean isProjectOwnerOrRoot(Long projectId, @Nullable UserAttrDTO userAttrDTO) {
+    public boolean isGitlabProjectOwnerOrRoot(Long projectId, @Nullable UserAttrDTO userAttrDTO) {
         if (userAttrDTO == null || userAttrDTO.getIamUserId() == null) {
             return false;
         }
-        return userAttrDTO.getGitlabAdmin() || baseServiceClientOperator.isProjectOwner(userAttrDTO.getIamUserId(), projectId);
+        return userAttrDTO.getGitlabAdmin() || baseServiceClientOperator.isGitlabProjectOwner(userAttrDTO.getIamUserId(), projectId);
     }
 
     @Override
     public void checkProjectOwnerOrRoot(Long projectId, Long iamUserId) {
-        if (!isProjectOwnerOrRoot(projectId, iamUserId)) {
+        if (!isGitlabProjectOwnerOrRoot(projectId, iamUserId)) {
             throw new CommonException("error.user.not.owner");
         }
     }
 
     @Override
     public void checkProjectOwnerOrRoot(Long projectId, @Nullable UserAttrDTO userAttrDTO) {
-        if (!isProjectOwnerOrRoot(projectId, userAttrDTO)) {
+        if (!isGitlabProjectOwnerOrRoot(projectId, userAttrDTO)) {
             throw new CommonException("error.user.not.owner");
         }
     }
