@@ -71,8 +71,8 @@ export default observer((props) => {
   return (
     <div>
       <Form dataSet={formDs}>
-        <Password name="adminPassword" autoFocus={!isModify} disabled={isModify} />
-        <TextField name="grafanaDomain" autoFocus={isModify} />
+        <Password name="adminPassword" autoFocus />
+        <TextField name="grafanaDomain" />
       </Form>
       <div className={`${prefixCls}-monitor-create-pv`}>
         <span>{formatMessage({ id: `${intlPrefix}.monitor.pv` })}</span>
