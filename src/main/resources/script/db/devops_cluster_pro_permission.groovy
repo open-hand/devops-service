@@ -23,4 +23,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_pro_permission.groovy') {
         renameTable(newTableName: 'devops_cluster_pro_rel', oldTableName: 'devops_cluster_pro_permission')
     }
 
+    changeSet(author: 'zmf', id: '2020-01-13-add-primary-key') {
+        addPrimaryKey(tableName: "devops_cluster_pro_permission", columnNames: "cluster_id, project_id")
+    }
 }
