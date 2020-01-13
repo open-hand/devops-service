@@ -4,12 +4,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 
 import io.choerodon.core.annotation.Permission;
 import io.choerodon.core.enums.ResourceType;
@@ -53,7 +53,7 @@ public class DevopsEnvAppServiceController {
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "删除指定环境关联的服务")
+    @ApiOperation(value = "删除指定环境-服务关联关系")
     @DeleteMapping
     public ResponseEntity delete(
             @ApiParam(value = "环境Id", required = true)

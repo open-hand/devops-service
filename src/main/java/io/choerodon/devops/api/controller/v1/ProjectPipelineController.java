@@ -2,12 +2,6 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Optional;
 
-import io.choerodon.core.annotation.Permission;
-import io.choerodon.core.enums.ResourceType;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.app.service.ProjectPipelineService;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +11,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import io.choerodon.core.annotation.Permission;
+import io.choerodon.core.enums.ResourceType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.app.service.ProjectPipelineService;
 
 
 /**
@@ -39,7 +39,7 @@ public class ProjectPipelineController {
      * @return Boolean
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "Retry jobs in a pipeline")
+    @ApiOperation(value = "重试GitLab流水线")
     @PostMapping(value = "/gitlab_projects/{gitlab_project_id}/pipelines/{pipeline_id}/retry")
     public ResponseEntity<Boolean> retry(
             @ApiParam(value = "项目ID", required = true)
@@ -62,7 +62,7 @@ public class ProjectPipelineController {
      * @return Boolean
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "Cancel jobs in a pipeline")
+    @ApiOperation(value = "取消GitLab流水线")
     @PostMapping(value = "/gitlab_projects/{gitlabProjectId}/pipelines/{pipeline_id}/cancel")
     public ResponseEntity<Boolean> cancel(
             @ApiParam(value = "项目ID", required = true)

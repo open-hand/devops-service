@@ -21,12 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class DevopsCheckClusterController {
     @Autowired
     private DevopsClusterService devopsClusterService;
-    /**
-     * 集群的权限校验
-     * @param clusterId
-     * @param userId
-     * @return
-     */
+
     @Permission(type = ResourceType.SITE, permissionPublic = true)
     @ApiOperation(value = "验证用户是否拥有操作集群的权限")
     @GetMapping(value = "/clusterCheck")
@@ -35,6 +30,6 @@ public class DevopsCheckClusterController {
             @RequestParam(value = "cluster_id") Long clusterId,
             @ApiParam(value = "用户ID", required = true)
             @RequestParam(value = "user_id") Long  userId) {
-        return new ResponseEntity<Boolean>(devopsClusterService.checkUserClusterPermission(clusterId, userId), HttpStatus.OK);
+        return new ResponseEntity<>(devopsClusterService.checkUserClusterPermission(clusterId, userId), HttpStatus.OK);
     }
 }

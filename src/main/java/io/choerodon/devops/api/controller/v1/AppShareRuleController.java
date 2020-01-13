@@ -43,7 +43,7 @@ public class AppShareRuleController {
      * @return Long
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "服务共享规则")
+    @ApiOperation(value = "创建服务共享规则")
     @PostMapping
     public ResponseEntity<AppServiceShareRuleVO> create(
             @ApiParam(value = "项目id", required = true)
@@ -77,16 +77,8 @@ public class AppShareRuleController {
                 .orElseThrow(() -> new CommonException("error.share.rule.update"));
     }
 
-    /**
-     * 查询服务共享规则
-     *
-     * @param projectId
-     * @param pageable
-     * @param param
-     * @return
-     */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "服务共享规则")
+    @ApiOperation(value = "分页查询服务共享规则")
     @PostMapping(value = "/page_by_options")
     @CustomPageRequest
     public ResponseEntity<PageInfo<AppServiceShareRuleVO>> pageByOptions(
@@ -104,15 +96,8 @@ public class AppShareRuleController {
                 .orElseThrow(() -> new CommonException("error.share.rule.page"));
     }
 
-    /**
-     * 查询单个服务共享规则详情
-     *
-     * @param projectId
-     * @param ruleId
-     * @return
-     */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "服务共享规则")
+    @ApiOperation(value = "查询单个共享规则详情")
     @GetMapping(value = "/{rule_id}")
     public ResponseEntity<AppServiceShareRuleVO> query(
             @ApiParam(value = "项目Id", required = true)
@@ -125,15 +110,8 @@ public class AppShareRuleController {
                 .orElseThrow(() -> new CommonException("error.share.rule.query"));
     }
 
-    /**
-     * 删除单个服务共享规则详情
-     *
-     * @param projectId
-     * @param ruleId
-     * @return
-     */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "删除服务共享规则")
+    @ApiOperation(value = "删除单个服务共享规则")
     @DeleteMapping(value = "/{rule_id}")
     public ResponseEntity delete(@ApiParam(value = "项目Id", required = true)
                                  @PathVariable(value = "project_id") Long projectId,

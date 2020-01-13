@@ -12,7 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.annotation.Permission;
+
 import org.springframework.data.domain.Pageable;
+
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -137,12 +139,12 @@ public class PipelineController {
      * 项目下获取流水线
      *
      * @param projectId        项目Id
-     * @param pageable      分页参数
+     * @param pageable         分页参数
      * @param pipelineSearchVO 查询参数
-     * @return
+     * @return 流水线页
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下获取流水线")
+    @ApiOperation(value = "项目下分页流水线")
     @CustomPageRequest
     @PostMapping("/page_by_options")
     public ResponseEntity<PageInfo<PipelineVO>> pageByOptions(
@@ -196,13 +198,6 @@ public class PipelineController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    /**
-     * 人工审核
-     *
-     * @param projectId
-     * @param userRecordRelDTO
-     * @return
-     */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "人工审核")
     @PostMapping("/audit")
@@ -216,13 +211,6 @@ public class PipelineController {
                 .orElseThrow(() -> new CommonException("error.pipeline.audit"));
     }
 
-    /**
-     * 人工审核预检
-     *
-     * @param projectId
-     * @param userRecordRelDTO
-     * @return
-     */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验人工审核")
     @PostMapping("/check_audit")
@@ -236,13 +224,6 @@ public class PipelineController {
                 .orElseThrow(() -> new CommonException("error.pipeline.audit.check"));
     }
 
-    /**
-     * 条件校验
-     *
-     * @param projectId
-     * @param pipelineId
-     * @return
-     */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "条件校验")
     @GetMapping("/check_deploy")
@@ -315,11 +296,6 @@ public class PipelineController {
                 .orElseThrow(() -> new CommonException("error.pipeline.record.list"));
     }
 
-    /**
-     * @param projectId 项目id
-     * @param name      流水线名称
-     * @return
-     */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "名称校验")
     @GetMapping(value = "/check_name")
@@ -332,12 +308,6 @@ public class PipelineController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    /**
-     * 获取所有流水线
-     *
-     * @param projectId 项目id
-     * @return
-     */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取所有流水线")
     @GetMapping(value = "/list_all")
@@ -350,12 +320,6 @@ public class PipelineController {
     }
 
 
-    /**
-     * 停止流水线
-     *
-     * @param projectId 项目id
-     * @return
-     */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "停止流水线")
     @GetMapping(value = "/failed")

@@ -485,7 +485,7 @@ public class DevopsEnvironmentController {
      * @param envId     环境Id
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "重试gitOps")
+    @ApiOperation(value = "重试gitOps解析流程")
     @GetMapping(value = "/{env_id}/retry")
     public void retryByGitOps(
             @ApiParam(value = "项目ID", required = true)
@@ -503,7 +503,7 @@ public class DevopsEnvironmentController {
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下查询环境")
+    @ApiOperation(value = "环境树形目录")
     @GetMapping(value = "/env_tree_menu")
     public ResponseEntity<List<DevopsEnvGroupEnvsVO>> listEnvTreeMenu(
             @ApiParam(value = "项目id", required = true)

@@ -204,12 +204,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             }
             instanceValueVO.setYaml(getReplaceResult(versionValue, baseQueryValueByInstanceId(instanceId)).getYaml());
         } else {
-            try {
-                FileUtil.checkYamlFormat(versionValue);
-            } catch (Exception e) {
-                instanceValueVO.setYaml(versionValue);
-                return instanceValueVO;
-            }
+            // 如果是创建实例,直接返回版本values
             instanceValueVO.setYaml(versionValue);
         }
         return instanceValueVO;

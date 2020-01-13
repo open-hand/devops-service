@@ -28,10 +28,9 @@ import io.choerodon.devops.app.service.DevopsConfigService;
 public class DevopsOrganizationConfigController {
 
     @Autowired
-    DevopsConfigService devopsConfigService;
-
+    private DevopsConfigService devopsConfigService;
     @Autowired
-    AppServiceService appServiceService;
+    private AppServiceService appServiceService;
 
 
     @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})

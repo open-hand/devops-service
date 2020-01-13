@@ -6,6 +6,7 @@ import javax.validation.Valid;
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.annotation.Permission;
-import org.springframework.data.domain.Pageable;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -110,10 +110,10 @@ public class DevopsSecretController {
     /**
      * 分页查询secret
      *
-     * @param envId    环境id
-     * @param pageable 分页参数
-     * @param params   查询参数
-     * @param params   服务id
+     * @param envId        环境id
+     * @param pageable     分页参数
+     * @param params       查询参数
+     * @param appServiceId 服务id
      * @return Page
      */
     @Permission(type = ResourceType.PROJECT,

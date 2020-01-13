@@ -43,10 +43,6 @@ public class GitlabWebHookController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    /**
-     * 查询自动化测试应用实例状态
-     * @param testReleases
-     */
     @ApiOperation(value = "查询自动化测试应用实例状态")
     @Permission(permissionPublic = true)
     @PostMapping("/get_test_status")
