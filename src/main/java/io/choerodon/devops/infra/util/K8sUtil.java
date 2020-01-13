@@ -1,11 +1,10 @@
 package io.choerodon.devops.infra.util;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -202,6 +201,38 @@ public class K8sUtil {
     }
 
     /**
+     * 解析ingress对象所关联的所有service的名称合集(使用集合的原因是可能重复)
+     *
+     * @param ingress ingress对象
+     * @return 空的不可修改的Set, 如果没有
+     */
+    public static Set<String> analyzeIngressServices(V1beta1Ingress ingress) {
+        if (ingress == null || ingress.getSpec() == null) {
+            return Collections.emptySet();
+        }
+
+        Set<String> services = new HashSet<>();
+        if (!CollectionUtils.isEmpty(ingress.getSpec().getRules())) {
+            ingress.getSpec().getRules().forEach(rule -> {
+                if (rule.getHttp() != null && !CollectionUtils.isEmpty(rule.getHttp().getPaths())) {
+                    rule.getHttp().getPaths().forEach(path -> {
+                        if (path.getBackend() != null) {
+                            services.add(path.getBackend().getServiceName());
+                        }
+                    });
+                }
+            });
+        }
+
+        // 将默认的backend相关的service加入集合
+        if (ingress.getSpec().getBackend() != null) {
+            services.add(ingress.getSpec().getBackend().getServiceName());
+        }
+
+        return services;
+    }
+
+    /**
      * 获取目标网络端口
      *
      * @param servicePorts service端口
@@ -228,8 +259,8 @@ public class K8sUtil {
      */
     public static String formatHosts(List<V1beta1IngressRule> v1beta1IngressRules) {
         List<String> results = new ArrayList<>();
-        Integer max = 3;
-        Boolean more = false;
+        int max = 3;
+        boolean more = false;
         for (V1beta1IngressRule v1beta1IngressRule : v1beta1IngressRules) {
             if (results.size() == max) {
                 more = true;

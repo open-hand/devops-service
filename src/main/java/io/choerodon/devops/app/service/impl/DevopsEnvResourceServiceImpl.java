@@ -120,40 +120,40 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
             case SERVICE:
                 V1Service v1Service = json.deserialize(devopsEnvResourceDetailDTO.getMessage(),
                         V1Service.class);
-                DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(
-                        devopsEnvResourceDTO.getName(), envId);
-                if (devopsServiceDTO != null) {
-                    List<String> domainNames =
-                            devopsIngressService.baseListNameByServiceId(
-                                    devopsServiceDTO.getId());
-                    domainNames.forEach(domainName -> {
-                        DevopsEnvResourceDTO newDevopsEnvResourceDTO =
-                                baseQueryOptions(
-                                        null,
-                                        null,
-                                        envId,
-                                        "Ingress",
-                                        domainName);
-                        //升级0.11.0-0.12.0,资源表新增envId,修复以前的域名数据
-                        if (newDevopsEnvResourceDTO == null) {
-                            newDevopsEnvResourceDTO = baseQueryOptions(
-                                    null,
-                                    null,
-                                    null,
-                                    "Ingress",
-                                    domainName);
-                        }
-                        if (newDevopsEnvResourceDTO != null) {
-                            DevopsEnvResourceDetailDTO newDevopsEnvResourceDetailDTO =
-                                    devopsEnvResourceDetailService.baesQueryByMessageId(
-                                            newDevopsEnvResourceDTO.getResourceDetailId());
-                            V1beta1Ingress v1beta1Ingress = json.deserialize(
-                                    newDevopsEnvResourceDetailDTO.getMessage(),
-                                    V1beta1Ingress.class);
-                            devopsEnvResourceVO.getIngressVOS().add(addIngressToResource(v1beta1Ingress));
-                        }
-                    });
-                }
+//                DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(
+//                        devopsEnvResourceDTO.getName(), envId);
+//                if (devopsServiceDTO != null) {
+//                    List<String> domainNames =
+//                            devopsIngressService.baseListNameByServiceId(
+//                                    devopsServiceDTO.getId());
+//                    domainNames.forEach(domainName -> {
+//                        DevopsEnvResourceDTO newDevopsEnvResourceDTO =
+//                                baseQueryOptions(
+//                                        null,
+//                                        null,
+//                                        envId,
+//                                        "Ingress",
+//                                        domainName);
+//                        //升级0.11.0-0.12.0,资源表新增envId,修复以前的域名数据
+//                        if (newDevopsEnvResourceDTO == null) {
+//                            newDevopsEnvResourceDTO = baseQueryOptions(
+//                                    null,
+//                                    null,
+//                                    null,
+//                                    "Ingress",
+//                                    domainName);
+//                        }
+//                        if (newDevopsEnvResourceDTO != null) {
+//                            DevopsEnvResourceDetailDTO newDevopsEnvResourceDetailDTO =
+//                                    devopsEnvResourceDetailService.baesQueryByMessageId(
+//                                            newDevopsEnvResourceDTO.getResourceDetailId());
+//                            V1beta1Ingress v1beta1Ingress = json.deserialize(
+//                                    newDevopsEnvResourceDetailDTO.getMessage(),
+//                                    V1beta1Ingress.class);
+//                            devopsEnvResourceVO.getIngressVOS().add(addIngressToResource(v1beta1Ingress));
+//                        }
+//                    });
+//                }
                 addServiceToResource(devopsEnvResourceVO, v1Service);
                 break;
             case INGRESS:
@@ -406,13 +406,14 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      *
      * @param v1beta1Ingress ingress对象
      */
-    public IngressVO addIngressToResource(V1beta1Ingress v1beta1Ingress) {
+    private IngressVO addIngressToResource(V1beta1Ingress v1beta1Ingress) {
         IngressVO ingressVO = new IngressVO();
         ingressVO.setName(v1beta1Ingress.getMetadata().getName());
         ingressVO.setHosts(K8sUtil.formatHosts(v1beta1Ingress.getSpec().getRules()));
         ingressVO.setPorts(K8sUtil.formatPorts(v1beta1Ingress.getSpec().getTls()));
         ingressVO.setAddress(K8sUtil.loadBalancerStatusStringer(v1beta1Ingress.getStatus().getLoadBalancer()));
         ingressVO.setAge(v1beta1Ingress.getMetadata().getCreationTimestamp().toString());
+        ingressVO.setServices(K8sUtil.analyzeIngressServices(v1beta1Ingress));
         return ingressVO;
     }
 

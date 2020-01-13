@@ -19,7 +19,7 @@ import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.app.service.GitlabGroupMemberService
 import io.choerodon.devops.app.service.GitlabUserService
-import io.choerodon.devops.app.service.IamService
+
 import io.choerodon.devops.infra.dto.AppServiceDTO
 import io.choerodon.devops.infra.dto.DevopsProjectDTO
 import io.choerodon.devops.infra.dto.UserAttrDTO
@@ -63,8 +63,6 @@ class SagaHandlerNewSpec extends Specification {
 
     @Autowired
     private SagaHandler sagaHandler
-    @Autowired
-    private IamService iamRepository
     @Autowired
     private GitlabServiceClientOperator gitlabRepository
     @Autowired

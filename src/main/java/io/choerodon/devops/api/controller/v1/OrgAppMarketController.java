@@ -32,12 +32,6 @@ public class OrgAppMarketController {
     @Autowired
     private OrgAppMarketService orgAppMarketService;
 
-    /**
-     * @param appId
-     * @param pageable
-     * @param params
-     * @return
-     */
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据应用Id，获取应用服务和应用服务版本")
     @CustomPageRequest
@@ -55,10 +49,6 @@ public class OrgAppMarketController {
                 .orElseThrow(() -> new CommonException("error.app.services.page"));
     }
 
-    /**
-     * @param appServiceId
-     * @return
-     */
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据应用服务ID查询所对应的应用版本")
     @GetMapping("/list_versions/{app_service_id}")
@@ -72,10 +62,6 @@ public class OrgAppMarketController {
     }
 
 
-    /**
-     * @param appMarketUploadVO
-     * @return
-     */
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "应用上传")
     @PostMapping("/upload")
@@ -86,10 +72,6 @@ public class OrgAppMarketController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    /**
-     * @param appMarketFixVersionPayload
-     * @return
-     */
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "应用上传 版本修复")
     @PostMapping("/upload_fix_version")
@@ -100,10 +82,6 @@ public class OrgAppMarketController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    /**
-     * @param applicationPayload
-     * @return
-     */
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "应用下载")
     @PostMapping("/download")
@@ -114,10 +92,6 @@ public class OrgAppMarketController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    /**
-     * @param versionVOList
-     * @return
-     */
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "查询应用服务版本")
     @PostMapping("/list_versions")

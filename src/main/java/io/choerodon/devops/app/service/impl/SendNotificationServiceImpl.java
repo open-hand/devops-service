@@ -6,6 +6,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 发送DevOps相关通知的实现类
@@ -94,6 +96,27 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         sendNotices(sendSettingCode, projectDTO.getId(), targetUsers, makeAppServiceParams(organizationDTO.getId(), projectDTO.getId(), projectDTO.getName(), projectDTO.getCategory(), appServiceDTO.getName()));
     }
 
+    private void sendNoticeAboutAppService(AppServiceDTO appServiceDTO, String sendSettingCode, Function<AppServiceDTO, List<NoticeSendDTO.User>> targetSupplier) {
+        if (appServiceDTO == null) {
+            LogUtil.loggerInfoObjectNullWithId("AppService", null, LOGGER);
+            return;
+        }
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+        if (projectDTO == null) {
+            LogUtil.loggerInfoObjectNullWithId(PROJECT, appServiceDTO.getProjectId(), LOGGER);
+            return;
+        }
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        if (organizationDTO == null) {
+            LogUtil.loggerInfoObjectNullWithId(ORGANIZATION, projectDTO.getOrganizationId(), LOGGER);
+            return;
+        }
+
+        List<NoticeSendDTO.User> targetUsers = targetSupplier.apply(appServiceDTO);
+        LOGGER.debug("AppService notice {}. Target users size: {}", sendSettingCode, targetUsers.size());
+
+        sendNotices(sendSettingCode, projectDTO.getId(), targetUsers, makeAppServiceParams(organizationDTO.getId(), projectDTO.getId(), projectDTO.getName(), projectDTO.getCategory(), appServiceDTO.getName()));
+    }
 
     /**
      * 应用服务相关模板所需要的参数
@@ -163,6 +186,23 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                                 .map(p -> constructTargetUser(p.getIamUserId()))
                                 .collect(Collectors.toList())),
                 ex -> LOGGER.info("Error occurred when sending message about app-service-disable. The exception is {}.", ex));
+    }
+
+    /**
+     * 删除数据消息发送同步执行
+     *
+     * @param appServiceId
+     */
+    @Override
+    @Async
+    public void sendWhenAppServiceDelete(List<DevopsUserPermissionVO> devopsUserPermissionVOS, AppServiceDTO appServiceDTO) {
+        doWithTryCatchAndLog(
+                () -> sendNoticeAboutAppService(appServiceDTO, NoticeCodeConstants.DELETE_APP_SERVICE,
+                        app -> mapNullListToEmpty(devopsUserPermissionVOS)
+                                .stream()
+                                .map(p -> constructTargetUser(p.getIamUserId()))
+                                .collect(Collectors.toList())),
+                ex -> LOGGER.info("Error occurred when sending message about app-service-delete. The exception is {}.", ex));
     }
 
 

@@ -15,6 +15,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsEnvUserVO;
 import io.choerodon.devops.app.service.DevopsEnvUserPermissionService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -34,6 +35,8 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
 
     @Override
@@ -81,8 +84,8 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
     @Override
     public void checkEnvDeployPermission(Long userId, Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-        //判断当前用户是否是项目所有者，如果是，直接跳过校验，如果不是，校验环境权限
-        if (!baseServiceClientOperator.isProjectOwner(userId, devopsEnvironmentDTO.getProjectId())) {
+        // 判断当前用户是否是项目所有者或者root，如果是，直接跳过校验，如果不是，校验环境权限
+        if (!permissionHelper.isGitlabProjectOwnerOrRoot(devopsEnvironmentDTO.getProjectId(), userId)) {
             DevopsEnvUserPermissionDTO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDTO(envId, userId);
             devopsEnvUserPermissionDO = devopsEnvUserPermissionMapper.selectOne(devopsEnvUserPermissionDO);
             if (devopsEnvUserPermissionDO != null && !devopsEnvUserPermissionDO.getPermitted()) {

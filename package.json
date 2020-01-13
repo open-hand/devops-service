@@ -3,7 +3,7 @@
   "routeName": "devops",
   "description": "",
   "license": "ISC",
-  "version": "0.20.4",
+  "version": "0.21.0",
   "keywords": [],
   "contributors": [
     "choerodon"
@@ -23,7 +23,7 @@
   },
   "peerDependencies": {
     "@choerodon/boot": "0.19.x",
-    "@choerodon/master": "0.20.0",
+    "@choerodon/master": "0.21.0",
     "choerodon-ui": "0.8.x"
   },
   "dependencies": {
@@ -52,7 +52,7 @@
   },
   "devDependencies": {
     "@choerodon/boot": "0.19.x",
-    "@choerodon/master": "0.20.0",
+    "@choerodon/master": "0.21.0",
     "babel-preset-env": "^1.7.0",
     "choerodon-ui": "^0.8.33",
     "del": "^4.1.1",

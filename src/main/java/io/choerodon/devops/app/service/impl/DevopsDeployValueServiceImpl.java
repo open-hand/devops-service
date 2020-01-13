@@ -12,10 +12,7 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsDeployValueVO;
-import io.choerodon.devops.app.service.AppServiceInstanceService;
-import io.choerodon.devops.app.service.DevopsDeployValueService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.app.service.PipelineAppDeployService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
@@ -48,6 +45,8 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     private PipelineAppDeployService pipelineAppDeployService;
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -84,8 +83,9 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
         Long userId = DetailsHelper.getUserDetails().getUserId();
         PageInfo<DevopsDeployValueDTO> deployValueDTOPageInfo;
-        boolean isOwner = baseServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectId);
-        if (isOwner) {
+        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrRoot(projectId, userId);
+
+        if (projectOwnerOrRoot) {
             deployValueDTOPageInfo = basePageByOptionsWithOwner(projectId, appServiceId, envId, userId, pageable, params);
         } else {
             deployValueDTOPageInfo = basePageByOptionsWithMember(projectId, appServiceId, envId, userId, pageable, params);
@@ -112,8 +112,19 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public void checkName(Long projectId, String name, Long deployValueId) {
-        baseCheckName(projectId, name, deployValueId);
+    public void checkName(Long projectId, String name, Long deployValueId, Long envId) {
+        DevopsDeployValueDTO devopsDeployValueDTO = new DevopsDeployValueDTO();
+        devopsDeployValueDTO.setEnvId(Objects.requireNonNull(envId));
+        devopsDeployValueDTO.setName(Objects.requireNonNull(name));
+        List<DevopsDeployValueDTO> devopsDeployValueDTOS = devopsDeployValueMapper.select(devopsDeployValueDTO);
+        boolean updateCheck = false;
+        if (deployValueId != null) {
+            updateCheck = devopsDeployValueDTOS.size() == 1 && devopsDeployValueDTOS.get(0).getId().equals(deployValueId);
+        }
+        // 当查询结果不为空且不是更新部署配置时抛出异常
+        if (!devopsDeployValueDTOS.isEmpty() && !updateCheck) {
+            throw new CommonException("error.devops.pipeline.value.name.exit");
+        }
     }
 
     @Override
@@ -177,22 +188,6 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         DevopsDeployValueDTO devopsDeployValueDTO = new DevopsDeployValueDTO();
         devopsDeployValueDTO.setId(valueId);
         return devopsDeployValueMapper.selectByPrimaryKey(devopsDeployValueDTO);
-    }
-
-    @Override
-    public void baseCheckName(Long projectId, String name, Long deployValueId) {
-        DevopsDeployValueDTO devopsDeployValueDTO = new DevopsDeployValueDTO();
-        devopsDeployValueDTO.setProjectId(projectId);
-        devopsDeployValueDTO.setName(name);
-        List<DevopsDeployValueDTO> devopsDeployValueDTOS = devopsDeployValueMapper.select(devopsDeployValueDTO);
-        boolean updateCheck = false;
-        if (deployValueId != null) {
-            updateCheck = devopsDeployValueDTOS.size() == 1 && devopsDeployValueDTOS.get(0).getId().equals(deployValueId);
-        }
-        // 当查询结果不为空且不是更新部署配置时抛出异常
-        if (!devopsDeployValueDTOS.isEmpty() && !updateCheck) {
-            throw new CommonException("error.devops.pipeline.value.name.exit");
-        }
     }
 
     @Override

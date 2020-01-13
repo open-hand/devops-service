@@ -13,8 +13,15 @@ import org.apache.ibatis.annotations.Param;
 public interface DevopsPrometheusMapper extends Mapper<DevopsPrometheusDTO> {
     /**
      * 根据prometheusId查询Prometheus安装信息(包含相关pv信息)
+     *
      * @param id
      * @return
      */
     DevopsPrometheusVO queryPrometheusWithPvById(@Param("id") Long id);
+
+    /**
+     * 根据集群id查询信息
+     */
+
+    DevopsPrometheusDTO queryPrometheusByClusterId(@Param("clusterId") Long clusterId);
 }

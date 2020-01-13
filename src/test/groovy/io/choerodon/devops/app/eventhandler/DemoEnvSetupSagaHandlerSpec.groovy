@@ -31,7 +31,7 @@ import io.choerodon.devops.api.vo.kubernetes.RepositoryFile
 import io.choerodon.devops.app.service.DevopsGitService
 import io.choerodon.devops.app.service.GitlabGroupMemberService
 import io.choerodon.devops.app.service.GitlabUserService
-import io.choerodon.devops.app.service.IamService
+
 import io.choerodon.devops.infra.dto.*
 import io.choerodon.devops.infra.dto.gitlab.*
 import io.choerodon.devops.infra.dto.iam.ApplicationDTO
@@ -65,8 +65,6 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
 
     @Autowired
     private DemoEnvSetupSagaHandler demoEnvSetupSagaHandler
-    @Autowired
-    private IamService iamRepository
     @Autowired
     private GitlabServiceClientOperator gitlabRepository
     @Autowired

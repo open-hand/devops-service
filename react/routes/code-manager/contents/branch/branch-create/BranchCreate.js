@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
-import { Form, TextField, Select, Progress, Spin } from 'choerodon-ui/pro';
+import { Form, TextField, Select, Progress } from 'choerodon-ui/pro';
 import { Content, axios } from '@choerodon/boot';
 import { injectIntl } from 'react-intl';
 import _ from 'lodash';
+import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
+import { useFormStore } from './stores';
+import { handlePromptError } from '../../../../../utils';
 
 import '../../../../main.less';
 import './index.less';
 import '../index.less';
-import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
-import { useFormStore } from './stores';
-import { handlePromptError } from '../../../../../utils';
 
 const { Option, OptGroup } = Select;
 
@@ -20,7 +20,6 @@ function BranchCreate(props) {
     modal,
     handleRefresh,
     contentStore,
-    issueNameOptionDs,
     formDs,
     projectId,
     appServiceId,
@@ -39,31 +38,6 @@ function BranchCreate(props) {
   const [moreBranchLoading, setMoreBranchLoading] = useState(false);
   const [selectCom, setSelectCom] = useState(null);
   const [isCallHandleInput, setIsCallHandleInput] = useState(false);
-
-  const recordData = issueNameOptionDs.toData();
-  const optionsData = [];
-  let issueTypeCode;
-  let issueSummry;
-  let issueIusseNum;
-  let issueIssueId;
-
-  recordData.forEach(item => {
-    issueIssueId = item.issueId;
-    issueTypeCode = item.typeCode;
-    issueSummry = item.summary;
-    issueIusseNum = item.issueNum;
-    const data = {
-      issueId: issueIssueId,
-      typeCode: issueTypeCode,
-      summary: issueSummry,
-      issueNum: issueIusseNum,
-    };
-    optionsData.push(data);
-  });
-
-  useEffect(() => {
-    issueNameOptionDs.query();
-  }, []);
 
   useEffect(() => {
     loadBranchData(branchPageSize);
@@ -155,17 +129,10 @@ function BranchCreate(props) {
    * @param value
    */
   const changeIssue = (value) => {
-    let key = '';
     let type;
-    let branchName;
-    optionsData.forEach((item) => {
-      if (item.issueId === value) {
-        key = item.typeCode;
-        branchName = item.issueNum;
-      }
-    });
-    formDs.current.set('branchName', branchName);
-    switch (key) {
+    const { typeCode, issueNum } = value || {};
+    formDs.current.set('branchName', issueNum);
+    switch (typeCode) {
       case 'story':
         type = 'feature';
         break;
@@ -292,20 +259,11 @@ function BranchCreate(props) {
     );
   };
 
-  const issueNameRender = ({ text }) => {
-    let renderTypeCode;
-    let renderIssueNum;
-    let renderSummary;
-    optionsData.forEach(item => {
-      if (item.issueId === Number(text)) {
-        renderTypeCode = item.typeCode;
-        renderIssueNum = item.issueNum;
-        renderSummary = item.summary;
-      }
-    });
+  const issueNameRender = ({ text, value }) => {
+    const { typeCode, issueNum, summary } = value || {};
     return (
       text ? <span>
-        {renderissueName(renderTypeCode, renderIssueNum, renderSummary)}
+        {renderissueName(typeCode, issueNum, summary)}
       </span> : null
     );
   };
@@ -412,7 +370,15 @@ function BranchCreate(props) {
           columns={5}
           ref={changeRef}
         >
-          <Select colSpan={5} onChange={changeIssue} optionRenderer={issueNameOptionRender} renderer={issueNameRender} name="issueName" />
+          <Select
+            name="issue"
+            colSpan={5}
+            onChange={changeIssue}
+            optionRenderer={issueNameOptionRender}
+            renderer={issueNameRender}
+            searchable
+            searchMatcher="content"
+          />
           <Select
             colSpan={5}
             name="branchOrigin"

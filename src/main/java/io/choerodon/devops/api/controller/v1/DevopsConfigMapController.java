@@ -127,7 +127,7 @@ public class DevopsConfigMapController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "配置映射查询")
+    @ApiOperation(value = "查询单个配置映射")
     @GetMapping("/{config_map_id}")
     public ResponseEntity<DevopsConfigMapRespVO> query(
             @ApiParam(value = "项目ID", required = true)
@@ -153,7 +153,7 @@ public class DevopsConfigMapController {
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "环境配置映射查询")
+    @ApiOperation(value = "分而查询配置映射")
     @CustomPageRequest
     @PostMapping(value = "/page_by_options")
     public ResponseEntity<PageInfo<DevopsConfigMapRespVO>> pageByOptions(

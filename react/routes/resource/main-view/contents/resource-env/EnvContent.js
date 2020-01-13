@@ -8,7 +8,7 @@ import EnvItem from '../../../../../components/env-item';
 import Modals from './modals';
 import { useResourceStore } from '../../../stores';
 import { useREStore } from './stores';
-import DosageTable from './DosageTable';
+import SyncSituation from './sync-situation';
 
 import './index.less';
 import openWarnModal from '../../../../../utils/openWarnModal';
@@ -189,7 +189,7 @@ const Content = observer(() => {
           </div>
         </div>
       </Spin>
-      <DosageTable />
+      <SyncSituation />
       <Modals />
     </div>
   );

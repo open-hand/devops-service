@@ -15,4 +15,10 @@
             #{userId}
         </foreach>
     </select>
+
+    <update id="updateIsGitlabAdmin">
+        UPDATE devops_user
+        SET is_gitlab_admin = #{isGitlabAdmin}
+        WHERE iam_user_id = #{iamUserId}
+    </update>
 </mapper>

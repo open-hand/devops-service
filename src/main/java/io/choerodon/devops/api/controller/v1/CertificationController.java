@@ -97,7 +97,7 @@ public class CertificationController {
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "分页查询")
+    @ApiOperation(value = "分页查询证书")
     @CustomPageRequest
     @PostMapping("/page_by_options")
     public ResponseEntity<PageInfo<CertificationVO>> pageByOptions(

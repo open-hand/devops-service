@@ -710,7 +710,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     .filter(Objects::nonNull)
                     .flatMap(Collection::stream)
                     .collect(Collectors.toList());
-
+            //去除CPIU和内存的信息
+            instancePodLiveInfoVOs.stream().forEach(e -> {
+                e.setCpuUsedList(Collections.EMPTY_LIST);
+                e.setMemoryUsedList(Collections.EMPTY_LIST);
+            });
             devopsServiceVO.setPodLiveInfos(instancePodLiveInfoVOs);
         }
         return devopsServiceVO;

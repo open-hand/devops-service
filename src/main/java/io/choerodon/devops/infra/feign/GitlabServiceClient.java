@@ -13,6 +13,9 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.devops.infra.dto.RepositoryFileDTO;
+import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
 
 /**
  * gitlab服务 feign客户端
@@ -163,8 +166,8 @@ public interface GitlabServiceClient {
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/{commit}/file")
     ResponseEntity<RepositoryFileDTO> getFile(@PathVariable("projectId") Integer projectId,
-                                           @PathVariable("commit") String commit,
-                                           @RequestParam(value = "file_path") String filePath);
+                                              @PathVariable("commit") String commit,
+                                              @RequestParam(value = "file_path") String filePath);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/file/diffs")
     ResponseEntity<CompareResultDTO> queryCompareResult(@PathVariable("projectId") Integer projectId,
@@ -464,4 +467,31 @@ public interface GitlabServiceClient {
 
     @GetMapping("/v1/confings/get_admin_token")
     ResponseEntity<String> getAdminToken();
+
+    /**
+     * 判断用户是否是admin
+     *
+     * @param userId gitlab用户id
+     * @return true表示是
+     */
+    @GetMapping("/v1/users/{userId}/admin")
+    ResponseEntity<Boolean> checkIsAdmin(@PathVariable("userId") Integer userId);
+
+    /**
+     * 为用户添加admin权限
+     *
+     * @param userId gitlab用户id
+     * @return true表示加上了
+     */
+    @PutMapping("/v1/users/{userId}/admin")
+    ResponseEntity<Boolean> assignAdmin(@PathVariable("userId") Integer userId);
+
+    /**
+     * 删除用户admin权限
+     *
+     * @param userId gitlab用户id
+     * @return true表示删除了
+     */
+    @DeleteMapping("/v1/users/{userId}/admin")
+    ResponseEntity<Boolean> deleteAdmin(@PathVariable("userId") Integer userId);
 }

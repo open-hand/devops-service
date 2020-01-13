@@ -20,4 +20,11 @@ public interface PipelineMapper extends Mapper<PipelineDTO> {
                                     @Param("sort") String sort);
 
     List<Long> listEnvIdByPipelineId(@Param("pipelineId") Long pipelineId);
+
+    /**
+     * 通过流水线id,查询该流水线中的部署任务属于哪个环境
+     * @param pipelineId
+     * @return
+     */
+    List<PipelineDTO> selectByProjectId(@Param("pipelineId") Long pipelineId);
 }

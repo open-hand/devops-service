@@ -8,6 +8,7 @@ import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayloa
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 
 import java.util.Date;
@@ -308,14 +309,17 @@ public interface AppServiceService {
      */
     PageInfo<DevopsUserPermissionVO> pagePermissionUsers(Long projectId, Long appServiceId, Pageable pageable, String searchParam);
 
-    /**
-     * 根据appServiceId查询服务服务所有没有权限的项目成员
-     *
-     * @param projectId
-     * @param appServiceId
-     * @param params
-     * @return
-     */
+    PageInfo<DevopsUserPermissionVO> combineOwnerAndMember(List<DevopsUserPermissionVO> allProjectMembers, List<DevopsUserPermissionVO> allProjectOwners, Pageable pageable);
+
+    DevopsUserPermissionVO iamUserTOUserPermissionVO(IamUserDTO iamUserDTO, Boolean isGitlabProjectOwner);
+        /**
+         * 根据appServiceId查询服务服务所有没有权限的项目成员
+         *
+         * @param projectId
+         * @param appServiceId
+         * @param params
+         * @return
+         */
     PageInfo<DevopsUserPermissionVO> listMembers(Long projectId, Long appServiceId, Long selectedIamUserId, Pageable pageable, String params);
 
     /**

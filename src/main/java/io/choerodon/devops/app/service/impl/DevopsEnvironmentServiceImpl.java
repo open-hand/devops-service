@@ -65,15 +65,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private static final String SYSTEM_ENV_NAME = "%s-env";
 
     private static final Gson gson = new Gson();
-    private static final String MEMBER = "member";
-    private static final String OWNER = "owner";
     private static final String MASTER = "master";
     private static final String README = "README.md";
     private static final String README_CONTENT =
             "# This is gitops env repository!";
     private static final String ENV = "ENV";
-    private static final String PROJECT_OWNER = "role/project/default/project-owner";
-    private static final String PROJECT_MEMBER = "role/project/default/project-member";
     private static final String ERROR_CODE_EXIST = "error.code.exist";
     private static final String ERROR_GITLAB_USER_SYNC_FAILED = "error.gitlab.user.sync.failed";
     private static final String LOGIN_NAME = "loginName";
@@ -171,6 +167,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsPvcService devopsPvcService;
     @Autowired
     private DevopsDeployValueService devopsDeployValueService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     @PostConstruct
     private void init() {
@@ -205,13 +203,23 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
         }
 
-        // 查询创建应用所在的gitlab应用组
+        boolean isGitlabRoot = false;
+
+        if (Boolean.TRUE == userAttrDTO.getGitlabAdmin()) {
+            // 如果这边表存了gitlabAdmin这个字段,那么gitlabUserId就不会为空,所以不判断此字段为空
+            isGitlabRoot = gitlabServiceClientOperator.isGitlabAdmin(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        }
+
+        // 查询创建环境所在的gitlab环境组
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-        MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(
-                TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()),
-                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
-            throw new CommonException("error.user.not.owner");
+
+        if (!isGitlabRoot) {
+            MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(
+                    TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()),
+                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
+                throw new CommonException("error.user.not.owner");
+            }
         }
 
         List<String> sshKeys = FileUtil.getSshKey(
@@ -445,15 +453,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .filter(DevopsEnvUserPermissionDTO::getPermitted)
                 .map(DevopsEnvUserPermissionDTO::getEnvId).collect(Collectors.toList());
         // 查询当前用户是否为项目所有者
-        Boolean isProjectOwner = baseServiceClientOperator
-                .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectId);
+        Boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrRoot(projectId);
 
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = baseListByProjectIdAndActive(projectId, active).stream()
                 .filter(devopsEnvironmentE -> !devopsEnvironmentE.getFailed()).peek(t -> {
                     setEnvStatus(upgradeClusterList, t);
                     // 项目成员返回拥有对应权限的环境，项目所有者返回所有环境
-                    setPermission(t, permissionEnvIds, isProjectOwner);
+                    setPermission(t, permissionEnvIds, projectOwnerOrRoot);
                 })
                 .collect(Collectors.toList());
         return ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class);
@@ -466,10 +473,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsEnvironmentViewVO> connectedEnvs = new ArrayList<>();
         List<DevopsEnvironmentViewVO> unConnectedEnvs = new ArrayList<>();
 
-        boolean isOwner = baseServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectId);
+        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrRoot(projectId);
 
         List<DevopsEnvironmentViewDTO> views;
-        if (isOwner) {
+        if (projectOwnerOrRoot) {
             views = devopsEnvironmentMapper.listAllInstanceEnvTree(projectId);
         } else {
             views = devopsEnvironmentMapper.listMemberInstanceEnvTree(projectId, DetailsHelper.getUserDetails().getUserId());
@@ -515,10 +522,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsResourceEnvOverviewVO> connectedEnvs = new ArrayList<>();
         List<DevopsResourceEnvOverviewVO> unConnectedEnvs = new ArrayList<>();
 
-        boolean isOwner = baseServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectId);
+        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrRoot(projectId);
 
         List<DevopsResourceEnvOverviewDTO> views;
-        if (isOwner) {
+        if (projectOwnerOrRoot) {
             views = devopsEnvironmentMapper.listAllResourceEnvTree(projectId);
         } else {
             views = devopsEnvironmentMapper.listMemberResourceEnvTree(projectId, DetailsHelper.getUserDetails().getUserId());
@@ -947,66 +954,21 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         // 根据搜索参数查询所有的项目所有者
-        Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
-        PageInfo<IamUserDTO> projectOwners = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
-                CustomPageRequest.of(0, 0), roleAssignmentSearchVO, ownerId, projectId, false);
+        List<DevopsUserPermissionVO> projectOwners =ConvertUtils.convertList(baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_OWNER.getValue()),
+                iamUserDTO->appServiceService.iamUserTOUserPermissionVO(iamUserDTO,true));
+        List<DevopsUserPermissionVO> projectMembers = ConvertUtils.convertList(baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_DEVELOPER.getValue()),
+                iamUserDTO->appServiceService.iamUserTOUserPermissionVO(iamUserDTO,false));
 
-        List<Long> ownerIds = projectOwners
-                .getList()
-                .stream()
-                .map(IamUserDTO::getId)
-                .collect(Collectors.toList());
-        List<DevopsUserPermissionVO> members;
         if (!devopsEnvironmentDTO.getSkipCheckPermission()) {
             // 根据搜索参数查询数据库中所有的环境权限分配数据
-            List<DevopsEnvUserPermissionDTO> permissions = devopsEnvUserPermissionMapper.listUserEnvPermissionByOption(envId, searchParamMap, paramList);
-            members = permissions
+            List<Long> permissions = devopsEnvUserPermissionMapper.listUserEnvPermissionByOption(envId, searchParamMap, paramList).stream().map(DevopsEnvUserPermissionDTO::getIamUserId).collect(Collectors.toList());
+            projectMembers = projectMembers
                     .stream()
-                    .filter(p -> !ownerIds.contains(p.getIamUserId()))
-                    .map(p -> {
-                        DevopsUserPermissionVO permissionVO = new DevopsUserPermissionVO();
-                        BeanUtils.copyProperties(p, permissionVO);
-                        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(p.getIamUserId());
-                        if (!iamUserDTO.getLdap()) {
-                            permissionVO.setLoginName(iamUserDTO.getEmail());
-                        }
-                        return permissionVO;
-                    })
-                    .peek(p -> p.setRole(MEMBER))
-                    .sorted(Comparator.comparing(DevopsUserPermissionVO::getCreationDate).reversed())
-                    .collect(Collectors.toList());
-        } else {
-            // 搜索所有的项目成员，并过滤其中的项目所有者
-            Long memberRoleId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
-
-            members = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
-                    CustomPageRequest.of(0, 0), roleAssignmentSearchVO, memberRoleId, projectId, false)
-                    .getList()
-                    .stream()
-                    .filter(u -> !ownerIds.contains(u.getId()))
-                    .map(iamUser -> new DevopsUserPermissionVO(iamUser.getId(), iamUser.getLdap() ? iamUser.getLoginName() : iamUser.getEmail(), iamUser.getRealName(), devopsEnvironmentDTO.getCreationDate()))
-                    .peek(p -> p.setRole(MEMBER))
+                    .filter(member -> permissions.contains(member.getIamUserId()) || baseServiceClientOperator.isGitlabProjectOwner(member.getIamUserId(), projectId))
                     .collect(Collectors.toList());
         }
 
-        // 项目成员加上项目所有者
-        List<DevopsUserPermissionVO> owners = projectOwners.getList()
-                .stream().map(iamUser -> {
-                    DevopsUserPermissionVO devopsUserPermissionVO = new DevopsUserPermissionVO();
-                    if (iamUser.getLdap()) {
-                        devopsUserPermissionVO = new DevopsUserPermissionVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName(), devopsEnvironmentDTO.getCreationDate());
-                    } else {
-                        devopsUserPermissionVO = new DevopsUserPermissionVO(iamUser.getId(), iamUser.getEmail(), iamUser.getRealName(), devopsEnvironmentDTO.getCreationDate());
-                    }
-                    return devopsUserPermissionVO;
-                })
-                .peek(p -> p.setRole(OWNER))
-                .collect(Collectors.toList());
-        members.addAll(owners);
-
-        members = PageRequestUtil.sortUserPermission(members, pageable.getSort());
-        // 根据结果手动设置page的相关属性
-        return PageInfoUtil.createPageFromList(members, pageable);
+        return appServiceService.combineOwnerAndMember(projectMembers,projectOwners,pageable);
     }
 
     @Override
@@ -1032,20 +994,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         // 根据参数搜索所有的项目成员
-        Long memberRoleId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
-        PageInfo<IamUserDTO> allProjectMembers = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
-                CustomPageRequest.of(0, 0), roleAssignmentSearchVO, memberRoleId, projectId, false);
-        if (allProjectMembers.getList().isEmpty()) {
+        List<IamUserDTO> allProjectMembers = baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_DEVELOPER.getValue());
+        if (allProjectMembers.isEmpty()) {
             PageInfo<DevopsEnvUserVO> pageInfo = new PageInfo<>();
             pageInfo.setList(new ArrayList<>());
             return pageInfo;
         }
 
         // 获取项目下所有的项目所有者（带上搜索参数搜索可以获得更精确的结果）
-        Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
-        List<Long> allProjectOwnerIds = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
-                CustomPageRequest.of(0, 0), roleAssignmentSearchVO, ownerId, projectId, false)
-                .getList()
+        List<Long> allProjectOwnerIds = baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_OWNER.getValue())
                 .stream()
                 .map(IamUserDTO::getId)
                 .collect(Collectors.toList());
@@ -1054,8 +1011,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<Long> assigned = devopsEnvUserPermissionMapper.listUserIdsByEnvId(envId);
 
         // 过滤项目成员中的项目所有者和已被分配权限的
-        List<IamUserDTO> members = allProjectMembers.getList()
-                .stream()
+        List<IamUserDTO> members = allProjectMembers.stream()
                 .filter(member -> !allProjectOwnerIds.contains(member.getId()))
                 .filter(member -> !assigned.contains(member.getId()))
                 .collect(Collectors.toList());
@@ -1106,7 +1062,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
 
-        if (baseServiceClientOperator.isProjectOwner(userAttrDTO.getIamUserId(), projectId)) {
+        if (baseServiceClientOperator.isGitlabProjectOwner(userAttrDTO.getIamUserId(), projectId)) {
             throw new CommonException("error.delete.permission.of.project.owner");
         }
 
@@ -1239,50 +1195,29 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 roleAssignmentSearchVO.setRealName(subReal);
             }
         }
-        // 获取项目所有者角色id和数量
-        Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
-        // 获取项目成员id
-        Long memberId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
         // 所有项目成员，可能还带有项目所有者的角色
-        PageInfo<IamUserDTO> allMemberWithOtherUsersPage = baseServiceClientOperator
-                .pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), roleAssignmentSearchVO,
-                        memberId, projectId, false);
+        List<IamUserDTO> allProjectMembers = baseServiceClientOperator.listUsersWithGitlabLabel(projectId, new RoleAssignmentSearchVO(), LabelType.GITLAB_PROJECT_DEVELOPER.getValue());
         // 所有项目所有者
-        PageInfo<IamUserDTO> allOwnerUsersPage = baseServiceClientOperator
-                .pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), roleAssignmentSearchVO,
-                        ownerId, projectId, false);
+        List<IamUserDTO> allProjectOwners = baseServiceClientOperator.listUsersWithGitlabLabel(projectId, new RoleAssignmentSearchVO(), LabelType.GITLAB_PROJECT_OWNER.getValue());
         //合并项目所有者和项目成员
-        Set<IamUserDTO> iamUserDTOS = new HashSet<>(allMemberWithOtherUsersPage.getList());
-        iamUserDTOS.addAll(allOwnerUsersPage.getList());
-        List<IamUserDTO> returnUserDTOList;
+        Set<IamUserDTO> iamUserDTOS = new HashSet<>(allProjectMembers);
+        iamUserDTOS.addAll(allProjectOwners);
 
-        //没有项目所有者
-        if (allOwnerUsersPage.getList().isEmpty()) {
-            return ConvertUtils.convertPage(allMemberWithOtherUsersPage, UserVO.class);
+        List<IamUserDTO> returnUserDTOList;
+        if (iamUserDTOS.isEmpty()) {
+            return ConvertUtils.convertPage(new PageInfo<>(), UserVO.class);
         } else {
             returnUserDTOList = iamUserDTOS.stream()
                     .peek(e -> {
-                        if (!allOwnerUsersPage.getList().contains(e)) {
+                        if (!allProjectOwners.contains(e)) {
                             e.setProjectOwner(false);
                         } else {
                             e.setProjectOwner(true);
                         }
                     }).collect(Collectors.toList());
         }
-        allMemberWithOtherUsersPage.setPageSize(pageable.getPageSize());
-        allMemberWithOtherUsersPage.setTotal(returnUserDTOList.size());
-        allMemberWithOtherUsersPage.setPageNum(pageable.getPageNumber());
-        if (returnUserDTOList.size() < pageable.getPageSize() * pageable.getPageNumber()) {
-            allMemberWithOtherUsersPage.setSize(TypeUtil.objToInt(returnUserDTOList.size()) - (pageable.getPageSize() * (pageable.getPageNumber() - 1)));
-            allMemberWithOtherUsersPage.setList(returnUserDTOList);
-        } else {
-            allMemberWithOtherUsersPage.setSize(pageable.getPageSize());
-            int fromIndex = pageable.getPageSize() * (pageable.getPageNumber() - 1);
-            int toIndex = (pageable.getPageSize() * pageable.getPageNumber()) > returnUserDTOList.size() ? returnUserDTOList.size() : pageable.getPageSize() * pageable.getPageNumber();
-            allMemberWithOtherUsersPage.setList(returnUserDTOList.subList(fromIndex, toIndex));
-        }
-
-        return ConvertUtils.convertPage(allMemberWithOtherUsersPage, UserVO.class);
+        List<UserVO> iamUserVOS = ConvertUtils.convertList(returnUserDTOList, UserVO.class);
+        return PageInfoUtil.createPageFromList(iamUserVOS, pageable);
     }
 
     private void setPermission(DevopsEnvironmentDTO devopsEnvironmentDTO, List<Long> permissionEnvIds,
@@ -1457,11 +1392,20 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnvironmentDTO.setToken(GenerateUUID.generateUUID());
         devopsEnvironmentDTO.setProjectId(projectId);
 
-        MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(
-                TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()),
-                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
-            throw new CommonException("error.user.not.owner");
+        boolean isGitlabRoot = false;
+
+        if (Boolean.TRUE == userAttrDTO.getGitlabAdmin()) {
+            // 如果这边表存了gitlabAdmin这个字段,那么gitlabUserId就不会为空,所以不判断此字段为空
+            isGitlabRoot = gitlabServiceClientOperator.isGitlabAdmin(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        }
+
+        if (!isGitlabRoot) {
+            MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(
+                    TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()),
+                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
+                throw new CommonException("error.user.not.owner");
+            }
         }
 
         // 生成deployKey

@@ -1,11 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
-import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;

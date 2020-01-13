@@ -73,6 +73,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private DevopsEnvFileErrorService devopsEnvFileErrorService;
     @Autowired
     private UserAttrService userAttrService;
+    @Autowired
+    private DevopsPvMapper devopsPvMapper;
 
     @Override
     public void baseCreate(DevopsClusterResourceDTO devopsClusterResourceDTO) {
@@ -251,8 +253,10 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
         // 解决分布式事务问题，注册client成功，更新cluster表client字段失败
+        LOGGER.info("clusterClientId:{}", devopsClusterDTO.getClientId());
         if (devopsClusterDTO.getClientId() == null) {
             ClientDTO clientDTO = baseServiceClientOperator.queryClientBySourceId(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getId());
+            LOGGER.info("clientDTO:{}", clientDTO);
             // 集群未注册client，则先注册
             if (clientDTO == null) {
                 clientDTO = registerClient(devopsClusterDTO);
@@ -322,8 +326,17 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Override
     public DevopsPrometheusVO queryPrometheus(Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.queryPrometheusByClusterId(clusterId);
+        DevopsPvDTO alertManagerPv = devopsPvMapper.selectByPrimaryKey(devopsPrometheusDTO.getAlertmanagerPvId());
+        DevopsPvDTO grafanaPv = devopsPvMapper.selectByPrimaryKey(devopsPrometheusDTO.getGrafanaPvId());
+        DevopsPvDTO prometheusPv = devopsPvMapper.selectByPrimaryKey(devopsPrometheusDTO.getPrometheusPvId());
 
-        return devopsPrometheusMapper.queryPrometheusWithPvById(devopsClusterResourceDTO.getConfigId());
+        DevopsPrometheusVO devopsPrometheusVO = devopsPrometheusMapper.queryPrometheusWithPvById(devopsClusterResourceDTO.getConfigId());
+        setPvStatus(alertManagerPv, "alertmanager", devopsPrometheusVO);
+        setPvStatus(grafanaPv, "grafana", devopsPrometheusVO);
+        setPvStatus(prometheusPv, "prometheus", devopsPrometheusVO);
+
+        return devopsPrometheusVO;
     }
 
     @Override
@@ -571,14 +584,15 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private ClientDTO registerClient(DevopsClusterDTO devopsClusterDTO) {
         // 添加客户端
         ClientVO clientVO = new ClientVO();
-        clientVO.setName(devopsClusterDTO.getChoerodonId());
+        clientVO.setName("grafana");
         clientVO.setOrganizationId(devopsClusterDTO.getOrganizationId());
         clientVO.setAuthorizedGrantTypes("password,implicit,client_credentials,refresh_token,authorization_code");
-        clientVO.setSecret(GenerateUUID.generateUUID().substring(0, 16).replace("-", "A"));
+        clientVO.setSecret("grafana");
         clientVO.setRefreshTokenValidity(360000L);
         clientVO.setAccessTokenValidity(360000L);
         clientVO.setSourceId(devopsClusterDTO.getId());
         clientVO.setSourceType("cluster");
+        LOGGER.info("clientVO:{}", clientVO);
         return baseServiceClientOperator.createClient(devopsClusterDTO.getOrganizationId(), clientVO);
     }
 
@@ -608,5 +622,30 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             pvcDTOList.remove(0);
         }
 
+    }
+
+    private void setPvStatus(DevopsPvDTO devopsPvDTO, String type, DevopsPrometheusVO devopsPrometheusVO) {
+        String boundPVCName = devopsPvDTO.getPvcName();
+        String pvName = devopsPvDTO.getName();
+        if (boundPVCName != null && boundPVCName.contains(type)) {
+            switch (type) {
+                case "alertmanager":
+                    devopsPrometheusVO.setAlertmanagerPvStatus(devopsPvDTO.getStatus());
+                    devopsPrometheusVO.setAlertmanagerPvId(devopsPvDTO.getId());
+                    devopsPrometheusVO.setAlertmanagerPvName(pvName);
+                    break;
+                case "grafana":
+                    devopsPrometheusVO.setGrafanaPvStatus(devopsPvDTO.getStatus());
+                    devopsPrometheusVO.setGrafanaPvId(devopsPvDTO.getId());
+                    devopsPrometheusVO.setGrafanaPvName(pvName);
+                    break;
+                case "prometheus":
+                    devopsPrometheusVO.setPrometheusPvStatus(devopsPvDTO.getStatus());
+                    devopsPrometheusVO.setPrometheusPvId(devopsPvDTO.getId());
+                    devopsPrometheusVO.setPrometheusPvName(pvName);
+                    break;
+                default:
+            }
+        }
     }
 }

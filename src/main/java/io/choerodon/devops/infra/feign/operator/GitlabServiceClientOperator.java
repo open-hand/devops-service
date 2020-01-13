@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageInfo;
 import feign.FeignException;
 import feign.RetryableException;
-import io.choerodon.devops.api.vo.FileCreationVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,12 +18,17 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.FileCreationVO;
+import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
-import io.choerodon.devops.infra.util.*;
+import io.choerodon.devops.infra.util.FeignResponseStatusCodeParse;
+import io.choerodon.devops.infra.util.GitUtil;
+import io.choerodon.devops.infra.util.PageInfoUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 
 /**
@@ -41,6 +45,8 @@ public class GitlabServiceClientOperator {
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private GitUtil gitUtil;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
 
     public GitLabUserDTO createUser(String password, Integer projectsLimit, GitlabUserReqDTO userReqDTO) {
@@ -500,7 +506,6 @@ public class GitlabServiceClientOperator {
             responseEntity = gitlabServiceClient.listBranch(projectId, userId);
         } catch (FeignException e) {
             throw new CommonException("error.branch.get", e);
-
         }
         List<BranchDTO> branches = responseEntity.getBody();
         branches.forEach(t -> t.getCommit().setUrl(
@@ -510,8 +515,7 @@ public class GitlabServiceClientOperator {
 
 
     public PageInfo<TagDTO> pageTag(ProjectDTO projectDTO, Integer gitlabProjectId, String path, Integer page, String params, Integer size, Integer userId) {
-
-        if (!baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO.getId())) {
+        if (!permissionHelper.isGitlabProjectOwnerOrRoot(projectDTO.getId())) {
             MemberDTO memberDTO = getProjectMember(
                     gitlabProjectId,
                     userId);
@@ -824,5 +828,64 @@ public class GitlabServiceClientOperator {
             throw new CommonException(e);
         }
 
+    }
+
+    /**
+     * 为一个已经是admin的gitlab用户再设置admin也不会报错且返回的是正常的false，
+     * 所以没有在对用户赋予admin权限前判断他是不是admin
+     *
+     * @param iamUserId    iamUserId
+     * @param gitlabUserId gitlabUserId
+     */
+    public void assignAdmin(Long iamUserId, Integer gitlabUserId) {
+        Boolean result;
+        try {
+            ResponseEntity<Boolean> responseEntity = gitlabServiceClient.assignAdmin(Objects.requireNonNull(gitlabUserId));
+            result = responseEntity == null ? Boolean.FALSE : responseEntity.getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+
+        if (!Boolean.TRUE.equals(result)) {
+            throw new CommonException("failed.to.set.user.gitlab.admin", Objects.requireNonNull(iamUserId));
+        }
+    }
+
+    public void deleteAdmin(Long iamUserId, Integer gitlabUserId) {
+        Boolean result;
+
+        try {
+            ResponseEntity<Boolean> responseEntity = gitlabServiceClient.deleteAdmin(Objects.requireNonNull(gitlabUserId));
+            result = responseEntity == null ? Boolean.FALSE : responseEntity.getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+
+        if (!Boolean.TRUE.equals(result)) {
+            throw new CommonException("failed.to.delete.user.gitlab.admin", Objects.requireNonNull(iamUserId));
+        }
+    }
+
+    /**
+     * 用户是否是gitlab的admin
+     *
+     * @param gitlabUserId gitlab用户id
+     * @return true表明是
+     */
+    public boolean isGitlabAdmin(Integer gitlabUserId) {
+        try {
+            ResponseEntity<Boolean> responseEntity = gitlabServiceClient.checkIsAdmin(Objects.requireNonNull(gitlabUserId));
+            if (responseEntity == null) {
+                return false;
+            }
+            if (responseEntity.getBody() == null) {
+                return false;
+            }
+            return responseEntity.getBody();
+        } catch (Exception e) {
+            LOGGER.info("Error occurred when check whether the user with gitlab id {} is root...", gitlabUserId);
+            LOGGER.info("The exception is {}", e);
+            return false;
+        }
     }
 }

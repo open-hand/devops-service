@@ -5,7 +5,7 @@ import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.FileCreationVO
 import io.choerodon.devops.app.service.GitlabGroupMemberService
-import io.choerodon.devops.app.service.IamService
+
 import io.choerodon.devops.app.service.impl.CertificationServiceImpl
 import io.choerodon.devops.infra.dto.CertificationDTO
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO
@@ -55,8 +55,6 @@ class CertificationControllerSpec extends Specification {
     private DevopsEnvironmentMapper devopsEnvironmentMapper
     @Autowired
     private DevopsEnvCommandMapper devopsEnvCommandMapper
-    @Autowired
-    private IamService iamRepository
     @Autowired
     private GitlabServiceClientOperator gitlabRepository
     @Autowired

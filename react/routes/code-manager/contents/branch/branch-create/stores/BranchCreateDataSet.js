@@ -1,6 +1,6 @@
 import { axios } from '@choerodon/boot';
 
-export default ({ projectId, issueNameOptionDs, appServiceId, formatMessage, searchDS, contentStore }) => {
+export default ({ projectId, appServiceId, formatMessage, contentStore }) => {
   async function checkBranchName(value) {
     const endWith = /(\/|\.|\.lock)$/;
     const contain = /(\s|~|\^|:|\?|\*|\[|\\|\.\.|@\{|\/{2,}){1}/;
@@ -31,12 +31,12 @@ export default ({ projectId, issueNameOptionDs, appServiceId, formatMessage, sea
     autoCreate: true,
     fields: [
       {
-        name: 'issueName',
-        type: 'string',
+        name: 'issue',
+        type: 'object',
         textField: 'summary',
         valueField: 'issueId',
         label: formatMessage({ id: 'branch.issueName' }),
-        options: issueNameOptionDs,
+        lookupUrl: `/agile/v1/projects/${projectId}/issues/summary?onlyActiveSprint=false&self=true`,
       },
       {
         name: 'branchOrigin',
@@ -64,15 +64,15 @@ export default ({ projectId, issueNameOptionDs, appServiceId, formatMessage, sea
         url: `/devops/v1/projects/${projectId}/app_service/${appServiceId}/git/branch`,
         method: 'post',
         transformRequest: () => {
-          const issueId = data.issueName;
+          const { issueId } = data.issue || {};
           const originBranch = data.branchOrigin;
           const type = data.branchType;
-          let branchName;
-          type === 'custom' ? branchName = data.branchName : branchName = `${data.branchType}-${data.branchName}`;
+          const branchName = type === 'custom' ? data.branchName : `${data.branchType}-${data.branchName}`;
+
           const postData = {
             branchName,
             issueId,
-            originBranch,
+            originBranch: originBranch && originBranch.slice(0, -7),
             type,
           };
           return JSON.stringify(postData);

@@ -11,6 +11,7 @@ import CreateForm from './modals/create-form';
 import PermissionManager from './modals/permission-mananger';
 import StatusTag from '../../components/status-tag';
 import { handlePromptError } from '../../utils';
+import StatusDot from '../../components/status-dot';
 import StatusIcon from '../../components/StatusIcon/StatusIcon';
 
 import './index.less';
@@ -20,7 +21,7 @@ const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
 const deleteKey = Modal.key();
 const modalStyle1 = {
-  width: 380,
+  width: 740,
 };
 const modalStyle2 = {
   width: 'calc(100vw - 3.52rem)',
@@ -46,7 +47,7 @@ const AppService = withRouter(observer((props) => {
   function refresh() {
     listDs.query();
   }
-  
+
   function renderName({ value, record }) {
     const status = record.get('status');
     let color = 'rgba(0, 0, 0, 0.26)';
@@ -130,6 +131,29 @@ const AppService = withRouter(observer((props) => {
     return data && <Action data={data} />;
   }
 
+  function getStatus(record) {
+    const connect = record.get('clusterConnect');
+    if (connect) {
+      return ['running', 'connect'];
+    }
+    return ['disconnect'];
+  }
+
+  function renderCluster({ value, record }) {
+    return (
+      <Fragment>
+        <span>
+          <StatusDot
+            size="small"
+            getStatus={() => getStatus(record)}
+          />
+          &nbsp;
+          {value}
+        </span>
+      </Fragment>
+    );
+  }
+
   function openCreate() {
     Modal.open({
       key: modalKey1,
@@ -207,7 +231,7 @@ const AppService = withRouter(observer((props) => {
           <Column name="name" renderer={renderName} sortable />
           <Column renderer={renderActions} width={70} />
           <Column name="description" sortable />
-          <Column name="clusterName" />
+          <Column name="clusterName" renderer={renderCluster} />
           <Column name="type" width={100} />
           <Column name="pvcName" renderer={renderPvcName} />
           <Column name="accessModes" width={140} />

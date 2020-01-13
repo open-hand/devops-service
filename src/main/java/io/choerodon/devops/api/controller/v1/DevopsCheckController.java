@@ -26,7 +26,7 @@ public class  DevopsCheckController {
      * @param version 版本
      */
     @Permission(permissionLogin = true)
-    @ApiOperation(value = "平滑升级")
+    @ApiOperation(value = "用于平滑升级(迁移数据等操作,可以多次调用)")
     @GetMapping
     public ResponseEntity<String> checkLog(
             @ApiParam(value = "version")

@@ -10,6 +10,17 @@ import java.util.List;
  */
 public class DevopsPvPermissionUpdateVO {
 
+    public DevopsPvPermissionUpdateVO() {
+
+    }
+
+    public DevopsPvPermissionUpdateVO(@NotNull(message = "error.pv.id.null") Long pvId, @NotNull(message = "error.project.ids.null") List<Long> projectIds, @NotNull(message = "error.skip.check.project.permission.null") Boolean skipCheckProjectPermission, Long objectVersionNumber) {
+        this.pvId = pvId;
+        this.projectIds = projectIds;
+        this.skipCheckProjectPermission = skipCheckProjectPermission;
+        this.objectVersionNumber = objectVersionNumber;
+    }
+
     @ApiModelProperty("pvId/必填")
     @NotNull(message = "error.pv.id.null")
     private Long pvId;
@@ -22,7 +33,7 @@ public class DevopsPvPermissionUpdateVO {
     @NotNull(message = "error.skip.check.project.permission.null")
     private Boolean skipCheckProjectPermission;
 
-    @ApiModelProperty("更新了skipCheckProjectPermission字段/必填")
+    @ApiModelProperty("更新了skipCheckProjectPermission字段")
     private Long objectVersionNumber;
 
     public Long getPvId() {

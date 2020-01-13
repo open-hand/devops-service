@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import io.choerodon.core.notify.NoticeSendDTO;
+import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 
 /**
@@ -47,6 +48,11 @@ public interface SendNotificationService {
      */
     void sendWhenAppServiceDisabled(Long appServiceId);
 
+    /**
+     * 删除应用服务通知
+     */
+    void sendWhenAppServiceDelete(List<DevopsUserPermissionVO> devopsUserPermissionVOS, AppServiceDTO appServiceDTO);
+
 
     /**
      * 当持续集成失败后
@@ -70,9 +76,9 @@ public interface SendNotificationService {
     /**
      * 当合并请求被关闭时
      *
-     * @param gitlabProjectId  gitlab项目id
-     * @param mergeRequestId   合并请求的id
-     * @param userLoginName iam_user login_name
+     * @param gitlabProjectId gitlab项目id
+     * @param mergeRequestId  合并请求的id
+     * @param userLoginName   iam_user login_name
      */
     void sendWhenMergeRequestClosed(Integer gitlabProjectId, Long mergeRequestId, String userLoginName);
 
@@ -80,9 +86,9 @@ public interface SendNotificationService {
     /**
      * 当合并请求被通过时
      *
-     * @param gitlabProjectId  gitlab项目id
-     * @param mergeRequestId   合并请求的id
-     * @param userLoginName iam_user login_name
+     * @param gitlabProjectId gitlab项目id
+     * @param mergeRequestId  合并请求的id
+     * @param userLoginName   iam_user login_name
      */
     void sendWhenMergeRequestPassed(Integer gitlabProjectId, Long mergeRequestId, String userLoginName);
 
@@ -125,4 +131,6 @@ public interface SendNotificationService {
      * @param resourceCommandId 资源的command id (不为null时校验command的commandType是不是create)
      */
     void sendWhenCertificationCreationFailure(Long envId, String resourceName, Long creatorId, @Nullable Long resourceCommandId);
+
+
 }

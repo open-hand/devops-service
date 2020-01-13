@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
+import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+
 import java.util.List;
 
 /**
@@ -19,6 +22,26 @@ public class DevOpsAppServicePayload {
     private Long iamProjectId;
     private Long templateAppServiceId;
     private Long templateAppServiceVersionId;
+
+    private AppServiceDTO appServiceDTO;
+    private List<DevopsUserPermissionVO> devopsUserPermissionVOS;
+
+    public List<DevopsUserPermissionVO> getDevopsUserPermissionVOS() {
+        return devopsUserPermissionVOS;
+    }
+
+    public void setDevopsUserPermissionVOS(List<DevopsUserPermissionVO> devopsUserPermissionVOS) {
+        this.devopsUserPermissionVOS = devopsUserPermissionVOS;
+    }
+
+    public AppServiceDTO getAppServiceDTO() {
+        return appServiceDTO;
+    }
+
+    public void setAppServiceDTO(AppServiceDTO appServiceDTO) {
+        this.appServiceDTO = appServiceDTO;
+    }
+
 
     public Integer getUserId() {
         return userId;

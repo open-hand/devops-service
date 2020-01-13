@@ -14,15 +14,13 @@ import org.springframework.stereotype.Service;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsDeployRecordVO;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -37,20 +35,18 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     private static final String RUNNING = "running";
     private static final String MANUAL = "manual";
 
-
     @Autowired
     private DevopsDeployRecordMapper devopsDeployRecordMapper;
-    @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private PipelineService pipelineService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     @Override
     public PageInfo<DevopsDeployRecordVO> pageByProjectId(Long projectId, String params, Pageable pageable) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO.getId());
+        Boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrRoot(projectId);
 
         PageInfo<DevopsDeployRecordDTO> devopsDeployRecordDTOPageInfo = basePageByProjectId(projectId, params, pageable);
 
@@ -64,14 +60,14 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         //设置环境信息以及用户信息
         devopsDeployRecordVOPageInfo.getList().forEach(devopsDeployRecordVO -> {
             if (devopsDeployRecordVO.getDeployType().equals("auto") && !devopsDeployRecordVO.getDeployStatus().equals("success")) {
-                pipelineService.setPipelineRecordDetail(projectOwner, devopsDeployRecordVO);
+                pipelineService.setPipelineRecordDetail(projectOwnerOrRoot, devopsDeployRecordVO);
             }
             if (userMap.containsKey(devopsDeployRecordVO.getDeployCreatedBy())) {
                 IamUserDTO targetUser = userMap.get(devopsDeployRecordVO.getDeployCreatedBy());
                 devopsDeployRecordVO.setUserName(targetUser.getRealName());
-                if(targetUser.getLdap()) {
+                if (targetUser.getLdap()) {
                     devopsDeployRecordVO.setUserLoginName(targetUser.getLoginName());
-                }else {
+                } else {
                     devopsDeployRecordVO.setUserLoginName(targetUser.getEmail());
                 }
                 devopsDeployRecordVO.setUserImage(targetUser.getImageUrl());

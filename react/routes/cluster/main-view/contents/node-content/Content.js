@@ -47,6 +47,15 @@ export default observer((props) => {
             <NodeContent />
           </Suspense>
         </TabPane>
+        <TabPane
+          key={MONITOR_TAB}
+          tab={formatMessage({ id: `${intlPrefix}.node.monitor` })}
+        >
+          <Suspense fallback={<Spin />}>
+            <Monitor />
+          </Suspense>
+        </TabPane>
+
       </Tabs>
     </Fragment>);
 });

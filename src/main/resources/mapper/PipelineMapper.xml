@@ -128,4 +128,21 @@
         WHERE
             dp.id = #{pipelineId}
     </select>
+
+    <select id="selectByProjectId" resultType="io.choerodon.devops.infra.dto.PipelineDTO">
+        SELECT
+        dp.id,
+        de.name AS envName
+        FROM
+        devops_pipeline  dp,
+        devops_pipeline_stage dps,
+	    devops_pipeline_task dpt,
+		devops_pipeline_app_service_deploy dpad,
+		devops_env de
+        WHERE dp.id=#{pipelineId}
+        AND dp.id  = dps.pipeline_id
+        AND dpt.stage_id=dps.id
+        AND dpt.app_service_deploy_id=dpad.id
+        AND dpad.env_id=de.id
+    </select>
 </mapper>

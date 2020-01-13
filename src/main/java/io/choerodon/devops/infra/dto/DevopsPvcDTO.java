@@ -43,6 +43,18 @@ public class DevopsPvcDTO extends BaseDTO {
     @ApiModelProperty("操作id")
     private Long commandId;
 
+    @ApiModelProperty("PV类型")
+    @Transient
+    private String type;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public String getPvName() {
         return pvName;
     }
