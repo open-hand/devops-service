@@ -82,11 +82,11 @@
 		FROM
 			devops_deploy_record ddr
 			LEFT JOIN devops_pipeline_record dpc ON ddr.deploy_id = dpc.id
-		    JOIN  devops_pipeline dp ON dp.id=dpc.pipeline_id
-		    JOIN  devops_pipeline_stage dps ON  dps.pipeline_id=dpc.pipeline_id
-		    JOIN  devops_pipeline_task  dpt ON   dpt.stage_id =dps.id
-		    JOIN  devops_pipeline_app_service_deploy dpasd ON dpasd.id=dpt.app_service_deploy_id
-		    JOIN  devops_env de on dpasd.env_id = de.id
+		    LEFT JOIN  devops_pipeline dp ON dp.id=dpc.pipeline_id
+		    LEFT JOIN  devops_pipeline_stage dps ON  dps.pipeline_id=dpc.pipeline_id
+		    LEFT JOIN  devops_pipeline_task  dpt ON   dpt.stage_id =dps.id
+		    LEFT JOIN  devops_pipeline_app_service_deploy dpasd ON dpasd.id=dpt.app_service_deploy_id
+		    LEFT JOIN  devops_env de on dpasd.env_id = de.id
 		WHERE
 			ddr.project_id = #{projectId}
 		and
