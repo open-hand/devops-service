@@ -31,7 +31,6 @@ public class WorkFlowController {
      *
      * @param stageRecordId 阶段记录Id
      * @param taskRecordId        任务Id
-     * @return
      */
     @ApiOperation(value = "触发自动部署")
     @GetMapping("/auto_deploy")
@@ -50,7 +49,6 @@ public class WorkFlowController {
      * @param pipelineRecordId 流水线记录Id
      * @param stageRecordId    阶段记录Id
      * @param taskRecordId           任务Id
-     * @return
      */
     @ApiOperation(value = "接收任务状态")
     @PutMapping("/auto_deploy/status")
@@ -67,13 +65,6 @@ public class WorkFlowController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    /**
-     * 检测部署任务生成实例状态
-     *
-     * @param taskRecordId
-     * @param stageRecordId
-     * @return
-     */
     @ApiOperation(value = "检测部署任务生成实例状态")
     @GetMapping("/auto_deploy/status")
     public ResponseEntity<String> getAppDeployStatusTask(

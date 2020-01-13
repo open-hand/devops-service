@@ -38,7 +38,7 @@ public class CiController {
      */
     @Permission(
             permissionPublic = true)
-    @ApiOperation(value = "服务查询ci脚本文件")
+    @ApiOperation(value = "根据应用服务的Token和类型查询某个应用服务用于ci的脚本文件")
     @GetMapping
     public ResponseEntity<String> queryFile(
             @ApiParam(value = "token")

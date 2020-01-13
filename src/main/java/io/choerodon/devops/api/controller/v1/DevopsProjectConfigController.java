@@ -57,11 +57,10 @@ public class DevopsProjectConfigController {
      * *
      *
      * @param projectId 项目id
-     * @return
+     * @return 配置详情
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询配置详情")
-    @CustomPageRequest
     @GetMapping
     public ResponseEntity<DevopsConfigRepVO> query(
             @ApiParam(value = "项目Id", required = true)

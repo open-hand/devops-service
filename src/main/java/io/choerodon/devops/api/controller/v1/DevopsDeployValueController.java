@@ -46,7 +46,7 @@ public class DevopsDeployValueController {
      * @return 部署配置
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下获取部署配置")
+    @ApiOperation(value = "项目下分页查询部署配置")
     @CustomPageRequest
     @PostMapping("/page_by_options")
     public ResponseEntity<PageInfo<DevopsDeployValueVO>> pageByOptions(
@@ -66,14 +66,14 @@ public class DevopsDeployValueController {
     }
 
     /**
-     * 项目下创建流水线配置
+     * 项目下创建部署配置
      *
      * @param projectId           项目Id
      * @param devopsDeployValueVO 配置信息
      * @return 部署配置
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下创建流水线配置")
+    @ApiOperation(value = "项目下创建部署配置")
     @PostMapping
     public ResponseEntity<DevopsDeployValueVO> create(
             @ApiParam(value = "项目Id", required = true)
@@ -86,14 +86,14 @@ public class DevopsDeployValueController {
     }
 
     /**
-     * 项目下更新流水线配置
+     * 项目下更新部署配置
      *
      * @param projectId                 项目Id
      * @param devopsDeployValueUpdateVO 配置信息
      * @return 部署配置
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下更新流水线配置")
+    @ApiOperation(value = "项目下更新部署配置")
     @PutMapping
     public ResponseEntity<DevopsDeployValueVO> update(
             @ApiParam(value = "项目Id", required = true)

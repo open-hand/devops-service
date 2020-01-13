@@ -44,6 +44,7 @@
           AND app_service.is_failed = FALSE
           AND app_service.is_active = TRUE
           AND app_service.is_synchro = TRUE
+          AND app_service.type = 'normal'
           AND related_app.app_service_id IS NULL;
     </select>
 

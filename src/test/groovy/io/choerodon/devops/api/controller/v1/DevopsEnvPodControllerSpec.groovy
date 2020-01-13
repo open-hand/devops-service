@@ -178,13 +178,13 @@ class DevopsEnvPodControllerSpec extends Specification {
         !entity.getBody().getList().isEmpty()
     }
 
-    def "queryEnvPodInfo"(){
-      when:
-      def entity=restTemplate.getForEntity(MAPPING+"/pod_ranking?env_id=1",List.class)
-      then:
-      entity.getStatusCode().is2xxSuccessful()
-      entity.getBody()!=null
-     }
+//    def "queryEnvPodInfo"(){
+//      when:
+//      def entity=restTemplate.getForEntity(MAPPING+"/pod_ranking?env_id=1",List.class)
+//      then:
+//      entity.getStatusCode().is2xxSuccessful()
+//      entity.getBody()!=null
+//     }
 
     def "deleteEnvPod"(){
         when:

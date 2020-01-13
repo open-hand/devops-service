@@ -238,14 +238,14 @@ public class DevopsClusterController {
 
 
     /**
-     * 查询shell脚本
+     * 查询激活集群的命令
      *
      * @param projectId 项目ID
      * @param clusterId 集群Id
      * @return String
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "查询shell脚本")
+    @ApiOperation(value = "查询激活集群的命令")
     @CustomPageRequest
     @GetMapping("/query_shell/{cluster_id}")
     public ResponseEntity<String> queryShell(
@@ -264,7 +264,7 @@ public class DevopsClusterController {
      * @param projectId 项目ID
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下所有集群以及所有的节点名称")
+    @ApiOperation(value = "项目下所有集群以及所有的节点名称(树形目录)")
     @GetMapping("/tree_menu")
     public ResponseEntity<List<DevopsClusterBasicInfoVO>> queryClustersAndNodes(
             @ApiParam(value = "项目Id", required = true)
@@ -275,13 +275,13 @@ public class DevopsClusterController {
     }
 
     /**
-     * 集群列表查询
+     * 分页查询集群列表
      *
      * @param projectId 项目ID
      * @return Page
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "集群列表查询")
+    @ApiOperation(value = "分页查询集群列表")
     @CustomPageRequest
     @PostMapping("/page_cluster")
     public ResponseEntity<PageInfo<ClusterWithNodesVO>> pageCluster(
@@ -410,6 +410,4 @@ public class DevopsClusterController {
             @RequestParam(value = "node_name") String nodeName) {
         return new ResponseEntity<>(clusterNodeInfoService.queryNodeInfo(projectId, clusterId, nodeName), HttpStatus.OK);
     }
-
-
 }

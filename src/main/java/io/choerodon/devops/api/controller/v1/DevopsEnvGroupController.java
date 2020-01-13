@@ -3,19 +3,19 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
-import io.choerodon.core.annotation.Permission;
-import io.choerodon.core.enums.ResourceType;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsEnvGroupVO;
-import io.choerodon.devops.app.service.DevopsEnvGroupService;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import io.choerodon.core.annotation.Permission;
+import io.choerodon.core.enums.ResourceType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.vo.DevopsEnvGroupVO;
+import io.choerodon.devops.app.service.DevopsEnvGroupService;
 
 
 /**
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/v1/projects/{project_id}/env_groups")
 public class DevopsEnvGroupController {
 
-    private static final String ERROR_ENV_GROUP_GET="error.env.group.get";
+    private static final String ERROR_ENV_GROUP_GET = "error.env.group.get";
 
     @Autowired
     private DevopsEnvGroupService devopsEnvGroupService;

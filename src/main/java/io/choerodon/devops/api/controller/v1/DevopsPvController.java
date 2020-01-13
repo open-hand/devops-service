@@ -33,14 +33,8 @@ public class DevopsPvController {
     @Autowired
     DevopsPvService devopsPvService;
 
-    /**
-     * 分页带参数查询项目下所有pv
-     *
-     * @param projectId
-     * @return
-     */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "分页条件查询pv列表")
+    @ApiOperation(value = "分页带参数查询项目下所有pv")
     @PostMapping("/page_by_options")
     public ResponseEntity<PageInfo<DevopsPvVO>> queryAll(
             @ApiParam(value = "项目id", required = true)
@@ -54,13 +48,6 @@ public class DevopsPvController {
                 .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
     }
 
-    /**
-     * 创建pv
-     *
-     * @param projectId
-     * @param devopsPvReqVo
-     * @return
-     */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建pv")
     @PostMapping
@@ -89,12 +76,6 @@ public class DevopsPvController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    /**
-     * 根据pvId删除Pv
-     *
-     * @param pvId
-     * @return
-     */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "根据pvId删除Pv")
     @DeleteMapping("/{pv_id}")
@@ -107,13 +88,6 @@ public class DevopsPvController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    /**
-     * 根据pvId查询对应pv
-     *
-     * @param projectId
-     * @param pvId
-     * @return
-     */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "根据pvId查询相应pv")
     @GetMapping("/{pv_id}")
@@ -154,14 +128,6 @@ public class DevopsPvController {
                 .orElseThrow(() -> new CommonException("error.get.pv.non.related.project"));
     }
 
-    /**
-     * 根据项目id删除与当前pv相关的权限记录
-     *
-     * @param projectId
-     * @param pvId
-     * @param relatedProjectId
-     * @return
-     */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "根据projectId删除和Pv关联的权限记录")
     @DeleteMapping(value = "/{pv_id}/permission")
@@ -176,13 +142,6 @@ public class DevopsPvController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    /***
-     * 给pv设置相对应的项目权限
-     * @param projectId
-     * @param pvId
-     * @param devopsPvPermissionUpdateVO
-     * @return
-     */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "给当前pv分配项目权限")
     @PostMapping(value = "/{pv_id}/permission")
@@ -197,15 +156,6 @@ public class DevopsPvController {
     }
 
 
-    /**
-     * PV跳过权限校验，查询所属集群下的所有项目
-     *
-     * @param projectId
-     * @param pvId
-     * @param pageable
-     * @param params
-     * @return
-     */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "PV跳过权限校验，查询所属集群下的所有项目")
     @PostMapping("/{pv_id}/page_projects")
@@ -223,15 +173,6 @@ public class DevopsPvController {
                 .orElseThrow(() -> new CommonException(ERROR_PROJECT_QUERY));
     }
 
-    /**
-     * PV不跳过权限校验，查询有关联的项目
-     *
-     * @param projectId
-     * @param pvId
-     * @param pageable
-     * @param params
-     * @return
-     */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "PV不跳过权限校验，查询有关联的项目")
     @PostMapping("/{pv_id}/page_related")
@@ -249,13 +190,6 @@ public class DevopsPvController {
                 .orElseThrow(() -> new CommonException(ERROR_PROJECT_QUERY));
     }
 
-    /**
-     * 根据pvc的条件筛选查询可用的pv
-     *
-     * @param projectId
-     * @param params
-     * @return
-     */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "根据pvc的条件筛选查询可用的pv")
     @PostMapping("/pv_available")
@@ -272,5 +206,4 @@ public class DevopsPvController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
     }
-
 }
