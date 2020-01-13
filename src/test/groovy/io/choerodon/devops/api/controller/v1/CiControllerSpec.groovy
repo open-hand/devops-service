@@ -21,7 +21,7 @@ import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.ProjectVO
 import io.choerodon.devops.app.service.AppServiceVersionService
-import io.choerodon.devops.app.service.IamService
+
 import io.choerodon.devops.infra.dto.AppServiceDTO
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO
 import io.choerodon.devops.infra.dto.AppServiceVersionReadmeDTO
@@ -61,9 +61,6 @@ class CiControllerSpec extends Specification {
     private AppServiceVersionValueMapper applicationVersionValueMapper
     @Autowired
     private AppServiceVersionService applicationVersionRepository
-
-    @Autowired
-    private IamService iamRepository
 
     BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient.class)
 

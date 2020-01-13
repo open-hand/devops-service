@@ -9,7 +9,7 @@ import io.choerodon.devops.api.vo.FileCreationVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
 import io.choerodon.devops.app.service.GitlabGroupMemberService
-import io.choerodon.devops.app.service.IamService
+
 import io.choerodon.devops.app.service.impl.DevopsConfigMapServiceImpl
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO
@@ -59,8 +59,6 @@ class DevopsConfigMapControllerSpec extends Specification {
     private DevopsConfigMapMapper devopsConfigMapMapper
     @Autowired
     private DevopsEnvFileResourceMapper devopsEnvFileResourceMapper
-    @Autowired
-    private IamService iamRepository
     @Autowired
     private GitlabServiceClientOperator gitlabRepository
     @Autowired

@@ -1,13 +1,17 @@
 package io.choerodon.devops.api.vo;
 
 import java.util.Date;
+import java.util.List;
+
+import io.choerodon.devops.infra.dto.iam.RoleDTO;
 
 /**
  * @author zmf
  */
 public class DevopsUserPermissionVO extends DevopsEnvUserVO {
-    private String role;
+    private List<RoleDTO> roles;
     private Date creationDate;
+    private Boolean gitlabProjectOwner;
 
     public DevopsUserPermissionVO() {
     }
@@ -25,12 +29,20 @@ public class DevopsUserPermissionVO extends DevopsEnvUserVO {
         super(iamUserId, loginName, realName, imageUrl);
     }
 
-    public String getRole() {
-        return role;
+    public List<RoleDTO> getRoles() {
+        return roles;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public void setRoles(List<RoleDTO> roles) {
+        this.roles = roles;
+    }
+
+    public Boolean getGitlabProjectOwner() {
+        return gitlabProjectOwner;
+    }
+
+    public void setGitlabProjectOwner(Boolean gitlabProjectOwner) {
+        this.gitlabProjectOwner = gitlabProjectOwner;
     }
 
     public Date getCreationDate() {
