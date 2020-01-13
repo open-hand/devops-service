@@ -26,6 +26,7 @@ export default ((formatMessage, intlPrefix, projectId, id) => ({
     { name: 'creationDate', type: 'dateTime', label: formatMessage({ id: 'addTime' }) },
     { name: 'iamUserId', type: 'number', textField: 'realName', valueField: 'iamUserId', label: formatMessage({ id: `${intlPrefix}.user` }) },
     { name: 'role', type: 'string', defaultValue: 'member', label: formatMessage({ id: 'projectRole' }) },
+    { name: 'roles', type: 'object', label: formatMessage({ id: 'projectRole' }) },
   ],
   queryFields: [
     { name: 'realName', type: 'string', label: formatMessage({ id: 'userName' }) },
