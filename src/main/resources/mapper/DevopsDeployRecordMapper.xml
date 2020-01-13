@@ -6,20 +6,20 @@
 		SELECT
 			* from (
 		SELECT
-			ddr.id,
-			ddr.project_id,
-			ddr.deploy_type,
-			ddr.deploy_id,
-			ddr.deploy_time,
-			dc.`status` deployStatus,
-			dc.created_by deployCreatedBy,
-			NULL pipelineName,
-			NULL pipelineTriggerType,
-			NULL pipelineId,
-			dasi.id instanceId,
-			dasi.env_id envId,
+		    ddr.id,
+	        ddr.project_id,
+		    ddr.deploy_type,
+		    ddr.deploy_id,
+		    ddr.deploy_time,
+		    dc.`status` deployStatus,
+		    dc.created_by deployCreatedBy,
+		    NULL pipelineName,
+		    NULL pipelineTriggerType,
+		    NULL pipelineId,
+		    dasi.id instanceId,
+		    dasi.env_id envId,
 		    de.name as env,
-			dasi.app_service_id appServiceId
+		    dasi.app_service_id appServiceId
 		FROM
 			devops_deploy_record ddr
 			LEFT JOIN devops_env_command dc ON ddr.deploy_id = dc.id
@@ -27,82 +27,119 @@
 		    LEFT JOIN devops_env de on de.id = dasi.env_id
 		WHERE
 		    ddr.project_id=#{projectId}
-		and
-			ddr.deploy_type = 'manual' UNION
-		SELECT
-			ddr.id,
-			ddr.project_id,
-			ddr.deploy_type,
-			ddr.deploy_id,
-			ddr.deploy_time,
-			dpc.`status` deployStatus,
-			dpc.created_by deployCreatedBy,
-			dpc.pipeline_name pipelineName,
-			dpc.trigger_type pipelineTriggerType,
-			dpc.pipeline_id pipelineId,
-		    NULL env,
-			NULL instanceId,
-			NULL envId,
-			NULL appServiceId
-		FROM
-			devops_deploy_record ddr
-			LEFT JOIN devops_pipeline_record dpc ON ddr.deploy_id = dpc.id
-		WHERE
-			ddr.project_id = #{projectId}
-		and
-			ddr.deploy_type = 'auto'
-			) t
-			where t.project_id=#{projectId}
-				<include refid="sqlparam"/>
-			ORDER BY t.id desc
-    </select>
-
-	<sql id="sqlparam">
+		    and
+			ddr.deploy_type = 'manual'
 		<if test='searchParam != null'>
 			<choose>
 				<when test="searchParam.deployType == null and searchParam.deployStatus == 'running'">
-						AND	(t.deployStatus ='running' OR t.deployStatus ='operating')
+					AND	(dc.`status` ='running' OR dc.`status` ='operating')
 				</when>
 				<otherwise>
 					<if test='searchParam.deployType != null and searchParam.deployType.length > 0'>
 						AND
-						t.deploy_type LIKE CONCAT(CONCAT('%', #{searchParam.deployType, jdbcType=VARCHAR}),'%')
+						ddr.deploy_type LIKE CONCAT(CONCAT('%', #{searchParam.deployType, jdbcType=VARCHAR}),'%')
 					</if>
 					<if test='searchParam.deployStatus != null and searchParam.deployStatus.length > 0'>
 						AND
-						t.deployStatus =#{searchParam.deployStatus}
+						dc.`status` =#{searchParam.deployStatus}
+					</if>
+				</otherwise>
+			</choose>
+			<if test='searchParam.env != null'>
+				AND
+				dasi.env_id =#{searchParam.env}
+			</if>
+			<if test='searchParam.deployId != null'>
+				AND
+				ddr.deploy_id =#{searchParam.deployId}
+			</if>
+		</if>
+		<if test='params != null and params.size > 0'>
+			AND
+			<foreach collection="params" item="param" open="(" separator=" OR " close=")">
+				(ddr.deploy_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+				OR dc.`status` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+				OR de.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+				)
+			</foreach>
+		</if>
+		UNION
+		SELECT
+		    ddr.id,
+	     	ddr.project_id,
+		    ddr.deploy_type,
+		    ddr.deploy_id,
+	    	ddr.deploy_time,
+		    dpc.`status` deployStatus,
+	    	dpc.created_by deployCreatedBy,
+	     	dpc.pipeline_name pipelineName,
+		    dpc.trigger_type pipelineTriggerType,
+		    dpc.pipeline_id pipelineId,
+		    NULL instanceId,
+		    dpasd.env_id envId,
+		    de.name as env,
+		    NULL appServiceId
+		FROM
+			devops_deploy_record ddr
+			LEFT JOIN devops_pipeline_record dpc ON ddr.deploy_id = dpc.id
+		    JOIN  devops_pipeline dp ON dp.id=dpc.pipeline_id
+		    JOIN  devops_pipeline_stage dps ON  dps.pipeline_id=dpc.pipeline_id
+		    JOIN  devops_pipeline_task  dpt ON   dpt.stage_id =dps.id
+		    JOIN  devops_pipeline_app_service_deploy dpasd ON dpasd.id=dpt.app_service_deploy_id
+		    JOIN  devops_env de on dpasd.env_id = de.id
+		WHERE
+			ddr.project_id = #{projectId}
+		and
+			ddr.deploy_type = 'auto'
+		<if test='searchParam != null'>
+			<choose>
+				<when test="searchParam.deployType == null and searchParam.deployStatus == 'running'">
+					AND	(dpc.`status` ='running' OR dpc.`status` ='operating')
+				</when>
+				<otherwise>
+					<if test='searchParam.deployType != null and searchParam.deployType.length > 0'>
+						AND
+						ddr.deploy_type LIKE CONCAT(CONCAT('%', #{searchParam.deployType, jdbcType=VARCHAR}),'%')
+					</if>
+					<if test='searchParam.deployStatus != null and searchParam.deployStatus.length > 0'>
+						AND
+						dpc.`status` =#{searchParam.deployStatus}
 					</if>
 				</otherwise>
 			</choose>
 
 			<if test='searchParam.pipelineName != null and searchParam.pipelineName.length > 0'>
 				AND
-					t.pipelineName LIKE CONCAT(CONCAT('%', #{searchParam.pipelineName, jdbcType=VARCHAR}),'%')
+				dpc.pipeline_name LIKE CONCAT(CONCAT('%', #{searchParam.pipelineName, jdbcType=VARCHAR}),'%')
 			</if>
 			<if test='searchParam.env != null'>
 				AND
-					t.envId =#{searchParam.env}
+				dpasd.env_id =#{searchParam.env}
 			</if>
 			<if test='searchParam.deployId != null'>
 				AND
-				t.deploy_id =#{searchParam.deployId}
+				ddr.deploy_id =#{searchParam.deployId}
 			</if>
 			<if test='searchParam.pipelineId != null'>
 				AND
-				t.pipelineId =#{searchParam.pipelineId}
+				dpc.pipeline_id =#{searchParam.pipelineId}
 			</if>
 		</if>
 		<if test='params != null and params.size > 0'>
 			AND
 			<foreach collection="params" item="param" open="(" separator=" OR " close=")">
-				(t.deploy_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-				OR t.deployStatus LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-				OR t.pipelineName LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-				OR t.env LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+				(ddr.deploy_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+				OR dpc.`status` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+				OR dpc.pipeline_name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+				OR de.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
 				)
 			</foreach>
 		</if>
-	</sql>
+			) t
+			where t.project_id=#{projectId}
+			ORDER BY t.id desc
+    </select>
+	
 
 	<delete id="deleteRelatedRecordOfInstance">
         DELETE
