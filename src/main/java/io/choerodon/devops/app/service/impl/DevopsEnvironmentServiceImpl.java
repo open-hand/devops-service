@@ -70,8 +70,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private static final String README_CONTENT =
             "# This is gitops env repository!";
     private static final String ENV = "ENV";
-    private static final String PROJECT_OWNER = "role/project/default/project-owner";
-    private static final String PROJECT_MEMBER = "role/project/default/project-member";
     private static final String ERROR_CODE_EXIST = "error.code.exist";
     private static final String ERROR_GITLAB_USER_SYNC_FAILED = "error.gitlab.user.sync.failed";
     private static final String LOGIN_NAME = "loginName";
@@ -167,6 +165,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsCustomizeResourceService devopsCustomizeResourceService;
     @Autowired
     private DevopsPvcService devopsPvcService;
+    @Autowired
+    private DevopsDeployValueService devopsDeployValueService;
     @Autowired
     private PermissionHelper permissionHelper;
 
@@ -1246,6 +1246,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (Boolean.TRUE.equals(devopsEnvironmentDTO.getActive()) && Boolean.FALSE.equals(devopsEnvironmentDTO.getFailed()) && upgradeClusterList.contains(devopsEnvironmentDTO.getClusterId())) {
             throw new CommonException("error.env.delete");
         }
+
+        if (!CollectionUtils.isEmpty(pipelineAppDeployService.baseQueryByEnvId(envId))) {
+            throw new CommonException("error.delete.env.with.pipeline");
+        }
+
         devopsEnvironmentDTO.setSynchro(Boolean.FALSE);
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("envId", envId);
@@ -1254,13 +1259,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
-                        .withRefType("")
+                        .withRefType("env")
+                        .withRefId(String.valueOf(envId))
                         .withJson(jsonObject.toString())
                         .withSourceId(projectId)
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_DELETE_ENV),
                 builder -> {
                 });
-
     }
 
     @Override
@@ -1307,6 +1312,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsCustomizeResourceService.baseListByEnvId(envId).forEach(pvcE ->
                 devopsEnvCommandService.baseListByObject(ObjectType.PERSISTENTVOLUMECLAIM.getType(), pvcE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
         devopsPvcService.baseDeleteByEnvId(envId);
+
+        // 删除环境关联的部署配置
+        devopsDeployValueService.deleteByEnvId(envId);
 
         // 删除环境
         baseDeleteById(envId);
@@ -1673,8 +1681,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public Boolean deleteCheck(Long projectId, Long envId) {
-        //pipeLineAppDeploy为空
+    public Boolean disableCheck(Long projectId, Long envId) {
+        // 停用环境校验资源和流水线
+        // pipeLineAppDeploy为空
         boolean pipeLineAppDeployEmpty = pipelineAppDeployService.baseQueryByEnvId(envId).isEmpty();
 
         DevopsEnvResourceCountVO devopsEnvResourceCountVO = devopsEnvironmentMapper.queryEnvResourceCount(envId);
@@ -1688,6 +1697,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 && devopsEnvResourceCountVO.getPvcCount() == 0
                 && devopsEnvResourceCountVO.getCustomCount() == 0
                 && pipeLineAppDeployEmpty;
+    }
+
+    @Override
+    public Boolean deleteCheck(Long projectId, Long envId) {
+        // 删除环境只校验是否有流水线
+        return CollectionUtils.isEmpty(pipelineAppDeployService.baseQueryByEnvId(envId));
     }
 
     @Override

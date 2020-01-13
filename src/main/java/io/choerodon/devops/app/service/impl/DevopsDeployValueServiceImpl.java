@@ -198,4 +198,11 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         devopsDeployValueDTO.setEnvId(envId);
         return devopsDeployValueMapper.select(devopsDeployValueDTO);
     }
+
+    @Override
+    public void deleteByEnvId(Long envId) {
+        DevopsDeployValueDTO condition = new DevopsDeployValueDTO();
+        condition.setEnvId(Objects.requireNonNull(envId));
+        devopsDeployValueMapper.delete(condition);
+    }
 }

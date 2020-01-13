@@ -119,7 +119,7 @@ export default withRouter(injectIntl(observer(({
               type="primary"
               className="c7ncd-pipeline-manual-stop"
             >
-              <FormattedMessage id="pipeline.flow.stopped" />
+              <FormattedMessage id="pipeline.flow.failed" />
             </Button>
           </Permission>
         );

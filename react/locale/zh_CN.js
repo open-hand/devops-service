@@ -574,6 +574,7 @@ const envrionment = {
   'c7ncd.env.delete.title': '删除环境“{name}”',
   'c7ncd.env.delete.des': '确定要删除该环境吗？',
   'c7ncd.env.delete.des.resource.confirm': '确定要删除该环境吗？删除后，该环境下所有资源将被彻底删除，且不能恢复。',
+  'c7ncd.env.delete.des.pipeline.confirm': '该环境存在关联的流水线，无法删除。',
   'c7ncd.env.config.delete.disable': '删除部署配置“{name}”',
   'c7ncd.env.config.delete.des': '确定要删除该部署配置吗？',
   'c7ncd.env.config.delete.describe': '仅能删除没有关联任务和关联实例的部署配置。',
@@ -590,7 +591,7 @@ const envrionment = {
     '此操作用于为环境配置特定的操作人员。一般默认选择为项目下所有成员，即该项目下的所有成员均能对此环境中的资源进行操作；若选择项目下特定成员，则只有被添加后的成员才有权限。项目所有者默认拥有权限',
   'c7ncd.env.stop.title': '停用环境“{name}”',
   'c7ncd.env.stop.des': '确定要停用该环境吗？',
-  'c7ncd.env.no.stop.des': '该环境下存在实例、网络、域名等资源，无法停用。',
+  'c7ncd.env.no.stop.des': '该环境下存在关联的流水线、实例、网络或域名等资源，无法停用。',
   'c7ncd.env.status.change': '环境状态已改变，请刷新后重试。',
 };
 
@@ -2462,7 +2463,8 @@ const zhCN = {
   'pipeline.trigger.manual': '人工触发',
   'pipeline.flow.auto': '自动流转',
   'pipeline.flow.manual': '手动流转',
-  'pipeline.flow.stopped': '强制失败',
+  'pipeline.flow.stopped': '手动终止',
+  'pipeline.flow.failed': '强制失败',
   'pipeline.action.detail': '执行记录',
   'pipeline.action.run': '执行',
   'pipeline.delete': '删除流水线“{name}”',

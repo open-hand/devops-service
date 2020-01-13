@@ -18,7 +18,7 @@ const Permission = observer((props) => {
   }, []);
   
   modal.handleOk(async () => {
-    const projectIds = map(PermissionDs.created, (record) => record.get('projectId')) || [];
+    const projectIds = map(PermissionDs.created, (createdRecord) => createdRecord.get('projectId')) || [];
     const skipCheckProjectPermission = clusterDetail.get('skipCheckProjectPermission');
     const projects = {
       projectIds: compact(projectIds),

@@ -8,7 +8,13 @@ import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+
+import io.choerodon.devops.infra.enums.PipelineStatus;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.web.util.PageableHelper;
+
+import com.netflix.discovery.converters.Auto;
 import io.reactivex.Emitter;
 import io.reactivex.Observable;
 import io.reactivex.ObservableOnSubscribe;
@@ -67,6 +73,7 @@ public class PipelineServiceImpl implements PipelineService {
     private static final String TASK = "task";
     private static final String STAGE_NAME = "stageName";
     private static final String NONTIFY_TYPE = "devops";
+    private static final String PIPELINE_ERROR_INFO = "Environment status error";
 
     private static final Gson gson = new Gson();
     @Autowired
@@ -111,6 +118,12 @@ public class PipelineServiceImpl implements PipelineService {
     private PipelineRecordMapper pipelineRecordMapper;
     @Autowired
     private PipelineAppServiceDeployMapper appServiceDeployMapper;
+    @Autowired
+    private DevopsEnvironmentMapper devopsEnvironmentMapper;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private PermissionHelper permissionHelper;
 
@@ -244,7 +257,10 @@ public class PipelineServiceImpl implements PipelineService {
                             if (appServiceDeployDTO == null) {
                                 throw new CommonException("error.get.pipeline.deploy");
                             }
-                            task.setPipelineAppServiceDeployVO(deployDtoToVo(pipelineAppDeployService.baseQueryById(task.getAppServiceDeployId())));
+                            if (appServiceDeployDTO.getEnvName() == null || appServiceDeployDTO.getEnvName().equals("")) {
+                                throw new CommonException("error.pipeline.env.status");
+                            }
+                            task.setPipelineAppServiceDeployVO(deployDtoToVo(appServiceDeployDTO));
                         } else {
                             task.setTaskUserRels(userRelationshipService.baseListByOptions(null, null, task.getId()).stream().map(PipelineUserRelationshipDTO::getUserId).collect(Collectors.toList()));
                         }
@@ -275,6 +291,10 @@ public class PipelineServiceImpl implements PipelineService {
         //插入部署记录
         createDeployRecord(pipelineRecordDTO);
 
+        //校验流水线中所有环境是否“已删除”或者“未连接”
+        if (!checkEnvStatus(pipelineId, pipelineRecordDTO)) {
+            return;
+        }
 
         PipelineUserRecordRelationshipDTO userRecordRelationshipDTO = new PipelineUserRecordRelationshipDTO();
         userRecordRelationshipDTO.setPipelineRecordId(pipelineRecordDTO.getId());
@@ -369,7 +389,8 @@ public class PipelineServiceImpl implements PipelineService {
         if ("task".equals(recordRelDTO.getType())) {
             auditUser = pipelineTaskRecordService.baseQueryRecordById(recordRelDTO.getTaskRecordId()).getAuditUser();
         } else {
-            Optional<PipelineStageRecordDTO> optional = pipelineStageRecordService.baseListByRecordAndStageId(recordRelDTO.getPipelineRecordId(), null).stream().filter(t -> t.getId() < recordRelDTO.getStageRecordId()).findFirst();
+            Optional<PipelineStageRecordDTO> optional = pipelineStageRecordService.baseListByRecordAndStageId(recordRelDTO.getPipelineRecordId(), null).stream()
+                    .filter(t -> t.getId() < recordRelDTO.getStageRecordId()).max(Comparator.comparingLong(PipelineStageRecordDTO::getId));
             auditUser = optional.isPresent() ? optional.get().getAuditUser() : auditUser;
         }
         status = getAuditResult(recordRelDTO, pipelineRecordE, auditUser, stageRecordDTO.getStageName());
@@ -683,6 +704,10 @@ public class PipelineServiceImpl implements PipelineService {
     @Transactional(rollbackFor = Exception.class)
     public void retry(Long projectId, Long pipelineRecordId) {
         PipelineRecordDTO pipelineRecordE = pipelineRecordService.baseQueryById(pipelineRecordId);
+        //校验流水线中所有环境是否“已删除”或者“未连接”
+        if (!checkEnvStatus(pipelineRecordE.getPipelineId(), pipelineRecordE)) {
+            return;
+        }
         String bpmDefinition = pipelineRecordE.getBpmDefinition();
         io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO devopsPipelineDTO = gson.fromJson(bpmDefinition, io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO.class);
         String uuid = GenerateUUID.generateUUID();
@@ -762,6 +787,11 @@ public class PipelineServiceImpl implements PipelineService {
 
         //插入部署记录
         createDeployRecord(pipelineRecordDTO);
+
+        //校验流水线中所有环境是否“已删除”或者“未连接”
+        if (!checkEnvStatus(pipelineId, pipelineRecordDTO)) {
+            return;
+        }
 
         DevopsPipelineDTO devopsPipelineDTO = createWorkFlowDTO(pipelineRecordDTO.getId(), pipelineId, uuid);
         pipelineRecordDTO.setBpmDefinition(gson.toJson(devopsPipelineDTO));
@@ -1600,6 +1630,31 @@ public class PipelineServiceImpl implements PipelineService {
             appServiceDeployDTO.setTriggerVersion(String.join(",", appServiceDeployVO.getTriggerVersion()));
         }
         return appServiceDeployDTO;
+    }
+
+    private Boolean checkEnvStatus(Long pipelineId, PipelineRecordDTO pipelineRecordDTO) {
+        List<Long> envIds = pipelineMapper.listEnvIdByPipelineId(pipelineId);
+        if (envIds != null && envIds.size() > 0) {
+            if (devopsEnvironmentMapper.queryEnvConutByEnvIds(envIds) != envIds.size()) {
+                pipelineRecordDTO.setErrorInfo(PIPELINE_ERROR_INFO);
+                pipelineRecordDTO.setStatus(PipelineStatus.FAILED.toValue());
+                pipelineRecordService.baseUpdate(pipelineRecordDTO);
+                return false;
+            }
+            try {
+                envIds.forEach(envId -> {
+                    //校验环境是否链接
+                    DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+                    clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
+                });
+            } catch (CommonException e) {
+                pipelineRecordDTO.setErrorInfo(PIPELINE_ERROR_INFO);
+                pipelineRecordDTO.setStatus(PipelineStatus.FAILED.toValue());
+                pipelineRecordService.baseUpdate(pipelineRecordDTO);
+                return false;
+            }
+        }
+        return true;
     }
 }
 

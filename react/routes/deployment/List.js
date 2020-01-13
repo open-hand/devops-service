@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { Page, Content, Header, Permission, Action, Breadcrumb, Choerodon } from '@choerodon/boot';
-import { Table, Modal, Select, Form } from 'choerodon-ui/pro';
+import { Table, Modal, Select, Form, Icon } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
@@ -220,6 +220,8 @@ const Deployment = withRouter(observer((props) => {
   }
 
   function renderNumber({ value, record }) {
+    const errorInfo = record.get('errorInfo');
+    const deployStatus = record.get('deployStatus');
     return (
       <Fragment>
         <div className={`${prefixCls}-content-table-mark ${prefixCls}-content-table-mark-${record.get('deployType')}`}>
@@ -230,6 +232,11 @@ const Deployment = withRouter(observer((props) => {
           clickAble
           onClick={openDetail}
         />
+        {errorInfo && deployStatus === 'failed' && (
+          <Tooltip title={errorInfo}>
+            <Icon type="error" className={`${prefixCls}-content-icon-failed`} />
+          </Tooltip>
+        )}
       </Fragment>
     );
   }

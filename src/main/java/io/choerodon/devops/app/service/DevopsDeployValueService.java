@@ -94,4 +94,11 @@ public interface DevopsDeployValueService {
     DevopsDeployValueDTO baseQueryById(Long valueId);
 
     List<DevopsDeployValueDTO> baseQueryByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId);
+
+    /**
+     * 根据环境id删除所有相关的部署配置
+     *
+     * @param envId 环境id
+     */
+    void deleteByEnvId(Long envId);
 }

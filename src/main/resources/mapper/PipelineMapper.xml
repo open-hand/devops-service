@@ -117,6 +117,18 @@
         <include refid="sqlparamName"/>
     </sql>
 
+    <select id="listEnvIdByPipelineId" resultType="java.lang.Long">
+        SELECT distinct
+            dpasd.env_id
+        FROM
+            devops_pipeline dp
+            JOIN devops_pipeline_stage dps ON dps.pipeline_id = dp.id
+            JOIN devops_pipeline_task dpt ON dpt.stage_id = dps.id
+            JOIN devops_pipeline_app_service_deploy dpasd ON dpasd.id = dpt.app_service_deploy_id
+        WHERE
+            dp.id = #{pipelineId}
+    </select>
+
     <select id="selectByProjectId" resultType="io.choerodon.devops.infra.dto.PipelineDTO">
         SELECT
         dp.id,
@@ -127,11 +139,10 @@
 	    devops_pipeline_task dpt,
 		devops_pipeline_app_service_deploy dpad,
 		devops_env de
-        WHERE dp.id=#{piplineId}
+        WHERE dp.id=#{pipelineId}
         AND dp.id  = dps.pipeline_id
         AND dpt.stage_id=dps.id
         AND dpt.app_service_deploy_id=dpad.id
         AND dpad.env_id=de.id
     </select>
-
 </mapper>

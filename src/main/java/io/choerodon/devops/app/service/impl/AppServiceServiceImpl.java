@@ -325,6 +325,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
         List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(organizationId);
         Set<Long> projectIds = projectDTOS.stream().filter(projectDTO -> !projectDTO.getId().equals(projectId)).map(ProjectDTO::getId).collect(toSet());
+        if (CollectionUtils.isEmpty(projectIds)) {
+            return;
+        }
         List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceMapper.listByProjectIdsAndAppServiceId(projectIds, appServiceId);
         if (!CollectionUtils.isEmpty(appServiceInstanceDTOS)) {
             throw new CommonException("error.not.delete.service.by.other.project.deployment");
@@ -2227,6 +2230,9 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
             if (ObjectUtils.isEmpty(projectDTOS)) return new PageInfo<>();
             //查询组织共享和共享项目的应用服务
+            if (projectIds == null || projectIds.size() == 0) {
+                return new PageInfo<>();
+            }
             List<AppServiceDTO> organizationAppServices = appServiceMapper.queryOrganizationShareApps(projectIds, param, projectId);
             if (organizationAppServices.isEmpty()) return new PageInfo<>();
 
@@ -2268,7 +2274,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             AppServiceGroupInfoVO appServiceGroupInfoVO = dtoToGroupInfoVO(appServiceDTO);
             if (share) {
                 AppServiceVersionDTO appServiceVersionDTO = appServiceVersionMapper.queryByShareVersion(appServiceDTO.getId(), projectId);
-                ProjectDTO projectDTO = projectDTO = finalProjectDTOMap.get(appServiceDTO.getProjectId());
+                ProjectDTO projectDTO  = finalProjectDTOMap.get(appServiceDTO.getProjectId());
                 appServiceGroupInfoVO.setProjectName(projectDTO.getName());
                 appServiceGroupInfoVO.setShare(true);
                 if (ObjectUtils.isEmpty(appServiceVersionDTO)) return;
@@ -2314,6 +2320,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 list.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, serviceType, params));
                 Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()
                         .map(this::dtoToGroupInfoVO)
+                        .filter(v -> !projectId.equals(v.getId()))
                         .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getProjectId));
 
                 for (Map.Entry<Long, List<AppServiceGroupInfoVO>> entry : map.entrySet()) {
