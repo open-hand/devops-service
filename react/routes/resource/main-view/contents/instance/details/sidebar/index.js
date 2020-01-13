@@ -5,9 +5,9 @@ import _ from 'lodash';
 import { Button, Modal, Collapse, Spin } from 'choerodon-ui';
 import Store from '../../stores';
 import SimpleTable from './SimpleTable';
+import YamlEditor from '../../../../../../../components/yamlEditor';
 
 import './index.less';
-import YamlEditor from '../../../../../../../components/yamlEditor';
 
 const { Sidebar } = Modal;
 const { Panel } = Collapse;
