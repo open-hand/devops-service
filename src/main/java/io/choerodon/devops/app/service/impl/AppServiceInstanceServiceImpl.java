@@ -1198,7 +1198,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         agentCommandService.startOrStopInstance(payload, appServiceInstanceDTO.getCode(), instanceCommandType,
                 devopsEnvironmentDTO.getCode(), devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getClusterId());
-        LOGGER.info("Sending command to {} instance {}", type, appServiceInstanceDTO.getCode());
     }
 
 
