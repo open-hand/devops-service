@@ -811,6 +811,9 @@ public class GitlabServiceClientOperator {
         try {
             gitlabServiceClient.deleteBranch(projectId, branchName, userId);
         } catch (FeignException e) {
+            if (e.status() == 403) {
+                throw new CommonException("error.user.gitlab.role.no.permission.delete.branch");
+            }
             throw new CommonException(e);
         }
     }
