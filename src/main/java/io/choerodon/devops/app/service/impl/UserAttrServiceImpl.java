@@ -45,7 +45,7 @@ public class UserAttrServiceImpl implements UserAttrService {
 
     @Override
     public void baseInsert(UserAttrDTO userAttrDTO) {
-        MapperUtil.resultJudgedInsert(userAttrMapper, userAttrDTO, "error.insert.user");
+        MapperUtil.resultJudgedInsertSelective(userAttrMapper, userAttrDTO, "error.insert.user");
     }
 
     @Override
