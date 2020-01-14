@@ -954,7 +954,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
 
         // 删除prometheus的相关信息
-        if (instanceDTO.getComponentChartName().equals("prometheus-operator")) {
+        if ("prometheus-operator".equals(instanceDTO.getComponentChartName())) {
             Long clusterId = devopsClusterMapper.queryClusterIdBySystemEnvId(instanceDTO.getEnvId());
             // 删除devopsClusterResource
             DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
