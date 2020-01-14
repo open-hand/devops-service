@@ -489,6 +489,12 @@ public class GitlabServiceClientOperator {
             responseEntity =
                     gitlabServiceClient.createBranch(projectId, branchName, baseBranch, userId);
         } catch (FeignException e) {
+            if (e.status() == 403) {
+                throw new CommonException("user gitlab role no permission create branch", e);
+            }
+            if (e.status() == 500) {
+                throw new CommonException("error.branch.insert", e);
+            }
             throw new CommonException("error.branch.create", e);
         }
         return responseEntity.getBody();
