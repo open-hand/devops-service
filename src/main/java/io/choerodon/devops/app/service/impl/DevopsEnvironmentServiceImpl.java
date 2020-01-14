@@ -169,6 +169,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsDeployValueService devopsDeployValueService;
     @Autowired
     private PermissionHelper permissionHelper;
+    @Autowired
+    private DevopsRegistrySecretService devopsRegistrySecretService;
+    @Autowired
+    private DevopsClusterProPermissionService devopsClusterProPermissionService;
 
     @PostConstruct
     private void init() {
@@ -181,6 +185,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Transactional(rollbackFor = Exception.class)
     public void create(Long projectId, DevopsEnvironmentReqVO devopsEnvironmentReqVO) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = ConvertUtils.convertObject(devopsEnvironmentReqVO, DevopsEnvironmentDTO.class);
+
+        if (!devopsClusterProPermissionService.projectHasClusterPermission(projectId, devopsEnvironmentReqVO.getClusterId())) {
+            throw new CommonException("error.project.miss.cluster.permission");
+        }
+
         // 创建环境时默认跳过权限校验
         devopsEnvironmentDTO.setSkipCheckPermission(Boolean.TRUE);
         devopsEnvironmentDTO.setProjectId(projectId);
@@ -256,7 +265,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         );
         agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentReqVO.getClusterId());
     }
-
 
     @Override
     public List<DevopsEnvGroupEnvsVO> listDevopsEnvGroupEnvs(Long projectId, Boolean active) {
@@ -1315,6 +1323,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 删除环境关联的部署配置
         devopsDeployValueService.deleteByEnvId(envId);
+
+        // 删除RegistrySecret
+        devopsRegistrySecretService.deleteByEnvId(envId);
 
         // 删除环境
         baseDeleteById(envId);

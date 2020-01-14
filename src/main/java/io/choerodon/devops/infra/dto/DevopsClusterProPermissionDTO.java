@@ -11,6 +11,7 @@ public class DevopsClusterProPermissionDTO extends BaseDTO {
 
     @Id
     private Long clusterId;
+    @Id
     private Long projectId;
 
     public Long getClusterId() {
