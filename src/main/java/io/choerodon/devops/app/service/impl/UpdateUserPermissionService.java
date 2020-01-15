@@ -47,6 +47,7 @@ public abstract class UpdateUserPermissionService {
 
     public void updateGitlabUserPermission(String type, Integer gitlabGroupId, Integer gitlabProjectId, List<Integer> addGitlabUserIds,
                                            List<Integer> deleteGitlabUserIds) {
+        gitlabServiceClientOperator.denyAllAccessRequestInvolved(addGitlabUserIds, gitlabGroupId);
         addGitlabUserIds.forEach(e -> {
             MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(gitlabGroupId, TypeUtil.objToInteger(e));
             if (memberDTO != null) {

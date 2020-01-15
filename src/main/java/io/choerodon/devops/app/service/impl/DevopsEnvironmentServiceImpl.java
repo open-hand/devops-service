@@ -8,6 +8,7 @@ import javax.annotation.PostConstruct;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import com.google.common.base.Functions;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.slf4j.Logger;
@@ -841,15 +842,19 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 跳过权限检查，项目下所有成员自动分配权限
         if (Boolean.TRUE.equals(gitlabProjectPayload.getSkipCheckPermission())) {
             List<Long> iamUserIds = baseServiceClientOperator.getAllMemberIdsWithoutOwner(gitlabProjectPayload.getIamProjectId());
-            userAttrService.baseListByUserIds(iamUserIds)
+            List<Integer> gitlabUserIds = userAttrService.baseListByUserIds(iamUserIds)
                     .stream()
                     .map(UserAttrDTO::getGitlabUserId)
                     .map(TypeUtil::objToInteger)
-                    .forEach(userId -> updateGitlabMemberPermission(
-                            gitlabProjectPayload.getGroupId(),
-                            gitlabProjectPayload.getGitlabProjectId(),
-                            userId)
-                    );
+                    .collect(Collectors.toList());
+
+            gitlabServiceClientOperator.denyAllAccessRequestInvolved(gitlabUserIds, gitlabProjectPayload.getGroupId());
+
+            gitlabUserIds.forEach(userId -> updateGitlabMemberPermission(
+                    gitlabProjectPayload.getGroupId(),
+                    gitlabProjectPayload.getGitlabProjectId(),
+                    userId)
+            );
             return;
         }
 
@@ -863,16 +868,22 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         PageInfo<UserVO> allProjectMemberPage = getMembersFromProject(CustomPageRequest.of(0, 0), projectId, "");
 
         // 所有项目成员中有权限的
-        allProjectMemberPage.getList().stream().filter(e -> userIds.contains(e.getId())).forEach(e -> {
+        List<UserVO> usersToBeAdded = allProjectMemberPage.getList().stream().filter(e -> userIds.contains(e.getId())).collect(Collectors.toList());
+        Map<Long, UserAttrDTO> devopsUsersToBeAdded = userAttrService.baseListByUserIds(usersToBeAdded.stream().map(UserVO::getId).collect(Collectors.toList()))
+                .stream()
+                .collect(Collectors.toMap(UserAttrDTO::getIamUserId, Functions.identity()));
+        usersToBeAdded.forEach(e -> {
             Long userId = e.getId();
             String loginName = e.getLoginName();
             String realName = e.getRealName();
-            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
+            if (devopsUsersToBeAdded.get(userId) == null) {
+                return;
+            }
 
             updateGitlabMemberPermission(
                     gitlabProjectPayload.getGroupId(),
                     gitlabProjectPayload.getGitlabProjectId(),
-                    userAttrDTO.getGitlabUserId().intValue());
+                    TypeUtil.objToInteger(devopsUsersToBeAdded.get(userId).getGitlabUserId()));
             // 添加devops数据库记录
             devopsEnvUserPermissionService.baseCreate(new DevopsEnvUserPermissionDTO(loginName, userId, realName, envId, true));
         });
