@@ -8,6 +8,7 @@ import javax.annotation.PostConstruct;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import com.google.common.base.Functions;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.slf4j.Logger;
@@ -169,6 +170,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsDeployValueService devopsDeployValueService;
     @Autowired
     private PermissionHelper permissionHelper;
+    @Autowired
+    private DevopsRegistrySecretService devopsRegistrySecretService;
+    @Autowired
+    private DevopsClusterProPermissionService devopsClusterProPermissionService;
 
     @PostConstruct
     private void init() {
@@ -181,6 +186,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Transactional(rollbackFor = Exception.class)
     public void create(Long projectId, DevopsEnvironmentReqVO devopsEnvironmentReqVO) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = ConvertUtils.convertObject(devopsEnvironmentReqVO, DevopsEnvironmentDTO.class);
+
+        if (!devopsClusterProPermissionService.projectHasClusterPermission(projectId, devopsEnvironmentReqVO.getClusterId())) {
+            throw new CommonException("error.project.miss.cluster.permission");
+        }
+
         // 创建环境时默认跳过权限校验
         devopsEnvironmentDTO.setSkipCheckPermission(Boolean.TRUE);
         devopsEnvironmentDTO.setProjectId(projectId);
@@ -256,7 +266,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         );
         agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentReqVO.getClusterId());
     }
-
 
     @Override
     public List<DevopsEnvGroupEnvsVO> listDevopsEnvGroupEnvs(Long projectId, Boolean active) {
@@ -738,6 +747,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
         DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+        // 考虑创建环境时,集群已删除的情况
+        if (devopsClusterDTO == null) {
+            throw new CommonException("error.cluster.not.exist", clusterId);
+        }
         devopsEnvironmentDTO.setProjectId(projectId);
         devopsEnvironmentDTO.setClusterId(clusterId);
         devopsEnvironmentDTO.setCode(code);
@@ -829,15 +842,19 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 跳过权限检查，项目下所有成员自动分配权限
         if (Boolean.TRUE.equals(gitlabProjectPayload.getSkipCheckPermission())) {
             List<Long> iamUserIds = baseServiceClientOperator.getAllMemberIdsWithoutOwner(gitlabProjectPayload.getIamProjectId());
-            userAttrService.baseListByUserIds(iamUserIds)
+            List<Integer> gitlabUserIds = userAttrService.baseListByUserIds(iamUserIds)
                     .stream()
                     .map(UserAttrDTO::getGitlabUserId)
                     .map(TypeUtil::objToInteger)
-                    .forEach(userId -> updateGitlabMemberPermission(
-                            gitlabProjectPayload.getGroupId(),
-                            gitlabProjectPayload.getGitlabProjectId(),
-                            userId)
-                    );
+                    .collect(Collectors.toList());
+
+            gitlabServiceClientOperator.denyAllAccessRequestInvolved(gitlabUserIds, gitlabProjectPayload.getGroupId());
+
+            gitlabUserIds.forEach(userId -> updateGitlabMemberPermission(
+                    gitlabProjectPayload.getGroupId(),
+                    gitlabProjectPayload.getGitlabProjectId(),
+                    userId)
+            );
             return;
         }
 
@@ -851,16 +868,22 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         PageInfo<UserVO> allProjectMemberPage = getMembersFromProject(CustomPageRequest.of(0, 0), projectId, "");
 
         // 所有项目成员中有权限的
-        allProjectMemberPage.getList().stream().filter(e -> userIds.contains(e.getId())).forEach(e -> {
+        List<UserVO> usersToBeAdded = allProjectMemberPage.getList().stream().filter(e -> userIds.contains(e.getId())).collect(Collectors.toList());
+        Map<Long, UserAttrDTO> devopsUsersToBeAdded = userAttrService.baseListByUserIds(usersToBeAdded.stream().map(UserVO::getId).collect(Collectors.toList()))
+                .stream()
+                .collect(Collectors.toMap(UserAttrDTO::getIamUserId, Functions.identity()));
+        usersToBeAdded.forEach(e -> {
             Long userId = e.getId();
             String loginName = e.getLoginName();
             String realName = e.getRealName();
-            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
+            if (devopsUsersToBeAdded.get(userId) == null) {
+                return;
+            }
 
             updateGitlabMemberPermission(
                     gitlabProjectPayload.getGroupId(),
                     gitlabProjectPayload.getGitlabProjectId(),
-                    userAttrDTO.getGitlabUserId().intValue());
+                    TypeUtil.objToInteger(devopsUsersToBeAdded.get(userId).getGitlabUserId()));
             // 添加devops数据库记录
             devopsEnvUserPermissionService.baseCreate(new DevopsEnvUserPermissionDTO(loginName, userId, realName, envId, true));
         });
@@ -954,10 +977,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         // 根据搜索参数查询所有的项目所有者
-        List<DevopsUserPermissionVO> projectOwners =ConvertUtils.convertList(baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_OWNER.getValue()),
-                iamUserDTO->appServiceService.iamUserTOUserPermissionVO(iamUserDTO,true));
+        List<DevopsUserPermissionVO> projectOwners = ConvertUtils.convertList(baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_OWNER.getValue()),
+                iamUserDTO -> appServiceService.iamUserTOUserPermissionVO(iamUserDTO, true));
         List<DevopsUserPermissionVO> projectMembers = ConvertUtils.convertList(baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_DEVELOPER.getValue()),
-                iamUserDTO->appServiceService.iamUserTOUserPermissionVO(iamUserDTO,false));
+                iamUserDTO -> appServiceService.iamUserTOUserPermissionVO(iamUserDTO, false));
 
         if (!devopsEnvironmentDTO.getSkipCheckPermission()) {
             // 根据搜索参数查询数据库中所有的环境权限分配数据
@@ -968,7 +991,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     .collect(Collectors.toList());
         }
 
-        return appServiceService.combineOwnerAndMember(projectMembers,projectOwners,pageable);
+        return appServiceService.combineOwnerAndMember(projectMembers, projectOwners, pageable);
     }
 
     @Override
@@ -1315,6 +1338,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 删除环境关联的部署配置
         devopsDeployValueService.deleteByEnvId(envId);
+
+        // 删除RegistrySecret
+        devopsRegistrySecretService.deleteByEnvId(envId);
 
         // 删除环境
         baseDeleteById(envId);

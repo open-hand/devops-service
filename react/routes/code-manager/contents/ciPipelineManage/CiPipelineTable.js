@@ -1,14 +1,12 @@
-import React, { Component, Fragment } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tooltip } from 'choerodon-ui';
 import { Table } from 'choerodon-ui/pro';
 import { Action, Page } from '@choerodon/boot';
 import { injectIntl } from 'react-intl';
 import TimeAgo from 'timeago-react';
-
 import MouserOverWrapper from '../../../../components/MouseOverWrapper';
 import Loading from '../../../../components/loading';
-
 import handleMapStore from '../../main-view/store/handleMapStore';
 import { usePipelineStore } from './stores';
 import { useCodeManagerStore } from '../../stores';
@@ -118,7 +116,6 @@ export default injectIntl(observer(() => {
     const pipelineUserName = record && record.get('pipelineUserName');
     const latest = record && record.get('latest');
     const pipelineUserUrl = record && record.get('pipelineUserUrl');
-    // console.log(record);
     return (
       <div className="c7n-cipip-sign">
         <div className="c7n-des-sign">
@@ -365,16 +362,8 @@ export default injectIntl(observer(() => {
             <Column name="gitlabProjectId" renderer={renderAction} width={40} />
             <Column name="commit" renderer={renderCommit} />
             <Column name="stages" renderer={renderStages} />
-            <Column
-              width={120}
-              name="pipelineTime"
-              renderer={renderTimeSpan}
-            />
-            <Column
-              width={120}
-              name="creationDate"
-              renderer={renderDateTooltip}
-            />
+            <Column name="pipelineTime" renderer={renderTimeSpan} width={120} />
+            <Column name="creationDate" renderer={renderDateTooltip} width={120} />
           </Table>
         </div>}
     </Page>

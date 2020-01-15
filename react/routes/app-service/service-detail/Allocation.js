@@ -4,6 +4,7 @@ import { Table, Modal } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
+import map from 'lodash/map';
 import { useAppTopStore } from '../stores';
 import { useServiceDetailStore } from './stores';
 import HeaderButtons from './HeaderButtons';
@@ -48,11 +49,12 @@ const Allocation = observer(() => {
   }
 
   function renderRole({ value }) {
-    return <FormattedMessage id={`${intlPrefix}.role.${value}`} />;
+    const text = map(value || [], 'name');
+    return text.join();
   }
 
   function renderAction({ record }) {
-    if ((detailDs.current && detailDs.current.get('skipCheckPermission')) || record.get('role') === 'owner') return;
+    if ((detailDs.current && detailDs.current.get('skipCheckPermission')) || record.get('gitlabProjectOwner')) return;
     const actionData = [{
       service: ['devops-service.app-service.deletePermission'],
       text: formatMessage({ id: 'delete' }),
@@ -156,7 +158,7 @@ const Allocation = observer(() => {
           <Column name="realName" sortable />
           <Column renderer={renderAction} width="0.7rem" />
           <Column name="loginName" sortable />
-          <Column name="role" renderer={renderRole} />
+          <Column name="roles" renderer={renderRole} />
           <Column name="creationDate" renderer={renderTime} sortable />
         </Table>
       </Content>

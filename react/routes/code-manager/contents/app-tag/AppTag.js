@@ -1,26 +1,21 @@
 import React, { useEffect, Fragment, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import ReactMarkdown from 'react-markdown';
-import _ from 'lodash';
-
+import map from 'lodash/map';
 import { Pagination, Icon, Button, Modal } from 'choerodon-ui/pro';
 import { Collapse } from 'choerodon-ui';
 import { Action, Page, Permission } from '@choerodon/boot';
-
 import UserInfo from '../../../../components/userInfo';
 import TimePopover from '../../../../components/timePopover';
 import EmptyPage from '../../../../components/empty-page';
 import Loading from '../../../../components/loading';
-
 import { handlePromptError } from '../../../../utils';
-
 import { useAppTagStore } from './stores';
 import { useCodeManagerStore } from '../../stores';
 import AppTagCreate from './modals/app-tag-create/AppTagCreate';
 import AppTagEdit from './modals/app-tag-edit/index';
 
 import './index.less';
-
 
 const { Panel } = Collapse;
 const appTagCreateKey = Modal.key();
@@ -143,7 +138,7 @@ export default observer((props) => {
     });
   };
 
-  const tagList = _.map(appTagData, (item) => {
+  const tagList = map(appTagData, (item) => {
     const {
       commit: {
         authorName,
@@ -209,7 +204,12 @@ export default observer((props) => {
   return <Fragment>
     <Page
       className="c7n-tag-wrapper page-container"
-      service={['devops-service.devops-git.pageTagsByOptions']}
+      service={[
+        'devops-service.devops-git.pageTagsByOptions',
+        'devops-service.devops-git.deleteTag',
+        'devops-service.devops-git.createTag',
+        'devops-service.devops-git.checkTag',
+      ]}
     >
       {/* 应用/标签是否加载完成的判断，目的是控制Loading的显示 */}
       {appServiceDs.status !== 'ready' || appTagDs.status !== 'ready' ? <Loading display />

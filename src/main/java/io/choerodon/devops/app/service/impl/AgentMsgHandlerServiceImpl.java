@@ -1431,7 +1431,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             return;
         }
 
-        logger.debug("sync command status!");
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         List<Command> commands = getCommandsToSync(envId);
 
@@ -1452,11 +1451,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         Date threeMinutesBefore = new Date(System.currentTimeMillis() - THREE_MINUTE_MILLISECONDS);
         String dateString = simpleDateFormat.format(threeMinutesBefore);
 
-        logger.debug("Commands sync: date string: {}", dateString);
-        List<Command> commandsToSend = devopsEnvCommandService.listCommandsToSync(envId, dateString);
-        logger.debug("Sending commands to sync. The size is {}", commandsToSend.size());
-        logger.debug("commands: {}", commandsToSend);
-        return commandsToSend;
+        return devopsEnvCommandService.listCommandsToSync(envId, dateString);
     }
 
     @Override

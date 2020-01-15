@@ -5,6 +5,7 @@ import _ from 'lodash';
 import { Button, Modal, Collapse, Spin } from 'choerodon-ui';
 import Store from '../../stores';
 import SimpleTable from './SimpleTable';
+import YamlEditor from '../../../../../../../components/yamlEditor';
 
 import './index.less';
 
@@ -30,6 +31,7 @@ export default class DetailsSidebar extends Component {
 
   state = {
     activeKey: [],
+    isJson: true,
   };
 
   handlePanelChange = (key) => {
@@ -41,6 +43,12 @@ export default class DetailsSidebar extends Component {
     this.setState((prev) => ({
       isExpand: !prev.isExpand,
       activeKey: !prev.isExpand ? PANEL_TYPE : [],
+    }));
+  };
+
+  handleChangeType = () => {
+    this.setState((prev) => ({
+      isJson: !prev.isJson,
     }));
   };
 
@@ -362,9 +370,10 @@ export default class DetailsSidebar extends Component {
   render() {
     const { detailsStore, intl: { formatMessage } } = this.context;
     const { visible, onClose } = this.props;
-    const { activeKey, isExpand } = this.state;
+    const { activeKey, isExpand, isJson } = this.state;
     const {
       getDeployments: { detail },
+      getDeploymentsYaml,
     } = detailsStore;
 
     let containers = [];
@@ -410,40 +419,56 @@ export default class DetailsSidebar extends Component {
           <FormattedMessage id="close" />
         </Button>,
       ]}
-      title={formatMessage({ id: 'ist.deploy.detail' })}
+      title={formatMessage({ id: `ist.deploy.${detail ? detail.kind : 'Deployment'}.detail` })}
     >
       <div className="c7ncd-expand-btn-wrap">
         <Button
-          className="c7ncd-expand-btn"
-          onClick={this.handleExpandAll}
+          className="c7ncd-deploy-detail-type-btn"
+          onClick={this.handleChangeType}
         >
-          <FormattedMessage id={isExpand ? 'collapseAll' : 'expandAll'} />
+          <FormattedMessage id={`ist.deploy.type.${isJson ? 'yaml' : 'json'}`} />
         </Button>
-      </div>
-      <Collapse
-        bordered={false}
-        activeKey={activeKey}
-        onChange={this.handlePanelChange}
-      >
-        {_.map(PANEL_TYPE, (item) => (
-          <Panel
-            key={item}
-            header={
-              <div className="c7ncd-deploy-panel-header">
-                <div className="c7ncd-deploy-panel-title">
-                  <FormattedMessage id={`ist.deploy.${item}`} />
-                </div>
-                <div className="c7ncd-deploy-panel-text">
-                  <FormattedMessage id={`ist.deploy.${item}.describe`} />
-                </div>
-              </div>
-            }
-            className="c7ncd-deploy-panel"
+        {isJson && (
+          <Button
+            className="c7ncd-expand-btn"
+            onClick={this.handleExpandAll}
           >
-            {visible && renderFun[item]()}
-          </Panel>
-        ))}
-      </Collapse>
+            <FormattedMessage id={isExpand ? 'collapseAll' : 'expandAll'} />
+          </Button>
+        )}
+      </div>
+      {isJson ? (
+        <Collapse
+          bordered={false}
+          activeKey={activeKey}
+          onChange={this.handlePanelChange}
+        >
+          {_.map(PANEL_TYPE, (item) => (
+            <Panel
+              key={item}
+              header={
+                <div className="c7ncd-deploy-panel-header">
+                  <div className="c7ncd-deploy-panel-title">
+                    <FormattedMessage id={`ist.deploy.${item}`} />
+                  </div>
+                  <div className="c7ncd-deploy-panel-text">
+                    <FormattedMessage id={`ist.deploy.${item}.describe`} />
+                  </div>
+                </div>
+              }
+              className="c7ncd-deploy-panel"
+            >
+              {visible && renderFun[item]()}
+            </Panel>
+          ))}
+        </Collapse>
+      ) : (
+        <YamlEditor
+          value={getDeploymentsYaml}
+          originValue={getDeploymentsYaml}
+          readOnly
+        />
+      )}
     </Sidebar>);
   }
 }

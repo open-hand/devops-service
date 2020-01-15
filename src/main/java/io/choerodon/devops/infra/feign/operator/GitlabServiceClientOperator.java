@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
+import com.google.common.base.Functions;
 import feign.FeignException;
 import feign.RetryableException;
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.FileCreationVO;
 import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -887,5 +889,75 @@ public class GitlabServiceClientOperator {
             LOGGER.info("The exception is {}", e);
             return false;
         }
+    }
+
+    public List<AccessRequestDTO> listAccessRequestsOfGroup(Integer groupId) {
+        try {
+            ResponseEntity<List<AccessRequestDTO>> resp = gitlabServiceClient.listAccessRequestsOfGroup(Objects.requireNonNull(groupId));
+            if (resp == null || resp.getBody() == null) {
+                return Collections.emptyList();
+            }
+            return resp.getBody();
+        } catch (FeignException ex) {
+            throw new CommonException(ex);
+        }
+    }
+
+    /**
+     * 拒绝AccessRequest
+     *
+     * @param groupId          组id
+     * @param userIdToBeDenied 被拒绝的用户的id
+     */
+    public void denyAccessRequest(Integer groupId, Integer userIdToBeDenied) {
+        try {
+            gitlabServiceClient.denyAccessRequest(Objects.requireNonNull(groupId), Objects.requireNonNull(userIdToBeDenied));
+        } catch (Exception e) {
+            LOGGER.info("Swallow exception when denying access request of group id {}, userIdToBeDenied {}", groupId, userIdToBeDenied);
+            LOGGER.info("The exception is {}", e);
+        }
+    }
+
+    /**
+     * 拒绝这些用户在组里的AccessRequest
+     * 用户对组AccessRequest存在会导致通过API给这个用户分配项目的Member失败 (Gitlab版本11.6.5 (237bddc6))
+     *
+     * @param groupId 组id
+     * @param users   用户
+     */
+    public void denyAllAccessRequestInvolved(Integer groupId, List<UserAttrDTO> users) {
+        // 查出组里的AccessRequest
+        Map<Integer, AccessRequestDTO> allRequests = listAccessRequestsOfGroup(groupId).stream().collect(Collectors.toMap(AccessRequestDTO::getId, Functions.identity()));
+
+        Objects.requireNonNull(users).forEach(user -> {
+            if (user == null) {
+                return;
+            }
+            Integer gitlabUserId = TypeUtil.objToInteger(user.getGitlabUserId());
+            if (allRequests.containsKey(gitlabUserId)) {
+                denyAccessRequest(groupId, gitlabUserId);
+            }
+        });
+    }
+
+    /**
+     * 拒绝这些用户在组里的AccessRequest
+     * 用户对组AccessRequest存在会导致通过API给这个用户分配项目的Member失败 (Gitlab版本11.6.5 (237bddc6))
+     *
+     * @param groupId       组id
+     * @param gitlabUserIds 用户gitlab id
+     */
+    public void denyAllAccessRequestInvolved(List<Integer> gitlabUserIds, Integer groupId) {
+        // 查出组里的AccessRequest
+        Map<Integer, AccessRequestDTO> allRequests = listAccessRequestsOfGroup(groupId).stream().collect(Collectors.toMap(AccessRequestDTO::getId, Functions.identity()));
+
+        Objects.requireNonNull(gitlabUserIds).forEach(gitlabUserId -> {
+            if (gitlabUserId == null) {
+                return;
+            }
+            if (allRequests.containsKey(gitlabUserId)) {
+                denyAccessRequest(groupId, gitlabUserId);
+            }
+        });
     }
 }

@@ -2274,7 +2274,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             AppServiceGroupInfoVO appServiceGroupInfoVO = dtoToGroupInfoVO(appServiceDTO);
             if (share) {
                 AppServiceVersionDTO appServiceVersionDTO = appServiceVersionMapper.queryByShareVersion(appServiceDTO.getId(), projectId);
-                ProjectDTO projectDTO  = finalProjectDTOMap.get(appServiceDTO.getProjectId());
+                ProjectDTO projectDTO = finalProjectDTOMap.get(appServiceDTO.getProjectId());
                 appServiceGroupInfoVO.setProjectName(projectDTO.getName());
                 appServiceGroupInfoVO.setShare(true);
                 if (ObjectUtils.isEmpty(appServiceVersionDTO)) return;
@@ -2622,6 +2622,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         if (iamUserIds != null && !iamUserIds.isEmpty()) {
             List<UserAttrDTO> userAttrDTOList = userAttrService.baseListByUserIds(iamUserIds);
+            gitlabServiceClientOperator.denyAllAccessRequestInvolved(devOpsAppServicePayload.getGroupId(), userAttrDTOList);
             userAttrDTOList.forEach(userAttrDTO -> {
                 MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(devOpsAppServicePayload.getGroupId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
                 if (memberDTO != null) {

@@ -154,7 +154,7 @@ function Branch(props) {
           status={status}
           error={errorMessage}
           name={text}
-          width={0.2}
+          width={0.17}
           clickAble={status !== 'operating'}
           onClick={() => openEditIssueModal(record.toData())}
           record={text}

@@ -9,6 +9,8 @@ export default class InstanceDetails {
 
   @observable deployments = {};
 
+  @observable deploymentsYaml = '';
+
   @observable targetCount = {};
 
   @action setTargetCount(count) {
@@ -49,6 +51,16 @@ export default class InstanceDetails {
     return this.deployments;
   }
 
+  @action
+  setDeploymentsYaml(data) {
+    this.deploymentsYaml = data;
+  }
+
+  @computed
+  get getDeploymentsYaml() {
+    return this.deploymentsYaml;
+  }
+
   /**
    * 根据实例id获取更多部署详情(Json格式)
    * @param type
@@ -73,6 +85,37 @@ export default class InstanceDetails {
       }
       return false;
     } catch (e) {
+      Choerodon.handleResponseError(e);
+      return false;
+    }
+  }
+
+  /**
+   * 根据实例id获取更多部署详情(Yaml格式)
+   * @param type
+   * @param project
+   * @param instance
+   * @param name
+   */
+  async loadDeploymentsYaml(type, project, instance, name) {
+    const URL_TYPE = {
+      deploymentVOS: `deployment_detail_yaml?deployment_name=${name}`,
+      statefulSetVOS: `stateful_set_detail_yaml?stateful_set_name=${name}`,
+      daemonSetVOS: `daemon_set_detail_yaml?daemon_set_name=${name}`,
+    };
+
+    try {
+      const data = await axios
+        .get(`devops/v1/projects/${project}/app_service_instances/${instance}/${URL_TYPE[type]}`);
+      const res = handlePromptError(data);
+      if (res) {
+        this.setDeploymentsYaml(data.detail || '');
+        return true;
+      }
+      this.setDeploymentsYaml('');
+      return false;
+    } catch (e) {
+      this.setDeploymentsYaml('');
       Choerodon.handleResponseError(e);
       return false;
     }
