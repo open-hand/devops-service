@@ -4,15 +4,13 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 
-import io.choerodon.devops.api.vo.FileCreationVO;
-import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
-import io.choerodon.devops.infra.dto.RepositoryFileDTO;
-import io.choerodon.devops.infra.dto.gitlab.*;
-import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.devops.api.vo.FileCreationVO;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
@@ -383,6 +381,7 @@ public interface GitlabServiceClient {
             @PathVariable("branchName") String branchName);
 
     //todo 如果name里面有&字符，&后面的部分会被丢弃
+
     /**
      * 创建新分支的接口
      *
@@ -494,4 +493,26 @@ public interface GitlabServiceClient {
      */
     @DeleteMapping("/v1/users/{userId}/admin")
     ResponseEntity<Boolean> deleteAdmin(@PathVariable("userId") Integer userId);
+
+
+    @ApiOperation(value = "查出组下所有的AccessRequest")
+    @GetMapping(value = "/v1/groups/{groupId}/access_requests")
+    ResponseEntity<List<AccessRequestDTO>> listAccessRequestsOfGroup(
+            @ApiParam("组id")
+            @PathVariable("groupId") Integer groupId);
+
+    /**
+     * 这个接口不抛出关于GitlabApi的异常
+     *
+     * @param groupId 组id
+     * @param userId  被拒绝的用户的id
+     * @return OK
+     */
+    @ApiOperation(value = "拒绝组下某个人的AccessRequest请求")
+    @DeleteMapping(value = "/v1/groups/{groupId}/access_requests")
+    ResponseEntity denyAccessRequest(
+            @ApiParam(value = "组id")
+            @PathVariable("groupId") Integer groupId,
+            @ApiParam(value = "被拒绝的用户id")
+            @RequestParam("user_id") Integer userId);
 }
