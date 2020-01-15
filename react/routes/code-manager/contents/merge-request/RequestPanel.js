@@ -1,18 +1,16 @@
-import React, { useEffect, useContext, Fragment, useState } from 'react';
-import _ from 'lodash';
+import React, { useEffect, Fragment, useMemo } from 'react';
 import { Icon, Tooltip } from 'choerodon-ui';
 import { Table, Button, Tabs } from 'choerodon-ui/pro';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { Page, Permission } from '@choerodon/boot';
+import map from 'lodash/map';
 import { useRequestStore } from './stores';
-
 import Loading from '../../../../components/loading';
 import MouseOverWrapper from '../../../../components/MouseOverWrapper';
 import ClickText from '../../../../components/click-text';
 import TimePopover from '../../../../components/timePopover';
 import UserInfo from '../../../../components/userInfo';
-
 import handleMapStore from '../../main-view/store/handleMapStore';
 import { useCodeManagerStore } from '../../stores';
 
@@ -29,6 +27,10 @@ const RequestPanel = withRouter(observer((props) => {
     openTableDS,
     mergedRequestStore,
   } = useRequestStore();
+  const {
+    appServiceDs,
+    selectAppDs,
+  } = useCodeManagerStore();
 
   const {
     getCount: { closeCount, mergeCount, openCount, totalCount, auditCount },
@@ -36,10 +38,25 @@ const RequestPanel = withRouter(observer((props) => {
     setTabKey,
   } = mergedRequestStore;
 
-
-  const { appServiceDs, selectAppDs } = useCodeManagerStore();
   const appId = selectAppDs.current && selectAppDs.current.get('appServiceId');
-  const appServiceData = appServiceDs.toData();
+  const tabPaneList = useMemo(() => [
+    {
+      key: 'opened',
+      count: openCount || 0,
+    },
+    {
+      key: 'merged',
+      count: mergeCount || 0,
+    },
+    {
+      key: 'closed',
+      count: closeCount || 0,
+    },
+    {
+      key: 'all',
+      count: totalCount || 0,
+    },
+  ], [closeCount, mergeCount, openCount, totalCount]);
 
   handleMapStore.setCodeManagerMergeRequest({
     refresh: reload,
@@ -101,10 +118,9 @@ const RequestPanel = withRouter(observer((props) => {
   }
 
   function renderIid({ value }) {
-    return (
-      <span style={{ textAlign: 'left' }}>!{value}</span>
-    );
+    return <span>!{value}</span>;
   }
+
   function renderTargetBranch({ value, record }) {
     return (
       <div
@@ -157,15 +173,19 @@ const RequestPanel = withRouter(observer((props) => {
     ) : formatMessage({ id: 'merge.noAssignee' });
   }
 
-  function renderTable(params) {
+  function renderTable(tabPaneKey) {
     return (
       <Table dataSet={openTableDS} queryBar="none">
         <Column name="title" renderer={renderTitle} />
         <Column name="iid" renderer={renderIid} width={80} align="left" />
         <Column name="targetBranch" renderer={renderTargetBranch} />
+        {tabPaneKey === 'all' && <Column name="state" width={90} />}
         <Column name="createdAt" renderer={renderCreatedAt} />
         <Column name="commits" renderer={renderCommit} />
         <Column name="updatedAt" renderer={renderUpdateDate} width={100} />
+        {(tabPaneKey === 'opened' || tabPaneKey === 'assignee') && (
+          <Column name="assignee" renderer={renderAssignee} />
+        )}
       </Table>
     );
   }
@@ -181,48 +201,31 @@ const RequestPanel = withRouter(observer((props) => {
       {appServiceDs.status !== 'ready' || !appId
         ? <Loading display />
         : <Fragment>
-          <Tabs activecKey={getTabKey} onChange={tabChange} animated={false} className="c7n-merge-tabs" type="card" size="small" tabBarStyle={{ marginRight: '0' }}>
-            <TabPane tab={`${formatMessage({ id: 'merge.tab1' })}(${openCount || 0})`} key="opened">
-              <Table dataSet={openTableDS} queryBar="none">
-                <Column name="title" renderer={renderTitle} />
-                <Column name="iid" renderer={renderIid} width={80} align="left" />
-                <Column name="targetBranch" renderer={renderTargetBranch} />
-                <Column name="createdAt" renderer={renderCreatedAt} />
-                <Column name="commits" renderer={renderCommit} />
-                <Column name="updatedAt" renderer={renderUpdateDate} width={100} />
-                <Column name="assignee" renderer={renderAssignee} />
-              </Table>
-            </TabPane>
-            <TabPane tab={`${formatMessage({ id: 'merge.tab2' })}(${mergeCount || 0})`} key="merged">
-              {renderTable()}
-            </TabPane>
-            <TabPane tab={`${formatMessage({ id: 'merge.tab3' })}(${closeCount || 0})`} key="closed">
-              {renderTable()}
-            </TabPane>
-            <TabPane tab={`${formatMessage({ id: 'merge.tab4' })}(${totalCount || 0})`} key="all">
-              <Table dataSet={openTableDS} queryBar="none">
-                <Column name="title" renderer={renderTitle} />
-                <Column name="iid" renderer={renderIid} align="left" width={80} />
-                <Column name="targetBranch" renderer={renderTargetBranch} />
-                <Column name="state" width={90} />
-                <Column name="createdAt" renderer={renderCreatedAt} />
-                <Column name="commits" renderer={renderCommit} />
-                <Column name="updatedAt" renderer={renderUpdateDate} width={100} />
-              </Table>
-            </TabPane>
-            {
-              auditCount > 0 ? <TabPane tab={`${formatMessage({ id: 'merge.tab5' })}(${auditCount || 0})`} key="assignee">
-                <Table dataSet={openTableDS} queryBar="none">
-                  <Column name="title" renderer={renderTitle} />
-                  <Column name="iid" renderer={renderIid} width={80} align="left" />
-                  <Column name="targetBranch" renderer={renderTargetBranch} />
-                  <Column name="createdAt" renderer={renderCreatedAt} />
-                  <Column name="commits" renderer={renderCommit} />
-                  <Column name="updatedAt" renderer={renderUpdateDate} width={100} />
-                  <Column name="assignee" renderer={renderAssignee} />
-                </Table>
-              </TabPane> : null
-            }
+          <Tabs
+            activecKey={getTabKey}
+            onChange={tabChange}
+            animated={false}
+            className="c7n-merge-tabs"
+            type="card"
+            size="small"
+            tabBarStyle={{ marginRight: '0' }}
+          >
+            {map(tabPaneList, ({ key, count }) => (
+              <TabPane
+                tab={`${formatMessage({ id: `merge.tab.${key}` })}(${count})`}
+                key={key}
+              >
+                {renderTable(key)}
+              </TabPane>
+            ))}
+            {auditCount > 0 && (
+              <TabPane
+                tab={`${formatMessage({ id: 'merge.tab.assignee' })}(${auditCount || 0})`}
+                key="assignee"
+              >
+                {renderTable('assignee')}
+              </TabPane>
+            )}
           </Tabs>
         </Fragment>}
     </Page>
