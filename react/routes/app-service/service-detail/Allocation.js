@@ -54,7 +54,7 @@ const Allocation = observer(() => {
   }
 
   function renderAction({ record }) {
-    if ((detailDs.current && detailDs.current.get('skipCheckPermission')) || !record.get('gitlabProjectOwner')) return;
+    if ((detailDs.current && detailDs.current.get('skipCheckPermission')) || record.get('gitlabProjectOwner')) return;
     const actionData = [{
       service: ['devops-service.app-service.deletePermission'],
       text: formatMessage({ id: 'delete' }),
