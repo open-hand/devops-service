@@ -4,7 +4,21 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper">
     <select id="listByProjectId" resultType="io.choerodon.devops.infra.dto.DevopsDeployRecordDTO">
 		SELECT
-			* from (
+		any_value(t.id) AS id,
+		any_value(t.project_id) AS project_id,
+		any_value(t.deploy_type) AS deploy_type,
+		any_value(t.deploy_id) AS deploy_id,
+		any_value(t.deploy_time) AS deploy_time,
+		any_value(t.deployStatus) AS deployStatus,
+		any_value(t.deployCreatedBy) AS deployCreatedBy,
+		any_value(t.pipelineName) AS pipelineName,
+		any_value(t.pipelineTriggerType) AS pipelineTriggerType,
+		any_value(t.pipelineId) AS pipelineId,
+		any_value(t.instanceId) AS instanceId,
+		any_value(t.envId) AS envId,
+		any_value(t.env) AS env,
+		any_value(t.appServiceId) AS appServiceId
+	    from (
 		SELECT
 		    ddr.id,
 	        ddr.project_id,
@@ -137,6 +151,10 @@
 		</if>
 			) t
 			where t.project_id=#{projectId}
+		    <if test="searchParam.pipelineId != null">
+				and t.pipelineId is not null
+			</if>
+		    GROUP BY t.id
 			ORDER BY t.id desc
     </select>
 	
