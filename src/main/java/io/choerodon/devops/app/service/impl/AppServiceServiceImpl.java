@@ -1689,12 +1689,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                 appServiceDTO.setSkipCheckPermission(false);
                 appServiceMapper.updateByPrimaryKeySelective(appServiceDTO);
                 // 不添加成员
-                if (CollectionUtils.isEmpty(userIds)) {
-                    return;
+                if (!CollectionUtils.isEmpty(userIds)) {
+                    userIds.stream().filter(Objects::nonNull)
+                            .forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
+                    devOpsUserPayload.setIamUserIds(applicationPermissionVO.getUserIds());
                 }
-                applicationPermissionVO.getUserIds().stream().filter(Objects::nonNull)
-                        .forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
-                devOpsUserPayload.setIamUserIds(applicationPermissionVO.getUserIds());
                 devOpsUserPayload.setOption(1);
             }
         } else {
@@ -1711,10 +1710,10 @@ public class AppServiceServiceImpl implements AppServiceService {
                     return;
                 }
                 //原来不跳过权限检查，现在也不跳过权限检查，新增用户权限
-                applicationPermissionVO.getUserIds().stream().filter(Objects::nonNull)
+                userIds.stream().filter(Objects::nonNull)
                         .forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
 
-                devOpsUserPayload.setIamUserIds(applicationPermissionVO.getUserIds());
+                devOpsUserPayload.setIamUserIds(userIds);
                 devOpsUserPayload.setOption(3);
             }
         }
