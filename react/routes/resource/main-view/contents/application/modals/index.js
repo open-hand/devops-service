@@ -9,12 +9,17 @@ import KeyValueModal from './key-value';
 import DomainModal from './domain';
 import CreateNetwork from './network';
 import CreateNetwork2 from './network2';
+import DomainForm from '../../../components/domain-form';
 
 const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
 const createNetWorkKey = Modal.key();
+const createDomainKey = Modal.key();
 const modalStyle2 = {
   width: 'calc(100vw - 3.52rem)',
+};
+const modalStyle3 = {
+  width: 740,
 };
 
 const AppModals = observer(() => {
@@ -130,6 +135,16 @@ const AppModals = observer(() => {
     isLoad && setTabKey(NET_TAB);
   }
 
+  function saveNetworkIds(ids) {
+    const {
+      getTabKey,
+      setNetworkIds,
+    } = appStore;
+    if (getTabKey === 'net') {
+      setNetworkIds(ids);
+    }
+  }
+
   function openNetWork() {
     Modal.open({
       key: createNetWorkKey,
@@ -143,6 +158,24 @@ const AppModals = observer(() => {
         networkStore={networkStore}
         refresh={refresh}
       />,
+    });
+  }
+
+  function openDomain() {
+    Modal.open({
+      key: createDomainKey,
+      style: modalStyle3,
+      drawer: true,
+      title: formatMessage({ id: 'domain.create.head' }),
+      children: <DomainForm
+        envId={parentId}
+        appServiceId={id}
+        refresh={refresh}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+        saveNetworkIds={saveNetworkIds}
+      />,
+      okText: formatMessage({ id: 'create' }),
     });
   }
 
@@ -163,7 +196,7 @@ const AppModals = observer(() => {
       disabled,
       name: formatMessage({ id: `${intlPrefix}.create.ingress` }),
       icon: 'playlist_add',
-      handler: () => setShowDomain(true),
+      handler: openDomain,
       display: true,
       group: 1,
     }, {
