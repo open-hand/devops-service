@@ -15,12 +15,17 @@ import DomainModal from '../modals/domain';
 import EditNetwork from '../modals/network/network-edit';
 import EditNetwork2 from '../modals/network2';
 import { useMainStore } from '../../../stores';
+import DomainForm from '../../../components/domain-form';
 
 import './index.less';
 
 
 const { Column } = Table;
 const editNetWorkKey = Modal.key();
+const editDomainKey = Modal.key();
+const modalStyle = {
+  width: 740,
+};
 
 const Networking = observer(() => {
   const {
@@ -279,8 +284,22 @@ const Networking = observer(() => {
   }
 
   function openDomainEdit(itemId) {
-    setDomainId(itemId);
-    setShowDomain(true);
+    Modal.open({
+      key: editDomainKey,
+      style: modalStyle,
+      drawer: true,
+      title: formatMessage({ id: 'domain.update.head' }),
+      children: <DomainForm
+        envId={parentId}
+        appServiceId={id}
+        ingressId={itemId}
+        ingressStore={domainStore}
+        refresh={refresh}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+      />,
+      okText: formatMessage({ id: 'save' }),
+    });
   }
 
   function closeDomainEdit(isLoad) {

@@ -6,6 +6,7 @@ import { useResourceStore } from '../../../../stores';
 import { useModalStore } from './stores';
 import { useIngressStore } from '../stores';
 import DomainModal from './domain-create';
+import DomainForm from '../../../components/domain-form';
 import { useMainStore } from '../../../stores';
 
 const modalKey = Modal.key();
@@ -17,6 +18,7 @@ const EnvModals = observer(() => {
   const {
     intlPrefix,
     intl: { formatMessage },
+    prefixCls,
     resourceStore,
     treeDs,
   } = useResourceStore();
@@ -38,11 +40,12 @@ const EnvModals = observer(() => {
       style: modalStyle,
       drawer: true,
       title: formatMessage({ id: 'domain.create.head' }),
-      children: <DomainModal
+      children: <DomainForm
         envId={parentId}
-        type="create"
-        store={ingressStore}
         refresh={refresh}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+        ingressStore={ingressStore}
       />,
       okText: formatMessage({ id: 'create' }),
     });
