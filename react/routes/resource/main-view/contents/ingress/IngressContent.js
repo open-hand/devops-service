@@ -6,12 +6,10 @@ import { Modal, Table, Icon } from 'choerodon-ui/pro';
 import { Tooltip } from 'choerodon-ui';
 import map from 'lodash/map';
 import StatusIcon from '../../../../../components/StatusIcon';
-import StatusTags from '../../../../../components/status-tag';
 import { useResourceStore } from '../../../stores';
 import { useIngressStore } from './stores';
 import Modals from './modals';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
-import DomainModal from './modals/domain-create';
 import DomainForm from '../../components/domain-form';
 import { useMainStore } from '../../stores';
 import ResourceListTitle from '../../components/resource-list-title';
@@ -22,14 +20,6 @@ const modalKey = Modal.key();
 const modalStyle = {
   width: 740,
 };
-
-const serviceStyle = {
-  minWidth: 40,
-  marginRight: 8,
-  height: '.16rem',
-  lineHeight: '.16rem',
-};
-
 
 const { Column } = Table;
 

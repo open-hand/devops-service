@@ -8,10 +8,8 @@ import _ from 'lodash';
 import classnames from 'classnames';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper/MouserOverWrapper';
 import StatusIcon from '../../../../../../components/StatusIcon';
-import { handlePromptError } from '../../../../../../utils';
 import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
-import DomainModal from '../modals/domain';
 import EditNetwork from '../modals/network/network-edit';
 import EditNetwork2 from '../modals/network2';
 import { useMainStore } from '../../../stores';
@@ -43,8 +41,6 @@ const Networking = observer(() => {
   } = useApplicationStore();
   const { mainStore: { openDeleteModal } } = useMainStore();
 
-  const [showDomain, setShowDomain] = useState(false);
-  const [domainId, setDomainId] = useState(null);
   const [showNetwork, setShowNetwork] = useState(false);
 
   function refresh() {
@@ -302,12 +298,6 @@ const Networking = observer(() => {
     });
   }
 
-  function closeDomainEdit(isLoad) {
-    setDomainId(null);
-    setShowDomain(false);
-    isLoad && refresh();
-  }
-
   function openNetworkEdit() {
     Modal.open({
       key: editNetWorkKey,
@@ -406,17 +396,6 @@ const Networking = observer(() => {
           <Column name="type" renderer={renderConfigType} />
         </Table>
       </div>
-      {showDomain && (
-        <DomainModal
-          envId={parentId}
-          appServiceId={id}
-          id={domainId}
-          visible={showDomain}
-          type="edit"
-          store={domainStore}
-          onClose={closeDomainEdit}
-        />
-      )}
       {showNetwork && (
         <EditNetwork
           netId={netDs.current.get('id')}
