@@ -5,7 +5,6 @@ import HeaderButtons from '../../../../../../components/header-buttons';
 import { useResourceStore } from '../../../../stores';
 import { useModalStore } from './stores';
 import { useIngressStore } from '../stores';
-import DomainModal from './domain-create';
 import DomainForm from '../../../components/domain-form';
 import { useMainStore } from '../../../stores';
 

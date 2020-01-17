@@ -6,7 +6,6 @@ import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
 import Detail from './detail';
 import KeyValueModal from './key-value';
-import DomainModal from './domain';
 import CreateNetwork from './network';
 import CreateNetwork2 from './network2';
 import DomainForm from '../../../components/domain-form';
@@ -52,7 +51,6 @@ const AppModals = observer(() => {
   } = useApplicationStore();
   const { id, parentId } = resourceStore.getSelectedMenu;
 
-  const [showDomain, setShowDomain] = useState(false);
   const [showNetwork, setShowNetwork] = useState(false);
 
   function refresh() {
@@ -123,11 +121,6 @@ const AppModals = observer(() => {
       />,
       okText: formatMessage({ id: 'create' }),
     });
-  }
-
-  function closeDomain(isLoad) {
-    setShowDomain(false);
-    isLoad && setTabKey(NET_TAB);
   }
 
   function closeNetwork(isLoad) {
@@ -231,17 +224,6 @@ const AppModals = observer(() => {
 
   return (<div>
     <HeaderButtons items={getButtons()} />
-    {showDomain && (
-      <DomainModal
-        envId={parentId}
-        appServiceId={id}
-        visible={showDomain}
-        type="create"
-        store={domainStore}
-        onClose={closeDomain}
-        appStore={appStore}
-      />
-    )}
     {showNetwork && (
       <CreateNetwork
         envId={parentId}
