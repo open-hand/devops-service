@@ -31,10 +31,6 @@ const AppService = withRouter(observer((props) => {
     prefixCls,
     permissions,
     listDs,
-    allProjectDs,
-    permissionProjectDs,
-    detailDs,
-    optionsDs,
     certStore,
   } = useCertificateStore();
 
@@ -89,9 +85,6 @@ const AppService = withRouter(observer((props) => {
   }
 
   async function openPermission() {
-    detailDs.transport.read.url = `/devops/v1/projects/${id}/certs/${listDs.current.get('id')}`;
-    await detailDs.query();
-
     Modal.open({
       key: modalKey2,
       style: modalStyle2,
@@ -102,26 +95,12 @@ const AppService = withRouter(observer((props) => {
         title={formatMessage({ id: `${intlPrefix}.permission` })}
       />,
       children: <PermissionManage
-        dataSet={detailDs}
-        allProjectDs={allProjectDs}
-        permissionProjectDs={permissionProjectDs}
-        optionsDs={optionsDs}
-        projectId={id}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
         refresh={refresh}
+        certId={listDs.current.get('id')}
       />,
-      onCancel: handleCancel,
     });
-  }
-
-  function handleCancel() {
-    const { current } = listDs;
-    if (current.status === 'add') {
-      listDs.remove(current);
-    } else {
-      current.reset();
-    }
   }
 
   function handleDelete() {

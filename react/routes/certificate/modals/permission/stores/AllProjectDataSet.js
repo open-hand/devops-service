@@ -1,7 +1,7 @@
-import getTablePostData from '../../../utils/getTablePostData';
+import getTablePostData from '../../../../../utils/getTablePostData';
 
-export default ((intlPrefix, formatMessage, projectId) => ({
-  autoQuery: false,
+export default (({ intlPrefix, formatMessage, projectId }) => ({
+  autoQuery: true,
   selection: false,
   transport: {
     read: ({ data }) => {
