@@ -33,6 +33,6 @@ public class EnableAppServiceEmailTemplate implements EmailTemplate {
 
     @Override
     public String content() {
-        return "<p>项目“${projectName}”下的应用服务“${appServiceName}”已被启用</p>";
+        return "<p>项目“${projectName}”下的应用服务“${appServiceName}”已被启用。</p>";
     }
 }

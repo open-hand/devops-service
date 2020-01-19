@@ -33,6 +33,6 @@ public class PipelineAuditEmailTemplate implements EmailTemplate {
 
     @Override
     public String content() {
-        return "<p>项目“${projectName}”中的流水线“${pipelineName}”目前暂停于【${stageName}】阶段，需要您进行审核<p>";
+        return "<p>项目“${projectName}”中的流水线“${pipelineName}”目前暂停于【${stageName}】阶段，需要您进行审核。<p>";
     }
 }

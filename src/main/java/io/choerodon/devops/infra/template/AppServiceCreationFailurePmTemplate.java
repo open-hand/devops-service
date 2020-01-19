@@ -46,7 +46,7 @@ public class AppServiceCreationFailurePmTemplate implements PmTemplate {
      */
     @Override
     public String content() {
-        return "<p>您在项目“${projectName}”下创建的应用服务“${appServiceName}”失败</p>\n" +
+        return "<p>您在项目“${projectName}”下创建的应用服务“${appServiceName}”失败。</p>\n" +
                 "<p><a href=#/devops/app-service?type=project&id=${projectId}&name=${appServiceName}&category=${projectCategory}&organizationId=${organizationId}>查看详情</a></p>";
     }
 }

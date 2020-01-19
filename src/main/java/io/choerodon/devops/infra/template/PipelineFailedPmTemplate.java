@@ -40,7 +40,7 @@ public class PipelineFailedPmTemplate implements PmTemplate {
 
     @Override
     public String content() {
-        return "<p>流水线“${pipelineName}”执行失败<p>" +
+        return "<p>流水线“${pipelineName}”执行失败。<p>" +
                 "<p><a href=#/devops/deployment-operation?type=project&id=${projectId}&name=${projectName}&category=undefined&organizationId=${organizationId}&orgId=${organizationId}&pipelineRecordId=${pipelineRecordId}>查看详情</a >";
     }
 }

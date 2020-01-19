@@ -33,6 +33,6 @@ public class MergeRequestPassedEmailTemplate implements EmailTemplate {
 
     @Override
     public String content() {
-        return "<p>您在项目“${projectName}”下应用服务“${appServiceName}”中提交的合并请求已被 ${realName} 合并</p>";
+        return "<p>您在项目“${projectName}”下应用服务“${appServiceName}”中提交的合并请求已被 ${realName} 合并。</p>";
     }
 }

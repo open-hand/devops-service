@@ -33,6 +33,6 @@ public class PipelinePassEmailTemplate implements EmailTemplate {
 
     @Override
     public String content() {
-        return "<p>项目“${projectName}”中的流水线“${pipelineName}”在阶段【${stageName}】的或签任务已被 ${auditName}:${realName} 审核</p>";
+        return "<p>项目“${projectName}”中的流水线“${pipelineName}”在阶段【${stageName}】的或签任务已被 ${auditName}:${realName} 审核。</p>";
     }
 }
