@@ -1,28 +1,29 @@
 import map from 'lodash/map';
 
-export default ((intlPrefix, formatMessage, projectId, detailDs) => ({
-  autoQuery: false,
+export default (({ intlPrefix, formatMessage, projectId, detailDs, certId }) => ({
+  autoQuery: true,
   selection: false,
   transport: {
     read: {
+      url: `/devops/v1/projects/${projectId}/certs/${certId}/permission/page_related`,
       method: 'post',
     },
     create: ({ data }) => {
       const res = {
         objectVersionNumber: detailDs.current.get('objectVersionNumber'),
-        certificationId: detailDs.current.get('id'),
+        certificationId: certId,
         skipCheckProjectPermission: false,
         projectIds: map(data, 'project'),
       };
 
       return ({
-        url: `/devops/v1/projects/${projectId}/certs/${detailDs.current.get('id')}/permission`,
+        url: `/devops/v1/projects/${projectId}/certs/${certId}/permission`,
         method: 'post',
         data: res,
       });
     },
     destroy: ({ data: [data] }) => ({
-      url: `/devops/v1/projects/${projectId}/certs/${detailDs.current.get('id')}/permission?related_project_id=${data.id}`,
+      url: `/devops/v1/projects/${projectId}/certs/${certId}/permission?related_project_id=${data.id}`,
       method: 'delete',
     }),
   },
