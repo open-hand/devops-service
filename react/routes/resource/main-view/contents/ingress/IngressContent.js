@@ -6,12 +6,11 @@ import { Modal, Table, Icon } from 'choerodon-ui/pro';
 import { Tooltip } from 'choerodon-ui';
 import map from 'lodash/map';
 import StatusIcon from '../../../../../components/StatusIcon';
-import StatusTags from '../../../../../components/status-tag';
 import { useResourceStore } from '../../../stores';
 import { useIngressStore } from './stores';
 import Modals from './modals';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
-import DomainModal from './modals/domain-create';
+import DomainForm from '../../components/domain-form';
 import { useMainStore } from '../../stores';
 import ResourceListTitle from '../../components/resource-list-title';
 
@@ -21,14 +20,6 @@ const modalKey = Modal.key();
 const modalStyle = {
   width: 740,
 };
-
-const serviceStyle = {
-  minWidth: 40,
-  marginRight: 8,
-  height: '.16rem',
-  lineHeight: '.16rem',
-};
-
 
 const { Column } = Table;
 
@@ -96,10 +87,10 @@ const IngressContent = observer(() => {
 
   function renderService({ record }) {
     return (
-      map(record.get('pathList'), ({ serviceStatus, serviceName, serviceError }) => (
+      map(record.get('pathList'), ({ serviceStatus, serviceName, serviceError, serviceId }) => (
         <div
           className="c7n-network-service"
-          key={record.get('id')}
+          key={serviceId}
         >
           <MouserOverWrapper
             text={serviceName}
@@ -109,7 +100,7 @@ const IngressContent = observer(() => {
             <span className={serviceStatus === 'deleted' ? 'c7n-status-deleted' : ''}>{serviceName}</span>
           </MouserOverWrapper>
           {(serviceStatus === 'deleted' || serviceStatus === 'failed') && (
-            <Tooltip title={formatMessage({ id: serviceError ? `failed: ${serviceError}` : serviceStatus })}>
+            <Tooltip title={serviceError ? `failed: ${serviceError}` : formatMessage({ id: serviceStatus })}>
               <Icon type="error" className="c7n-status-failed" />
             </Tooltip>
           )}
@@ -143,12 +134,12 @@ const IngressContent = observer(() => {
       style: modalStyle,
       drawer: true,
       title: formatMessage({ id: 'domain.update.head' }),
-      children: <DomainModal
+      children: <DomainForm
         envId={parentId}
-        id={ingressDs.current.get('id')}
-        type="edit"
-        store={ingressStore}
+        ingressId={ingressDs.current.get('id')}
         refresh={refresh}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
       />,
       okText: formatMessage({ id: 'save' }),
     });

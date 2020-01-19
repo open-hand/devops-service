@@ -8,19 +8,22 @@ import _ from 'lodash';
 import classnames from 'classnames';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper/MouserOverWrapper';
 import StatusIcon from '../../../../../../components/StatusIcon';
-import { handlePromptError } from '../../../../../../utils';
 import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
-import DomainModal from '../modals/domain';
 import EditNetwork from '../modals/network/network-edit';
 import EditNetwork2 from '../modals/network2';
 import { useMainStore } from '../../../stores';
+import DomainForm from '../../../components/domain-form';
 
 import './index.less';
 
 
 const { Column } = Table;
 const editNetWorkKey = Modal.key();
+const editDomainKey = Modal.key();
+const modalStyle = {
+  width: 740,
+};
 
 const Networking = observer(() => {
   const {
@@ -38,8 +41,6 @@ const Networking = observer(() => {
   } = useApplicationStore();
   const { mainStore: { openDeleteModal } } = useMainStore();
 
-  const [showDomain, setShowDomain] = useState(false);
-  const [domainId, setDomainId] = useState(null);
   const [showNetwork, setShowNetwork] = useState(false);
 
   function refresh() {
@@ -279,14 +280,22 @@ const Networking = observer(() => {
   }
 
   function openDomainEdit(itemId) {
-    setDomainId(itemId);
-    setShowDomain(true);
-  }
-
-  function closeDomainEdit(isLoad) {
-    setDomainId(null);
-    setShowDomain(false);
-    isLoad && refresh();
+    Modal.open({
+      key: editDomainKey,
+      style: modalStyle,
+      drawer: true,
+      title: formatMessage({ id: 'domain.update.head' }),
+      children: <DomainForm
+        envId={parentId}
+        appServiceId={id}
+        ingressId={itemId}
+        ingressStore={domainStore}
+        refresh={refresh}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+      />,
+      okText: formatMessage({ id: 'save' }),
+    });
   }
 
   function openNetworkEdit() {
@@ -387,17 +396,6 @@ const Networking = observer(() => {
           <Column name="type" renderer={renderConfigType} />
         </Table>
       </div>
-      {showDomain && (
-        <DomainModal
-          envId={parentId}
-          appServiceId={id}
-          id={domainId}
-          visible={showDomain}
-          type="edit"
-          store={domainStore}
-          onClose={closeDomainEdit}
-        />
-      )}
       {showNetwork && (
         <EditNetwork
           netId={netDs.current.get('id')}

@@ -33,6 +33,6 @@ public class MergeRequestClosedEmailTemplate implements EmailTemplate {
 
     @Override
     public String content() {
-        return "<p>您在项目“${projectName}”下应用服务“${appServiceName}”中提交的合并请求已被 ${realName} 关闭</p>";
+        return "<p>您在项目“${projectName}”下应用服务“${appServiceName}”中提交的合并请求已被 ${realName} 关闭。</p>";
     }
 }

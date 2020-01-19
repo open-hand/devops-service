@@ -44,7 +44,7 @@ public class GitLabContinuousDeliveryFailurePmTemplate implements PmTemplate {
      */
     @Override
     public String content() {
-        return "<p>您在项目“${projectName}”下应用服务“${appServiceName}”中的持续集成过程失败</p>\n" +
+        return "<p>您在项目“${projectName}”下应用服务“${appServiceName}”中的持续集成过程失败。</p>\n" +
                 "<p><a href=${gitlabUrl}/${organizationCode}-${projectCode}/${appServiceCode}/pipelines/${gitlabPipelineId}>查看详情</a></p>";
     }
 }

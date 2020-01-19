@@ -44,7 +44,7 @@ public class MergeRequestPassedPmTemplate implements PmTemplate {
      */
     @Override
     public String content() {
-        return "<p>您在项目“${projectName}”下应用服务“${appServiceName}”中提交的合并请求已被 ${realName} 合并</p>\n" +
+        return "<p>您在项目“${projectName}”下应用服务“${appServiceName}”中提交的合并请求已被 ${realName} 合并。</p>\n" +
                 "<p><a href=${gitlabUrl}/${organizationCode}-${projectCode}/${appServiceCode}/merge_requests/${mergeRequestId}>查看详情</a></p>";
     }
 }

@@ -33,6 +33,6 @@ public class DisableAppServiceEmailTemplate implements EmailTemplate {
 
     @Override
     public String content() {
-        return "<p>项目“${projectName}”下的应用服务“${appServiceName}”已被停用</p>";
+        return "<p>项目“${projectName}”下的应用服务“${appServiceName}”已被停用。</p>";
     }
 }

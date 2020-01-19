@@ -7,9 +7,9 @@ import { Icon } from 'choerodon-ui';
 import { Modal } from 'choerodon-ui/pro';
 import { useResourceStore } from '../../../stores';
 import { useMainStore } from '../../stores';
-import DomainModal from '../../contents/ingress/modals/domain-create';
 import eventStopProp from '../../../../../utils/eventStopProp';
 import openWarnModal from '../../../../../utils/openWarnModal';
+import DomainForm from '../../components/domain-form';
 
 const modalKey = Modal.key();
 const modalStyle = {
@@ -29,11 +29,8 @@ function IngressItem({
     AppState: { currentMenuType: { projectId } },
   } = useResourceStore();
   const {
-    ingressStore,
     mainStore: { openDeleteModal },
   } = useMainStore();
-
-  const [showModal, setShowModal] = useState(false);
 
   function freshTree() {
     treeDs.query();
@@ -84,23 +81,17 @@ function IngressItem({
           style: modalStyle,
           drawer: true,
           title: formatMessage({ id: 'domain.update.head' }),
-          children: <DomainModal
+          children: <DomainForm
             envId={record.get('parentId').split('-')[0]}
-            id={record.get('id')}
-            visible={showModal}
-            type="edit"
-            store={ingressStore}
+            ingressId={record.get('id')}
             refresh={freshMenu}
+            intlPrefix={intlPrefix}
+            prefixCls="c7ncd-deployment"
           />,
           okText: formatMessage({ id: 'save' }),
         });
       }
     });
-  }
-
-  function closeModal(isLoad) {
-    setShowModal(false);
-    isLoad && freshMenu();
   }
 
   function getSuffix() {
@@ -128,16 +119,6 @@ function IngressItem({
     <Icon type="language" />
     {name}
     {getSuffix()}
-    {showModal && (
-      <DomainModal
-        envId={record.get('parentId').split('-')[0]}
-        id={record.get('id')}
-        visible={showModal}
-        type="edit"
-        store={ingressStore}
-        onClose={closeModal}
-      />
-    )}
   </Fragment>;
 }
 

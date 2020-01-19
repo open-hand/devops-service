@@ -39,6 +39,6 @@ public class AppServiceCreationFailureEmailTemplate implements EmailTemplate {
      */
     @Override
     public String content() {
-        return "<p>您在项目“${projectName}”下创建的应用服务“${appServiceName}”失败</p>";
+        return "<p>您在项目“${projectName}”下创建的应用服务“${appServiceName}”失败。</p>";
     }
 }

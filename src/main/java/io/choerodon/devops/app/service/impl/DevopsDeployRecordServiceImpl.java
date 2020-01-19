@@ -3,6 +3,9 @@ package io.choerodon.devops.app.service.impl;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
@@ -89,12 +92,11 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             }
         }
         maps.put(TypeUtil.SEARCH_PARAM, cast);
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(
-                () -> devopsDeployRecordMapper.listByProjectId(projectId,
-                        TypeUtil.cast(maps.get(TypeUtil.PARAMS)),
-                        TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM))
-                )
-        );
+
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(()->devopsDeployRecordMapper.listByProjectId(projectId,
+                TypeUtil.cast(maps.get(TypeUtil.PARAMS)),
+                TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM))
+        ));
     }
 
 
