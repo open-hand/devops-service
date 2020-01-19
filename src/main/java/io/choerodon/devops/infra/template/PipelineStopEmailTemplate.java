@@ -33,6 +33,6 @@ public class PipelineStopEmailTemplate implements EmailTemplate {
 
     @Override
     public String content() {
-        return "<p>项目“${projectName}”中的流水线“${pipelineName}”在阶段【${stageName}】被 ${auditName}:${realName} 终止</p>";
+        return "<p>项目“${projectName}”中的流水线“${pipelineName}”在阶段【${stageName}】被 ${auditName}:${realName} 终止。</p>";
     }
 }

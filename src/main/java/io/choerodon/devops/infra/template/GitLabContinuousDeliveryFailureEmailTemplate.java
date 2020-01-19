@@ -33,6 +33,6 @@ public class GitLabContinuousDeliveryFailureEmailTemplate implements EmailTempla
 
     @Override
     public String content() {
-        return "<p>您在项目“${projectName}”下应用服务“${appServiceName}”中的持续集成过程失败</p>";
+        return "<p>您在项目“${projectName}”下应用服务“${appServiceName}”中的持续集成过程失败。</p>";
     }
 }

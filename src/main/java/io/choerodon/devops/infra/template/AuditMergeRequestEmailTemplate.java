@@ -33,6 +33,6 @@ public class AuditMergeRequestEmailTemplate implements EmailTemplate {
 
     @Override
     public String content() {
-        return "<p>项目“${projectName}”下应用服务“${appServiceName}”中 ${realName} 提交了合并请求，需要您进行审核</p>";
+        return "<p>项目“${projectName}”下应用服务“${appServiceName}”中 ${realName} 提交了合并请求，需要您进行审核。</p>";
     }
 }

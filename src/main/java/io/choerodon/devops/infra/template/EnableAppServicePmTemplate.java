@@ -43,7 +43,7 @@ public class EnableAppServicePmTemplate implements PmTemplate {
      */
     @Override
     public String content() {
-        return "<p>项目“${projectName}”下的应用服务“${appServiceName}”已被启用</p>\n" +
+        return "<p>项目“${projectName}”下的应用服务“${appServiceName}”已被启用。</p>\n" +
                 "<p><a href=#/devops/app-service?type=project&id=${projectId}&name=${projectName}&category=${projectCategory}&organizationId=${organizationId}>查看详情</a></p>";
     }
 }

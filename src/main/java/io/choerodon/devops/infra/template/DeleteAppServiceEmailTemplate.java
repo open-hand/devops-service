@@ -38,6 +38,6 @@ public class DeleteAppServiceEmailTemplate implements EmailTemplate {
      */
     @Override
     public String content() {
-        return "项目“${projectName}”下的应用服务“${appServiceName}”已被删除</p>";
+        return "项目“${projectName}”下的应用服务“${appServiceName}”已被删除。</p>";
     }
 }

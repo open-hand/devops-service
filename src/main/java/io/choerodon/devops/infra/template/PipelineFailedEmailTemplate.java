@@ -33,6 +33,6 @@ public class PipelineFailedEmailTemplate implements EmailTemplate {
 
     @Override
     public String content() {
-        return "<p>项目“${projectName}”中的流水线“${pipelineName}”执行失败</p>";
+        return "<p>项目“${projectName}”中的流水线“${pipelineName}”执行失败。</p>";
     }
 }
