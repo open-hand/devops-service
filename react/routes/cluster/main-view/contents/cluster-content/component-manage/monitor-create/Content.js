@@ -17,6 +17,9 @@ export default observer((props) => {
     intlPrefix,
     pvSelect,
     pvSelectEdit,
+    store,
+    AppState: { currentMenuType: { projectId } },
+    clusterId,
   } = usePrometheusStore();
 
   const isModify = useMemo(() => {
@@ -27,9 +30,17 @@ export default observer((props) => {
   }, [formDs.current]);
 
   modal.handleOk(async () => {
+    const postData = formDs.current.toData();
     try {
-      if (await formDs.submit() !== false) {
+      let res;
+      if (isModify && !formDs.dirty) {
+        res = await store.installPrometheus(projectId, clusterId, postData);
+      } else {
+        res = await formDs.submit();
+      }
+      if (res !== false) {
         refresh();
+        return true;
       } else {
         return false;
       }
