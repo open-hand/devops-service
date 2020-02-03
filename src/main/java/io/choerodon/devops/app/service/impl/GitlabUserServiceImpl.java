@@ -11,6 +11,7 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.GitlabUserRequestVO;
 import io.choerodon.devops.app.service.GitlabUserService;
+import io.choerodon.devops.app.service.SendNotificationService;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.config.GitlabConfigurationProperties;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
@@ -34,6 +35,8 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     private UserAttrService userAttrService;
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    private SendNotificationService sendNotificationService;
 
 
     @Override
@@ -42,10 +45,15 @@ public class GitlabUserServiceImpl implements GitlabUserService {
         checkGitlabUser(gitlabUserReqDTO);
         GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserByUserName(gitlabUserReqDTO.getUsername());
         if (gitLabUserDTO == null) {
+            String randomPassword = GenerateUUID.generateRandomGitlabPassword();
+
             gitLabUserDTO = gitlabServiceClientOperator.createUser(
-                    gitlabConfigurationProperties.getPassword(),
+                    randomPassword,
                     gitlabConfigurationProperties.getProjectLimit(),
                     ConvertUtils.convertObject(gitlabUserReqDTO, GitlabUserReqDTO.class));
+
+            // 以通知形式告知默认密码
+            sendNotificationService.sendForUserDefaultPassword(gitlabUserReqDTO.getExternUid(), randomPassword);
         }
         UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(gitLabUserDTO.getId().longValue());
         if (userAttrDTO == null) {
