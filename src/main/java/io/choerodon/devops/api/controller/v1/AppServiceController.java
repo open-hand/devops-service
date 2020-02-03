@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.core.annotation.Permission;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
@@ -9,6 +10,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.swagger.annotation.CustomPageRequest;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.data.domain.Pageable;
@@ -355,24 +357,24 @@ public class AppServiceController {
         applicationServiceService.checkCode(projectId, code);
     }
 
-//    /**
-//     * 批量校验appServiceCode和appServiceName
-//     *
-//     * @param projectId              项目ID
-//     * @param appServiceBatchCheckVO 服务code
-//     */
-//    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-//    @ApiOperation(value = "批量校验appServiceCode和appServiceName")
-//    @PostMapping(value = "/batch_check")
-//    public ResponseEntity<AppServiceBatchCheckVO> batchCheck(
-//            @ApiParam(value = "项目ID", required = true)
-//            @PathVariable(value = "project_id") Long projectId,
-//            @ApiParam(value = "校验数据", required = true)
-//            @RequestBody AppServiceBatchCheckVO appServiceBatchCheckVO) {
-//        return Optional.ofNullable(applicationServiceService.checkCodeByProjectId(projectId, appServiceBatchCheckVO))
-//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-//                .orElseThrow(() -> new CommonException("error.app.service.check"));
-//    }
+    /**
+     * 批量校验appServiceCode和appServiceName
+     *
+     * @param projectId              项目ID
+     * @param appServiceBatchCheckVO 服务code
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "批量校验appServiceCode和appServiceName")
+    @PostMapping(value = "/batch_check")
+    public ResponseEntity<AppServiceBatchCheckVO> batchCheck(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "校验数据", required = true)
+            @RequestBody AppServiceBatchCheckVO appServiceBatchCheckVO) {
+        return Optional.ofNullable(applicationServiceService.checkCodeByProjectId(projectId, appServiceBatchCheckVO))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.app.service.check"));
+    }
 
     /**
      * 根据服务编码查询服务
