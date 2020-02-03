@@ -1,10 +1,8 @@
-import React, { useEffect } from 'react';
-import { Button } from 'choerodon-ui';
+import React from 'react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import some from 'lodash/some';
 import DynamicSelect from '../../../../components/dynamic-select-new';
-
 
 import './index.less';
 

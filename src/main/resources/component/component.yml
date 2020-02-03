@@ -8,7 +8,7 @@ image: http://registry.com/cert-manager
 ---
 componentName: prometheus
 chartName: prometheus-operator
-version: 8.5.6-alphe.1
+version: 8.5.6
 chartRepo: http://chart.choerodon.com.cn/choerodon/infra/
 valuesFile: prometheus.yml
 image: http://registry.com/prometheus

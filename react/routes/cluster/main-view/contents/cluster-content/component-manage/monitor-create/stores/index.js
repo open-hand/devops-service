@@ -5,6 +5,7 @@ import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import FormDataSet from './FormDataSet';
 import PvOptionsDataSet from './PvOptionsDataSet';
+import useStore from './useStore';
 
 const Store = createContext();
 
@@ -22,6 +23,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
       AppState: { currentMenuType: { projectId } },
       clusterId,
     } = props;
+
+    const store = useStore();
 
     const pvDs = useMemo(() => new DataSet(PvOptionsDataSet(projectId, clusterId)), [projectId, clusterId]);
     const formDs = useMemo(() => new DataSet(FormDataSet({ formatMessage, intlPrefix, projectId, clusterId, pvDs })), [projectId, clusterId]);
@@ -43,6 +46,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
         alertmanagerPvId: 'alertmanagerPvName',
       },
       formDs,
+      store,
     };
     return (
       <Store.Provider value={value}>
