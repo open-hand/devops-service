@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageInfo;
 import feign.FeignException;
 import feign.RetryableException;
-import io.choerodon.devops.api.vo.FileCreationVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +18,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.FileCreationVO;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -84,6 +84,22 @@ public class GitlabServiceClientOperator {
             throw new CommonException(e);
         }
         return userDTOResponseEntity.getBody();
+    }
+
+    /**
+     * 更新用户密码(用gitlab的admin更新用户的密码)
+     *
+     * @param userId   gitlab用户id
+     * @param password 要被更新的密码
+     */
+    public void updateUserPassword(Integer userId, String password) {
+        GitlabUserWithPasswordDTO user = new GitlabUserWithPasswordDTO();
+        user.setPassword(Objects.requireNonNull(password));
+        try {
+            gitlabServiceClient.updateUserPasswordByUserId(Objects.requireNonNull(userId), user);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
     }
 
     public void enableUser(Integer userId) {

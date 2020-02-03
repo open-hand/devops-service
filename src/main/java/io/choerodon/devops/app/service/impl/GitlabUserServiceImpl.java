@@ -1,10 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.GitlabUserRequestVO;
 import io.choerodon.devops.app.service.GitlabUserService;
 import io.choerodon.devops.app.service.UserAttrService;
@@ -14,6 +18,7 @@ import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabUserReqDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
@@ -99,4 +104,25 @@ public class GitlabUserServiceImpl implements GitlabUserService {
         return gitlabServiceClientOperator.checkEmail(email);
     }
 
+    @Override
+    public String resetGitlabPassword(Long userId) {
+        // 校验这个用户是否是自己，目前只允许自己重置自己的gitlab密码
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        if (userDetails == null || !Objects.equals(Objects.requireNonNull(userId), userDetails.getUserId())) {
+            throw new CommonException("error.reset.password.user.not.self");
+        }
+
+        // 校验用户是否同步
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
+        userAttrService.checkUserSync(userAttrDTO);
+
+        // 生成随机密码
+        String randomPassword = GenerateUUID.generateRandomGitlabPassword();
+
+        // 更新密码
+        gitlabServiceClientOperator.updateUserPassword(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), randomPassword);
+
+        // 返回密码
+        return randomPassword;
+    }
 }

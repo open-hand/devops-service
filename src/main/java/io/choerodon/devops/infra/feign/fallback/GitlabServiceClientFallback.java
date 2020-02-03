@@ -2,18 +2,17 @@ package io.choerodon.devops.infra.feign.fallback;
 
 import java.util.List;
 import java.util.Map;
-
 import javax.validation.Valid;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.FileCreationVO;
-import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
-import io.choerodon.devops.infra.dto.RepositoryFileDTO;
-import io.choerodon.devops.infra.dto.gitlab.*;
-import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.FileCreationVO;
+import io.choerodon.devops.infra.dto.RepositoryFileDTO;
+import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.feign.GitlabServiceClient;
 
 
 /**
@@ -283,6 +282,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<GitLabUserDTO> updateGitLabUser(Integer userId, Integer projectsLimit, GitlabUserReqDTO userReqDTO) {
         throw new CommonException("error.gitlab.user.update");
+    }
+
+    @Override
+    public ResponseEntity<GitLabUserDTO> updateUserPasswordByUserId(Integer userId, GitlabUserWithPasswordDTO user) {
+        throw new CommonException("error.reset.user.password");
     }
 
     @Override
