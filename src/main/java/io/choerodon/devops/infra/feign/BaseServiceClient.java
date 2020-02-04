@@ -190,4 +190,8 @@ public interface BaseServiceClient {
     @ApiOperation(value = "查询所有的Root用户 / DevOps服务迁移数据需要")
     @GetMapping("/v1/users/admin_all")
     ResponseEntity<List<IamUserDTO>> queryAllAdminUsers();
+
+    @ApiOperation(value = "查询所有的组织管理员 / 修复数据时用到")
+    @GetMapping("/v1/users/admin_org_all")
+    ResponseEntity<List<IamUserDTO>> queryAllOrgAdmin();
 }
