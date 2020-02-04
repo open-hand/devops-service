@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.net.CacheResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -121,7 +122,6 @@ public interface BaseServiceClient {
     ResponseEntity<List<ProjectDTO>> queryByIds(@RequestBody Set<Long> ids);
 
 
-
     /**
      * 根据组织Id及项目code查询项目
      *
@@ -176,6 +176,10 @@ public interface BaseServiceClient {
             @PathVariable("id") Long id,
             @PathVariable("project_id") Long projectId);
 
+    @ApiOperation(value = "判断用户是否为组织层root")
+    @GetMapping("/v1/users/{id}/projects/{project_id}/check_is_gitlab_org_owner")
+    ResponseEntity<Boolean> checkIsGitlabOrgOwner(@PathVariable("id") Long id,
+                                                  @PathVariable("project_id") Long projectId);
 
     /**
      * 根据用户名查询用户信息
@@ -194,4 +198,6 @@ public interface BaseServiceClient {
     @ApiOperation(value = "查询所有的组织管理员 / 修复数据时用到")
     @GetMapping("/v1/users/admin_org_all")
     ResponseEntity<List<IamUserDTO>> queryAllOrgAdmin();
+
+
 }
