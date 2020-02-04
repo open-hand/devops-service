@@ -4,14 +4,14 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 
-import io.choerodon.devops.api.vo.FileCreationVO;
-import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
-import io.choerodon.devops.infra.dto.RepositoryFileDTO;
-import io.choerodon.devops.infra.dto.gitlab.*;
-import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import io.choerodon.devops.api.vo.FileCreationVO;
+import io.choerodon.devops.infra.dto.RepositoryFileDTO;
+import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
 
 
 /**
@@ -60,6 +60,17 @@ public interface GitlabServiceClient {
     ResponseEntity<GitLabUserDTO> updateGitLabUser(@PathVariable("userId") Integer userId,
                                                    @RequestParam(value = "projectsLimit", required = false) Integer projectsLimit,
                                                    @RequestBody GitlabUserReqDTO userReqDTO);
+
+    /**
+     * 根据用户Id更新用户密码
+     *
+     * @param userId 用户Id
+     * @param user   用户密码信息F
+     */
+    @PutMapping(value = "/v1/users/{userId}/password")
+    ResponseEntity<GitLabUserDTO> updateUserPasswordByUserId(
+            @PathVariable("userId") Integer userId,
+            @RequestBody GitlabUserWithPasswordDTO user);
 
 
     @PutMapping("/v1/projects/{projectId}")
@@ -163,8 +174,8 @@ public interface GitlabServiceClient {
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/{commit}/file")
     ResponseEntity<RepositoryFileDTO> getFile(@PathVariable("projectId") Integer projectId,
-                                           @PathVariable("commit") String commit,
-                                           @RequestParam(value = "file_path") String filePath);
+                                              @PathVariable("commit") String commit,
+                                              @RequestParam(value = "file_path") String filePath);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/file/diffs")
     ResponseEntity<CompareResultDTO> queryCompareResult(@PathVariable("projectId") Integer projectId,
@@ -380,6 +391,7 @@ public interface GitlabServiceClient {
             @PathVariable("branchName") String branchName);
 
     //todo 如果name里面有&字符，&后面的部分会被丢弃
+
     /**
      * 创建新分支的接口
      *

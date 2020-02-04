@@ -22,5 +22,6 @@ public class NoticeCodeConstants {
     public static final String MERGE_REQUEST_PASSED = "mergeRequestPassed";
     public static final String SERVICE_CREATION_FAILURE = "serviceFailure";
     public static final String RESOURC_EDELETE_CONFIRMATION = "resourceDeleteConfirmation";
+    public static final String GITLAB_PASSWORD = "gitlabPassword";
     public static final String INVITE_USER = "inviteUser";
 }
