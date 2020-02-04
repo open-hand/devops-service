@@ -467,7 +467,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     Map<String, Object> params = new HashMap<>();
                     params.put("organizationId", organizationId);
-                    params.put("password", Objects.requireNonNull(password));
+                    params.put("gitlabPassword", Objects.requireNonNull(password));
 
                     sendNotices(NoticeCodeConstants.GITLAB_PASSWORD, 0L, ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params);
                 },
