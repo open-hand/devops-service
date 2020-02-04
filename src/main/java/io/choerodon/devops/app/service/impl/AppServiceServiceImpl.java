@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.kubernetes.client.JSON;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
@@ -1975,6 +1976,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         Long userId = DetailsHelper.getUserDetails().getUserId();
+
         boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrRoot(projectId, userId);
         List<AppServiceDTO> list;
         if (projectOwnerOrRoot) {

@@ -238,6 +238,16 @@ public class BaseServiceClientOperator {
         return isGitlabProjectOwner;
     }
 
+    public Boolean isGitLabOrgOwner(Long userId, Long projectId) {
+        Boolean isGitLabOrgOwner;
+        try {
+            isGitLabOrgOwner = baseServiceClient.checkIsGitlabOrgOwner(userId, projectId).getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+        return isGitLabOrgOwner;
+    }
+
     public ProjectDTO createProject(Long organizationId, ProjectCreateDTO projectCreateDTO) {
         try {
             ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient
