@@ -141,7 +141,7 @@ public class BaseServiceClientOperator {
                                                      String labelName) {
         try {
             return baseServiceClient
-                    .listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO,labelName).getBody();
+                    .listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, labelName).getBody();
         } catch (FeignException e) {
             throw new CommonException("error.user.get.byGitlabLabel");
         }
@@ -415,6 +415,16 @@ public class BaseServiceClientOperator {
 
     public List<IamUserDTO> queryAllRootUsers() {
         ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.queryAllAdminUsers();
+        return responseEntity == null ? Collections.emptyList() : responseEntity.getBody();
+    }
+
+    /**
+     * 查询所有的组织管理员
+     *
+     * @return
+     */
+    public List<IamUserDTO> queryAllOrgAdmin() {
+        ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.queryAllOrgAdmin();
         return responseEntity == null ? Collections.emptyList() : responseEntity.getBody();
     }
 }

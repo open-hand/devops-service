@@ -3,6 +3,13 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Collections2;
+import com.netflix.discovery.converters.Auto;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.LabelType;
+import io.choerodon.devops.infra.feign.BaseServiceClient;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +62,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
     @Autowired
     private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
 
 
     @Override
@@ -83,6 +92,41 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         throw new CommonException(e);
                     }
                 });
+        //根据标签如果是组织管理员需要添加组织下所有项目的的三个组的owner权限
+        gitlabGroupMemberVOList.stream()
+                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceType.ORGANIZATION.value()))
+                .forEach(gitlabGroupMemberVO -> {
+                    screenOrgLable(gitlabGroupMemberVO);
+                });
+    }
+
+    private void screenOrgLable(GitlabGroupMemberVO gitlabGroupMemberVO) {
+        List<String> roleLabels = gitlabGroupMemberVO.getRoleLabels();
+        if (roleLabels.contains(LabelType.ORGANIZATION_GITLAB_OWNER.getValue())) {
+            List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(gitlabGroupMemberVO.getResourceId());
+            if (projectDTOS != null || projectDTOS.size() > 0) {
+                assignGitLabPermissions(projectDTOS, gitlabGroupMemberVO.getUserId());
+            }
+        }
+    }
+
+    private void assignGitLabPermissions(List<ProjectDTO> projectDTOS, Long gitlabUserId) {
+        projectDTOS.stream().forEach(projectDTO -> {
+            DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
+            //添加应用服务gitlab权限
+            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabUserId);
+            if (userAttrDTO != null) {
+                MemberDTO memberDTO = new MemberDTO((TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()))
+                        , AccessLevel.OWNER.toValue(), "");
+                gitlabServiceClientOperator.createGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), memberDTO);
+                //添加环境的owner权限
+                gitlabServiceClientOperator.createGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()), memberDTO);
+                //添加集群配置库的owner,一些旧项目的集群group是采用懒加载的方式创建的,组可能为null
+                if (!Objects.isNull(devopsProjectDTO.getDevopsClusterEnvGroupId())) {
+                    gitlabServiceClientOperator.createGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()), memberDTO);
+                }
+            }
+        });
     }
 
     @Override
