@@ -96,6 +96,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         gitlabGroupMemberVOList.stream()
                 .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceType.ORGANIZATION.value()))
                 .forEach(gitlabGroupMemberVO -> {
+                    //还需要同步到devops_user表
+                    //同步到gitlab
                     screenOrgLable(gitlabGroupMemberVO, Boolean.TRUE);
                 });
     }
@@ -126,7 +128,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
             //添加应用服务gitlab权限
             UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupMemberVO.getUserId());
-            if (userAttrDTO != null) {
+            if (userAttrDTO != null && devopsProjectDTO != null) {
                 MemberDTO memberDTO = new MemberDTO((TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()))
                         , AccessLevel.OWNER.toValue(), "");
                 gitlabServiceClientOperator.createGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), memberDTO);
