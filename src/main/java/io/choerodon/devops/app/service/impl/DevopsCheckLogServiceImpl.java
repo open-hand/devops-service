@@ -1,15 +1,19 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.zaxxer.hikari.util.UtilityElf;
+import io.choerodon.devops.app.service.DevopsProjectService;
+import io.choerodon.devops.infra.dto.DevopsProjectDTO;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.AccessLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +50,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private UserAttrService userAttrService;
+    @Autowired
+    private DevopsProjectService devopsProjectService;
 
     @Override
     public void checkLog(String version) {
@@ -82,6 +88,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 if ("0.21.0".equals(version)) {
                     LOGGER.info("修复数据开始");
                     syncRoot();
+                    syncOrgRoot();
                     LOGGER.info("修复数据完成");
                 } else {
                     LOGGER.info("version not matched");
@@ -96,7 +103,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 LOGGER.warn("Exception occurred when applying data migration. The ex is: {}", ex);
             }
         }
-
 
         private void syncRoot() {
             LOGGER.info("Start to sync root users to gitlab");
@@ -128,6 +134,55 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             });
 
             LOGGER.info("Finish syncing root users to gitlab");
+        }
+
+        //同步之前已经是组织管理员的用户的gitLab权限
+        private void syncOrgRoot() {
+            LOGGER.info("Start to sync organization root users to gitlab");
+            //所有组织管理员用户
+            List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryAllOrgRoot();
+            if (CollectionUtils.isEmpty(iamUserDTOS)) {
+                LOGGER.warn("Organization Root users got is null. Please check whether it is right later in cheorodon-front.");
+                LOGGER.info("Organization Root user migration is Skipped...");
+                return;
+            }
+
+            Map<Long, List<IamUserDTO>> listMap = iamUserDTOS.stream().collect(Collectors.groupingBy(IamUserDTO::getOrganizationId));
+            listMap.forEach((organizationId, iamUserDTOS1) -> {
+                LOGGER.info("Start synchronizing organization administrators for project with organization Id :{} ", organizationId);
+                synOrgRootByOrgId(organizationId, iamUserDTOS1);
+                //还要同步到devops_user表。
+                LOGGER.info("Finished synchronizing organization administrators for project with organization Id :{} ", organizationId);
+            });
+            LOGGER.info("Finish syncing organization root users to gitlab");
+        }
+
+        private void synOrgRootByOrgId(Long organizationId, List<IamUserDTO> iamUserDTOS1) {
+            List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(organizationId);
+            if (!CollectionUtils.isEmpty(projectDTOS)) {
+                projectDTOS.stream().forEach(projectDTO -> {
+                    iamUserDTOS1.stream().forEach(iamUserDTO -> {
+                        assignGitLabGroupMemeberForOwner(projectDTO, iamUserDTO);
+                    });
+                });
+            }
+        }
+
+        private void assignGitLabGroupMemeberForOwner(ProjectDTO projectDTO, IamUserDTO iamUserDTO) {
+            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(iamUserDTO.getId());
+            DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
+            if (!Objects.isNull(devopsProjectDTO) && !Objects.isNull(userAttrDTO)) {
+                MemberDTO memberDTO = new MemberDTO((TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()))
+                        , AccessLevel.OWNER.toValue(), "");
+                //添加应用服务的gitlab的owner权限
+                gitlabServiceClientOperator.createGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), memberDTO);
+                //添加环境的owner权限
+                gitlabServiceClientOperator.createGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()), memberDTO);
+                //添加集群配置库的owner,一些旧项目的集群group是采用懒加载的方式创建的,组可能为null
+                if (!Objects.isNull(devopsProjectDTO.getDevopsClusterEnvGroupId())) {
+                    gitlabServiceClientOperator.createGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()), memberDTO);
+                }
+            }
         }
     }
 }

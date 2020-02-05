@@ -433,8 +433,8 @@ public class BaseServiceClientOperator {
      *
      * @return
      */
-    public List<IamUserDTO> queryAllOrgAdmin() {
-        ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.queryAllOrgAdmin();
+    public List<IamUserDTO> queryAllOrgRoot() {
+        ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.queryAllOrgRoot();
         return responseEntity == null ? Collections.emptyList() : responseEntity.getBody();
     }
 }

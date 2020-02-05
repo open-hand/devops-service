@@ -39,7 +39,7 @@ public class DevopsTask {
     @JobTask(maxRetryCount = 3, code = "upgradeVersionTo21", description = "升级0.20.0-0.21.0，迁移数据")
     @TimedTask(name = "upgradeVersionTo21", description = "升级0.20.0-0.21.0，迁移数据", oneExecution = true,
             repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
-    public void syncGitlib(Map<String, Object> map) {
+    public void syncOrgRootToGitlib(Map<String, Object> map) {
         logger.info("begin to upgrade 0.20.0 to 0.21 without Cluster and Certification migration.");
         devopsCheckLogService.checkLog("0.21.0");
     }

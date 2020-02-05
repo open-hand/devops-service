@@ -197,7 +197,7 @@ public interface BaseServiceClient {
 
     @ApiOperation(value = "查询所有的组织管理员 / 修复数据时用到")
     @GetMapping("/v1/users/admin_org_all")
-    ResponseEntity<List<IamUserDTO>> queryAllOrgAdmin();
+    ResponseEntity<List<IamUserDTO>> queryAllOrgRoot();
 
 
 }

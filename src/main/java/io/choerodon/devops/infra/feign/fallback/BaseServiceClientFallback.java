@@ -183,7 +183,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<IamUserDTO>> queryAllOrgAdmin() {
+    public ResponseEntity<List<IamUserDTO>> queryAllOrgRoot() {
         throw new CommonException("error.query.all.org.admin");
     }
 
