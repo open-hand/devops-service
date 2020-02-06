@@ -2,6 +2,7 @@ import React, { Fragment, lazy, Suspense, useEffect, useMemo, useState } from 'r
 import { observer } from 'mobx-react-lite';
 import { Tabs, Spin } from 'choerodon-ui';
 import { axios } from '@choerodon/boot';
+// import axios from 'axios';
 import { useClusterContentStore } from './stores';
 import Modals from './modals';
 import PageTitle from '../../../../../components/page-title';
@@ -35,7 +36,7 @@ export default observer((props) => {
     contentStore.setTabKey(key);
     if (key === MONITOR_TAB) {
       const uri = escape(`${window.location}`);
-      axios.get('/oauth/is_login')
+      axios.get('/oauth/is_login', { withCredentials: true })
         .then((response) => {
           if (!response) {
             window.location = `${window._env_.API_HOST}/oauth/oauth/authorize?response_type=token&client_id=${window._env_.CLIENT_ID}&state=&redirect_uri=${uri}%26redirectFlag`;
