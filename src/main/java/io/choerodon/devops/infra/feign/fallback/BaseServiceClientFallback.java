@@ -173,8 +173,18 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
+    public ResponseEntity<Boolean> checkIsGitlabOrgOwner(Long userId, Long projectId) {
+        throw new CommonException("error.check.org.permission");
+    }
+
+    @Override
     public ResponseEntity<List<IamUserDTO>> queryAllAdminUsers() {
         throw new CommonException("error.query.all.admins");
+    }
+
+    @Override
+    public ResponseEntity<List<IamUserDTO>> queryAllOrgRoot() {
+        throw new CommonException("error.query.all.org.admin");
     }
 
     @Override

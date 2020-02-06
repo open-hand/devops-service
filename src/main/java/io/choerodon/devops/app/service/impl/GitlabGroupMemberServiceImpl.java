@@ -3,6 +3,13 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Collections2;
+import com.netflix.discovery.converters.Auto;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.LabelType;
+import io.choerodon.devops.infra.feign.BaseServiceClient;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +62,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
     @Autowired
     private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
 
 
     @Override
@@ -83,6 +92,54 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         throw new CommonException(e);
                     }
                 });
+        //根据标签如果是组织管理员需要添加组织下所有项目的的三个组的owner权限
+        gitlabGroupMemberVOList.stream()
+                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceType.ORGANIZATION.value()))
+                .forEach(gitlabGroupMemberVO -> {
+                    //还需要同步到devops_user表
+                    //同步到gitlab
+                    screenOrgLable(gitlabGroupMemberVO, Boolean.TRUE);
+                });
+    }
+
+    private void screenOrgLable(GitlabGroupMemberVO gitlabGroupMemberVO, Boolean isCreate) {
+        List<String> roleLabels = gitlabGroupMemberVO.getRoleLabels();
+        if (roleLabels.contains(LabelType.ORGANIZATION_GITLAB_OWNER.getValue())) {
+            List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(gitlabGroupMemberVO.getResourceId());
+            if (projectDTOS != null || projectDTOS.size() > 0) {
+                if (isCreate) {
+                    assignGitLabPermissions(projectDTOS, gitlabGroupMemberVO);
+                } else {
+                    deleteGitLabPermissions(projectDTOS, gitlabGroupMemberVO);
+                }
+            }
+        }
+    }
+
+    private void deleteGitLabPermissions(List<ProjectDTO> projectDTOS, GitlabGroupMemberVO gitlabGroupMemberVO) {
+        projectDTOS.stream().forEach(projectDTO -> {
+            deleteProcess(gitlabGroupMemberVO);
+        });
+
+    }
+
+    private void assignGitLabPermissions(List<ProjectDTO> projectDTOS, GitlabGroupMemberVO gitlabGroupMemberVO) {
+        projectDTOS.stream().forEach(projectDTO -> {
+            DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
+            //添加应用服务gitlab权限
+            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupMemberVO.getUserId());
+            if (userAttrDTO != null && devopsProjectDTO != null) {
+                MemberDTO memberDTO = new MemberDTO((TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()))
+                        , AccessLevel.OWNER.toValue(), "");
+                gitlabServiceClientOperator.createGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), memberDTO);
+                //添加环境的owner权限
+                gitlabServiceClientOperator.createGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()), memberDTO);
+                //添加集群配置库的owner,一些旧项目的集群group是采用懒加载的方式创建的,组可能为null
+                if (!Objects.isNull(devopsProjectDTO.getDevopsClusterEnvGroupId())) {
+                    gitlabServiceClientOperator.createGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()), memberDTO);
+                }
+            }
+        });
     }
 
     @Override
@@ -90,47 +147,56 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         gitlabGroupMemberVOList.stream()
                 .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(PROJECT))
                 .forEach(gitlabGroupMemberVO -> {
-                    UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupMemberVO.getUserId());
-                    userAttrService.checkUserSync(userAttrDTO, gitlabGroupMemberVO.getUserId());
-                    Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
-                    GitLabUserDTO gitlabUserDTO = gitlabServiceClientOperator.queryUserById(
-                            TypeUtil.objToInteger(gitlabUserId));
-                    if (gitlabUserDTO == null) {
-                        LOGGER.error("error.gitlab.username.select");
-                        return;
-                    }
-                    DevopsProjectDTO devopsProjectDTO;
-                    MemberDTO memberDTO;
-                    devopsProjectDTO = devopsProjectService.baseQueryByProjectId(gitlabGroupMemberVO.getResourceId());
-
-                    // 删除应用服务对应gitlab的权限
-                    memberDTO = gitlabServiceClientOperator.queryGroupMember(
-                            TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), gitlabUserId);
-                    if (memberDTO != null && memberDTO.getId() != null) {
-                        deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, GitlabGroupType.APP);
-                    }
-
-                    // 删除gitops对应gitlab的权限
-                    memberDTO = gitlabServiceClientOperator.queryGroupMember(
-                            TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()), gitlabUserId);
-                    if (memberDTO != null && memberDTO.getId() != null) {
-                        deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, GitlabGroupType.ENV_GITOPS);
-                    }
-                    deleteAboutApplicationService(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
-                    deleteAboutEnvironment(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
-
-                    // 删除集群环境对应gitlab的权限
-                    if (devopsProjectDTO.getDevopsClusterEnvGroupId() != null) {
-                        memberDTO = gitlabServiceClientOperator.queryGroupMember(
-                                TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()), gitlabUserId);
-                        if (memberDTO != null && memberDTO.getId() != null) {
-                            deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, GitlabGroupType.CLUSTER_GITOPS);
-                        }
-                        deleteAboutCluster(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
-                    }
+                    deleteProcess(gitlabGroupMemberVO);
                 });
+        //组织root的标签，那么删除在组织下的root的权限
+        gitlabGroupMemberVOList.stream().filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceType.ORGANIZATION.value())).forEach(gitlabGroupMemberVO -> {
+            screenOrgLable(gitlabGroupMemberVO, Boolean.FALSE);
+        });
     }
 
+
+    private void deleteProcess(GitlabGroupMemberVO gitlabGroupMemberVO) {
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupMemberVO.getUserId());
+        userAttrService.checkUserSync(userAttrDTO, gitlabGroupMemberVO.getUserId());
+        Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
+        GitLabUserDTO gitlabUserDTO = gitlabServiceClientOperator.queryUserById(
+                TypeUtil.objToInteger(gitlabUserId));
+        if (gitlabUserDTO == null) {
+            LOGGER.error("error.gitlab.username.select");
+            return;
+        }
+        DevopsProjectDTO devopsProjectDTO;
+        MemberDTO memberDTO;
+        devopsProjectDTO = devopsProjectService.baseQueryByProjectId(gitlabGroupMemberVO.getResourceId());
+
+        // 删除应用服务对应gitlab的权限
+        memberDTO = gitlabServiceClientOperator.queryGroupMember(
+                TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), gitlabUserId);
+        if (memberDTO != null && memberDTO.getId() != null) {
+            deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, GitlabGroupType.APP);
+        }
+
+        // 删除gitops对应gitlab的权限
+        memberDTO = gitlabServiceClientOperator.queryGroupMember(
+                TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()), gitlabUserId);
+        if (memberDTO != null && memberDTO.getId() != null) {
+            deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, GitlabGroupType.ENV_GITOPS);
+        }
+        deleteAboutApplicationService(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
+        deleteAboutEnvironment(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
+
+        // 删除集群环境对应gitlab的权限
+        if (devopsProjectDTO.getDevopsClusterEnvGroupId() != null) {
+            memberDTO = gitlabServiceClientOperator.queryGroupMember(
+                    TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()), gitlabUserId);
+            if (memberDTO != null && memberDTO.getId() != null) {
+                deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, GitlabGroupType.CLUSTER_GITOPS);
+            }
+            deleteAboutCluster(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
+        }
+
+    }
 
     /**
      * 删除角色时处理应用相关的操作

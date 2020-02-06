@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service.impl;
 
 import javax.annotation.Nullable;
 
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,12 +42,12 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     @Override
     public boolean isGitlabProjectOwnerOrRoot(Long projectId) {
         Long iamUserId = DetailsHelper.getUserDetails().getUserId();
-        return isRoot(iamUserId) || baseServiceClientOperator.isGitlabProjectOwner(iamUserId, projectId);
+        return isRoot(iamUserId) || isGitlabProjectOwnerOrgitlabOrganizationOwner(iamUserId, projectId);
     }
 
     @Override
     public boolean isGitlabProjectOwnerOrRoot(Long projectId, Long iamUserId) {
-        return isRoot(iamUserId) || baseServiceClientOperator.isGitlabProjectOwner(iamUserId, projectId);
+        return isRoot(iamUserId) || isGitlabProjectOwnerOrgitlabOrganizationOwner(iamUserId, projectId);
     }
 
     @Override
@@ -53,7 +55,11 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
         if (userAttrDTO == null || userAttrDTO.getIamUserId() == null) {
             return false;
         }
-        return userAttrDTO.getGitlabAdmin() || baseServiceClientOperator.isGitlabProjectOwner(userAttrDTO.getIamUserId(), projectId);
+        return userAttrDTO.getGitlabAdmin() || isGitlabProjectOwnerOrgitlabOrganizationOwner(userAttrDTO.getIamUserId(), projectId);
+    }
+
+    private boolean isGitlabProjectOwnerOrgitlabOrganizationOwner(Long userId, Long projectId) {
+        return baseServiceClientOperator.isGitlabProjectOwner(userId, projectId) || baseServiceClientOperator.isGitLabOrgOwner(userId, projectId);
     }
 
     @Override

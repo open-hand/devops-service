@@ -37,7 +37,7 @@ public interface PermissionHelper {
 
     /**
      * 首先判断用户是否同步成功，如果没有同步成功，返回false
-     * 其次判断指定用户是否是项目所有者或者root用户
+     * 其次判断指定用户是否是项目所有者或者root用户（包括组织层的root）
      *
      * @param projectId 项目id
      * @param iamUserId iamUserId
