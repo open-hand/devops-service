@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSON;
 import com.zaxxer.hikari.util.UtilityElf;
 import io.choerodon.devops.app.service.DevopsProjectService;
+import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -52,6 +53,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private UserAttrService userAttrService;
     @Autowired
     private DevopsProjectService devopsProjectService;
+    @Autowired
+    private GitlabGroupMemberService gitlabGroupMemberService;
 
     @Override
     public void checkLog(String version) {
@@ -87,7 +90,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 devopsCheckLogDTO.setBeginCheckDate(new Date());
                 if ("0.21.0".equals(version)) {
                     LOGGER.info("修复数据开始");
-                    syncRoot();
+//                    syncRoot();
                     syncOrgRoot();
                     LOGGER.info("修复数据完成");
                 } else {
@@ -162,26 +165,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             if (!CollectionUtils.isEmpty(projectDTOS)) {
                 projectDTOS.stream().forEach(projectDTO -> {
                     iamUserDTOS1.stream().forEach(iamUserDTO -> {
-                        assignGitLabGroupMemeberForOwner(projectDTO, iamUserDTO);
+                        gitlabGroupMemberService.assignGitLabGroupMemeberForOwner(projectDTO, iamUserDTO.getId());
                     });
                 });
-            }
-        }
-
-        private void assignGitLabGroupMemeberForOwner(ProjectDTO projectDTO, IamUserDTO iamUserDTO) {
-            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(iamUserDTO.getId());
-            DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
-            if (!Objects.isNull(devopsProjectDTO) && !Objects.isNull(userAttrDTO)) {
-                MemberDTO memberDTO = new MemberDTO((TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()))
-                        , AccessLevel.OWNER.toValue(), "");
-                //添加应用服务的gitlab的owner权限
-                gitlabServiceClientOperator.createGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), memberDTO);
-                //添加环境的owner权限
-                gitlabServiceClientOperator.createGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()), memberDTO);
-                //添加集群配置库的owner,一些旧项目的集群group是采用懒加载的方式创建的,组可能为null
-                if (!Objects.isNull(devopsProjectDTO.getDevopsClusterEnvGroupId())) {
-                    gitlabServiceClientOperator.createGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()), memberDTO);
-                }
             }
         }
     }
