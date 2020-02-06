@@ -7,7 +7,8 @@ import HeaderButtons from '../../../../../../components/header-buttons';
 import { useResourceStore } from '../../../../stores';
 import { useModalStore } from './stores';
 import { useCustomStore } from '../stores';
-import CustomForm from './form-view';
+// import CustomForm from './form-view';
+import CustomForm from './form-view/formViewPro';
 import { useMainStore } from '../../../stores';
 
 const modalKey = Modal.key();
