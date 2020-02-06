@@ -12,14 +12,8 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsDeployValueVO;
-import io.choerodon.devops.app.service.AppServiceInstanceService;
-import io.choerodon.devops.app.service.DevopsDeployValueService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.app.service.PipelineAppDeployService;
-import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
-import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.PipelineAppServiceDeployDTO;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -48,6 +42,8 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     private PipelineAppDeployService pipelineAppDeployService;
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
+    @Autowired
+    private AppServiceService appServiceService;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -152,6 +148,8 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     @Override
     public DevopsDeployValueDTO baseCreateOrUpdate(DevopsDeployValueDTO devopsDeployValueDTO) {
         if (devopsDeployValueDTO.getId() == null) {
+            checkNameUniqueForInsert(devopsDeployValueDTO);
+            checkAppServiceAndEnvInProject(devopsDeployValueDTO.getProjectId(), devopsDeployValueDTO.getEnvId(), devopsDeployValueDTO.getAppServiceId());
             if (devopsDeployValueMapper.insert(devopsDeployValueDTO) != 1) {
                 throw new CommonException("error.insert.pipeline.value");
             }
@@ -163,6 +161,48 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
             devopsDeployValueDTO.setObjectVersionNumber(null);
         }
         return devopsDeployValueMapper.selectByPrimaryKey(devopsDeployValueDTO);
+    }
+
+    /**
+     * 校验配置的name环境下唯一
+     *
+     * @param devopsDeployValueDTO 相关信息
+     */
+    private void checkNameUniqueForInsert(DevopsDeployValueDTO devopsDeployValueDTO) {
+        // 插入前校验名称是否存在
+        DevopsDeployValueDTO condition = new DevopsDeployValueDTO();
+        condition.setProjectId(Objects.requireNonNull(devopsDeployValueDTO.getProjectId()));
+        condition.setName(Objects.requireNonNull(devopsDeployValueDTO.getName()));
+        condition.setEnvId(Objects.requireNonNull(devopsDeployValueDTO.getEnvId()));
+        List<DevopsDeployValueDTO> devopsDeployValueDTOS = devopsDeployValueMapper.select(condition);
+        if (!devopsDeployValueDTOS.isEmpty()) {
+            throw new CommonException("error.devops.pipeline.value.name.exit");
+        }
+    }
+
+    /**
+     * 校验环境和应用服务存在且都在这个项目下
+     *
+     * @param projectId    项目id
+     * @param envId        环境id
+     * @param appServiceId 应用服务id
+     */
+    private void checkAppServiceAndEnvInProject(Long projectId, Long envId, Long appServiceId) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        if (devopsEnvironmentDTO == null) {
+            throw new CommonException("error.env.id.not.exist", envId);
+        }
+        if (!projectId.equals(devopsEnvironmentDTO.getProjectId())) {
+            throw new CommonException("error.env.not.in.this.project", envId, projectId);
+        }
+
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+        if (appServiceDTO == null) {
+            throw new CommonException("error.app.id.not.exist", appServiceId);
+        }
+        if (!projectId.equals(appServiceDTO.getProjectId())) {
+            throw new CommonException("error.app.not.in.this.project", appServiceId, projectId);
+        }
     }
 
     @Override
