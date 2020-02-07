@@ -489,6 +489,31 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         doSendWhenResourceCreationFailure(NoticeCodeConstants.CERTIFICATION_CREATION_FAILURE, envId, resourceName, creatorId, resourceCommandId);
     }
 
+    @Override
+    public void sendForUserDefaultPassword(String userId, String password) {
+        doWithTryCatchAndLog(() -> {
+                    Long id = TypeUtil.objToLong(userId);
+                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(id);
+                    if (iamUserDTO == null) {
+                        LogUtil.loggerInfoObjectNullWithId("user", id, LOGGER);
+                        return;
+                    }
+
+                    Long organizationId = iamUserDTO.getOrganizationId();
+                    if (organizationId == null) {
+                        LOGGER.info("The organization is is null of user with id {}", userId);
+                        return;
+                    }
+
+                    Map<String, Object> params = new HashMap<>();
+                    params.put("organizationId", organizationId);
+                    params.put("gitlabPassword", Objects.requireNonNull(password));
+
+                    sendNotices(NoticeCodeConstants.GITLAB_PASSWORD, 0L, ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params);
+                },
+                ex -> LOGGER.info("Error occurred when sending message about user's default password. The exception is {}.", ex));
+    }
+
 
     /**
      * 保证在执行逻辑时不抛出异常的包装方法

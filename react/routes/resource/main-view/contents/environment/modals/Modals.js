@@ -228,7 +228,7 @@ const EnvModals = observer(() => {
       disabled: notReady,
       group: 1,
     }, {
-      disabled: configDisabled,
+      disabled: notReady,
       name: formatMessage({ id: `${intlPrefix}.create.config` }),
       icon: 'playlist_add',
       handler: openConfigModal,

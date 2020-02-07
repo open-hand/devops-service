@@ -285,6 +285,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<GitLabUserDTO> updateUserPasswordByUserId(Integer userId, GitlabUserWithPasswordDTO user) {
+        throw new CommonException("error.reset.user.password");
+    }
+
+    @Override
     public ResponseEntity<List<Map<String, Object>>> batchAddProjectVariable(Integer projectId, Integer userId, @Valid List<VariableDTO> variableDTODTOS) {
         throw new CommonException("error.variable.create");
     }

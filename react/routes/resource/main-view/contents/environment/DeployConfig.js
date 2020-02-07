@@ -34,8 +34,7 @@ export default function DeployConfig() {
   const disabled = useMemo(() => {
     const record = baseInfoDs.current;
     const notReady = !record;
-    const connect = record && record.get('connect');
-    return !connect || notReady;
+    return notReady;
   }, [baseInfoDs.current]);
 
   function refresh() {
