@@ -165,8 +165,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             if (!CollectionUtils.isEmpty(projectDTOS)) {
                 projectDTOS.stream().forEach(projectDTO -> {
                     iamUserDTOS1.stream().forEach(iamUserDTO -> {
+                        LOGGER.info("Start synchronizing project Id :{}", projectDTO.getId());
                         gitlabGroupMemberService.assignGitLabGroupMemeberForOwner(projectDTO, iamUserDTO.getId());
                     });
+                    LOGGER.info("Finish synchronizing project Id :{}", projectDTO.getId());
                 });
             }
         }

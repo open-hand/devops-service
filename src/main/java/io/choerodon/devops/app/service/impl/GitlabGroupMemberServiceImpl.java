@@ -10,6 +10,7 @@ import io.choerodon.devops.infra.enums.LabelType;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
+import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +65,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private DevopsProjectMapper devopsProjectMapper;
 
 
     @Override
@@ -592,20 +595,30 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     public void assignGitLabGroupMemeberForOwner(ProjectDTO projectDTO, Long userId) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
-        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
+        DevopsProjectDTO search = new DevopsProjectDTO();
+        search.setIamProjectId(projectDTO.getId());
+        DevopsProjectDTO devopsProjectDTO = devopsProjectMapper.selectOne(search);
         if (!Objects.isNull(devopsProjectDTO) && !Objects.isNull(userAttrDTO)) {
             MemberDTO memberDTO = new MemberDTO((TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()))
                     , AccessLevel.OWNER.toValue(), "");
-            //分配gitlab应用服务owner
+            //分配gitlab应用服务owner  注意跳过没有的项目
             MemberDTO appMemberDTO = gitlabServiceClientOperator.queryGroupMember(
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-            assignGitLabGroupOwner(devopsProjectDTO.getDevopsAppGroupId(), appMemberDTO, memberDTO);
-            //添加环境的owner权限
-            MemberDTO envMemberDTO1 = gitlabServiceClientOperator.queryGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-            assignGitLabGroupOwner(devopsProjectDTO.getDevopsEnvGroupId(), envMemberDTO1, memberDTO);
+            if (!Objects.isNull(devopsProjectDTO.getDevopsAppGroupId())) {
+                LOGGER.info("assign app service gitlab owner , group id is {}", devopsProjectDTO.getDevopsAppGroupId());
+                assignGitLabGroupOwner(devopsProjectDTO.getDevopsAppGroupId(), appMemberDTO, memberDTO);
+            }
+            if (!Objects.isNull(devopsProjectDTO.getDevopsEnvGroupId())) {
+                //添加环境的owner权限
+                LOGGER.info("assign env service gitlab owner , group id is {}", devopsProjectDTO.getDevopsEnvGroupId());
+                MemberDTO envMemberDTO1 = gitlabServiceClientOperator.queryGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                assignGitLabGroupOwner(devopsProjectDTO.getDevopsEnvGroupId(), envMemberDTO1, memberDTO);
+            }
+
             //添加集群配置库的owner,一些旧项目的集群group是采用懒加载的方式创建的,组可能为null
             if (!Objects.isNull(devopsProjectDTO.getDevopsClusterEnvGroupId())) {
                 MemberDTO clusterMemberDTO1 = gitlabServiceClientOperator.queryGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                LOGGER.info("assign env service gitlab owner , group id is {}", devopsProjectDTO.getDevopsClusterEnvGroupId());
                 assignGitLabGroupOwner(devopsProjectDTO.getDevopsClusterEnvGroupId(), clusterMemberDTO1, memberDTO);
             }
         }
