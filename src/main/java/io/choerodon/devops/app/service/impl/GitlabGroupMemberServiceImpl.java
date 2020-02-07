@@ -593,9 +593,9 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     public void assignGitLabGroupMemeberForOwner(ProjectDTO projectDTO, Long userId) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
-        MemberDTO memberDTO = new MemberDTO((TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()))
-                , AccessLevel.OWNER.toValue(), "");
         if (!Objects.isNull(devopsProjectDTO) && !Objects.isNull(userAttrDTO)) {
+            MemberDTO memberDTO = new MemberDTO((TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()))
+                    , AccessLevel.OWNER.toValue(), "");
             //分配gitlab应用服务owner
             MemberDTO appMemberDTO = gitlabServiceClientOperator.queryGroupMember(
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
