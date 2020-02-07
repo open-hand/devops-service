@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { Component, Fragment, useState, useEffect, useCallback, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { inject } from 'mobx-react';
@@ -30,7 +29,6 @@ const formItemLayout = {
 };
 
 const FormView = injectIntl(inject('AppState')(observer((props) => {
-
   const [dataSource, setDataSource] = useState([new ConfigNode()]);
   const [dataYaml, setDataYaml] = useState('');
   const [counter, setCounter] = useState(1);
@@ -79,7 +77,6 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
         })
         .catch(error => {
           callback(formatMessage({ id: 'checkNameFailed' }));
-
         });
     } else {
       callback();
@@ -102,13 +99,14 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
         try {
           const res = await store.loadSingleData(projectId, id);
           if (handlePromptError(res)) {
-            let counter = 1;
+            let counterCurrent = 1;
 
             if (!_.isEmpty(res.value)) {
-              const dataSource = _.map(res.value, (value, key) => new ConfigNode(key, value, counter++));
+              // eslint-disable-next-line no-plusplus
+              const dataSourceCurrent = _.map(res.value, (value, key) => new ConfigNode(key, value, counterCurrent++));
 
-              setDataSource(dataSource);
-              setCounter(counter);
+              setDataSource(dataSourceCurrent);
+              setCounter(counterCurrent);
             }
 
             setData(res);
@@ -137,27 +135,27 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
    * 删除key-value
    * @param key
    */
-  const handleDelete = useAvoidClosure((key) => {
-    console.log(dataSource);
-    const dataSource = [...dataSource].filter(item => item.index !== key);
+  const handleDelete = (key) => {
+    const dataSourceCurrent = [...dataSource].filter(item => item.index !== key);
 
-    asyncCheckErrorData(dataSource);
+    asyncCheckErrorData(dataSourceCurrent);
 
-    setDataSource(dataSource);
-  });
+    setDataSource(dataSourceCurrent);
+  };
 
   /**
    * 添加一组 key/value
    * @param data
    */
-  const handleAdd = (data) => {
-    let _data = data;
+  const handleAdd = (dataCurrent) => {
+    let _data = dataCurrent;
 
     if (!Array.isArray(data)) {
       _data = [[null, null]];
     }
 
     let _counter = counter;
+    // eslint-disable-next-line no-plusplus
     const newData = _.map(_data, ([key, value]) => new ConfigNode(key, value, ++_counter));
 
     if (!newData.length) {
@@ -192,8 +190,8 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
    * configMap 规则中value只能是字符串
    * @param data
    */
-  const checkConfigRuleError = (data = '') => {
-    const yaml = data || dataYaml;
+  const checkConfigRuleError = (dataCurrent = '') => {
+    const yaml = dataCurrent || dataYaml;
     const yamlObj = yamlToObj(yaml) || {};
     const values = Object.values(yamlObj);
 
@@ -205,7 +203,7 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
       }
     }
 
-    //TODO 此处存疑
+    // TODO 此处存疑
     setHasValueError(error);
 
     // this.setState({ hasValueError: error }, () => this.checkButtonDisabled);
@@ -219,7 +217,7 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
    * @param data
    * @returns {boolean}
    */
-  const checkErrorData = (data = null, isSubmit = false) => {
+  const checkErrorData = (dataCurrent = null, isSubmitCurrent = false) => {
     const {
       title,
       intl: {
@@ -228,7 +226,7 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
       modal,
     } = props;
 
-    const _data = data || dataSource;
+    const _data = dataCurrent || dataSource;
     const hasKey = _data.filter(({ key }) => !_.isEmpty(key));
     const onlyHasValue = _data.filter(({ key, value }) => _.isEmpty(key) && !_.isEmpty(value));
     const onlyHasKey = hasKey.filter(({ value }) => _.isEmpty(value));
@@ -237,7 +235,9 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
     const hasEmptyKey = title === 'cipher' && (_.isEmpty(hasKey) || hasKey.length !== _data.length);
 
     let hasErrorKey;
+    // eslint-disable-next-line no-restricted-syntax
     for (const { key } of hasKey) {
+      // eslint-disable-next-line no-useless-escape
       const pattern = /[^0-9A-Za-z\.\-\_]/;
       if (pattern.test(key)) {
         hasErrorKey = true;
@@ -247,7 +247,7 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
 
     if (!(hasErrorItem || hasErrorKey || hasRepeatKey || hasEmptyKey)) {
       setWarningMes('');
-      setIsSubmit(isSubmit);
+      setIsSubmit(isSubmitCurrent);
       setHasItemError(false);
 
       // this.setState({
@@ -285,7 +285,7 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
     //   warningMes: msg,
     //   hasItemError: true,
     // });
-    modal.update({ okProps: { disabled: true }});
+    modal.update({ okProps: { disabled: true } });
   }
 
   const formValidate = () => {
@@ -315,7 +315,7 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
           resolve(false);
         } else {
           setSubmitting(true);
-          setHasItemError(false)
+          setHasItemError(false);
 
           if (!err) {
             const _value = takeObject(configData);
@@ -380,7 +380,7 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
       id,
       title,
     } = props;
-    return (<Form className='c7n-sidebar-form' layout="vertical">
+    return (<Form className="c7n-sidebar-form" layout="vertical">
       <FormItem
         {...formItemLayout}
       >
@@ -572,12 +572,12 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
         const kvValue = yamlToObj(dataYaml);
         const postData = makePostData(kvValue);
 
-        const counter = postData.length;
+        const counterCurrent = postData.length;
         setDataSource(postData);
         setHasYamlError(false);
         setIsYamlEdit(false);
         setDataYaml('');
-        setCounter(counter);
+        setCounter(counterCurrent);
         // this.setState({
         //   dataSource: postData,
         //   hasYamlError: false,
@@ -592,14 +592,14 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
         //   hasValueError: true,
         //   valueErrorMsg: e.message,
         // });
-        modal.update({ okProps: { disabled: true }})
+        modal.update({ okProps: { disabled: true } });
       }
     }
   };
 
-  const checkButtonDisabled = (isSubmit = false) => {
+  const checkButtonDisabled = (isSubmitCurrent = false) => {
     const { modal } = props;
-    !isSubmit && modal.update({ okProps: { disabled: hasYamlError || hasValueError || hasItemError }});
+    !isSubmitCurrent && modal.update({ okProps: { disabled: hasYamlError || hasValueError || hasItemError } });
     setIsSubmit(false);
   };
 
