@@ -47,6 +47,8 @@ public class DevopsPrometheusDTO extends BaseDTO {
     @Transient
     private DevopsPvDTO grafanaPv;
 
+    private String clientName;
+
     public Long getId() {
         return id;
     }
@@ -133,5 +135,13 @@ public class DevopsPrometheusDTO extends BaseDTO {
 
     public void setGrafanaPv(DevopsPvDTO grafanaPv) {
         this.grafanaPv = grafanaPv;
+    }
+
+    public String getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
     }
 }

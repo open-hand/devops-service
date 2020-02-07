@@ -59,6 +59,8 @@ public class DevopsPrometheusVO {
     @ApiModelProperty("cluster编码")
     private String clusterCode;
 
+    private String clientName;
+
     private Long objectVersionNumber;
 
     public Long getId() {
@@ -179,5 +181,13 @@ public class DevopsPrometheusVO {
 
     public void setAlertmanagerPvName(String alertmanagerPvName) {
         this.alertmanagerPvName = alertmanagerPvName;
+    }
+
+    public String getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
     }
 }
