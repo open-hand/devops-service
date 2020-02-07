@@ -3,15 +3,12 @@ import { inject } from 'mobx-react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Content, Choerodon } from '@choerodon/boot';
+import { Radio } from 'choerodon-ui/pro';
 import {
   Form,
-  Modal,
-  Radio,
+  // Radio,
   Upload,
   Icon,
-  Button,
-  Select,
-  Tooltip,
 } from 'choerodon-ui';
 import _ from 'lodash';
 import classnames from 'classnames';
@@ -21,10 +18,8 @@ import { handlePromptError } from '../../../../../../../utils';
 
 import './index.less';
 
-const { Sidebar } = Modal;
-const { Option } = Select;
 const { Item: FormItem } = Form;
-const { Group: RadioGroup } = Radio;
+// const { Group: RadioGroup } = Radio;
 const formItemLayout = {
   labelCol: {
     xs: { span: 24 },
@@ -151,9 +146,9 @@ const ResourceSidebar = injectIntl(inject('AppState')(observer((props) => {
    * 切换添加模式
    * @param e
    */
-  const changeMode = (e) => {
+  const changeMode = (value, oldValue) => {
     const { modal } = props;
-    const modeCurrent = e.target.value;
+    const modeCurrent = value;
     setChangedValue(null);
     setHasEditorError(false);
     setShowError(false);
@@ -199,22 +194,20 @@ const ResourceSidebar = injectIntl(inject('AppState')(observer((props) => {
         {type === 'create' && (<Fragment>
           <div className="c7ncd-resource-mode">
             <div className="c7ncd-resource-mode-label">{formatMessage({ id: 'resource.mode' })}：</div>
-            <RadioGroup
-              value={mode}
-              onChange={changeMode}
-            >
-              {
-                _.map(['paste', 'upload'], (item) => (
-                  <Radio
-                    key={item}
-                    value={item}
-                    className="c7ncd-resource-radio"
-                  >
-                    {formatMessage({ id: `resource.mode.${item}` })}
-                  </Radio>
-                ))
-              }
-            </RadioGroup>
+            {
+              _.map(['paste', 'upload'], (item) => (
+                <Radio
+                  name="addMode"
+                  key={item}
+                  value={item}
+                  checked={mode === item}
+                  onChange={changeMode}
+                  className="c7ncd-resource-radio"
+                >
+                  {formatMessage({ id: `resource.mode.${item}` })}
+                </Radio>
+              ))
+            }
           </div>
           </Fragment>)}
         {mode === 'paste' && (
