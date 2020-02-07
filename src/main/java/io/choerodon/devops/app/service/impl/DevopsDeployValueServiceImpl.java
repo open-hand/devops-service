@@ -154,6 +154,8 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
                 throw new CommonException("error.insert.pipeline.value");
             }
         } else {
+            devopsDeployValueDTO.setEnvId(null);
+            devopsDeployValueDTO.setAppServiceId(null);
             devopsDeployValueDTO.setObjectVersionNumber(devopsDeployValueMapper.selectByPrimaryKey(devopsDeployValueDTO).getObjectVersionNumber());
             if (devopsDeployValueMapper.updateByPrimaryKeySelective(devopsDeployValueDTO) != 1) {
                 throw new CommonException("error.update.pipeline.value");
