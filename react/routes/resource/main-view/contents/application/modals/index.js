@@ -5,7 +5,7 @@ import HeaderButtons from '../../../../../../components/header-buttons';
 import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
 import Detail from './detail';
-import KeyValueModal from './key-value';
+import KeyValueModal from './key-value/KeyValuePro';
 import CreateNetwork from './network';
 import CreateNetwork2 from './network2';
 import DomainForm from '../../../components/domain-form';
@@ -145,9 +145,9 @@ const AppModals = observer(() => {
       style: { width: 740 },
       okText: formatMessage({ id: 'create' }),
       drawer: true,
-      children: <CreateNetwork2 
+      children: <CreateNetwork2
         envId={parentId}
-        appId={id} 
+        appId={id}
         networkStore={networkStore}
         refresh={refresh}
       />,
