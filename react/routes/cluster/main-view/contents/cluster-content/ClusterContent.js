@@ -2,7 +2,6 @@ import React, { Fragment, lazy, Suspense, useEffect, useMemo, useState } from 'r
 import { observer } from 'mobx-react-lite';
 import { Tabs, Spin } from 'choerodon-ui';
 import { axios } from '@choerodon/boot';
-// import axios from 'axios';
 import { useClusterContentStore } from './stores';
 import Modals from './modals';
 import PageTitle from '../../../../../components/page-title';
