@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 import java.util.Map;
-
 import javax.annotation.Nullable;
 
 import io.choerodon.core.notify.NoticeSendDTO;
@@ -132,5 +131,11 @@ public interface SendNotificationService {
      */
     void sendWhenCertificationCreationFailure(Long envId, String resourceName, Long creatorId, @Nullable Long resourceCommandId);
 
-
+    /**
+     * 当创建用户时，将用户的默认随机密码发送给用户
+     *
+     * @param userId   猪齿鱼用户id
+     * @param password 密码
+     */
+    void sendForUserDefaultPassword(String userId, String password);
 }

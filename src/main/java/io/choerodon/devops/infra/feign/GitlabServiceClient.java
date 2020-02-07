@@ -62,6 +62,17 @@ public interface GitlabServiceClient {
                                                    @RequestParam(value = "projectsLimit", required = false) Integer projectsLimit,
                                                    @RequestBody GitlabUserReqDTO userReqDTO);
 
+    /**
+     * 根据用户Id更新用户密码
+     *
+     * @param userId 用户Id
+     * @param user   用户密码信息F
+     */
+    @PutMapping(value = "/v1/users/{userId}/password")
+    ResponseEntity<GitLabUserDTO> updateUserPasswordByUserId(
+            @PathVariable("userId") Integer userId,
+            @RequestBody GitlabUserWithPasswordDTO user);
+
 
     @PutMapping("/v1/projects/{projectId}")
     ResponseEntity<GitlabProjectDTO> updateProject(@PathVariable("projectId") Integer projectId,
