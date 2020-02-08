@@ -1,34 +1,36 @@
-import React, { Component, Fragment, useState, useEffect, useCallback, useRef } from 'react';
+import React, { Fragment, useState, useEffect, useMemo, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import { Choerodon } from '@choerodon/boot';
-import { Button, Form, Input, Modal, Icon, Table, Tooltip } from 'choerodon-ui';
+import { Form, DataSet, TextField, TextArea } from 'choerodon-ui/pro';
+import { Button, Icon, Table, Tooltip } from 'choerodon-ui';
 import { EditableCell, EditableFormRow } from './editableTable';
 import { objToYaml, yamlToObj, takeObject, ConfigNode, makePostData } from '../utils';
 import YamlEditor from '../../../../../../../components/yamlEditor';
 import { handlePromptError } from '../../../../../../../utils';
+import formDataSet from './stores/formDataSet';
 
 import '../../../../../../main.less';
 import './index.less';
 
-const { Sidebar } = Modal;
-const { Item: FormItem } = Form;
-const { TextArea } = Input;
-
-const formItemLayout = {
-  labelCol: {
-    xs: { span: 24 },
-    sm: { span: 100 },
-  },
-  wrapperCol: {
-    xs: { span: 24 },
-    sm: { span: 26 },
-  },
-};
-
 const FormView = injectIntl(inject('AppState')(observer((props) => {
+  const {
+    id,
+    store,
+    intl: { formatMessage },
+    AppState: {
+      currentMenuType: {
+        projectId,
+      },
+    },
+    envId,
+    modal,
+  } = props;
+
+  const FormDataSet = useMemo(() => new DataSet(formDataSet({ id, formatMessage, projectId, envId, store })), []);
+
   const [dataSource, setDataSource] = useState([new ConfigNode()]);
   const [dataYaml, setDataYaml] = useState('');
   const [counter, setCounter] = useState(1);
@@ -43,58 +45,9 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
 
   const [isSubmit, setIsSubmit] = useState(false);
 
-  /**
-   * 检查名称唯一性
-   * @param rule
-   * @param value
-   * @param callback
-   */
-  const checkName = _.debounce((rule, value, callback) => {
-    const {
-      intl: {
-        formatMessage,
-      },
-      AppState: {
-        currentMenuType: {
-          projectId,
-        },
-      },
-      envId,
-      store,
-    } = props;
-
-    const pattern = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
-    if (value && !pattern.test(value)) {
-      callback(formatMessage({ id: 'network.name.check.failed' }));
-    } else if (value && pattern.test(value)) {
-      store.checkName(projectId, envId, value)
-        .then(res => {
-          if (handlePromptError(res, false)) {
-            callback();
-          } else {
-            callback(formatMessage({ id: 'checkNameExist' }));
-          }
-        })
-        .catch(error => {
-          callback(formatMessage({ id: 'checkNameFailed' }));
-        });
-    } else {
-      callback();
-    }
-  }, 1000);
 
   useEffect(() => {
     async function callBack() {
-      const {
-        id,
-        store,
-        AppState: {
-          currentMenuType: {
-            projectId,
-          },
-        },
-        modal,
-      } = props;
       if (typeof id === 'number') {
         try {
           const res = await store.loadSingleData(projectId, id);
@@ -115,7 +68,6 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
           Choerodon.handleResponseError(e);
         }
       }
-      modal.handleOk(handleSubmit);
     }
     callBack();
   }, []);
@@ -123,13 +75,6 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
   useEffect(() => {
     checkButtonDisabled(isSubmit);
   }, [hasValueError, hasItemError, hasYamlError]);
-
-  function useAvoidClosure(fn) {
-    const ref = useRef(fn);
-    ref.current = fn;
-    const callback = (...args) => ref.current(...args);
-    return callback;
-  }
 
   /**
    * 删除key-value
@@ -220,10 +165,6 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
   const checkErrorData = (dataCurrent = null, isSubmitCurrent = false) => {
     const {
       title,
-      intl: {
-        formatMessage,
-      },
-      modal,
     } = props;
 
     const _data = dataCurrent || dataSource;
@@ -278,7 +219,6 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
    * @param msg
    */
   function setConfigError(msg) {
-    const { modal } = props;
     setWarningMes(msg);
     setHasItemError(true);
     // this.setState({
@@ -288,12 +228,10 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
     modal.update({ okProps: { disabled: true } });
   }
 
-  const formValidate = () => {
+  const formValidate = useCallback(async () => {
     const {
-      id,
-      envId,
       appId,
-      form: { validateFields },
+      // form: { validateFields },
     } = props;
 
     let configData = [];
@@ -301,40 +239,35 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
     let hasConfigRuleError = false;
 
     return new Promise((resolve) => {
-      validateFields((err, { name, description }) => {
-        if (!isYamlEdit) {
-          hasKVError = checkErrorData(null, true);
-          const allData = [...dataSource.filter(item => !_.isEmpty(item.key))];
-          configData = _.uniqBy(allData, 'index');
-        } else {
-          hasConfigRuleError = checkConfigRuleError();
-          configData = yamlToObj(dataYaml);
-        }
+      const { name, description } = FormDataSet.toData()[0];
+      if (!isYamlEdit) {
+        hasKVError = checkErrorData(null, true);
+        const allData = [...dataSource.filter(item => !_.isEmpty(item.key))];
+        configData = _.uniqBy(allData, 'index');
+      } else {
+        hasConfigRuleError = checkConfigRuleError();
+        configData = yamlToObj(dataYaml);
+      }
 
-        if (hasYamlError || hasKVError || hasConfigRuleError) {
-          resolve(false);
-        } else {
-          setSubmitting(true);
-          setHasItemError(false);
-
-          if (!err) {
-            const _value = takeObject(configData);
-            const dto = {
-              name,
-              description,
-              envId,
-              appServiceId: appId,
-              type: id ? 'update' : 'create',
-              id: id || undefined,
-              value: _value,
-            };
-            resolve(dto);
-          }
-          resolve(false);
-        }
-      });
+      if (hasYamlError || hasKVError || hasConfigRuleError) {
+        resolve(false);
+      } else {
+        setSubmitting(true);
+        setHasItemError(false);
+        const _value = takeObject(configData);
+        const dto = {
+          name,
+          description,
+          envId,
+          appServiceId: appId,
+          type: id ? 'update' : 'create',
+          id: id || undefined,
+          value: _value,
+        };
+        resolve(dto);
+      }
     });
-  };
+  }, [dataSource]);
 
   /**
    * form提交函数
@@ -343,28 +276,27 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
    */
   const handleSubmit = async () => {
     const {
-      store,
-      AppState: {
-        currentMenuType: {
-          id: projectId,
-        },
-      },
       refresh,
     } = props;
-    const postData = await formValidate();
-
-    if (!postData) {
-      return false;
-    }
-    try {
-      const res = await store.postKV(projectId, postData);
-      if (handlePromptError(res)) {
-        refresh();
-      } else {
+    const isValidate = await FormDataSet.validate();
+    if (isValidate) {
+      const postData = await formValidate();
+      if (!postData) {
         return false;
       }
-    } catch (error) {
-      Choerodon.handleResponseError(error);
+      try {
+        const res = await store.postKV(projectId, postData);
+        if (handlePromptError(res)) {
+          refresh();
+        } else {
+          return false;
+        }
+      } catch (error) {
+        Choerodon.handleResponseError(error);
+        return false;
+      }
+      return false;
+    } else {
       return false;
     }
   };
@@ -373,50 +305,55 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
    * 配置信息的名称描述等常规表单项
    * @returns {*}
    */
-  const getFormContent = () => {
-    const {
-      intl: { formatMessage },
-      form: { getFieldDecorator },
-      id,
-      title,
-    } = props;
-    return (<Form className="c7n-sidebar-form" layout="vertical">
-      <FormItem
-        {...formItemLayout}
-      >
-        {getFieldDecorator('name', {
-          initialValue: data ? data.name : null,
-          rules: [{
-            required: true,
-            message: formatMessage({ id: 'required' }),
-          }, {
-            validator: id ? null : checkName,
-          }],
-        })(
-          <Input
-            autoFocus={!id}
-            disabled={!!id}
-            maxLength={100}
-            label={<FormattedMessage id="app.name" />}
-          />,
-        )}
-      </FormItem>
-      <FormItem
-        {...formItemLayout}
-      >
-        {getFieldDecorator('description', {
-          initialValue: data ? data.description : null,
-        })(
-          <TextArea
-            autoFocus={!!id}
-            autosize={{ minRows: 2 }}
-            maxLength={30}
-            label={<FormattedMessage id="configMap.des" />}
-          />,
-        )}
-      </FormItem>
-    </Form>);
-  };
+  const getFormContent = () => (
+    <Form dataSet={FormDataSet} className="c7n-sidebar-form" layout="vertical">
+      <TextField
+        name="name"
+        autoFocus={!id}
+        disabled={!!id}
+      />
+      <TextArea
+        name="description"
+        autoFocus={!!id}
+        autosize={{ minRows: 2 }}
+      />
+
+      {/* <FormItem */}
+      {/*  {...formItemLayout} */}
+      {/* > */}
+      {/*  {getFieldDecorator('name', { */}
+      {/*    initialValue: data ? data.name : null, */}
+      {/*    rules: [{ */}
+      {/*      required: true, */}
+      {/*      message: formatMessage({ id: 'required' }), */}
+      {/*    }, { */}
+      {/*      validator: id ? null : checkName, */}
+      {/*    }], */}
+      {/*  })( */}
+      {/*    <Input */}
+      {/*      autoFocus={!id} */}
+      {/*      disabled={!!id} */}
+      {/*      maxLength={100} */}
+      {/*      label={<FormattedMessage id="app.name" />} */}
+      {/*    />, */}
+      {/*  )} */}
+      {/* </FormItem> */}
+      {/* <FormItem */}
+      {/*  {...formItemLayout} */}
+      {/* > */}
+      {/*  {getFieldDecorator('description', { */}
+      {/*    initialValue: data ? data.description : null, */}
+      {/*  })( */}
+      {/*    <TextArea */}
+      {/*      autoFocus={!!id} */}
+      {/*      autosize={{ minRows: 2 }} */}
+      {/*      maxLength={30} */}
+      {/*      label={<FormattedMessage id="configMap.des" />} */}
+      {/*    />, */}
+      {/*  )} */}
+      {/* </FormItem> */}
+    </Form>
+  );
 
   /**
    * 编辑 configMap 组件节点
@@ -535,8 +472,6 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
    * 切换配置映射的编辑模式
    */
   const changeEditMode = () => {
-    const { modal } = props;
-
     if (hasYamlError || hasValueError || hasItemError) return;
 
     if (!isYamlEdit) {
@@ -598,15 +533,12 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
   };
 
   const checkButtonDisabled = (isSubmitCurrent = false) => {
-    const { modal } = props;
     !isSubmitCurrent && modal.update({ okProps: { disabled: hasYamlError || hasValueError || hasItemError } });
     setIsSubmit(false);
   };
 
   const {
-    intl: { formatMessage },
     visible,
-    id,
     title,
     modeSwitch,
     AppState: {
@@ -620,6 +552,8 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
   const titleName = id ? data.name : menuName;
   const titleCode = `${intlPrefix}.${title}.${id ? 'edit' : 'create'}`;
   const disableBtn = hasYamlError || hasValueError || hasItemError;
+
+  modal.handleOk(handleSubmit);
 
   return (
     <div className="c7n-region">
@@ -650,4 +584,4 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
     </div>
   );
 })));
-export default Form.create()(FormView);
+export default FormView;
