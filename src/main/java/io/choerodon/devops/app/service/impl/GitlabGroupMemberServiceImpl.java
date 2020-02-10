@@ -123,6 +123,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     private void deleteGitLabPermissions(List<ProjectDTO> projectDTOS, GitlabGroupMemberVO gitlabGroupMemberVO) {
         projectDTOS.stream().forEach(projectDTO -> {
+            LOGGER.info("start ddelete project id is {} for gitlab org owner",projectDTO.getId());
             deleteProcess(gitlabGroupMemberVO);
         });
 
