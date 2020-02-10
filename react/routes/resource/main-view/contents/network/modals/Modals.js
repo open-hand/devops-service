@@ -7,9 +7,8 @@ import HeaderButtons from '../../../../../../components/header-buttons';
 import { useResourceStore } from '../../../../stores';
 import { useModalStore } from './stores';
 import { useNetworkStore } from '../stores';
-import CreateNetwork from './network-create';
 import { useMainStore } from '../../../stores';
-import CreateNetwork2 from './network-operation';
+import CreateNetwork from './network-operation';
 
 const modalKey = Modal.key();
 const modalStyle = {
@@ -47,7 +46,7 @@ const EnvModals = observer(() => {
       style: modalStyle,
       drawer: true,
       title: formatMessage({ id: 'network.header.create' }),
-      children: <CreateNetwork2
+      children: <CreateNetwork
         envId={parentId}
         store={networkStore}
         refresh={refresh}
