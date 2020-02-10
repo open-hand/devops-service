@@ -51,31 +51,33 @@ const FormView = observer(() => {
   const [isSubmit, setIsSubmit] = useState(false);
 
 
-  // useEffect(() => {
-  //   async function callBack() {
-  //     if (typeof id === 'number') {
-  //       try {
-  //         const res = await store.loadSingleData(projectId, id);
-  //         if (handlePromptError(res)) {
-  //           let counterCurrent = 1;
-  //
-  //           if (!_.isEmpty(res.value)) {
-  //             // eslint-disable-next-line no-plusplus
-  //             const dataSourceCurrent = _.map(res.value, (value, key) => new ConfigNode(key, value, counterCurrent++));
-  //
-  //             setDataSource(dataSourceCurrent);
-  //             setCounter(counterCurrent);
-  //           }
-  //
-  //           setData(res);
-  //         }
-  //       } catch (e) {
-  //         Choerodon.handleResponseError(e);
-  //       }
-  //     }
-  //   }
-  //   callBack();
-  // }, []);
+  useEffect(() => {
+    async function callBack() {
+      const res = await FormDataSet.query();
+      const dataSourceCurrent = _.map(res.value, (value, key) => new ConfigNode(key, value));
+      KeyValueDataSet.loadData(dataSourceCurrent);
+      // if (typeof id === 'number') {
+      //   try {
+      //     const res = await store.loadSingleData(projectId, id);
+      //     if (handlePromptError(res)) {
+      //       let counterCurrent = 1;
+      //
+      //       if (!_.isEmpty(res.value)) {
+      //         // eslint-disable-next-line no-plusplus
+      //         const dataSourceCurrent = _.map(res.value, (value, key) => new ConfigNode(key, value, counterCurrent++));
+      //
+      //         setDataSource(dataSourceCurrent);
+      //         setCounter(counterCurrent);
+      //       }
+      //
+      //       setData(res);
+      //     }
+      //   } catch (e) {
+      //     Choerodon.handleResponseError(e);
+      //   }
+    }
+    callBack();
+  }, []);
 
   useEffect(() => {
     checkButtonDisabled(isSubmit);
@@ -243,7 +245,7 @@ const FormView = observer(() => {
       if (!isYamlEdit) {
         hasKVError = checkErrorData(null, true);
         const allData = [...dataSource.filter(item => !_.isEmpty(item.key))];
-        configData = _.uniqBy(allData, 'index');
+        configData = allData;
       } else {
         hasConfigRuleError = checkConfigRuleError();
         configData = yamlToObj(dataYaml);
@@ -306,6 +308,7 @@ const FormView = observer(() => {
             width: 190,
           }}
           name="key"
+          onBlur={() => checkErrorData(null, false)}
           placeholder="键"
         />
         <span className="c7n-config-equal">=</span>
@@ -313,6 +316,7 @@ const FormView = observer(() => {
           className="c7n-config-value"
           name="value"
           placeholder="值"
+          onBlur={() => checkErrorData(null, false)}
         />
         <Icon
           className="del-btn"

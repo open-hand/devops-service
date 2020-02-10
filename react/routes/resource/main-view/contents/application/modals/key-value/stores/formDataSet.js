@@ -1,6 +1,6 @@
 import { handlePromptError } from '../../../../../../../../utils';
 
-export default ({ id, formatMessage, projectId, envId, store }) => {
+export default ({ title, id, formatMessage, projectId, envId, store, KeyValueDataSet }) => {
   const checkName = (value, name, record) => {
     const pattern = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
     if (value && !pattern.test(value)) {
@@ -21,12 +21,16 @@ export default ({ id, formatMessage, projectId, envId, store }) => {
   };
 
   return ({
-    autoQuery: typeof id === 'number',
+    autoCreate: typeof id !== 'number',
+    // autoQuery: typeof id === 'number',
     transport: {
       read: () => ({
-        url: `/devops/v1/projects/${projectId}/config_maps/${id}`,
+        url: title === 'mapping' ? `/devops/v1/projects/${projectId}/config_maps/${id}` : `/devops/v1/projects/${projectId}/secret/${id}?to_decode=true`,
         method: 'GET',
       }),
+    },
+    children: {
+      keyValueDataSet: KeyValueDataSet,
     },
     fields: [{
       name: 'name',

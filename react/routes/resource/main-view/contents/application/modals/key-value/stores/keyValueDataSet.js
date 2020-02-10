@@ -1,5 +1,5 @@
 export default () => ({
-  autoCreate: true,
+  autoCreate: typeof id !== 'number',
   fields: [{
     name: 'key',
     type: 'string',

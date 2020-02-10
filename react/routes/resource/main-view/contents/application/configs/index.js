@@ -5,7 +5,7 @@ import { Modal, Table } from 'choerodon-ui/pro';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper/MouserOverWrapper';
 import StatusTags from '../../../../../../components/status-tag';
 import TimePopover from '../../../../../../components/timePopover/TimePopover';
-import KeyValueModal from '../modals/key-value';
+import KeyValueModal from '../modals/key-value/KeyValueProIndex';
 import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
 import ClickText from '../../../../../../components/click-text';
