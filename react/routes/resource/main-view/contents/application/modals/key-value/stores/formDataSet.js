@@ -1,6 +1,6 @@
 import { handlePromptError } from '../../../../../../../../utils';
 
-export default ({ title, id, formatMessage, projectId, envId, store, KeyValueDataSet }) => {
+export default ({ title, id, formatMessage, projectId, envId, store }) => {
   const checkName = (value, name, record) => {
     const pattern = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
     if (value && !pattern.test(value)) {
@@ -28,9 +28,6 @@ export default ({ title, id, formatMessage, projectId, envId, store, KeyValueDat
         url: title === 'mapping' ? `/devops/v1/projects/${projectId}/config_maps/${id}` : `/devops/v1/projects/${projectId}/secret/${id}?to_decode=true`,
         method: 'GET',
       }),
-    },
-    children: {
-      keyValueDataSet: KeyValueDataSet,
     },
     fields: [{
       name: 'name',

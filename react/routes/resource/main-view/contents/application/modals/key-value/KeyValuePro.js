@@ -482,6 +482,7 @@ const FormView = observer(() => {
 
         const counterCurrent = postData.length;
         // TODO
+        KeyValueDataSet.loadData(postData);
         // setDataSource(postData);
         setHasYamlError(false);
         setIsYamlEdit(false);
@@ -523,12 +524,12 @@ const FormView = observer(() => {
         <Form dataSet={FormDataSet} className="c7n-sidebar-form" layout="vertical">
           <TextField
             name="name"
-            autoFocus={!id}
+            // autoFocus={!id}
             disabled={!!id}
           />
           <TextArea
             name="description"
-            autoFocus={!!id}
+            // autoFocus={!!id}
             autosize={{ minRows: 2 }}
           />
         </Form>
