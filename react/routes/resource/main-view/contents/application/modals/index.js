@@ -176,7 +176,7 @@ const AppModals = observer(() => {
     const envRecord = treeDs.find((record) => record.get('key') === parentId);
     const connect = envRecord.get('connect');
     const notReady = !baseInfoDs.current;
-    const disabled = false;
+    const disabled = !connect || notReady;
 
     return [{
       disabled,

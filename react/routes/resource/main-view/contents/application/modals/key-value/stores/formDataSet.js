@@ -1,8 +1,7 @@
-import _ from 'lodash';
 import { handlePromptError } from '../../../../../../../../utils';
 
 export default ({ id, formatMessage, projectId, envId, store }) => {
-  const checkName = _.debounce((value, name, record) => {
+  const checkName = (value, name, record) => {
     const pattern = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
     if (value && !pattern.test(value)) {
       return formatMessage({ id: 'network.name.check.failed' });
@@ -19,7 +18,7 @@ export default ({ id, formatMessage, projectId, envId, store }) => {
     } else {
       return true;
     }
-  }, 1000);
+  };
 
   return ({
     autoQuery: typeof id === 'number',
