@@ -53,9 +53,11 @@ const FormView = observer(() => {
 
   useEffect(() => {
     async function callBack() {
-      const res = await FormDataSet.query();
-      const dataSourceCurrent = _.map(res.value, (value, key) => new ConfigNode(key, value));
-      KeyValueDataSet.loadData(dataSourceCurrent);
+      if (typeof id === 'number') {
+        const res = await FormDataSet.query();
+        const dataSourceCurrent = _.map(res.value, (value, key) => new ConfigNode(key, value));
+        KeyValueDataSet.loadData(dataSourceCurrent);
+      }
       // if (typeof id === 'number') {
       //   try {
       //     const res = await store.loadSingleData(projectId, id);
