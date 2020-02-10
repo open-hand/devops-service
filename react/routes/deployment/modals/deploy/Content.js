@@ -9,7 +9,7 @@ import classnames from 'classnames';
 import YamlEditor from '../../../../components/yamlEditor';
 import StatusDot from '../../../../components/status-dot';
 import Tips from '../../../../components/new-tips';
-import NetworkForm from './network-form';
+import NetworkForm from './NetworkForm';
 import DomainForm from './domain-form';
 import { useManualDeployStore } from './stores';
 
@@ -292,11 +292,7 @@ const DeployModal = injectIntl(observer(({ form }) => {
             <FormattedMessage id={`${intlPrefix}.network`} />
           </div>
           <div className={netIsExpand ? `${prefixCls}-resource-content` : `${prefixCls}-resource-display`}>
-            <NetworkForm
-              form={form}
-              store={deployStore}
-              envId={record.get('environmentId')}
-            />
+            <NetworkForm />
           </div>
           <div
             className={`${prefixCls}-resource-config-network`}
