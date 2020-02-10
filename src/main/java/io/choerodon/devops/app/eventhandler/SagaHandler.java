@@ -139,8 +139,10 @@ public class SagaHandler {
         List<GitlabGroupMemberVO> gitlabGroupMemberVOList = gson.fromJson(payload,
                 new TypeToken<List<GitlabGroupMemberVO>>() {
                 }.getType());
+        LOGGER.info("delete gitlab role start");
         loggerInfo(gitlabGroupMemberVOList);
         gitlabGroupMemberService.deleteGitlabGroupMemberRole(gitlabGroupMemberVOList);
+        LOGGER.info("delete gitlab role end");
         return gitlabGroupMemberVOList;
     }
 
