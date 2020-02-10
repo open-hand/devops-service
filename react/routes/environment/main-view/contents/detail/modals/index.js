@@ -9,7 +9,6 @@ import { useEnvironmentStore } from '../../../../stores';
 import { useMainStore } from '../../../stores';
 import { useDetailStore } from '../stores';
 import useStore from './useStore';
-import ResourceSecurity from './resource-security';
 import EnvCreateForm from '../../../modals/env-create';
 import GroupForm from '../../../modals/GroupForm';
 import DeployConfigForm from './deploy-config';
@@ -160,17 +159,6 @@ const EnvModals = observer(() => {
       children: <Permission
         {...modalPorps}
       />,
-    });
-  }
-
-  function resourceSetting() {
-    const { id } = getSelectedMenu;
-    Modal.open({
-      key: resourceKey,
-      title: formatMessage({ id: `${currentIntlPrefix}.resource.setting` }),
-      children: <ResourceSecurity envId={id} />,
-      drawer: true,
-      style: configModalStyle,
     });
   }
 

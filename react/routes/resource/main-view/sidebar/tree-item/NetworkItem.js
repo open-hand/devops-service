@@ -6,7 +6,7 @@ import { Action } from '@choerodon/boot';
 import { Icon } from 'choerodon-ui';
 import { Modal } from 'choerodon-ui/pro';
 import { useResourceStore } from '../../../stores';
-import EditNetwork from '../../contents/network/modals/network-edit';
+import EditNetwork from '../../contents/network/modals/network-operation';
 import { useMainStore } from '../../stores';
 import eventStopProp from '../../../../../utils/eventStopProp';
 import openWarnModal from '../../../../../utils/openWarnModal';
@@ -85,6 +85,7 @@ function NetworkItem({
           children: <EditNetwork
             netId={record.get('id')}
             envId={record.get('parentId').split('-')[0]}
+            appServiceId={record.get('appServiceId')}
             store={networkStore}
             refresh={freshMenu}
           />,
