@@ -46,7 +46,7 @@ public class DevopsPrometheusDTO extends BaseDTO {
     private DevopsPvDTO altermanagerPv;
     @Transient
     private DevopsPvDTO grafanaPv;
-
+    @Transient
     private String clientName;
 
     public Long getId() {
