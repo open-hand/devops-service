@@ -120,8 +120,10 @@ public class SagaHandler {
         List<GitlabGroupMemberVO> gitlabGroupMemberVOList = gson.fromJson(payload,
                 new TypeToken<List<GitlabGroupMemberVO>>() {
                 }.getType());
+        LOGGER.info("update user role start");
         loggerInfo(gitlabGroupMemberVOList);
         gitlabGroupMemberService.createGitlabGroupMemberRole(gitlabGroupMemberVOList);
+        LOGGER.info("update user role end");
         return gitlabGroupMemberVOList;
     }
 
@@ -151,6 +153,7 @@ public class SagaHandler {
     public List<GitlabUserVO> handleCreateUserEvent(String payload) {
         List<GitlabUserVO> gitlabUserDTO = gson.fromJson(payload, new TypeToken<List<GitlabUserVO>>() {
         }.getType());
+        LOGGER.info("create user start");
         loggerInfo(gitlabUserDTO);
         gitlabUserDTO.forEach(t -> {
             GitlabUserRequestVO gitlabUserReqDTO = new GitlabUserRequestVO();
@@ -167,6 +170,7 @@ public class SagaHandler {
             gitlabUserReqDTO.setProjectsLimit(100);
 
             gitlabUserService.createGitlabUser(gitlabUserReqDTO);
+            LOGGER.info("create user end");
         });
         return gitlabUserDTO;
     }

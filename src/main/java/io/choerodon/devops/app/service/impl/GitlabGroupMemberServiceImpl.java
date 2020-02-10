@@ -585,6 +585,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     public void assignGitLabGroupOwner(Long groupId, MemberDTO groupMemberDTO, MemberDTO memberDTO) {
         if (Objects.isNull(groupMemberDTO)) {
+            LOGGER.info("Group member user is null ,create group member user");
             gitlabServiceClientOperator.createGroupMember(TypeUtil.objToInteger(groupId), memberDTO);
         } else {
             if (!AccessLevel.OWNER.toValue().equals(groupMemberDTO.getAccessLevel())) {
