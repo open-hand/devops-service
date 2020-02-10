@@ -586,7 +586,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private ClientDTO registerClient(DevopsClusterDTO devopsClusterDTO) {
         // 添加客户端
         ClientVO clientVO = new ClientVO();
-        clientVO.setName(GRAFANA_CLIENT_PREFIX + "-" + devopsClusterDTO.getId());
+        clientVO.setName(GRAFANA_CLIENT_PREFIX + devopsClusterDTO.getId());
         clientVO.setOrganizationId(devopsClusterDTO.getOrganizationId());
         clientVO.setAuthorizedGrantTypes("password,implicit,client_credentials,refresh_token,authorization_code");
         clientVO.setSecret("grafana");
