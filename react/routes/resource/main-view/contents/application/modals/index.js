@@ -5,7 +5,7 @@ import HeaderButtons from '../../../../../../components/header-buttons';
 import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
 import Detail from './detail';
-import KeyValueModal from './key-value/KeyValuePro';
+import KeyValueModal from './key-value/KeyValueProIndex';
 import CreateNetwork from './network';
 import CreateNetwork2 from './network2';
 import DomainForm from '../../../components/domain-form';
@@ -176,7 +176,7 @@ const AppModals = observer(() => {
     const envRecord = treeDs.find((record) => record.get('key') === parentId);
     const connect = envRecord.get('connect');
     const notReady = !baseInfoDs.current;
-    const disabled = !connect || notReady;
+    const disabled = false;
 
     return [{
       disabled,

@@ -1,7 +1,6 @@
 import React, { Fragment, useState, useEffect, useMemo, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { inject } from 'mobx-react';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import { Choerodon } from '@choerodon/boot';
 import { Form, DataSet, TextField, TextArea } from 'choerodon-ui/pro';
@@ -10,28 +9,34 @@ import { EditableCell, EditableFormRow } from './editableTable';
 import { objToYaml, yamlToObj, takeObject, ConfigNode, makePostData } from '../utils';
 import YamlEditor from '../../../../../../../components/yamlEditor';
 import { handlePromptError } from '../../../../../../../utils';
-import formDataSet from './stores/formDataSet';
+import { useKeyValueStore } from './stores';
 
 import '../../../../../../main.less';
 import './index.less';
 
-const FormView = injectIntl(inject('AppState')(observer((props) => {
+const FormView = observer(() => {
   const {
     id,
+    appId,
     store,
     intl: { formatMessage },
     AppState: {
       currentMenuType: {
         projectId,
+        name: menuName,
       },
     },
+    title,
+    modeSwitch,
+    intlPrefix,
     envId,
+    refresh,
     modal,
-  } = props;
+    FormDataSet,
+    KeyValueDataSet,
+  } = useKeyValueStore();
 
-  const FormDataSet = useMemo(() => new DataSet(formDataSet({ id, formatMessage, projectId, envId, store })), []);
-
-  const [dataSource, setDataSource] = useState([new ConfigNode()]);
+  // const [dataSource, setDataSource] = useState([new ConfigNode()]);
   const [dataYaml, setDataYaml] = useState('');
   const [counter, setCounter] = useState(1);
   const [submitting, setSubmitting] = useState(false);
@@ -46,31 +51,31 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
   const [isSubmit, setIsSubmit] = useState(false);
 
 
-  useEffect(() => {
-    async function callBack() {
-      if (typeof id === 'number') {
-        try {
-          const res = await store.loadSingleData(projectId, id);
-          if (handlePromptError(res)) {
-            let counterCurrent = 1;
-
-            if (!_.isEmpty(res.value)) {
-              // eslint-disable-next-line no-plusplus
-              const dataSourceCurrent = _.map(res.value, (value, key) => new ConfigNode(key, value, counterCurrent++));
-
-              setDataSource(dataSourceCurrent);
-              setCounter(counterCurrent);
-            }
-
-            setData(res);
-          }
-        } catch (e) {
-          Choerodon.handleResponseError(e);
-        }
-      }
-    }
-    callBack();
-  }, []);
+  // useEffect(() => {
+  //   async function callBack() {
+  //     if (typeof id === 'number') {
+  //       try {
+  //         const res = await store.loadSingleData(projectId, id);
+  //         if (handlePromptError(res)) {
+  //           let counterCurrent = 1;
+  //
+  //           if (!_.isEmpty(res.value)) {
+  //             // eslint-disable-next-line no-plusplus
+  //             const dataSourceCurrent = _.map(res.value, (value, key) => new ConfigNode(key, value, counterCurrent++));
+  //
+  //             setDataSource(dataSourceCurrent);
+  //             setCounter(counterCurrent);
+  //           }
+  //
+  //           setData(res);
+  //         }
+  //       } catch (e) {
+  //         Choerodon.handleResponseError(e);
+  //       }
+  //     }
+  //   }
+  //   callBack();
+  // }, []);
 
   useEffect(() => {
     checkButtonDisabled(isSubmit);
@@ -80,56 +85,58 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
    * 删除key-value
    * @param key
    */
-  const handleDelete = (key) => {
-    const dataSourceCurrent = [...dataSource].filter(item => item.index !== key);
+  const handleDelete = (record) => {
+    KeyValueDataSet.remove(record);
+    // const dataSourceCurrent = [...dataSource].filter(item => item.index !== key);
+    //
+    asyncCheckErrorData(KeyValueDataSet.toData());
 
-    asyncCheckErrorData(dataSourceCurrent);
-
-    setDataSource(dataSourceCurrent);
+    // setDataSource(dataSourceCurrent);
   };
 
   /**
    * 添加一组 key/value
    * @param data
    */
-  const handleAdd = (dataCurrent) => {
-    let _data = dataCurrent;
-
-    if (!Array.isArray(data)) {
-      _data = [[null, null]];
-    }
-
-    let _counter = counter;
-    // eslint-disable-next-line no-plusplus
-    const newData = _.map(_data, ([key, value]) => new ConfigNode(key, value, ++_counter));
-
-    if (!newData.length) {
-      const initConfig = new ConfigNode();
-      newData.push(initConfig);
-    }
-
-    const uniqData = _.uniqBy([...dataSource.filter(item => item.index !== ''), ...newData], 'index');
-    setDataSource([...uniqData]);
-    setCounter(_counter);
+  const handleAdd = () => {
+    KeyValueDataSet.create();
+    // let _data = dataCurrent;
+    //
+    // if (!Array.isArray(data)) {
+    //   _data = [[null, null]];
+    // }
+    //
+    // let _counter = counter;
+    // // eslint-disable-next-line no-plusplus
+    // const newData = _.map(_data, ([key, value]) => new ConfigNode(key, value, ++_counter));
+    //
+    // if (!newData.length) {
+    //   const initConfig = new ConfigNode();
+    //   newData.push(initConfig);
+    // }
+    //
+    // const uniqData = _.uniqBy([...dataSource.filter(item => item.index !== ''), ...newData], 'index');
+    // setDataSource([...uniqData]);
+    // setCounter(_counter);
   };
 
   /**
    * 保存输入
    * @param row
    */
-  const handleSave = (row) => {
-    const newData = [...dataSource];
-    const index = _.findIndex(newData, ['index', row.index]);
-
-    newData.splice(index, 1, {
-      ...newData[index],
-      ...row,
-    });
-
-    checkErrorData(newData);
-
-    setDataSource(newData);
-  };
+  // const handleSave = (row) => {
+  //   const newData = [...dataSource];
+  //   const index = _.findIndex(newData, ['index', row.index]);
+  //
+  //   newData.splice(index, 1, {
+  //     ...newData[index],
+  //     ...row,
+  //   });
+  //
+  //   checkErrorData(newData);
+  //
+  //   setDataSource(newData);
+  // };
 
   /**
    * configMap 规则中value只能是字符串
@@ -163,10 +170,7 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
    * @returns {boolean}
    */
   const checkErrorData = (dataCurrent = null, isSubmitCurrent = false) => {
-    const {
-      title,
-    } = props;
-
+    const dataSource = KeyValueDataSet.toData();
     const _data = dataCurrent || dataSource;
     const hasKey = _data.filter(({ key }) => !_.isEmpty(key));
     const onlyHasValue = _data.filter(({ key, value }) => _.isEmpty(key) && !_.isEmpty(value));
@@ -228,18 +232,14 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
     modal.update({ okProps: { disabled: true } });
   }
 
-  const formValidate = useCallback(async () => {
-    const {
-      appId,
-      // form: { validateFields },
-    } = props;
-
+  const formValidate = async () => {
     let configData = [];
     let hasKVError = false;
     let hasConfigRuleError = false;
 
     return new Promise((resolve) => {
       const { name, description } = FormDataSet.toData()[0];
+      const dataSource = KeyValueDataSet.toData();
       if (!isYamlEdit) {
         hasKVError = checkErrorData(null, true);
         const allData = [...dataSource.filter(item => !_.isEmpty(item.key))];
@@ -267,7 +267,7 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
         resolve(dto);
       }
     });
-  }, [dataSource]);
+  };
 
   /**
    * form提交函数
@@ -275,9 +275,6 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
    * @param e
    */
   const handleSubmit = async () => {
-    const {
-      refresh,
-    } = props;
     const isValidate = await FormDataSet.validate();
     if (isValidate) {
       const postData = await formValidate();
@@ -301,59 +298,30 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
     }
   };
 
-  /**
-   * 配置信息的名称描述等常规表单项
-   * @returns {*}
-   */
-  const getFormContent = () => (
-    <Form dataSet={FormDataSet} className="c7n-sidebar-form" layout="vertical">
-      <TextField
-        name="name"
-        autoFocus={!id}
-        disabled={!!id}
-      />
-      <TextArea
-        name="description"
-        autoFocus={!!id}
-        autosize={{ minRows: 2 }}
-      />
-
-      {/* <FormItem */}
-      {/*  {...formItemLayout} */}
-      {/* > */}
-      {/*  {getFieldDecorator('name', { */}
-      {/*    initialValue: data ? data.name : null, */}
-      {/*    rules: [{ */}
-      {/*      required: true, */}
-      {/*      message: formatMessage({ id: 'required' }), */}
-      {/*    }, { */}
-      {/*      validator: id ? null : checkName, */}
-      {/*    }], */}
-      {/*  })( */}
-      {/*    <Input */}
-      {/*      autoFocus={!id} */}
-      {/*      disabled={!!id} */}
-      {/*      maxLength={100} */}
-      {/*      label={<FormattedMessage id="app.name" />} */}
-      {/*    />, */}
-      {/*  )} */}
-      {/* </FormItem> */}
-      {/* <FormItem */}
-      {/*  {...formItemLayout} */}
-      {/* > */}
-      {/*  {getFieldDecorator('description', { */}
-      {/*    initialValue: data ? data.description : null, */}
-      {/*  })( */}
-      {/*    <TextArea */}
-      {/*      autoFocus={!!id} */}
-      {/*      autosize={{ minRows: 2 }} */}
-      {/*      maxLength={30} */}
-      {/*      label={<FormattedMessage id="configMap.des" />} */}
-      {/*    />, */}
-      {/*  )} */}
-      {/* </FormItem> */}
+  const getDataSourceMapFormItem = () => KeyValueDataSet.data.map(record => (
+    <Form record={record} key={record.id}>
+      <div className="c7n-config-container">
+        <TextField
+          style={{
+            width: 190,
+          }}
+          name="key"
+          placeholder="键"
+        />
+        <span className="c7n-config-equal">=</span>
+        <TextField
+          className="c7n-config-value"
+          name="value"
+          placeholder="值"
+        />
+        <Icon
+          className="del-btn"
+          type="delete"
+          onClick={() => handleDelete(record)}
+        />
+      </div>
     </Form>
-  );
+  ));
 
   /**
    * 编辑 configMap 组件节点
@@ -361,72 +329,71 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
    * @returns {*}
    */
   const getConfigMap = () => {
-    const { title, intlPrefix } = props;
-
     let configMap = null;
     if (!isYamlEdit) {
-      const components = {
-        body: {
-          row: EditableFormRow,
-          cell: EditableCell,
-        },
-      };
-      const baseColumns = [{
-        title: 'key',
-        dataIndex: 'key',
-        width: '25%',
-        editable: true,
-      }, {
-        title: '',
-        width: '5%',
-        className: 'icon-equal',
-        align: 'center',
-        dataIndex: 'temp',
-      }, {
-        title,
-        width: '100%',
-        dataIndex: 'value',
-        editable: true,
-      }, {
-        title: '',
-        dataIndex: 'operation',
-        render: (text, { index }) => (
-          dataSource.length >= 1 ? (
-            <Icon
-              className="del-btn"
-              type="delete"
-              onClick={() => handleDelete(index)}
-            />
-          ) : null),
-      }];
-
-      const columns = baseColumns.map((col) => {
-        if (!col.editable) return col;
-
-        return {
-          ...col,
-          onCell: record => ({
-            record,
-            editable: col.editable,
-            dataIndex: col.dataIndex,
-            title: col.title,
-            save: handleSave,
-            add: handleAdd,
-          }),
-        };
-      });
+      // const components = {
+      //   body: {
+      //     row: EditableFormRow,
+      //     cell: EditableCell,
+      //   },
+      // };
+      // const baseColumns = [{
+      //   title: 'key',
+      //   dataIndex: 'key',
+      //   width: '25%',
+      //   editable: true,
+      // }, {
+      //   title: '',
+      //   width: '5%',
+      //   className: 'icon-equal',
+      //   align: 'center',
+      //   dataIndex: 'temp',
+      // }, {
+      //   title,
+      //   width: '100%',
+      //   dataIndex: 'value',
+      //   editable: true,
+      // }, {
+      //   title: '',
+      //   dataIndex: 'operation',
+      //   render: (text, { index }) => (
+      //     dataSource.length >= 1 ? (
+      //       <Icon
+      //         className="del-btn"
+      //         type="delete"
+      //         onClick={() => handleDelete(index)}
+      //       />
+      //     ) : null),
+      // }];
+      //
+      // const columns = baseColumns.map((col) => {
+      //   if (!col.editable) return col;
+      //
+      //   return {
+      //     ...col,
+      //     onCell: record => ({
+      //       record,
+      //       editable: col.editable,
+      //       dataIndex: col.dataIndex,
+      //       title: col.title,
+      //       save: handleSave,
+      //       add: handleAdd,
+      //     }),
+      //   };
+      // });
 
       configMap = <Fragment>
-        <Table
-          filterBar={false}
-          showHeader={false}
-          pagination={false}
-          components={components}
-          className="c7n-editable-table"
-          dataSource={dataSource}
-          columns={columns}
-          rowKey={record => record.index}
-        />
+        {getDataSourceMapFormItem()}
+        {/* <Table */}
+        {/*  filterBar={false} */}
+        {/*  showHeader={false} */}
+        {/*  pagination={false} */}
+        {/*  components={components} */}
+        {/*  className="c7n-editable-table" */}
+        {/*  dataSource={dataSource} */}
+        {/*  columns={columns} */}
+        {/*  rowKey={record => record.index} */}
+        {/* /> */}
         <Button icon="add" onClick={handleAdd} type="primary">
           <FormattedMessage id={`${intlPrefix}.${title}.add`} />
         </Button>
@@ -475,6 +442,7 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
     if (hasYamlError || hasValueError || hasItemError) return;
 
     if (!isYamlEdit) {
+      const dataSource = KeyValueDataSet.toData();
       const result = checkErrorData(dataSource);
 
       if (result) return;
@@ -487,7 +455,6 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
       setHasItemError(false);
       setIsYamlEdit(true);
       setWarningMes('');
-      setDataSource([]);
       setDataYaml(yamlValue);
 
       // this.setState({
@@ -508,7 +475,8 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
         const postData = makePostData(kvValue);
 
         const counterCurrent = postData.length;
-        setDataSource(postData);
+        // TODO
+        // setDataSource(postData);
         setHasYamlError(false);
         setIsYamlEdit(false);
         setDataYaml('');
@@ -537,18 +505,6 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
     setIsSubmit(false);
   };
 
-  const {
-    visible,
-    title,
-    modeSwitch,
-    AppState: {
-      currentMenuType: {
-        name: menuName,
-      },
-    },
-    intlPrefix,
-  } = props;
-
   const titleName = id ? data.name : menuName;
   const titleCode = `${intlPrefix}.${title}.${id ? 'edit' : 'create'}`;
   const disableBtn = hasYamlError || hasValueError || hasItemError;
@@ -558,7 +514,18 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
   return (
     <div className="c7n-region">
       <div>
-        {getFormContent()}
+        <Form dataSet={FormDataSet} className="c7n-sidebar-form" layout="vertical">
+          <TextField
+            name="name"
+            autoFocus={!id}
+            disabled={!!id}
+          />
+          <TextArea
+            name="description"
+            autoFocus={!!id}
+            autosize={{ minRows: 2 }}
+          />
+        </Form>
         <div className="c7n-sidebar-from-title">
           <FormattedMessage id={`${intlPrefix}.${title}.head`} />
           {!isYamlEdit && <Tooltip
@@ -583,5 +550,5 @@ const FormView = injectIntl(inject('AppState')(observer((props) => {
       </div>
     </div>
   );
-})));
+});
 export default FormView;
