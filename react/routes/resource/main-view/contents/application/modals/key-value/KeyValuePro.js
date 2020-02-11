@@ -5,7 +5,6 @@ import _ from 'lodash';
 import { Choerodon } from '@choerodon/boot';
 import { Form, DataSet, TextField, TextArea } from 'choerodon-ui/pro';
 import { Button, Icon, Table, Tooltip } from 'choerodon-ui';
-import { EditableCell, EditableFormRow } from './editableTable';
 import { objToYaml, yamlToObj, takeObject, ConfigNode, makePostData } from '../utils';
 import YamlEditor from '../../../../../../../components/yamlEditor';
 import { handlePromptError } from '../../../../../../../utils';
@@ -36,13 +35,9 @@ const FormView = observer(() => {
     KeyValueDataSet,
   } = useKeyValueStore();
 
-  // const [dataSource, setDataSource] = useState([new ConfigNode()]);
   const [dataYaml, setDataYaml] = useState('');
-  const [counter, setCounter] = useState(1);
-  const [submitting, setSubmitting] = useState(false);
   const [hasItemError, setHasItemError] = useState(false);
   const [warningMes, setWarningMes] = useState('');
-  const [data, setData] = useState(false);
   const [isYamlEdit, setIsYamlEdit] = useState(false);
   const [hasYamlError, setHasYamlError] = useState(false);
   const [hasValueError, setHasValueError] = useState(false);
@@ -58,25 +53,6 @@ const FormView = observer(() => {
         const dataSourceCurrent = _.map(res.value, (value, key) => new ConfigNode(key, value));
         KeyValueDataSet.loadData(dataSourceCurrent);
       }
-      // if (typeof id === 'number') {
-      //   try {
-      //     const res = await store.loadSingleData(projectId, id);
-      //     if (handlePromptError(res)) {
-      //       let counterCurrent = 1;
-      //
-      //       if (!_.isEmpty(res.value)) {
-      //         // eslint-disable-next-line no-plusplus
-      //         const dataSourceCurrent = _.map(res.value, (value, key) => new ConfigNode(key, value, counterCurrent++));
-      //
-      //         setDataSource(dataSourceCurrent);
-      //         setCounter(counterCurrent);
-      //       }
-      //
-      //       setData(res);
-      //     }
-      //   } catch (e) {
-      //     Choerodon.handleResponseError(e);
-      //   }
     }
     callBack();
   }, []);
@@ -91,11 +67,7 @@ const FormView = observer(() => {
    */
   const handleDelete = (record) => {
     KeyValueDataSet.remove(record);
-    // const dataSourceCurrent = [...dataSource].filter(item => item.index !== key);
-    //
     asyncCheckErrorData(KeyValueDataSet.toData());
-
-    // setDataSource(dataSourceCurrent);
   };
 
   /**
@@ -104,43 +76,7 @@ const FormView = observer(() => {
    */
   const handleAdd = () => {
     KeyValueDataSet.create();
-    // let _data = dataCurrent;
-    //
-    // if (!Array.isArray(data)) {
-    //   _data = [[null, null]];
-    // }
-    //
-    // let _counter = counter;
-    // // eslint-disable-next-line no-plusplus
-    // const newData = _.map(_data, ([key, value]) => new ConfigNode(key, value, ++_counter));
-    //
-    // if (!newData.length) {
-    //   const initConfig = new ConfigNode();
-    //   newData.push(initConfig);
-    // }
-    //
-    // const uniqData = _.uniqBy([...dataSource.filter(item => item.index !== ''), ...newData], 'index');
-    // setDataSource([...uniqData]);
-    // setCounter(_counter);
   };
-
-  /**
-   * 保存输入
-   * @param row
-   */
-  // const handleSave = (row) => {
-  //   const newData = [...dataSource];
-  //   const index = _.findIndex(newData, ['index', row.index]);
-  //
-  //   newData.splice(index, 1, {
-  //     ...newData[index],
-  //     ...row,
-  //   });
-  //
-  //   checkErrorData(newData);
-  //
-  //   setDataSource(newData);
-  // };
 
   /**
    * configMap 规则中value只能是字符串
@@ -159,10 +95,7 @@ const FormView = observer(() => {
       }
     }
 
-    // TODO 此处存疑
     setHasValueError(error);
-
-    // this.setState({ hasValueError: error }, () => this.checkButtonDisabled);
     return error;
   };
 
@@ -198,11 +131,6 @@ const FormView = observer(() => {
       setWarningMes('');
       setIsSubmit(isSubmitCurrent);
       setHasItemError(false);
-
-      // this.setState({
-      //   warningMes: '',
-      //   hasItemError: false,
-      // }, () => this.checkButtonDisabled(isSubmit));
       return false;
     }
 
@@ -229,10 +157,6 @@ const FormView = observer(() => {
   function setConfigError(msg) {
     setWarningMes(msg);
     setHasItemError(true);
-    // this.setState({
-    //   warningMes: msg,
-    //   hasItemError: true,
-    // });
     modal.update({ okProps: { disabled: true } });
   }
 
@@ -256,7 +180,6 @@ const FormView = observer(() => {
       if (hasYamlError || hasKVError || hasConfigRuleError) {
         resolve(false);
       } else {
-        setSubmitting(true);
         setHasItemError(false);
         const _value = takeObject(configData);
         const dto = {
@@ -337,69 +260,8 @@ const FormView = observer(() => {
   const getConfigMap = () => {
     let configMap = null;
     if (!isYamlEdit) {
-      // const components = {
-      //   body: {
-      //     row: EditableFormRow,
-      //     cell: EditableCell,
-      //   },
-      // };
-      // const baseColumns = [{
-      //   title: 'key',
-      //   dataIndex: 'key',
-      //   width: '25%',
-      //   editable: true,
-      // }, {
-      //   title: '',
-      //   width: '5%',
-      //   className: 'icon-equal',
-      //   align: 'center',
-      //   dataIndex: 'temp',
-      // }, {
-      //   title,
-      //   width: '100%',
-      //   dataIndex: 'value',
-      //   editable: true,
-      // }, {
-      //   title: '',
-      //   dataIndex: 'operation',
-      //   render: (text, { index }) => (
-      //     dataSource.length >= 1 ? (
-      //       <Icon
-      //         className="del-btn"
-      //         type="delete"
-      //         onClick={() => handleDelete(index)}
-      //       />
-      //     ) : null),
-      // }];
-      //
-      // const columns = baseColumns.map((col) => {
-      //   if (!col.editable) return col;
-      //
-      //   return {
-      //     ...col,
-      //     onCell: record => ({
-      //       record,
-      //       editable: col.editable,
-      //       dataIndex: col.dataIndex,
-      //       title: col.title,
-      //       save: handleSave,
-      //       add: handleAdd,
-      //     }),
-      //   };
-      // });
-
       configMap = <Fragment>
         {getDataSourceMapFormItem()}
-        {/* <Table */}
-        {/*  filterBar={false} */}
-        {/*  showHeader={false} */}
-        {/*  pagination={false} */}
-        {/*  components={components} */}
-        {/*  className="c7n-editable-table" */}
-        {/*  dataSource={dataSource} */}
-        {/*  columns={columns} */}
-        {/*  rowKey={record => record.index} */}
-        {/* /> */}
         <Button icon="add" onClick={handleAdd} type="primary">
           <FormattedMessage id={`${intlPrefix}.${title}.add`} />
         </Button>
@@ -438,7 +300,6 @@ const FormView = observer(() => {
    */
   const checkYamlError = (flag) => {
     setHasYamlError(flag);
-    // this.setState({ hasYamlError: flag }, () => this.checkButtonDisabled());
   };
 
   /**
@@ -457,20 +318,10 @@ const FormView = observer(() => {
 
       checkConfigRuleError(yamlValue);
 
-      setCounter(1);
       setHasItemError(false);
       setIsYamlEdit(true);
       setWarningMes('');
       setDataYaml(yamlValue);
-
-      // this.setState({
-      //   counter: 1,
-      //   hasItemError: false,
-      //   isYamlEdit: true,
-      //   warningMes: '',
-      //   dataSource: [],
-      //   dataYaml: yamlValue,
-      // }, () => this.checkButtonDisabled());
     } else {
       const result = checkConfigRuleError(dataYaml);
 
@@ -480,28 +331,13 @@ const FormView = observer(() => {
         const kvValue = yamlToObj(dataYaml);
         const postData = makePostData(kvValue);
 
-        const counterCurrent = postData.length;
-        // TODO
         KeyValueDataSet.loadData(postData);
-        // setDataSource(postData);
         setHasYamlError(false);
         setIsYamlEdit(false);
         setDataYaml('');
-        setCounter(counterCurrent);
-        // this.setState({
-        //   dataSource: postData,
-        //   hasYamlError: false,
-        //   isYamlEdit: false,
-        //   dataYaml: '',
-        //   counter,
-        // }, () => this.checkButtonDisabled());
       } catch (e) {
         setHasValueError(true);
         setValueErrorMsg(e.message);
-        // this.setState({
-        //   hasValueError: true,
-        //   valueErrorMsg: e.message,
-        // });
         modal.update({ okProps: { disabled: true } });
       }
     }
@@ -512,8 +348,6 @@ const FormView = observer(() => {
     setIsSubmit(false);
   };
 
-  const titleName = id ? data.name : menuName;
-  const titleCode = `${intlPrefix}.${title}.${id ? 'edit' : 'create'}`;
   const disableBtn = hasYamlError || hasValueError || hasItemError;
 
   modal.handleOk(handleSubmit);
