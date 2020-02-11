@@ -348,10 +348,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String versionValue = appServiceVersionService.baseQueryValue(appServiceDeployVO.getAppServiceVersionId());
         AppServiceDTO applicationDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
-        devopsEnvironmentDTO.setCode(CHOERODON);
-        devopsEnvironmentDTO.setClusterId(appServiceDeployVO.getEnvironmentId());
-        String secretCode = getSecret(applicationDTO, appServiceDeployVO.getAppServiceVersionId(), devopsEnvironmentDTO);
+        String secretCode = getSecretForTestApp(applicationDTO.getId(), applicationDTO.getProjectId(), appServiceDeployVO.getAppServiceVersionId(), appServiceDeployVO.getEnvironmentId(), CHOERODON);
 
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceDeployVO.getAppServiceVersionId());
         FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
@@ -1379,6 +1376,45 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = new DevopsEnvCommandValueDTO();
         devopsEnvCommandValueDTO.setValue(appServiceDeployVO.getValues());
         return devopsEnvCommandValueDTO;
+    }
+
+    /**
+     * 获取用于拉取测试应用的镜像拉取Secret(注：此处每次都创建且不存储生成的Secret，更好的修复方式需要修改数据库结构且迁移数据)
+     *
+     * @param appServiceId        应用服务id
+     * @param projectId           项目id
+     * @param appServiceVersionId 版本id
+     * @param clusterId           集群id
+     * @param envCode             环境code
+     * @return secret名称
+     */
+    private String getSecretForTestApp(Long appServiceId, Long projectId, Long appServiceVersionId, Long clusterId, String envCode) {
+        String secretCode = null;
+        //如果应用绑定了私有镜像库,则处理secret
+        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceVersionId);
+        DevopsConfigDTO devopsConfigDTO;
+        if (appServiceVersionDTO.getHarborConfigId() != null) {
+            devopsConfigDTO = devopsConfigService.baseQuery(appServiceVersionDTO.getHarborConfigId());
+        } else {
+            devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, HARBOR, AUTHTYPE);
+        }
+        if (devopsConfigDTO != null) {
+            ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+            if (devopsConfigDTO.getName() != null && devopsConfigDTO.getName().equals("harbor_default") && projectId != null) {
+                configVO = queryDefaultConfig(projectId, configVO);
+            }
+            if (configVO.getPrivate() != null && configVO.getPrivate()) {
+                List<DevopsRegistrySecretDTO> devopsRegistrySecretDTOS = devopsRegistrySecretService.baseListByConfig(devopsConfigDTO.getId());
+                if (devopsRegistrySecretDTOS.isEmpty()) {
+                    secretCode = String.format("%s%s%s%s", "registry-secret-", devopsConfigDTO.getId(), "-", GenerateUUID.generateUUID().substring(0, 5));
+                } else {
+                    secretCode = devopsRegistrySecretDTOS.get(0).getSecretCode();
+                }
+                // 这里无论创建还是更新都用更新类型，agent那边这个0.20.x实现是用的createOrUpdate的形式
+                agentCommandService.operateSecret(clusterId, envCode, secretCode, configVO, UPDATE);
+            }
+        }
+        return secretCode;
     }
 
     private String getSecret(AppServiceDTO appServiceDTO, Long appServiceVersionId, DevopsEnvironmentDTO devopsEnvironmentDTO) {
