@@ -19,6 +19,7 @@ export default observer(() => {
 
   function handleRemovePort(portRecord) {
     portsDs.remove(portRecord);
+    portsDs.validate();
   }
 
   function handlePortAdd() {
@@ -30,13 +31,14 @@ export default observer(() => {
       <Form dataSet={networkDs}>
         <TextField
           name="name"
-          disabled={!manualDeployDs.current.get('envId')}
+          disabled={!manualDeployDs.current.get('environmentId')}
         />
         <SelectBox name="type">
           <Option value="ClusterIP"><span className="type-span">ClusterIP</span></Option>
           <Option value="NodePort"><span className="type-span">NodePort</span></Option>
           <Option value="LoadBalancer">LoadBalancer</Option>
         </SelectBox>
+        {record.get('type') === 'ClusterIP' && <TextField name="externalIp" />}
       </Form>
       {map(portsDs.data, (portRecord) => (
         <Form record={portRecord} key={portRecord.id} columns={5}>
@@ -48,7 +50,7 @@ export default observer(() => {
           <TextField name="targetPort" />
           {
             record.get('type') === 'NodePort'
-            && <Select name="protocol" clearButton={false} />
+            && <Select name="protocol" />
           }
           {
             portsDs.length > 1 ? <Button
@@ -56,6 +58,7 @@ export default observer(() => {
               icon="delete"
               onClick={() => handleRemovePort(portRecord)}
               className={`${prefixCls}-resource-delete-btn`}
+              colSpan={3}
             /> : <span colSpan={3} />
           }
         </Form>

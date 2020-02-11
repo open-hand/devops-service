@@ -1,10 +1,5 @@
 import { DataSet } from 'choerodon-ui/pro';
-
-function handleUpdate({ record, name }) {
-  if (name !== 'protocol') {
-    checkOtherRecords(record, name);
-  }
-}
+import map from 'lodash/map';
 
 function checkOtherRecords(record, type) {
   record.dataSet.forEach((r) => {
@@ -17,7 +12,7 @@ function checkOtherRecords(record, type) {
   });
 }
 
-export default ({ formatMessage }) => {
+export default ({ formatMessage, pathListDs }) => {
   const protocolDs = new DataSet({
     data: [
       {
@@ -77,9 +72,24 @@ export default ({ formatMessage }) => {
     }
   }
 
+  function handleUpdate({ dataSet, record, name }) {
+    if (name !== 'protocol') {
+      checkOtherRecords(record, name);
+    }
+    if (name === 'port') {
+      const ports = map(dataSet.toData(), ({ port }) => {
+        if (port) {
+          return Number(port);
+        }
+      });
+      pathListDs.forEach((pathRecord) => pathRecord.init('ports', ports));
+    }
+  }
+
   function isRequired({ dataSet, record }) {
     const name = record.cascadeParent.get('name');
-    return dataSet.dirty || !!name;
+    const dirty = dataSet.some((portRecord) => portRecord.dirty);
+    return dirty || !!name;
   }
 
   return {
@@ -87,14 +97,14 @@ export default ({ formatMessage }) => {
     fields: [
       {
         name: 'nodePort',
-        type: 'string', 
+        type: 'string',
         label: formatMessage({ id: 'network.config.nodePort' }),
         validator: checkPort,
         maxLength: 5,
       },
       {
         name: 'port',
-        type: 'string', 
+        type: 'string',
         label: formatMessage({ id: 'network.config.port' }),
         validator: checkPort,
         dynamicProps: {
@@ -117,6 +127,8 @@ export default ({ formatMessage }) => {
         name: 'protocol',
         type: 'string', 
         label: formatMessage({ id: 'ist.deploy.ports.protocol' }),
+        textField: 'value',
+        valueField: 'value',
         dynamicProps: {
           required: ({ dataSet, record }) => isRequired({ dataSet, record }) && record.cascadeParent.get('type') === 'NodePort',
         },

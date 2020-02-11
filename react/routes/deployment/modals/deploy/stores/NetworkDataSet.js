@@ -1,10 +1,12 @@
 import { axios } from '@choerodon/boot';
+import some from 'lodash/some';
+import forEach from 'lodash/forEach';
 
-export default (({ formatMessage, projectId, portsDs }) => {
+export default (({ formatMessage, projectId, portsDs, pathListDs }) => {
   async function checkName(value, name, record) {
-    const envId = record.cascadeParent.get('envId');
+    const envId = record.cascadeParent.get('environmentId');
     if (!envId) {
-      return '请先选择环境';
+      return;
     }
     const pattern = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
     if (value && !pattern.test(value)) {
@@ -28,8 +30,23 @@ export default (({ formatMessage, projectId, portsDs }) => {
     }
   }
 
+  function handleUpdate({ record, name, value }) {
+    if (name === 'name' && value) {
+      pathListDs.forEach((pathRecord) => pathRecord.init('serviceName', value));
+    }
+    if (name === 'type') {
+      record.get('externalIp') && record.set('externalIp', null);
+      forEach(record.getCascadeRecords('ports'), (portRecord) => {
+        portRecord.get('nodePort') && portRecord.set('nodePort', null);
+        portRecord.get('protocol') && portRecord.set('protocol', null);
+      });
+    }
+  }
+
   function isRequired({ record }) {
-    return record.dirty;
+    const name = record.get('name');
+    const dirty = some(record.getCascadeRecords('ports'), (portRecord) => portRecord.dirty);
+    return !!name || dirty;
   }
 
   return ({
@@ -48,6 +65,7 @@ export default (({ formatMessage, projectId, portsDs }) => {
           required: isRequired,
         },
         validator: checkName,
+        maxLength: 30,
       },
       {
         name: 'type',
@@ -58,11 +76,14 @@ export default (({ formatMessage, projectId, portsDs }) => {
         },
       },
       {
-        name: 'externalIps',
+        name: 'externalIp',
         label: formatMessage({ id: 'network.config.ip' }),
         multiple: true,
         validator: checkIP,
       },
     ],
+    events: {
+      update: handleUpdate,
+    },
   });
 });
