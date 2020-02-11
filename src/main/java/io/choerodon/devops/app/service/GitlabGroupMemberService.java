@@ -6,6 +6,7 @@ import io.choerodon.devops.api.vo.GitlabGroupMemberVO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 
 /**
  * Created by Zenger on 2018/3/28.
@@ -25,4 +26,8 @@ public interface GitlabGroupMemberService {
     int create(Integer groupId, MemberDTO memberDTO);
 
     void update(Integer groupId, MemberDTO memberDTO);
+
+    void assignGitLabGroupOwner(Long groupId, MemberDTO groupMemberDTO, MemberDTO memberDTO);
+
+    void assignGitLabGroupMemeberForOwner(ProjectDTO projectDTO, Long userId);
 }

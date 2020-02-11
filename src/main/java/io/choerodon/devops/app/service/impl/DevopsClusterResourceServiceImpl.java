@@ -36,6 +36,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private static final String ERROR_FORMAT = "%s;";
     private static final String ERROR_BOUND_PVC_FORMAT = "%s绑定PV失败;";
     private static final String ERROR_CLUSTER_NOT_EXIST = "error.cluster.not.exist";
+    private static final String GRAFANA_CLIENT_PREFIX = "grafana";
 
     @Autowired
     private DevopsClusterResourceMapper devopsClusterResourceMapper;
@@ -262,6 +263,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 clientDTO = registerClient(devopsClusterDTO);
             }
             devopsClusterDTO.setClientId(clientDTO.getId());
+            devopsPrometheusVO.setClientName(clientDTO.getName());
             devopsClusterService.baseUpdate(devopsClusterDTO);
         }
         DevopsPrometheusDTO newPrometheusDTO = ConvertUtils.convertObject(devopsPrometheusVO, DevopsPrometheusDTO.class);
@@ -584,7 +586,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private ClientDTO registerClient(DevopsClusterDTO devopsClusterDTO) {
         // 添加客户端
         ClientVO clientVO = new ClientVO();
-        clientVO.setName("grafana");
+        clientVO.setName(GRAFANA_CLIENT_PREFIX + devopsClusterDTO.getId());
         clientVO.setOrganizationId(devopsClusterDTO.getOrganizationId());
         clientVO.setAuthorizedGrantTypes("password,implicit,client_credentials,refresh_token,authorization_code");
         clientVO.setSecret("grafana");

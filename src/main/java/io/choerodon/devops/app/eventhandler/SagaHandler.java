@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.eventhandler;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -120,8 +121,10 @@ public class SagaHandler {
         List<GitlabGroupMemberVO> gitlabGroupMemberVOList = gson.fromJson(payload,
                 new TypeToken<List<GitlabGroupMemberVO>>() {
                 }.getType());
+        LOGGER.info("update user role start");
         loggerInfo(gitlabGroupMemberVOList);
         gitlabGroupMemberService.createGitlabGroupMemberRole(gitlabGroupMemberVOList);
+        LOGGER.info("update user role end");
         return gitlabGroupMemberVOList;
     }
 
@@ -136,8 +139,10 @@ public class SagaHandler {
         List<GitlabGroupMemberVO> gitlabGroupMemberVOList = gson.fromJson(payload,
                 new TypeToken<List<GitlabGroupMemberVO>>() {
                 }.getType());
+        LOGGER.info("delete gitlab role start");
         loggerInfo(gitlabGroupMemberVOList);
         gitlabGroupMemberService.deleteGitlabGroupMemberRole(gitlabGroupMemberVOList);
+        LOGGER.info("delete gitlab role end");
         return gitlabGroupMemberVOList;
     }
 
@@ -151,6 +156,7 @@ public class SagaHandler {
     public List<GitlabUserVO> handleCreateUserEvent(String payload) {
         List<GitlabUserVO> gitlabUserDTO = gson.fromJson(payload, new TypeToken<List<GitlabUserVO>>() {
         }.getType());
+        LOGGER.info("create user start");
         loggerInfo(gitlabUserDTO);
         gitlabUserDTO.forEach(t -> {
             GitlabUserRequestVO gitlabUserReqDTO = new GitlabUserRequestVO();
@@ -167,6 +173,7 @@ public class SagaHandler {
             gitlabUserReqDTO.setProjectsLimit(100);
 
             gitlabUserService.createGitlabUser(gitlabUserReqDTO);
+            LOGGER.info("create user end");
         });
         return gitlabUserDTO;
     }
@@ -303,6 +310,24 @@ public class SagaHandler {
         MarketDelGitlabProPayload marketDelGitlabProPayload = gson.fromJson(payload, MarketDelGitlabProPayload.class);
         loggerInfo(marketDelGitlabProPayload);
         orgAppMarketService.deleteGitlabProject(marketDelGitlabProPayload);
+        return payload;
+    }
+
+    /**
+     * 处理组织层创建用户
+     *
+     * @param payload
+     * @return
+     */
+    @SagaTask(code = SagaTaskCodeConstants.ORG_USER_CREAT,
+            description = "组织层创建用户并分配角色",
+            sagaCode = SagaTaskCodeConstants.ORG_USER_CREAT,
+            maxRetryCount = 5, seq = 1)
+    public String createAndUpdateUser(String payload) {
+        CreateAndUpdateUserEventPayload createAndUpdateUserEventPayload = gson.fromJson(payload, CreateAndUpdateUserEventPayload.class);
+        loggerInfo(createAndUpdateUserEventPayload);
+        handleCreateUserEvent(gson.toJson(Arrays.asList(createAndUpdateUserEventPayload.getUserEventPayload())));
+        handleGitlabGroupMemberEvent(gson.toJson(createAndUpdateUserEventPayload.getUserMemberEventPayloads()));
         return payload;
     }
 }

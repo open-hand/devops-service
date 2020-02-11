@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,8 @@ import io.choerodon.devops.app.service.AppServiceService;
 public class DevopsOrganizationController {
     @Autowired
     AppServiceService applicationServiceService;
+    @Autowired
+    private DevopsCheckLogService devopsCheckLogService;
 
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "批量查询应用服务")
@@ -44,8 +47,15 @@ public class DevopsOrganizationController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationServiceService.listAppServiceByIds(null,ids, doPage, pageable, params))
+                applicationServiceService.listAppServiceByIds(null, ids, doPage, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.service.ids"));
+    }
+
+    @Permission(permissionPublic = true)
+    @GetMapping("/syncOrgRoot")
+    @ApiOperation("手动同步组织root")
+    public void syncOrgRoot() {
+        devopsCheckLogService.checkLog("0.21.0");
     }
 }

@@ -10,8 +10,7 @@ import MouserOverWrapper from '../../../../../../components/MouseOverWrapper/Mou
 import StatusIcon from '../../../../../../components/StatusIcon';
 import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
-import EditNetwork from '../modals/network/network-edit';
-import EditNetwork2 from '../modals/network2';
+import EditNetwork from '../modals/network2';
 import { useMainStore } from '../../../stores';
 import DomainForm from '../../../components/domain-form';
 
@@ -40,8 +39,6 @@ const Networking = observer(() => {
     networkStore,
   } = useApplicationStore();
   const { mainStore: { openDeleteModal } } = useMainStore();
-
-  const [showNetwork, setShowNetwork] = useState(false);
 
   function refresh() {
     treeDs.query();
@@ -305,7 +302,7 @@ const Networking = observer(() => {
       style: { width: 740 },
       okText: formatMessage({ id: 'edit' }),
       drawer: true,
-      children: <EditNetwork2 
+      children: <EditNetwork
         envId={parentId}
         appId={id} 
         networkStore={networkStore}
@@ -313,11 +310,6 @@ const Networking = observer(() => {
         networkId={netDs.current.get('id')}
       />,
     });
-  }
- 
-  function closeNetworkEdit(isLoad) {
-    setShowNetwork(false);
-    isLoad && refresh();
   }
 
   function renderExpandedRow({ record }) {
@@ -396,16 +388,6 @@ const Networking = observer(() => {
           <Column name="type" renderer={renderConfigType} />
         </Table>
       </div>
-      {showNetwork && (
-        <EditNetwork
-          netId={netDs.current.get('id')}
-          envId={parentId}
-          appServiceId={id}
-          visible={showNetwork}
-          store={networkStore}
-          onClose={closeNetworkEdit}
-        />
-      )}
     </div>
   );
 });

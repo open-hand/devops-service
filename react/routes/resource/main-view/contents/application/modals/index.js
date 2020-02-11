@@ -6,7 +6,6 @@ import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
 import Detail from './detail';
 import KeyValueModal from './key-value/KeyValueProIndex';
-import CreateNetwork from './network';
 import CreateNetwork2 from './network2';
 import DomainForm from '../../../components/domain-form';
 
@@ -41,7 +40,6 @@ const AppModals = observer(() => {
     baseInfoDs,
     mappingStore,
     cipherStore,
-    domainStore,
     networkStore,
     netDs,
     mappingDs,
@@ -50,8 +48,6 @@ const AppModals = observer(() => {
     checkAppExist,
   } = useApplicationStore();
   const { id, parentId } = resourceStore.getSelectedMenu;
-
-  const [showNetwork, setShowNetwork] = useState(false);
 
   function refresh() {
     checkAppExist().then((query) => {
@@ -121,11 +117,6 @@ const AppModals = observer(() => {
       />,
       okText: formatMessage({ id: 'create' }),
     });
-  }
-
-  function closeNetwork(isLoad) {
-    setShowNetwork(false);
-    isLoad && setTabKey(NET_TAB);
   }
 
   function saveNetworkIds(ids) {
@@ -224,15 +215,6 @@ const AppModals = observer(() => {
 
   return (<div>
     <HeaderButtons items={getButtons()} />
-    {showNetwork && (
-      <CreateNetwork
-        envId={parentId}
-        appServiceId={id}
-        visible={showNetwork}
-        store={networkStore}
-        onClose={closeNetwork}
-      />
-    )}
   </div>);
 });
 

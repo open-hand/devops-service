@@ -50,6 +50,7 @@ public class ComponentValuesTemplateUtil {
         map.put("{{grafana-pv}}", devopsPrometheusDTO.getGrafanaPv().getName());
         map.put("{{grafanaAccessMode}}", devopsPrometheusDTO.getGrafanaPv().getAccessModes());
         map.put("{{grafanaStorage}}", devopsPrometheusDTO.getGrafanaPv().getRequestResource());
+        map.put("{{grafana-client-id}}", devopsPrometheusDTO.getClientName());
 
         map.put("{{api-host}}", apiHost);
 

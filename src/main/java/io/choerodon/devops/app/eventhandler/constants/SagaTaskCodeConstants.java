@@ -63,6 +63,10 @@ public class SagaTaskCodeConstants {
     public static final String DEVOPS_PIPELINE_CREATE_INSTANCE = "devops-pipeline-create-instance";
 
     /**
+     * 组织层创建用户
+     */
+    public static final String ORG_USER_CREAT = "iam-create-org-user";
+    /**
      * devops创建分支
      */
     public static final String DEVOPS_CREATE_BRANCH = "devopsCreateBranch";

@@ -94,6 +94,22 @@ public class GitlabServiceClientOperator {
         return userDTOResponseEntity.getBody();
     }
 
+    /**
+     * 更新用户密码(用gitlab的admin更新用户的密码)
+     *
+     * @param userId   gitlab用户id
+     * @param password 要被更新的密码
+     */
+    public void updateUserPassword(Integer userId, String password) {
+        GitlabUserWithPasswordDTO user = new GitlabUserWithPasswordDTO();
+        user.setPassword(Objects.requireNonNull(password));
+        try {
+            gitlabServiceClient.updateUserPasswordByUserId(Objects.requireNonNull(userId), user);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+    }
+
     public void enableUser(Integer userId) {
 
         try {
@@ -497,6 +513,12 @@ public class GitlabServiceClientOperator {
             responseEntity =
                     gitlabServiceClient.createBranch(projectId, branchName, baseBranch, userId);
         } catch (FeignException e) {
+            if (e.status() == 403) {
+                throw new CommonException("user gitlab role no permission create branch", e);
+            }
+            if (e.status() == 500) {
+                throw new CommonException("error.branch.insert", e);
+            }
             throw new CommonException("error.branch.create", e);
         }
         return responseEntity.getBody();
@@ -811,6 +833,9 @@ public class GitlabServiceClientOperator {
         try {
             gitlabServiceClient.deleteBranch(projectId, branchName, userId);
         } catch (FeignException e) {
+            if (e.status() == 403) {
+                throw new CommonException("error.user.gitlab.role.no.permission.delete.branch");
+            }
             throw new CommonException(e);
         }
     }
