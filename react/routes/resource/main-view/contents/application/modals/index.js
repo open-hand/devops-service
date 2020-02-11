@@ -5,8 +5,8 @@ import HeaderButtons from '../../../../../../components/header-buttons';
 import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
 import Detail from './detail';
-import KeyValueModal from './key-value';
-import CreateNetwork from './network2';
+import KeyValueModal from './key-value/KeyValueProIndex';
+import CreateNetwork2 from './network2';
 import DomainForm from '../../../components/domain-form';
 
 const modalKey1 = Modal.key();
@@ -136,9 +136,9 @@ const AppModals = observer(() => {
       style: { width: 740 },
       okText: formatMessage({ id: 'create' }),
       drawer: true,
-      children: <CreateNetwork
+      children: <CreateNetwork2
         envId={parentId}
-        appId={id} 
+        appId={id}
         networkStore={networkStore}
         refresh={refresh}
       />,
