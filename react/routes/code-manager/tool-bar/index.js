@@ -152,7 +152,7 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
         className="c7ncd-copyBtn"
         style={{ margin: '-0.15rem 0 0 0.2rem' }}
       >
-        <span>
+        <span className="c7ncd-copyBtn-span">
           {formatMessage({ id: 'repository.copyUrl' })}
           <Icon
             style={{ marginLeft: '.18rem' }}
