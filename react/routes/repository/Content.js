@@ -4,15 +4,11 @@ import { Modal, Button, Spin } from 'choerodon-ui/pro';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
+import { Prompt } from 'react-router-dom';
 import { useRepositoryStore } from './stores';
 import RepositoryForm from './repository-form';
 
 import './index.less';
-
-const modalKey = Modal.key();
-const modalStyle = {
-  width: 380,
-};
 
 const Repository = withRouter(observer((props) => {
   const {
@@ -21,24 +17,21 @@ const Repository = withRouter(observer((props) => {
     intlPrefix,
     prefixCls,
     permissions,
-    homeDs,
     detailDs,
     repositoryStore,
+    promptMsg,
   } = useRepositoryStore();
 
   function refresh() {
-    homeDs.query();
-  }
-
-  useEffect(() => {
     detailDs.query();
-  }, []);
+  }
 
   return (
     <Page
       service={permissions}
     >
       <Breadcrumb />
+      <Prompt message={promptMsg} when={detailDs.current ? detailDs.current.dirty : false} />
       <Content className={`${prefixCls}-home`}>
         {detailDs.current ? <RepositoryForm
           record={detailDs.current}

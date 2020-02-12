@@ -85,7 +85,7 @@ export default ((intlPrefix, formatMessage, url) => {
   }
 
   return ({
-    autoQuery: false,
+    autoQuery: true,
     selection: false,
     paging: false,
     dataKey: null,
