@@ -709,6 +709,8 @@ const repository = {
   'c7ncd.repository.tab.repo': '仓库',
   'c7ncd.repository.tab.info.project': '项目信息',
   'c7ncd.repository.tab.application': '应用配置',
+  'c7ncd.repository.prompt.inform.title': '离开此页',
+  'c7ncd.repository.prompt.inform.message': '此页面修改项尚未保存，确定要离开此页面？',
 };
 
 const pvManager = {
