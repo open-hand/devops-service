@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.choerodon.devops.infra.mapper.*;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -48,6 +47,7 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 
 
@@ -347,7 +347,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String versionValue = appServiceVersionService.baseQueryValue(appServiceDeployVO.getAppServiceVersionId());
         AppServiceDTO applicationDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
 
-        String secretCode = getSecretForTestApp(applicationDTO.getId(), applicationDTO.getProjectId(), appServiceDeployVO.getAppServiceVersionId(), appServiceDeployVO.getEnvironmentId(), CHOERODON);
+        DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
+        devopsEnvironmentDTO.setClusterId(appServiceDeployVO.getEnvironmentId());
+        devopsEnvironmentDTO.setCode(CHOERODON);
+        // 测试应用没有环境id
+        String secretCode = getSecret(applicationDTO, appServiceDeployVO.getAppServiceVersionId(), devopsEnvironmentDTO);
 
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceDeployVO.getAppServiceVersionId());
         FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
@@ -1391,45 +1395,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return devopsEnvCommandValueDTO;
     }
 
-    /**
-     * 获取用于拉取测试应用的镜像拉取Secret(注：此处每次都创建且不存储生成的Secret，更好的修复方式需要修改数据库结构且迁移数据)
-     *
-     * @param appServiceId        应用服务id
-     * @param projectId           项目id
-     * @param appServiceVersionId 版本id
-     * @param clusterId           集群id
-     * @param envCode             环境code
-     * @return secret名称
-     */
-    private String getSecretForTestApp(Long appServiceId, Long projectId, Long appServiceVersionId, Long clusterId, String envCode) {
-        String secretCode = null;
-        //如果应用绑定了私有镜像库,则处理secret
-        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceVersionId);
-        DevopsConfigDTO devopsConfigDTO;
-        if (appServiceVersionDTO.getHarborConfigId() != null) {
-            devopsConfigDTO = devopsConfigService.baseQuery(appServiceVersionDTO.getHarborConfigId());
-        } else {
-            devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, HARBOR, AUTHTYPE);
-        }
-        if (devopsConfigDTO != null) {
-            ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
-            if (devopsConfigDTO.getName() != null && devopsConfigDTO.getName().equals("harbor_default") && projectId != null) {
-                configVO = queryDefaultConfig(projectId, configVO);
-            }
-            if (configVO.getPrivate() != null && configVO.getPrivate()) {
-                List<DevopsRegistrySecretDTO> devopsRegistrySecretDTOS = devopsRegistrySecretService.baseListByConfig(devopsConfigDTO.getId());
-                if (devopsRegistrySecretDTOS.isEmpty()) {
-                    secretCode = String.format("%s%s%s%s", "registry-secret-", devopsConfigDTO.getId(), "-", GenerateUUID.generateUUID().substring(0, 5));
-                } else {
-                    secretCode = devopsRegistrySecretDTOS.get(0).getSecretCode();
-                }
-                // 这里无论创建还是更新都用更新类型，agent那边这个0.20.x实现是用的createOrUpdate的形式
-                agentCommandService.operateSecret(clusterId, envCode, secretCode, configVO, UPDATE);
-            }
-        }
-        return secretCode;
-    }
-
     private String getSecret(AppServiceDTO appServiceDTO, Long appServiceVersionId, DevopsEnvironmentDTO devopsEnvironmentDTO) {
         String secretCode = null;
         //如果应用绑定了私有镜像库,则处理secret
@@ -1446,7 +1411,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 configVO = queryDefaultConfig(appServiceDTO.getProjectId(), configVO);
             }
             if (configVO.getPrivate() != null && configVO.getPrivate()) {
-                DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndId(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId());
+                DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByClusterIdAndNamespace(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsConfigDTO.getId());
                 if (devopsRegistrySecretDTO == null) {
                     //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
                     List<DevopsRegistrySecretDTO> devopsRegistrySecretDTOS = devopsRegistrySecretService.baseListByConfig(devopsConfigDTO.getId());
@@ -1455,7 +1420,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     } else {
                         secretCode = devopsRegistrySecretDTOS.get(0).getSecretCode();
                     }
-                    devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), secretCode, gson.toJson(configVO));
+                    // 测试应用的secret是没有环境id的，此处环境id只是暂存，之后不使用，考虑后续版本删除此字段
+                    devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), secretCode, gson.toJson(configVO));
                     devopsRegistrySecretService.baseCreate(devopsRegistrySecretDTO);
                     agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, configVO, CREATE);
                 } else {
