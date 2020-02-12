@@ -1,17 +1,17 @@
 import React, { Component } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
+import { inject } from 'mobx-react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import { stores } from '@choerodon/boot';
 import { Dropdown, Button, Menu, Icon } from 'choerodon-ui';
 import reportList from '../Home/reportList';
 
-const { AppState } = stores;
 const { Item: MenuItem } = Menu;
 
-function ChartSwitch(props) {
-  const { current, history, location: { search } } = props;
+const ChartSwitch = withRouter(inject('AppState')((props) => {
+  const { current, history, location: { search }, AppState } = props;
   const handleClick = (e) => {
     const nextReport = _.find(reportList, ['key', e.key]);
     if (nextReport) {
@@ -39,11 +39,11 @@ function ChartSwitch(props) {
       </Button>
     </Dropdown>
   );
-}
+}));
 
 ChartSwitch.propTypes = {
   current: PropTypes.string.isRequired,
 };
 
 
-export default withRouter(ChartSwitch);
+export default ChartSwitch;

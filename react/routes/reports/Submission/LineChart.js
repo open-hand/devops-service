@@ -1,7 +1,8 @@
-import React, { PureComponent, Fragment } from 'react';
+import React from 'react';
 import ReactEchartsCore from 'echarts-for-react/lib/core';
 import PropTypes from 'prop-types';
-import { Spin, Avatar, Tooltip } from 'choerodon-ui';
+import { Spin } from 'choerodon-ui';
+import { observer } from 'mobx-react-lite';
 import echarts from 'echarts/lib/echarts';
 import { injectIntl } from 'react-intl';
 import { getNear7Day, dateSplitAndPad, pickEntries } from '../util';
@@ -9,41 +10,28 @@ import 'echarts/lib/chart/line';
 import 'echarts/lib/component/tooltip';
 import 'echarts/lib/component/title';
 import 'echarts/lib/component/legend';
-import 'echarts/lib/component/grid';  
+import 'echarts/lib/component/grid';
 import './Submission.less';
 import UserInfo from '../../../components/userInfo';
 
-class LineChart extends PureComponent {
-  static propTypes = {
-    color: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-    loading: PropTypes.bool.isRequired,
-    hasAvatar: PropTypes.bool.isRequired,
-    languageType: PropTypes.string,
-    tooltip: PropTypes.bool,
-    legend: PropTypes.bool,
-    /* eslint-disable-next-line */
-    grid: PropTypes.array,
-  };
+const LineChart = injectIntl(observer((props) => {
+  const {
+    style,
+    languageType,
+    color,
+    data: { items, count, avatar, id, name: userName },
+    name,
+    loading,
+    hasAvatar,
+    tooltip,
+    intl: { formatMessage },
+    start,
+    end,
+    grid,
+    legend,
+  } = props;
 
-  static defaultProps = {
-    grid: [42, 14, 20, 0],
-    tooltip: true,
-    legend: false,
-    languageType: 'report',
-  };
-
-  getOption = () => {
-    const {
-      languageType,
-      color,
-      data: { items, count },
-      intl: { formatMessage },
-      start,
-      end,
-      grid,
-      legend,
-    } = this.props;
+  const getOption = () => {
     const { keys, values } = pickEntries(dateSplitAndPad(start, end, items));
     const xAxis = keys && keys.length ? keys.reverse() : getNear7Day();
     const yAxis = values && values.length ? values.reverse() : [];
@@ -70,9 +58,9 @@ class LineChart extends PureComponent {
         left: 'right',
         itemWidth: 14,
         itemGap: 20,
-        formatter(name) {
+        formatter(nameCurrent) {
           // 在series中必须有对应的name，否则不显示
-          return `${name}：${count || 0}`;
+          return `${nameCurrent}：${count || 0}`;
         },
         selectedMode: false,
       },
@@ -170,37 +158,44 @@ class LineChart extends PureComponent {
     };
   };
 
-  render() {
-    const {
-      style,
-      data: { avatar, count, id, name: userName },
-      name,
-      loading,
-      hasAvatar,
-      intl: { formatMessage },
-      tooltip,
-      languageType,
-    } = this.props;
-    return (
-      <Spin spinning={loading}>
-        {tooltip ? (
-          <div className="c7n-report-commits-title">
-            <UserInfo name={name || '?'} avatar={avatar} size="large" showTooltip={false} />
-            {count ? (
-              <span className="c7n-report-commits-text">{count} commits</span>
-            ) : null}
-          </div>
-        ) : null}
-        <ReactEchartsCore
-          echarts={echarts}
-          option={this.getOption()}
-          style={style}
-          notMerge
-          lazyUpdate
-        />
-      </Spin>
-    );
-  }
-}
+  return (
+    <Spin spinning={loading}>
+      {tooltip ? (
+        <div className="c7n-report-commits-title">
+          <UserInfo name={name || '?'} avatar={avatar} size="large" showTooltip={false} />
+          {count ? (
+            <span className="c7n-report-commits-text">{count} commits</span>
+          ) : null}
+        </div>
+      ) : null}
+      <ReactEchartsCore
+        echarts={echarts}
+        option={getOption()}
+        style={style}
+        notMerge
+        lazyUpdate
+      />
+    </Spin>
+  );
+}));
 
-export default injectIntl(LineChart);
+LineChart.propTypes = {
+  current: PropTypes.string.isRequired,
+  color: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
+  loading: PropTypes.bool.isRequired,
+  hasAvatar: PropTypes.bool.isRequired,
+  languageType: PropTypes.string,
+  tooltip: PropTypes.bool,
+  legend: PropTypes.bool,
+  /* eslint-disable-next-line */
+  grid: PropTypes.array,
+};
+LineChart.defaultProps = {
+  grid: [42, 14, 20, 0],
+  tooltip: true,
+  legend: false,
+  languageType: 'report',
+};
+
+export default LineChart;
