@@ -99,6 +99,17 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
       </Form>
     </div>
   );
+  
+  function renderAppServiceOption({ value, text }) {
+    const record = appServiceDs.find((appServiceRecord) => appServiceRecord.get('id') === value);
+    if (record) {
+      return (
+        <Tooltip title={record.get('code')}>
+          {text}
+        </Tooltip>
+      );
+    }
+  }
 
   return <div style={{ paddingLeft: 24, display: 'flex', alignItems: 'center' }}>
     <Form columns={2} style={{ maxWidth: '3.5rem' }}>
@@ -112,6 +123,7 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
         name="appServiceId"
         clearButton={false}
         disabled={appServiceDs.status !== 'ready' || appServiceDs.length === 0}
+        optionRenderer={renderAppServiceOption}
       >
         {
           localStorage.getItem('recent-app') && <OptGroup label={formatMessage({ id: 'deploy.app-recent' })} key="app-recent">

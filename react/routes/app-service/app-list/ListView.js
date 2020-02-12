@@ -1,5 +1,5 @@
 import React, { useEffect, useState, Fragment } from 'react';
-import { Table, Modal } from 'choerodon-ui/pro';
+import { Table, Modal, Tooltip } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';
 import { FormattedMessage } from 'react-intl';
 import { withRouter, Link } from 'react-router-dom';
@@ -77,15 +77,18 @@ const ListView = withRouter(observer((props) => {
       },
     } = props;
     const canLink = !record.get('fail') && record.get('synchro');
-    return (canLink ? (
-      <Link
-        to={{
-          pathname: `${pathname}/detail/${record.get('id')}`,
-          search,
-        }}
-      >
-        <span className={`${prefixCls}-table-name`}>{value}</span>
-      </Link>) : <span>{value}</span>
+    return (
+      <Tooltip title={value} placement="top">
+        {canLink ? (
+          <Link
+            to={{
+              pathname: `${pathname}/detail/${record.get('id')}`,
+              search,
+            }}
+          >
+            <span className={`${prefixCls}-table-name`}>{value}</span>
+          </Link>) : <span>{value}</span>}
+      </Tooltip>
     );
   }
 
