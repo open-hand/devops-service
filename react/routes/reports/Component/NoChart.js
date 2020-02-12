@@ -1,6 +1,6 @@
 import React from 'react';
 import { withRouter } from 'react-router-dom';
-import { observer } from 'mobx-react';
+import { observer } from 'mobx-react-lite';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { Button } from 'choerodon-ui';
