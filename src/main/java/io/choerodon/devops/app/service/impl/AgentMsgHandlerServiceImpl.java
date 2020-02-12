@@ -2020,12 +2020,17 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Override
     public void operateDockerRegistrySecretResp(String key, String result, Long clusterId) {
-        Long envId = getEnvId(key, clusterId);
-        if (envId == null) {
-            logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
+        String namespace = KeyParseUtil.getNamespace(key);
+        String resourceName = KeyParseUtil.getResourceName(key);
+        if (clusterId == null || namespace == null || resourceName == null) {
+            logger.info("Bad response for registry secret: clusterId: {}, namespace: {}, resourceName: {}", clusterId, namespace, resourceName);
             return;
         }
-        DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndName(envId, KeyParseUtil.getResourceName(key));
+        DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByClusterAndNamespaceAndName(clusterId, namespace, resourceName);
+        if (devopsRegistrySecretDTO == null) {
+            logger.info("Registry-secret with name {} wasn't found. The clusterId is {}, the namespace is {}", resourceName, clusterId, namespace);
+            return;
+        }
         if (result.equals("failed")) {
             devopsRegistrySecretService.baseUpdateStatus(devopsRegistrySecretDTO.getId(), false);
         } else {

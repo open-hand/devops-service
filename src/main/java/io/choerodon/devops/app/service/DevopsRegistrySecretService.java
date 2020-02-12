@@ -23,10 +23,26 @@ public interface DevopsRegistrySecretService {
 
     void baseUpdateStatus(Long id, Boolean status);
 
-    DevopsRegistrySecretDTO baseQueryByEnvAndId(Long envId, Long configId);
+    /**
+     * 查询集群下的namespace中是否存在对应配置的secret
+     *
+     * @param clusterId 集群id
+     * @param namespace 环境code
+     * @param configId  配置id
+     * @return 查询结果
+     */
+    DevopsRegistrySecretDTO baseQueryByClusterIdAndNamespace(Long clusterId, String namespace, Long configId);
 
     List<DevopsRegistrySecretDTO> baseListByConfig(Long configId);
 
-    DevopsRegistrySecretDTO baseQueryByEnvAndName(Long envId, String name);
+    /**
+     * 查询集群下的namespace中是否存在对应name的secret
+     *
+     * @param clusterId 集群id
+     * @param namespace 环境code
+     * @param name      secret名称
+     * @return 查询结果
+     */
+    DevopsRegistrySecretDTO baseQueryByClusterAndNamespaceAndName(Long clusterId, String namespace, String name);
 
 }
