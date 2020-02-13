@@ -21,6 +21,7 @@ const BuildNumber = observer(() => {
   const {
     ReportsStore,
     ReportsStore: {
+      getProRole,
       changeIsRefresh,
       getStartTime,
       setAllData,
@@ -175,7 +176,7 @@ const BuildNumber = observer(() => {
     </div>
     <BuildChart ReportsStore={ReportsStore} echartsLoading={echartsLoading} height="400px" top="15%" languageType="report" />
     <BuildTable />
-  </React.Fragment> : <NoChart type="app" />);
+  </React.Fragment> : <NoChart getProRole={getProRole} type="app" />);
 
   return (<Page
     className="c7n-region c7n-ciPipeline"

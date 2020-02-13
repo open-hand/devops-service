@@ -71,6 +71,7 @@ const NoChart = observer((props) => {
 
 NoChart.propTypes = {
   type: PropTypes.string.isRequired,
+  getProRole: PropTypes.string.isRequired,
 };
 
 export default withRouter(NoChart);
