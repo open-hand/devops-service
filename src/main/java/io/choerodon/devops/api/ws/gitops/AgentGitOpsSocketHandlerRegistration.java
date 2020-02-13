@@ -75,45 +75,8 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
     @Override
     public boolean beforeHandshake(ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
         ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) serverHttpRequest;
-        HttpServletRequest request = servletRequest.getServletRequest();
 
-        //校验ws连接参数是否正确
-        String key = request.getParameter("key");
-        String clusterId = request.getParameter(CLUSTER_ID);
-        String token = request.getParameter("token");
-        String version = request.getParameter("version");
-        if (key == null || key.trim().isEmpty()) {
-            logger.warn("Agent Handshake : Key is null");
-            return false;
-        }
-        if (!KeyParseUtil.matchPattern(key)) {
-            logger.warn("Agent Handshake : Key not match the pattern");
-            return false;
-        }
-        if (clusterId == null || clusterId.trim().isEmpty()) {
-            logger.warn("Agent Handshake : ClusterId is null");
-            return false;
-        }
-        if (token == null || token.trim().isEmpty()) {
-            logger.warn("Agent Handshake : Token is null");
-            return false;
-        }
-        if (version == null || version.trim().isEmpty()) {
-            logger.warn("Agent Handshake : Version is null");
-            return false;
-        }
-        //检验连接过来的agent和集群是否匹配
-        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(TypeUtil.objToLong(clusterId));
-        if (devopsClusterDTO == null) {
-            LogUtil.loggerWarnObjectNullWithId("Cluster", TypeUtil.objToLong(clusterId), logger);
-            return false;
-        }
-        if (!token.equals(devopsClusterDTO.getToken())) {
-            logger.warn("Cluster with id {} exists but its token doesn't match the token that agent offers as {}", clusterId, token);
-            return false;
-        }
-
-        return true;
+        return clusterConnectionHandler.validConnectionParameter(servletRequest.getServletRequest());
     }
 
     @Override

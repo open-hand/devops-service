@@ -72,6 +72,10 @@ public enum HelmType {
      * 删除pod，由DevOps服务发到agent
      */
     DELETE_POD("delete_pod"),
+    /**
+     * polaris扫描集群或集群的某个namespace
+     */
+    POLARIS_SCAN_CLUSTER("polaris_scan_cluster"),
     POD_METRICS_SYNC("pod_metrics_sync"),
     NODE_SYNC("node_sync");
 

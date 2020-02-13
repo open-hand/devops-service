@@ -434,4 +434,17 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         msg.setPayload("{" + "\"" + CertManagerConstants.RELEASE_NAME + "\"" + ":" + "\"" + CertManagerConstants.CERT_MANAGER_REALASE_NAME + "\"" + "}");
         sendToWebsocket(clusterId, msg);
     }
+
+    @Override
+    public void scanCluster(Long clusterId, List<String> namespaces) {
+        AgentMsgVO msg = new AgentMsgVO();
+        msg.setKey(String.format(CLUSTER_FORMAT, clusterId));
+        try {
+            msg.setPayload(mapper.writeValueAsString(Objects.requireNonNull(namespaces)));
+        } catch (IOException e) {
+            throw new CommonException("Unexpected error occurred when serializing DeletePodVO {}", namespaces);
+        }
+        msg.setType(HelmType.POLARIS_SCAN_CLUSTER.toValue());
+        sendToWebsocket(clusterId, msg);
+    }
 }

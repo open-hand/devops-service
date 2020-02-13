@@ -67,6 +67,17 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
 
     @Override
+    public void saveClusterSummaryInfo(Long clusterId, ClusterSummaryInfoVO clusterSummaryInfoVO) {
+        // TODO
+    }
+
+    @Override
+    public ClusterSummaryInfoVO queryClusterSummaryInfo(Long clusterId) {
+        // TODO
+        return null;
+    }
+
+    @Override
     @Transactional
     public String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
         ProjectDTO iamProject = baseServiceClientOperator.queryIamProjectById(projectId);

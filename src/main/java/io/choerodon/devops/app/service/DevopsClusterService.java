@@ -1,14 +1,30 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import com.github.pagehelper.PageInfo;
+import org.springframework.data.domain.Pageable;
+
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
-import org.springframework.data.domain.Pageable;
-
-import java.util.List;
 
 public interface DevopsClusterService {
+    /**
+     * 将集群一些信息存在redis中
+     *
+     * @param clusterId            集群id
+     * @param clusterSummaryInfoVO 集群的一些信息
+     */
+    void saveClusterSummaryInfo(Long clusterId, ClusterSummaryInfoVO clusterSummaryInfoVO);
+
+    /**
+     * 查询集群的一些总结信息，主要由健康检查界面需要
+     *
+     * @param clusterId 集群id
+     * @return 信息
+     */
+    ClusterSummaryInfoVO queryClusterSummaryInfo(Long clusterId);
 
     /**
      * 创建集群
