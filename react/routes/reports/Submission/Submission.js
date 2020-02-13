@@ -3,7 +3,8 @@ import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Page, Header, Content, Breadcrumb } from '@choerodon/boot';
-import { Select, Button } from 'choerodon-ui';
+import { Select, Button, Form } from 'choerodon-ui/pro';
+// import { Select, Button } from 'choerodon-ui';
 import _ from 'lodash';
 import moment from 'moment';
 import ChartSwitch from '../Component/ChartSwitch';
@@ -32,6 +33,7 @@ const Submission = observer(() => {
     intl: { formatMessage },
     AppState,
     ReportsStore,
+    SubmissionSelectDataSet,
     ReportsStore: {
       getProRole,
       getAllApps,
@@ -60,6 +62,8 @@ const Submission = observer(() => {
   const [dateType, setDateType] = useState('seven');
   const [index, setIndex] = useState(null);
 
+  const record = SubmissionSelectDataSet.current;
+
   useEffect(() => {
     ReportsStore.changeIsRefresh(true);
     loadData();
@@ -73,6 +77,10 @@ const Submission = observer(() => {
       ReportsStore.setEndDate(null);
     };
   }, []);
+
+  useEffect(() => {
+    record.set('apps', appId);
+  }, [appId]);
 
   const handleRefresh = () => loadData();
 
@@ -221,20 +229,21 @@ const Submission = observer(() => {
   const content = getAllApps.length ? (
     <Fragment>
       <div className="c7n-report-control c7n-report-select">
-        <Select
-          className=" c7n-report-control-select"
-          mode="multiple"
-          label={formatMessage({ id: 'chooseApp' })}
-          placeholder={formatMessage({ id: 'report.app.noselect' })}
-          maxTagCount={3}
-          value={appId || []}
-          maxTagPlaceholder={maxTagNode(getAllApps)}
-          onChange={handleSelect}
-          optionFilterProp="children"
-          filter
-        >
-          {options}
-        </Select>
+        <Form dataSet={SubmissionSelectDataSet}>
+          <Select
+            name="apps"
+            className="c7n-report-control-select"
+            placeholder={formatMessage({ id: 'report.app.noselect' })}
+            maxTagCount={3}
+            // value={appId || []}
+            maxTagPlaceholder={maxTagNode(getAllApps)}
+            onChange={handleSelect}
+            // optionFilterProp="children"
+            // filter
+          >
+            {options}
+          </Select>
+        </Form>
         <TimePicker
           unlimit
           startTime={getStartDate}
