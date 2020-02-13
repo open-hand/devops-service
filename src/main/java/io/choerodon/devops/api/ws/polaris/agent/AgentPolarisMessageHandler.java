@@ -21,6 +21,7 @@ public class AgentPolarisMessageHandler implements TextMessageHandler<AgentMsgVO
         message.setClusterId(key.split(":")[1]);
         String namespace = KeyParseUtil.getNamespace(message.getKey());
         // TODO by zmf 存数据库
+        LOGGER.info("Polaris message received: {}", message);
         try {
             webSocketSession.close();
         } catch (IOException e) {
