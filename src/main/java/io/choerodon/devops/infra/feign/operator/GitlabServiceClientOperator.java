@@ -54,8 +54,10 @@ public class GitlabServiceClientOperator {
     public GitLabUserDTO createUser(String password, Integer projectsLimit, GitlabUserReqDTO userReqDTO) {
         ResponseEntity<GitLabUserDTO> userDOResponseEntity;
         try {
-            userDOResponseEntity = gitlabServiceClient.createUser(
-                    password, projectsLimit, userReqDTO);
+            GitlabTransferDTO gitlabTransferDTO = new GitlabTransferDTO();
+            gitlabTransferDTO.setGitlabUserReqDTO(userReqDTO);
+            gitlabTransferDTO.setPassword(password);
+            userDOResponseEntity = gitlabServiceClient.createUser(projectsLimit, gitlabTransferDTO);
         } catch (FeignException e) {
             LOGGER.info("error.gitlab.user.create");
             throw new CommonException(e);
@@ -166,7 +168,10 @@ public class GitlabServiceClientOperator {
 
 
     public void createVariable(Integer gitlabProjectId, String key, String value, Boolean protecteds, Integer userId) {
-        gitlabServiceClient.addProjectVariable(gitlabProjectId, key, value, protecteds, userId);
+        GitlabTransferDTO gitlabTransferDTO = new GitlabTransferDTO();
+        gitlabTransferDTO.setKey(key);
+        gitlabTransferDTO.setValue(value);
+        gitlabServiceClient.addProjectVariable(gitlabProjectId, gitlabTransferDTO, protecteds, userId);
     }
 
     public void batchAddProjectVariable(Integer gitlabProjectId, Integer userId, List<VariableDTO> variableDTODTOS) {
@@ -328,8 +333,12 @@ public class GitlabServiceClientOperator {
     public void createProtectBranch(Integer projectId, String name, String mergeAccessLevel, String pushAccessLevel,
                                     Integer userId) {
         try {
+            GitlabTransferDTO gitlabTransferDTO = new GitlabTransferDTO();
+            gitlabTransferDTO.setBranchName(name);
+            gitlabTransferDTO.setMergeAccessLevel(mergeAccessLevel);
+            gitlabTransferDTO.setPushAccessLevel(pushAccessLevel);
             gitlabServiceClient.createProtectedBranch(
-                    projectId, name, mergeAccessLevel, pushAccessLevel, userId);
+                    projectId, gitlabTransferDTO, userId);
         } catch (FeignException e) {
             throw new CommonException("error.branch.create", e);
         }
@@ -420,7 +429,10 @@ public class GitlabServiceClientOperator {
 
     public void createDeployKey(Integer projectId, String title, String key, boolean canPush, Integer userId) {
         try {
-            gitlabServiceClient.createDeploykey(projectId, title, key, canPush, userId);
+            GitlabTransferDTO gitlabTransferDTO = new GitlabTransferDTO();
+            gitlabTransferDTO.setTitle(title);
+            gitlabTransferDTO.setSshKey(key);
+            gitlabServiceClient.createDeploykey(projectId, gitlabTransferDTO, canPush, userId);
         } catch (FeignException e) {
             throw new CommonException("error.deploykey.create", e);
         }
@@ -462,7 +474,12 @@ public class GitlabServiceClientOperator {
 
     public MergeRequestDTO createMergeRequest(Integer projectId, String sourceBranch, String targetBranch, String title, String description, Integer userId) {
         try {
-            return gitlabServiceClient.createMergeRequest(projectId, sourceBranch, targetBranch, title, description, userId).getBody();
+            GitlabTransferDTO gitlabTransferDTO = new GitlabTransferDTO();
+            gitlabTransferDTO.setSourceBranch(sourceBranch);
+            gitlabTransferDTO.setTargetBranch(targetBranch);
+            gitlabTransferDTO.setTitle(title);
+            gitlabTransferDTO.setDescription(description);
+            return gitlabServiceClient.createMergeRequest(projectId, gitlabTransferDTO, userId).getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
         }
@@ -492,7 +509,10 @@ public class GitlabServiceClientOperator {
             if (releaseNotes == null) {
                 releaseNotes = "";
             }
-            return gitlabServiceClient.updateTag(gitLabProjectId, tag, releaseNotes, userId).getBody();
+            GitlabTransferDTO gitlabTransferDTO = new GitlabTransferDTO();
+            gitlabTransferDTO.setTagName(tag);
+            gitlabTransferDTO.setReleaseNotes(releaseNotes);
+            return gitlabServiceClient.updateTag(gitLabProjectId, gitlabTransferDTO, userId).getBody();
         } catch (FeignException e) {
             throw new CommonException("update gitlab tag failed: " + e.getMessage(), e);
         }
@@ -510,8 +530,11 @@ public class GitlabServiceClientOperator {
     public BranchDTO createBranch(Integer projectId, String branchName, String baseBranch, Integer userId) {
         ResponseEntity<BranchDTO> responseEntity;
         try {
+            GitlabTransferDTO gitlabTransferDTO = new GitlabTransferDTO();
+            gitlabTransferDTO.setBranchName(branchName);
+            gitlabTransferDTO.setSourceBranch(baseBranch);
             responseEntity =
-                    gitlabServiceClient.createBranch(projectId, branchName, baseBranch, userId);
+                    gitlabServiceClient.createBranch(projectId, gitlabTransferDTO, userId);
         } catch (FeignException e) {
             if (e.status() == 403) {
                 throw new CommonException("user gitlab role no permission create branch", e);
@@ -663,7 +686,10 @@ public class GitlabServiceClientOperator {
 
     public CompareResultDTO queryCompareResult(Integer gitlabProjectId, String from, String to) {
         try {
-            return gitlabServiceClient.queryCompareResult(gitlabProjectId, from, to).getBody();
+            GitlabTransferDTO gitlabTransferDTO = new GitlabTransferDTO();
+            gitlabTransferDTO.setFrom(from);
+            gitlabTransferDTO.setTo(to);
+            return gitlabServiceClient.queryCompareResult(gitlabProjectId, gitlabTransferDTO).getBody();
         } catch (FeignException e) {
             throw new CommonException("error.diffs.get", e);
         }
@@ -686,7 +712,10 @@ public class GitlabServiceClientOperator {
 
     public List<CommitDTO> getCommits(Integer gitLabProjectId, String branchName, String date) {
         try {
-            return gitlabServiceClient.getCommits(gitLabProjectId, branchName, date).getBody();
+            GitlabTransferDTO gitlabTransferDTO = new GitlabTransferDTO();
+            gitlabTransferDTO.setBranchName(branchName);
+            gitlabTransferDTO.setSince(date);
+            return gitlabServiceClient.getCommits(gitLabProjectId, gitlabTransferDTO).getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
         }

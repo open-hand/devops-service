@@ -26,6 +26,16 @@ public class GitlabUserReqDTO {
     private Boolean canCreateGroup;
     private Boolean skipConfirmation;
 
+    private String password;
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public String getProvider() {
         return provider;
     }
