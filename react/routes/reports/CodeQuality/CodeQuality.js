@@ -3,8 +3,8 @@ import { observer } from 'mobx-react-lite';
 import { Link, withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Page, Header, Content, Breadcrumb, Choerodon } from '@choerodon/boot';
-import { Select, Spin, Breadcrumb as Bread } from 'choerodon-ui';
-import { Button, Tooltip } from 'choerodon-ui/pro';
+import { Spin, Breadcrumb as Bread } from 'choerodon-ui';
+import { Button, Tooltip, Form, Select } from 'choerodon-ui/pro';
 import ReactEcharts from 'echarts-for-react';
 import map from 'lodash/map';
 import moment from 'moment';
@@ -13,10 +13,10 @@ import TimePicker from '../Component/TimePicker';
 import NoChart from '../Component/NoChart';
 import LoadingBar from '../../../components/loading';
 import { useReportsStore } from '../stores';
+import { useCodeQualityStore } from './stores';
 
-import './CodeQuality.less';
+import './index.less';
 
-const { Option } = Select;
 const { Item } = Bread;
 const OBJECT_TYPE = {
   issue: [
@@ -37,74 +37,49 @@ const OBJECT_TYPE = {
 const CodeQuality = withRouter(observer(() => {
   const {
     ReportsStore,
+    ReportsStore: {
+      isRefresh,
+    },
+  } = useReportsStore();
+  const {
     AppState: { currentMenuType: { projectId, name } },
     intl: { formatMessage },
     history,
-    location: { state, search },
-  } = useReportsStore();
-  const { appId, type } = state || {};
-  const backPath = state && state.appId ? '/devops/code-management' : '/charts';
-  const {
-    isRefresh,
-  } = ReportsStore;
+    location: { search },
+    detailDs,
+    appServiceDs,
+    chartsDs,
+    backPath,
+  } = useCodeQualityStore();
+
+  const record = detailDs.current;
 
   const [dateType, setDateType] = useState('seven');
-  const [objectType, setObjectType] = useState('issue');
 
   useEffect(() => {
-    loadDatas();
+    ReportsStore.changeIsRefresh(true);
 
     return () => {
-      ReportsStore.setCodeQuality({});
-      ReportsStore.setStartTime(moment().subtract(6, 'days'));
+      ReportsStore.setStartTime(moment()
+        .subtract(6, 'days'));
       ReportsStore.setEndTime(moment());
-      ReportsStore.setAppId(null);
       ReportsStore.setStartDate();
       ReportsStore.setEndDate();
-      ReportsStore.setAllApps([]);
     };
   }, []);
-
-  async function loadDatas() {
-    ReportsStore.changeIsRefresh(true);
-    try {
-      ReportsStore.changeIsRefresh(false);
-      const data = await ReportsStore.loadAllApps(projectId);
-      if (data && data.length) {
-        const selectApp = appId || data[0].id;
-        ReportsStore.setAppId(selectApp);
-        loadCharts();
-      }
-    } catch (e) {
-      Choerodon.handleResponseError(e);
-    }
-    type && setObjectType(type);
-  }
 
   function loadCharts() {
     const { getStartTime, getEndTime, getAppId } = ReportsStore;
     const startTime = getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = getEndTime.format().split('T')[0].replace(/-/g, '/');
-    ReportsStore.loadCodeQuality(projectId, getAppId, objectType, startTime, endTime);
+    chartsDs.setQueryParameter('startTime', startTime);
+    chartsDs.setQueryParameter('endTime', endTime);
+    chartsDs.query();
   }
 
   function handleRefresh() {
-    ReportsStore.loadAllApps(projectId);
-    loadCharts();
-  }
-
-  function handleAppSelect(value) {
-    ReportsStore.setAppId(value);
-    loadCharts();
-  }
-
-  /**
-   * 选择对象类型
-   * @param value
-   */
-  function handleTypeSelect(value) {
-    setObjectType(value);
-    loadCharts();
+    appServiceDs.query();
+    chartsDs.query();
   }
 
   /**
@@ -119,7 +94,8 @@ const CodeQuality = withRouter(observer(() => {
    * 图表函数
    */
   function getOption() {
-    const { getCodeQuality } = ReportsStore;
+    const getCodeQuality = chartsDs.toData();
+    const objectType = record.get('objectType');
     const series = [];
     const legend = [];
     const dates = getCodeQuality.dates || [];
@@ -264,49 +240,30 @@ const CodeQuality = withRouter(observer(() => {
     };
   }
 
+  function renderAppServiceOption({ record: appServiceRecord, text }) {
+    return (
+      <Tooltip title={appServiceRecord.get('code')}>
+        {text}
+      </Tooltip>
+    );
+  }
+
   function getContent() {
     const {
-      getAllApps,
       getStartDate,
       getEndDate,
-      getAppId,
-      echartsLoading,
     } = ReportsStore;
-    return (getAllApps && getAllApps.length ? <Fragment>
+    return (appServiceDs.length ? <Fragment>
       <div className="c7n-codeQuality-select">
-        <Select
-          label={formatMessage({ id: 'chooseApp' })}
-          className="c7n-select_250"
-          defaultValue={getAppId}
-          value={getAppId}
-          optionFilterProp="children"
-          filterOption={(input, option) => option.props.children.props.children.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-          filter
-          onChange={handleAppSelect}
-        >
-          {
-            map(getAllApps, ({ id, code, name: appName }) => (
-              <Option value={id} key={id}>
-                <Tooltip title={code}>
-                  <span>{appName}</span>
-                </Tooltip>
-              </Option>))
-          }
-        </Select>
-        <Select
-          label={formatMessage({ id: 'report.code-quality.type' })}
-          className="c7n-select_250 c7n-type-select"
-          defaultValue={objectType}
-          value={objectType}
-          onChange={handleTypeSelect}
-        >
-          {
-            map(['issue', 'coverage', 'duplicate'], (item) => (
-              <Option value={item} key={item}>
-                <FormattedMessage id={`report.code-quality.type.${item}`} />
-              </Option>))
-          }
-        </Select>
+        <Form dataSet={detailDs} columns={2} style={{ width: '5.7rem' }}>
+          <Select
+            name="appServiceId"
+            searchable
+            optionRenderer={renderAppServiceOption}
+            className="c7ncd-codeQuality-select-item"
+          />
+          <Select name="objectType" className="c7ncd-codeQuality-select-item" />
+        </Form>
         <TimePicker
           startTime={getStartDate}
           endTime={getEndDate}
@@ -316,7 +273,7 @@ const CodeQuality = withRouter(observer(() => {
           store={ReportsStore}
         />
       </div>
-      <Spin spinning={echartsLoading}>
+      <Spin spinning={chartsDs.status === 'loading'}>
         <ReactEcharts
           className="c7n-codeQuality-charts"
           option={getOption()}
@@ -325,6 +282,10 @@ const CodeQuality = withRouter(observer(() => {
         />
       </Spin>
     </Fragment> : <NoChart type="app" />);
+  }
+
+  if (!record) {
+    return <LoadingBar display />;
   }
 
   return (<Page
