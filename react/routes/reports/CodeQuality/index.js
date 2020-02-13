@@ -1,3 +1,9 @@
-import CodeQuality from './CodeQuality';
+import React from 'react';
+import { StoreProvider } from './stores';
+import Content from './CodeQuality';
 
-export default CodeQuality;
+export default (props) => (
+  <StoreProvider {...props}>
+    <Content />
+  </StoreProvider>
+);
