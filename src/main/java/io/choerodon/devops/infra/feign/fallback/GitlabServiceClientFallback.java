@@ -77,7 +77,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity createDeploykey(Integer projectId, String title, String key, boolean canPush, Integer userId) {
+    public ResponseEntity createDeploykey(Integer projectId, GitlabTransferDTO gitlabTransferDTO, boolean canPush, Integer userId) {
         throw new CommonException("error.deploykey.create");
     }
 
@@ -87,7 +87,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<Map<String, Object>> addProjectVariable(Integer projectId, String key, String value, Boolean protecteds, Integer userId) {
+    public ResponseEntity<Map<String, Object>> addProjectVariable(Integer projectId, GitlabTransferDTO gitlabTransferDTO, Boolean protecteds, Integer userId) {
         throw new CommonException("error.variable.get");
     }
 
@@ -174,7 +174,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<CommitDTO>> getCommits(Integer projectId, String branchName, String since) {
+    public ResponseEntity<List<CommitDTO>> getCommits(Integer projectId, GitlabTransferDTO gitlabTransferDTO) {
         throw new CommonException("error.commits.get");
     }
 
@@ -206,8 +206,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
 
     @Override
-    public ResponseEntity<MergeRequestDTO> createMergeRequest(Integer projectId, String sourceBranch, String
-            targetBranch, String title, String description, Integer userId) {
+    public ResponseEntity<MergeRequestDTO> createMergeRequest(Integer projectId, GitlabTransferDTO gitlabTransferDTO, Integer userId) {
         throw new CommonException("error.mergeRequest.create");
     }
 
@@ -249,7 +248,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<BranchDTO> createBranch(Integer projectId, String name, String source, Integer userId) {
+    public ResponseEntity<BranchDTO> createBranch(Integer projectId, GitlabTransferDTO gitlabTransferDTO, Integer userId) {
         throw new CommonException("error.branch.create");
     }
 
@@ -275,7 +274,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<GitLabUserDTO> createUser(String password, Integer projectsLimit, GitlabUserReqDTO userReqDTO) {
+    public ResponseEntity<GitLabUserDTO> createUser(Integer projectsLimit, GitlabTransferDTO gitlabTransferDTO) {
         throw new CommonException("error.gitlab.user.create");
     }
 
@@ -305,12 +304,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<CompareResultDTO> queryCompareResult(Integer projectId, String from, String to) {
+    public ResponseEntity<CompareResultDTO> queryCompareResult(Integer projectId, GitlabTransferDTO gitlabTransferDTO) {
         throw new CommonException("error.compare.query");
     }
 
     @Override
-    public ResponseEntity<Map<String, Object>> createProtectedBranch(Integer projectId, String name, String mergeAccessLevel, String pushAccessLevel, Integer userId) {
+    public ResponseEntity<Map<String, Object>> createProtectedBranch(Integer projectId, GitlabTransferDTO gitlabTransferDTO, Integer userId) {
         throw new CommonException("error.compare.query");
     }
 
@@ -330,7 +329,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<TagDTO> updateTag(Integer projectId, String name, String releaseNotes, Integer userId) {
+    public ResponseEntity<TagDTO> updateTag(Integer projectId, GitlabTransferDTO gitlabTransferDTO, Integer userId) {
         throw new CommonException("error.tag.update");
     }
 
