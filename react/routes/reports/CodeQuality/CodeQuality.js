@@ -50,6 +50,7 @@ const CodeQuality = withRouter(observer(() => {
     appServiceDs,
     chartsDs,
     backPath,
+    permissions,
   } = useCodeQualityStore();
 
   const record = detailDs.current;
@@ -94,7 +95,10 @@ const CodeQuality = withRouter(observer(() => {
    * 图表函数
    */
   function getOption() {
-    const getCodeQuality = chartsDs.toData();
+    if (!chartsDs.current) {
+      return;
+    }
+    const getCodeQuality = chartsDs.current.toData();
     const objectType = record.get('objectType');
     const series = [];
     const legend = [];
@@ -290,10 +294,7 @@ const CodeQuality = withRouter(observer(() => {
 
   return (<Page
     className="c7n-region c7n-report-codeQuality-wrapper"
-    service={[
-      'devops-service.app-service.listByActive',
-      'devops-service.app-service.getSonarQubeTable',
-    ]}
+    service={permissions}
   >
     <Header
       title={formatMessage({ id: 'report.code-quality.head' })}
