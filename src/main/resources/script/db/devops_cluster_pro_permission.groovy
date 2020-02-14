@@ -46,5 +46,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_pro_permission.groovy') {
                                GROUP BY remain.cluster_id, remain.project_id
                                HAVING COUNT(1) > 1) tmp2);
         """)
+
+        addUniqueConstraint(tableName: 'devops_cluster_pro_rel',
+                constraintName: 'devops_cluster_pro_cluster_id_project_id_uk', columnNames: 'cluster_id, project_id')
     }
 }

@@ -308,10 +308,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             devopsPvProPermissionMapper.batchDeleteByPvIdsAndProjectId(pvIds, relatedProjectId);
         }
 
-        DevopsClusterProPermissionDTO permission = new DevopsClusterProPermissionDTO();
-        permission.setClusterId(clusterId);
-        permission.setProjectId(relatedProjectId);
-        devopsClusterProPermissionService.baseDeletePermission(permission);
+        devopsClusterProPermissionService.baseDeletePermissionByClusterIdAndProjectId(clusterId, relatedProjectId);
     }
 
     @Override
