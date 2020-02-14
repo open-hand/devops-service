@@ -1,11 +1,11 @@
-import React, { Component } from 'react';
-import { observer } from 'mobx-react';
-import { observable, action, configure } from 'mobx';
+import React, { Component, useState, useEffect } from 'react';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Page, Header, Content, stores, Breadcrumb, Choerodon } from '@choerodon/boot';
-import { Select, Button, Table, Spin } from 'choerodon-ui';
+import { Page, Header, Content, Breadcrumb } from '@choerodon/boot';
+import { Select, Button, Table, Spin, Form } from 'choerodon-ui/pro';
 import ReactEcharts from 'echarts-for-react';
-import _ from 'lodash';
+import { observer } from 'mobx-react-lite';
+import map from 'lodash/map';
+import filter from 'lodash/filter';
 import moment from 'moment';
 import StatusTags from '../../../components/status-tag';
 import LoadingBar from '../../../components/loading';
@@ -14,13 +14,12 @@ import ChartSwitch from '../Component/ChartSwitch';
 import TimePicker from '../Component/TimePicker';
 import NoChart from '../Component/NoChart';
 import MaxTagPopover from '../Component/MaxTagPopover';
+import { useDeployDurationStore } from './stores';
+import { useReportsStore } from '../stores';
+
 import './DeployDuration.less';
 
-
-configure({ enforceActions: 'never' });
-
-const { AppState } = stores;
-const { Option } = Select;
+const { Column } = Table;
 
 const COLOR = ['50,198,222', '116,59,231', '87,170,248', '255,177,0', '237,74,103'];
 const LENGEND = [
@@ -31,179 +30,102 @@ const LENGEND = [
   'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDI2IDI2Ij4KICA8Y2lyY2xlIGN4PSI0OTkiIGN5PSI1NyIgcj0iMTIiIGZpbGw9IiNFRDRBNjciIGZpbGwtb3BhY2l0eT0iLjYiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlPSIjRUQ0QTY3IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgtNDg2IC00NCkiLz4KPC9zdmc+Cg==',
 ];
 
-@observer
-class DeployDuration extends Component {
-  @observable env = [];
+const DeployDuration = observer(() => {
+  const {
+    ReportsStore,
+    ReportsStore: {
+      isRefresh,
+      getProRole,
+    },
+  } = useReportsStore();
+  const {
+    intl: { formatMessage },
+    detailDs,
+    appServiceDs,
+    chartsDs,
+    permissions,
+    envDs,
+    tableDs,
+    history,
+    location: { search },
+  } = useDeployDurationStore();
+  const [dateArr, setDateArr] = useState([]);
+  const [appArr, setAppArr] = useState([]);
+  const [seriesArr, setSeriesArr] = useState([]);
+  const [dateType, setDateType] = useState('seven');
 
-  @observable app = [];
-
-  @observable envId = null;
-
-  @observable appIds = [];
-
-  @observable appArr = [];
-
-  @observable dateArr = [];
-
-  @observable seriesArr = [];
-
-  @observable startTime = '';
-
-  @observable endTime = '';
-
-  @observable dateType = 'seven';
-
-  handleRefresh = () => {
-    this.loadEnvCards();
-  };
-
-  /**
-   * 选择环境
-   * @param id 环境ID
-   */
-  @action
-  handleEnvSelect = (id) => {
-    this.envId = id;
-    this.appIds = [];
-    this.loadAppByEnv(id);
-    this.loadCharts();
-  };
-
-  /**
-   * 选择应用
-   * @param ids 应用ID
-   */
-  @action
-  handleAppSelect = (ids) => {
-    const { intl: { formatMessage } } = this.props;
-    if (ids.length < 6) {
-      this.appIds = ids;
-      this.loadCharts();
-    } else {
-      this.appIds = ids.splice(0, 5);
-      this.loadCharts();
-      Choerodon.prompt(formatMessage({ id: 'report.deploy-duration.apps' }));
-    }
-  };
-
-  componentDidMount() {
-    const { ReportsStore } = this.props;
+  useEffect(() => {
     ReportsStore.changeIsRefresh(true);
-    this.loadEnvCards();
+
+    return () => {
+      ReportsStore.setStartTime(moment().subtract(6, 'days'));
+      ReportsStore.setEndTime(moment());
+      ReportsStore.setStartDate();
+      ReportsStore.setEndDate();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!chartsDs.current) {
+      return;
+    }
+    const res = chartsDs.current.toData();
+    if (res) {
+      const { creationDates, deployAppVOS } = res;
+      setDateArr(creationDates);
+      const newSeriesArr = [];
+      const newAppArr = [];
+      map(deployAppVOS, (v, index) => {
+        const series = {
+          name: v.appServiceName,
+          symbolSize: 24,
+          itemStyle: {
+            color: `rgba(${COLOR[index]}, 0.6)`,
+            borderColor: `rgb(${COLOR[index]})`,
+          },
+          data: map(v.deployDetailVOS, (c) => Object.values(c)),
+          type: 'scatter',
+        };
+        const obj = {};
+        obj.name = v.appServiceName;
+        obj.icon = `image://${LENGEND[index]}`;
+        newSeriesArr.push(series);
+        newAppArr.push(obj);
+      });
+      setSeriesArr(newSeriesArr);
+      setAppArr(newAppArr);
+    }
+  }, [chartsDs.current]);
+
+  function handleRefresh() {
+    envDs.query();
+    appServiceDs.query();
+    chartsDs.query();
+    tableDs.query();
   }
 
-  componentWillUnmount() {
-    const { ReportsStore } = this.props;
-    ReportsStore.setAllData([]);
-    ReportsStore.setStartTime(moment().subtract(6, 'days'));
-    ReportsStore.setEndTime(moment());
-    ReportsStore.setPageInfo({ pageNum: 1, total: 0, pageSize: 10 });
-    ReportsStore.setStartDate();
-    ReportsStore.setEndDate();
+  /**
+   * 加载数据
+   */
+  function loadData() {
+    const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
+    const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
+    chartsDs.setQueryParameter('startTime', startTime);
+    chartsDs.setQueryParameter('endTime', endTime);
+    tableDs.setQueryParameter('startTime', startTime);
+    tableDs.setQueryParameter('endTime', endTime);
+    chartsDs.query();
+    tableDs.query();
   }
-
-  /**
-   * 获取可用环境
-   */
-  @action
-  loadEnvCards = () => {
-    const { ReportsStore } = this.props;
-    const projectId = AppState.currentMenuType.id;
-    ReportsStore.loadActiveEnv(projectId)
-      .then((data) => {
-        const env = data && data.length ? _.filter(data, ['permission', true]) : [];
-        if (env.length) {
-          this.env = env;
-          this.envId = this.envId || env[0].id;
-          this.loadAppByEnv(this.envId);
-        } else {
-          ReportsStore.setEchartsLoading(false);
-          ReportsStore.judgeRole();
-        }
-        ReportsStore.changeIsRefresh(false);
-      });
-  };
-
-  /**
-   * 加载table数据
-   */
-  loadTables = () => {
-    const { ReportsStore } = this.props;
-    const projectId = AppState.currentMenuType.id;
-    const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
-    const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
-    const { pageInfo } = ReportsStore;
-    ReportsStore.loadDeployDurationTable(projectId, this.envId, startTime, endTime, this.appIds.slice(), pageInfo.current, pageInfo.pageSize);
-  };
-
-  /**
-   * 加载图表数据
-   */
-  @action
-  loadCharts = () => {
-    const { ReportsStore } = this.props;
-    const projectId = AppState.currentMenuType.id;
-    const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
-    const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
-    ReportsStore.loadDeployDurationChart(projectId, this.envId, startTime, endTime, this.appIds.slice())
-      .then((res) => {
-        if (res) {
-          this.dateArr = res.creationDates;
-          const seriesArr = [];
-          const appArr = [];
-          _.map(res.deployAppVOS, (v, index) => {
-            const series = {
-              name: v.appServiceName,
-              symbolSize: 24,
-              itemStyle: {
-                color: `rgba(${COLOR[index]}, 0.6)`,
-                borderColor: `rgb(${COLOR[index]})`,
-              },
-              data: _.map(v.deployDetailVOS, (c) => Object.values(c)),
-              type: 'scatter',
-            };
-            const obj = {};
-            obj.name = v.appServiceName;
-            obj.icon = `image://${LENGEND[index]}`;
-            seriesArr.push(series);
-            appArr.push(obj);
-          });
-          this.seriesArr = seriesArr;
-          this.appArr = appArr;
-        }
-      });
-    this.loadTables();
-  };
-
-  /**
-   * 环境ID筛选应用
-   * @param envId
-   */
-  @action
-  loadAppByEnv = (envId) => {
-    const projectId = AppState.currentMenuType.id;
-    const { ReportsStore } = this.props;
-    ReportsStore.loadAppDataByEnv(projectId, envId)
-      .then((app) => {
-        this.app = app;
-        if (app.length) {
-          this.appIds = this.appIds.length ? this.appIds : [app[0].id];
-        } else {
-          this.appIds = [];
-        }
-        this.loadCharts();
-      });
-  };
 
   /**
    * 图表函数
    * @returns {*}
    */
-  getOption() {
-    const { intl: { formatMessage } } = this.props;
+  function getOption() {
     return {
       legend: {
-        data: this.appArr,
+        data: appArr,
         borderColor: '#000',
         borderWidth: '5px',
         itemWidth: 12,
@@ -303,135 +225,77 @@ class DeployDuration extends Component {
         },
         boundaryGap: false,
         name: formatMessage({ id: 'minTime' }),
-        min: this.seriesArr.length ? null : 0,
-        max: this.seriesArr.length ? null : 4,
+        min: seriesArr.length ? null : 0,
+        max: seriesArr.length ? null : 4,
         scale: true,
       },
-      series: this.seriesArr,
+      series: seriesArr,
     };
   }
 
-  /**
-   * 表格函数
-   * @returns {*}
-   */
-  renderTable() {
-    const { intl: { formatMessage }, ReportsStore } = this.props;
-    const data = ReportsStore.getAllData;
-    const { loading, pageInfo } = ReportsStore;
-
-    const column = [
-      {
-        title: formatMessage({ id: 'app.active' }),
-        key: 'status',
-        render: (record) => (<StatusTags name={formatMessage({ id: record.status })} colorCode={record.status} error={record.error} />),
-      }, {
-        title: formatMessage({ id: 'report.deploy-duration.time' }),
-        key: 'creationDate',
-        dataIndex: 'creationDate',
-      }, {
-        title: formatMessage({ id: 'deploy.instance' }),
-        key: 'appServiceInstanceCode',
-        dataIndex: 'appServiceInstanceCode',
-        render: (text) => (<MouserOverWrapper text={text} width={0.2}>{text}</MouserOverWrapper>),
-      }, {
-        title: formatMessage({ id: 'deploy.appName' }),
-        key: 'appServiceName',
-        dataIndex: 'appServiceName',
-        render: (text) => (<MouserOverWrapper text={text} width={0.2}>{text}</MouserOverWrapper>),
-      }, {
-        title: formatMessage({ id: 'deploy.ver' }),
-        key: 'appServiceVersion',
-        dataIndex: 'appServiceVersion',
-        render: (text) => (<MouserOverWrapper text={text} width={0.2}>{text}</MouserOverWrapper>),
-      }, {
-        title: formatMessage({ id: 'report.deploy-duration.user' }),
-        key: 'lastUpdatedName',
-        dataIndex: 'lastUpdatedName',
-      },
-    ];
-
+  function renderTableStatus({ value, record }) {
+    const error = record.get('status');
     return (
-      <Table
-        rowKey={(record) => record.creationDate}
-        dataSource={data}
-        filterBar={false}
-        columns={column}
-        loading={loading}
-        pagination={pageInfo}
-        onChange={this.tableChange}
+      <StatusTags
+        name={formatMessage({ id: value })}
+        colorCode={value || ''}
+        error={error}
       />
     );
   }
 
-  tableChange = (pagination) => {
-    const { ReportsStore } = this.props;
-    const projectId = AppState.currentMenuType.id;
-    const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
-    const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
-    ReportsStore.loadDeployDurationTable(projectId, this.envId, startTime, endTime, this.appIds.slice(), pagination.current, pagination.pageSize);
-  };
+  function renderText({ value }) {
+    return (
+      <MouserOverWrapper
+        text={value}
+        width={0.2}
+      >
+        {value}
+      </MouserOverWrapper>
+    );
+  }
 
-  @action
-  handleDateChoose = (type) => { this.dateType = type; };
+  function handleDateChoose(type) {
+    setDateType(type);
+  }
 
-  maxTagNode = (data, value) => <MaxTagPopover dataSource={data} value={value} />;
+  function maxTagNode(value) {
+    return <MaxTagPopover dataSource={appServiceDs.toData()} value={value} />;
+  }
 
-  render() {
-    const { intl: { formatMessage }, history, location: { search }, ReportsStore } = this.props;
-    const { id, name, type, organizationId } = AppState.currentMenuType;
-    const echartsLoading = ReportsStore.getEchartsLoading;
-    const envData = ReportsStore.getEnvCard;
-    const envs = _.filter(envData, ['permission', true]);
-    const isRefresh = ReportsStore.getIsRefresh;
-
-    const envDom = this.env.length ? _.map(this.env, (d) => (<Option key={d.id} value={d.id}>{d.name}</Option>)) : null;
-
-    const appDom = this.app.length ? _.map(this.app, (d) => (<Option key={d.id} value={d.id}>{d.name}</Option>)) : null;
-
-    const content = (envs && envs.length ? <React.Fragment>
+  function getContent() {
+    const envData = envDs.toData();
+    const envs = filter(envData, ['permission', true]);
+    return (envs && envs.length ? <React.Fragment>
       <div className="c7n-report-screen c7n-report-select">
-        <Select
-          notFoundContent={formatMessage({ id: 'envoverview.noEnv' })}
-          value={this.envId}
-          label={formatMessage({ id: 'deploy.envName' })}
-          className="c7n-select_200"
-          onChange={this.handleEnvSelect}
-          optionFilterProp="children"
-          filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-          filter
-        >
-          {envDom}
-        </Select>
-        <Select
-          showCheckAll={false}
-          notFoundContent={formatMessage({ id: 'report.no.app.tips' })}
-          value={this.appIds.length ? this.appIds.slice() : []}
-          label={formatMessage({ id: 'deploy.appName' })}
-          className={`c7n-select_400 margin-more ${this.appIds.length ? 'c7n-select-multi-top' : ''}`}
-          mode="multiple"
-          maxTagCount={3}
-          onChange={this.handleAppSelect}
-          maxTagPlaceholder={this.maxTagNode.bind(this, this.app)}
-          optionFilterProp="children"
-          filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-          filter
-        >
-          {appDom}
-        </Select>
+        <Form dataSet={detailDs} columns={3} style={{ paddingRight: '.2rem' }}>
+          <Select
+            name="envId"
+            searchable
+            colSpan={1}
+          />
+          <Select
+            name="appServiceIds"
+            searchable
+            maxTagCount={3}
+            maxTagPlaceholder={maxTagNode}
+            showCheckAll={false}
+            colSpan={2}
+          />
+        </Form>
         <TimePicker
           startTime={ReportsStore.getStartDate}
           endTime={ReportsStore.getEndDate}
-          func={this.loadCharts}
-          type={this.dateType}
-          onChange={this.handleDateChoose}
+          func={loadData}
+          type={dateType}
+          onChange={handleDateChoose}
           store={ReportsStore}
         />
       </div>
       <div className="c7n-report-content">
-        <Spin spinning={echartsLoading}>
+        <Spin spinning={chartsDs.status === 'loading'}>
           <ReactEcharts
-            option={this.getOption()}
+            option={getOption()}
             notMerge
             lazyUpdate
             style={{ height: '350px', width: '100%' }}
@@ -439,40 +303,46 @@ class DeployDuration extends Component {
         </Spin>
       </div>
       <div className="c7n-report-table">
-        {this.renderTable()}
+        <Table dataSet={tableDs} queryBar="none">
+          <Column name="status" renderer={renderTableStatus} />
+          <Column name="creationDate" />
+          <Column name="appServiceInstanceCode" renderer={renderText} />
+          <Column name="appServiceName" renderer={renderText} />
+          <Column name="appServiceVersion" renderer={renderText} />
+          <Column name="lastUpdatedName" />
+        </Table>
       </div>
-    </React.Fragment> : <NoChart type="env" />);
-
-    return (<Page
-      className="c7n-region"
-      service={[
-        'devops-service.app-service.listByActive',
-        'devops-service.app-service-instance.listDeployTime',
-        'devops-service.app-service-instance.pageDeployTimeDetail',
-        'devops-service.devops-environment.listByProjectIdAndActive',
-      ]}
-    >
-      <Header
-        title={formatMessage({ id: 'report.deploy-duration.head' })}
-        backPath={`/charts${search}`}
-      >
-        <ChartSwitch
-          history={history}
-          current="deploy-duration"
-        />
-        <Button
-          icon="refresh"
-          onClick={this.handleRefresh}
-        >
-          <FormattedMessage id="refresh" />
-        </Button>
-      </Header>
-      <Breadcrumb title={formatMessage({ id: 'report.deploy-duration.head' })} />
-      <Content>
-        {isRefresh ? <LoadingBar display={isRefresh} /> : content}
-      </Content>
-    </Page>);
+    </React.Fragment> : <NoChart type="env" getProRole={getProRole} />);
   }
-}
 
-export default injectIntl(DeployDuration);
+  if (!detailDs.current) {
+    return <LoadingBar display />;
+  }
+
+  return (<Page
+    className="c7n-region"
+    service={permissions}
+  >
+    <Header
+      title={formatMessage({ id: 'report.deploy-duration.head' })}
+      backPath={`/charts${search}`}
+    >
+      <ChartSwitch
+        history={history}
+        current="deploy-duration"
+      />
+      <Button
+        icon="refresh"
+        onClick={handleRefresh}
+      >
+        <FormattedMessage id="refresh" />
+      </Button>
+    </Header>
+    <Breadcrumb title={formatMessage({ id: 'report.deploy-duration.head' })} />
+    <Content>
+      {isRefresh ? <LoadingBar display={isRefresh} /> : getContent()}
+    </Content>
+  </Page>);
+});
+
+export default DeployDuration;
