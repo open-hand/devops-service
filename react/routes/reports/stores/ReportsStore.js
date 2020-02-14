@@ -556,7 +556,7 @@ export default function useStore(AppState) {
     },
 
     loadActiveEnv(projectId) {
-      axios.get(`devops/v1/projects/${projectId}/envs/list_by_active?active=true`)
+      return axios.get(`devops/v1/projects/${projectId}/envs/list_by_active?active=true`)
         .then((data) => {
           if (data && data.failed) {
             Choerodon.prompt(data.message);

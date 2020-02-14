@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
-import { observer } from 'mobx-react';
-import { observable, action, configure } from 'mobx';
+import React, { useState, useEffect } from 'react';
+import { observer } from 'mobx-react-lite';
+// import { observable, action, configure } from 'mobx';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Page, Header, Content, stores, Breadcrumb } from '@choerodon/boot';
 import { Select, Button, Table, Spin } from 'choerodon-ui';
@@ -15,85 +15,78 @@ import TimePicker from '../Component/TimePicker';
 import NoChart from '../Component/NoChart';
 import '../DeployDuration/DeployDuration.less';
 import { getAxis } from '../util';
+import { useReportsStore } from '../stores';
 
 import MaxTagPopover from '../Component/MaxTagPopover';
 
 
-configure({ enforceActions: 'never' });
+// configure({ enforceActions: 'never' });
 
-const { AppState } = stores;
+// const { AppState } = stores;
 const { Option } = Select;
 
-@observer
-class DeployTimes extends Component {
-  @observable env = [];
+const DeployTimes = observer(() => {
+  const {
+    AppState,
+    ReportsStore,
+    history,
+    intl: { formatMessage },
+    history: { location: { state, search } },
+  } = useReportsStore();
 
-  @observable app = [];
+  const [env, setEnv] = useState([]);
+  const [app, setApp] = useState([]);
+  const [envIds, setEnvIds] = useState([]);
+  const [appId, setAppId] = useState('all');
+  const [appArr, setAppArr] = useState([]);
+  const [dateArr, setDateArr] = useState([]);
+  const [successArr, setSuccessArr] = useState([]);
+  const [failArr, setFailArr] = useState([]);
+  const [allArr, setAllArr] = useState([]);
+  const [dateType, setDateType] = useState('seven');
 
-  @observable envIds = [];
-
-  @observable appId = 'all';
-
-  @observable appArr = [];
-
-  @observable dateArr = [];
-
-  @observable successArr = [];
-
-  @observable failArr = [];
-
-  @observable allArr = [];
-
-  @observable dateType = 'seven';
-
-  handleRefresh = () => {
-    this.loadEnvCards();
-    this.loadApps();
+  const handleRefresh = () => {
+    loadEnvCards();
+    loadApps();
   };
 
   /**
    * 选择环境
    * @param ids 环境ID
    */
-  @action
-  handleEnvSelect = (ids) => {
-    this.envIds = ids;
-    this.loadCharts();
+  const handleEnvSelect = (ids) => {
+    setEnvIds(ids);
+    loadCharts();
   };
 
   /**
    * 选择应用
    * @param id 应用ID
    */
-  @action
-  handleAppSelect = (id) => {
-    this.appId = id;
-    this.loadCharts();
+  const handleAppSelect = (id) => {
+    setAppId(id);
+    loadCharts();
   };
 
-  componentDidMount() {
-    const { ReportsStore } = this.props;
+  useEffect(() => {
     ReportsStore.changeIsRefresh(true);
-    this.loadEnvCards();
-    this.loadApps();
-  }
+    loadEnvCards();
+    loadApps();
 
-  componentWillUnmount() {
-    const { ReportsStore } = this.props;
-    ReportsStore.setAllData([]);
-    ReportsStore.setStartTime(moment().subtract(6, 'days'));
-    ReportsStore.setEndTime(moment());
-    ReportsStore.setStartDate();
-    ReportsStore.setEndDate();
-    ReportsStore.setPageInfo({ pageNum: 1, total: 0, pageSize: 10 });
-  }
+    return () => {
+      ReportsStore.setAllData([]);
+      ReportsStore.setStartTime(moment().subtract(6, 'days'));
+      ReportsStore.setEndTime(moment());
+      ReportsStore.setStartDate();
+      ReportsStore.setEndDate();
+      ReportsStore.setPageInfo({ pageNum: 1, total: 0, pageSize: 10 });
+    };
+  }, []);
 
   /**
    * 获取可用环境
    */
-  @action
-  loadEnvCards = () => {
-    const { history: { location: { state } }, ReportsStore } = this.props;
+  const loadEnvCards = () => {
     const projectId = AppState.currentMenuType.id;
     let historyEnvsId = null;
     if (state && state.envIds) {
@@ -101,15 +94,15 @@ class DeployTimes extends Component {
     }
     ReportsStore.loadActiveEnv(projectId)
       .then((data) => {
-        const env = data && data.length ? _.filter(data, ['permission', true]) : [];
-        if (env.length) {
-          let selectEnv = this.envIds.length ? this.envIds : [env[0].id];
+        const envCurrent = data && data.length ? _.filter(data, ['permission', true]) : [];
+        if (envCurrent.length) {
+          let selectEnv = envIds.length ? envIds : [envCurrent[0].id];
           if (historyEnvsId) {
             selectEnv = historyEnvsId;
           }
-          this.env = env;
-          this.envIds = selectEnv;
-          this.loadCharts();
+          setEnv(envCurrent);
+          setEnvIds(selectEnv);
+          loadCharts();
         } else {
           ReportsStore.judgeRole();
         }
@@ -119,26 +112,21 @@ class DeployTimes extends Component {
   /**
    * 加载应用
    */
-  @action
-  loadApps = () => {
-    const {
-      ReportsStore,
-      history: { location: { state } },
-    } = this.props;
+  const loadApps = () => {
     const { id } = AppState.currentMenuType;
     let historyAppId = null;
     if (state && state.appId) {
       historyAppId = state.appId;
     }
     ReportsStore.loadApps(id)
-      .then((app) => {
-        if (app.length) {
-          let selectApp = this.appId || 'all';
+      .then((appCurrent) => {
+        if (appCurrent.length) {
+          let selectApp = appId || 'all';
           if (historyAppId) {
             selectApp = historyAppId;
           }
-          this.app = app;
-          this.appId = selectApp;
+          setApp(appCurrent);
+          setAppId(selectApp);
         }
       });
   };
@@ -146,55 +134,50 @@ class DeployTimes extends Component {
   /**
    * 加载图表数据
    */
-  @action
-  loadCharts = () => {
-    const { ReportsStore } = this.props;
+  const loadCharts = () => {
     const projectId = AppState.currentMenuType.id;
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
-    const appID = (this.appId === 'all') ? [] : this.appId;
-    ReportsStore.loadDeployTimesChart(projectId, appID, startTime, endTime, this.envIds.slice())
+    const appIDCurrent = (appId === 'all') ? [] : appId;
+    ReportsStore.loadDeployTimesChart(projectId, appIDCurrent, startTime, endTime, envIds.slice())
       .then((res) => {
         if (res) {
-          this.dateArr = res.creationDates;
-          this.successArr = res.deploySuccessFrequency;
-          this.failArr = res.deployFailFrequency;
-          this.allArr = res.deployFrequencys;
+          setDateArr(res.creationDates);
+          setSuccessArr(res.deploySuccessFrequency);
+          setFailArr(res.deployFailFrequency);
+          setAllArr(res.deployFrequencys);
         }
       });
-    this.loadTables();
+    loadTables();
   };
 
   /**
    * 加载table数据
    */
-  @action
-  loadTables = () => {
-    const { ReportsStore } = this.props;
+  const loadTables = () => {
     const projectId = AppState.currentMenuType.id;
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
-    const appID = (this.appId === 'all') ? [] : this.appId;
+    const appIDCurrent = (appId === 'all') ? [] : appId;
     const { pageInfo } = ReportsStore;
-    ReportsStore.loadDeployTimesTable(projectId, appID, startTime, endTime, this.envIds.slice(), pageInfo.current, pageInfo.pageSize);
+    ReportsStore.loadDeployTimesTable(projectId, appIDCurrent, startTime, endTime, envIds.slice(), pageInfo.current, pageInfo.pageSize);
   };
 
   /**
    * 渲染图表
    * @returns {*}
    */
-  getOption() {
-    const { intl: { formatMessage }, ReportsStore } = this.props;
+  function getOption() {
     const val = [{ name: `${formatMessage({ id: 'report.build-number.fail' })}` }, { name: `${formatMessage({ id: 'report.build-number.success' })}` }, { name: `${formatMessage({ id: 'report.build-number.total' })}` }];
-    val[0].value = _.reduce(this.failArr, (sum, n) => sum + n, 0);
-    val[1].value = _.reduce(this.successArr, (sum, n) => sum + n, 0);
-    val[2].value = _.reduce(this.allArr, (sum, n) => sum + n, 0);
+    val[0].value = _.reduce(failArr, (sum, n) => sum + n, 0);
+    val[1].value = _.reduce(successArr, (sum, n) => sum + n, 0);
+    val[2].value = _.reduce(allArr, (sum, n) => sum + n, 0);
     const startTime = ReportsStore.getStartTime;
     const endTime = ReportsStore.getEndTime;
-    const successArr = this.successArr ? this.successArr.slice() : [];
-    const failArr = this.failArr ? this.failArr.slice() : [];
-    const allArr = this.allArr ? this.allArr.slice() : [];
-    const { xAxis, yAxis } = getAxis(startTime, endTime, this.dateArr ? this.dateArr.slice() : [], { successArr, failArr, allArr });
+    const successArrCurrent = successArr ? successArr.slice() : [];
+    const failArrCurrent = failArr ? failArr.slice() : [];
+    const allArrCurrent = allArr ? allArr.slice() : [];
+    const { xAxis, yAxis } = getAxis(startTime, endTime, dateArr ? dateArr.slice() : [], { successArrCurrent, failArrCurrent, allArrCurrent });
     return {
       tooltip: {
         trigger: 'axis',
@@ -274,8 +257,8 @@ class DeployTimes extends Component {
       },
       yAxis: {
         name: `${formatMessage({ id: 'report.build-number.yAxis' })}`,
-        min: yAxis.allArr.length ? null : 0,
-        max: yAxis.allArr.length ? null : 4,
+        min: yAxis.allArrCurrent.length ? null : 0,
+        max: yAxis.allArrCurrent.length ? null : 4,
         type: 'value',
         nameTextStyle: {
           fontSize: 13,
@@ -317,7 +300,7 @@ class DeployTimes extends Component {
           },
           barWidth: '40%',
           stack: 'total',
-          data: yAxis.successArr,
+          data: yAxis.successArrCurrent,
         },
         {
           name: `${formatMessage({ id: 'report.build-number.fail' })}`,
@@ -331,7 +314,7 @@ class DeployTimes extends Component {
           },
           barWidth: '40%',
           stack: 'total',
-          data: yAxis.failArr,
+          data: yAxis.failArrCurrent,
         },
         {
           name: `${formatMessage({ id: 'report.build-number.total' })}`,
@@ -347,8 +330,7 @@ class DeployTimes extends Component {
    * 表格函数
    * @returns {*}
    */
-  renderTable() {
-    const { intl: { formatMessage }, ReportsStore } = this.props;
+  function renderTable() {
     const data = ReportsStore.getAllData;
     const { loading, pageInfo } = ReportsStore;
 
@@ -391,122 +373,119 @@ class DeployTimes extends Component {
         columns={column}
         loading={loading}
         pagination={pageInfo}
-        onChange={this.tableChange}
+        onChange={tableChange}
       />
     );
   }
 
-  tableChange = (pagination) => {
-    const { ReportsStore } = this.props;
+  const tableChange = (pagination) => {
     const projectId = AppState.currentMenuType.id;
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
-    const appID = (this.appId === 'all') ? [] : this.appId;
-    ReportsStore.loadDeployTimesTable(projectId, appID, startTime, endTime, this.envIds.slice(), pagination.current, pagination.pageSize);
+    const appIDCurrent = (appId === 'all') ? [] : appId;
+    ReportsStore.loadDeployTimesTable(projectId, appIDCurrent, startTime, endTime, envIds.slice(), pagination.current, pagination.pageSize);
   };
 
-  @action
-  handleDateChoose = (type) => { this.dateType = type; };
+  const handleDateChoose = (type) => { setDateType(type); };
 
-  maxTagNode = (data, value) => <MaxTagPopover dataSource={data} value={value} />;
+  const maxTagNode = (data, value) => <MaxTagPopover dataSource={data} value={value} />;
 
-  render() {
-    const { intl: { formatMessage }, history, location: { search }, ReportsStore } = this.props;
-    const echartsLoading = ReportsStore.getEchartsLoading;
-    const envData = ReportsStore.getEnvCard;
-    const envs = _.filter(envData, ['permission', true]);
-    const isRefresh = ReportsStore.getIsRefresh;
-    const backPath = search.includes('deploy-overview')
-      ? '/devops/deploy-overview'
-      : '/charts';
+  const echartsLoading = ReportsStore.getEchartsLoading;
+  const envData = ReportsStore.getEnvCard;
+  const envs = _.filter(envData, ['permission', true]);
+  const isRefresh = ReportsStore.getIsRefresh;
+  const backPath = search.includes('deploy-overview')
+    ? '/devops/deploy-overview'
+    : '/charts';
 
-    const envDom = this.env.length ? _.map(this.env, (d) => (<Option key={d.id} value={d.id}>{d.name}</Option>)) : null;
+  const envDom = env.length ? _.map(env, (d) => (<Option key={d.id} value={d.id}>{d.name}</Option>)) : null;
 
-    const appDom = this.app.length ? _.map(this.app, (d) => (<Option key={d.id} value={d.id}>{d.name}</Option>)) : null;
+  const appDom = app.length ? _.map(app, (d) => (<Option key={d.id} value={d.id}>{d.name}</Option>)) : null;
 
-    const content = (envs && envs.length ? <React.Fragment>
-      <div className="c7n-report-screen c7n-report-select">
-        <Select
-          notFoundContent={formatMessage({ id: 'envoverview.noEnv' })}
-          value={this.envIds.length && this.envIds.slice()}
-          label={formatMessage({ id: 'deploy.envName' })}
-          className={`c7n-select_400 ${this.envIds.length ? 'c7n-select-multi-top' : ''}`}
-          mode="multiple"
-          maxTagCount={3}
-          onChange={this.handleEnvSelect}
-          maxTagPlaceholder={this.maxTagNode.bind(this, this.env)}
-          optionFilterProp="children"
-          filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-          filter
-        >
-          {envDom}
-        </Select>
-        <Select
-          notFoundContent={formatMessage({ id: 'report.no.app.tips' })}
-          value={appDom ? this.appId : null}
-          className="c7n-select_200 margin-more"
-          label={formatMessage({ id: 'deploy.appName' })}
-          onChange={this.handleAppSelect}
-          optionFilterProp="children"
-          filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-          filter
-        >
-          {appDom}
-          {appDom ? <Option key="all" value="all">{formatMessage({ id: 'report.all-app' })}</Option> : null}
-        </Select>
-        <TimePicker
-          startTime={ReportsStore.getStartDate}
-          endTime={ReportsStore.getEndDate}
-          type={this.dateType}
-          onChange={this.handleDateChoose}
-          func={this.loadCharts}
-          store={ReportsStore}
-        />
-      </div>
-      <div className="c7n-report-content">
-        <Spin spinning={echartsLoading}>
-          <ReactEcharts
-            option={this.getOption()}
-            notMerge
-            lazyUpdate
-            style={{ height: '350px', width: '100%' }}
-          />
-        </Spin>
-      </div>
-      <div className="c7n-report-table">
-        {this.renderTable()}
-      </div>
-    </React.Fragment> : <NoChart type="env" />);
-
-    return (<Page
-      className="c7n-region"
-      service={[
-        'devops-service.app-service.listByActive',
-        'devops-service.app-service-instance.listDeployFrequency',
-        'devops-service.app-service-instance.pageDeployFrequencyDetail',
-      ]}
-    >
-      <Header
-        title={formatMessage({ id: 'report.deploy-times.head' })}
-        backPath={`${backPath}${search}`}
+  const content = (envs && envs.length ? <React.Fragment>
+    <div className="c7n-report-screen c7n-report-select">
+      <Select
+        notFoundContent={formatMessage({ id: 'envoverview.noEnv' })}
+        value={envIds.length && envIds.slice()}
+        label={formatMessage({ id: 'deploy.envName' })}
+        className={`c7n-select_400 ${envIds.length ? 'c7n-select-multi-top' : ''}`}
+        mode="multiple"
+        maxTagCount={3}
+        onChange={handleEnvSelect}
+        maxTagPlaceholder={maxTagNode(env)}
+        optionFilterProp="children"
+        filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+        filter
       >
-        <ChartSwitch
-          history={history}
-          current="deploy-times"
+        {envDom}
+      </Select>
+      <Select
+        notFoundContent={formatMessage({ id: 'report.no.app.tips' })}
+        value={appDom ? appId : null}
+        className="c7n-select_200 margin-more"
+        label={formatMessage({ id: 'deploy.appName' })}
+        onChange={handleAppSelect}
+        optionFilterProp="children"
+        filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+        filter
+      >
+        {appDom}
+        {appDom ? <Option key="all" value="all">{formatMessage({ id: 'report.all-app' })}</Option> : null}
+      </Select>
+      <TimePicker
+        startTime={ReportsStore.getStartDate}
+        endTime={ReportsStore.getEndDate}
+        type={dateType}
+        onChange={handleDateChoose}
+        func={loadCharts}
+        store={ReportsStore}
+      />
+    </div>
+    <div className="c7n-report-content">
+      <Spin spinning={echartsLoading}>
+        <ReactEcharts
+          option={getOption()}
+          notMerge
+          lazyUpdate
+          style={{ height: '350px', width: '100%' }}
         />
-        <Button
-          icon="refresh"
-          onClick={this.handleRefresh}
-        >
-          <FormattedMessage id="refresh" />
-        </Button>
-      </Header>
-      <Breadcrumb title={formatMessage({ id: 'report.deploy-times.head' })} />
-      <Content>
-        {isRefresh ? <LoadingBar display={isRefresh} /> : content}
-      </Content>
-    </Page>);
-  }
-}
+      </Spin>
+    </div>
+    <div className="c7n-report-table">
+      {renderTable()}
+    </div>
+  </React.Fragment> : <NoChart getProRole={ReportsStore.getProRole} type="env" />);
 
-export default injectIntl(DeployTimes);
+  return (<Page
+    className="c7n-region"
+    service={[
+      'devops-service.app-service.listByActive',
+      'devops-service.app-service-instance.listDeployFrequency',
+      'devops-service.app-service-instance.pageDeployFrequencyDetail',
+    ]}
+  >
+    <Header
+      title={formatMessage({ id: 'report.deploy-times.head' })}
+      backPath={`${backPath}${search}`}
+    >
+      <ChartSwitch
+        history={history}
+        current="deploy-times"
+      />
+      <Button
+        icon="refresh"
+        onClick={handleRefresh}
+      >
+        <FormattedMessage id="refresh" />
+      </Button>
+    </Header>
+    <Breadcrumb title={formatMessage({ id: 'report.deploy-times.head' })} />
+    <Content>
+      {isRefresh ? <LoadingBar display={isRefresh} /> : content}
+    </Content>
+  </Page>);
+});
+
+DeployTimes.name = 'DeployTimes';
+
+export default DeployTimes;

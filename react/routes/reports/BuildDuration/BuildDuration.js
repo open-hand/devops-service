@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Page, Header, Content, Breadcrumb } from '@choerodon/boot';
-import { Select, Button, Tooltip, Spin } from 'choerodon-ui';
+import { Form, Select } from 'choerodon-ui/pro';
+import { Button, Tooltip, Spin } from 'choerodon-ui';
 import ReactEcharts from 'echarts-for-react';
 import _ from 'lodash';
 import moment from 'moment';
@@ -13,6 +14,7 @@ import NoChart from '../Component/NoChart';
 import BuildTable from '../BuildNumber/BuildTable/BuildTable';
 import './BuildDuration.less';
 import { useReportsStore } from '../stores';
+import { useBuildDurationStore } from './stores';
 
 
 const { Option } = Select;
@@ -26,6 +28,12 @@ const BuildDuration = observer(() => {
     intl: { formatMessage },
     location: { search },
   } = useReportsStore();
+
+  const {
+    BuildDurationSelectDataSet,
+  } = useBuildDurationStore();
+
+  const record = BuildDurationSelectDataSet.current;
 
   const [dateType, setDateType] = useState('seven');
 
@@ -45,6 +53,10 @@ const BuildDuration = observer(() => {
       ReportsStore.setAllApps([]);
     };
   }, []);
+
+  useEffect(() => {
+    record.set('buildDurationApps', ReportsStore.getAppId);
+  }, [ReportsStore.getAppId]);
 
   /**
    * 加载数据
@@ -242,27 +254,33 @@ const BuildDuration = observer(() => {
 
   const content = (getAllApps && getAllApps.length ? <React.Fragment>
     <div className="c7n-buildDuration-select">
-      <Select
-        label={formatMessage({ id: 'chooseApp' })}
+      <Form
+        dataSet={BuildDurationSelectDataSet}
         className="c7n-app-select_247"
-        defaultValue={appId}
-        value={appId}
-        optionFilterProp="children"
-        filterOption={(input, option) => option.props.children.props.children.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-        filter
-        onChange={handleAppSelect}
+
       >
-        {
-          _.map(getAllApps, (app, index) => (
-            <Option value={app.id} key={index}>
-              <Tooltip title={app.code}>
-                <span className="c7n-app-select-tooltip">
-                  {app.name}
-                </span>
-              </Tooltip>
-            </Option>))
-        }
-      </Select>
+        <Select
+          name="buildDurationApps"
+          // defaultValue={appId}
+          // value={appId}
+          optionFilterProp="children"
+          filterOption={(input, option) => option.props.children.props.children.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+          filter
+          onChange={handleAppSelect}
+        >
+          {
+            _.map(getAllApps, (app, index) => (
+              <Option value={app.id} key={index}>
+                {app.name}
+                {/* <Tooltip title={app.code}> */}
+                {/* <span className="c7n-app-select-tooltip"> */}
+                {/*  */}
+                {/* </span> */}
+                {/* </Tooltip> */}
+              </Option>))
+          }
+        </Select>
+      </Form>
       <TimePicker
         startTime={ReportsStore.getStartDate}
         endTime={ReportsStore.getEndDate}

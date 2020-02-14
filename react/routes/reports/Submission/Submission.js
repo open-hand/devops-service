@@ -121,18 +121,24 @@ const Submission = observer(() => {
    * @param e
    */
   const handleSelect = (e) => {
-    const { id: projectId } = AppState.currentMenuType;
-    const startTime = getStartTime
-      .format()
-      .split('T')[0]
-      .replace(/-/g, '/');
-    const endTime = getEndTime
-      .format()
-      .split('T')[0]
-      .replace(/-/g, '/');
-    setAppId(e);
-    loadCommits(projectId, startTime, endTime, e);
-    loadCommitsRecord(projectId, startTime, endTime, e, 1);
+    if (e.length === 0) {
+      ReportsStore.setAllApps([]);
+      ReportsStore.setCommits({});
+      ReportsStore.setCommitsRecord([]);
+    } else {
+      const { id: projectId } = AppState.currentMenuType;
+      const startTime = getStartTime
+        .format()
+        .split('T')[0]
+        .replace(/-/g, '/');
+      const endTime = getEndTime
+        .format()
+        .split('T')[0]
+        .replace(/-/g, '/');
+      setAppId(e);
+      loadCommits(projectId, startTime, endTime, e);
+      loadCommitsRecord(projectId, startTime, endTime, e, 1);
+    }
   };
 
   const handlePageChange = (pageCurrent) => {
@@ -233,14 +239,16 @@ const Submission = observer(() => {
   const content = getAllApps.length ? (
     <Fragment>
       <div className="c7n-report-control c7n-report-select">
-        <Form dataSet={SubmissionSelectDataSet}>
+        <Form
+          dataSet={SubmissionSelectDataSet}
+          className="c7n-report-control-select"
+        >
           <Select
             name="apps"
-            className="c7n-report-control-select"
             placeholder={formatMessage({ id: 'report.app.noselect' })}
             maxTagCount={3}
             // value={appId || []}
-            maxTagPlaceholder={maxTagNode(getAllApps)}
+            maxTagPlaceholder={(omittedValues) => maxTagNode(getAllApps, omittedValues)}
             onChange={handleSelect}
             // optionFilterProp="children"
             // filter

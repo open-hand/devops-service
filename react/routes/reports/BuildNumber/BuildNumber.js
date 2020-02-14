@@ -143,10 +143,12 @@ const BuildNumber = observer(() => {
 
   const content = (getAllApps.length ? <React.Fragment>
     <div className="c7n-buildNumber-select">
-      <Form dataSet={BuildNumberSelectDataSet}>
+      <Form
+        dataSet={BuildNumberSelectDataSet}
+        className="c7n-app-select_247"
+      >
         <Select
           name="buildNumberApps"
-          className="c7n-app-select_247"
           // defaultValue={appId}
           // value={appId}
           optionFilterProp="children"
