@@ -17,6 +17,7 @@ import './Submission.less';
 import '../../main.less';
 import LoadingBar from '../../../components/loading';
 import { useReportsStore } from '../stores';
+import { useSubmissionStore } from './stores';
 
 
 /**
@@ -33,7 +34,6 @@ const Submission = observer(() => {
     intl: { formatMessage },
     AppState,
     ReportsStore,
-    SubmissionSelectDataSet,
     ReportsStore: {
       getProRole,
       getAllApps,
@@ -56,6 +56,10 @@ const Submission = observer(() => {
       location: { state, search },
     },
   } = useReportsStore();
+
+  const {
+    SubmissionSelectDataSet,
+  } = useSubmissionStore();
 
   const [appId, setAppId] = useState(null);
   const [page, setPage] = useState(1);

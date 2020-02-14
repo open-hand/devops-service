@@ -13,6 +13,7 @@ import BuildTable from './BuildTable/BuildTable';
 import LoadingBar from '../../../components/loading';
 import BuildChart from './BuildChart';
 import { useReportsStore } from '../stores';
+import { useBuildNumberStore } from './stores';
 
 const { Option } = Select;
 const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
@@ -50,8 +51,11 @@ const BuildNumber = observer(() => {
     AppState,
     history,
     history: { location: { state, search } },
-    BuildNumberSelectDataSet,
   } = useReportsStore();
+
+  const {
+    BuildNumberSelectDataSet,
+  } = useBuildNumberStore();
 
   const record = BuildNumberSelectDataSet.current;
 
