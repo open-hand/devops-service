@@ -35,6 +35,7 @@ const DeployDuration = observer(() => {
     ReportsStore,
     ReportsStore: {
       isRefresh,
+      getProRole,
     },
   } = useReportsStore();
   const {
@@ -302,7 +303,7 @@ const DeployDuration = observer(() => {
         </Spin>
       </div>
       <div className="c7n-report-table">
-        <Table dataSet={tableDs}>
+        <Table dataSet={tableDs} queryBar="none">
           <Column name="status" renderer={renderTableStatus} />
           <Column name="creationDate" />
           <Column name="appServiceInstanceCode" renderer={renderText} />
@@ -311,7 +312,7 @@ const DeployDuration = observer(() => {
           <Column name="lastUpdatedName" />
         </Table>
       </div>
-    </React.Fragment> : <NoChart type="env" />);
+    </React.Fragment> : <NoChart type="env" getProRole={getProRole} />);
   }
 
   if (!detailDs.current) {
