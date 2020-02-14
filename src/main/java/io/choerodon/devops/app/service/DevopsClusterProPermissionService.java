@@ -41,7 +41,13 @@ public interface DevopsClusterProPermissionService {
 
     List<DevopsClusterProPermissionDTO> baseListByClusterId(Long clusterId);
 
-    void baseDeletePermission(DevopsClusterProPermissionDTO devopsClusterProPermissionDTO);
+    /**
+     * 删除纪录
+     *
+     * @param clusterId  集群id
+     * @param projectId 项目id
+     */
+    void baseDeletePermissionByClusterIdAndProjectId(Long clusterId, Long projectId);
 
     void baseDeleteByClusterId(Long clusterId);
 }
