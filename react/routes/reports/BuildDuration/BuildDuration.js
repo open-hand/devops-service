@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
-import { observer } from 'mobx-react';
+import React, { useState, useEffect } from 'react';
+import { observer } from 'mobx-react-lite';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Page, Header, Content, stores, Breadcrumb } from '@choerodon/boot';
+import { Page, Header, Content, Breadcrumb } from '@choerodon/boot';
 import { Select, Button, Tooltip, Spin } from 'choerodon-ui';
 import ReactEcharts from 'echarts-for-react';
 import _ from 'lodash';
@@ -12,50 +12,49 @@ import TimePicker from '../Component/TimePicker';
 import NoChart from '../Component/NoChart';
 import BuildTable from '../BuildNumber/BuildTable/BuildTable';
 import './BuildDuration.less';
+import { useReportsStore } from '../stores';
 
 
-const { AppState } = stores;
 const { Option } = Select;
 const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 
-@observer
-class BuildDuration extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      dateType: 'seven',
-    };
-  }
+const BuildDuration = observer(() => {
+  const {
+    AppState,
+    ReportsStore,
+    history,
+    intl: { formatMessage },
+    location: { search },
+  } = useReportsStore();
 
-  componentDidMount() {
-    const { ReportsStore } = this.props;
+  const [dateType, setDateType] = useState('seven');
+
+  useEffect(() => {
     ReportsStore.changeIsRefresh(true);
-    this.loadDatas();
-  }
+    loadDatas();
 
-  componentWillUnmount() {
-    const { ReportsStore } = this.props;
-    ReportsStore.setAllData([]);
-    ReportsStore.setBuildDuration({});
-    ReportsStore.setStartTime(moment().subtract(6, 'days'));
-    ReportsStore.setEndTime(moment());
-    ReportsStore.setAppId(null);
-    ReportsStore.setPageInfo({ pageNum: 1, total: 0, pageSize: 10 });
-    ReportsStore.setStartDate();
-    ReportsStore.setEndDate();
-    ReportsStore.setAllApps([]);
-  }
+    return () => {
+      ReportsStore.setAllData([]);
+      ReportsStore.setBuildDuration({});
+      ReportsStore.setStartTime(moment().subtract(6, 'days'));
+      ReportsStore.setEndTime(moment());
+      ReportsStore.setAppId(null);
+      ReportsStore.setPageInfo({ pageNum: 1, total: 0, pageSize: 10 });
+      ReportsStore.setStartDate();
+      ReportsStore.setEndDate();
+      ReportsStore.setAllApps([]);
+    };
+  }, []);
 
   /**
    * 加载数据
    */
-  loadDatas = () => {
-    const { ReportsStore } = this.props;
+  const loadDatas = () => {
     const { id } = AppState.currentMenuType;
     ReportsStore.loadAllApps(id).then((data) => {
       if (data && data.length) {
         ReportsStore.setAppId(data[0].id);
-        this.loadCharts();
+        loadCharts();
       }
     });
   };
@@ -63,29 +62,26 @@ class BuildDuration extends Component {
   /**
    * 刷新
    */
-  handleRefresh = () => {
-    const { ReportsStore } = this.props;
+  const handleRefresh = () => {
     const { id } = AppState.currentMenuType;
     const { pageInfo } = ReportsStore;
     ReportsStore.loadAllApps(id);
-    this.loadCharts(pageInfo);
+    loadCharts(pageInfo);
   };
 
   /**
    * 选择应用
    * @param value
    */
-  handleAppSelect = (value) => {
-    const { ReportsStore } = this.props;
+  const handleAppSelect = (value) => {
     ReportsStore.setAppId(value);
-    this.loadCharts();
+    loadCharts();
   };
 
   /**
    * 图表函数
    */
-  getOption() {
-    const { intl: { formatMessage }, ReportsStore } = this.props;
+  function getOption() {
     const { pipelineTime, refs, versions, createDates } = ReportsStore.getBuildDuration;
     const averageDuration = [];
     averageDuration.length = pipelineTime && pipelineTime.length ? pipelineTime.length : 0;
@@ -224,8 +220,7 @@ class BuildDuration extends Component {
     };
   }
 
-  loadCharts = (pageInfo) => {
-    const { ReportsStore } = this.props;
+  const loadCharts = (pageInfo) => {
     const projectId = AppState.currentMenuType.id;
     const appId = ReportsStore.getAppId;
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
@@ -238,85 +233,81 @@ class BuildDuration extends Component {
     }
   };
 
-  handleDateChoose = (type) => {
-    this.setState({ dateType: type });
+  const handleDateChoose = (type) => {
+    setDateType(type);
   };
 
-  render() {
-    const { intl: { formatMessage }, history, ReportsStore, location: { search } } = this.props;
-    const { dateType } = this.state;
-    const { id, name, type, organizationId } = AppState.currentMenuType;
-    const { getAllApps, appId, echartsLoading, isRefresh } = ReportsStore;
+  const { id, name, type, organizationId } = AppState.currentMenuType;
+  const { getAllApps, appId, echartsLoading, isRefresh } = ReportsStore;
 
-    const content = (getAllApps && getAllApps.length ? <React.Fragment>
-      <div className="c7n-buildDuration-select">
-        <Select
-          label={formatMessage({ id: 'chooseApp' })}
-          className="c7n-app-select_247"
-          defaultValue={appId}
-          value={appId}
-          optionFilterProp="children"
-          filterOption={(input, option) => option.props.children.props.children.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-          filter
-          onChange={this.handleAppSelect}
-        >
-          {
-            _.map(getAllApps, (app, index) => (
-              <Option value={app.id} key={index}>
-                <Tooltip title={app.code}>
-                  <span className="c7n-app-select-tooltip">
-                    {app.name}
-                  </span>
-                </Tooltip>
-              </Option>))
-          }
-        </Select>
-        <TimePicker
-          startTime={ReportsStore.getStartDate}
-          endTime={ReportsStore.getEndDate}
-          func={this.loadCharts}
-          type={dateType}
-          onChange={this.handleDateChoose}
-          store={ReportsStore}
-        />
-      </div>
-      <Spin spinning={echartsLoading}>
-        <ReactEcharts className="c7n-buildDuration-echarts" option={this.getOption()} />
-      </Spin>
-      <BuildTable />
-    </React.Fragment> : <NoChart type="app" />);
-
-    return (<Page
-      className="c7n-region c7n-ciPipeline"
-      service={[
-        'devops-service.application.listByActive',
-        'devops-service.devops-gitlab-pipeline.listPipelineTime',
-        'devops-service.devops-gitlab-pipeline.pagePipeline',
-        'devops-service.project-pipeline.cancel',
-        'devops-service.project-pipeline.retry',
-      ]}
-    >
-      <Header
-        title={formatMessage({ id: 'report.build-duration.head' })}
-        backPath={`/charts${search}`}
+  const content = (getAllApps && getAllApps.length ? <React.Fragment>
+    <div className="c7n-buildDuration-select">
+      <Select
+        label={formatMessage({ id: 'chooseApp' })}
+        className="c7n-app-select_247"
+        defaultValue={appId}
+        value={appId}
+        optionFilterProp="children"
+        filterOption={(input, option) => option.props.children.props.children.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+        filter
+        onChange={handleAppSelect}
       >
-        <ChartSwitch
-          history={history}
-          current="build-duration"
-        />
-        <Button
-          icon="refresh"
-          onClick={this.handleRefresh}
-        >
-          <FormattedMessage id="refresh" />
-        </Button>
-      </Header>
-      <Breadcrumb title={formatMessage({ id: 'report.build-duration.head' })} />
-      <Content className="c7n-buildDuration-content">
-        {isRefresh ? <LoadingBar display={isRefresh} /> : content}
-      </Content>
-    </Page>);
-  }
-}
+        {
+          _.map(getAllApps, (app, index) => (
+            <Option value={app.id} key={index}>
+              <Tooltip title={app.code}>
+                <span className="c7n-app-select-tooltip">
+                  {app.name}
+                </span>
+              </Tooltip>
+            </Option>))
+        }
+      </Select>
+      <TimePicker
+        startTime={ReportsStore.getStartDate}
+        endTime={ReportsStore.getEndDate}
+        func={loadCharts}
+        type={dateType}
+        onChange={handleDateChoose}
+        store={ReportsStore}
+      />
+    </div>
+    <Spin spinning={echartsLoading}>
+      <ReactEcharts className="c7n-buildDuration-echarts" option={getOption()} />
+    </Spin>
+    <BuildTable />
+  </React.Fragment> : <NoChart getProRole={ReportsStore.getProRole} type="app" />);
+
+  return (<Page
+    className="c7n-region c7n-ciPipeline"
+    service={[
+      'devops-service.application.listByActive',
+      'devops-service.devops-gitlab-pipeline.listPipelineTime',
+      'devops-service.devops-gitlab-pipeline.pagePipeline',
+      'devops-service.project-pipeline.cancel',
+      'devops-service.project-pipeline.retry',
+    ]}
+  >
+    <Header
+      title={formatMessage({ id: 'report.build-duration.head' })}
+      backPath={`/charts${search}`}
+    >
+      <ChartSwitch
+        history={history}
+        current="build-duration"
+      />
+      <Button
+        icon="refresh"
+        onClick={handleRefresh}
+      >
+        <FormattedMessage id="refresh" />
+      </Button>
+    </Header>
+    <Breadcrumb title={formatMessage({ id: 'report.build-duration.head' })} />
+    <Content className="c7n-buildDuration-content">
+      {isRefresh ? <LoadingBar display={isRefresh} /> : content}
+    </Content>
+  </Page>);
+});
 
 export default injectIntl(BuildDuration);
