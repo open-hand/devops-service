@@ -7,19 +7,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
-import io.choerodon.devops.api.vo.AgentMsgVO;
-import io.choerodon.devops.infra.util.KeyParseUtil;
+import io.choerodon.devops.api.vo.polaris.PolarisResponsePayloadVO;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.websocket.receive.TextMessageHandler;
 
 @Component
-public class AgentPolarisMessageHandler implements TextMessageHandler<AgentMsgVO> {
+public class AgentPolarisMessageHandler implements TextMessageHandler<PolarisResponsePayloadVO> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AgentPolarisMessageHandler.class);
 
     @Override
-    public void handle(WebSocketSession webSocketSession, String type, String key, AgentMsgVO message) {
+    public void handle(WebSocketSession webSocketSession, String type, String key, PolarisResponsePayloadVO message) {
         //设置集群id
-        message.setClusterId(key.split(":")[1]);
-        String namespace = KeyParseUtil.getNamespace(message.getKey());
+        Long clusterId = TypeUtil.objToLong(key.split(":")[1]);
         // TODO by zmf 存数据库
         LOGGER.info("Polaris message received: {}", message);
         try {

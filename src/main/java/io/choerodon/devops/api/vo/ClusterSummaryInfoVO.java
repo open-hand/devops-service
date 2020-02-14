@@ -13,43 +13,97 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class ClusterSummaryInfoVO {
     @ApiModelProperty("Kubernetes版本")
-    private String kubernetesVersion;
+    private String version;
     @ApiModelProperty("集群的pod数量")
-    private Long podCount;
+    private Long pods;
     @ApiModelProperty("集群的namespace数量")
-    private Long namespaceCount;
+    private Long namespaces;
     @ApiModelProperty("集群节点的数量")
-    private Long nodeCount;
+    private Long nodes;
+    private Long deployments;
+    private Long statefulSets;
+    private Long daemonSets;
+    private Long jobs;
+    private Long cronJobs;
+    private Long replicationControllers;
 
-    public String getKubernetesVersion() {
-        return kubernetesVersion;
+    public String getVersion() {
+        return version;
     }
 
-    public void setKubernetesVersion(String kubernetesVersion) {
-        this.kubernetesVersion = kubernetesVersion;
+    public void setVersion(String version) {
+        this.version = version;
     }
 
-    public Long getPodCount() {
-        return podCount;
+    public Long getPods() {
+        return pods;
     }
 
-    public void setPodCount(Long podCount) {
-        this.podCount = podCount;
+    public void setPods(Long pods) {
+        this.pods = pods;
     }
 
-    public Long getNamespaceCount() {
-        return namespaceCount;
+    public Long getNamespaces() {
+        return namespaces;
     }
 
-    public void setNamespaceCount(Long namespaceCount) {
-        this.namespaceCount = namespaceCount;
+    public void setNamespaces(Long namespaces) {
+        this.namespaces = namespaces;
     }
 
-    public Long getNodeCount() {
-        return nodeCount;
+    public Long getNodes() {
+        return nodes;
     }
 
-    public void setNodeCount(Long nodeCount) {
-        this.nodeCount = nodeCount;
+    public void setNodes(Long nodes) {
+        this.nodes = nodes;
+    }
+
+    public Long getDeployments() {
+        return deployments;
+    }
+
+    public void setDeployments(Long deployments) {
+        this.deployments = deployments;
+    }
+
+    public Long getStatefulSets() {
+        return statefulSets;
+    }
+
+    public void setStatefulSets(Long statefulSets) {
+        this.statefulSets = statefulSets;
+    }
+
+    public Long getDaemonSets() {
+        return daemonSets;
+    }
+
+    public void setDaemonSets(Long daemonSets) {
+        this.daemonSets = daemonSets;
+    }
+
+    public Long getJobs() {
+        return jobs;
+    }
+
+    public void setJobs(Long jobs) {
+        this.jobs = jobs;
+    }
+
+    public Long getCronJobs() {
+        return cronJobs;
+    }
+
+    public void setCronJobs(Long cronJobs) {
+        this.cronJobs = cronJobs;
+    }
+
+    public Long getReplicationControllers() {
+        return replicationControllers;
+    }
+
+    public void setReplicationControllers(Long replicationControllers) {
+        this.replicationControllers = replicationControllers;
     }
 }

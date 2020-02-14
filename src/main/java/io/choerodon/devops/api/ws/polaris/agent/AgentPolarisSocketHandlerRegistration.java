@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.ws.polaris.agent;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -26,7 +24,7 @@ public class AgentPolarisSocketHandlerRegistration implements SocketHandlerRegis
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
-        return clusterConnectionHandler.validConnectionParameter(((ServletServerHttpRequest)serverHttpRequest).getServletRequest());
+        return clusterConnectionHandler.validConnectionParameter(((ServletServerHttpRequest) serverHttpRequest).getServletRequest());
     }
 
     @Override
