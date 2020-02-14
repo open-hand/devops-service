@@ -39,6 +39,7 @@ const CodeQuality = withRouter(observer(() => {
     ReportsStore,
     ReportsStore: {
       isRefresh,
+      getProRole,
     },
   } = useReportsStore();
   const {
@@ -285,7 +286,7 @@ const CodeQuality = withRouter(observer(() => {
           lazyUpdate
         />
       </Spin>
-    </Fragment> : <NoChart type="app" />);
+    </Fragment> : <NoChart type="app" getProRole={getProRole} />);
   }
 
   if (!record) {
