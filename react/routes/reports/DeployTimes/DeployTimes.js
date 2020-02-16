@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-// import { observable, action, configure } from 'mobx';
-import { injectIntl, FormattedMessage } from 'react-intl';
-import { Page, Header, Content, stores, Breadcrumb } from '@choerodon/boot';
-import { Select, Button, Table, Spin } from 'choerodon-ui';
+import { FormattedMessage } from 'react-intl';
+import { Form, Select, Table } from 'choerodon-ui/pro';
+import { Page, Header, Content, Breadcrumb } from '@choerodon/boot';
+import { Button, Spin } from 'choerodon-ui';
 import ReactEcharts from 'echarts-for-react';
 import _ from 'lodash';
 import moment from 'moment';
@@ -16,14 +16,14 @@ import NoChart from '../Component/NoChart';
 import '../DeployDuration/DeployDuration.less';
 import { getAxis } from '../util';
 import { useReportsStore } from '../stores';
+import { useDeployTimesStore } from './stores';
 
 import MaxTagPopover from '../Component/MaxTagPopover';
 
+import './DeployTimes.less';
 
-// configure({ enforceActions: 'never' });
-
-// const { AppState } = stores;
 const { Option } = Select;
+const { Column } = Table;
 
 const DeployTimes = observer(() => {
   const {
@@ -33,6 +33,13 @@ const DeployTimes = observer(() => {
     intl: { formatMessage },
     history: { location: { state, search } },
   } = useReportsStore();
+
+  const {
+    DeployTimesSelectDataSet,
+    DeployTimesTableDataSet,
+  } = useDeployTimesStore();
+
+  const multilpleRecord = DeployTimesSelectDataSet.current;
 
   const [env, setEnv] = useState([]);
   const [app, setApp] = useState([]);
@@ -55,7 +62,11 @@ const DeployTimes = observer(() => {
    * @param ids 环境ID
    */
   const handleEnvSelect = (ids) => {
-    setEnvIds(ids);
+    if (ids) {
+      setEnvIds(ids);
+    } else {
+      setEnvIds([]);
+    }
     loadCharts();
   };
 
@@ -82,6 +93,19 @@ const DeployTimes = observer(() => {
       ReportsStore.setPageInfo({ pageNum: 1, total: 0, pageSize: 10 });
     };
   }, []);
+
+  useEffect(() => {
+    if (envIds.length) {
+      multilpleRecord.set('deployTimeApps', envIds.slice());
+    } else {
+      multilpleRecord.set('deployTimeApps', []);
+    }
+    if (appDom) {
+      multilpleRecord.set('deployTimeName', appId);
+    } else {
+      multilpleRecord.set('deployTimeName', null);
+    }
+  }, [envIds, appId]);
 
   /**
    * 获取可用环境
@@ -155,12 +179,14 @@ const DeployTimes = observer(() => {
    * 加载table数据
    */
   const loadTables = () => {
-    const projectId = AppState.currentMenuType.id;
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
     const appIDCurrent = (appId === 'all') ? [] : appId;
-    const { pageInfo } = ReportsStore;
-    ReportsStore.loadDeployTimesTable(projectId, appIDCurrent, startTime, endTime, envIds.slice(), pageInfo.current, pageInfo.pageSize);
+    DeployTimesTableDataSet.setQueryParameter('appId', appIDCurrent);
+    DeployTimesTableDataSet.setQueryParameter('endTime', endTime);
+    DeployTimesTableDataSet.setQueryParameter('startTime', startTime);
+    DeployTimesTableDataSet.setQueryParameter('envIds', envIds.slice());
+    DeployTimesTableDataSet.query();
   };
 
   /**
@@ -331,59 +357,46 @@ const DeployTimes = observer(() => {
    * @returns {*}
    */
   function renderTable() {
-    const data = ReportsStore.getAllData;
-    const { loading, pageInfo } = ReportsStore;
-
-    const column = [
-      {
-        title: formatMessage({ id: 'app.active' }),
-        key: 'status',
-        render: (record) => (<StatusTags name={formatMessage({ id: record.status })} colorCode={record.status} error={record.error} />),
-      }, {
-        title: formatMessage({ id: 'report.deploy-duration.time' }),
-        key: 'creationDate',
-        dataIndex: 'creationDate',
-      }, {
-        title: formatMessage({ id: 'deploy.instance' }),
-        key: 'appServiceInstanceCode',
-        dataIndex: 'appServiceInstanceCode',
-        render: (text) => (<MouserOverWrapper text={text} width={0.2}>{text}</MouserOverWrapper>),
-      }, {
-        title: formatMessage({ id: 'deploy.appName' }),
-        key: 'appServiceName',
-        dataIndex: 'appServiceName',
-        render: (text) => (<MouserOverWrapper text={text} width={0.2}>{text}</MouserOverWrapper>),
-      }, {
-        title: formatMessage({ id: 'deploy.ver' }),
-        key: 'appServiceVersion',
-        dataIndex: 'appServiceVersion',
-        render: (text) => (<MouserOverWrapper text={text} width={0.2}>{text}</MouserOverWrapper>),
-      }, {
-        title: formatMessage({ id: 'report.deploy-duration.user' }),
-        key: 'lastUpdatedName',
-        dataIndex: 'lastUpdatedName',
-      },
-    ];
-
     return (
       <Table
-        rowKey={(record) => record.creationDate}
-        dataSource={data}
-        filterBar={false}
-        columns={column}
-        loading={loading}
-        pagination={pageInfo}
-        onChange={tableChange}
-      />
+        dataSet={DeployTimesTableDataSet}
+        queryBar="none"
+      >
+        <Column
+          name="status"
+          renderer={({ record }) => <StatusTags name={formatMessage({ id: record.status })} colorCode={record.status} error={record.error} />}
+        />
+        <Column
+          name="creationDate"
+        />
+        <Column
+          name="appServiceInstanceCode"
+          renderer={({ record }) => <MouserOverWrapper text={record.appServiceInstanceCode} width={0.2}>{record.appServiceInstanceCode}</MouserOverWrapper>}
+        />
+        <Column
+          name="appServiceName"
+          renderer={({ record }) => <MouserOverWrapper text={record.appServiceName} width={0.2}>{record.appServiceName}</MouserOverWrapper>}
+        />
+        <Column
+          name="appServiceVersion"
+          renderer={({ record }) => <MouserOverWrapper text={record.appServiceVersion} width={0.2}>{record.appServiceVersion}</MouserOverWrapper>}
+        />
+        <Column
+          name="lastUpdatedName"
+        />
+      </Table>
     );
   }
 
   const tableChange = (pagination) => {
-    const projectId = AppState.currentMenuType.id;
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
     const appIDCurrent = (appId === 'all') ? [] : appId;
-    ReportsStore.loadDeployTimesTable(projectId, appIDCurrent, startTime, endTime, envIds.slice(), pagination.current, pagination.pageSize);
+    DeployTimesTableDataSet.setQueryParameter('appId', appIDCurrent);
+    DeployTimesTableDataSet.setQueryParameter('endTime', endTime);
+    DeployTimesTableDataSet.setQueryParameter('startTime', startTime);
+    DeployTimesTableDataSet.setQueryParameter('envIds', envIds.slice());
+    DeployTimesTableDataSet.query();
   };
 
   const handleDateChoose = (type) => { setDateType(type); };
@@ -404,34 +417,33 @@ const DeployTimes = observer(() => {
 
   const content = (envs && envs.length ? <React.Fragment>
     <div className="c7n-report-screen c7n-report-select">
-      <Select
-        notFoundContent={formatMessage({ id: 'envoverview.noEnv' })}
-        value={envIds.length && envIds.slice()}
-        label={formatMessage({ id: 'deploy.envName' })}
-        className={`c7n-select_400 ${envIds.length ? 'c7n-select-multi-top' : ''}`}
-        mode="multiple"
-        maxTagCount={3}
-        onChange={handleEnvSelect}
-        maxTagPlaceholder={maxTagNode(env)}
-        optionFilterProp="children"
-        filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-        filter
-      >
-        {envDom}
-      </Select>
-      <Select
-        notFoundContent={formatMessage({ id: 'report.no.app.tips' })}
-        value={appDom ? appId : null}
-        className="c7n-select_200 margin-more"
-        label={formatMessage({ id: 'deploy.appName' })}
-        onChange={handleAppSelect}
-        optionFilterProp="children"
-        filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-        filter
-      >
-        {appDom}
-        {appDom ? <Option key="all" value="all">{formatMessage({ id: 'report.all-app' })}</Option> : null}
-      </Select>
+      <Form style={{ width: 620, marginRight: 60 }} dataSet={DeployTimesSelectDataSet} columns={3}>
+        <Select
+          name="deployTimeApps"
+          notFoundContent={formatMessage({ id: 'envoverview.noEnv' })}
+          colSpan={2}
+          maxTagCount={3}
+          onChange={handleEnvSelect}
+          maxTagPlaceholder={maxTagNode(env)}
+          optionFilterProp="children"
+          filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+          filter
+        >
+          {envDom}
+        </Select>
+        <Select
+          colSpan={1}
+          name="deployTimeName"
+          notFoundContent={formatMessage({ id: 'report.no.app.tips' })}
+          onChange={handleAppSelect}
+          optionFilterProp="children"
+          filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+          filter
+        >
+          {appDom}
+          {appDom ? <Option key="all" value="all">{formatMessage({ id: 'report.all-app' })}</Option> : null}
+        </Select>
+      </Form>
       <TimePicker
         startTime={ReportsStore.getStartDate}
         endTime={ReportsStore.getEndDate}
