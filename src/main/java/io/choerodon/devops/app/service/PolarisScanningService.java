@@ -38,4 +38,11 @@ public interface PolarisScanningService {
      * @return true表示超时且更新了纪录
      */
     boolean checkTimeout(Long recordId);
+
+    /**
+     * 清楚和recordId相关的数据（不包含record本身，是删除其他表的数据）
+     *
+     * @param recordId 扫描记录id
+     */
+    void deleteAssociatedData(Long recordId);
 }
