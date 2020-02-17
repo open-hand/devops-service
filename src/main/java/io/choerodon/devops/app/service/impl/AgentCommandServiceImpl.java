@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 import com.alibaba.fastjson.JSONArray;
 import io.codearte.props2yaml.Props2YAML;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -436,13 +438,14 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
     @Override
-    public void scanCluster(Long clusterId, List<String> namespaces) {
+    public void scanCluster(Long clusterId, Long recordId, @Nullable String namespace) {
         AgentMsgVO msg = new AgentMsgVO();
         msg.setKey(String.format(CLUSTER_FORMAT, clusterId));
+        ClusterPolarisScanningVO clusterPolarisScanningVO = new ClusterPolarisScanningVO(Objects.requireNonNull(recordId), namespace);
         try {
-            msg.setPayload(mapper.writeValueAsString(Objects.requireNonNull(namespaces)));
+            msg.setPayload(mapper.writeValueAsString(clusterPolarisScanningVO));
         } catch (IOException e) {
-            throw new CommonException("Unexpected error occurred when serializing DeletePodVO {}", namespaces);
+            throw new CommonException("Unexpected error occurred when serializing clusterPolarisScanningVO. {}", clusterPolarisScanningVO);
         }
         msg.setType(HelmType.POLARIS_SCAN_CLUSTER.toValue());
         sendToWebsocket(clusterId, msg);

@@ -3,6 +3,8 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.DescribeResourceVO;
 import io.choerodon.devops.api.vo.PipeRequestVO;
@@ -55,11 +57,12 @@ public interface AgentCommandService {
 
     /**
      * polaris扫描集群或集群某个namespace
+     *
      * @param clusterId 集群id
-     * @param namespaces namespace集合，不能为null。
-     *                   其中的元素数量只能是0或1个，
-     *                   0个表示扫描整个集群所有的namespace，
-     *                   1个表示扫描一个指定的namespace
+     * @param recordId  关联的扫描纪录id
+     * @param namespace namespace
+     *                  为null时表示扫描整个集群所有的namespace，
+     *                  有值时表示扫描一个指定的namespace
      */
-    void scanCluster(Long clusterId, List<String> namespaces);
+    void scanCluster(Long clusterId, Long recordId, @Nullable String namespace);
 }
