@@ -99,7 +99,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String SONAR = "sonar";
     private static final String NORMAL = "normal";
     private static final String APP_SERVICE = "appService";
-    private static final String ERROR_USER_NOT_OWNER = "error.user.not.owner";
+    private static final String ERROR_USER_NOT_GITLAB_OWNER = "error.user.not.gitlab.owner";
     private static final String METRICS = "metrics";
     private static final String SONAR_NAME = "sonar_default";
     private static final String APPLICATION = "application";
@@ -210,7 +210,8 @@ public class AppServiceServiceImpl implements AppServiceService {
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
-                throw new CommonException(ERROR_USER_NOT_OWNER);
+
+                throw new CommonException(ERROR_USER_NOT_GITLAB_OWNER);
             }
         }
 
@@ -948,7 +949,8 @@ public class AppServiceServiceImpl implements AppServiceService {
 
             // 校验用户的gitlab权限
             if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
-                throw new CommonException(ERROR_USER_NOT_OWNER);
+
+                throw new CommonException(ERROR_USER_NOT_GITLAB_OWNER);
             }
         }
 
@@ -1848,7 +1850,8 @@ public class AppServiceServiceImpl implements AppServiceService {
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
 
                 if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
-                    throw new CommonException(ERROR_USER_NOT_OWNER);
+
+                    throw new CommonException(ERROR_USER_NOT_GITLAB_OWNER);
                 }
             }
 

@@ -90,7 +90,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 devopsCheckLogDTO.setBeginCheckDate(new Date());
                 if ("0.21.0".equals(version)) {
                     LOGGER.info("修复数据开始");
-//                    syncRoot();
+                    syncRoot();
                     syncOrgRoot();
                     LOGGER.info("修复数据完成");
                 } else {
