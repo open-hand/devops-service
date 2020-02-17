@@ -5,12 +5,11 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 import forEach from 'lodash/forEach';
-import classnames from 'classnames';
 import YamlEditor from '../../../../components/yamlEditor';
 import StatusDot from '../../../../components/status-dot';
 import Tips from '../../../../components/new-tips';
-import NetworkForm from './network-form';
-import DomainForm from './domain-form';
+import NetworkForm from './NetworkForm';
+import DomainForm from './DomainForm';
 import { useManualDeployStore } from './stores';
 
 import './index.less';
@@ -48,26 +47,7 @@ const DeployModal = injectIntl(observer(({ form }) => {
   
 
   modal.handleOk(async () => {
-    if (hasYamlFailed || await record.validate() === false) return false;
-    let result = true;
-    let hasDomain = false;
-    let hasNet = false;
-    const { getFieldValue, validateFieldsAndScroll } = form;
-    const fieldNames = [];
-    if (getFieldValue('networkName') || getFieldValue('externalIps') || getFieldValue('port').join('') || getFieldValue('tport').join('') || (getFieldValue('nport') && getFieldValue('nport').join('')) || (getFieldValue('protocol') && getFieldValue('protocol').join(''))) {
-      fieldNames.push('networkName', 'externalIps', 'portKeys', 'config', 'port', 'tport', 'nport', 'protocol');
-      hasNet = true;
-    }
-    if (getFieldValue('domain') || getFieldValue('domainName') || getFieldValue('netPort').join('') || getFieldValue('path').join('') !== '/') {
-      fieldNames.push('domain', 'domainName', 'paths', 'netPort', 'path', 'network', 'type');
-      hasDomain = true;
-    }
-    if (fieldNames.length) {
-      result = await formValidate(fieldNames, hasNet, hasDomain);
-    }
-    if (!result) {
-      return false;
-    }
+    if (hasYamlFailed) return false;
     try {
       const res = await manualDeployDs.submit();
       if (res !== false) {
@@ -79,84 +59,6 @@ const DeployModal = injectIntl(observer(({ form }) => {
       return false;
     }
   });
-
-  function formValidate(fieldNames, hasNet, hasDomain) {
-    const { getFieldValue, validateFieldsAndScroll } = form;
-    return new Promise((resolve) => {
-      validateFieldsAndScroll(fieldNames, (err, data) => {
-        if (!err) {
-          const {
-            networkName,
-            externalIps,
-            portKeys,
-            port,
-            tport,
-            nport,
-            protocol,
-            config,
-            domain,
-            domainName,
-            certId,
-            paths,
-            path,
-            network,
-            netPort,
-          } = data;
-          if (hasNet) {
-            const ports = [];
-            if (portKeys) {
-              forEach(portKeys, (item) => {
-                if (item || item === 0) {
-                  const node = {
-                    port: Number(port[item]),
-                    targetPort: Number(tport[item]),
-                    nodePort: nport ? Number(nport[item]) : null,
-                  };
-                  config === 'NodePort' && (node.protocol = protocol[item]);
-                  ports.push(node);
-                }
-              });
-            }
-
-            const networkData = {
-              name: networkName,
-              targetInstanceCode: record.get('instanceName'),
-              envId: record.get('environmentId'),
-              externalIp: externalIps && externalIps.length ? externalIps.join(',') : null,
-              ports,
-              type: config,
-            };
-            record.set('devopsServiceReqVO', networkData);
-          }
-          if (hasDomain) {
-            const pathList = [];
-            forEach(paths, (item) => {
-              const pt = path[item];
-              const servicePort = Number(netPort[item]);
-              const serviceName = network[item];
-              pathList.push({
-                path: pt,
-                servicePort,
-                serviceName,
-              });
-            });
-
-            const ingress = {
-              domain,
-              name: domainName,
-              certId,
-              appServiceId: Number(record.get('appServiceId').split('__')[0]),
-              envId: record.get('environmentId'),
-              pathList,
-            };
-            record.set('devopsIngressVO', ingress);
-          }
-          resolve(true);
-        }
-        resolve(false);
-      });
-    });
-  }
 
   function ChangeConfigValue(value) {
     record.set('values', value);
@@ -292,11 +194,7 @@ const DeployModal = injectIntl(observer(({ form }) => {
             <FormattedMessage id={`${intlPrefix}.network`} />
           </div>
           <div className={netIsExpand ? `${prefixCls}-resource-content` : `${prefixCls}-resource-display`}>
-            <NetworkForm
-              form={form}
-              store={deployStore}
-              envId={record.get('environmentId')}
-            />
+            <NetworkForm />
           </div>
           <div
             className={`${prefixCls}-resource-config-network`}
@@ -309,12 +207,7 @@ const DeployModal = injectIntl(observer(({ form }) => {
             <FormattedMessage id={`${intlPrefix}.ingress`} />
           </div>
           <div className={ingressIsExpand ? `${prefixCls}-resource-content` : `${prefixCls}-resource-display`}>
-            <DomainForm
-              form={form}
-              type="create"
-              envId={record.get('environmentId')}
-              DomainStore={deployStore}
-            />
+            <DomainForm />
           </div>
         </div>
       </div>
