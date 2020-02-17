@@ -1,9 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -42,4 +39,94 @@ public class DevopsPolarisInstanceResultDTO extends BaseDTO {
 
     @ApiModelProperty("此条资源详细扫描纪录id")
     private Long detailId;
+
+    @Transient
+    @ApiModelProperty("详情json")
+    private String detail;
+
+    public DevopsPolarisInstanceResultDTO() {
+    }
+
+    public DevopsPolarisInstanceResultDTO(Long envId, Long instanceId, String namespace, String resourceName, String resourceKind, Long recordId, Long detailId, String detail) {
+        this.envId = envId;
+        this.instanceId = instanceId;
+        this.namespace = namespace;
+        this.resourceName = resourceName;
+        this.resourceKind = resourceKind;
+        this.recordId = recordId;
+        this.detailId = detailId;
+        this.detail = detail;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
+    }
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
+    public String getResourceName() {
+        return resourceName;
+    }
+
+    public void setResourceName(String resourceName) {
+        this.resourceName = resourceName;
+    }
+
+    public String getResourceKind() {
+        return resourceKind;
+    }
+
+    public void setResourceKind(String resourceKind) {
+        this.resourceKind = resourceKind;
+    }
+
+    public Long getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(Long recordId) {
+        this.recordId = recordId;
+    }
+
+    public Long getDetailId() {
+        return detailId;
+    }
+
+    public void setDetailId(Long detailId) {
+        this.detailId = detailId;
+    }
+
+    public String getDetail() {
+        return detail;
+    }
+
+    public void setDetail(String detail) {
+        this.detail = detail;
+    }
 }

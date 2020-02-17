@@ -50,6 +50,17 @@ public class DevopsPolarisItemDTO extends BaseDTO {
     @ApiModelProperty("通过/未通过这一项时的message")
     private String message;
 
+    public DevopsPolarisItemDTO() {
+    }
+
+    public DevopsPolarisItemDTO(Long envId, String namespace, String resourceName, String resourceKind, Long recordId) {
+        this.envId = envId;
+        this.namespace = namespace;
+        this.resourceName = resourceName;
+        this.resourceKind = resourceKind;
+        this.recordId = recordId;
+    }
+
     public Long getId() {
         return id;
     }

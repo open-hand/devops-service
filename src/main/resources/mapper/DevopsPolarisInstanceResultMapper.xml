@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsPolarisInstanceResultMapper">
+    <insert id="batchInsert">
+        INSERT INTO devops_polaris_instance_result(env_id, instance_id, namespace, resource_name, resource_kind, record_id, detail_id) VALUES
+        <foreach collection="items" item="item" separator=",">
+            (#{item.envId},#{item.instanceId},#{item.namespace},#{item.resourceName},#{item.resourceKind},#{item.recordId},#{item.detailId})
+        </foreach>
+    </insert>
+</mapper>
