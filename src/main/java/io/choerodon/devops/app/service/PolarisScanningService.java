@@ -30,4 +30,12 @@ public interface PolarisScanningService {
      * @param message polaris扫描结果
      */
     void handleAgentPolarisMessage(PolarisResponsePayloadVO message);
+
+    /**
+     * 检查纪录是否超时，如果超时，更新状态为超时
+     *
+     * @param recordId 纪录id
+     * @return true表示超时且更新了纪录
+     */
+    boolean checkTimeout(Long recordId);
 }

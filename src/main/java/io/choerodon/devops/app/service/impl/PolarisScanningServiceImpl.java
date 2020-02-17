@@ -6,6 +6,7 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,12 @@ import io.choerodon.devops.infra.util.MapperUtil;
 @Service
 public class PolarisScanningServiceImpl implements PolarisScanningService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PolarisScanningServiceImpl.class);
+
+    /**
+     * polaris扫描的超时时间
+     */
+    @Value("${polaris.scanning.timeout.seconds:300}")
+    private Long scanningTimeoutSeconds;
 
     @Autowired
     private AgentCommandService agentCommandService;
@@ -92,6 +99,11 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         DevopsPolarisRecordDTO existedRecord = devopsPolarisRecordMapper.selectOne(devopsPolarisRecordDTO);
 
         if (existedRecord != null) {
+            // 看看是否是应该超时了
+            if (checkTimeout(existedRecord.getId())) {
+                existedRecord = devopsPolarisRecordMapper.selectByPrimaryKey(existedRecord.getId());
+            }
+
             // 上一条纪录处理中时不允许再次扫描
             if (PolarisScanningStatus.OPERATING.getStatus().equals(existedRecord.getStatus())) {
                 throw new CommonException("error.polaris.scanning.operating");
@@ -118,6 +130,30 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     public void handleAgentPolarisMessage(PolarisResponsePayloadVO message) {
         LOGGER.info("Polaris: Unhandled polaris message...");
         // TODO by zmf
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Override
+    public boolean checkTimeout(Long recordId) {
+        DevopsPolarisRecordDTO devopsPolarisRecordDTO = devopsPolarisRecordMapper.selectByPrimaryKey(recordId);
+        if (devopsPolarisRecordDTO == null) {
+            return false;
+        }
+        if (!PolarisScanningStatus.OPERATING.getStatus().equals(devopsPolarisRecordDTO.getStatus())) {
+            return false;
+        }
+
+        Long startMills = devopsPolarisRecordDTO.getScanDateTime().getTime();
+        Long currentMills = System.currentTimeMillis();
+
+        // 计算是否超时
+        if ((currentMills - startMills) > this.scanningTimeoutSeconds * 1000) {
+            devopsPolarisRecordDTO.setStatus(PolarisScanningStatus.TIMEOUT.getStatus());
+            checkedUpdate(devopsPolarisRecordDTO);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
