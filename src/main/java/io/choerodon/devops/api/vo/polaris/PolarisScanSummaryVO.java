@@ -37,4 +37,13 @@ public class PolarisScanSummaryVO {
     public void setErrors(Long errors) {
         this.errors = errors;
     }
+
+    @Override
+    public String toString() {
+        return "PolarisScanSummaryVO{" +
+                "successes=" + successes +
+                ", warnings=" + warnings +
+                ", errors=" + errors +
+                '}';
+    }
 }
