@@ -222,8 +222,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<TagDTO> createTag(Integer projectId, String name, String ref,
-                                            String msg, String releaseNotes, Integer userId) {
+    public ResponseEntity<TagDTO> createTag(Integer projectId, GitlabTransferDTO gitlabTransferDTO, Integer userId) {
         throw new CommonException("error.tags.create");
     }
 
