@@ -37,6 +37,7 @@ const commonField = {
   appName: '应用名称',
   environment: '环境',
   envName: '环境名称',
+  envCode: '环境编码',
   instance: '实例',
   network: '网络',
   label: '标签',
@@ -1288,6 +1289,12 @@ const cluster = {
     '当选择将权限分配至组织下所有项目时，此时便不能在列表中删除任何项目的权限；仅在选择将权限分配给组织下特定项目时，才能在下方列表中管理项目的权限',
   'c7ncd.cluster.permission.some.tips': '若本项目想使用该集群，同样需要为本项目授权',
   'c7ncd.cluster.code.tips': '限制为30个字符，且在项目下唯一',
+  'c7ncd.cluster.polaris.cluster': '集群概览',
+  'c7ncd.cluster.polaris.env': '环境详情',
+  'c7ncd.cluster.belong.project': '所属项目',
+  'c7ncd.cluster.polarise.internal.true': '内',
+  'c7ncd.cluster.polarise.internal.false': '外',
+  'c7ncd.cluster.polarise.score': '分值',
 };
 
 const zhCN = {
