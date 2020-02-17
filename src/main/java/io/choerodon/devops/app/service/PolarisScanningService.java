@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.api.vo.polaris.PolarisResponsePayloadVO;
 import io.choerodon.devops.infra.dto.DevopsPolarisRecordDTO;
 
 /**
@@ -22,4 +23,11 @@ public interface PolarisScanningService {
      * @return 扫描纪录
      */
     DevopsPolarisRecordDTO scanCluster(Long clusterId);
+
+    /**
+     * 处理来自agent的polaris扫描结果消息
+     *
+     * @param message polaris扫描结果
+     */
+    void handleAgentPolarisMessage(PolarisResponsePayloadVO message);
 }

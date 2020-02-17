@@ -444,6 +444,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     public DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId) {
+        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectByPrimaryKey(instanceId);
+        if (appServiceInstanceDTO == null) {
+            return null;
+        }
+
         // 获取相关的pod
         List<DevopsEnvPodVO> devopsEnvPodDTOS = ConvertUtils.convertList(devopsEnvPodService.baseListByInstanceId(instanceId), DevopsEnvPodVO.class);
 

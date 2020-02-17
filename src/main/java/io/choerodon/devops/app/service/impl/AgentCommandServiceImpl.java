@@ -439,6 +439,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
 
     @Override
     public void scanCluster(Long clusterId, Long recordId, @Nullable String namespace) {
+        LOGGER.info("Polaris: start to send the polaris scan message...");
         AgentMsgVO msg = new AgentMsgVO();
         msg.setKey(String.format(CLUSTER_FORMAT, clusterId));
         ClusterPolarisScanningVO clusterPolarisScanningVO = new ClusterPolarisScanningVO(Objects.requireNonNull(recordId), namespace);
@@ -449,5 +450,6 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         }
         msg.setType(HelmType.POLARIS_SCAN_CLUSTER.toValue());
         sendToWebsocket(clusterId, msg);
+        LOGGER.info("Polaris: successfully sent the polaris scan message...");
     }
 }

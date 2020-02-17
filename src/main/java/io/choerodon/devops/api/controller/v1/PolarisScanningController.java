@@ -41,8 +41,7 @@ public class PolarisScanningController {
             @PathVariable("project_id") Long projectId,
             @ApiParam("需要扫描的环境的id")
             @PathVariable("env_id") Long envId) {
-        return null;
-//        return new ResponseEntity<>(polarisScanningService.scanEnv(envId), HttpStatus.OK);
+        return new ResponseEntity<>(polarisScanningService.scanEnv(envId), HttpStatus.OK);
     }
 
     @ApiOperation("获取扫描的集群报告")
