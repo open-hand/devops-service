@@ -21,6 +21,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
   observer((props) => {
     const tabs = useMemo(() => ({
       NODE_TAB: 'node',
+      POLARIS_TAB: 'polaris',
       ASSIGN_TAB: 'assign',
       COMPONENT_TAB: 'component',
       MONITOR_TAB: 'monitor',

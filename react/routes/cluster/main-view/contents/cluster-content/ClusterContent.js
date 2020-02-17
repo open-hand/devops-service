@@ -16,6 +16,7 @@ const NodeList = lazy(() => import('./node-list'));
 const PermissionList = lazy(() => import('./permission-list'));
 const Monitor = lazy(() => import('./monitor'));
 const ComponentManage = lazy(() => import('./component-manage'));
+const Polaris = lazy(() => import('./polaris'));
 
 
 export default observer((props) => {
@@ -24,6 +25,7 @@ export default observer((props) => {
     intl: { formatMessage },
     tabs: {
       NODE_TAB,
+      POLARIS_TAB,
       ASSIGN_TAB,
       COMPONENT_TAB,
       MONITOR_TAB,
@@ -88,6 +90,14 @@ export default observer((props) => {
             <div className="c7ncd-cluster-node-list">
               <NodeList />
             </div>
+          </Suspense>
+        </TabPane>
+        <TabPane
+          key={POLARIS_TAB}
+          tab={formatMessage({ id: `${intlPrefix}.polaris` })}
+        >
+          <Suspense fallback={<Spin />}>
+            <Polaris />
           </Suspense>
         </TabPane>
         <TabPane

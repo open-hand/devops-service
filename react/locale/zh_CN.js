@@ -1220,6 +1220,7 @@ const cluster = {
   'c7ncd.cluster.permission.assign': '权限分配',
   'c7ncd.cluster.monitor': '集群监控',
   'c7ncd.cluster.component': '组件管理',
+  'c7ncd.cluster.polaris': '健康检查',
   'c7ncd.cluster.node.resource': '资源分配',
   'c7ncd.cluster.node.monitor': '节点监控',
   'c7ncd.cluster.node.assign.overview': '分配概览',
