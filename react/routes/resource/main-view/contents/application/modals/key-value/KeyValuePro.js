@@ -212,6 +212,7 @@ const FormView = observer(() => {
         const res = await store.postKV(projectId, postData);
         if (handlePromptError(res)) {
           refresh();
+          return true;
         } else {
           return false;
         }
@@ -219,7 +220,6 @@ const FormView = observer(() => {
         Choerodon.handleResponseError(error);
         return false;
       }
-      return false;
     } else {
       return false;
     }
