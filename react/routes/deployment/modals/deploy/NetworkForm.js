@@ -33,10 +33,15 @@ export default observer(() => {
           name="name"
           disabled={!manualDeployDs.current.get('environmentId')}
         />
-        <SelectBox name="type">
-          <Option value="ClusterIP"><span className="type-span">ClusterIP</span></Option>
-          <Option value="NodePort"><span className="type-span">NodePort</span></Option>
-          <Option value="LoadBalancer">LoadBalancer</Option>
+        <SelectBox name="type" className={`${prefixCls}-resource-mgt-12`}>
+          <Option value="ClusterIP">
+            <span className={`${prefixCls}-resource-radio`}>ClusterIP</span>
+          </Option>
+          <Option value="NodePort">
+            <span className={`${prefixCls}-resource-radio`}>NodePort</span>
+          </Option>
+          <Option value="LoadBalancer">
+            <span className={`${prefixCls}-resource-radio`}>LoadBalancer</span></Option>
         </SelectBox>
         {record.get('type') === 'ClusterIP' && <TextField name="externalIp" />}
       </Form>

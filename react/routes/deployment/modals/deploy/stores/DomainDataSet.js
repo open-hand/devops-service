@@ -105,6 +105,7 @@ export default ({ formatMessage, intlPrefix, projectId, pathListDs }) => {
         type: 'boolean',
         defaultValue: true,
         ignore: 'always',
+        label: formatMessage({ id: 'domain.protocol.type' }),
         dynamicProps: {
           required: isRequired,
         },

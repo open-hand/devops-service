@@ -71,6 +71,7 @@ export default (({ formatMessage, projectId, portsDs, pathListDs }) => {
         name: 'type',
         type: 'string',
         defaultValue: 'ClusterIP',
+        label: formatMessage({ id: 'ist.networking.service.type' }),
         dynamicProps: {
           required: isRequired,
         },

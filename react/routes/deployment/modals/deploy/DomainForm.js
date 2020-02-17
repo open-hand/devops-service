@@ -31,12 +31,12 @@ export default observer(() => {
     <div className={`${prefixCls}-resource-domain`}>
       <Form dataSet={domainDs}>
         <TextField name="name" disabled={!envId} />
-        <SelectBox name="isNormal">
+        <SelectBox name="isNormal" className={`${prefixCls}-resource-mgt-12`}>
           <Option value>
-            <span className={`${prefixCls}-manual-deploy-radio`}>{formatMessage({ id: 'domain.protocol.normal' })}</span>
+            <span className={`${prefixCls}-resource-radio`}>{formatMessage({ id: 'domain.protocol.normal' })}</span>
           </Option>
           <Option value={false}>
-            <span className={`${prefixCls}-manual-deploy-radio`}>{formatMessage({ id: 'domain.protocol.secret' })}</span>
+            <span className={`${prefixCls}-resource-radio`}>{formatMessage({ id: 'domain.protocol.secret' })}</span>
           </Option>
         </SelectBox>
         <TextField name="domain" disabled={!envId} />
