@@ -318,10 +318,7 @@ public interface GitlabServiceClient {
     @PostMapping("/v1/projects/{projectId}/repository/tags")
     ResponseEntity<TagDTO> createTag(
             @PathVariable("projectId") Integer projectId,
-            @RequestParam("name") String name,
-            @RequestParam("ref") String ref,
-            @RequestParam(value = "message", required = false, defaultValue = "") String message,
-            @RequestBody(required = false) String releaseNotes,
+            @RequestBody GitlabTransferDTO gitlabTransferDTO,
             @RequestParam("userId") Integer userId);
 
     /**

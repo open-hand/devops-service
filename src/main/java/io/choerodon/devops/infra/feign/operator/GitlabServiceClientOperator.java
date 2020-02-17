@@ -498,7 +498,12 @@ public class GitlabServiceClientOperator {
             if (releaseNotes == null) {
                 releaseNotes = "No ReleaseNote";
             }
-            gitlabServiceClient.createTag(gitLabProjectId, tag, ref, msg, releaseNotes, userId);
+            GitlabTransferDTO gitlabTransferDTO = new GitlabTransferDTO();
+            gitlabTransferDTO.setTagName(tag);
+            gitlabTransferDTO.setRef(ref);
+            gitlabTransferDTO.setMsg(msg);
+            gitlabTransferDTO.setReleaseNotes(releaseNotes);
+            gitlabServiceClient.createTag(gitLabProjectId, gitlabTransferDTO, userId);
         } catch (FeignException e) {
             throw new CommonException("create gitlab tag failed: " + e.getMessage(), e);
         }
