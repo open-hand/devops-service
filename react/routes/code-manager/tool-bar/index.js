@@ -17,6 +17,7 @@ const CodeManagerToolBar = injectIntl(inject('AppState')(observer((props) => {
   const { appServiceDs, selectAppDs } = useCodeManagerStore();
   useEffect(() => {
     handleRefresh();
+    console.log(selectAppDs.current.get('appServiceId'));
   }, [selectAppDs.current]);
 
   const { name, intl: { formatMessage } } = props;
@@ -99,7 +100,7 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
       </Form>
     </div>
   );
-  
+
   function renderAppServiceOption({ value, text }) {
     const record = appServiceDs.find((appServiceRecord) => appServiceRecord.get('id') === value);
     if (record) {

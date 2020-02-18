@@ -28,7 +28,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     } = props;
 
     const appServiceId = selectAppDs.current && selectAppDs.current.get('appServiceId');
-    const tableDs = useMemo(() => new DataSet(TableDataset({ projectId, formatMessage, appServiceId }), []));
+    const tableDs = useMemo(() => new DataSet(TableDataset({ projectId, formatMessage, appServiceId })), []);
 
     useEffect(() => {
       if (appServiceId) {
