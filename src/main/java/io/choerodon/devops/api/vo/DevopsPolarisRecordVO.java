@@ -1,25 +1,14 @@
-package io.choerodon.devops.infra.dto;
+package io.choerodon.devops.api.vo;
 
 import java.util.Date;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
-
 /**
- * polaris扫描纪录
- *
  * @author zmf
- * @since 2/17/20
+ * @since 2/18/20
  */
-@Table(name = "devops_polaris_record")
-public class DevopsPolarisRecordDTO extends BaseDTO {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class DevopsPolarisRecordVO {
     @ApiModelProperty("自增id")
     private Long id;
 
@@ -47,9 +36,6 @@ public class DevopsPolarisRecordDTO extends BaseDTO {
     @ApiModelProperty("错误的检测项数量")
     private Long errors;
 
-    @ApiModelProperty("扫描结果的得分")
-    private Long score;
-
     @ApiModelProperty("扫描出的集群版本")
     private String kubernetesVersion;
 
@@ -61,6 +47,12 @@ public class DevopsPolarisRecordDTO extends BaseDTO {
 
     @ApiModelProperty("节点数量")
     private Long nodes;
+
+    @ApiModelProperty("实例数量 / 只有环境类型的纪录有此字段")
+    private Long instanceCount;
+
+    @ApiModelProperty("健康检查的分数")
+    private Long score;
 
     public Long getId() {
         return id;
@@ -134,14 +126,6 @@ public class DevopsPolarisRecordDTO extends BaseDTO {
         this.errors = errors;
     }
 
-    public Long getScore() {
-        return score;
-    }
-
-    public void setScore(Long score) {
-        this.score = score;
-    }
-
     public String getKubernetesVersion() {
         return kubernetesVersion;
     }
@@ -172,5 +156,21 @@ public class DevopsPolarisRecordDTO extends BaseDTO {
 
     public void setNodes(Long nodes) {
         this.nodes = nodes;
+    }
+
+    public Long getInstanceCount() {
+        return instanceCount;
+    }
+
+    public void setInstanceCount(Long instanceCount) {
+        this.instanceCount = instanceCount;
+    }
+
+    public Long getScore() {
+        return score;
+    }
+
+    public void setScore(Long score) {
+        this.score = score;
     }
 }

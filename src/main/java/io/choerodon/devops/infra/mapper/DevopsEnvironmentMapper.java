@@ -107,4 +107,7 @@ public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDTO> {
     List<DevopsEnvironmentDTO> listByProjectIdAndName(@Param("projectId") Long projectId, @Param("envName") String envName);
 
     Integer queryEnvConutByEnvIds(@Param("envIds") List<Long> envIds);
+
+    int countByOptions(@Param("clusterId") Long clusterId,
+                       @Param("type") String type);
 }

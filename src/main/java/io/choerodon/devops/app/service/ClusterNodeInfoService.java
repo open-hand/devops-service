@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import com.github.pagehelper.PageInfo;
 import org.springframework.data.domain.Pageable;
+
 import io.choerodon.devops.api.vo.AgentNodeInfoVO;
 import io.choerodon.devops.api.vo.ClusterNodeInfoVO;
 
@@ -40,9 +41,9 @@ public interface ClusterNodeInfoService {
     /**
      * page query the node information of the cluster
      *
-     * @param clusterId   the cluster id
-     * @param projectId   the project id
-     * @param pageable the page parameters
+     * @param clusterId the cluster id
+     * @param projectId the project id
+     * @param pageable  the page parameters
      * @return a page of nodes
      */
     PageInfo<ClusterNodeInfoVO> pageClusterNodeInfo(Long clusterId, Long projectId, Pageable pageable);
@@ -60,4 +61,13 @@ public interface ClusterNodeInfoService {
     ClusterNodeInfoVO queryNodeInfo(Long projectId, Long clusterId, String nodeName);
 
     List<String> queryNodeName(Long projectId, Long clusterId);
+
+    /**
+     * 获取集群节点的数量
+     *
+     * @param projectId 项目id
+     * @param clusterId 集群id
+     * @return 数量
+     */
+    long countNodes(Long projectId, Long clusterId);
 }

@@ -29,4 +29,9 @@ public interface DevopsEnvPodMapper extends Mapper<DevopsEnvPodDTO> {
 
     List<DevopsEnvPodDTO> queryPodByEnvIdAndInstanceId(@Param("instanceId") Long instanceId,
                                                        @Param("envId") Long envId);
+
+    int countByOptions(@Param("instanceId") Long instanceId,
+                       @Param("namespace") String namespace,
+                       @Param("status") String status,
+                       @Param("is_ready") Boolean isReady);
 }
