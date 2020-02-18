@@ -30,4 +30,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_polaris_record.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: "zmf", id: "2020-02-18-add-polaris-record-columns") {
+        addColumn(tableName: 'devops_polaris_record') {
+            column(name: 'kubernetes_version', type: 'VARCHAR(45)', remarks: '扫描出的集群版本', afterColumn: "errors")
+            column(name: 'pods', type: 'BIGINT UNSIGNED', remarks: 'pod数量', afterColumn: "kubernetes_version")
+            column(name: 'namespaces', type: 'BIGINT UNSIGNED', remarks: 'namespace数量', afterColumn: "pods")
+            column(name: 'nodes', type: 'BIGINT UNSIGNED', remarks: '节点数量', afterColumn: "namespaces")
+        }
+    }
 }
