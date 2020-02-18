@@ -192,7 +192,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         }
 
         DevopsPolarisSummaryVO summaryVO = new DevopsPolarisSummaryVO(Boolean.TRUE);
-        List<ClusterPolarisSummaryItemVO> items = devopsPolarisItemMapper.queryPolarisSummary(clusterId);
+        List<ClusterPolarisSummaryItemVO> items = devopsPolarisItemMapper.queryPolarisSummary(devopsPolarisRecordDTO.getId());
         Map<PolarisItemCategory, ClusterPolarisSummaryItemVO> map = new HashMap<>();
 
         items.forEach(i -> {
@@ -501,7 +501,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         // 分子
         long numerator = successes;
         // 四舍五入
-        return Math.round(numerator / denominator);
+        return Math.round(numerator / denominator * 100);
     }
 
     /**
