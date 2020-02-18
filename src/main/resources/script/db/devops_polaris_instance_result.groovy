@@ -31,4 +31,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_polaris_instance_result.groovy') 
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: "zmf", id: "2020-02-18-add-polaris-instance-result-columns-has-errors") {
+        addColumn(tableName: 'devops_polaris_instance_result') {
+            column(name: 'has_errors', type: 'TINYINT UNSIGNED', remarks: '是否有error级别的检测项', afterColumn: "detail_id")
+        }
+    }
 }

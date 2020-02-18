@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.alibaba.fastjson.JSONObject;
@@ -17,14 +18,12 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.polaris.PolarisControllerResultVO;
-import io.choerodon.devops.api.vo.polaris.PolarisResponsePayloadVO;
-import io.choerodon.devops.api.vo.polaris.PolarisResultItemVO;
-import io.choerodon.devops.api.vo.polaris.PolarisScanResultVO;
+import io.choerodon.devops.api.vo.polaris.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.enums.PolarisScanningStatus;
-import io.choerodon.devops.infra.enums.PolarisScopeType;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -73,6 +72,8 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
     @Autowired
     private ClusterNodeInfoService clusterNodeInfoService;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
 
     @Override
     public DevopsPolarisRecordVO queryRecordByScopeAndScopeId(Long projectId, String scope, Long scopeId) {
@@ -81,7 +82,8 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             return null;
         }
         DevopsPolarisRecordDTO devopsPolarisRecordDTO = queryRecordByScopeIdAndScope(scopeId, scope);
-        if (devopsPolarisRecordDTO == null) {
+        if (devopsPolarisRecordDTO == null
+                || !PolarisScanningStatus.FINISHED.getStatus().equals(devopsPolarisRecordDTO.getStatus())) {
             return handleNullRecord(projectId, scopeType, scopeId);
         }
         DevopsPolarisRecordVO devopsPolarisRecordVO = ConvertUtils.convertObject(devopsPolarisRecordDTO, DevopsPolarisRecordVO.class);
@@ -113,7 +115,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             int podCount = devopsEnvPodMapper.countByOptions(null, devopsEnvironmentDTO.getCode(), null, null);
             devopsPolarisRecordVO.setPods((long) podCount);
         } else {
-            int envCount = devopsEnvironmentMapper.countByOptions(scopeId, null);
+            int envCount = devopsEnvironmentMapper.countByOptions(scopeId, null, null, EnvironmentType.USER.getValue());
             devopsPolarisRecordVO.setNamespaces((long) envCount);
             devopsPolarisRecordVO.setNodes(clusterNodeInfoService.countNodes(projectId, scopeId));
         }
@@ -122,8 +124,13 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
 
     @Override
     public List<InstanceWithPolarisResultVO> queryEnvPolarisResult(Long projectId, Long envId) {
-        // TODO
-        return null;
+        DevopsPolarisRecordDTO recordDTO = queryRecordByScopeIdAndScope(envId, PolarisScopeType.ENV.getValue());
+        Long recordId = null;
+        if (recordDTO != null) {
+            recordId = recordDTO.getId();
+        }
+
+        return devopsPolarisInstanceResultMapper.queryInstanceWithResult(recordId, envId);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -172,14 +179,134 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
 
     @Override
     public DevopsPolarisSummaryVO clusterPolarisSummary(Long projectId, Long clusterId) {
-        // TODO
-        return null;
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+        if (devopsClusterDTO == null || !Objects.equals(devopsClusterDTO.getProjectId(), projectId)) {
+            throw new CommonException("error.cluster.not.exist", clusterId);
+        }
+
+        DevopsPolarisRecordDTO devopsPolarisRecordDTO = queryRecordByScopeIdAndScope(clusterId, PolarisScopeType.CLUSTER.getValue());
+        // 如果没检测过
+        if (devopsPolarisRecordDTO == null
+                || !PolarisScanningStatus.FINISHED.getStatus().equals(devopsPolarisRecordDTO.getStatus())) {
+            return new DevopsPolarisSummaryVO(Boolean.FALSE);
+        }
+
+        DevopsPolarisSummaryVO summaryVO = new DevopsPolarisSummaryVO(Boolean.TRUE);
+        List<ClusterPolarisSummaryItemVO> items = devopsPolarisItemMapper.queryPolarisSummary(clusterId);
+        Map<PolarisItemCategory, ClusterPolarisSummaryItemVO> map = new HashMap<>();
+
+        items.forEach(i -> {
+            PolarisItemCategory category = PolarisItemCategory.forValue(i.getCategory());
+            if (category != null) {
+                map.put(category, i);
+                countItemScore(i);
+            }
+        });
+
+        summaryVO.setHealthCheck(map.get(PolarisItemCategory.HEALTH_CHECK));
+        summaryVO.setImageCheck(map.get(PolarisItemCategory.IMAGES));
+        summaryVO.setNetworkCheck(map.get(PolarisItemCategory.NETWORKING));
+        summaryVO.setResourceCheck(map.get(PolarisItemCategory.RESOURCES));
+        summaryVO.setSecurityCheck(map.get(PolarisItemCategory.SECURITY));
+        return summaryVO;
+    }
+
+    private void countItemScore(ClusterPolarisSummaryItemVO item) {
+        long errors = 0;
+        long warnings = 0;
+        long successes = 0;
+        // TODO 想办法优化
+        for (ClusterPolarisSummaryItemContentVO content : item.getItems()) {
+            for (ClusterPolarisSummaryItemDetailVO detail : content.getItems()) {
+                if (Boolean.TRUE.equals(detail.getApproved())) {
+                    successes++;
+                } else {
+                    if (PolarisSeverity.IGNORE.getValue().equals(detail.getSeverity())) {
+                        successes++;
+                    } else if (PolarisSeverity.WARNING.getValue().equals(detail.getSeverity())) {
+                        warnings++;
+                    } else if (PolarisSeverity.ERROR.getValue().equals(detail.getSeverity())) {
+                        errors++;
+                        item.setHasErrors(Boolean.TRUE);
+                    }
+                }
+            }
+        }
+        item.setScore(countScore(successes, warnings, errors));
     }
 
     @Override
-    public DevopsPolarisEnvDetailVO clusterPolarisEnvDetail(Long projectId, Long clusterId) {
-        // TODO
-        return null;
+    public List<DevopsEnvWithPolarisResultVO> clusterPolarisEnvDetail(Long projectId, Long clusterId) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+        if (devopsClusterDTO == null || !Objects.equals(devopsClusterDTO.getProjectId(), projectId)) {
+            throw new CommonException("error.cluster.not.exist", clusterId);
+        }
+
+
+        DevopsPolarisRecordDTO recordDTO = queryRecordByScopeIdAndScope(clusterId, PolarisScopeType.CLUSTER.getValue());
+
+        if (recordDTO == null) {
+            return handleEnvWithoutPolaris(devopsPolarisInstanceResultMapper.queryEnvWithoutPolarisResult(clusterId));
+        }
+
+        return handleEnvWithPolaris(devopsPolarisInstanceResultMapper.queryEnvWithPolarisResult(recordDTO.getId()));
+    }
+
+    private List<DevopsEnvWithPolarisResultVO> handleEnvWithoutPolaris(List<DevopsEnvWithPolarisResultVO> results) {
+        Set<Long> projectIds = results.stream()
+                .map(DevopsEnvWithPolarisResultVO::getProjectId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        List<ProjectDTO> projectDTOS = baseServiceClientOperator.queryProjectsByIds(projectIds);
+
+        Map<Long, ProjectDTO> map = new HashMap<>();
+        if (!CollectionUtils.isEmpty(projectDTOS)) {
+            projectDTOS.forEach(p -> map.put(p.getId(), p));
+        }
+
+        results.forEach(result -> {
+            if (result.getProjectId() != null) {
+                ProjectDTO projectDTO = map.get(result.getProjectId());
+                if (projectDTO != null) {
+                    result.setProjectCode(projectDTO.getCode());
+                    result.setProjectName(projectDTO.getName());
+                }
+            }
+        });
+
+        return results;
+    }
+
+    private List<DevopsEnvWithPolarisResultVO> handleEnvWithPolaris(List<DevopsEnvWithPolarisResultVO> results) {
+        Set<Long> projectIds = results.stream()
+                .map(DevopsEnvWithPolarisResultVO::getProjectId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        List<ProjectDTO> projectDTOS = baseServiceClientOperator.queryProjectsByIds(projectIds);
+        Map<Long, ProjectDTO> map = new HashMap<>();
+        if (!CollectionUtils.isEmpty(projectDTOS)) {
+            projectDTOS.forEach(p -> map.put(p.getId(), p));
+        }
+
+        results.forEach(result -> {
+            if (result.getProjectId() != null) {
+                ProjectDTO projectDTO = map.get(result.getProjectId());
+                if (projectDTO != null) {
+                    result.setProjectName(projectDTO.getName());
+                    result.setProjectCode(projectDTO.getCode());
+                }
+            }
+            if (result.getItemHasErrors() != null) {
+                Optional<Boolean> hasErrors = result.getItemHasErrors().stream().reduce((one, another) -> mapNullToFalse(one) && mapNullToFalse(another));
+                hasErrors.ifPresent(result::setHasErrors);
+            }
+        });
+
+        return results;
+    }
+
+    private static Boolean mapNullToFalse(Boolean value) {
+        return value == null ? Boolean.FALSE : value;
     }
 
     @Override
@@ -252,11 +379,14 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             return;
         }
 
+
         PolarisScanResultVO polarisScanResultVO = message.getPolarisResult();
+        PolarisScanSummaryVO summaryVO = polarisScanResultVO.getSummary();
+
         recordDTO.setLastScanDateTime(polarisScanResultVO.getAuditTime());
-        recordDTO.setSuccesses(polarisScanResultVO.getSummary().getSuccesses());
-        recordDTO.setWarnings(polarisScanResultVO.getSummary().getWarnings());
-        recordDTO.setErrors(polarisScanResultVO.getSummary().getErrors());
+        recordDTO.setSuccesses(summaryVO.getSuccesses());
+        recordDTO.setWarnings(summaryVO.getWarnings());
+        recordDTO.setErrors(summaryVO.getErrors());
         recordDTO.setStatus(PolarisScanningStatus.FINISHED.getStatus());
         recordDTO.setScore(countScore(recordDTO.getSuccesses(), recordDTO.getWarnings(), recordDTO.getErrors()));
         recordDTO.setKubernetesVersion(polarisScanResultVO.getAuditData().getClusterInfo().getVersion());
@@ -297,10 +427,12 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         final Long finalEnvId = envId;
         final Long finalClusterId = clusterId;
         results.forEach(controllerResult -> {
+            int errorCount = 0;
             Long confirmedEnvId = null;
             if (finalEnvId == null) {
-                DevopsEnvironmentRepVO controllerEnv = devopsEnvironmentService.queryByCode(finalClusterId, controllerResult.getNamespace());
-                if (controllerEnv != null) {
+                DevopsEnvironmentDTO controllerEnv = devopsEnvironmentService.baseQueryByClusterIdAndCode(finalClusterId, controllerResult.getNamespace());
+                // 只考虑用户创建的环境
+                if (controllerEnv != null && EnvironmentType.USER.getValue().equals(controllerEnv.getType())) {
                     confirmedEnvId = controllerEnv.getId();
                 }
             } else {
@@ -333,14 +465,19 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             allItems.addAll(controllerItems);
             allItems.addAll(podItems);
             allItems.addAll(containerItems);
-            allItems.forEach(i -> {
+            for (PolarisResultItemVO i : allItems) {
                 DevopsPolarisItemDTO item = new DevopsPolarisItemDTO();
                 BeanUtils.copyProperties(template, item);
                 BeanUtils.copyProperties(i, item);
                 item.setType(i.getId());
                 item.setApproved(i.getSuccess());
+                if (Boolean.FALSE.equals(i.getSuccess())
+                        && PolarisSeverity.ERROR.getValue().equals(i.getSeverity())) {
+                    errorCount++;
+                }
                 items.add(item);
-            });
+            }
+            instanceResult.setHasErrors(errorCount > 0);
         });
 
         // 处理 devops_polaris_instance_result 数据

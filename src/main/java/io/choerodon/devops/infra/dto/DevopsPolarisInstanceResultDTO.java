@@ -40,6 +40,9 @@ public class DevopsPolarisInstanceResultDTO extends BaseDTO {
     @ApiModelProperty("此条资源详细扫描纪录id")
     private Long detailId;
 
+    @ApiModelProperty("是否有error级别的检测项")
+    private Boolean hasErrors;
+
     @Transient
     @ApiModelProperty("详情json")
     private String detail;
@@ -128,5 +131,13 @@ public class DevopsPolarisInstanceResultDTO extends BaseDTO {
 
     public void setDetail(String detail) {
         this.detail = detail;
+    }
+
+    public Boolean getHasErrors() {
+        return hasErrors;
+    }
+
+    public void setHasErrors(Boolean hasErrors) {
+        this.hasErrors = hasErrors;
     }
 }

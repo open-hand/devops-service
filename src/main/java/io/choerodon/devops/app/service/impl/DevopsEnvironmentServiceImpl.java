@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 
 import com.alibaba.fastjson.JSONArray;
@@ -1533,6 +1534,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
+    public Long countEnvByOption(final Long projectId, @Nullable Long clusterId, @Nullable Boolean isFailed) {
+        // 如果集群id有值，projectId就不传值
+        final Long projectIdValue = clusterId == null ? projectId : null;
+        return (long) devopsEnvironmentMapper.countByOptions(clusterId, projectIdValue, isFailed, EnvironmentType.USER.getValue());
+    }
+
+    @Override
     public List<DevopsClusterRepVO> listDevopsCluster(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         List<DevopsClusterRepVO> devopsClusterRepVOS = ConvertUtils.convertList(devopsClusterService.baseListByProjectId(projectId, projectDTO.getOrganizationId()), DevopsClusterRepVO.class);
@@ -1566,8 +1574,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public DevopsEnvironmentRepVO queryByCode(Long clusterId, String code) {
-        return ConvertUtils.convertObject(baseQueryByProjectIdAndCode(clusterId, code), DevopsEnvironmentRepVO.class);
+    public DevopsEnvironmentRepVO queryByCode(Long projectId, String code) {
+        return ConvertUtils.convertObject(baseQueryByProjectIdAndCode(projectId, code), DevopsEnvironmentRepVO.class);
     }
 
 

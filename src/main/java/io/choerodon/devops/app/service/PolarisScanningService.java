@@ -64,7 +64,7 @@ public interface PolarisScanningService {
      * @param clusterId 集群id
      * @return 报告
      */
-    DevopsPolarisEnvDetailVO clusterPolarisEnvDetail(Long projectId, Long clusterId);
+    List<DevopsEnvWithPolarisResultVO> clusterPolarisEnvDetail(Long projectId, Long clusterId);
 
     DevopsPolarisRecordDTO queryRecordByScopeIdAndScope(Long scopeId, String scope);
 

@@ -2,6 +2,21 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsPolarisItemMapper">
+    <resultMap id="polarisSummaryResultMap" type="io.choerodon.devops.api.vo.ClusterPolarisSummaryItemVO">
+        <result column="category" property="category"/>
+        <collection property="items" ofType="io.choerodon.devops.api.vo.ClusterPolarisSummaryItemContentVO" notNullColumn="resourceName" javaType="java.util.List">
+            <result property="namespace" column="namespace"/>
+            <result property="resourceName" column="resource_name"/>
+            <result property="resourceKind" column="resource_kind"/>
+            <collection property="items" ofType="io.choerodon.devops.api.vo.ClusterPolarisSummaryItemDetailVO" javaType="java.util.List">
+                <result property="type" column="type"/>
+                <result property="approved" column="is_approved"/>
+                <result property="severity" column="severity"/>
+                <result property="message" column="message"/>
+            </collection>
+        </collection>
+    </resultMap>
+
     <insert id="batchInsert">
         INSERT INTO devops_polaris_item(
         env_id, namespace, resource_name, resource_kind, severity, is_approved, record_id, type, category, message) VALUES
@@ -9,4 +24,18 @@
             (#{item.envId},#{item.namespace},#{item.resourceName},#{item.resourceKind},#{item.severity},#{item.isApproved},#{item.recordId},#{item.type},#{item.category},#{item.message})
         </foreach>
     </insert>
+
+    <select id="queryPolarisSummary" resultMap="polarisSummaryResultMap">
+        SELECT
+        dpi.category,
+        dpi.namespace,
+        dpi.resource_name,
+        dpi.resource_kind,
+        dpi.message,
+        dpi.severity,
+        dpi.is_approved,
+        dpi.type
+        FROM devops_polaris_item dpi
+        WHERE dpi.record_id = #{recordId,jdbcType=BIGINT}
+    </select>
 </mapper>

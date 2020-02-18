@@ -74,7 +74,7 @@ public class PolarisScanningController {
     @ApiOperation("获取扫描的集群环境详情报告")
     @Permission(roles = {InitRoleCode.PROJECT_OWNER})
     @GetMapping("/clusters/{cluster_id}/env_detail")
-    public ResponseEntity<DevopsPolarisEnvDetailVO> clusterPolarisEnvDetail(
+    public ResponseEntity<List<DevopsEnvWithPolarisResultVO>> clusterPolarisEnvDetail(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam("需要扫描的集群的id")
