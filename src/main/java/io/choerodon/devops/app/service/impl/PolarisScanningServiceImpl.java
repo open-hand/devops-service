@@ -193,9 +193,11 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
 
         DevopsPolarisSummaryVO summaryVO = new DevopsPolarisSummaryVO(Boolean.TRUE);
         List<ClusterPolarisSummaryItemVO> items = devopsPolarisItemMapper.queryPolarisSummary(devopsPolarisRecordDTO.getId());
+        LOGGER.info("Polaris: item size: {}", items.size());
         Map<PolarisItemCategory, ClusterPolarisSummaryItemVO> map = new HashMap<>();
 
         items.forEach(i -> {
+            LOGGER.info("Polaris: category: {}", i.getCategory());
             PolarisItemCategory category = PolarisItemCategory.forValue(i.getCategory());
             if (category != null) {
                 map.put(category, i);
