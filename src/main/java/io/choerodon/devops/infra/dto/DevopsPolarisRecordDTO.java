@@ -47,6 +47,18 @@ public class DevopsPolarisRecordDTO extends BaseDTO {
     @ApiModelProperty("错误的检测项数量")
     private Long errors;
 
+    @ApiModelProperty("扫描出的集群版本")
+    private String kubernetesVersion;
+
+    @ApiModelProperty("pod数量")
+    private Long pods;
+
+    @ApiModelProperty("namespace数量")
+    private Long namespaces;
+
+    @ApiModelProperty("节点数量")
+    private Long nodes;
+
     public Long getId() {
         return id;
     }
@@ -117,5 +129,37 @@ public class DevopsPolarisRecordDTO extends BaseDTO {
 
     public void setErrors(Long errors) {
         this.errors = errors;
+    }
+
+    public String getKubernetesVersion() {
+        return kubernetesVersion;
+    }
+
+    public void setKubernetesVersion(String kubernetesVersion) {
+        this.kubernetesVersion = kubernetesVersion;
+    }
+
+    public Long getPods() {
+        return pods;
+    }
+
+    public void setPods(Long pods) {
+        this.pods = pods;
+    }
+
+    public Long getNamespaces() {
+        return namespaces;
+    }
+
+    public void setNamespaces(Long namespaces) {
+        this.namespaces = namespaces;
+    }
+
+    public Long getNodes() {
+        return nodes;
+    }
+
+    public void setNodes(Long nodes) {
+        this.nodes = nodes;
     }
 }

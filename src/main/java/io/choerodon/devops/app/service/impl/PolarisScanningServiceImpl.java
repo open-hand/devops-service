@@ -174,20 +174,22 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         recordDTO.setWarnings(polarisScanResultVO.getSummary().getWarnings());
         recordDTO.setErrors(polarisScanResultVO.getSummary().getErrors());
         recordDTO.setStatus(PolarisScanningStatus.FINISHED.getStatus());
+        recordDTO.setKubernetesVersion(polarisScanResultVO.getAuditData().getClusterInfo().getVersion());
+        recordDTO.setPods(polarisScanResultVO.getAuditData().getClusterInfo().getPods());
+        recordDTO.setNamespaces(polarisScanResultVO.getAuditData().getClusterInfo().getNamespaces());
+        recordDTO.setNodes(polarisScanResultVO.getAuditData().getClusterInfo().getNodes());
         checkedUpdate(recordDTO);
 
-        handleAuditData(recordId, polarisScanResultVO.getAuditData());
+        handleResult(recordId, polarisScanResultVO.getAuditData().getResults());
     }
 
     /**
      * 处理详细的数据
      *
-     * @param recordId               扫描纪录id
-     * @param polarisScanAuditDataVO 详细的扫描数据
+     * @param recordId 扫描纪录id
+     * @param results  详细的扫描数据
      */
-    private void handleAuditData(Long recordId, PolarisScanAuditDataVO polarisScanAuditDataVO) {
-        handleClusterInfo(polarisScanAuditDataVO.getClusterInfo());
-        List<PolarisControllerResultVO> results = polarisScanAuditDataVO.getResults();
+    private void handleResult(Long recordId, List<PolarisControllerResultVO> results) {
         if (CollectionUtils.isEmpty(results)) {
             LOGGER.info("Polaris: controller results empty... {}", results);
             return;
@@ -305,10 +307,6 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             itemList.add(item);
         });
         return itemList;
-    }
-
-    private void handleClusterInfo(ClusterSummaryInfoVO clusterSummaryInfoVO) {
-        // TODO
     }
 
     /**
