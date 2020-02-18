@@ -1,6 +1,7 @@
 import React from 'react';
 import { Action } from '@choerodon/boot';
 import { Table } from 'choerodon-ui/pro';
+import map from 'lodash/map';
 import { FormattedMessage } from 'react-intl';
 import TimePopover from '../../../../../components/time-popover';
 import { useEnvironmentStore } from './stores';
@@ -35,7 +36,7 @@ export default function Permissions() {
         action: handleDelete,
       },
     ];
-    const isOwner = record.get('role') === 'member';
+    const isOwner = record.get('gitlabProjectOwner');
     return isOwner && <Action data={actionData} />;
   }
 
@@ -44,7 +45,8 @@ export default function Permissions() {
   }
 
   function renderRole({ value }) {
-    return value && <FormattedMessage id={value} />;
+    const roles = map(value || [], 'name');
+    return roles.join();
   }
 
   function getActionColumn() {
@@ -65,7 +67,7 @@ export default function Permissions() {
         <Column name="realName" sortable />
         {getActionColumn()}
         <Column name="loginName" sortable />
-        <Column name="role" renderer={renderRole} />
+        <Column name="roles" renderer={renderRole} />
         <Column name="creationDate" renderer={renderDate} sortable />
       </Table>
     </div>
