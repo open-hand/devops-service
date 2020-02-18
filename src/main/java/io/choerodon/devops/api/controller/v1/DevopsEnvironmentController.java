@@ -611,7 +611,7 @@ public class DevopsEnvironmentController {
      * @return 环境数量
      */
     @ApiOperation("查询环境的数量")
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER}, type = ResourceType.PROJECT)
     @GetMapping("/count_by_options")
     public ResponseEntity<Long> countEnvByOptions(
             @ApiParam("项目id")
