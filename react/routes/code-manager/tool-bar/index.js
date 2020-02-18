@@ -17,7 +17,6 @@ const CodeManagerToolBar = injectIntl(inject('AppState')(observer((props) => {
   const { appServiceDs, selectAppDs } = useCodeManagerStore();
   useEffect(() => {
     handleRefresh();
-    console.log(selectAppDs.current.get('appServiceId'));
   }, [selectAppDs.current]);
 
   const { name, intl: { formatMessage } } = props;

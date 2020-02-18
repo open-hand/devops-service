@@ -221,8 +221,8 @@ function Branch(props) {
         {record.get('commitUserUrl') && record.get('commitUserName') ? <Tooltip title={`${record.get('commitUserName')}${record.get('commitUserRealName') ? ` (${record.get('commitUserRealName')})` : ''}`}>
           <div className="branch-user-img" style={{ backgroundImage: `url(${record.get('commitUserUrl')})` }} />
         </Tooltip> : <Tooltip title={record.get('commitUserName') ? `${record.get('commitUserName')}${record.get('commitUserRealName') ? ` (${record.get('commitUserRealName')})` : ''}` : ''}>
-            <div className="branch-user-img">{record.get('commitUserName') && record.get('commitUserName').slice(0, 1)}</div>
-          </Tooltip>}
+          <div className="branch-user-img">{record.get('commitUserName') && record.get('commitUserName').slice(0, 1)}</div>
+        </Tooltip>}
         <MouserOverWrapper text={text} width={0.2} className="branch-col-icon">
           {text}
         </MouserOverWrapper>
