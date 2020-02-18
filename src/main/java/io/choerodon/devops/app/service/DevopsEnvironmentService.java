@@ -218,13 +218,13 @@ public interface DevopsEnvironmentService {
     void setEnvErrStatus(String data, Long projectId);
 
     /**
-     * 根据集群id和环境code查询环境
+     * 根据项目id和环境code查询环境
      *
-     * @param clusterId 集群id
+     * @param projectId 项目id
      * @param code      环境code
      * @return 环境信息
      */
-    DevopsEnvironmentRepVO queryByCode(Long clusterId, String code);
+    DevopsEnvironmentRepVO queryByCode(Long projectId, String code);
 
 
     /**

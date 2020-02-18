@@ -430,8 +430,9 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             int errorCount = 0;
             Long confirmedEnvId = null;
             if (finalEnvId == null) {
-                DevopsEnvironmentRepVO controllerEnv = devopsEnvironmentService.queryByCode(finalClusterId, controllerResult.getNamespace());
-                if (controllerEnv != null) {
+                DevopsEnvironmentDTO controllerEnv = devopsEnvironmentService.baseQueryByClusterIdAndCode(finalClusterId, controllerResult.getNamespace());
+                // 只考虑用户创建的环境
+                if (controllerEnv != null && EnvironmentType.USER.getValue().equals(controllerEnv.getType())) {
                     confirmedEnvId = controllerEnv.getId();
                 }
             } else {
