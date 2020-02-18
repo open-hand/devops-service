@@ -11,11 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AgentNodeInfoVO;
 import io.choerodon.devops.api.vo.ClusterNodeInfoVO;
@@ -205,5 +205,12 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                 .map(ClusterNodeInfoVO::getNodeName)
                 .collect(Collectors.toList());
 
+    }
+
+    @Override
+    public long countNodes(Long projectId, Long clusterId) {
+        String key = getRedisClusterKey(clusterId, projectId);
+        Long count = stringRedisTemplate.opsForList().size(key);
+        return count == null ? 0 : count;
     }
 }

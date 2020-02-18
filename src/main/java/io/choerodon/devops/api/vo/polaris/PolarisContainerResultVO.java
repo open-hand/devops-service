@@ -2,12 +2,14 @@ package io.choerodon.devops.api.vo.polaris;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author zmf
  * @since 2/14/20
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PolarisContainerResultVO {
 
     @ApiModelProperty("容器name")

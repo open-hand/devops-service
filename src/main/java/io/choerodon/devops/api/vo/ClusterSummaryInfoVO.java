@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -11,6 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @author zmf
  * @since 2/13/20
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ClusterSummaryInfoVO {
     @ApiModelProperty("Kubernetes版本")
     private String version;

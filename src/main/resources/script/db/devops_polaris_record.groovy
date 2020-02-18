@@ -39,4 +39,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_polaris_record.groovy') {
             column(name: 'nodes', type: 'BIGINT UNSIGNED', remarks: '节点数量', afterColumn: "namespaces")
         }
     }
+
+    changeSet(author: "zmf", id: "2020-02-18-add-polaris-record-columns-score") {
+        addColumn(tableName: 'devops_polaris_record') {
+            column(name: 'score', type: 'BIGINT UNSIGNED', remarks: '扫描结果的得分', afterColumn: "errors")
+        }
+    }
 }

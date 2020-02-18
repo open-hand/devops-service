@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
-
 import javax.annotation.Nullable;
 
 import com.alibaba.fastjson.JSONObject;
@@ -17,15 +16,18 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.vo.ClusterSummaryInfoVO;
-import io.choerodon.devops.api.vo.DevopsEnvironmentRepVO;
-import io.choerodon.devops.api.vo.polaris.*;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.polaris.PolarisControllerResultVO;
+import io.choerodon.devops.api.vo.polaris.PolarisResponsePayloadVO;
+import io.choerodon.devops.api.vo.polaris.PolarisResultItemVO;
+import io.choerodon.devops.api.vo.polaris.PolarisScanResultVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.PolarisScanningStatus;
 import io.choerodon.devops.infra.enums.PolarisScopeType;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.MapperUtil;
 
@@ -63,10 +65,70 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     private DevopsPolarisInstanceResultMapper devopsPolarisInstanceResultMapper;
     @Autowired
     private DevopsPolarisResultDetailMapper devopsPolarisResultDetailMapper;
+    @Autowired
+    private AppServiceInstanceMapper appServiceInstanceMapper;
+    @Autowired
+    private DevopsEnvPodMapper devopsEnvPodMapper;
+    @Autowired
+    private DevopsEnvironmentMapper devopsEnvironmentMapper;
+    @Autowired
+    private ClusterNodeInfoService clusterNodeInfoService;
+
+    @Override
+    public DevopsPolarisRecordVO queryRecordByScopeAndScopeId(Long projectId, String scope, Long scopeId) {
+        PolarisScopeType scopeType = PolarisScopeType.forValue(scope);
+        if (scopeType == null) {
+            return null;
+        }
+        DevopsPolarisRecordDTO devopsPolarisRecordDTO = queryRecordByScopeIdAndScope(scopeId, scope);
+        if (devopsPolarisRecordDTO == null) {
+            return handleNullRecord(projectId, scopeType, scopeId);
+        }
+        DevopsPolarisRecordVO devopsPolarisRecordVO = ConvertUtils.convertObject(devopsPolarisRecordDTO, DevopsPolarisRecordVO.class);
+        if (PolarisScopeType.ENV.getValue().equals(scope)) {
+            int instanceCount = appServiceInstanceMapper.countByOptions(scopeId, null, null);
+            devopsPolarisRecordVO.setInstanceCount((long) instanceCount);
+        }
+        return devopsPolarisRecordVO;
+    }
+
+    /**
+     * 处理未扫描过时需要给的数据
+     *
+     * @param projectId 项目id
+     * @param scope     扫描范围
+     * @param scopeId   envId或clusterId
+     * @return 基础的数据
+     */
+    private DevopsPolarisRecordVO handleNullRecord(Long projectId, PolarisScopeType scope, Long scopeId) {
+        // TODO 获取Kubernetes版本
+        DevopsPolarisRecordVO devopsPolarisRecordVO = new DevopsPolarisRecordVO();
+        if (PolarisScopeType.ENV == Objects.requireNonNull(scope)) {
+            int instanceCount = appServiceInstanceMapper.countByOptions(scopeId, null, null);
+            devopsPolarisRecordVO.setInstanceCount((long) instanceCount);
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(scopeId);
+            if (devopsEnvironmentDTO == null) {
+                return devopsPolarisRecordVO;
+            }
+            int podCount = devopsEnvPodMapper.countByOptions(null, devopsEnvironmentDTO.getCode(), null, null);
+            devopsPolarisRecordVO.setPods((long) podCount);
+        } else {
+            int envCount = devopsEnvironmentMapper.countByOptions(scopeId, null);
+            devopsPolarisRecordVO.setNamespaces((long) envCount);
+            devopsPolarisRecordVO.setNodes(clusterNodeInfoService.countNodes(projectId, scopeId));
+        }
+        return devopsPolarisRecordVO;
+    }
+
+    @Override
+    public DevopsEnvResultVO queryEnvPolarisResult(Long projectId, Long envId) {
+        // TODO
+        return null;
+    }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public DevopsPolarisRecordDTO scanEnv(Long envId) {
+    public DevopsPolarisRecordDTO scanEnv(Long projectId, Long envId) {
         LOGGER.info("Scanning env {}", envId);
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         if (devopsEnvironmentDTO == null) {
@@ -90,7 +152,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public DevopsPolarisRecordDTO scanCluster(Long clusterId) {
+    public DevopsPolarisRecordDTO scanCluster(Long projectId, Long clusterId) {
         LOGGER.info("scanning cluster  {}", clusterId);
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO == null) {
@@ -108,13 +170,34 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         return devopsPolarisRecordDTO;
     }
 
+    @Override
+    public DevopsPolarisSummaryVO clusterPolarisSummary(Long projectId, Long clusterId) {
+        // TODO
+        return null;
+    }
+
+    @Override
+    public DevopsPolarisEnvDetailVO clusterPolarisEnvDetail(Long projectId, Long clusterId) {
+        // TODO
+        return null;
+    }
+
+    @Override
+    public DevopsPolarisRecordDTO queryRecordByScopeIdAndScope(Long scopeId, String scope) {
+        // TODO 待使用索引优化
+        DevopsPolarisRecordDTO devopsPolarisRecordDTO = new DevopsPolarisRecordDTO();
+        devopsPolarisRecordDTO.setScope(Objects.requireNonNull(scope));
+        devopsPolarisRecordDTO.setScopeId(Objects.requireNonNull(scopeId));
+        return devopsPolarisRecordMapper.selectOne(devopsPolarisRecordDTO);
+    }
+
     private DevopsPolarisRecordDTO createOrUpdateRecord(String scope, Long scopeId) {
         DevopsPolarisRecordDTO devopsPolarisRecordDTO = new DevopsPolarisRecordDTO();
         devopsPolarisRecordDTO.setScope(scope);
         devopsPolarisRecordDTO.setScopeId(scopeId);
 
         // 查看数据库是否有现有纪录
-        DevopsPolarisRecordDTO existedRecord = devopsPolarisRecordMapper.selectOne(devopsPolarisRecordDTO);
+        DevopsPolarisRecordDTO existedRecord = queryRecordByScopeIdAndScope(scopeId, scope);
 
         if (existedRecord != null) {
             // 看看是否是应该超时了
@@ -170,16 +253,19 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         }
 
         PolarisScanResultVO polarisScanResultVO = message.getPolarisResult();
+        recordDTO.setLastScanDateTime(polarisScanResultVO.getAuditTime());
         recordDTO.setSuccesses(polarisScanResultVO.getSummary().getSuccesses());
         recordDTO.setWarnings(polarisScanResultVO.getSummary().getWarnings());
         recordDTO.setErrors(polarisScanResultVO.getSummary().getErrors());
         recordDTO.setStatus(PolarisScanningStatus.FINISHED.getStatus());
+        recordDTO.setScore(countScore(recordDTO.getSuccesses(), recordDTO.getWarnings(), recordDTO.getErrors()));
         recordDTO.setKubernetesVersion(polarisScanResultVO.getAuditData().getClusterInfo().getVersion());
         recordDTO.setPods(polarisScanResultVO.getAuditData().getClusterInfo().getPods());
         recordDTO.setNamespaces(polarisScanResultVO.getAuditData().getClusterInfo().getNamespaces());
         recordDTO.setNodes(polarisScanResultVO.getAuditData().getClusterInfo().getNodes());
         checkedUpdate(recordDTO);
 
+        // 处理扫描结果项
         handleResult(recordId, polarisScanResultVO.getAuditData().getResults());
     }
 
@@ -261,6 +347,24 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         handleInstanceResultList(rawInstanceResultList);
         // 批量插入 devops_polaris_item 纪录
         devopsPolarisItemMapper.batchInsert(items);
+    }
+
+    /**
+     * 计算分值
+     *
+     * @param successes 通过项
+     * @param warnings  警告项
+     * @param errors    错误项
+     * @return 分值
+     */
+    private long countScore(Long successes, Long warnings, Long errors) {
+        // 分值： pass项数量/（pass项数量+1/2warning项数量+error项数量）
+        // 分母
+        double denominator = (successes + warnings / 2.0 + errors);
+        // 分子
+        long numerator = successes;
+        // 四舍五入
+        return Math.round(numerator / denominator);
     }
 
     /**

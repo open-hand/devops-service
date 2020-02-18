@@ -1,5 +1,9 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.api.vo.DevopsEnvResultVO;
+import io.choerodon.devops.api.vo.DevopsPolarisEnvDetailVO;
+import io.choerodon.devops.api.vo.DevopsPolarisRecordVO;
+import io.choerodon.devops.api.vo.DevopsPolarisSummaryVO;
 import io.choerodon.devops.api.vo.polaris.PolarisResponsePayloadVO;
 import io.choerodon.devops.infra.dto.DevopsPolarisRecordDTO;
 
@@ -9,20 +13,61 @@ import io.choerodon.devops.infra.dto.DevopsPolarisRecordDTO;
  */
 public interface PolarisScanningService {
     /**
-     * 扫描环境
+     * 查询扫描纪录
      *
-     * @param envId 环境id
+     * @param projectId 项目id
+     * @param scope     扫描的范围 env/cluster
+     * @param scopeId   对应scope的envId或者clusterId
      * @return 扫描纪录
      */
-    DevopsPolarisRecordDTO scanEnv(Long envId);
+    DevopsPolarisRecordVO queryRecordByScopeAndScopeId(Long projectId, String scope, Long scopeId);
+
+    /**
+     * 获取扫描的环境报告
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @return 扫描报告
+     */
+    DevopsEnvResultVO queryEnvPolarisResult(Long projectId, Long envId);
+
+    /**
+     * 扫描环境
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @return 扫描纪录
+     */
+    DevopsPolarisRecordDTO scanEnv(Long projectId, Long envId);
 
     /**
      * 扫描集群
      *
+     * @param projectId 项目id
      * @param clusterId 集群id
      * @return 扫描纪录
      */
-    DevopsPolarisRecordDTO scanCluster(Long clusterId);
+    DevopsPolarisRecordDTO scanCluster(Long projectId, Long clusterId);
+
+    /**
+     * 获取扫描的集群概览报告
+     *
+     * @param projectId 项目id
+     * @param clusterId 集群id
+     * @return 报告
+     */
+    DevopsPolarisSummaryVO clusterPolarisSummary(Long projectId, Long clusterId);
+
+    /**
+     * 获取扫描的集群环境详情报告
+     *
+     * @param projectId 项目id
+     * @param clusterId 集群id
+     * @return 报告
+     */
+    DevopsPolarisEnvDetailVO clusterPolarisEnvDetail(Long projectId, Long clusterId);
+
+    DevopsPolarisRecordDTO queryRecordByScopeIdAndScope(Long scopeId, String scope);
 
     /**
      * 处理来自agent的polaris扫描结果消息
