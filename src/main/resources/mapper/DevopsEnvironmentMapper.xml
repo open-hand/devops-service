@@ -151,7 +151,7 @@
                       any_value(env.cluster_id) as           cluster_id,
  			          COUNT(dp.namespace = env.code and env.id = ins.env_id)  AS pod_count,
 			          COUNT( dp.`status` = 'Running'  AND dp.is_ready = TRUE  AND dp.namespace = env.code  AND env.id = ins.env_id)  AS pod_running_count
-         FROM devops_env env
+
                 FROM devops_env env
                          LEFT JOIN devops_env_app_service env_app ON env.id = env_app.env_id
                          LEFT JOIN devops_app_service app ON env_app.app_service_id = app.id AND (app.is_active = TRUE OR app.is_active is NULL)
