@@ -1574,8 +1574,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public DevopsEnvironmentRepVO queryByCode(Long clusterId, String code) {
-        return ConvertUtils.convertObject(baseQueryByProjectIdAndCode(clusterId, code), DevopsEnvironmentRepVO.class);
+    public DevopsEnvironmentRepVO queryByCode(Long projectId, String code) {
+        return ConvertUtils.convertObject(baseQueryByProjectIdAndCode(projectId, code), DevopsEnvironmentRepVO.class);
     }
 
 
