@@ -2277,7 +2277,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 List<Long> appServiceIds = new ArrayList<>();
                 baseServiceClientOperator.listIamProjectByOrgId(organizationId)
                         .forEach(pro ->
-                                baseListAll(pro.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
+                                baseSelectAll(pro.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
                         );
                 list.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, serviceType, params));
                 Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()
@@ -2327,6 +2327,12 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     private List<AppServiceDTO> baseListAll(Long projectId) {
         return appServiceMapper.listAll(projectId);
+    }
+
+    private List<AppServiceDTO> baseSelectAll(Long projectId) {
+        AppServiceDTO appServiceDTO = new AppServiceDTO();
+        appServiceDTO.setProjectId(projectId);
+        return appServiceMapper.select(appServiceDTO);
     }
 
     private AppServiceDTO fromImportVoToDto(AppServiceImportVO appServiceImportVO) {
