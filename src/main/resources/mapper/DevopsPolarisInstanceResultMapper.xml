@@ -2,10 +2,40 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsPolarisInstanceResultMapper">
+    <resultMap id="instanceWithResultMap" type="io.choerodon.devops.api.vo.InstanceWithPolarisResultVO">
+        <result column="instance_id" property="instanceId"/>
+        <result column="instance_code" property="instanceCode"/>
+        <result column="instance_status" property="instanceStatus"/>
+        <result column="app_service_code" property="appServiceCode"/>
+        <result column="app_service_name" property="appServiceName"/>
+        <result column="app_service_id" property="appServiceId"/>
+        <result column="env_id" property="envId"/>
+        <collection property="resultJson" ofType="java.lang.String" javaType="java.util.List" notNullColumn="detail_json">
+            <result column="detail_json"/>
+        </collection>
+    </resultMap>
+
     <insert id="batchInsert">
         INSERT INTO devops_polaris_instance_result(env_id, instance_id, namespace, resource_name, resource_kind, record_id, detail_id) VALUES
         <foreach collection="items" item="item" separator=",">
             (#{item.envId},#{item.instanceId},#{item.namespace},#{item.resourceName},#{item.resourceKind},#{item.recordId},#{item.detailId})
         </foreach>
     </insert>
+
+    <select id="queryInstanceWithResult" resultMap="instanceWithResultMap">
+        SELECT
+        dasi.env_id,
+        dasi.id AS instance_id,
+        dasi.code AS instance_code,
+        dasi.status AS instance_status,
+        das.id AS app_service_id,
+        das.code AS app_service_code,
+        das.name AS app_service_name,
+        dprd.detail AS detail_json
+        FROM devops_app_service_instance dasi
+        LEFT JOIN devops_app_service das ON dasi.app_service_id = das.id
+        LEFT JOIN devops_polaris_instance_result dpir ON dasi.id = dpir.instance_id AND dpir.record_id = #{recordId,jdbcType=BIGINT}
+        LEFT JOIN devops_polaris_result_detail dprd ON dpir.detail_id = dprd.id
+        WHERE dasi.env_id = #{envId,jdbcType=BIGINT}
+    </select>
 </mapper>

@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,10 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.annotation.Permission;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsEnvResultVO;
-import io.choerodon.devops.api.vo.DevopsPolarisEnvDetailVO;
-import io.choerodon.devops.api.vo.DevopsPolarisRecordVO;
-import io.choerodon.devops.api.vo.DevopsPolarisSummaryVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.PolarisScanningService;
 import io.choerodon.devops.infra.dto.DevopsPolarisRecordDTO;
 
@@ -42,7 +41,7 @@ public class PolarisScanningController {
     @ApiOperation("获取扫描的环境报告")
     @Permission(roles = {InitRoleCode.PROJECT_OWNER})
     @GetMapping("/envs/{env_id}")
-    public ResponseEntity<DevopsEnvResultVO> queryEnvPolarisResult(
+    public ResponseEntity<List<InstanceWithPolarisResultVO>> queryEnvPolarisResult(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam("需要扫描的环境的id")
