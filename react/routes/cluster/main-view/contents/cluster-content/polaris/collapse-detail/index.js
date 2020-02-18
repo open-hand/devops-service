@@ -1,10 +1,11 @@
-import React, { Fragment, Suspense, useMemo } from 'react';
+import React, { useState, Fragment, Suspense, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs } from 'choerodon-ui/pro';
 import map from 'lodash/map';
 import { Collapse } from 'choerodon-ui';
 import { useClusterMainStore } from '../../../../stores';
 import { useClusterContentStore } from '../../stores';
+import Progress from '../components/Progress';
 
 import './index.less';
 
@@ -26,6 +27,9 @@ const collapseDetail = observer((props) => {
     },
     ClusterDetailDs,
   } = useClusterContentStore();
+
+  const [loading, setLoading] = useState(false);
+  const [num, setNum] = useState(80);
 
   const envs = useMemo(() => ([
     {
@@ -89,6 +93,10 @@ const collapseDetail = observer((props) => {
           {formatMessage({ id: `${intlPrefix}.polarise.score` })}:
         </span>
         <span>{value}%</span>
+        <Progress
+          loading={loading}
+          num={num}
+        />
       </div>
     );
   }

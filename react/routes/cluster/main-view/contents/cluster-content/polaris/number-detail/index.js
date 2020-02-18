@@ -1,8 +1,9 @@
-import React, { Fragment, Suspense, useMemo } from 'react';
+import React, { Fragment, Suspense, useMemo, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Spin, Button, Icon } from 'choerodon-ui';
 import { useClusterMainStore } from '../../../../stores';
 import { useClusterContentStore } from '../../stores';
+import Radar from '../components/Radar';
 import './index.less';
 
 const checkGroup = {
@@ -20,6 +21,9 @@ const numberDetail = observer((props) => {
     prefixCls,
   } = useClusterMainStore();
 
+  const [num, setNum] = useState(null);
+  const [loading, setLoading] = useState(false);
+
   const {
     contentStore: {
       setTabKey,
@@ -30,6 +34,20 @@ const numberDetail = observer((props) => {
     },
     ClusterDetailDs,
   } = useClusterContentStore();
+
+  const handleScan = () => {
+    if (loading) {
+      setNum(83);
+      setLoading(false);
+    } else {
+      setNum(null);
+      setLoading(true);
+    }
+    // setTimeout(() => {
+    //   setNum(83);
+    //   setLoading(false);
+    // }, 3000);
+  };
 
   function refresh() {
 
@@ -53,6 +71,7 @@ const numberDetail = observer((props) => {
               boShadow: '0px 2px 4px 0px rgba(106,117,203,0.6)',
               borderRadius: '6px',
             }}
+            onClick={handleScan}
           >手动扫描</Button>
 
           {/* 最新一次扫描时间 */}
@@ -79,14 +98,10 @@ const numberDetail = observer((props) => {
           </div>
 
           {/* ---------------- 皓天！！！这个雷达的组件你可以替换掉，换成动画 ------------- */}
-          <div className={`${prefixCls}-number-leftDown-right`}>
-
-            <div className={`${prefixCls}-number-leftDown-right-rate`}>
-              reigh
-            </div>
-
-          </div>
-
+          <Radar
+            num={num}
+            loading={loading}
+          />
         </div>
 
       </div>
