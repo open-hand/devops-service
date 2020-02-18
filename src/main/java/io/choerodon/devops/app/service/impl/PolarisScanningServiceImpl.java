@@ -67,6 +67,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public DevopsPolarisRecordDTO scanEnv(Long envId) {
+        LOGGER.info("Scanning env {}", envId);
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         if (devopsEnvironmentDTO == null) {
             throw new CommonException("error.env.id.not.exist", envId);
@@ -82,12 +83,15 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         DevopsPolarisRecordDTO devopsPolarisRecordDTO = createOrUpdateRecord(PolarisScopeType.ENV.getValue(), envId);
 
         agentCommandService.scanCluster(clusterId, devopsPolarisRecordDTO.getId(), devopsEnvironmentDTO.getCode());
+        LOGGER.info("Finish scanning env {}", envId);
+        LOGGER.info("record: {}", devopsPolarisRecordDTO);
         return devopsPolarisRecordDTO;
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public DevopsPolarisRecordDTO scanCluster(Long clusterId) {
+        LOGGER.info("scanning cluster  {}", clusterId);
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO == null) {
             throw new CommonException("error.cluster.not.exist", clusterId);
@@ -99,6 +103,8 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         DevopsPolarisRecordDTO devopsPolarisRecordDTO = createOrUpdateRecord(PolarisScopeType.CLUSTER.getValue(), clusterId);
 
         agentCommandService.scanCluster(clusterId, devopsPolarisRecordDTO.getId(), null);
+        LOGGER.info("Finish scanning cluster {}", clusterId);
+        LOGGER.info("record: {}", devopsPolarisRecordDTO);
         return devopsPolarisRecordDTO;
     }
 
