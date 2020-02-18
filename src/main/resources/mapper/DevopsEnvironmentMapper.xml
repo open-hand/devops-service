@@ -497,6 +497,12 @@
       <if test="clusterId != null">
           AND de.cluster_id = #{clusterId,jdbcType=BIGINT}
       </if>
+      <if test="projectId != null">
+          AND de.project_id = #{projectId,jdbcType=BIGINT}
+      </if>
+      <if test="isFailed != null">
+          AND de.is_failed = #{isFailed,jdbcType=BOOLEAN}
+      </if>
       <if test="type != null and type != ''">
           AND de.type = #{type,jdbcType=VARCHAR}
       </if>
