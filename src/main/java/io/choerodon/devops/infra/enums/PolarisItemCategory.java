@@ -1,6 +1,8 @@
 package io.choerodon.devops.infra.enums;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Polaris检查项的类别
@@ -17,9 +19,19 @@ public enum PolarisItemCategory {
 
     private String value;
 
-    @SuppressWarnings("unchecked")
-    private static final JacksonJsonEnumHelper<PolarisItemCategory> enumHelper = new JacksonJsonEnumHelper(PolarisItemCategory.class);
+    private static final Map<String, PolarisItemCategory> valuesMap;
 
+    static {
+        PolarisItemCategory[] values = values();
+
+        Map<String, PolarisItemCategory> map = new HashMap<>();
+
+        for (PolarisItemCategory polarisItemCategory : values) {
+            map.put(polarisItemCategory.value, polarisItemCategory);
+        }
+
+        valuesMap = Collections.unmodifiableMap(map);
+    }
 
     PolarisItemCategory(String value) {
         this.value = value;
@@ -29,8 +41,7 @@ public enum PolarisItemCategory {
         return value;
     }
 
-    @JsonCreator
-    public static PolarisItemCategory forValue(String value) {
-        return enumHelper.forValue(value);
+    public PolarisItemCategory forValue(String value) {
+        return value == null ? null : valuesMap.get(value);
     }
 }
