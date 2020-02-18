@@ -11,20 +11,10 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PolarisScanResultVO {
-    @ApiModelProperty("扫描时间")
-    private Date auditTime;
     @ApiModelProperty("主要数据")
     private PolarisScanAuditDataVO auditData;
     @ApiModelProperty("总结的数据")
     private PolarisScanSummaryVO summary;
-
-    public Date getAuditTime() {
-        return auditTime;
-    }
-
-    public void setAuditTime(Date auditTime) {
-        this.auditTime = auditTime;
-    }
 
     public PolarisScanAuditDataVO getAuditData() {
         return auditData;
