@@ -45,6 +45,14 @@ export default function useStore({ NODE_TAB }) {
       return this.prometheusLoading;
     },
 
+    hasEnv: false,
+    setHasEnv(flag) {
+      this.hasEnv = flag;
+    },
+    get getHasEnv() {
+      return this.hasEnv;
+    },
+
 
     async loadGrafanaUrl(projectId, clusterId) {
       try {
@@ -124,6 +132,15 @@ export default function useStore({ NODE_TAB }) {
         return handlePromptError(res);
       } catch (e) {
         return false;
+      }
+    },
+
+    async checkHasEnv(projectId, clusterId) {
+      try {
+        const res = await axios.get(`/devops/v1/projects/${projectId}/envs/count_by_options?cluster_id=${clusterId}`);
+        this.setHasEnv(handlePromptError(res));
+      } catch (e) {
+        Choerodon.handleResponseError(e);
       }
     },
   }));

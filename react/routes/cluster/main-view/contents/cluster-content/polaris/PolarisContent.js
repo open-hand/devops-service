@@ -23,16 +23,34 @@ const polaris = observer((props) => {
       POLARIS_TAB,
     },
     ClusterDetailDs,
+    contentStore,
   } = useClusterContentStore();
 
   function refresh() {
 
   }
 
+  function getContent() {
+    if (contentStore.getHasEnv) {
+      return (
+        <Fragment>
+          <NumberDetail />
+          <CollapseDetail />
+        </Fragment>
+      );
+    } else {
+      return (
+        <EmptyPage
+          title="暂无环境"
+          describe="该集群下暂无任何环境"
+        />
+      );
+    }
+  }
+
   return (
     <div className={`${prefixCls}-polaris-wrap`}>
-      <NumberDetail />
-      <CollapseDetail />
+      {getContent()}
     </div>
   );
 });

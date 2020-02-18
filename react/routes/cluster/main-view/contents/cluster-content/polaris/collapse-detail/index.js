@@ -2,10 +2,11 @@ import React, { useState, Fragment, Suspense, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs } from 'choerodon-ui/pro';
 import map from 'lodash/map';
-import { Collapse } from 'choerodon-ui';
+import { Collapse, Progress, Icon } from 'choerodon-ui';
 import { useClusterMainStore } from '../../../../stores';
 import { useClusterContentStore } from '../../stores';
-import Progress from '../components/Progress';
+import ProgressBar from '../components/Progress';
+import { usePolarisContentStore } from '../stores';
 
 import './index.less';
 
@@ -26,6 +27,8 @@ const collapseDetail = observer((props) => {
       POLARIS_TAB,
     },
     ClusterDetailDs,
+    clusterSummaryDs,
+    envDetailDs,
   } = useClusterContentStore();
 
   const [loading, setLoading] = useState(false);
@@ -52,50 +55,28 @@ const collapseDetail = observer((props) => {
     },
   ]), []);
 
-  const clusterData = useMemo(() => ([
-    {
-      name: '健康检查',
-      code: 'health',
-      value: 90,
-    },
-    {
-      name: '镜像检查',
-      code: 'mirror',
-      value: 60,
-    },
-    {
-      name: '网络配置',
-      code: 'netword',
-      value: 100,
-    },
-    {
-      name: '资源分配',
-      code: 'resource',
-      value: 0,
-    },
-    {
-      name: '安全',
-      code: 'security',
-      value: 50,
-    },
-  ]), []);
+  const clusterSummary = useMemo(() => (['healthCheck', 'imageCheck', 'networkCheck', 'resourceCheck', 'securityCheck']), []);
 
   function refresh() {
 
   }
 
   function getClusterHeader(item) {
-    const { name, value } = item || {};
+    const { score, hasErrors } = clusterSummaryDs.current ? (clusterSummaryDs.current.get(item) || {}) : {};
+    const isLoading = clusterSummaryDs.status === 'loading' || loading;
     return (
       <div className={`${prefixCls}-polaris-tabs-header`}>
-        <span className={`${prefixCls}-polaris-mgl-10`}>{name}</span>
-        <span className={`${prefixCls}-polaris-tabs-header-score`}>
-          {formatMessage({ id: `${intlPrefix}.polarise.score` })}:
+        <span className={`${prefixCls}-polaris-mgl-10`}>
+          {formatMessage({ id: `${intlPrefix}.polaris.${item}` })}
         </span>
-        <span>{value}%</span>
-        <Progress
-          loading={loading}
-          num={num}
+        <span className={`${prefixCls}-polaris-tabs-header-score`}>
+          {formatMessage({ id: `${intlPrefix}.polaris.score` })}:
+        </span>
+        {isLoading ? <Progress type="loading" size="small" /> : <span>{score}%</span>}
+        {hasErrors && <Icon type="cancel" />}
+        <ProgressBar
+          loading={isLoading}
+          num={isLoading ? 0 : score}
         />
       </div>
     );
@@ -107,7 +88,7 @@ const collapseDetail = observer((props) => {
       <div className={`${prefixCls}-polaris-tabs-header`}>
         <div className={`${prefixCls}-polaris-tabs-header-item`}>
           <span className={`${prefixCls}-polaris-tabs-header-env-${internal}`}>
-            {formatMessage({ id: `${intlPrefix}.polarise.internal.${internal}` })}
+            {formatMessage({ id: `${intlPrefix}.polaris.internal.${internal}` })}
           </span>
         </div>
         {code && (
@@ -143,8 +124,8 @@ const collapseDetail = observer((props) => {
           key="cluster"
         >
           <Collapse bordered={false} defaultActiveKey={['1']}>
-            {map(clusterData, (item) => (
-              <Panel header={getClusterHeader(item)} key={item.code}>
+            {map(clusterSummary, (item) => (
+              <Panel header={getClusterHeader(item)} key={item}>
                 content
               </Panel>
             ))}

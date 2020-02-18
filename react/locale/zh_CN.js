@@ -1292,9 +1292,14 @@ const cluster = {
   'c7ncd.cluster.polaris.cluster': '集群概览',
   'c7ncd.cluster.polaris.env': '环境详情',
   'c7ncd.cluster.belong.project': '所属项目',
-  'c7ncd.cluster.polarise.internal.true': '内',
-  'c7ncd.cluster.polarise.internal.false': '外',
-  'c7ncd.cluster.polarise.score': '分值',
+  'c7ncd.cluster.polaris.internal.true': '内',
+  'c7ncd.cluster.polaris.internal.false': '外',
+  'c7ncd.cluster.polaris.score': '分值',
+  'c7ncd.cluster.polaris.healthCheck': '健康检查',
+  'c7ncd.cluster.polaris.imageCheck': '镜像检查',
+  'c7ncd.cluster.polaris.networkCheck': '网络配置',
+  'c7ncd.cluster.polaris.resourceCheck': '资源分配',
+  'c7ncd.cluster.polaris.securityCheck': '安全',
 };
 
 const zhCN = {
