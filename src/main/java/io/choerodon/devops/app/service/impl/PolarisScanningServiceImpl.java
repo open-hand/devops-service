@@ -383,7 +383,8 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         PolarisScanResultVO polarisScanResultVO = message.getPolarisResult();
         PolarisScanSummaryVO summaryVO = polarisScanResultVO.getSummary();
 
-        recordDTO.setLastScanDateTime(polarisScanResultVO.getAuditTime());
+        LOGGER.info("Polaris: auditTime: {}", polarisScanResultVO.getAuditData().getAuditTime());
+        recordDTO.setLastScanDateTime(polarisScanResultVO.getAuditData().getAuditTime());
         recordDTO.setSuccesses(summaryVO.getSuccesses());
         recordDTO.setWarnings(summaryVO.getWarnings());
         recordDTO.setErrors(summaryVO.getErrors());
