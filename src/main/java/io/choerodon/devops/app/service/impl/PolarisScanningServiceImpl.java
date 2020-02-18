@@ -121,7 +121,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     }
 
     @Override
-    public DevopsEnvResultVO queryEnvPolarisResult(Long projectId, Long envId) {
+    public List<InstanceWithPolarisResultVO> queryEnvPolarisResult(Long projectId, Long envId) {
         // TODO
         return null;
     }

@@ -1,9 +1,8 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.vo.DevopsEnvResultVO;
-import io.choerodon.devops.api.vo.DevopsPolarisEnvDetailVO;
-import io.choerodon.devops.api.vo.DevopsPolarisRecordVO;
-import io.choerodon.devops.api.vo.DevopsPolarisSummaryVO;
+import java.util.List;
+
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.polaris.PolarisResponsePayloadVO;
 import io.choerodon.devops.infra.dto.DevopsPolarisRecordDTO;
 
@@ -29,7 +28,7 @@ public interface PolarisScanningService {
      * @param envId     环境id
      * @return 扫描报告
      */
-    DevopsEnvResultVO queryEnvPolarisResult(Long projectId, Long envId);
+    List<InstanceWithPolarisResultVO> queryEnvPolarisResult(Long projectId, Long envId);
 
     /**
      * 扫描环境
