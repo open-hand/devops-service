@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.annotation.Permission;
+import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.PolarisScanningService;
@@ -27,7 +28,7 @@ public class PolarisScanningController {
 
     @ApiOperation("查询扫描纪录")
     @GetMapping("/records")
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER}, type = ResourceType.PROJECT)
     public ResponseEntity<DevopsPolarisRecordVO> queryRecordByScopeAndScopeId(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
@@ -39,7 +40,7 @@ public class PolarisScanningController {
     }
 
     @ApiOperation("获取扫描的环境报告")
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER}, type = ResourceType.PROJECT)
     @GetMapping("/envs/{env_id}")
     public ResponseEntity<List<InstanceWithPolarisResultVO>> queryEnvPolarisResult(
             @ApiParam("项目id")
@@ -50,7 +51,7 @@ public class PolarisScanningController {
     }
 
     @ApiOperation("扫描环境")
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER}, type = ResourceType.PROJECT)
     @PostMapping("/envs/{env_id}")
     public ResponseEntity<DevopsPolarisRecordDTO> scanEnv(
             @ApiParam("项目id")
@@ -61,7 +62,7 @@ public class PolarisScanningController {
     }
 
     @ApiOperation("获取扫描的集群概览报告")
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER}, type = ResourceType.PROJECT)
     @GetMapping("/clusters/{cluster_id}/summary")
     public ResponseEntity<DevopsPolarisSummaryVO> clusterPolarisSummary(
             @ApiParam("项目id")
@@ -72,7 +73,7 @@ public class PolarisScanningController {
     }
 
     @ApiOperation("获取扫描的集群环境详情报告")
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER}, type = ResourceType.PROJECT)
     @GetMapping("/clusters/{cluster_id}/env_detail")
     public ResponseEntity<List<DevopsEnvWithPolarisResultVO>> clusterPolarisEnvDetail(
             @ApiParam("项目id")
@@ -83,7 +84,7 @@ public class PolarisScanningController {
     }
 
     @ApiOperation("扫描集群")
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER}, type = ResourceType.PROJECT)
     @PostMapping("/clusters/{cluster_id}")
     public ResponseEntity<DevopsPolarisRecordDTO> scanCluster(
             @ApiParam("项目id")
