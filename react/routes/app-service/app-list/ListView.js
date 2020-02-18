@@ -266,6 +266,7 @@ const ListView = withRouter(observer((props) => {
   async function handleChangeActive(active) {
     try {
       if (await appServiceStore.changeActive(projectId, listDs.current.get('id'), active)) {
+        checkLocalstorage(listDs.current.get('id'));
         refresh();
       } else {
         return false;
