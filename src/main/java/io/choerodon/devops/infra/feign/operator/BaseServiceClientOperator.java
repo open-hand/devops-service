@@ -321,6 +321,7 @@ public class BaseServiceClientOperator {
         try {
             return baseServiceClient.queryByIds(ids).getBody();
         } catch (Exception e) {
+            // TODO 是否考虑抛异常，暂时没时间看为什么返回null
             return null;
         }
     }

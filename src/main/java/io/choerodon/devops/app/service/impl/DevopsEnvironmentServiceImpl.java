@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 
 import com.alibaba.fastjson.JSONArray;
@@ -1530,6 +1531,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public void updateDevopsEnvGroupIdNullByProjectIdAndGroupId(Long projectId, Long envGroupId) {
         devopsEnvironmentMapper.updateDevopsEnvGroupIdNullByProjectIdAndGroupId(Objects.requireNonNull(projectId), Objects.requireNonNull(envGroupId));
+    }
+
+    @Override
+    public Long countEnvByOption(final Long projectId, @Nullable Long clusterId, @Nullable Boolean isFailed) {
+        // 如果集群id有值，projectId就不传值
+        final Long projectIdValue = clusterId == null ? projectId : null;
+        return (long) devopsEnvironmentMapper.countByOptions(clusterId, projectIdValue, isFailed, EnvironmentType.USER.getValue());
     }
 
     @Override

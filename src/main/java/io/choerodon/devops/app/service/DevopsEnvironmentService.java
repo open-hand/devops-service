@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.github.pagehelper.PageInfo;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.data.domain.Pageable;
@@ -351,4 +353,14 @@ public interface DevopsEnvironmentService {
      * @param envGroupId 组id
      */
     void updateDevopsEnvGroupIdNullByProjectIdAndGroupId(Long projectId, Long envGroupId);
+
+    /**
+     * 查询环境的数量
+     *
+     * @param projectId 项目id
+     * @param clusterId 集群id，传此值时表示查询集群下的环境，不传则查询项目下环境
+     * @param isFailed  环境是否失败
+     * @return 数量
+     */
+    Long countEnvByOption(Long projectId, @Nullable Long clusterId, @Nullable Boolean isFailed);
 }
