@@ -41,7 +41,7 @@ public enum PolarisItemCategory {
         return value;
     }
 
-    public PolarisItemCategory forValue(String value) {
+    public static PolarisItemCategory forValue(String value) {
         return value == null ? null : valuesMap.get(value);
     }
 }
