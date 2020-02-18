@@ -4,7 +4,7 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsPolarisItemMapper">
     <resultMap id="polarisSummaryResultMap" type="io.choerodon.devops.api.vo.ClusterPolarisSummaryItemVO">
         <result column="category" property="category"/>
-        <collection property="items" ofType="io.choerodon.devops.api.vo.ClusterPolarisSummaryItemContentVO" notNullColumn="resourceName" javaType="java.util.List">
+        <collection property="items" ofType="io.choerodon.devops.api.vo.ClusterPolarisSummaryItemContentVO" notNullColumn="resource_name" javaType="java.util.List">
             <result property="namespace" column="namespace"/>
             <result property="resourceName" column="resource_name"/>
             <result property="resourceKind" column="resource_kind"/>
