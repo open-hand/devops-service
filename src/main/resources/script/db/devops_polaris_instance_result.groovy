@@ -34,7 +34,21 @@ databaseChangeLog(logicalFilePath: 'dba/devops_polaris_instance_result.groovy') 
 
     changeSet(author: "zmf", id: "2020-02-18-add-polaris-instance-result-columns-has-errors") {
         addColumn(tableName: 'devops_polaris_instance_result') {
-            column(name: 'has_errors', type: 'TINYINT UNSIGNED', remarks: '是否有error级别的检测项', afterColumn: "detail_id")
+            column(name: 'has_errors', type: 'TINYINT UNSIGNED', remarks: '是否有error级别的检测项', afterColumn: "detail_id") {
+                constraints(nullable: false)
+            }
+        }
+    }
+
+    changeSet(author: 'zmf', id: '2020-02-19-polaris-instance-result-idx') {
+        createIndex(indexName: "idx_polaris-instance-result_record_id ", tableName: "devops_polaris_instance_result") {
+            column(name: "record_id")
+        }
+        createIndex(indexName: "idx_polaris-instance-result_env_id ", tableName: "devops_polaris_instance_result") {
+            column(name: "env_id")
+        }
+        createIndex(indexName: "idx_polaris-instance-result_instance_id ", tableName: "devops_polaris_instance_result") {
+            column(name: "instance_id")
         }
     }
 }
