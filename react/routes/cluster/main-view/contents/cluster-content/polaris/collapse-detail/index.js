@@ -2,6 +2,7 @@ import React, { useState, Fragment, Suspense, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs } from 'choerodon-ui/pro';
 import map from 'lodash/map';
+import isEmpty from 'lodash/isEmpty';
 import { Collapse, Progress, Icon } from 'choerodon-ui';
 import { useClusterMainStore } from '../../../../stores';
 import { useClusterContentStore } from '../../stores';
@@ -30,9 +31,7 @@ const collapseDetail = observer(({ loading }) => {
     envDetailDs,
     polarisNumDS,
   } = useClusterContentStore();
-
-  const [num, setNum] = useState(80);
-
+  
   const clusterSummary = useMemo(() => (['healthCheck', 'imageCheck', 'networkCheck', 'resourceCheck', 'securityCheck']), []);
   const clusterSummaryData = useMemo(() => {
     if (clusterSummaryDs.current) {
@@ -40,7 +39,10 @@ const collapseDetail = observer(({ loading }) => {
     }
     return {};
   }, [clusterSummaryDs.current]);
-  const statusLoading = useMemo(() => polarisNumDS.current && polarisNumDS.current.get('status') === 'operating', [polarisNumDS.current]);
+  const isLoading = useMemo(() => {
+    const flag = polarisNumDS.current && polarisNumDS.current.get('status') === 'operating';
+    return loading || flag || clusterSummaryDs.status === 'loading';
+  }, [loading, clusterSummaryDs.status, polarisNumDS.current]);
 
   function refresh() {
 
@@ -49,7 +51,6 @@ const collapseDetail = observer(({ loading }) => {
   function getClusterHeader(item) {
     const checked = clusterSummaryData.checked;
     const { score, hasErrors } = clusterSummaryData[item] || {};
-    const isLoading = loading || statusLoading || clusterSummaryDs.status === 'loading';
     return (
       <div className={`${prefixCls}-polaris-tabs-header`}>
         <span className={`${prefixCls}-polaris-mgl-10`}>
@@ -59,7 +60,7 @@ const collapseDetail = observer(({ loading }) => {
           {formatMessage({ id: `${intlPrefix}.polaris.score` })}:
         </span>
         {isLoading ? <Progress type="loading" size="small" /> : <span>{checked ? `${score}%` : '-'}</span>}
-        {hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
+        {!isLoading && hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
         <ProgressBar
           loading={isLoading}
           num={isLoading || !checked ? null : score}
@@ -81,13 +82,13 @@ const collapseDetail = observer(({ loading }) => {
           <div className={`${prefixCls}-polaris-tabs-header-item`}>
             <span className={`${prefixCls}-polaris-tabs-header-text`}>{formatMessage({ id: 'environment' })}:</span>
             <span>{envName}</span>
-            {hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
+            {!isLoading && hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
           </div>
         )}
         <div className={`${prefixCls}-polaris-tabs-header-item`}>
           <span className={`${prefixCls}-polaris-tabs-header-text`}>{formatMessage({ id: 'envCode' })}:</span>
           <span>{namespace}</span>
-          {!envName && hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
+          {!isLoading && !envName && hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
         </div>
         {projectName && (
           <div className={`${prefixCls}-polaris-tabs-header-item`}>
@@ -103,16 +104,30 @@ const collapseDetail = observer(({ loading }) => {
     const checked = clusterSummaryData.checked;
     const { items: list } = clusterSummaryData[item] || {};
     if (!checked) {
-      return <span className={`${prefixCls}-polaris-empty-text`}>{formatMessage({ id: `${intlPrefix}.polaris.check.null` })}</span>;
+      return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: `${intlPrefix}.polaris.check.null` })}</span>;
     }
-    return (map(list, ({ namespace, resourceKind, resourceName, hasErrors, items }) => (
-      <div key={namespace}>
-        <div>
-          <span>{`NameSpace:${namespace}/${resourceKind}:${resourceName}`}</span>
+    if (isLoading) {
+      return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: `${intlPrefix}.polaris.check.operating` })}</span>;
+    }
+    if (isEmpty(list)) {
+      return (
+        <div className={`${prefixCls}-polaris-tabs-content`}>
+          <Icon type="done" className={`${prefixCls}-polaris-tabs-content-icon-success`} />
+          <span>{formatMessage({ id: `${intlPrefix}.polaris.check.success` })}</span>
+        </div>
+      );
+    }
+    return (map(list, ({ namespace, resourceKind, resourceName, hasErrors, items }, index) => (
+      <div key={`${namespace}-${index}`} className={`${prefixCls}-polaris-tabs-content`}>
+        <div className={`${prefixCls}-polaris-tabs-content-title`}>
+          <span>{`NameSpace: ${namespace} / ${resourceKind}: ${resourceName}`}</span>
           {hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
         </div>
-        {map(items, ({ message, type }) => (
-          <div key={type}>{message}</div>
+        {map(items, ({ message, type, severity }) => (
+          <div key={type} className={`${prefixCls}-polaris-tabs-content-des`}>
+            <Icon type={severity === 'warning' ? 'priority_high' : 'close'} className={`${prefixCls}-polaris-tabs-content-icon-${severity}`} />
+            <span>{message}</span>
+          </div>
         ))}
       </div>
     )));
@@ -120,9 +135,41 @@ const collapseDetail = observer(({ loading }) => {
 
   function getEnvContent(envRecord) {
     const checked = envRecord.get('checked');
+    const detailJson = envRecord.get('detailJson');
     if (!checked) {
-      return <span className={`${prefixCls}-polaris-empty-text`}>{formatMessage({ id: `${intlPrefix}.polaris.check.null` })}</span>;
+      return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: `${intlPrefix}.polaris.check.null` })}</span>;
     }
+    if (isLoading) {
+      return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: `${intlPrefix}.polaris.check.operating` })}</span>;
+    }
+    // if (isEmpty(detailJson)) {
+    //   return (
+    //     <div className={`${prefixCls}-polaris-tabs-content`}>
+    //       <Icon type="done" className={`${prefixCls}-polaris-tabs-content-icon-success`} />
+    //       <span>{formatMessage({ id: `${intlPrefix}.polaris.check.success` })}</span>
+    //     </div>
+    //   );
+    // }
+    // return (map(detailJson, (item, index) => {
+    //   const data = JSON.parse(item);
+    //   const { kind, name, podResult, hasErrors } = data || {};
+    //   const containers = podResult ? podResult.containerResults : [];
+    //   const results = podResult ? podResult.results : {};
+    //   return (
+    //     <div key={`${name}-${index}`} className={`${prefixCls}-polaris-tabs-content`}>
+    //       <div className={`${prefixCls}-polaris-tabs-content-title`}>
+    //         <span>{`${kind}: ${name}`}</span>
+    //         {hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
+    //       </div>
+    //       {map(results || {}, ({ message, type, severity }) => (
+    //         <div key={type} className={`${prefixCls}-polaris-tabs-content-des`}>
+    //           <Icon type={severity === 'warning' ? 'priority_high' : 'close'} className={`${prefixCls}-polaris-tabs-content-icon-${severity}`} />
+    //           <span>{message}</span>
+    //         </div>
+    //       ))}
+    //     </div>
+    //   );
+    // }));
   }
 
   return (

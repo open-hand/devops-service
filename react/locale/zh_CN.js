@@ -1302,6 +1302,8 @@ const cluster = {
   'c7ncd.cluster.polaris.securityCheck': '安全',
   'c7ncd.cluster.polaris.empty.des': '当前集群下暂无环境，无法执行健康检查。',
   'c7ncd.cluster.polaris.check.null': '暂无检测结果',
+  'c7ncd.cluster.polaris.check.operating': '配置项扫描中...',
+  'c7ncd.cluster.polaris.check.success': '配置项检测通过',
   'c7ncd.cluster.polaris.scanning': '手动扫描',
 };
 

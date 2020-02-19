@@ -1,6 +1,6 @@
 import React, { Fragment, Suspense, useMemo, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Spin, Button } from 'choerodon-ui';
+import { Button } from 'choerodon-ui/pro';
 import { useClusterMainStore } from '../../../stores';
 import { useClusterContentStore } from '../stores';
 import EmptyPage from '../../../../../../components/empty-page';
@@ -57,7 +57,7 @@ const polaris = observer((props) => {
         <Fragment>
           <Button
             className={`${prefixCls}-polaris-wrap-btn`}
-            type="primary"
+            color="primary"
             funcType="raised"
             onClick={handleScan}
             disabled={!(ClusterDetailDs.current && ClusterDetailDs.current.get('connect') && !loading)}
