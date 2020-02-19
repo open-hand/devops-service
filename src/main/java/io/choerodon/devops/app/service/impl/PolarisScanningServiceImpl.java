@@ -349,11 +349,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
 
     @Override
     public DevopsPolarisRecordDTO queryRecordByScopeIdAndScope(Long scopeId, String scope) {
-        // TODO 待使用索引优化
-        DevopsPolarisRecordDTO devopsPolarisRecordDTO = new DevopsPolarisRecordDTO();
-        devopsPolarisRecordDTO.setScope(Objects.requireNonNull(scope));
-        devopsPolarisRecordDTO.setScopeId(Objects.requireNonNull(scopeId));
-        return devopsPolarisRecordMapper.selectOne(devopsPolarisRecordDTO);
+        return devopsPolarisRecordMapper.queryRecordByScopeIdAndScope(scopeId, scope);
     }
 
     private DevopsPolarisRecordDTO createOrUpdateRecord(String scope, Long scopeId) {

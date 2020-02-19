@@ -45,4 +45,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_polaris_record.groovy') {
             column(name: 'score', type: 'BIGINT UNSIGNED', remarks: '扫描结果的得分', afterColumn: "errors")
         }
     }
+
+    changeSet(author: "zmf", id: "2020-02-19-add-record-unique-index") {
+        addUniqueConstraint(tableName: 'devops_polaris_record',
+                constraintName: 'polaris_record_uk_scope_scope_id', columnNames: 'scope_id, scope')
+    }
 }

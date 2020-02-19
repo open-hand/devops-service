@@ -4,8 +4,8 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsPolarisResultDetailMapper">
     <delete id="batchDelete">
         DELETE
-        FROM devops_polaris_result_detail dprd
-        WHERE dprd.id IN
+        FROM devops_polaris_result_detail
+        WHERE id IN
         <foreach collection="ids" item="detailId" open="(" close=")" separator=",">
             #{detailId}
         </foreach>

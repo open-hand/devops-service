@@ -36,4 +36,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_polaris_item.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'zmf', id: '2020-02-19-add-polaris-item-idx') {
+        createIndex(indexName: "idx_polaris_item_record_id ", tableName: "devops_polaris_item") {
+            column(name: "record_id")
+        }
+    }
 }
