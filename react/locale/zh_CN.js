@@ -192,6 +192,7 @@ const deployment = {
   'c7ncd.deployment.environment.tabs.sync': 'GitOps日志',
   'c7ncd.deployment.environment.tabs.config': '部署配置',
   'c7ncd.deployment.environment.tabs.assignPermissions': '权限分配',
+  'c7ncd.deployment.environment.tabs.polaris': '健康检查',
   'c7ncd.deployment.environment.error.logs': '错误日志',
   'c7ncd.deployment.environment.error.tips': '此处将显示解析过程中产生的错误信息以及错误的文件源。若错误日志为空，则表示解析过程正常',
   'c7ncd.deployment.environment.error.info': '错误信息',
@@ -418,6 +419,7 @@ const deployment = {
   'c7ncd.deployment.pvc.delete.des': '确定要删除该PVC吗？',
   'c7ncd.deployment.active': '生效',
   'c7ncd.deployment.choose.version': '选择版本',
+  'c7ncd.deployment.polaris.empty.des': '该环境下暂无可运行实例',
 
 };
 
@@ -759,6 +761,7 @@ const codeManagement = {
 const emptyPage = {
   'empty.title.app': '暂无应用服务',
   'empty.title.env': '暂无环境',
+  'empty.title.instance': '暂无实例',
   'empty.title.prohibited': '暂无权限',
   'empty.tips.app.owner': '当前项目下无应用服务，请创建',
   'empty.tips.env.owner': '当前项目下无可用环境，请创建',

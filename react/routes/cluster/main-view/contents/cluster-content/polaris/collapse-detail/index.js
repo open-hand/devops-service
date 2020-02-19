@@ -168,7 +168,7 @@ const collapseDetail = observer(({ loading }) => {
             </div>
           )))}
           {map(containers, ({ name: containerName, results: containerResults }) => (<Fragment>
-            <div className={`${prefixCls}-polaris-tabs-content-title`}>
+            <div className={`${prefixCls}-polaris-tabs-content-title`} key={containerName}>
               <span>{`Container: ${containerName}`}</span>
             </div>
             {isEmpty(containerResults) ? (
@@ -189,7 +189,7 @@ const collapseDetail = observer(({ loading }) => {
   }
 
   return (
-    <div className={`${prefixCls}-polaris-wrap-number`}>
+    <div className={`${prefixCls}-polaris-wrap-collapse`}>
       <Tabs
         type="card"
         tabBarGutter={0}
