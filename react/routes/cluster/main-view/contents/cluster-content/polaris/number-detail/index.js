@@ -1,4 +1,4 @@
-import React, { Fragment, Suspense, useMemo, useState } from 'react';
+import React, { Fragment, Suspense, useMemo, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Spin, Button, Icon } from 'choerodon-ui';
 import { useClusterMainStore } from '../../../../stores';
@@ -33,7 +33,12 @@ const numberDetail = observer((props) => {
       POLARIS_TAB,
     },
     ClusterDetailDs,
+    polarisNumDS,
   } = useClusterContentStore();
+
+  useEffect(() => {
+    polarisNumDS.query();
+  }, []);
 
   const handleScan = () => {
     if (loading) {
@@ -132,6 +137,15 @@ const numberDetail = observer((props) => {
               <span>11</span>
             </div>
           </div>
+
+          <div className={`${prefixCls}-number-category`}>
+            <Icon type="grain" />
+            <div className={`${prefixCls}-number-category-detail`}>
+              <span>环境数量</span>
+              <span>11</span>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

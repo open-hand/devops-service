@@ -6,7 +6,6 @@ import { Collapse, Progress, Icon } from 'choerodon-ui';
 import { useClusterMainStore } from '../../../../stores';
 import { useClusterContentStore } from '../../stores';
 import ProgressBar from '../components/Progress';
-import { usePolarisContentStore } from '../stores';
 
 import './index.less';
 
