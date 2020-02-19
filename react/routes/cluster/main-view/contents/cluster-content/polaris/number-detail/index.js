@@ -4,7 +4,6 @@ import { Spin, Button, Icon } from 'choerodon-ui';
 import { useClusterMainStore } from '../../../../stores';
 import { useClusterContentStore } from '../../stores';
 import Radar from '../components/Radar';
-import ScanBtn from '../scan-btn';
 import './index.less';
 
 const checkGroup = [
@@ -118,8 +117,6 @@ const numberDetail = observer((props) => {
 
         {/* 左半部分上部分 */}
         <div className={`${prefixCls}-number-leftTop`}>
-          {/* 扫描按钮 */}
-          <ScanBtn />
           {/* 最新一次扫描时间 */}
           <span className={`${prefixCls}-number-leftTop-lastestDate`}>
             上次扫描时间：{polarisNumDS.current ? polarisNumDS.current.get('lastScanDateTime') : '-'}
