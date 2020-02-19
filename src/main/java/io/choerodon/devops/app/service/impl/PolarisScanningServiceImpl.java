@@ -76,7 +76,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     private BaseServiceClientOperator baseServiceClientOperator;
 
     @Override
-    public DevopsPolarisRecordVO queryRecordByScopeAndScopeId(Long projectId, String scope, Long scopeId) {
+    public DevopsPolarisRecordRespVO queryRecordByScopeAndScopeId(Long projectId, String scope, Long scopeId) {
         PolarisScopeType scopeType = PolarisScopeType.forValue(scope);
         if (scopeType == null) {
             return null;
@@ -86,12 +86,12 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
                 || !PolarisScanningStatus.FINISHED.getStatus().equals(devopsPolarisRecordDTO.getStatus())) {
             return handleNullRecord(projectId, scopeType, scopeId);
         }
-        DevopsPolarisRecordVO devopsPolarisRecordVO = ConvertUtils.convertObject(devopsPolarisRecordDTO, DevopsPolarisRecordVO.class);
+        DevopsPolarisRecordRespVO devopsPolarisRecordRespVO = ConvertUtils.convertObject(devopsPolarisRecordDTO, DevopsPolarisRecordRespVO.class);
         if (PolarisScopeType.ENV.getValue().equals(scope)) {
             int instanceCount = appServiceInstanceMapper.countByOptions(scopeId, null, null);
-            devopsPolarisRecordVO.setInstanceCount((long) instanceCount);
+            devopsPolarisRecordRespVO.setInstanceCount((long) instanceCount);
         }
-        return devopsPolarisRecordVO;
+        return devopsPolarisRecordRespVO;
     }
 
     /**
@@ -102,24 +102,24 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
      * @param scopeId   envId或clusterId
      * @return 基础的数据
      */
-    private DevopsPolarisRecordVO handleNullRecord(Long projectId, PolarisScopeType scope, Long scopeId) {
+    private DevopsPolarisRecordRespVO handleNullRecord(Long projectId, PolarisScopeType scope, Long scopeId) {
         // TODO 获取Kubernetes版本
-        DevopsPolarisRecordVO devopsPolarisRecordVO = new DevopsPolarisRecordVO();
+        DevopsPolarisRecordRespVO devopsPolarisRecordRespVO = new DevopsPolarisRecordRespVO();
         if (PolarisScopeType.ENV == Objects.requireNonNull(scope)) {
             int instanceCount = appServiceInstanceMapper.countByOptions(scopeId, null, null);
-            devopsPolarisRecordVO.setInstanceCount((long) instanceCount);
+            devopsPolarisRecordRespVO.setInstanceCount((long) instanceCount);
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(scopeId);
             if (devopsEnvironmentDTO == null) {
-                return devopsPolarisRecordVO;
+                return devopsPolarisRecordRespVO;
             }
             int podCount = devopsEnvPodMapper.countByOptions(null, devopsEnvironmentDTO.getCode(), null, null);
-            devopsPolarisRecordVO.setPods((long) podCount);
+            devopsPolarisRecordRespVO.setPods((long) podCount);
         } else {
             int envCount = devopsEnvironmentMapper.countByOptions(scopeId, null, null, EnvironmentType.USER.getValue());
-            devopsPolarisRecordVO.setNamespaces((long) envCount);
-            devopsPolarisRecordVO.setNodes(clusterNodeInfoService.countNodes(projectId, scopeId));
+            devopsPolarisRecordRespVO.setNamespaces((long) envCount);
+            devopsPolarisRecordRespVO.setNodes(clusterNodeInfoService.countNodes(projectId, scopeId));
         }
-        return devopsPolarisRecordVO;
+        return devopsPolarisRecordRespVO;
     }
 
     @Override
@@ -135,7 +135,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public DevopsPolarisRecordDTO scanEnv(Long projectId, Long envId) {
+    public DevopsPolarisRecordVO scanEnv(Long projectId, Long envId) {
         LOGGER.info("Scanning env {}", envId);
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         if (devopsEnvironmentDTO == null) {
@@ -154,12 +154,12 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         agentCommandService.scanCluster(clusterId, devopsPolarisRecordDTO.getId(), devopsEnvironmentDTO.getCode());
         LOGGER.info("Finish scanning env {}", envId);
         LOGGER.info("record: {}", devopsPolarisRecordDTO);
-        return devopsPolarisRecordDTO;
+        return ConvertUtils.convertObject(devopsPolarisRecordDTO, DevopsPolarisRecordVO.class);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public DevopsPolarisRecordDTO scanCluster(Long projectId, Long clusterId) {
+    public DevopsPolarisRecordVO scanCluster(Long projectId, Long clusterId) {
         LOGGER.info("scanning cluster  {}", clusterId);
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO == null) {
@@ -174,7 +174,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         agentCommandService.scanCluster(clusterId, devopsPolarisRecordDTO.getId(), null);
         LOGGER.info("Finish scanning cluster {}", clusterId);
         LOGGER.info("record: {}", devopsPolarisRecordDTO);
-        return devopsPolarisRecordDTO;
+        return ConvertUtils.convertObject(devopsPolarisRecordDTO, DevopsPolarisRecordVO.class);
     }
 
     @Override
