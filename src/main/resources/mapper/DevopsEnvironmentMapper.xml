@@ -108,7 +108,7 @@
           AND env.is_failed = FALSE
           AND env.is_synchro = TRUE
           AND env.type = 'user'
-          GROUP BY ins.id
+          GROUP BY env.name,app.id,ins.id
     </select>
 
     <select id="listMemberInstanceEnvTree" resultMap="instanceEnvTree">
@@ -136,7 +136,7 @@
            AND env.is_active = TRUE
            AND env.is_failed = FALSE
            AND env.type = 'user'
-           GROUP BY ins.id)
+           GROUP BY env.name,app.id,ins.id)
 
         UNION ALL
                 (
@@ -166,7 +166,7 @@
                   AND env.is_failed = FALSE
                   AND env.is_synchro = TRUE
                   AND deup.iam_user_id = #{memberId}
-                  GROUP BY ins.id
+                  GROUP BY env.name,app.id,ins.id
                 )
     </select>
 
@@ -239,7 +239,7 @@
           AND env.is_failed = FALSE
           AND env.is_synchro = TRUE
           AND env.type = 'user'
-          GROUP BY ins.id
+          GROUP BY env.name,app.id,ins.id
     </select>
 
     <select id="listMemberResourceEnvTree" resultMap="resourceEnvTree">
@@ -260,7 +260,7 @@
           AND env.is_active = TRUE
           AND env.is_synchro = TRUE
           AND env.is_failed = FALSE
-          GROUP BY ins.id
+          GROUP BY env.name,ins.id
           )
         UNION ALL
         (
@@ -284,7 +284,7 @@
           AND env.is_synchro = TRUE
           AND env.type = 'user'
           AND deup.iam_user_id = #{memberId}
-          GROUP BY ins.id
+          GROUP BY env.name,ins.id
         )
     </select>
 
