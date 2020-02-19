@@ -20,6 +20,7 @@ public class DevopsEnvPodInfoVO {
     @ApiModelProperty("ip地址")
     private String podIp;
     private Date creationDate;
+    @ApiModelProperty(value = "namespace", hidden = true)
     @JsonIgnore
     private String namespace;
 

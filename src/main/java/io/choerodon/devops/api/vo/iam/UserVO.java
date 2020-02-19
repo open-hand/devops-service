@@ -61,6 +61,7 @@ public class UserVO {
     @ApiModelProperty(value = "乐观锁版本号")
     private Long objectVersionNumber;
 
+    @ApiModelProperty(hidden = true)
     @JsonIgnore
     private String param;
 

@@ -40,9 +40,9 @@
     </resultMap>
 
     <insert id="batchInsert">
-        INSERT INTO devops_polaris_instance_result(env_id, instance_id, namespace, resource_name, resource_kind, record_id, detail_id) VALUES
+        INSERT INTO devops_polaris_instance_result(env_id, instance_id, namespace, resource_name, resource_kind, record_id, detail_id, has_errors) VALUES
         <foreach collection="items" item="item" separator=",">
-            (#{item.envId},#{item.instanceId},#{item.namespace},#{item.resourceName},#{item.resourceKind},#{item.recordId},#{item.detailId})
+            (#{item.envId},#{item.instanceId},#{item.namespace},#{item.resourceName},#{item.resourceKind},#{item.recordId},#{item.detailId}, #{item.hasErrors})
         </foreach>
     </insert>
 
@@ -79,6 +79,7 @@
         LEFT JOIN devops_env de ON dpir.env_id = de.id
         LEFT JOIN devops_polaris_result_detail dprd ON dpir.detail_id = dprd.id
         WHERE dpir.record_id = #{recordId,jdbcType=BIGINT}
+        ORDER BY internal DESC
     </select>
 
     <select id="queryEnvWithoutPolarisResult" resultMap="envWithoutResultMap">

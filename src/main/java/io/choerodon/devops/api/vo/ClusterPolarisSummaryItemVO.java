@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * @author zmf
@@ -16,7 +17,7 @@ public class ClusterPolarisSummaryItemVO {
     @ApiModelProperty("内容items")
     private List<ClusterPolarisSummaryItemContentVO> items;
 
-    @ApiModelProperty("类别")
+    @ApiModelProperty(value = "类别", hidden = true)
     @JsonIgnore
     private String category;
 
