@@ -135,41 +135,57 @@ const collapseDetail = observer(({ loading }) => {
 
   function getEnvContent(envRecord) {
     const checked = envRecord.get('checked');
-    const detailJson = envRecord.get('detailJson');
+    const items = envRecord.get('items');
     if (!checked) {
       return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: `${intlPrefix}.polaris.check.null` })}</span>;
     }
     if (isLoading) {
       return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: `${intlPrefix}.polaris.check.operating` })}</span>;
     }
-    // if (isEmpty(detailJson)) {
-    //   return (
-    //     <div className={`${prefixCls}-polaris-tabs-content`}>
-    //       <Icon type="done" className={`${prefixCls}-polaris-tabs-content-icon-success`} />
-    //       <span>{formatMessage({ id: `${intlPrefix}.polaris.check.success` })}</span>
-    //     </div>
-    //   );
-    // }
-    // return (map(detailJson, (item, index) => {
-    //   const data = JSON.parse(item);
-    //   const { kind, name, podResult, hasErrors } = data || {};
-    //   const containers = podResult ? podResult.containerResults : [];
-    //   const results = podResult ? podResult.results : {};
-    //   return (
-    //     <div key={`${name}-${index}`} className={`${prefixCls}-polaris-tabs-content`}>
-    //       <div className={`${prefixCls}-polaris-tabs-content-title`}>
-    //         <span>{`${kind}: ${name}`}</span>
-    //         {hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
-    //       </div>
-    //       {map(results || {}, ({ message, type, severity }) => (
-    //         <div key={type} className={`${prefixCls}-polaris-tabs-content-des`}>
-    //           <Icon type={severity === 'warning' ? 'priority_high' : 'close'} className={`${prefixCls}-polaris-tabs-content-icon-${severity}`} />
-    //           <span>{message}</span>
-    //         </div>
-    //       ))}
-    //     </div>
-    //   );
-    // }));
+    return (map(items, ({ hasErrors, detailJson }, index) => {
+      const data = JSON.parse(detailJson);
+      const { kind, name, podResult } = data || {};
+      const containers = podResult ? podResult.containerResults : [];
+      const results = podResult ? podResult.results : {};
+      return (
+        <div key={`${name}-${index}`} className={`${prefixCls}-polaris-tabs-content`}>
+          <div className={`${prefixCls}-polaris-tabs-content-title-weight`}>
+            <span>{`${kind}: ${name}`}</span>
+            {hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
+          </div>
+          <div className={`${prefixCls}-polaris-tabs-content-title`}>
+            <span>Pod Spec:</span>
+          </div>
+          {isEmpty(results) ? (
+            <div className={`${prefixCls}-polaris-tabs-content-env`}>
+              <Icon type="done" className={`${prefixCls}-polaris-tabs-content-icon-success`} />
+              <span>{formatMessage({ id: `${intlPrefix}.polaris.check.success` })}</span>
+            </div>
+          ) : (map(results, ({ message, type, severity }) => (
+            <div key={type} className={`${prefixCls}-polaris-tabs-content-des`}>
+              <Icon type={severity === 'warning' ? 'priority_high' : 'close'} className={`${prefixCls}-polaris-tabs-content-icon-${severity}`} />
+              <span>{message}</span>
+            </div>
+          )))}
+          {map(containers, ({ name: containerName, results: containerResults }) => (<Fragment>
+            <div className={`${prefixCls}-polaris-tabs-content-title`}>
+              <span>{`Container: ${containerName}`}</span>
+            </div>
+            {isEmpty(containerResults) ? (
+              <div className={`${prefixCls}-polaris-tabs-content-env`}>
+                <Icon type="done" className={`${prefixCls}-polaris-tabs-content-icon-success`} />
+                <span>{formatMessage({ id: `${intlPrefix}.polaris.check.success` })}</span>
+              </div>
+            ) : (map(containerResults, ({ message, type, severity }) => (
+              <div key={type} className={`${prefixCls}-polaris-tabs-content-des`}>
+                <Icon type={severity === 'warning' ? 'priority_high' : 'close'} className={`${prefixCls}-polaris-tabs-content-icon-${severity}`} />
+                <span>{message}</span>
+              </div>
+            )))}
+          </Fragment>))}
+        </div>
+      );
+    }));
   }
 
   return (
