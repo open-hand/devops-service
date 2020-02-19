@@ -14,7 +14,6 @@ import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.PolarisScanningService;
-import io.choerodon.devops.infra.dto.DevopsPolarisRecordDTO;
 
 /**
  * @author zmf
@@ -29,7 +28,7 @@ public class PolarisScanningController {
     @ApiOperation("查询扫描纪录")
     @GetMapping("/records")
     @Permission(roles = {InitRoleCode.PROJECT_OWNER}, type = ResourceType.PROJECT)
-    public ResponseEntity<DevopsPolarisRecordVO> queryRecordByScopeAndScopeId(
+    public ResponseEntity<DevopsPolarisRecordRespVO> queryRecordByScopeAndScopeId(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam("扫描的范围 env/cluster")
@@ -53,7 +52,7 @@ public class PolarisScanningController {
     @ApiOperation("扫描环境")
     @Permission(roles = {InitRoleCode.PROJECT_OWNER}, type = ResourceType.PROJECT)
     @PostMapping("/envs/{env_id}")
-    public ResponseEntity<DevopsPolarisRecordDTO> scanEnv(
+    public ResponseEntity<DevopsPolarisRecordVO> scanEnv(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam("需要扫描的环境的id")
@@ -86,7 +85,7 @@ public class PolarisScanningController {
     @ApiOperation("扫描集群")
     @Permission(roles = {InitRoleCode.PROJECT_OWNER}, type = ResourceType.PROJECT)
     @PostMapping("/clusters/{cluster_id}")
-    public ResponseEntity<DevopsPolarisRecordDTO> scanCluster(
+    public ResponseEntity<DevopsPolarisRecordVO> scanCluster(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam("需要扫描的集群的id")

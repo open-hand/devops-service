@@ -1,17 +1,14 @@
 package io.choerodon.devops.api.vo;
 
-
 import java.util.Date;
 
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * polaris扫描纪录
- *
  * @author zmf
- * @since 2/19/20
+ * @since 2/18/20
  */
-public class DevopsPolarisRecordVO {
+public class DevopsPolarisRecordRespVO {
     @ApiModelProperty("自增id")
     private Long id;
 
@@ -39,9 +36,6 @@ public class DevopsPolarisRecordVO {
     @ApiModelProperty("错误的检测项数量")
     private Long errors;
 
-    @ApiModelProperty("扫描结果的得分")
-    private Long score;
-
     @ApiModelProperty("扫描出的集群版本")
     private String kubernetesVersion;
 
@@ -54,8 +48,11 @@ public class DevopsPolarisRecordVO {
     @ApiModelProperty("节点数量")
     private Long nodes;
 
-    @ApiModelProperty("版本id")
-    private Long objectVersionNumber;
+    @ApiModelProperty("实例数量 / 只有环境类型的纪录有此字段")
+    private Long instanceCount;
+
+    @ApiModelProperty("健康检查的分数")
+    private Long score;
 
     public Long getId() {
         return id;
@@ -129,14 +126,6 @@ public class DevopsPolarisRecordVO {
         this.errors = errors;
     }
 
-    public Long getScore() {
-        return score;
-    }
-
-    public void setScore(Long score) {
-        this.score = score;
-    }
-
     public String getKubernetesVersion() {
         return kubernetesVersion;
     }
@@ -169,12 +158,19 @@ public class DevopsPolarisRecordVO {
         this.nodes = nodes;
     }
 
-    public Long getObjectVersionNumber() {
-        return objectVersionNumber;
+    public Long getInstanceCount() {
+        return instanceCount;
     }
 
-    public void setObjectVersionNumber(Long objectVersionNumber) {
-        this.objectVersionNumber = objectVersionNumber;
+    public void setInstanceCount(Long instanceCount) {
+        this.instanceCount = instanceCount;
+    }
+
+    public Long getScore() {
+        return score;
+    }
+
+    public void setScore(Long score) {
+        this.score = score;
     }
 }
-

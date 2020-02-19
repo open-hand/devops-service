@@ -19,7 +19,7 @@ public interface PolarisScanningService {
      * @param scopeId   对应scope的envId或者clusterId
      * @return 扫描纪录
      */
-    DevopsPolarisRecordVO queryRecordByScopeAndScopeId(Long projectId, String scope, Long scopeId);
+    DevopsPolarisRecordRespVO queryRecordByScopeAndScopeId(Long projectId, String scope, Long scopeId);
 
     /**
      * 获取扫描的环境报告
@@ -37,7 +37,7 @@ public interface PolarisScanningService {
      * @param envId     环境id
      * @return 扫描纪录
      */
-    DevopsPolarisRecordDTO scanEnv(Long projectId, Long envId);
+    DevopsPolarisRecordVO scanEnv(Long projectId, Long envId);
 
     /**
      * 扫描集群
@@ -46,7 +46,7 @@ public interface PolarisScanningService {
      * @param clusterId 集群id
      * @return 扫描纪录
      */
-    DevopsPolarisRecordDTO scanCluster(Long projectId, Long clusterId);
+    DevopsPolarisRecordVO scanCluster(Long projectId, Long clusterId);
 
     /**
      * 获取扫描的集群概览报告
