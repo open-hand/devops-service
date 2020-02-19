@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -81,5 +82,13 @@ public class DevopsEnvFileErrorServiceImpl implements DevopsEnvFileErrorService 
         DevopsEnvFileErrorDTO devopsEnvFileErrorDTO = new DevopsEnvFileErrorDTO();
         BeanUtils.copyProperties(devopsEnvFileErrorVO, devopsEnvFileErrorDTO);
         devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDTO);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Override
+    public void deleteByEnvId(Long envId) {
+        DevopsEnvFileErrorDTO devopsEnvFileErrorDO = new DevopsEnvFileErrorDTO();
+        devopsEnvFileErrorDO.setEnvId(Objects.requireNonNull(envId));
+        devopsEnvFileErrorMapper.delete(devopsEnvFileErrorDO);
     }
 }

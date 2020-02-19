@@ -25,4 +25,12 @@ public interface DevopsEnvFileErrorService {
     DevopsEnvFileErrorDTO baseQueryByEnvIdAndFilePath(Long envId, String filePath);
 
     void baseCreate(DevopsEnvFileErrorVO devopsEnvFileErrorE);
+
+    /**
+     * 根据环境id删除相应的纪录
+     * 删除环境时使用
+     *
+     * @param envId 环境id
+     */
+    void deleteByEnvId(Long envId);
 }

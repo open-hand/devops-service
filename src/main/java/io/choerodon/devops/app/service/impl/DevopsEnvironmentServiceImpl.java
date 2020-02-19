@@ -175,6 +175,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsRegistrySecretService devopsRegistrySecretService;
     @Autowired
     private DevopsClusterProPermissionService devopsClusterProPermissionService;
+    @Autowired
+    private DevopsEnvFileService devopsEnvFileService;
+    @Autowired
+    private DevopsEnvFileResourceService devopsEnvFileResourceService;
+    @Autowired
+    private DevopsEnvFileErrorService devopsEnvFileErrorService;
+    @Autowired
+    private PolarisScanningService polarisScanningService;
 
     @PostConstruct
     private void init() {
@@ -1295,6 +1303,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public void deleteEnvSaga(Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
+        if (devopsEnvironmentDTO == null) {
+            LogUtil.loggerInfoObjectNullWithId("env",envId , LOGGER);
+            LOGGER.info("Delete env: environment with id {} is skipped", envId);
+            return;
+        }
+
         // 删除对应的环境-应用服务关联关系
         DevopsEnvAppServiceDTO deleteCondition = new DevopsEnvAppServiceDTO();
         deleteCondition.setEnvId(envId);
@@ -1342,6 +1356,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 删除RegistrySecret
         devopsRegistrySecretService.deleteByEnvId(envId);
+
+        // 删除文件解析相关纪录
+        devopsEnvFileService.deleteByEnvId(envId);
+        devopsEnvFileResourceService.deleteByEnvId(envId);
+        devopsEnvFileErrorService.deleteByEnvId(envId);
+
+        // 删除polaris扫描相关的数据
+        polarisScanningService.deleteAllByScopeAndScopeId(PolarisScopeType.ENV, envId);
 
         // 删除环境
         baseDeleteById(envId);

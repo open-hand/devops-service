@@ -624,8 +624,18 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     @Override
     public void deleteAssociatedData(Long recordId) {
         deleteDevopsPolarisItemByRecordId(recordId);
-        deleteDevopsPolarisInstanceResultByRecordId(recordId);
         deleteDevopsPolarisResultDetailByRecordId(recordId);
+        deleteDevopsPolarisInstanceResultByRecordId(recordId);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Override
+    public void deleteAllByScopeAndScopeId(PolarisScopeType scope, Long scopeId) {
+        DevopsPolarisRecordDTO devopsPolarisRecordDTO = queryRecordByScopeIdAndScope(scopeId, scope.getValue());
+        if (devopsPolarisRecordDTO != null) {
+            deleteAssociatedData(devopsPolarisRecordDTO.getId());
+            devopsPolarisRecordMapper.deleteByPrimaryKey(devopsPolarisRecordDTO.getId());
+        }
     }
 
     private void deleteDevopsPolarisItemByRecordId(Long recordId) {
