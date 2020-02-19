@@ -28,40 +28,27 @@ const collapseDetail = observer((props) => {
     ClusterDetailDs,
     clusterSummaryDs,
     envDetailDs,
+    polarisNumDS,
   } = useClusterContentStore();
 
-  const [loading, setLoading] = useState(false);
   const [num, setNum] = useState(80);
 
-  const envs = useMemo(() => ([
-    {
-      name: 'Staging环境',
-      code: 'staging',
-      projectName: 'choerodon',
-      internal: true,
-    },
-    {
-      name: 'Uat环境',
-      code: 'uat',
-      projectName: 'choerodon',
-      internal: true,
-    },
-    {
-      name: '生产环境',
-      code: 'produce',
-      projectName: 'choerodon',
-      internal: false,
-    },
-  ]), []);
-
   const clusterSummary = useMemo(() => (['healthCheck', 'imageCheck', 'networkCheck', 'resourceCheck', 'securityCheck']), []);
+  const clusterSummaryData = useMemo(() => {
+    if (clusterSummaryDs.current) {
+      return clusterSummaryDs.current.toData();
+    }
+    return {};
+  }, [clusterSummaryDs.current]);
+  const loading = useMemo(() => polarisNumDS.current && polarisNumDS.current.get('status') === 'operating', [polarisNumDS.current]);
 
   function refresh() {
 
   }
 
   function getClusterHeader(item) {
-    const { score, hasErrors } = clusterSummaryDs.current ? (clusterSummaryDs.current.get(item) || {}) : {};
+    const checked = clusterSummaryData.checked;
+    const { score, hasErrors } = clusterSummaryData[item] || {};
     const isLoading = clusterSummaryDs.status === 'loading' || loading;
     return (
       <div className={`${prefixCls}-polaris-tabs-header`}>
@@ -71,18 +58,18 @@ const collapseDetail = observer((props) => {
         <span className={`${prefixCls}-polaris-tabs-header-score`}>
           {formatMessage({ id: `${intlPrefix}.polaris.score` })}:
         </span>
-        {isLoading ? <Progress type="loading" size="small" /> : <span>{score}%</span>}
-        {hasErrors && <Icon type="cancel" />}
+        {isLoading ? <Progress type="loading" size="small" /> : <span>{checked ? `${score}%` : '-'}</span>}
+        {hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
         <ProgressBar
           loading={isLoading}
-          num={isLoading ? 0 : score}
+          num={isLoading || !checked ? null : score}
         />
       </div>
     );
   }
 
-  function getEnvHeader(env) {
-    const { name, code, projectName, internal } = env || {};
+  function getEnvHeader(envRecord) {
+    const { envName, namespace, projectName, internal, hasErrors } = envRecord.toData() || {};
     return (
       <div className={`${prefixCls}-polaris-tabs-header`}>
         <div className={`${prefixCls}-polaris-tabs-header-item`}>
@@ -90,15 +77,17 @@ const collapseDetail = observer((props) => {
             {formatMessage({ id: `${intlPrefix}.polaris.internal.${internal}` })}
           </span>
         </div>
-        {code && (
+        {envName && (
           <div className={`${prefixCls}-polaris-tabs-header-item`}>
             <span className={`${prefixCls}-polaris-tabs-header-text`}>{formatMessage({ id: 'environment' })}:</span>
-            <span>{name}</span>
+            <span>{envName}</span>
+            {hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
           </div>
         )}
         <div className={`${prefixCls}-polaris-tabs-header-item`}>
           <span className={`${prefixCls}-polaris-tabs-header-text`}>{formatMessage({ id: 'envCode' })}:</span>
-          <span>{code}</span>
+          <span>{namespace}</span>
+          {!envName && hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
         </div>
         {projectName && (
           <div className={`${prefixCls}-polaris-tabs-header-item`}>
@@ -108,6 +97,25 @@ const collapseDetail = observer((props) => {
         )}
       </div>
     );
+  }
+
+  function getClusterContent(item) {
+    const checked = clusterSummaryData.checked;
+    const { items: list } = clusterSummaryData[item] || {};
+    if (!checked) {
+      return <span className={`${prefixCls}-polaris-empty-text`}>{formatMessage({ id: `${intlPrefix}.polaris.check.null` })}</span>;
+    }
+    return (map(list, ({ namespace, resourceKind, resourceName, hasErrors, items }) => (
+      <div key={namespace}>
+        <div>
+          <span>`NameSpace:${namespace}/${resourceKind}:${resourceName}`</span>
+          {hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
+        </div>
+        {map(items, ({ message, type }) => (
+          <div key={type}>{message}</div>
+        ))}
+      </div>
+    )));
   }
 
   return (
@@ -122,10 +130,10 @@ const collapseDetail = observer((props) => {
           className={`${prefixCls}-polaris-tabs-item`}
           key="cluster"
         >
-          <Collapse bordered={false} defaultActiveKey={['1']}>
+          <Collapse bordered={false}>
             {map(clusterSummary, (item) => (
               <Panel header={getClusterHeader(item)} key={item}>
-                content
+                {getClusterContent(item)}
               </Panel>
             ))}
           </Collapse>
@@ -134,9 +142,9 @@ const collapseDetail = observer((props) => {
           tab={formatMessage({ id: `${intlPrefix}.polaris.env` })}
           key="environment"
         >
-          <Collapse bordered={false} defaultActiveKey={['1']}>
-            {map(envs, (env) => (
-              <Panel header={getEnvHeader(env)} key={env.code}>
+          <Collapse bordered={false}>
+            {map(envDetailDs.data, (envRecord) => (
+              <Panel header={getEnvHeader(envRecord)} key={envRecord.id}>
                 content
               </Panel>
             ))}

@@ -41,8 +41,8 @@ const polaris = observer((props) => {
     } else {
       return (
         <EmptyPage
-          title="暂无环境"
-          describe="该集群下暂无任何环境"
+          title={formatMessage({ id: 'empty.title.env' })}
+          describe={formatMessage({ id: `${intlPrefix}.polaris.empty.des` })}
         />
       );
     }

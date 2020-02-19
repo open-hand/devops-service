@@ -138,9 +138,12 @@ export default function useStore({ NODE_TAB }) {
     async checkHasEnv(projectId, clusterId) {
       try {
         const res = await axios.get(`/devops/v1/projects/${projectId}/envs/count_by_options?cluster_id=${clusterId}`);
-        this.setHasEnv(handlePromptError(res));
+        const result = handlePromptError(res);
+        this.setHasEnv(result);
+        return result;
       } catch (e) {
         Choerodon.handleResponseError(e);
+        return false;
       }
     },
   }));

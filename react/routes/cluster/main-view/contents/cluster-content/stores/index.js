@@ -96,14 +96,20 @@ export const StoreProvider = injectIntl(inject('AppState')(
           clusterSummaryDs.transport.read.url = `/devops/v1/projects/${projectId}/polaris/clusters/${id}/summary`;
           envDetailDs.transport.read.url = `/devops/v1/projects/${projectId}/polaris/clusters/${id}/env_detail`;
           polarisNumDS.transport.read.url = `devops/v1/projects/${projectId}/polaris/records?scope=cluster&scope_id=${id}`;
-          contentStore.checkHasEnv(projectId, id);
-          clusterSummaryDs.query();
-          polarisNumDS.query();
-          envDetailDs.query();
+          loadPolaris();
           break;
         default:
       }
     }, [projectId, id, tabkey, record]);
+
+    async function loadPolaris() {
+      const res = await contentStore.checkHasEnv(projectId, id);
+      if (res) {
+        polarisNumDS.query();
+        clusterSummaryDs.query();
+        envDetailDs.query();
+      }
+    }
 
     const value = {
       ...props,

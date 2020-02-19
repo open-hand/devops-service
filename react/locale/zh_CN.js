@@ -1300,6 +1300,8 @@ const cluster = {
   'c7ncd.cluster.polaris.networkCheck': '网络配置',
   'c7ncd.cluster.polaris.resourceCheck': '资源分配',
   'c7ncd.cluster.polaris.securityCheck': '安全',
+  'c7ncd.cluster.polaris.empty.des': '当前集群下暂无环境，无法执行健康检查。',
+  'c7ncd.cluster.polaris.check.null': '暂无检测结果',
 };
 
 const zhCN = {
