@@ -12,7 +12,7 @@ import './index.less';
 const { TabPane } = Tabs;
 const { Panel } = Collapse;
 
-const collapseDetail = observer((props) => {
+const collapseDetail = observer(({ loading }) => {
   const {
     intlPrefix,
     prefixCls,
@@ -40,7 +40,7 @@ const collapseDetail = observer((props) => {
     }
     return {};
   }, [clusterSummaryDs.current]);
-  const loading = useMemo(() => polarisNumDS.current && polarisNumDS.current.get('status') === 'operating', [polarisNumDS.current]);
+  const statusLoading = useMemo(() => polarisNumDS.current && polarisNumDS.current.get('status') === 'operating', [polarisNumDS.current]);
 
   function refresh() {
 
@@ -49,7 +49,7 @@ const collapseDetail = observer((props) => {
   function getClusterHeader(item) {
     const checked = clusterSummaryData.checked;
     const { score, hasErrors } = clusterSummaryData[item] || {};
-    const isLoading = clusterSummaryDs.status === 'loading' || loading;
+    const isLoading = loading || statusLoading || clusterSummaryDs.status === 'loading';
     return (
       <div className={`${prefixCls}-polaris-tabs-header`}>
         <span className={`${prefixCls}-polaris-mgl-10`}>
@@ -108,7 +108,7 @@ const collapseDetail = observer((props) => {
     return (map(list, ({ namespace, resourceKind, resourceName, hasErrors, items }) => (
       <div key={namespace}>
         <div>
-          <span>`NameSpace:${namespace}/${resourceKind}:${resourceName}`</span>
+          <span>{`NameSpace:${namespace}/${resourceKind}:${resourceName}`}</span>
           {hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
         </div>
         {map(items, ({ message, type }) => (
@@ -116,6 +116,13 @@ const collapseDetail = observer((props) => {
         ))}
       </div>
     )));
+  }
+
+  function getEnvContent(envRecord) {
+    const checked = envRecord.get('checked');
+    if (!checked) {
+      return <span className={`${prefixCls}-polaris-empty-text`}>{formatMessage({ id: `${intlPrefix}.polaris.check.null` })}</span>;
+    }
   }
 
   return (
@@ -145,7 +152,7 @@ const collapseDetail = observer((props) => {
           <Collapse bordered={false}>
             {map(envDetailDs.data, (envRecord) => (
               <Panel header={getEnvHeader(envRecord)} key={envRecord.id}>
-                content
+                {getEnvContent(envRecord)}
               </Panel>
             ))}
           </Collapse>

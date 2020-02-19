@@ -146,5 +146,16 @@ export default function useStore({ NODE_TAB }) {
         return false;
       }
     },
+
+    async ManualScan(projectId, clusterId) {
+      try {
+        const res = await axios.post(`/devops/v1/projects/${projectId}/polaris/clusters/${clusterId}`);
+        const result = handlePromptError(res);
+        return result;
+      } catch (e) {
+        Choerodon.handleResponseError(e);
+        return false;
+      }
+    },
   }));
 }
