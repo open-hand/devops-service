@@ -5,6 +5,7 @@ import java.util.List;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.polaris.PolarisResponsePayloadVO;
 import io.choerodon.devops.infra.dto.DevopsPolarisRecordDTO;
+import io.choerodon.devops.infra.enums.PolarisScopeType;
 
 /**
  * @author zmf
@@ -89,4 +90,13 @@ public interface PolarisScanningService {
      * @param recordId 扫描记录id
      */
     void deleteAssociatedData(Long recordId);
+
+    /**
+     * 通过scope和scopeId删除扫描纪录及其相关数据
+     * 一般用于删除环境和删除集群时
+     *
+     * @param scope   scope
+     * @param scopeId clusterId或者envId
+     */
+    void deleteAllByScopeAndScopeId(PolarisScopeType scope, Long scopeId);
 }

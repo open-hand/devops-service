@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import com.github.pagehelper.PageInfo;
 
@@ -24,6 +25,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Creator: Runge
@@ -129,6 +132,14 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
         devopsEnvFileDTO.setEnvId(envId);
         devopsEnvFileDTO.setFilePath(path);
         return devopsEnvFileMapper.select(devopsEnvFileDTO);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Override
+    public void deleteByEnvId(Long envId) {
+        DevopsEnvFileDTO devopsEnvFileDTO = new DevopsEnvFileDTO();
+        devopsEnvFileDTO.setEnvId(Objects.requireNonNull(envId));
+        devopsEnvFileMapper.delete(devopsEnvFileDTO);
     }
 
 
