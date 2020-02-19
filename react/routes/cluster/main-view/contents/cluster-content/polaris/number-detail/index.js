@@ -4,16 +4,49 @@ import { Spin, Button, Icon } from 'choerodon-ui';
 import { useClusterMainStore } from '../../../../stores';
 import { useClusterContentStore } from '../../stores';
 import Radar from '../components/Radar';
+import ScanBtn from '../scan-btn';
 import './index.less';
 
-const checkGroup = {
-  checkColor: {
-
+const checkGroup = [
+  {
+    checkType: 'successes',
+    icon: 'check',
+    text: 'checks passed',
   },
-  checkText: {
-
+  {
+    checkType: 'warnings',
+    icon: 'priority_high',
+    text: 'checks had warning',
   },
-};
+  {
+    checkType: 'errors',
+    icon: 'close',
+    text: 'checks had errors',
+  },
+];
+
+const categoryGroup = [
+  {
+    category_type: 'kubernetesVersion',
+    name: 'Kubernetes版本',
+    icon: 'saga_define',
+  },
+  {
+    category_type: 'pods',
+    name: 'Pods数量',
+    icon: 'toll',
+  },
+  {
+    category_type: 'nodes',
+    name: '节点数量',
+    icon: 'instance_outline',
+  },
+  {
+    category_type: 'namespaces',
+    name: '环境数量',
+    icon: 'grain',
+  },
+];
 
 const numberDetail = observer((props) => {
   const {
@@ -37,7 +70,7 @@ const numberDetail = observer((props) => {
   } = useClusterContentStore();
 
   useEffect(() => {
-    polarisNumDS.query();
+
   }, []);
 
   const handleScan = () => {
@@ -58,6 +91,24 @@ const numberDetail = observer((props) => {
 
   }
 
+  function renderNumPanel() {
+    // eslint-disable-next-line react/no-array-index-key
+    return checkGroup.map((item, key) => <div className={`${prefixCls}-number-check`} key={key}>
+      <Icon type={item.icon} /> <span>{polarisNumDS.current ? (polarisNumDS.current.get(item.checkType) || '-') : '-'} {item.text}</span>
+    </div>);
+  }
+
+  function renderDetailPanel(category) {
+    // eslint-disable-next-line react/no-array-index-key
+    return categoryGroup.map((item, key) => <div className={`${prefixCls}-number-category`} key={key}>
+      <Icon type={item.icon} />
+      <div className={`${prefixCls}-number-category-detail`}>
+        <span>{item.name}</span>
+        <span>{polarisNumDS.current ? (polarisNumDS.current.get(item.category_type) || '-') : '-'}</span>
+      </div>
+    </div>);
+  }
+
 
   return (
     <div className={`${prefixCls}-number`}>
@@ -67,21 +118,11 @@ const numberDetail = observer((props) => {
 
         {/* 左半部分上部分 */}
         <div className={`${prefixCls}-number-leftTop`}>
-
-          <Button
-            type="primary"
-            funcType="raised"
-            style={{
-              width: '.92rem',
-              boShadow: '0px 2px 4px 0px rgba(106,117,203,0.6)',
-              borderRadius: '6px',
-            }}
-            onClick={handleScan}
-          >手动扫描</Button>
-
+          {/* 扫描按钮 */}
+          <ScanBtn />
           {/* 最新一次扫描时间 */}
           <span className={`${prefixCls}-number-leftTop-lastestDate`}>
-            上次扫描时间：-
+            上次扫描时间：{polarisNumDS.current ? polarisNumDS.current.get('lastScanDateTime') : '-'}
           </span>
 
         </div>
@@ -89,63 +130,20 @@ const numberDetail = observer((props) => {
         {/* 左半部分下部分 */}
         <div className={`${prefixCls}-number-leftDown`}>
           <div className={`${prefixCls}-number-leftDown-left`}>
-
-            <div className={`${prefixCls}-number-check`}>
-              <Icon type="check" /> <span>- checks passed</span>
-            </div>
-            <div className={`${prefixCls}-number-check`}>
-              <Icon type="priority_high" /> <span>- checks had warning</span>
-            </div>
-            <div className={`${prefixCls}-number-check`}>
-              <Icon type="close" /> <span>- checks had errors</span>
-            </div>
-
+            {renderNumPanel()}
           </div>
-
-          {/* ---------------- 皓天！！！这个雷达的组件你可以替换掉，换成动画 ------------- */}
+          {/* 扫描动画 */}
           <Radar
-            num={num}
+            num={polarisNumDS.current ? polarisNumDS.current.get('score') : ''}
             loading={loading}
           />
         </div>
-
       </div>
 
       {/* 下部分 */}
       <div className={`${prefixCls}-number-right`}>
         <div className={`${prefixCls}-number-right-list`}>
-          <div className={`${prefixCls}-number-category`}>
-            <Icon type="saga_define" />
-            <div className={`${prefixCls}-number-category-detail`}>
-              <span>Kubernetes版本</span>
-              <span>1.15</span>
-            </div>
-          </div>
-
-          <div className={`${prefixCls}-number-category`}>
-            <Icon type="instance_outline" />
-            <div className={`${prefixCls}-number-category-detail`}>
-              <span>实例数量</span>
-              <span>22</span>
-            </div>
-          </div>
-
-          <div className={`${prefixCls}-number-category`}>
-            <Icon type="toll" />
-            <div className={`${prefixCls}-number-category-detail`}>
-              <span>Pods数量</span>
-              <span>11</span>
-            </div>
-          </div>
-
-          <div className={`${prefixCls}-number-category`}>
-            <Icon type="grain" />
-            <div className={`${prefixCls}-number-category-detail`}>
-              <span>环境数量</span>
-              <span>11</span>
-            </div>
-          </div>
-
+          {renderDetailPanel()}
         </div>
       </div>
     </div>
