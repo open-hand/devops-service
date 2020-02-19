@@ -31,7 +31,7 @@ public class DevopsEnvWithPolarisResultVO {
     @ApiModelProperty("扫描结果json")
     private List<String> detailJson;
     @JsonIgnore
-    @ApiModelProperty("每个item是否有error")
+    @ApiModelProperty(value = "每个item是否有error", hidden = true)
     private List<Boolean> itemHasErrors;
     @ApiModelProperty("是否扫描过")
     private Boolean checked;

@@ -61,6 +61,7 @@ public class RoleVO {
     @ApiModelProperty(value = "项目名/非必填")
     private String projectName;
 
+    @ApiModelProperty(hidden = true)
     @JsonIgnore
     private String param;
 
