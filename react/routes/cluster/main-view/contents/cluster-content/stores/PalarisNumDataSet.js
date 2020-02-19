@@ -1,13 +1,12 @@
 
 export default ({ formatMessage, intlPrefix, projectId, id }) => ({
-  selection: false,
+  autoQuery: false,
+  paging: false,
+  dataKey: null,
   transport: {
     read: {
       method: 'get',
-      // url: `devops/v1/projects/${projectId}/polaris/records?scope=cluster&scope_id=${id}`,
     },
   },
-  fields: [
-    
-  ],
+  fields: [],
 });

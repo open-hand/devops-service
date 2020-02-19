@@ -47,6 +47,10 @@ const polaris = observer((props) => {
     setLoading(true);
   }
 
+  function checkStatus() {
+
+  }
+
   function getContent() {
     if (contentStore.getHasEnv) {
       return (
@@ -56,11 +60,11 @@ const polaris = observer((props) => {
             type="primary"
             funcType="raised"
             onClick={handleScan}
-            disabled={!(ClusterDetailDs.current && ClusterDetailDs.current.get('connect'))}
+            disabled={!(ClusterDetailDs.current && ClusterDetailDs.current.get('connect') && !loading)}
           >
             {formatMessage({ id: `${intlPrefix}.polaris.scanning` })}
           </Button>
-          <NumberDetail />
+          <NumberDetail loading={loading} />
           <CollapseDetail loading={loading} />
         </Fragment>
       );

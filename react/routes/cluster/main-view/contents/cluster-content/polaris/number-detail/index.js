@@ -47,14 +47,11 @@ const categoryGroup = [
   },
 ];
 
-const numberDetail = observer((props) => {
+const numberDetail = observer(({ loading }) => {
   const {
     intlPrefix,
     prefixCls,
   } = useClusterMainStore();
-
-  const [num, setNum] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   const {
     contentStore: {
@@ -68,32 +65,25 @@ const numberDetail = observer((props) => {
     polarisNumDS,
   } = useClusterContentStore();
 
+  const statusLoading = useMemo(() => polarisNumDS.current && polarisNumDS.current.get('status') === 'operating', [polarisNumDS.current]);
+
   useEffect(() => {
 
   }, []);
-
-  const handleScan = () => {
-    if (loading) {
-      setNum(83);
-      setLoading(false);
-    } else {
-      setNum(null);
-      setLoading(true);
-    }
-    // setTimeout(() => {
-    //   setNum(83);
-    //   setLoading(false);
-    // }, 3000);
-  };
 
   function refresh() {
 
   }
 
   function renderNumPanel() {
+    const isLoading = loading || statusLoading;
     // eslint-disable-next-line react/no-array-index-key
     return checkGroup.map((item, key) => <div className={`${prefixCls}-number-check`} key={key}>
-      <Icon type={item.icon} /> <span>{polarisNumDS.current ? (polarisNumDS.current.get(item.checkType) || '-') : '-'} {item.text}</span>
+      <Icon type={item.icon} />
+      <span>
+        {!isLoading ? (polarisNumDS.current && polarisNumDS.current.get(item.checkType)) : '-'}
+        {item.text}
+      </span>
     </div>);
   }
 
@@ -108,6 +98,16 @@ const numberDetail = observer((props) => {
     </div>);
   }
 
+  function renderRadar() {
+    const isLoading = loading || statusLoading;
+    const score = polarisNumDS.current && polarisNumDS.current.get('score');
+    return (
+      <Radar
+        num={!isLoading ? score : null}
+        loading={isLoading}
+      />
+    );
+  }
 
   return (
     <div className={`${prefixCls}-number`}>
@@ -119,7 +119,8 @@ const numberDetail = observer((props) => {
         <div className={`${prefixCls}-number-leftTop`}>
           {/* 最新一次扫描时间 */}
           <span className={`${prefixCls}-number-leftTop-lastestDate`}>
-            上次扫描时间：{polarisNumDS.current ? polarisNumDS.current.get('lastScanDateTime') : '-'}
+            上次扫描时间：
+            {polarisNumDS.current ? polarisNumDS.current.get('lastScanDateTime') : '-'}
           </span>
 
         </div>
@@ -130,10 +131,7 @@ const numberDetail = observer((props) => {
             {renderNumPanel()}
           </div>
           {/* 扫描动画 */}
-          <Radar
-            num={polarisNumDS.current ? polarisNumDS.current.get('score') : ''}
-            loading={loading}
-          />
+          {renderRadar()}
         </div>
       </div>
 
