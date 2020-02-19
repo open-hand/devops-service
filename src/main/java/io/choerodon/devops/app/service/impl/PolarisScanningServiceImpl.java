@@ -112,12 +112,24 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             if (devopsEnvironmentDTO == null) {
                 return devopsPolarisRecordRespVO;
             }
+            ClusterSummaryInfoVO clusterSummaryInfoVO = devopsClusterService.queryClusterSummaryInfo(devopsEnvironmentDTO.getClusterId());
             int podCount = devopsEnvPodMapper.countByOptions(null, devopsEnvironmentDTO.getCode(), null, null);
             devopsPolarisRecordRespVO.setPods((long) podCount);
+            if (clusterSummaryInfoVO != null) {
+                devopsPolarisRecordRespVO.setKubernetesVersion(clusterSummaryInfoVO.getVersion());
+            }
         } else {
-            int envCount = devopsEnvironmentMapper.countByOptions(scopeId, null, null, EnvironmentType.USER.getValue());
-            devopsPolarisRecordRespVO.setNamespaces((long) envCount);
-            devopsPolarisRecordRespVO.setNodes(clusterNodeInfoService.countNodes(projectId, scopeId));
+            ClusterSummaryInfoVO clusterSummaryInfoVO = devopsClusterService.queryClusterSummaryInfo(scopeId);
+            if (clusterSummaryInfoVO == null) {
+                int envCount = devopsEnvironmentMapper.countByOptions(scopeId, null, null, EnvironmentType.USER.getValue());
+                devopsPolarisRecordRespVO.setNamespaces((long) envCount);
+                devopsPolarisRecordRespVO.setNodes(clusterNodeInfoService.countNodes(projectId, scopeId));
+            } else {
+                devopsPolarisRecordRespVO.setKubernetesVersion(clusterSummaryInfoVO.getVersion());
+                devopsPolarisRecordRespVO.setPods(clusterSummaryInfoVO.getPods());
+                devopsPolarisRecordRespVO.setNamespaces(clusterSummaryInfoVO.getNamespaces());
+                devopsPolarisRecordRespVO.setNodes(clusterSummaryInfoVO.getNodes());
+            }
         }
         return devopsPolarisRecordRespVO;
     }
@@ -247,7 +259,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
 
         DevopsPolarisRecordDTO recordDTO = queryRecordByScopeIdAndScope(clusterId, PolarisScopeType.CLUSTER.getValue());
 
-        if (recordDTO == null) {
+        if (recordDTO == null || !PolarisScanningStatus.FINISHED.getStatus().equals(recordDTO.getStatus())) {
             return handleEnvWithoutPolaris(devopsPolarisInstanceResultMapper.queryEnvWithoutPolarisResult(clusterId));
         }
 
@@ -381,10 +393,27 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             return;
         }
 
+        Long clusterId;
+        if (PolarisScopeType.ENV.getValue().equals(recordDTO.getScope())) {
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(recordDTO.getScopeId());
+            if (devopsEnvironmentDTO == null) {
+                LogUtil.loggerWarnObjectNullWithId("env", recordDTO.getScopeId(), LOGGER);
+                return;
+            } else {
+                clusterId = devopsEnvironmentDTO.getClusterId();
+            }
+        } else {
+            clusterId = recordDTO.getScopeId();
+        }
+
 
         PolarisScanResultVO polarisScanResultVO = message.getPolarisResult();
         PolarisScanSummaryVO summaryVO = polarisScanResultVO.getSummary();
 
+        // 存储集群信息
+        devopsClusterService.saveClusterSummaryInfo(clusterId, polarisScanResultVO.getAuditData().getClusterInfo());
+
+        // 处理record信息
         LOGGER.info("Polaris: auditTime: {}", polarisScanResultVO.getAuditData().getAuditTime());
         recordDTO.setLastScanDateTime(polarisScanResultVO.getAuditData().getAuditTime());
         recordDTO.setSuccesses(summaryVO.getSuccesses());

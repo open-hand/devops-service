@@ -82,4 +82,8 @@ public interface AgentMsgHandlerService {
 
     void handlePodMetricsSync(String key, String result, Long clusterId);
 
+    /**
+     * 处理agent启动时发来的集群信息
+     */
+    void handleClusterInfo(AgentMsgVO msg);
 }

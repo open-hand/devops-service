@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.github.pagehelper.PageInfo;
 import org.springframework.data.domain.Pageable;
 
@@ -24,6 +26,7 @@ public interface DevopsClusterService {
      * @param clusterId 集群id
      * @return 信息
      */
+    @Nullable
     ClusterSummaryInfoVO queryClusterSummaryInfo(Long clusterId);
 
     /**

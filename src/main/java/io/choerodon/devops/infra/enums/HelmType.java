@@ -73,6 +73,10 @@ public enum HelmType {
      */
     DELETE_POD("delete_pod"),
     /**
+     * agent启动时将集群的基本信息发送过来，如版本，namespace数量等
+     */
+    CLUSTER_INFO("cluster_info"),
+    /**
      * polaris扫描集群或集群的某个namespace
      */
     POLARIS_SCAN_CLUSTER("polaris_scan_cluster"),
