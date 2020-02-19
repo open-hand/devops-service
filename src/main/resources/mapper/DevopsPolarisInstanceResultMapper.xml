@@ -10,8 +10,9 @@
         <result column="app_service_name" property="appServiceName"/>
         <result column="app_service_id" property="appServiceId"/>
         <result column="env_id" property="envId"/>
-        <collection property="resultJson" ofType="java.lang.String" javaType="java.util.List" notNullColumn="detail_json">
-            <result column="detail_json"/>
+        <collection property="items" ofType="io.choerodon.devops.api.vo.PolarisSimpleResultVO" javaType="java.util.List" notNullColumn="detail_json">
+            <result property="detailJson"  column="detail_json"/>
+            <result property="hasErrors" column="has_errors"/>
         </collection>
     </resultMap>
 
@@ -22,11 +23,9 @@
         <result property="internal" column="internal"/>
         <result property="projectId" column="project_id"/>
         <result property="checked" column="checked"/>
-        <collection property="detailJson" ofType="java.lang.String" javaType="java.util.List" notNullColumn="detail">
-            <result column="detail"/>
-        </collection>
-        <collection property="itemHasErrors" ofType="java.lang.Boolean" javaType="java.util.List" notNullColumn="item_has_errors">
-            <result column="item_has_errors"/>
+        <collection property="items" ofType="io.choerodon.devops.api.vo.PolarisSimpleResultVO" javaType="java.util.List" notNullColumn="detail">
+            <result property="detailJson" column="detail"/>
+            <result property="hasErrors" column="item_has_errors"/>
         </collection>
     </resultMap>
 
@@ -55,6 +54,7 @@
         das.id AS app_service_id,
         das.code AS app_service_code,
         das.name AS app_service_name,
+        dpir.has_errors AS has_errors,
         dprd.detail AS detail_json
         FROM devops_app_service_instance dasi
         LEFT JOIN devops_app_service das ON dasi.app_service_id = das.id

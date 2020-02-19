@@ -334,8 +334,12 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
                     result.setProjectCode(projectDTO.getCode());
                 }
             }
-            if (result.getItemHasErrors() != null) {
-                Optional<Boolean> hasErrors = result.getItemHasErrors().stream().reduce((one, another) -> mapNullToFalse(one) && mapNullToFalse(another));
+            result.setHasErrors(Boolean.FALSE);
+            if (result.getItems() != null) {
+                Optional<Boolean> hasErrors = result.getItems()
+                        .stream()
+                        .map(PolarisSimpleResultVO::getHasErrors)
+                        .reduce((one, another) -> mapNullToFalse(one) && mapNullToFalse(another));
                 hasErrors.ifPresent(result::setHasErrors);
             }
         });
@@ -504,19 +508,43 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
                     controllerResult.getName(),
                     controllerResult.getKind(),
                     recordId, null,
-                    JSONObject.toJSONString(controllerResult));
+                    null);
             rawInstanceResultList.add(instanceResult);
 
+            // 这个是存储到数据库的json结构
+            PolarisStorageControllerResultVO storageControllerResultVO = new PolarisStorageControllerResultVO();
+            storageControllerResultVO.setPodResult(new PolarisStoragePodResultVO());
+            BeanUtils.copyProperties(controllerResult, storageControllerResultVO, "podResult", "results");
+            storageControllerResultVO.getPodResult().setName(controllerResult.getPodResult().getName());
+            storageControllerResultVO.getPodResult().setContainerResults(new ArrayList<>());
+
             // 以下是处理 devops_polaris_item 表相关数据
+            // 并挑选出各个层级未通过的检测项放入到要作为json传出到数据库的对象中
             DevopsPolarisItemDTO template = new DevopsPolarisItemDTO(confirmedEnvId, controllerResult.getNamespace(), controllerResult.getName(), controllerResult.getKind(), recordId);
             List<PolarisResultItemVO> allItems = new ArrayList<>();
+
             List<PolarisResultItemVO> controllerItems = convertItemFromMap(controllerResult.getResults());
+            storageControllerResultVO.setResults(pickNonPassedItems(controllerItems));
+
             List<PolarisResultItemVO> podItems = convertItemFromMap(controllerResult.getPodResult().getResults());
+            storageControllerResultVO.getPodResult().setResults(pickNonPassedItems(podItems));
+
             List<PolarisResultItemVO> containerItems = new ArrayList<>();
-            controllerResult.getPodResult().getContainerResults().forEach(c -> containerItems.addAll(convertItemFromMap(c.getResults())));
+            controllerResult.getPodResult()
+                    .getContainerResults()
+                    .forEach(c -> {
+                        PolarisStorageContainerResultVO containerResultVO = new PolarisStorageContainerResultVO();
+                        containerResultVO.setName(c.getName());
+                        List<PolarisResultItemVO> containerResults = convertItemFromMap(c.getResults());
+                        containerResultVO.setResults(pickNonPassedItems(containerResults));
+                        containerItems.addAll(containerResults);
+                        storageControllerResultVO.getPodResult().getContainerResults().add(containerResultVO);
+                    });
+
             allItems.addAll(controllerItems);
             allItems.addAll(podItems);
             allItems.addAll(containerItems);
+            // 生成devops_polaris_item并计算这个资源error级别的检测项的数量
             for (PolarisResultItemVO i : allItems) {
                 DevopsPolarisItemDTO item = new DevopsPolarisItemDTO();
                 BeanUtils.copyProperties(template, item);
@@ -529,13 +557,47 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
                 }
                 items.add(item);
             }
+
             instanceResult.setHasErrors(errorCount > 0);
+            instanceResult.setDetail(JSONObject.toJSONString(storageControllerResultVO));
         });
 
         // 处理 devops_polaris_instance_result 数据
         handleInstanceResultList(rawInstanceResultList);
         // 批量插入 devops_polaris_item 纪录
         devopsPolarisItemMapper.batchInsert(items);
+    }
+
+    /**
+     * 将未通过的item挑出来，放在新的列表
+     *
+     * @param items 检测项
+     * @return 未通过检测的
+     */
+    private static List<PolarisResultItemVO> pickNonPassedItems(List<PolarisResultItemVO> items) {
+        if (CollectionUtils.isEmpty(items)) {
+            return Collections.emptyList();
+        }
+        List<PolarisResultItemVO> results = new ArrayList<>();
+        items.forEach(item -> {
+            if (!judgePassed(item)) {
+                results.add(item);
+            }
+        });
+        return results;
+    }
+
+    /**
+     * 判断检测项是通过的吗
+     *
+     * @param item 检测项
+     * @return true表示通过
+     */
+    private static boolean judgePassed(PolarisResultItemVO item) {
+        if (item == null) {
+            return false;
+        }
+        return Boolean.TRUE.equals(item.getSuccess()) || PolarisSeverity.IGNORE.getValue().equals(item.getSeverity());
     }
 
     /**

@@ -25,8 +25,8 @@ public class InstanceWithPolarisResultVO {
     private Long appServiceId;
     @ApiModelProperty("应用服务code")
     private String appServiceCode;
-    @ApiModelProperty("扫描结果json")
-    private List<String> resultJson;
+    @ApiModelProperty("实例包含的配置文件")
+    private List<PolarisSimpleResultVO> items;
 
     public Long getEnvId() {
         return envId;
@@ -84,11 +84,11 @@ public class InstanceWithPolarisResultVO {
         this.appServiceCode = appServiceCode;
     }
 
-    public List<String> getResultJson() {
-        return resultJson;
+    public List<PolarisSimpleResultVO> getItems() {
+        return items;
     }
 
-    public void setResultJson(List<String> resultJson) {
-        this.resultJson = resultJson;
+    public void setItems(List<PolarisSimpleResultVO> items) {
+        this.items = items;
     }
 }
