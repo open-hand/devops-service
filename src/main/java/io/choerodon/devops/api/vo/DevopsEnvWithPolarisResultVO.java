@@ -2,7 +2,6 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -28,11 +27,8 @@ public class DevopsEnvWithPolarisResultVO {
     private String projectName;
     @ApiModelProperty("项目code / 可为空")
     private String projectCode;
-    @ApiModelProperty("扫描结果json")
-    private List<String> detailJson;
-    @JsonIgnore
-    @ApiModelProperty(value = "每个item是否有error", hidden = true)
-    private List<Boolean> itemHasErrors;
+    @ApiModelProperty("环境下的配置文件项")
+    private List<PolarisSimpleResultVO> items;
     @ApiModelProperty("是否扫描过")
     private Boolean checked;
 
@@ -100,20 +96,12 @@ public class DevopsEnvWithPolarisResultVO {
         this.projectCode = projectCode;
     }
 
-    public List<String> getDetailJson() {
-        return detailJson;
+    public List<PolarisSimpleResultVO> getItems() {
+        return items;
     }
 
-    public void setDetailJson(List<String> detailJson) {
-        this.detailJson = detailJson;
-    }
-
-    public List<Boolean> getItemHasErrors() {
-        return itemHasErrors;
-    }
-
-    public void setItemHasErrors(List<Boolean> itemHasErrors) {
-        this.itemHasErrors = itemHasErrors;
+    public void setItems(List<PolarisSimpleResultVO> items) {
+        this.items = items;
     }
 
     public Boolean getChecked() {
