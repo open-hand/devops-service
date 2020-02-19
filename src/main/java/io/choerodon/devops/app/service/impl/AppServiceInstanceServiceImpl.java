@@ -1431,8 +1431,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, configVO, CREATE);
                 } else {
                     //判断如果某个配置有发生过修改，则需要修改secret信息，并通知k8s更新secret
-                    if (!devopsRegistrySecretDTO.getSecretDetail().equals(gson.toJson(devopsConfigDTO.getConfig()))) {
-                        devopsRegistrySecretDTO.setSecretDetail(gson.toJson(devopsConfigDTO.getConfig()));
+                    if (!devopsRegistrySecretDTO.getSecretDetail().equals(gson.toJson(configVO))) {
+                        devopsRegistrySecretDTO.setSecretDetail(gson.toJson(configVO));
                         devopsRegistrySecretService.baseUpdate(devopsRegistrySecretDTO);
                         agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsRegistrySecretDTO.getSecretCode(), configVO, UPDATE);
                     } else {
