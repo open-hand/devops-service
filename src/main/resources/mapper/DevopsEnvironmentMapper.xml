@@ -239,7 +239,7 @@
           AND env.is_failed = FALSE
           AND env.is_synchro = TRUE
           AND env.type = 'user'
-          GROUP BY env.name,app.id,ins.id
+          GROUP BY env.name,ins.id
     </select>
 
     <select id="listMemberResourceEnvTree" resultMap="resourceEnvTree">
