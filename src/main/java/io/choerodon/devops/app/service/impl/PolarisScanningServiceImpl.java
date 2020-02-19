@@ -84,7 +84,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         DevopsPolarisRecordDTO devopsPolarisRecordDTO = queryRecordByScopeIdAndScope(scopeId, scope);
         if (devopsPolarisRecordDTO == null
                 || !PolarisScanningStatus.FINISHED.getStatus().equals(devopsPolarisRecordDTO.getStatus())) {
-            return handleNullRecord(projectId, scopeType, scopeId);
+            return handleNullOrUnfinishedRecord(projectId, scopeType, scopeId, devopsPolarisRecordDTO);
         }
         DevopsPolarisRecordRespVO devopsPolarisRecordRespVO = ConvertUtils.convertObject(devopsPolarisRecordDTO, DevopsPolarisRecordRespVO.class);
         if (PolarisScopeType.ENV.getValue().equals(scope)) {
@@ -95,16 +95,20 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     }
 
     /**
-     * 处理未扫描过时需要给的数据
+     * 处理未扫描过时(或者未扫描完成时)需要给的数据
      *
      * @param projectId 项目id
      * @param scope     扫描范围
      * @param scopeId   envId或clusterId
+     * @param recordDTO record，可以为空
      * @return 基础的数据
      */
-    private DevopsPolarisRecordRespVO handleNullRecord(Long projectId, PolarisScopeType scope, Long scopeId) {
-        // TODO 获取Kubernetes版本
+    private DevopsPolarisRecordRespVO handleNullOrUnfinishedRecord(Long projectId, PolarisScopeType scope, Long scopeId, @Nullable DevopsPolarisRecordDTO recordDTO) {
         DevopsPolarisRecordRespVO devopsPolarisRecordRespVO = new DevopsPolarisRecordRespVO();
+        if (recordDTO != null) {
+            BeanUtils.copyProperties(recordDTO, devopsPolarisRecordRespVO);
+        }
+
         if (PolarisScopeType.ENV == Objects.requireNonNull(scope)) {
             int instanceCount = appServiceInstanceMapper.countByOptions(scopeId, null, null);
             devopsPolarisRecordRespVO.setInstanceCount((long) instanceCount);
