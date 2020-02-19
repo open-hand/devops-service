@@ -229,25 +229,45 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         return summaryVO;
     }
 
-    private void countItemScore(ClusterPolarisSummaryItemVO item) {
+    /**
+     * 计算分值并移除通过的检测项
+     *
+     * @param item 数据
+     */
+    private static void countItemScore(ClusterPolarisSummaryItemVO item) {
         long errors = 0;
         long warnings = 0;
         long successes = 0;
         // TODO 想办法优化
-        for (ClusterPolarisSummaryItemContentVO content : item.getItems()) {
-            for (ClusterPolarisSummaryItemDetailVO detail : content.getItems()) {
+        // TODO 可以考虑不将通过的项查出来,减少数据传输量
+        item.setHasErrors(Boolean.FALSE);
+        Iterator<ClusterPolarisSummaryItemContentVO> iterator = item.getItems().iterator();
+        while (iterator.hasNext()) {
+            ClusterPolarisSummaryItemContentVO content = iterator.next();
+            content.setHasErrors(Boolean.FALSE);
+            Iterator<ClusterPolarisSummaryItemDetailVO> detailIterator = content.getItems().iterator();
+
+            while (detailIterator.hasNext()) {
+                ClusterPolarisSummaryItemDetailVO detail = detailIterator.next();
                 if (Boolean.TRUE.equals(detail.getApproved())) {
                     successes++;
+                    detailIterator.remove();
                 } else {
                     if (PolarisSeverity.IGNORE.getValue().equals(detail.getSeverity())) {
+                        detailIterator.remove();
                         successes++;
                     } else if (PolarisSeverity.WARNING.getValue().equals(detail.getSeverity())) {
                         warnings++;
                     } else if (PolarisSeverity.ERROR.getValue().equals(detail.getSeverity())) {
                         errors++;
+                        content.setHasErrors(Boolean.TRUE);
                         item.setHasErrors(Boolean.TRUE);
                     }
                 }
+            }
+
+            if (content.getItems().isEmpty()) {
+                iterator.remove();
             }
         }
         item.setScore(countScore(successes, warnings, errors));
@@ -530,7 +550,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
      * @param errors    错误项
      * @return 分值
      */
-    private long countScore(Long successes, Long warnings, Long errors) {
+    private static long countScore(Long successes, Long warnings, Long errors) {
         // 分值： pass项数量/（pass项数量+1/2warning项数量+error项数量）
         // 分母
         double denominator = (successes + warnings / 2.0 + errors);
