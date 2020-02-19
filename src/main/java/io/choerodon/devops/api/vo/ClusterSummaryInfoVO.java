@@ -108,4 +108,20 @@ public class ClusterSummaryInfoVO {
     public void setReplicationControllers(Long replicationControllers) {
         this.replicationControllers = replicationControllers;
     }
+
+    @Override
+    public String toString() {
+        return "ClusterSummaryInfoVO{" +
+                "version='" + version + '\'' +
+                ", pods=" + pods +
+                ", namespaces=" + namespaces +
+                ", nodes=" + nodes +
+                ", deployments=" + deployments +
+                ", statefulSets=" + statefulSets +
+                ", daemonSets=" + daemonSets +
+                ", jobs=" + jobs +
+                ", cronJobs=" + cronJobs +
+                ", replicationControllers=" + replicationControllers +
+                '}';
+    }
 }

@@ -1,8 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
@@ -16,11 +18,15 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvProPermissionMapper;
 import io.choerodon.devops.infra.util.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +41,12 @@ import java.util.stream.Collectors;
 
 @Service
 public class DevopsClusterServiceImpl implements DevopsClusterService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsClusterServiceImpl.class);
+    /**
+     * 存储集群基本信息的key: cluster-{clusterId}-info
+     * 存储的结构为 {@link ClusterSummaryInfoVO}
+     */
+    private static final String CLUSTER_INFO_KEY_TEMPLATE = "cluster-%s-info";
 
     private static final String UPGRADE_MESSAGE = "Version is too low, please upgrade!";
     private static final String ERROR_CLUSTER_NOT_EXIST = "error.cluster.not.exist";
@@ -64,17 +76,35 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private DevopsPvService devopsPvService;
     @Autowired
     private DevopsPvProPermissionMapper devopsPvProPermissionMapper;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
 
     @Override
     public void saveClusterSummaryInfo(Long clusterId, ClusterSummaryInfoVO clusterSummaryInfoVO) {
-        // TODO
+        if ( clusterSummaryInfoVO == null || clusterSummaryInfoVO.getVersion() == null) {
+            LOGGER.warn("Abandon Bad cluster info: {}", clusterSummaryInfoVO);
+            return;
+        }
+        String redisKey = renderClusterInfoRedisKey(clusterId);
+        stringRedisTemplate.opsForValue().set(redisKey, JSONObject.toJSONString(clusterSummaryInfoVO));
     }
 
     @Override
     public ClusterSummaryInfoVO queryClusterSummaryInfo(Long clusterId) {
-        // TODO
-        return null;
+        String redisKey = renderClusterInfoRedisKey(clusterId);
+        String json = stringRedisTemplate.opsForValue().get(redisKey);
+        return StringUtils.isEmpty(json) ? null : JSONObject.parseObject(json, ClusterSummaryInfoVO.class);
+    }
+
+    /**
+     * 获取存储集群信息到redis的key
+     *
+     * @param clusterId 集群id
+     * @return key
+     */
+    private String renderClusterInfoRedisKey(Long clusterId) {
+        return String.format(CLUSTER_INFO_KEY_TEMPLATE, Objects.requireNonNull(clusterId));
     }
 
     @Override

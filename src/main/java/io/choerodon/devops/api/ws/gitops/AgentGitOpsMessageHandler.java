@@ -205,6 +205,9 @@ public class AgentGitOpsMessageHandler implements TextMessageHandler<AgentMsgVO>
             case POD_METRICS_SYNC:
                 agentMsgHandlerService.handlePodMetricsSync(msg.getKey(),msg.getPayload(),TypeUtil.objToLong(msg.getClusterId()));
                 break;
+            case CLUSTER_INFO:
+                agentMsgHandlerService.handleClusterInfo(msg);
+                break;
             default:
                 break;
         }

@@ -316,7 +316,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                             appServiceInstanceDTO.setEffectCommandId(releasePayloadVO.getCommand());
                             logger.info("Set the effect command from agent. The instance id is {} and the command id is {}", appServiceInstanceDTO.getId(), releasePayloadVO.getCommand());
                         } else {
-                            logger.info("The effect command from agent is invalid for instance {}. It is {}", appServiceInstanceDTO.getId(),releasePayloadVO.getCommand());
+                            logger.info("The effect command from agent is invalid for instance {}. It is {}", appServiceInstanceDTO.getId(), releasePayloadVO.getCommand());
                         }
                     }
                 }
@@ -1985,6 +1985,14 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             });
             agentPodService.handleRealTimePodData(podMetricsRedisInfoVOS);
         }
+    }
+
+    @Override
+    public void handleClusterInfo(AgentMsgVO msg) {
+        Long clusterId = TypeUtil.objToLong(msg.getClusterId());
+        // 应该要有 version, namespaces, pods, nodes字段
+        ClusterSummaryInfoVO clusterSummaryInfoVO = JSONObject.parseObject(msg.getPayload(), ClusterSummaryInfoVO.class);
+        devopsClusterService.saveClusterSummaryInfo(clusterId, clusterSummaryInfoVO);
     }
 
 
