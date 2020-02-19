@@ -234,6 +234,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         long warnings = 0;
         long successes = 0;
         // TODO 想办法优化
+        item.setHasErrors(Boolean.FALSE);
         for (ClusterPolarisSummaryItemContentVO content : item.getItems()) {
             for (ClusterPolarisSummaryItemDetailVO detail : content.getItems()) {
                 if (Boolean.TRUE.equals(detail.getApproved())) {
