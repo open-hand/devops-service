@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsPolarisCategoryResultMapper">
+    <insert id="batchInsert">
+        INSERT INTO devops_polaris_category_result (record_id, score, category, detail_id, has_errors) VALUES
+        <foreach collection="items" item="item" separator=",">
+            (#{item.recordId},#{item.score},#{item.category},#{item.detailId,jdbcType=BIGINT},#{item.hasErrors})
+        </foreach>
+    </insert>
+
+    <select id="queryPolarisSummary" resultType="io.choerodon.devops.api.vo.ClusterPolarisSummaryItemVO">
+        SELECT
+        dpi.category,
+        dpi.score,
+        dpi.has_errors,
+        dpcd.detail
+        FROM devops_polaris_category_result dpi
+        LEFT JOIN devops_polaris_category_detail dpcd ON dpi.detail_id = dpcd.id
+        WHERE dpi.record_id = #{recordId,jdbcType=BIGINT}
+    </select>
+</mapper>

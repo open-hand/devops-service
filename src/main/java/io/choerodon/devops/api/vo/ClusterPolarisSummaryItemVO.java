@@ -1,10 +1,7 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
-import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * @author zmf
@@ -14,8 +11,11 @@ public class ClusterPolarisSummaryItemVO {
     @ApiModelProperty("分数")
     private Long score;
 
-    @ApiModelProperty("内容items")
-    private List<ClusterPolarisSummaryItemContentVO> items;
+    /**
+     * {@link io.choerodon.devops.api.vo.polaris.PolarisSummaryItemContentVO} 数组
+     */
+    @ApiModelProperty("详情json")
+    private String detail;
 
     @ApiModelProperty(value = "类别", hidden = true)
     @JsonIgnore
@@ -32,12 +32,12 @@ public class ClusterPolarisSummaryItemVO {
         this.score = score;
     }
 
-    public List<ClusterPolarisSummaryItemContentVO> getItems() {
-        return items;
+    public String getDetail() {
+        return detail;
     }
 
-    public void setItems(List<ClusterPolarisSummaryItemContentVO> items) {
-        this.items = items;
+    public void setDetail(String detail) {
+        this.detail = detail;
     }
 
     public String getCategory() {

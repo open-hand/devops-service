@@ -1,4 +1,4 @@
-package io.choerodon.devops.api.vo;
+package io.choerodon.devops.api.vo.polaris;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @author zmf
  * @since 2/18/20
  */
-public class ClusterPolarisSummaryItemDetailVO {
+public class PolarisSummaryItemDetailVO {
     @ApiModelProperty("是否通过")
     private Boolean approved;
     @ApiModelProperty("重视程度 / ignore/ warning / error")

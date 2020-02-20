@@ -29,7 +29,7 @@ public interface PolarisScanningService {
      * @param envId     环境id
      * @return 扫描报告
      */
-    List<InstanceWithPolarisResultVO> queryEnvPolarisResult(Long projectId, Long envId);
+    String queryEnvPolarisResult(Long projectId, Long envId);
 
     /**
      * 扫描环境

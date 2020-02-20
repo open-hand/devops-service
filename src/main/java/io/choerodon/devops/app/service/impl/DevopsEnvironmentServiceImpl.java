@@ -1674,8 +1674,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public DevopsEnvironmentDTO baseQueryByClusterIdAndCode(Long clusterId, String code) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
-        devopsEnvironmentDTO.setClusterId(clusterId);
-        devopsEnvironmentDTO.setCode(code);
+        devopsEnvironmentDTO.setClusterId(Objects.requireNonNull(clusterId));
+        devopsEnvironmentDTO.setCode(Objects.requireNonNull(code));
         return devopsEnvironmentMapper.selectOne(devopsEnvironmentDTO);
     }
 

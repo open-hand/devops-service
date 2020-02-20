@@ -19,6 +19,24 @@ public class PolarisStorageControllerResultVO {
     private PolarisStoragePodResultVO podResult;
     @ApiModelProperty("校验结果")
     private List<PolarisResultItemVO> results;
+    @ApiModelProperty("是否有error级别的检测项")
+    private Boolean hasErrors;
+
+    public PolarisStorageControllerResultVO() {
+    }
+
+    public PolarisStorageControllerResultVO(Boolean hasErrors) {
+        this.hasErrors = hasErrors;
+    }
+
+    public PolarisStorageControllerResultVO(String name, String kind, String namespace, PolarisStoragePodResultVO podResult, List<PolarisResultItemVO> results, Boolean hasErrors) {
+        this.name = name;
+        this.kind = kind;
+        this.namespace = namespace;
+        this.podResult = podResult;
+        this.results = results;
+        this.hasErrors = hasErrors;
+    }
 
     public String getName() {
         return name;
@@ -58,5 +76,13 @@ public class PolarisStorageControllerResultVO {
 
     public void setResults(List<PolarisResultItemVO> results) {
         this.results = results;
+    }
+
+    public Boolean getHasErrors() {
+        return hasErrors;
+    }
+
+    public void setHasErrors(Boolean hasErrors) {
+        this.hasErrors = hasErrors;
     }
 }

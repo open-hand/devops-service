@@ -1,7 +1,7 @@
 package script.db
 
 databaseChangeLog(logicalFilePath: 'dba/devops_polaris_record.groovy') {
-    changeSet(author: 'Zmf', id: '2020-02-14-create-table-polaris-record') {
+    changeSet(author: 'zmf', id: '2020-02-14-create-table-polaris-record') {
         createTable(tableName: "devops_polaris_record", remarks: 'polaris扫描纪录') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
@@ -22,6 +22,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_polaris_record.groovy') {
             column(name: 'successes', type: 'BIGINT UNSIGNED', remarks: '通过的检测项数量')
             column(name: 'warnings', type: 'BIGINT UNSIGNED', remarks: '警告的检测项数量')
             column(name: 'errors', type: 'BIGINT UNSIGNED', remarks: '错误的检测项数量')
+            column(name: 'score', type: 'BIGINT UNSIGNED', remarks: '扫描结果的得分')
+            column(name: 'kubernetes_version', type: 'VARCHAR(45)', remarks: '扫描出的集群版本')
+            column(name: 'pods', type: 'BIGINT UNSIGNED', remarks: 'pod数量')
+            column(name: 'namespaces', type: 'BIGINT UNSIGNED', remarks: 'namespace数量')
+            column(name: 'nodes', type: 'BIGINT UNSIGNED', remarks: '节点数量')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
@@ -29,25 +34,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_polaris_record.groovy') {
             column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-    }
 
-    changeSet(author: "zmf", id: "2020-02-18-add-polaris-record-columns") {
-        addColumn(tableName: 'devops_polaris_record') {
-            column(name: 'kubernetes_version', type: 'VARCHAR(45)', remarks: '扫描出的集群版本', afterColumn: "errors")
-            column(name: 'pods', type: 'BIGINT UNSIGNED', remarks: 'pod数量', afterColumn: "kubernetes_version")
-            column(name: 'namespaces', type: 'BIGINT UNSIGNED', remarks: 'namespace数量', afterColumn: "pods")
-            column(name: 'nodes', type: 'BIGINT UNSIGNED', remarks: '节点数量', afterColumn: "namespaces")
-        }
-    }
-
-    changeSet(author: "zmf", id: "2020-02-18-add-polaris-record-columns-score") {
-        addColumn(tableName: 'devops_polaris_record') {
-            column(name: 'score', type: 'BIGINT UNSIGNED', remarks: '扫描结果的得分', afterColumn: "errors")
-        }
-    }
-
-    changeSet(author: "zmf", id: "2020-02-19-add-record-unique-index") {
         addUniqueConstraint(tableName: 'devops_polaris_record',
-                constraintName: 'polaris_record_uk_scope_scope_id', columnNames: 'scope_id, scope')
+                constraintName: 'polaris_record_uk_scope_id_scope', columnNames: 'scope_id, scope')
     }
 }

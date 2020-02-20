@@ -39,9 +39,10 @@ public class PolarisScanningController {
     }
 
     @ApiOperation("获取扫描的环境报告")
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER}, type = ResourceType.PROJECT)
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER}, type = ResourceType.PROJECT)
     @GetMapping("/envs/{env_id}")
-    public ResponseEntity<List<InstanceWithPolarisResultVO>> queryEnvPolarisResult(
+    @ResponseBody
+    public ResponseEntity<String> queryEnvPolarisResult(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam("需要扫描的环境的id")
@@ -50,7 +51,7 @@ public class PolarisScanningController {
     }
 
     @ApiOperation("扫描环境")
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER}, type = ResourceType.PROJECT)
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER}, type = ResourceType.PROJECT)
     @PostMapping("/envs/{env_id}")
     public ResponseEntity<DevopsPolarisRecordVO> scanEnv(
             @ApiParam("项目id")
