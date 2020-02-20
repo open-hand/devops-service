@@ -486,12 +486,15 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
 
         // 挑选出各个层级未通过的检测项放入到要作为json传出到数据库的对象中
         storageControllerResultVO.setResults(pickNonPassedItems(convertItemFromMap(result.getResults())));
-        if (!storageControllerResultVO.getResults().isEmpty()) {
+        if (!storageControllerResultVO.getResults().isEmpty()
+                && hasErrors(storageControllerResultVO.getResults())) {
             storageControllerResultVO.setHasErrors(Boolean.TRUE);
         }
 
         storageControllerResultVO.getPodResult().setResults(pickNonPassedItems(convertItemFromMap(result.getPodResult().getResults())));
-        if (!storageControllerResultVO.getPodResult().getResults().isEmpty()) {
+        if (!storageControllerResultVO.getPodResult().getResults().isEmpty()
+                && !storageControllerResultVO.getHasErrors()
+                && hasErrors(storageControllerResultVO.getPodResult().getResults())) {
             storageControllerResultVO.setHasErrors(Boolean.TRUE);
         }
 
@@ -502,12 +505,40 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
                     containerResultVO.setName(c.getName());
                     List<PolarisResultItemVO> containerResults = convertItemFromMap(c.getResults());
                     containerResultVO.setResults(pickNonPassedItems(containerResults));
-                    if (!containerResultVO.getResults().isEmpty()) {
+                    if (!containerResultVO.getResults().isEmpty()
+                            && !storageControllerResultVO.getHasErrors()
+                            && hasErrors(containerResultVO.getResults())) {
                         storageControllerResultVO.setHasErrors(Boolean.TRUE);
                     }
                     storageControllerResultVO.getPodResult().getContainerResults().add(containerResultVO);
                 });
         return storageControllerResultVO;
+    }
+
+    /**
+     * 这列表中是否有error级别的检测项
+     *
+     * @param items 检测项列表
+     * @return true表示有
+     */
+    private static boolean hasErrors(List<PolarisResultItemVO> items) {
+        for (PolarisResultItemVO item : items) {
+            if (hasError(item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 是否是error级别的检测项
+     *
+     * @param item 检测项结果
+     * @return true表示是
+     */
+    private static boolean hasError(PolarisResultItemVO item) {
+        return Boolean.FALSE.equals(item.getSuccess())
+                && PolarisSeverity.ERROR.getValue().equals(item.getSeverity());
     }
 
     /**
@@ -517,6 +548,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
      * devops_polaris_namespace_record
      * devops_polaris_category_record
      * devops_polaris_category_detail
+     *
      * @param recordId 扫描纪录id
      * @param results  详细的扫描数据
      */
@@ -569,13 +601,8 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             allItems.addAll(controllerItems);
             allItems.addAll(podItems);
             allItems.addAll(containerItems);
-            // 生成devops_polaris_item并计算这个资源error级别的检测项的数量
-            for (PolarisResultItemVO i : allItems) {
-                if (Boolean.FALSE.equals(i.getSuccess())
-                        && PolarisSeverity.ERROR.getValue().equals(i.getSeverity())) {
-                    storageControllerResultVO.setHasErrors(Boolean.TRUE);
-                    return;
-                }
+            if (hasErrors(allItems)) {
+                storageControllerResultVO.setHasErrors(Boolean.TRUE);
             }
 
             Map<String, List<PolarisResultItemVO>> itemMap = allItems.stream().collect(Collectors.groupingBy(PolarisResultItemVO::getCategory, HashMap::new, Collectors.toList()));
@@ -589,7 +616,6 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
 
             namespaceMap.computeIfAbsent(storageControllerResultVO.getNamespace(), n -> new ArrayList<>()).add(storageControllerResultVO);
         });
-
 
 
         // 处理 devops_polaris_namespace_result 数据
