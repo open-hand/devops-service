@@ -47,25 +47,17 @@ const categoryGroup = [
   },
 ];
 
-const numberDetail = observer(({ loading }) => {
+const numberDetail = observer(({ loading, statusLoading }) => {
   const {
     intlPrefix,
     prefixCls,
   } = useClusterMainStore();
 
   const {
-    contentStore: {
-      setTabKey,
-    },
     formatMessage,
-    tabs: {
-      POLARIS_TAB,
-    },
-    ClusterDetailDs,
     polarisNumDS,
   } = useClusterContentStore();
 
-  const statusLoading = useMemo(() => polarisNumDS.current && polarisNumDS.current.get('status') === 'operating', [polarisNumDS.current]);
 
   useEffect(() => {
 
@@ -81,13 +73,13 @@ const numberDetail = observer(({ loading }) => {
     return checkGroup.map((item, key) => <div className={`${prefixCls}-number-check`} key={key}>
       <Icon type={item.icon} />
       <span>
-        {!isLoading ? (polarisNumDS.current && polarisNumDS.current.get(item.checkType)) : '-'}
+        {!isLoading ? (polarisNumDS.current && polarisNumDS.current.get(item.checkType)) : '-'}&nbsp;
         {item.text}
       </span>
     </div>);
   }
 
-  function renderDetailPanel(category) {
+  function renderDetailPanel() {
     // eslint-disable-next-line react/no-array-index-key
     return categoryGroup.map((item, key) => <div className={`${prefixCls}-number-category`} key={key}>
       <Icon type={item.icon} />
@@ -111,31 +103,22 @@ const numberDetail = observer(({ loading }) => {
 
   return (
     <div className={`${prefixCls}-number`}>
-
-      {/* number详情的左半部分 */}
       <div className={`${prefixCls}-number-left`}>
-
-        {/* 左半部分上部分 */}
         <div className={`${prefixCls}-number-leftTop`}>
           {/* 最新一次扫描时间 */}
           <span className={`${prefixCls}-number-leftTop-lastestDate`}>
-            上次扫描时间：
+            {formatMessage({ id: `${intlPrefix}.polaris.lastedScanDate` })}
             {polarisNumDS.current ? polarisNumDS.current.get('lastScanDateTime') : '-'}
           </span>
 
         </div>
-
-        {/* 左半部分下部分 */}
         <div className={`${prefixCls}-number-leftDown`}>
           <div className={`${prefixCls}-number-leftDown-left`}>
             {renderNumPanel()}
           </div>
-          {/* 扫描动画 */}
           {renderRadar()}
         </div>
       </div>
-
-      {/* 下部分 */}
       <div className={`${prefixCls}-number-right`}>
         <div className={`${prefixCls}-number-right-list`}>
           {renderDetailPanel()}

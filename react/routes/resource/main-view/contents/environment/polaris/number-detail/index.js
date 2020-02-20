@@ -43,16 +43,15 @@ const categoryGroup = [
   },
 ];
 
-const numberDetail = observer(({ loading }) => {
+const numberDetail = observer(({ loading, statusLoading }) => {
   const {
     prefixCls,
+    intlPrefix,
   } = useResourceStore();
   const {
     intl: { formatMessage },
     polarisNumDS,
   } = useEnvironmentStore();
-
-  const statusLoading = useMemo(() => polarisNumDS.current && polarisNumDS.current.get('status') === 'operating', [polarisNumDS.current]);
 
   useEffect(() => {
 
@@ -68,7 +67,7 @@ const numberDetail = observer(({ loading }) => {
     return checkGroup.map((item, key) => <div className={`${prefixCls}-number-check`} key={key}>
       <Icon type={item.icon} />
       <span>
-        {!isLoading ? (polarisNumDS.current && polarisNumDS.current.get(item.checkType)) : '-'}
+        {!isLoading ? (polarisNumDS.current && polarisNumDS.current.get(item.checkType)) : '-'}&nbsp;
         {item.text}
       </span>
     </div>);
@@ -98,21 +97,14 @@ const numberDetail = observer(({ loading }) => {
 
   return (
     <div className={`${prefixCls}-number`}>
-
-      {/* number详情的左半部分 */}
       <div className={`${prefixCls}-number-left`}>
-
-        {/* 左半部分上部分 */}
         <div className={`${prefixCls}-number-leftTop`}>
-          {/* 最新一次扫描时间 */}
           <span className={`${prefixCls}-number-leftTop-lastestDate`}>
-            上次扫描时间：
+            {formatMessage({ id: 'c7ncd.cluster.polaris.lastedScanDate' })}
             {polarisNumDS.current ? polarisNumDS.current.get('lastScanDateTime') : '-'}
           </span>
 
         </div>
-
-        {/* 左半部分下部分 */}
         <div className={`${prefixCls}-number-leftDown`}>
           <div className={`${prefixCls}-number-leftDown-left`}>
             {renderNumPanel()}
@@ -121,8 +113,6 @@ const numberDetail = observer(({ loading }) => {
           {renderRadar()}
         </div>
       </div>
-
-      {/* 下部分 */}
       <div className={`${prefixCls}-number-right`}>
         <div className={`${prefixCls}-number-right-list`}>
           {renderDetailPanel()}

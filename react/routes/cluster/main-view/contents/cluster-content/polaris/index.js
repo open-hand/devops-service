@@ -38,6 +38,8 @@ const polaris = observer((props) => {
 
   const [loading, setLoading] = useState(false);
 
+  const statusLoading = useMemo(() => polarisNumDS.current && polarisNumDS.current.get('status') === 'operating', [polarisNumDS.current]);
+
   useEffect(() => {
     setLoading(false);
   }, [polarisNumDS.current]);
@@ -52,6 +54,8 @@ const polaris = observer((props) => {
   }
 
   function getContent() {
+    const isLoading = loading || statusLoading;
+    const connectStatus = ClusterDetailDs.current && ClusterDetailDs.current.get('connect');
     if (contentStore.getHasEnv) {
       return (
         <Fragment>
@@ -60,11 +64,11 @@ const polaris = observer((props) => {
             color="primary"
             funcType="raised"
             onClick={handleScan}
-            disabled={!(ClusterDetailDs.current && ClusterDetailDs.current.get('connect') && !loading)}
+            disabled={!(connectStatus && isLoading)}
           >
             {formatMessage({ id: `${intlPrefix}.polaris.scanning` })}
           </Button>
-          <NumberDetail loading={loading} />
+          <NumberDetail loading={loading} statusLoading={statusLoading} />
           <CollapseDetail loading={loading} />
         </Fragment>
       );
