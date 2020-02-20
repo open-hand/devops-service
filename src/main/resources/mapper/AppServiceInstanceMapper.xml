@@ -610,4 +610,17 @@
         AND dasi.component_chart_name = #{componentChartName,jdbcType=VARCHAR}
         AND dasi.code != #{instanceCode}
     </select>
+
+    <select id="countInstanceByCondition" resultType="java.lang.Integer">
+        SELECT
+        COUNT(dasi.id)
+        FROM devops_app_service_instance dasi
+        WHERE dasi.env_id=#{envId}
+        <if test="status !=null and status !=''">
+            and dasi.status=#{status}
+        </if>
+        <if test="appServiceId !=null ">
+            and dasi.app_service_id=#{appServiceId}
+        </if>
+    </select>
 </mapper>

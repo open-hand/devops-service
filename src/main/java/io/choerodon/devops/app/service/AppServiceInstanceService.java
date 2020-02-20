@@ -337,4 +337,6 @@ public interface AppServiceInstanceService {
     void updateStatus(AppServiceInstanceDTO appServiceInstanceDTO);
 
     ConfigVO queryDefaultConfig(Long projectId, ConfigVO configVO);
+
+    Integer countByOptions(Long envId, String status, Long appServiceId);
 }
