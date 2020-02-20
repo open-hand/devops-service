@@ -866,7 +866,8 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void deleteAssociatedData(Long recordId) {
-        deleteDevopsPolarisItemByRecordId(recordId);
+        deleteDevopsPolarisCategoryDetailByRecordId(recordId);
+        deleteDevopsPolarisCategoryResultId(recordId);
         deleteDevopsPolarisResultDetailByRecordId(recordId);
         deleteDevopsPolarisInstanceResultByRecordId(recordId);
     }
@@ -881,10 +882,17 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         }
     }
 
-    private void deleteDevopsPolarisItemByRecordId(Long recordId) {
+    private void deleteDevopsPolarisCategoryResultId(Long recordId) {
         DevopsPolarisCategoryResultDTO deleteCondition = new DevopsPolarisCategoryResultDTO();
         deleteCondition.setRecordId(Objects.requireNonNull(recordId));
         devopsPolarisCategoryResultMapper.delete(deleteCondition);
+    }
+    private void deleteDevopsPolarisCategoryDetailByRecordId(Long recordId) {
+        List<Long> detailIds = devopsPolarisCategoryDetailMapper.queryDetailIdsByRecordId(Objects.requireNonNull(recordId));
+        if (detailIds.isEmpty()) {
+            return;
+        }
+        devopsPolarisCategoryDetailMapper.batchDelete(detailIds);
     }
 
     private void deleteDevopsPolarisInstanceResultByRecordId(Long recordId) {
