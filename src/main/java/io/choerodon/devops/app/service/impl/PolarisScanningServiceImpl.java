@@ -463,7 +463,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             ins.getItems()
                     .stream()
                     .map(PolarisStorageControllerResultVO::getHasErrors)
-                    .reduce((one, another) -> one && another)
+                    .reduce((one, another) -> one || another)
                     .ifPresent(ins::setHasErrors);
         });
         DevopsPolarisNamespaceDetailDTO detailDTO = new DevopsPolarisNamespaceDetailDTO(JSONObject.toJSONString(instances));
@@ -618,6 +618,9 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         });
 
 
+        LOGGER.info("Polaris: finished analyzing message...");
+        LOGGER.info("Polaris: the namespaceMap size is {}", namespaceMap.size());
+        LOGGER.info("Polaris: the categoryMap size is {}", categoryMap.size());
         // 处理 devops_polaris_namespace_result 数据
         handleNamespaceResultList(analyzeNamespaceResults(namespaceMap, finalClusterId, recordId));
         // 批量插入 devops_polaris_category_record 纪录
@@ -632,7 +635,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             result.setDetail(JSONObject.toJSONString(controllers));
             controllers.stream()
                     .map(PolarisStorageControllerResultVO::getHasErrors)
-                    .reduce((one, another) -> one && another)
+                    .reduce((one, another) -> one || another)
                     .ifPresent(result::setHasErrors);
         });
         return namespaceResults;
@@ -765,9 +768,11 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
      * @param polarisNamespaceResultDTOS 待插入的数据
      */
     private void handleNamespaceResultList(List<DevopsPolarisNamespaceResultDTO> polarisNamespaceResultDTOS) {
+        LOGGER.info("Polaris: handleNamespaceResultList");
         if (CollectionUtils.isEmpty(polarisNamespaceResultDTOS)) {
             return;
         }
+        LOGGER.info("Polaris: handleNamespaceResultList: the size is {}", polarisNamespaceResultDTOS.size());
         DevopsPolarisNamespaceDetailDTO detailDTO = new DevopsPolarisNamespaceDetailDTO();
         // 这里无法将detail纪录批量插入
         polarisNamespaceResultDTOS.forEach(i -> {
@@ -777,6 +782,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             i.setDetailId(detailDTO.getId());
         });
         devopsPolarisNamespaceResultMapper.batchInsert(polarisNamespaceResultDTOS);
+        LOGGER.info("Polaris: handleNamespaceResultList: finished...");
     }
 
     /**
