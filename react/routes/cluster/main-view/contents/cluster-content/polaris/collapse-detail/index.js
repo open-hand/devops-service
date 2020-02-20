@@ -19,17 +19,9 @@ const collapseDetail = observer(({ loading }) => {
     prefixCls,
   } = useClusterMainStore();
   const {
-    contentStore: {
-      setTabKey,
-    },
     formatMessage,
-    tabs: {
-      POLARIS_TAB,
-    },
-    ClusterDetailDs,
     clusterSummaryDs,
     envDetailDs,
-    polarisNumDS,
   } = useClusterContentStore();
   
   const clusterSummary = useMemo(() => (['healthCheck', 'imageCheck', 'networkCheck', 'resourceCheck', 'securityCheck']), []);
@@ -39,14 +31,7 @@ const collapseDetail = observer(({ loading }) => {
     }
     return {};
   }, [clusterSummaryDs.current]);
-  const isLoading = useMemo(() => {
-    const flag = polarisNumDS.current && polarisNumDS.current.get('status') === 'operating';
-    return loading || flag || clusterSummaryDs.status === 'loading';
-  }, [loading, clusterSummaryDs.status, polarisNumDS.current]);
-
-  function refresh() {
-
-  }
+  const isLoading = useMemo(() => loading || clusterSummaryDs.status === 'loading', [loading, clusterSummaryDs.status]);
 
   function getClusterHeader(item) {
     const checked = clusterSummaryData.checked;
@@ -200,7 +185,7 @@ const collapseDetail = observer(({ loading }) => {
           className={`${prefixCls}-polaris-tabs-item`}
           key="cluster"
         >
-          <Collapse bordered={false}>
+          <Collapse bordered={false} className={`${prefixCls}-polaris-tabs-collapse`}>
             {map(clusterSummary, (item) => (
               <Panel header={getClusterHeader(item)} key={item}>
                 {getClusterContent(item)}
@@ -212,7 +197,7 @@ const collapseDetail = observer(({ loading }) => {
           tab={formatMessage({ id: `${intlPrefix}.polaris.env` })}
           key="environment"
         >
-          <Collapse bordered={false}>
+          <Collapse bordered={false} className={`${prefixCls}-polaris-tabs-collapse`}>
             {map(envDetailDs.data, (envRecord) => (
               <Panel header={getEnvHeader(envRecord)} key={envRecord.id}>
                 {getEnvContent(envRecord)}

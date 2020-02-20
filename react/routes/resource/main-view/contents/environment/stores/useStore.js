@@ -29,7 +29,7 @@ export default function useStore({ defaultTab }) {
       return this.value;
     },
 
-    hasInstance: true,
+    hasInstance: false,
     setHasInstance(data) {
       this.hasInstance = data;
     },
@@ -67,7 +67,7 @@ export default function useStore({ defaultTab }) {
 
     async checkHasInstance(projectId, envId) {
       try {
-        const res = await axios.get(`devops/v1/projects/${projectId}/envs/${envId}/resource_count`);
+        const res = await axios.get(`devops/v1/projects/${projectId}/app_service_instances/count_by_options?env_id=${envId}&status=running&app_service_id=`);
         const result = handlePromptError(res);
         this.setHasInstance(result);
         return result;

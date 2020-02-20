@@ -62,7 +62,7 @@ const polaris = observer((props) => {
             {formatMessage({ id: 'c7ncd.cluster.polaris.scanning' })}
           </Button>
           <NumberDetail isLoading={isLoading} />
-          <CollapseDetail loading={loading} />
+          <CollapseDetail loading={isLoading} />
         </Fragment>
       );
     } else {

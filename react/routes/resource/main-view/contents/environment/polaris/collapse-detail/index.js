@@ -2,7 +2,7 @@ import React, { useState, Fragment, Suspense, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 import isEmpty from 'lodash/isEmpty';
-import { Collapse, Progress, Icon } from 'choerodon-ui';
+import { Collapse, Icon } from 'choerodon-ui';
 import { useEnvironmentStore } from '../../stores';
 import { useResourceStore } from '../../../../../stores';
 
@@ -16,17 +16,13 @@ const collapseDetail = observer(({ loading }) => {
   } = useResourceStore();
   const {
     intl: { formatMessage },
-    polarisNumDS,
     istSummaryDs,
   } = useEnvironmentStore();
 
-  const isLoading = useMemo(() => {
-    const flag = polarisNumDS.current && polarisNumDS.current.get('status') === 'operating';
-    return loading || flag || istSummaryDs.status === 'loading';
-  }, [loading, istSummaryDs.status, polarisNumDS.current]);
+  const isLoading = useMemo(() => loading || istSummaryDs.status === 'loading', [loading, istSummaryDs.status]);
 
   function getIstHeader(record) {
-    const { instanceCode, appServiceName, items, hasErrors } = record.toData() || {};
+    const { instanceCode, appServiceName, hasErrors } = record.toData() || {};
     return (
       <div className={`${prefixCls}-polaris-tabs-header`}>
         <div className={`${prefixCls}-polaris-tabs-header-item`}>

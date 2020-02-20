@@ -22,17 +22,9 @@ const polaris = observer((props) => {
   } = useClusterMainStore();
   const {
     AppState: { currentMenuType: { id: projectId } },
-    contentStore: {
-      getTabKey,
-    },
     formatMessage,
-    tabs: {
-      POLARIS_TAB,
-    },
     ClusterDetailDs,
     contentStore,
-    clusterSummaryDs,
-    envDetailDs,
     polarisNumDS,
   } = useClusterContentStore();
 
@@ -77,7 +69,7 @@ const polaris = observer((props) => {
             {formatMessage({ id: `${intlPrefix}.polaris.scanning` })}
           </Button>
           <NumberDetail isLoading={isLoading} />
-          <CollapseDetail loading={loading} />
+          <CollapseDetail loading={isLoading} />
         </Fragment>
       );
     } else {

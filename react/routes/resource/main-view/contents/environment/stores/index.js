@@ -106,13 +106,11 @@ export const StoreProvider = injectIntl(inject('AppState')(
     }
 
     async function loadPolaris() {
-      // const res = await envStore.checkHasInstance(projectId, id);
-      // if (res) {
-      //   polarisNumDS.query();
-      //   istSummaryDs.query();
-      // }
-      polarisNumDS.query();
-      istSummaryDs.query();
+      const res = await envStore.checkHasInstance(projectId, id);
+      if (res) {
+        polarisNumDS.query();
+        istSummaryDs.query();
+      }
     }
 
     useEffect(() => {
