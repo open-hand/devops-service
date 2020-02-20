@@ -40,6 +40,8 @@ const polaris = observer((props) => {
 
   const statusLoading = useMemo(() => polarisNumDS.current && polarisNumDS.current.get('status') === 'operating', [polarisNumDS.current]);
 
+  const scanFailed = useMemo(() => polarisNumDS.current && polarisNumDS.current.get('status') === 'failed', [polarisNumDS.current]);
+
   useEffect(() => {
     setLoading(false);
   }, [polarisNumDS.current]);
@@ -49,13 +51,19 @@ const polaris = observer((props) => {
     setLoading(true);
   }
 
-  function checkStatus() {
-
+  function renderBtnStatus() {
+    const connectStatus = ClusterDetailDs.current && ClusterDetailDs.current.get('connect');
+    const isLoading = loading || statusLoading;
+    if (connectStatus) {
+      if (isLoading) return true;
+      if (scanFailed) return false;
+      return false;
+    } else {
+      return true;
+    }
   }
-
   function getContent() {
     const isLoading = loading || statusLoading;
-    const connectStatus = ClusterDetailDs.current && ClusterDetailDs.current.get('connect');
     if (contentStore.getHasEnv) {
       return (
         <Fragment>
@@ -64,11 +72,11 @@ const polaris = observer((props) => {
             color="primary"
             funcType="raised"
             onClick={handleScan}
-            disabled={!(connectStatus && isLoading)}
+            disabled={renderBtnStatus()}
           >
             {formatMessage({ id: `${intlPrefix}.polaris.scanning` })}
           </Button>
-          <NumberDetail loading={loading} statusLoading={statusLoading} />
+          <NumberDetail isLoading={isLoading} />
           <CollapseDetail loading={loading} />
         </Fragment>
       );

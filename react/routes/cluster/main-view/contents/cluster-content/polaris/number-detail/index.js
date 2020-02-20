@@ -47,7 +47,7 @@ const categoryGroup = [
   },
 ];
 
-const numberDetail = observer(({ loading, statusLoading }) => {
+const numberDetail = observer(({ isLoading }) => {
   const {
     intlPrefix,
     prefixCls,
@@ -68,7 +68,6 @@ const numberDetail = observer(({ loading, statusLoading }) => {
   }
 
   function renderNumPanel() {
-    const isLoading = loading || statusLoading;
     // eslint-disable-next-line react/no-array-index-key
     return checkGroup.map((item, key) => <div className={`${prefixCls}-number-check`} key={key}>
       <Icon type={item.icon} />
@@ -91,7 +90,6 @@ const numberDetail = observer(({ loading, statusLoading }) => {
   }
 
   function renderRadar() {
-    const isLoading = loading || statusLoading;
     const score = polarisNumDS.current && polarisNumDS.current.get('score');
     return (
       <Radar

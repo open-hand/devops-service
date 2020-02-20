@@ -43,7 +43,7 @@ const categoryGroup = [
   },
 ];
 
-const numberDetail = observer(({ loading, statusLoading }) => {
+const numberDetail = observer(({ isLoading }) => {
   const {
     prefixCls,
     intlPrefix,
@@ -62,9 +62,7 @@ const numberDetail = observer(({ loading, statusLoading }) => {
   }
 
   function renderNumPanel() {
-    const isLoading = loading || statusLoading;
-    // eslint-disable-next-line react/no-array-index-key
-    return checkGroup.map((item, key) => <div className={`${prefixCls}-number-check`} key={key}>
+    return checkGroup.map((item) => <div className={`${prefixCls}-number-check`} key={item.checkType}>
       <Icon type={item.icon} />
       <span>
         {!isLoading ? (polarisNumDS.current && polarisNumDS.current.get(item.checkType)) : '-'}&nbsp;
@@ -74,8 +72,7 @@ const numberDetail = observer(({ loading, statusLoading }) => {
   }
 
   function renderDetailPanel(category) {
-    // eslint-disable-next-line react/no-array-index-key
-    return categoryGroup.map((item, key) => <div className={`${prefixCls}-number-category`} key={key}>
+    return categoryGroup.map((item, key) => <div className={`${prefixCls}-number-category`} key={item.checkType}>
       <Icon type={item.icon} />
       <div className={`${prefixCls}-number-category-detail`}>
         <span>{item.name}</span>
@@ -85,7 +82,6 @@ const numberDetail = observer(({ loading, statusLoading }) => {
   }
 
   function renderRadar() {
-    const isLoading = loading || statusLoading;
     const score = polarisNumDS.current && polarisNumDS.current.get('score');
     return (
       <Radar

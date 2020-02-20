@@ -1308,7 +1308,7 @@ const cluster = {
   'c7ncd.cluster.polaris.check.operating': '配置项扫描中...',
   'c7ncd.cluster.polaris.check.success': '配置项检测通过',
   'c7ncd.cluster.polaris.scanning': '手动扫描',
-  'c7ncd.cluster.polaris.lastedScanDate': '上次扫描时间：',
+  'c7ncd.cluster.polaris.lastedScanDate': '上次扫描结束时间：',
   'c7ncd.cluster.polaris.KubernetesVersion': 'Kubernetes版本',
 };
 
