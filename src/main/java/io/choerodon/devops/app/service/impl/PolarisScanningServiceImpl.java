@@ -637,6 +637,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
                     .map(PolarisStorageControllerResultVO::getHasErrors)
                     .reduce((one, another) -> one || another)
                     .ifPresent(result::setHasErrors);
+            namespaceResults.add(result);
         });
         return namespaceResults;
     }
