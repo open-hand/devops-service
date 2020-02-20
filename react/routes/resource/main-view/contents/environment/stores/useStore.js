@@ -29,6 +29,14 @@ export default function useStore({ defaultTab }) {
       return this.value;
     },
 
+    hasInstance: false,
+    setHasInstance(data) {
+      this.hasInstance = data;
+    },
+    get getHasInstance() {
+      return this.hasInstance;
+    },
+
     async checkPermission({ projectId, organizationId, resourceType }) {
       const res = await checkPermission({
         code: 'devops-service.devops-environment.pageEnvUserPermissions',
@@ -55,6 +63,29 @@ export default function useStore({ defaultTab }) {
     },
     deleteRecord(projectId, id) {
       return axios.delete(`/devops/v1/projects/${projectId}/deploy_value?value_id=${id}`);
+    },
+
+    async checkHasInstance(projectId, envId) {
+      try {
+        const res = await axios.get(`devops/v1/projects/${projectId}/app_service_instances/count_by_options?env_id=${envId}&status=running&app_service_id=`);
+        const result = handlePromptError(res);
+        this.setHasInstance(result);
+        return result;
+      } catch (e) {
+        Choerodon.handleResponseError(e);
+        return false;
+      }
+    },
+
+    async ManualScan(projectId, envId) {
+      try {
+        const res = await axios.post(`/devops/v1/projects/${projectId}/polaris/envs/${envId}`);
+        const result = handlePromptError(res);
+        return result;
+      } catch (e) {
+        Choerodon.handleResponseError(e);
+        return false;
+      }
     },
   }));
 }

@@ -13,6 +13,8 @@ import useStore from './useStore';
 import ConfigDataSet from './ConfigDataSet';
 import ConfigFormDataSet from './ConfigFormDataSet';
 import { useMainStore } from '../../../stores';
+import SummaryDataSet from './SummaryDataSet';
+import PolarisNumDataSet from './PalarisNumDataSet';
 
 const Store = createContext();
 
@@ -40,6 +42,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       SYNC_TAB: 'sync',
       CONFIG_TAB: 'config',
       ASSIGN_TAB: 'assign',
+      POLARIS_TAB: 'polaris',
     }), []);
     const envStore = useStore({ defaultTab: tabs.SYNC_TAB });
     const permissionsDs = useMemo(() => new DataSet(PermissionsDataSet({ formatMessage, intlPrefix })), []);
@@ -48,6 +51,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const retryDs = useMemo(() => new DataSet(RetryDataSet()), []);
     const configDs = useMemo(() => new DataSet(ConfigDataSet({ formatMessage, intlPrefix })), []);
     const configFormDs = useMemo(() => new DataSet(ConfigFormDataSet({ formatMessage, intlPrefix, projectId, store: envStore, envId: id })), [projectId, id]);
+    const istSummaryDs = useMemo(() => new DataSet(SummaryDataSet()), []);
+    const polarisNumDS = useMemo(() => new DataSet(PolarisNumDataSet()), []);
 
 
     function queryData() {
@@ -91,7 +96,20 @@ export const StoreProvider = injectIntl(inject('AppState')(
           };
           permissionsDs.query();
           break;
+        case tabs.POLARIS_TAB:
+          istSummaryDs.transport.read.url = `/devops/v1/projects/${projectId}/polaris/envs/${id}`;
+          polarisNumDS.transport.read.url = `devops/v1/projects/${projectId}/polaris/records?scope=env&scope_id=${id}`;
+          loadPolaris();
+          break;
         default:
+      }
+    }
+
+    async function loadPolaris() {
+      const res = await envStore.checkHasInstance(projectId, id);
+      if (res) {
+        polarisNumDS.query();
+        istSummaryDs.query();
       }
     }
 
@@ -115,6 +133,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
       configFormDs,
       envStore,
       intlPrefix,
+      polarisNumDS,
+      istSummaryDs,
     };
     return (
       <Store.Provider value={value}>

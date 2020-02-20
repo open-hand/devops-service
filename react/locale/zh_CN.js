@@ -37,6 +37,7 @@ const commonField = {
   appName: '应用名称',
   environment: '环境',
   envName: '环境名称',
+  envCode: '环境编码',
   instance: '实例',
   network: '网络',
   label: '标签',
@@ -191,6 +192,7 @@ const deployment = {
   'c7ncd.deployment.environment.tabs.sync': 'GitOps日志',
   'c7ncd.deployment.environment.tabs.config': '部署配置',
   'c7ncd.deployment.environment.tabs.assignPermissions': '权限分配',
+  'c7ncd.deployment.environment.tabs.polaris': '健康检查',
   'c7ncd.deployment.environment.error.logs': '错误日志',
   'c7ncd.deployment.environment.error.tips': '此处将显示解析过程中产生的错误信息以及错误的文件源。若错误日志为空，则表示解析过程正常',
   'c7ncd.deployment.environment.error.info': '错误信息',
@@ -417,6 +419,7 @@ const deployment = {
   'c7ncd.deployment.pvc.delete.des': '确定要删除该PVC吗？',
   'c7ncd.deployment.active': '生效',
   'c7ncd.deployment.choose.version': '选择版本',
+  'c7ncd.deployment.polaris.empty.des': '该环境下暂无可运行实例',
 
 };
 
@@ -758,6 +761,7 @@ const codeManagement = {
 const emptyPage = {
   'empty.title.app': '暂无应用服务',
   'empty.title.env': '暂无环境',
+  'empty.title.instance': '暂无实例',
   'empty.title.prohibited': '暂无权限',
   'empty.tips.app.owner': '当前项目下无应用服务，请创建',
   'empty.tips.env.owner': '当前项目下无可用环境，请创建',
@@ -1220,6 +1224,7 @@ const cluster = {
   'c7ncd.cluster.permission.assign': '权限分配',
   'c7ncd.cluster.monitor': '集群监控',
   'c7ncd.cluster.component': '组件管理',
+  'c7ncd.cluster.polaris': '健康检查',
   'c7ncd.cluster.node.resource': '资源分配',
   'c7ncd.cluster.node.monitor': '节点监控',
   'c7ncd.cluster.node.assign.overview': '分配概览',
@@ -1287,6 +1292,24 @@ const cluster = {
     '当选择将权限分配至组织下所有项目时，此时便不能在列表中删除任何项目的权限；仅在选择将权限分配给组织下特定项目时，才能在下方列表中管理项目的权限',
   'c7ncd.cluster.permission.some.tips': '若本项目想使用该集群，同样需要为本项目授权',
   'c7ncd.cluster.code.tips': '限制为30个字符，且在项目下唯一',
+  'c7ncd.cluster.polaris.cluster': '集群概览',
+  'c7ncd.cluster.polaris.env': '环境详情',
+  'c7ncd.cluster.belong.project': '所属项目',
+  'c7ncd.cluster.polaris.internal.true': '内',
+  'c7ncd.cluster.polaris.internal.false': '外',
+  'c7ncd.cluster.polaris.score': '分值',
+  'c7ncd.cluster.polaris.healthCheck': '健康检查',
+  'c7ncd.cluster.polaris.imageCheck': '镜像检查',
+  'c7ncd.cluster.polaris.networkCheck': '网络配置',
+  'c7ncd.cluster.polaris.resourceCheck': '资源分配',
+  'c7ncd.cluster.polaris.securityCheck': '安全',
+  'c7ncd.cluster.polaris.empty.des': '当前集群下暂无环境，无法执行健康检查。',
+  'c7ncd.cluster.polaris.check.null': '暂无检测结果',
+  'c7ncd.cluster.polaris.check.operating': '配置项扫描中...',
+  'c7ncd.cluster.polaris.check.success': '配置项检测通过',
+  'c7ncd.cluster.polaris.scanning': '手动扫描',
+  'c7ncd.cluster.polaris.lastedScanDate': '上次扫描结束时间：',
+  'c7ncd.cluster.polaris.KubernetesVersion': 'Kubernetes版本',
 };
 
 const zhCN = {
