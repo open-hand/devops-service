@@ -5,16 +5,16 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.DevopsEnvWithPolarisResultVO;
-import io.choerodon.devops.api.vo.InstanceWithPolarisResultVO;
-import io.choerodon.devops.infra.dto.DevopsPolarisInstanceResultDTO;
+import io.choerodon.devops.api.vo.polaris.InstanceWithPolarisStorageVO;
+import io.choerodon.devops.infra.dto.DevopsPolarisNamespaceResultDTO;
 import io.choerodon.mybatis.common.Mapper;
 
 /**
  * @author zmf
  * @since 2/17/20
  */
-public interface DevopsPolarisInstanceResultMapper extends Mapper<DevopsPolarisInstanceResultDTO> {
-    void batchInsert(@Param("items") List<DevopsPolarisInstanceResultDTO> items);
+public interface DevopsPolarisNamespaceResultMapper extends Mapper<DevopsPolarisNamespaceResultDTO> {
+    void batchInsert(@Param("items") List<DevopsPolarisNamespaceResultDTO> items);
 
     /**
      * 查询带有扫描结果的实例数据
@@ -23,7 +23,7 @@ public interface DevopsPolarisInstanceResultMapper extends Mapper<DevopsPolarisI
      * @param envId    环境id
      * @return 数据
      */
-    List<InstanceWithPolarisResultVO> queryInstanceWithResult(
+    String queryNamespaceResultDetail(
             @Param("recordId") Long recordId,
             @Param("envId") Long envId);
 
@@ -42,4 +42,6 @@ public interface DevopsPolarisInstanceResultMapper extends Mapper<DevopsPolarisI
      * @return 数据
      */
     List<DevopsEnvWithPolarisResultVO> queryEnvWithPolarisResult(@Param("recordId") Long recordId);
+
+    List<InstanceWithPolarisStorageVO> queryInstanceWithoutResult(@Param("envId") Long envId);
 }

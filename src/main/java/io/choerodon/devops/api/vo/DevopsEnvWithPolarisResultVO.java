@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.List;
-
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -27,8 +25,12 @@ public class DevopsEnvWithPolarisResultVO {
     private String projectName;
     @ApiModelProperty("项目code / 可为空")
     private String projectCode;
-    @ApiModelProperty("环境下的配置文件项")
-    private List<PolarisSimpleResultVO> items;
+    /**
+     * 是{@link io.choerodon.devops.api.vo.polaris.PolarisStorageControllerResultVO} 的数组
+     */
+    @ApiModelProperty("namespace下的配置文件数据的结构")
+    private String detailJson;
+
     @ApiModelProperty("是否扫描过")
     private Boolean checked;
 
@@ -96,12 +98,12 @@ public class DevopsEnvWithPolarisResultVO {
         this.projectCode = projectCode;
     }
 
-    public List<PolarisSimpleResultVO> getItems() {
-        return items;
+    public String getDetailJson() {
+        return detailJson;
     }
 
-    public void setItems(List<PolarisSimpleResultVO> items) {
-        this.items = items;
+    public void setDetailJson(String detailJson) {
+        this.detailJson = detailJson;
     }
 
     public Boolean getChecked() {

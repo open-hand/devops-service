@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 
+import io.choerodon.devops.api.vo.polaris.InstanceWithPolarisStorageVO;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.mybatis.common.Mapper;
 
@@ -81,4 +82,6 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
             @Param("envId") Long envId,
             @Param("status") String status,
             @Param("appServiceId") Long appServiceId);
+
+    List<InstanceWithPolarisStorageVO> queryInstancesWithAppServiceByIds(@Param("instanceIds") List<Long> instanceIds);
 }

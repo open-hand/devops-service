@@ -1,4 +1,4 @@
-package io.choerodon.devops.api.vo;
+package io.choerodon.devops.api.vo.polaris;
 
 import java.util.List;
 
@@ -8,7 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @author zmf
  * @since 2/18/20
  */
-public class ClusterPolarisSummaryItemContentVO {
+public class PolarisSummaryItemContentVO {
     @ApiModelProperty("namespace")
     private String namespace;
     @ApiModelProperty("资源类型")
@@ -16,9 +16,20 @@ public class ClusterPolarisSummaryItemContentVO {
     @ApiModelProperty("资源名称")
     private String resourceName;
     @ApiModelProperty("检测项")
-    private List<ClusterPolarisSummaryItemDetailVO> items;
+    private List<PolarisSummaryItemDetailVO> items;
     @ApiModelProperty("是否有error的检测项")
     private Boolean hasErrors;
+
+    public PolarisSummaryItemContentVO() {
+    }
+
+    public PolarisSummaryItemContentVO(String namespace, String resourceKind, String resourceName, List<PolarisSummaryItemDetailVO> items, Boolean hasErrors) {
+        this.namespace = namespace;
+        this.resourceKind = resourceKind;
+        this.resourceName = resourceName;
+        this.items = items;
+        this.hasErrors = hasErrors;
+    }
 
     public String getNamespace() {
         return namespace;
@@ -44,11 +55,11 @@ public class ClusterPolarisSummaryItemContentVO {
         this.resourceName = resourceName;
     }
 
-    public List<ClusterPolarisSummaryItemDetailVO> getItems() {
+    public List<PolarisSummaryItemDetailVO> getItems() {
         return items;
     }
 
-    public void setItems(List<ClusterPolarisSummaryItemDetailVO> items) {
+    public void setItems(List<PolarisSummaryItemDetailVO> items) {
         this.items = items;
     }
 

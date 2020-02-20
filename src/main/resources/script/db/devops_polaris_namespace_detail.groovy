@@ -1,12 +1,12 @@
 package script.db
 
-databaseChangeLog(logicalFilePath: 'dba/devops_polaris_result_detail.groovy') {
-    changeSet(author: 'zmf', id: '2020-02-14-create-table-devops_polaris_result_detail') {
-        createTable(tableName: "devops_polaris_result_detail", remarks: '资源详细扫描结果') {
+databaseChangeLog(logicalFilePath: 'dba/devops_polaris_namespace_detail.groovy') {
+    changeSet(author: 'zmf', id: '2020-02-14-create-table-devops_polaris_namespace_detail') {
+        createTable(tableName: "devops_polaris_namespace_detail", remarks: 'namespace详细扫描结果') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'detail', type: 'TEXT', remarks: '资源的详细扫描数据') {
+            column(name: 'detail', type: 'MEDIUMTEXT', remarks: '是这个namespace下所有扫描数据json，根据扫描范围是env或者是cluster结构会有不同') {
                 constraints(nullable: false)
             }
 

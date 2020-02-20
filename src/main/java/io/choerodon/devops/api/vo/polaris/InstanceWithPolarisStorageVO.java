@@ -1,20 +1,14 @@
-package io.choerodon.devops.api.vo;
+package io.choerodon.devops.api.vo.polaris;
 
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.devops.api.vo.polaris.PolarisStorageControllerResultVO;
-
 /**
- * 带有Polaris扫描结果的实例数据
- *
  * @author zmf
- * @since 2/18/20
+ * @since 2/20/20
  */
-public class InstanceWithPolarisResultVO {
-    @ApiModelProperty("环境id")
-    private Long envId;
+public class InstanceWithPolarisStorageVO {
     @ApiModelProperty("实例id")
     private Long instanceId;
     @ApiModelProperty("实例code")
@@ -27,14 +21,10 @@ public class InstanceWithPolarisResultVO {
     private String appServiceCode;
     @ApiModelProperty("实例包含的配置文件")
     private List<PolarisStorageControllerResultVO> items;
-
-    public Long getEnvId() {
-        return envId;
-    }
-
-    public void setEnvId(Long envId) {
-        this.envId = envId;
-    }
+    @ApiModelProperty("是否有error级别的检测项")
+    private Boolean hasErrors;
+    @ApiModelProperty("是否是检查的数据，存在数据库中的值都是true")
+    private Boolean checked = Boolean.TRUE;
 
     public Long getInstanceId() {
         return instanceId;
@@ -82,5 +72,21 @@ public class InstanceWithPolarisResultVO {
 
     public void setItems(List<PolarisStorageControllerResultVO> items) {
         this.items = items;
+    }
+
+    public Boolean getHasErrors() {
+        return hasErrors;
+    }
+
+    public void setHasErrors(Boolean hasErrors) {
+        this.hasErrors = hasErrors;
+    }
+
+    public Boolean getChecked() {
+        return checked;
+    }
+
+    public void setChecked(Boolean checked) {
+        this.checked = checked;
     }
 }
