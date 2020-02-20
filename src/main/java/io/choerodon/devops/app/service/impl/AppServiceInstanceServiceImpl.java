@@ -1160,6 +1160,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return configVO;
     }
 
+    @Override
+    public Integer countByOptions(Long envId, String status, Long appServiceId) {
+        return appServiceInstanceMapper.countInstanceByCondition(envId, status, appServiceId);
+    }
+
 
     private void handleStartOrStopInstance(Long instanceId, String type) {
 

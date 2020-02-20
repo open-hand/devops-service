@@ -70,10 +70,15 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
 
     List<DevopsEnvAppServiceDTO> listAllDistinctWithoutDeleted();
 
-    List<AppServiceInstanceDTO> listByProjectIdsAndAppServiceId(@Param("projectIds") Set<Long> projectIds,@Param("appServiceId") Long appServiceId);
+    List<AppServiceInstanceDTO> listByProjectIdsAndAppServiceId(@Param("projectIds") Set<Long> projectIds, @Param("appServiceId") Long appServiceId);
 
     List<AppServiceInstanceDTO> queryOtherInstancesOfComponents(
             @Param("envId") Long envId,
             @Param("instanceCode") String instanceCode,
             @Param("componentChartName") String componentChartName);
+
+    int countInstanceByCondition(
+            @Param("envId") Long envId,
+            @Param("status") String status,
+            @Param("appServiceId") Long appServiceId);
 }

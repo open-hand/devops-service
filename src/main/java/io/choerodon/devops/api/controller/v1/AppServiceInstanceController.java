@@ -65,10 +65,10 @@ public class AppServiceInstanceController {
     /**
      * 分页查询环境下实例信息（基本信息）
      *
-     * @param projectId   项目id
-     * @param pageable 分页参数
-     * @param envId       环境id
-     * @param params      搜索参数
+     * @param projectId 项目id
+     * @param pageable  分页参数
+     * @param envId     环境id
+     * @param params    搜索参数
      * @return page of AppInstanceInfoVO
      */
     @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
@@ -592,7 +592,7 @@ public class AppServiceInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
-        appServiceInstanceService.deleteInstance(instanceId,false);
+        appServiceInstanceService.deleteInstance(instanceId, false);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -815,6 +815,25 @@ public class AppServiceInstanceController {
         return Optional.ofNullable(appServiceInstanceService.queryByCommandId(commandId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.instance.get"));
+    }
+
+
+    @ApiOperation("计算环境下实例的数量")
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @GetMapping("/count_by_options")
+    public ResponseEntity<Integer> countByOptions(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id", required = true)
+            @RequestParam Long env_id,
+            @ApiParam(value = "实例状态, 不填是查全部", required = false)
+            @RequestParam String status,
+            @ApiParam(value = "应用服务id", required = false)
+            @RequestParam Long app_service_id) {
+        return Optional.ofNullable(appServiceInstanceService.countByOptions(env_id, status, app_service_id))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.query.instance.count"));
     }
 
 }

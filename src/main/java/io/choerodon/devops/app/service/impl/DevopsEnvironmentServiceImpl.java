@@ -237,7 +237,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()),
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
-                throw new CommonException("error.user.not.owner");
+                throw new CommonException("error.user.not.gitlab.owner");
             }
         }
 
