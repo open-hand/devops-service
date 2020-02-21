@@ -87,12 +87,13 @@ const collapseDetail = observer(({ loading }) => {
 
   function getClusterContent(item) {
     const checked = clusterSummaryData.checked;
-    const { items: list } = clusterSummaryData[item] || {};
-    if (!checked) {
-      return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: `${intlPrefix}.polaris.check.null` })}</span>;
-    }
+    const { detail } = clusterSummaryData[item] || {};
+    const list = detail ? JSON.parse(detail) : [];
     if (isLoading) {
       return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: `${intlPrefix}.polaris.check.operating` })}</span>;
+    }
+    if (!checked) {
+      return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: `${intlPrefix}.polaris.check.null` })}</span>;
     }
     if (isEmpty(list)) {
       return (
@@ -108,8 +109,8 @@ const collapseDetail = observer(({ loading }) => {
           <span>{`NameSpace: ${namespace} / ${resourceKind}: ${resourceName}`}</span>
           {hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
         </div>
-        {map(items, ({ message, type, severity }) => (
-          <div key={type} className={`${prefixCls}-polaris-tabs-content-des`}>
+        {map(items, ({ message, type, severity }, itemIndex) => (
+          <div key={`${type}-${itemIndex}`} className={`${prefixCls}-polaris-tabs-content-des`}>
             <Icon type={severity === 'warning' ? 'priority_high' : 'close'} className={`${prefixCls}-polaris-tabs-content-icon-${severity}`} />
             <span>{message}</span>
           </div>
@@ -120,16 +121,18 @@ const collapseDetail = observer(({ loading }) => {
 
   function getEnvContent(envRecord) {
     const checked = envRecord.get('checked');
-    const items = envRecord.get('items');
-    if (!checked) {
-      return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: `${intlPrefix}.polaris.check.null` })}</span>;
-    }
+    const detailJson = envRecord.get('detailJson');
+    const list = detailJson ? JSON.parse(detailJson) : [];
     if (isLoading) {
       return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: `${intlPrefix}.polaris.check.operating` })}</span>;
     }
-    return (map(items, ({ hasErrors, detailJson }, index) => {
-      const data = JSON.parse(detailJson);
-      const { kind, name, podResult } = data || {};
+    if (!checked) {
+      return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: `${intlPrefix}.polaris.check.null` })}</span>;
+    }
+    if (isEmpty(list)) {
+      return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: 'c7ncd.cluster.polaris.check.empty' })}</span>;
+    }
+    return (map(list, ({ hasErrors, kind, name, podResult }, index) => {
       const containers = podResult ? podResult.containerResults : [];
       const results = podResult ? podResult.results : {};
       return (
@@ -146,8 +149,8 @@ const collapseDetail = observer(({ loading }) => {
               <Icon type="done" className={`${prefixCls}-polaris-tabs-content-icon-success`} />
               <span>{formatMessage({ id: `${intlPrefix}.polaris.check.success` })}</span>
             </div>
-          ) : (map(results, ({ message, type, severity }) => (
-            <div key={type} className={`${prefixCls}-polaris-tabs-content-des`}>
+          ) : (map(results, ({ message, type, severity }, resultIndex) => (
+            <div key={`${type}-${resultIndex}`} className={`${prefixCls}-polaris-tabs-content-des`}>
               <Icon type={severity === 'warning' ? 'priority_high' : 'close'} className={`${prefixCls}-polaris-tabs-content-icon-${severity}`} />
               <span>{message}</span>
             </div>
@@ -161,8 +164,8 @@ const collapseDetail = observer(({ loading }) => {
                 <Icon type="done" className={`${prefixCls}-polaris-tabs-content-icon-success`} />
                 <span>{formatMessage({ id: `${intlPrefix}.polaris.check.success` })}</span>
               </div>
-            ) : (map(containerResults, ({ message, type, severity }) => (
-              <div key={type} className={`${prefixCls}-polaris-tabs-content-des`}>
+            ) : (map(containerResults, ({ message, type, severity }, containerIndex) => (
+              <div key={`${type}-${containerIndex}`} className={`${prefixCls}-polaris-tabs-content-des`}>
                 <Icon type={severity === 'warning' ? 'priority_high' : 'close'} className={`${prefixCls}-polaris-tabs-content-icon-${severity}`} />
                 <span>{message}</span>
               </div>
