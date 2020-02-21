@@ -85,12 +85,13 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public void saveClusterSummaryInfo(Long clusterId, ClusterSummaryInfoVO clusterSummaryInfoVO) {
-        if ( clusterSummaryInfoVO == null || clusterSummaryInfoVO.getVersion() == null) {
+        if (clusterSummaryInfoVO == null || clusterSummaryInfoVO.getVersion() == null) {
             LOGGER.warn("Abandon Bad cluster info: {}", clusterSummaryInfoVO);
             return;
         }
         String redisKey = renderClusterInfoRedisKey(clusterId);
         stringRedisTemplate.opsForValue().set(redisKey, JSONObject.toJSONString(clusterSummaryInfoVO));
+        LOGGER.info("Finish saving info about cluster with id {}. The redisKey is {}. the info object is: {} ", clusterId, redisKey, clusterSummaryInfoVO);
     }
 
     @Override
