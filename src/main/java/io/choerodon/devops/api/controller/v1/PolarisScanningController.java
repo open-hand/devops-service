@@ -27,7 +27,7 @@ public class PolarisScanningController {
 
     @ApiOperation("查询扫描纪录")
     @GetMapping("/records")
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER}, type = ResourceType.PROJECT)
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER}, type = ResourceType.PROJECT)
     public ResponseEntity<DevopsPolarisRecordRespVO> queryRecordByScopeAndScopeId(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
