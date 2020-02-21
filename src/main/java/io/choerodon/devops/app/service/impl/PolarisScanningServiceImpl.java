@@ -78,6 +78,8 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     @Override
     public DevopsPolarisRecordRespVO queryRecordByScopeAndScopeId(Long projectId, String scope, Long scopeId) {
@@ -85,6 +87,20 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         if (scopeType == null) {
             return null;
         }
+
+        // 校验权限
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        if (PolarisScopeType.ENV == scopeType) {
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(scopeId);
+            if (devopsEnvironmentDTO == null) {
+                throw new CommonException("error.env.id.not.exist", scopeId);
+            }
+            devopsEnvUserPermissionService.checkEnvDeployPermission(DetailsHelper.getUserDetails().getUserId(), scopeId);
+        } else {
+            permissionHelper.checkProjectOwnerOrRoot(projectId, userId);
+        }
+
+        // 以上是预检
         DevopsPolarisRecordDTO devopsPolarisRecordDTO = queryRecordByScopeIdAndScope(scopeId, scope);
         if (devopsPolarisRecordDTO == null
                 || !PolarisScanningStatus.FINISHED.getStatus().equals(devopsPolarisRecordDTO.getStatus())) {
