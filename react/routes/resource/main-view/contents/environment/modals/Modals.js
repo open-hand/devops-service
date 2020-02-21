@@ -45,6 +45,7 @@ const EnvModals = observer(() => {
       SYNC_TAB,
       ASSIGN_TAB,
       CONFIG_TAB,
+      POLARIS_TAB,
     },
     permissionsDs,
     gitopsLogDs,
@@ -52,6 +53,8 @@ const EnvModals = observer(() => {
     baseInfoDs,
     configFormDs,
     configDs,
+    polarisNumDS,
+    istSummaryDs,
   } = useEnvironmentStore();
 
   const ModalStores = useModalStore();
@@ -70,13 +73,30 @@ const EnvModals = observer(() => {
     baseInfoDs.query();
     treeDs.query();
     const tabKey = envStore.getTabKey;
-    if (tabKey === SYNC_TAB) {
-      gitopsSyncDs.query();
-      gitopsLogDs.query();
-    } else if (tabKey === ASSIGN_TAB) {
-      permissionsDs.query();
-    } else if (tabKey === CONFIG_TAB) {
-      configDs.query();
+    switch (tabKey) {
+      case SYNC_TAB:
+        gitopsSyncDs.query();
+        gitopsLogDs.query();
+        break;
+      case ASSIGN_TAB:
+        permissionsDs.query();
+        break;
+      case CONFIG_TAB:
+        configDs.query();
+        break;
+      case POLARIS_TAB:
+        loadPolaris();
+        break;
+      default:
+        break;
+    }
+  }
+
+  async function loadPolaris() {
+    const res = await envStore.checkHasInstance(projectId, id);
+    if (res) {
+      polarisNumDS.query();
+      istSummaryDs.query();
     }
   }
 

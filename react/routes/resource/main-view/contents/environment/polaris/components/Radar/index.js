@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Icon } from 'choerodon-ui';
 import { observer } from 'mobx-react-lite';
 import _ from 'lodash';
 
@@ -8,6 +9,7 @@ const RadarApp = observer((props) => {
   const {
     num,
     loading,
+    failed,
   } = props;
 
   useEffect(() => {
@@ -62,30 +64,45 @@ const RadarApp = observer((props) => {
     }());
   }, [num, loading]);
 
+  function renderCircle() {
+    if (loading) {
+      return (
+        <div className="radar">
+          <div className="column" />
+          <div className="row" />
+          <div className="smallCircle" />
+          <div className="bigCircle" />
+          <div className="movingCircle" />
+        </div>
+      );
+    } else if (!failed) {
+      return (
+        <React.Fragment>
+          <div className="circleText">健康分值</div>
+          <div className="circleNum">
+            <span className="currentNum">
+              {_.isNull(num) ? '- -' : <span className="numberSpan">0</span>}
+            </span>
+          </div>
+        </React.Fragment>
+      );
+    } else {
+      return (
+        <React.Fragment>
+          <div className="circleText failedText">扫描失败</div>
+          <div className="circleNum">
+            <Icon type="close" className="numberFailed" />
+          </div>
+        </React.Fragment>
+      );
+    }
+  }
+
   const getContent = () => (
     <div className="radarApp">
       <div className="circleFragment">
         <div className="circle">
-          {
-            loading ? (
-              <div className="radar">
-                <div className="column" />
-                <div className="row" />
-                <div className="smallCircle" />
-                <div className="bigCircle" />
-                <div className="movingCircle" />
-              </div>
-            ) : (
-              <React.Fragment>
-                <div className="circleText">健康分值</div>
-                <div className="circleNum">
-                  <span className="currentNum">
-                    {_.isNull(num) ? '- -' : <span className="numberSpan">0</span>}
-                  </span>
-                </div>
-              </React.Fragment>
-            )
-          }
+          {renderCircle()}
         </div>
         {
           _.isNull(num) && !loading ? '' : (
