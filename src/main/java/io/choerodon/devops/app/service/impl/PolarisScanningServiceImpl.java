@@ -270,7 +270,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             return handleEnvWithoutPolaris(devopsPolarisNamespaceResultMapper.queryEnvWithoutPolarisResult(clusterId));
         }
 
-        return handleEnvWithPolaris(devopsPolarisNamespaceResultMapper.queryEnvWithPolarisResult(recordDTO.getId()));
+        return handleEnvWithPolaris(devopsPolarisNamespaceResultMapper.queryEnvWithPolarisResult(recordDTO.getId(), recordDTO.getScopeId()));
     }
 
     private List<DevopsEnvWithPolarisResultVO> handleEnvWithoutPolaris(List<DevopsEnvWithPolarisResultVO> results) {
@@ -910,6 +910,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         deleteCondition.setRecordId(Objects.requireNonNull(recordId));
         devopsPolarisCategoryResultMapper.delete(deleteCondition);
     }
+
     private void deleteDevopsPolarisCategoryDetailByRecordId(Long recordId) {
         List<Long> detailIds = devopsPolarisCategoryDetailMapper.queryDetailIdsByRecordId(Objects.requireNonNull(recordId));
         if (detailIds.isEmpty()) {

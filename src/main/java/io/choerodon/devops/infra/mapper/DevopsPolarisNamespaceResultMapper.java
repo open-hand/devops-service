@@ -37,11 +37,13 @@ public interface DevopsPolarisNamespaceResultMapper extends Mapper<DevopsPolaris
 
     /**
      * 查询带有扫描结果的环境数据
+     * 包括空的内部环境
      *
-     * @param recordId 扫描纪录id
+     * @param recordId  扫描纪录id
+     * @param clusterId 集群id
      * @return 数据
      */
-    List<DevopsEnvWithPolarisResultVO> queryEnvWithPolarisResult(@Param("recordId") Long recordId);
+    List<DevopsEnvWithPolarisResultVO> queryEnvWithPolarisResult(@Param("recordId") Long recordId, @Param("clusterId") Long clusterId);
 
     List<InstanceWithPolarisStorageVO> queryInstanceWithoutResult(@Param("envId") Long envId);
 }
