@@ -41,15 +41,16 @@ const collapseDetail = observer(({ loading }) => {
   function getIstContent(record) {
     const checked = record.get('checked');
     const items = record.get('items');
-    // if (!checked) {
-    //   return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: 'c7ncd.cluster.polaris.check.null' })}</span>;
-    // }
     if (isLoading) {
       return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: 'c7ncd.cluster.polaris.check.operating' })}</span>;
     }
-    return (map(items, ({ hasErrors, detailJson }, index) => {
-      const data = JSON.parse(detailJson);
-      const { kind, name, podResult } = data || {};
+    if (!checked) {
+      return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: 'c7ncd.cluster.polaris.check.null' })}</span>;
+    }
+    if (isEmpty(items)) {
+      return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: 'c7ncd.cluster.polaris.check.empty' })}</span>;
+    }
+    return (map(items, ({ hasErrors, kind, name, podResult }, index) => {
       const containers = podResult ? podResult.containerResults : [];
       const results = podResult ? podResult.results : {};
       return (
@@ -66,8 +67,8 @@ const collapseDetail = observer(({ loading }) => {
               <Icon type="done" className={`${prefixCls}-polaris-tabs-content-icon-success`} />
               <span>{formatMessage({ id: 'c7ncd.cluster.polaris.check.success' })}</span>
             </div>
-          ) : (map(results, ({ message, type, severity }) => (
-            <div key={type} className={`${prefixCls}-polaris-tabs-content-des`}>
+          ) : (map(results, ({ message, type, severity }, resultIndex) => (
+            <div key={`${type}-${resultIndex}`} className={`${prefixCls}-polaris-tabs-content-des`}>
               <Icon type={severity === 'warning' ? 'priority_high' : 'close'} className={`${prefixCls}-polaris-tabs-content-icon-${severity}`} />
               <span>{message}</span>
             </div>
@@ -81,8 +82,8 @@ const collapseDetail = observer(({ loading }) => {
                 <Icon type="done" className={`${prefixCls}-polaris-tabs-content-icon-success`} />
                 <span>{formatMessage({ id: 'c7ncd.cluster.polaris.check.success' })}</span>
               </div>
-            ) : (map(containerResults, ({ message, type, severity }) => (
-              <div key={type} className={`${prefixCls}-polaris-tabs-content-des`}>
+            ) : (map(containerResults, ({ message, type, severity }, containerIndex) => (
+              <div key={`${type}-${containerIndex}`} className={`${prefixCls}-polaris-tabs-content-des`}>
                 <Icon type={severity === 'warning' ? 'priority_high' : 'close'} className={`${prefixCls}-polaris-tabs-content-icon-${severity}`} />
                 <span>{message}</span>
               </div>

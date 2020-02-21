@@ -36,19 +36,9 @@ const polaris = observer((props) => {
     setLoading(true);
   }
 
-  function renderBtnStatus() {
-    const envStatus = baseInfoDs.current && baseInfoDs.current.get('connect');
-    const isLoading = loading || statusLoading;
-    if (envStatus) {
-      if (isLoading) return true;
-      return false;
-    } else {
-      return true;
-    }
-  }
-
   function getContent() {
     const isLoading = loading || statusLoading;
+    const envStatus = baseInfoDs.current && baseInfoDs.current.get('connect');
     if (envStore.getHasInstance) {
       return (
         <Fragment>
@@ -57,7 +47,7 @@ const polaris = observer((props) => {
             color="primary"
             funcType="raised"
             onClick={handleScan}
-            disabled={renderBtnStatus()}
+            disabled={isLoading || !envStatus}
           >
             {formatMessage({ id: 'c7ncd.cluster.polaris.scanning' })}
           </Button>

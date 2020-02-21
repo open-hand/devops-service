@@ -68,8 +68,7 @@ const numberDetail = observer(({ isLoading }) => {
   }
 
   function renderNumPanel() {
-    // eslint-disable-next-line react/no-array-index-key
-    return checkGroup.map((item, key) => <div className={`${prefixCls}-number-check`} key={key}>
+    return checkGroup.map((item, key) => <div className={`${prefixCls}-number-check`} key={item.checkType}>
       <Icon type={item.icon} />
       <span>
         {!isLoading ? (polarisNumDS.current && polarisNumDS.current.get(item.checkType)) : '-'}&nbsp;
@@ -79,8 +78,7 @@ const numberDetail = observer(({ isLoading }) => {
   }
 
   function renderDetailPanel() {
-    // eslint-disable-next-line react/no-array-index-key
-    return categoryGroup.map((item, key) => <div className={`${prefixCls}-number-category`} key={key}>
+    return categoryGroup.map((item) => <div className={`${prefixCls}-number-category`} key={item.category_type}>
       <Icon type={item.icon} />
       <div className={`${prefixCls}-number-category-detail`}>
         <span>{item.name}</span>
