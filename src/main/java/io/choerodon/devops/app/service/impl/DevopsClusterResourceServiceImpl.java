@@ -304,6 +304,9 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 && devopsPrometheusDTO.getGrafanaDomain().equals(devopsPrometheusVO.getGrafanaDomain())) {
             return false;
         }
+        // 添加client
+        ClientDTO clientDTO = baseServiceClientOperator.queryClientBySourceId(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getId());
+        devopsPrometheusDTO.setClientName(clientDTO.getName());
 
         devopsPrometheusDTO.setAdminPassword(devopsPrometheusVO.getAdminPassword());
         devopsPrometheusDTO.setGrafanaDomain(devopsPrometheusVO.getGrafanaDomain());
