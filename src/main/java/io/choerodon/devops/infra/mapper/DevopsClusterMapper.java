@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.devops.api.vo.ClusterOverViewVO;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
 import io.choerodon.mybatis.common.Mapper;
@@ -42,4 +43,6 @@ public interface DevopsClusterMapper extends Mapper<DevopsClusterDTO> {
     DevopsClusterDTO queryClusterForUpdate(@Param("clusterId") Long clusterId);
 
     Long queryClusterIdBySystemEnvId(@Param("systemEnvId") Long systemEnvId);
+
+    List<DevopsClusterDTO> listByOrganizationId(@Param("organizationId") Long organizationId);
 }
