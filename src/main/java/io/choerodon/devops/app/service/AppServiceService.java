@@ -480,4 +480,6 @@ public interface AppServiceService {
      * @return 有版本的应用服务列表
      */
     List<AppServiceSimpleVO> listAppServiceHavingVersions(Long projectId);
+
+    Integer countByProjectId(Long projectId);
 }
