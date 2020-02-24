@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.kubernetes.client.JSON;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
@@ -2562,6 +2561,11 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public AppServiceMsgVO checkAppService(Long projectId, Long appServiceId) {
         return checkCanDisable(appServiceId, projectId);
+    }
+
+    @Override
+    public List<AppServiceSimpleVO> listAppServiceHavingVersions(Long projectId) {
+        return ConvertUtils.convertList(appServiceMapper.queryAppServicesHavingVersions(projectId), app -> new AppServiceSimpleVO(app.getId(), app.getName(), app.getCode()));
     }
 
     private AppServiceVO dtoTOVo(AppServiceDTO appServiceDTO, Map<Long, List<AppServiceVersionDTO>> appVerisonMap) {

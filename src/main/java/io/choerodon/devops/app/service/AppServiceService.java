@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import com.github.pagehelper.PageInfo;
 import org.springframework.data.domain.Pageable;
+
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.AppServiceImportPayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayload;
@@ -312,14 +313,10 @@ public interface AppServiceService {
     PageInfo<DevopsUserPermissionVO> combineOwnerAndMember(List<DevopsUserPermissionVO> allProjectMembers, List<DevopsUserPermissionVO> allProjectOwners, Pageable pageable);
 
     DevopsUserPermissionVO iamUserTOUserPermissionVO(IamUserDTO iamUserDTO, Boolean isGitlabProjectOwner);
-        /**
-         * 根据appServiceId查询服务服务所有没有权限的项目成员
-         *
-         * @param projectId
-         * @param appServiceId
-         * @param params
-         * @return
-         */
+
+    /**
+     * 根据appServiceId查询服务服务所有没有权限的项目成员
+     */
     PageInfo<DevopsUserPermissionVO> listMembers(Long projectId, Long appServiceId, Long selectedIamUserId, Pageable pageable, String params);
 
     /**
@@ -474,4 +471,13 @@ public interface AppServiceService {
     List<AppServiceTemplateVO> listServiceTemplates();
 
     AppServiceMsgVO checkAppService(Long projectId, Long appServiceId);
+
+    /**
+     * 列出项目下有版本的应用服务，任何角色可以查到所有的的应用服务
+     * 无论有没有权限
+     *
+     * @param projectId 项目id
+     * @return 有版本的应用服务列表
+     */
+    List<AppServiceSimpleVO> listAppServiceHavingVersions(Long projectId);
 }
