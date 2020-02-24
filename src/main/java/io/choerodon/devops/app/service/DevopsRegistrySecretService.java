@@ -29,9 +29,10 @@ public interface DevopsRegistrySecretService {
      * @param clusterId 集群id
      * @param namespace 环境code
      * @param configId  配置id
+     * @param projectId 项目Id
      * @return 查询结果
      */
-    DevopsRegistrySecretDTO baseQueryByClusterIdAndNamespace(Long clusterId, String namespace, Long configId);
+    DevopsRegistrySecretDTO baseQueryByClusterIdAndNamespace(Long clusterId, String namespace, Long configId, Long projectId);
 
     List<DevopsRegistrySecretDTO> baseListByConfig(Long configId);
 
