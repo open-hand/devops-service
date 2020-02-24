@@ -100,7 +100,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
           break;
         default:
       }
-    }, [projectId, id, tabkey, record]);
+    }, [projectId, tabkey, record]);
 
     async function loadPolaris() {
       const res = await contentStore.checkHasEnv(projectId, id);
