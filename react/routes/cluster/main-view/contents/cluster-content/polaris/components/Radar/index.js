@@ -34,7 +34,7 @@ const RadarApp = observer((props) => {
       g.addColorStop(0, '#F77A70'); // 添加颜色点
       g.addColorStop(1, '#6E41F3');
       context.strokeStyle = g; // 设置描边样式
-      context.lineWidth = 5; // 设置线宽
+      context.lineWidth = 3; // 设置线宽
       context.beginPath(); // 路径开始
       context.arc(centerX, centerY, 67, -Math.PI / 2, -Math.PI / 2 + n * rad, false); // 用于绘制圆弧context.arc(x坐标，y坐标，半径，起始角度，终止角度，顺时针/逆时针)
       context.stroke(); // 绘制
@@ -58,7 +58,7 @@ const RadarApp = observer((props) => {
       g.addColorStop(0, '#F77A70FF'); // 添加颜色点
       g.addColorStop(1, '#FECC50FF');
       context.strokeStyle = g; // 设置描边样式
-      context.lineWidth = 5; // 设置线宽
+      context.lineWidth = 3; // 设置线宽
       context.beginPath(); // 路径开始
       context.arc(centerX, centerY, 67, -Math.PI / 2, -Math.PI / 2 + 100 * rad, false); // 用于绘制圆弧context.arc(x坐标，y坐标，半径，起始角度，终止角度，顺时针/逆时针)
       context.stroke(); // 绘制
