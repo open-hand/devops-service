@@ -836,6 +836,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{ DOCKER_USERNAME }}", harborProjectConfig.getUserName());
             params.put("{{ DOCKER_PASSWORD }}", harborProjectConfig.getPassword());
             params.put("{{ HARBOR_CONFIG_ID }}", harborConfigDTO.getId().toString());
+            // TODO 能不能优化为只读一次，读入内存?
             return FileUtil.replaceReturnString(inputStream, params);
         } catch (CommonException e) {
             return null;
