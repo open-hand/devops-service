@@ -63,14 +63,6 @@ grafana:
       allowed_organizations:
 
 prometheus:
-  serviceMonitor:
-    relabelings:
-      - sourceLabels: [__metrics_path__]
-        separator: ;
-        regex: ^(.*)$
-        targetLabel: cluster
-        replacement: {{clusterName}}
-        action: replace
   prometheusSpec:
     storageSpec:
       volumeClaimTemplate:
