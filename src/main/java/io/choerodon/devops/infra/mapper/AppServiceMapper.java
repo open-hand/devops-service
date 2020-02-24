@@ -135,5 +135,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
      */
     List<Long> listGitlabProjectIdByAppPermission(@Param("gitlabGroupId") Long gitlabGroupId,
                                                   @Param("iamUserId") Long iamUserId);
+
+    List<AppServiceDTO> queryAppServicesHavingVersions(@Param("projectId") Long projectId);
 }
 
