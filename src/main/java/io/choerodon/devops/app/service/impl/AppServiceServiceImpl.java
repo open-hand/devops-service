@@ -2592,6 +2592,14 @@ public class AppServiceServiceImpl implements AppServiceService {
         return appServiceVO;
     }
 
+    @Override
+    public Integer countByProjectId(Long projectId) {
+        AppServiceDTO appServiceDTO = new AppServiceDTO();
+        appServiceDTO.setProjectId(projectId);
+        List<AppServiceDTO> select = appServiceMapper.select(appServiceDTO);
+        return CollectionUtils.isEmpty(select) == true ? 0 : select.size();
+    }
+
     /**
      * 释放资源
      */

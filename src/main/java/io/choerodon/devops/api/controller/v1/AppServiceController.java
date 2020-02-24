@@ -821,5 +821,14 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId) {
         return new ResponseEntity<>(applicationServiceService.listAppServiceHavingVersions(projectId), HttpStatus.OK);
     }
+
+    @Permission(type = ResourceType.ORGANIZATION, roles = InitRoleCode.ORGANIZATION_ADMINISTRATOR)
+    @ApiOperation(value = "查询项目下应用服务的数量")
+    @GetMapping("/list_by_project_id")
+    public ResponseEntity<Integer> countByProjectId(
+            @ApiParam(value = "项目Id")
+            @PathVariable(value = "project_id") Long projectId) {
+        return new ResponseEntity<>(applicationServiceService.countByProjectId(projectId), HttpStatus.OK);
+    }
 }
 
