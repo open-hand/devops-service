@@ -37,6 +37,14 @@ export default function useStore({ defaultTab }) {
       return this.hasInstance;
     },
 
+    polarisLoading: true,
+    setPolarisLoading(flag) {
+      this.polarisLoading = flag;
+    },
+    get getPolarisLoading() {
+      return this.polarisLoading;
+    },
+
     async checkPermission({ projectId, organizationId, resourceType }) {
       const res = await checkPermission({
         code: 'devops-service.devops-environment.pageEnvUserPermissions',
@@ -67,12 +75,15 @@ export default function useStore({ defaultTab }) {
 
     async checkHasInstance(projectId, envId) {
       try {
+        this.setPolarisLoading(true);
         const res = await axios.get(`devops/v1/projects/${projectId}/app_service_instances/count_by_options?env_id=${envId}&status=&app_service_id=`);
         const result = handlePromptError(res);
         this.setHasInstance(result);
+        this.setPolarisLoading(false);
         return result;
       } catch (e) {
         Choerodon.handleResponseError(e);
+        this.setPolarisLoading(false);
         return false;
       }
     },

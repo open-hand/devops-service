@@ -7,6 +7,7 @@ import EmptyPage from '../../../../../../components/empty-page';
 import NumberDetail from './number-detail';
 import CollapseDetail from './collapse-detail';
 import { useClusterStore } from '../../../../stores';
+import LoadingBar from '../../../../../../components/loading';
 
 import './index.less';
 
@@ -45,6 +46,9 @@ const polaris = observer((props) => {
   function getContent() {
     const isLoading = loading || statusLoading;
     const connectStatus = ClusterDetailDs.current && ClusterDetailDs.current.get('connect');
+    if (contentStore.getPolarisLoading) {
+      return <LoadingBar display />;
+    }
     if (contentStore.getHasEnv) {
       return (
         <Fragment>

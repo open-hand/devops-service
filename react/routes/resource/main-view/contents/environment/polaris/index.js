@@ -6,6 +6,7 @@ import NumberDetail from './number-detail';
 import CollapseDetail from './collapse-detail';
 import { useResourceStore } from '../../../../stores';
 import { useEnvironmentStore } from '../stores';
+import Loading from '../../../../../../components/loading';
 
 import './index.less';
 
@@ -39,6 +40,9 @@ const polaris = observer((props) => {
   function getContent() {
     const isLoading = loading || statusLoading;
     const envStatus = baseInfoDs.current && baseInfoDs.current.get('connect');
+    if (envStore.getPolarisLoading) {
+      return <Loading display />;
+    }
     if (envStore.getHasInstance) {
       return (
         <Fragment>
