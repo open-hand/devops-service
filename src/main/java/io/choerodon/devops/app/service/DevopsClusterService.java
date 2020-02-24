@@ -202,4 +202,6 @@ public interface DevopsClusterService {
     void baseUpdateProjectId(Long orgId, Long proId);
 
     Boolean checkUserClusterPermission(Long clusterId, Long userId);
+
+    ClusterOverViewVO getClusterOverview(Long organizationId);
 }

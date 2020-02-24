@@ -661,6 +661,27 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         return !CollectionUtils.isEmpty(clusterBelongToProjectIds);
     }
 
+    @Override
+    public ClusterOverViewVO getClusterOverview(Long organizationId) {
+        ClusterOverViewVO clusterOverViewVO = new ClusterOverViewVO();
+        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedClusterList();
+        List<DevopsClusterDTO> clusterDTOList = devopsClusterMapper.listByOrganizationId(organizationId);
+        if (CollectionUtils.isEmpty(clusterDTOList)) {
+
+            return new ClusterOverViewVO(0, 0);
+        }
+        if (CollectionUtils.isEmpty(connectedClusterList)) {
+            return new ClusterOverViewVO(0, connectedClusterList.size());
+        }
+        List<Long> connectedClusterByOrgIdList = new ArrayList<>();
+        clusterDTOList.stream().forEach(v -> {
+            if (connectedClusterList.contains(v.getId())) {
+                connectedClusterByOrgIdList.add(v.getId());
+            }
+        });
+        return new ClusterOverViewVO(connectedClusterByOrgIdList.size(), clusterDTOList.size() - connectedClusterByOrgIdList.size());
+    }
+
     /**
      * pod dto to cluster pod vo
      *
