@@ -253,19 +253,17 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(systemEnvId);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
-        // 解决分布式事务问题，注册client成功，更新cluster表client字段失败
-        LOGGER.info("clusterClientId:{}", devopsClusterDTO.getClientId());
-        if (devopsClusterDTO.getClientId() == null) {
-            ClientDTO clientDTO = baseServiceClientOperator.queryClientBySourceId(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getId());
-            LOGGER.info("clientDTO:{}", clientDTO);
-            // 集群未注册client，则先注册
-            if (clientDTO == null) {
-                clientDTO = registerClient(devopsClusterDTO);
-            }
-            devopsClusterDTO.setClientId(clientDTO.getId());
-            devopsPrometheusVO.setClientName(clientDTO.getName());
-            devopsClusterService.baseUpdate(devopsClusterDTO);
+        // 解决分布式事务问题，注册client
+        ClientDTO clientDTO = baseServiceClientOperator.queryClientBySourceId(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getId());
+        LOGGER.info("clientDTO:{}", clientDTO);
+        // 集群未注册client，则先注册
+        if (clientDTO == null) {
+            clientDTO = registerClient(devopsClusterDTO);
         }
+        devopsClusterDTO.setClientId(clientDTO.getId());
+        devopsPrometheusVO.setClientName(clientDTO.getName());
+        devopsClusterService.baseUpdate(devopsClusterDTO);
+
         DevopsPrometheusDTO newPrometheusDTO = ConvertUtils.convertObject(devopsPrometheusVO, DevopsPrometheusDTO.class);
         DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         //安装失败点击安装
@@ -306,6 +304,9 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 && devopsPrometheusDTO.getGrafanaDomain().equals(devopsPrometheusVO.getGrafanaDomain())) {
             return false;
         }
+        // 添加client
+        ClientDTO clientDTO = baseServiceClientOperator.queryClientBySourceId(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getId());
+        devopsPrometheusDTO.setClientName(clientDTO.getName());
 
         devopsPrometheusDTO.setAdminPassword(devopsPrometheusVO.getAdminPassword());
         devopsPrometheusDTO.setGrafanaDomain(devopsPrometheusVO.getGrafanaDomain());
