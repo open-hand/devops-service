@@ -1,13 +1,10 @@
-# 集群名
-global:
-  clusterName: {{clusterName}}
+fullnameOverride: "c7n-prometheus"
+
 alertmanager:
   alertmanagerSpec:
     storage:
       volumeClaimTemplate:
         spec:
-          # 你们现在不支持 sc,所以注释了
-          #storageClassName: standard
           accessModes:
           - {{altermanagerAccesssMode}}
           resources:
@@ -17,6 +14,7 @@ alertmanager:
           selector:
             matchLabels:
               choerodon.io/name: {{alertmanager-pv}}
+
 grafana:
   adminPassword: "{{adminPassword}}"
   ingress:
@@ -28,16 +26,29 @@ grafana:
       nginx.ingress.kubernetes.io/configuration-snippet: |
         more_set_headers "X-Frame-Options: ALLOW-ALL";
   persistence:
-    enabled: true
-    existingClaim: c7n-grafana-pvc
+    enabled: false
     accessModes:
     - {{grafanaAccessMode}}
     size: {{grafanaStorage}}
+    existingClaim: c7n-grafana-pvc
     # 选择 PVC 绑定的 PV
     selector:
       matchLabels:
         choerodon.io/name: {{grafana-pv}}
   grafana.ini:
+    paths:
+      data: /var/lib/grafana/data
+      logs: /var/log/grafana
+      plugins: /var/lib/grafana/plugins
+      provisioning: /etc/grafana/provisioning
+    analytics:
+      check_for_updates: true
+    log:
+      mode: console
+    grafana_net:
+      url: https://grafana.net
+    server:
+      root_url: http://{{host}}
     auth.generic_oauth:
       name: Choerodon
       enabled: true
@@ -48,19 +59,18 @@ grafana:
       auth_url: {{api-host}}/oauth/oauth/authorize
       token_url: {{api-host}}/oauth/oauth/token
       api_url: {{api-host}}/base/v1/users/self
-    server:
-      root_url: http://{{host}}
-    paths:
-      data: /var/lib/grafana/data
-      logs: /var/log/grafana
-      plugins: /var/lib/grafana/plugins
-      provisioning: /etc/grafana/provisioning
-    analytics:
-      check_for_updates: true
-    log:
-      mode: console
+      team_ids:
+      allowed_organizations:
 
 prometheus:
+  serviceMonitor:
+    relabelings:
+      - sourceLabels: [__metrics_path__]
+        separator: ;
+        regex: ^(.*)$
+        targetLabel: cluster
+        replacement: {{clusterName}}
+        action: replace
   prometheusSpec:
     storageSpec:
       volumeClaimTemplate:
