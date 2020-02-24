@@ -55,8 +55,8 @@ function DeployConfigForm() {
   modal.handleOk(handleSubmit);
 
   function appOption(record) {
-    const id = record.get('id');
-    const name = record.get('name');
+    const id = record.get('appServiceId');
+    const name = record.get('appServiceName');
     return <Option key={id} value={id}>
       {name}
     </Option>;
