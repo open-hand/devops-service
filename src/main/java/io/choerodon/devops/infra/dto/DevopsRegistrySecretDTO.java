@@ -33,13 +33,13 @@ public class DevopsRegistrySecretDTO extends BaseDTO {
     private String secretDetail;
     private Boolean status;
     private Long objectVersionNumber;
-
+    private Long projectId;
 
 
     public DevopsRegistrySecretDTO() {
     }
 
-    public DevopsRegistrySecretDTO(Long envId, Long configId, String envCode, Long clusterId, String secretCode, String secretDetail) {
+    public DevopsRegistrySecretDTO(Long envId, Long configId, String envCode, Long clusterId, String secretCode, String secretDetail, Long projectId) {
         this.clusterId = clusterId;
         this.envId = envId;
         this.namespace = envCode;
@@ -47,6 +47,7 @@ public class DevopsRegistrySecretDTO extends BaseDTO {
         this.secretCode = secretCode;
         this.secretDetail = secretDetail;
         this.status = false;
+        this.projectId = projectId;
     }
 
 
@@ -122,5 +123,13 @@ public class DevopsRegistrySecretDTO extends BaseDTO {
 
     public void setClusterId(Long clusterId) {
         this.clusterId = clusterId;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

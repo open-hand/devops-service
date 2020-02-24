@@ -61,11 +61,12 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
     }
 
     @Override
-    public DevopsRegistrySecretDTO baseQueryByClusterIdAndNamespace(Long clusterId, String namespace, Long configId) {
+    public DevopsRegistrySecretDTO baseQueryByClusterIdAndNamespace(Long clusterId, String namespace, Long configId, Long projectId) {
         DevopsRegistrySecretDTO devopsRegistrySecretDTO = new DevopsRegistrySecretDTO();
         devopsRegistrySecretDTO.setConfigId(Objects.requireNonNull(configId));
         devopsRegistrySecretDTO.setClusterId(Objects.requireNonNull(clusterId));
         devopsRegistrySecretDTO.setNamespace(Objects.requireNonNull(namespace));
+        devopsRegistrySecretDTO.setProjectId(Objects.requireNonNull(projectId));
         return devopsRegistrySecretMapper.selectOne(devopsRegistrySecretDTO);
     }
 

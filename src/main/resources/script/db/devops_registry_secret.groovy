@@ -35,4 +35,18 @@ databaseChangeLog(logicalFilePath: 'dba/devops_registry_secret.groovy') {
             SET drs.cluster_id = (SELECT cluster_id FROM devops_env de WHERE de.id = drs.env_id)
         """)
     }
+
+    changeSet(id: "2020-02-24-registry-secret-add-project-id", author: "scp") {
+        addColumn(tableName: 'devops_registry_secret') {
+            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id', afterColumn: "cluster_id")
+        }
+
+        preConditions (onFail: 'MARK_RAN') {
+            tableExists(tableName: "devops_env")
+        }
+        sql("""
+            UPDATE devops_registry_secret drs
+            SET drs.project_id = (SELECT project_id FROM devops_env de WHERE de.id = drs.env_id)
+        """)
+    }
 }
