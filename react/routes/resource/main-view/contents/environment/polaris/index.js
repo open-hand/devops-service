@@ -1,12 +1,14 @@
 import React, { Fragment, Suspense, useMemo, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button } from 'choerodon-ui/pro';
+import { Choerodon } from '@choerodon/boot';
 import EmptyPage from '../../../../../../components/empty-page';
 import NumberDetail from './number-detail';
 import CollapseDetail from './collapse-detail';
 import { useResourceStore } from '../../../../stores';
 import { useEnvironmentStore } from '../stores';
 import Loading from '../../../../../../components/loading';
+import { useInterval } from '../../../../../../components/costom-hooks';
 
 import './index.less';
 
@@ -18,6 +20,7 @@ const polaris = observer((props) => {
     intlPrefix,
     polarisNumDS,
     envStore,
+    istSummaryDs,
   } = useEnvironmentStore();
   const {
     resourceStore: { getSelectedMenu: { id } },
@@ -25,6 +28,7 @@ const polaris = observer((props) => {
   } = useResourceStore();
 
   const [loading, setLoading] = useState(false);
+  const [delay, setDelay] = useState(false);
 
   const statusLoading = useMemo(() => polarisNumDS.current && polarisNumDS.current.get('status') === 'operating', [polarisNumDS.current]);
 
@@ -35,6 +39,24 @@ const polaris = observer((props) => {
   function handleScan() {
     envStore.ManualScan(projectId, id);
     setLoading(true);
+    setDelay(5000);
+  }
+
+  async function loadData() {
+    try {
+      await polarisNumDS.query();
+      if (polarisNumDS.current) {
+        if (polarisNumDS.current.get('status') === 'operating') {
+          setDelay(5000);
+        } else {
+          istSummaryDs.query();
+          setDelay(false);
+        }
+      }
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+      setDelay(5000);
+    }
   }
 
   function getContent() {
@@ -64,10 +86,13 @@ const polaris = observer((props) => {
         <EmptyPage
           title={formatMessage({ id: 'empty.title.instance' })}
           describe={formatMessage({ id: `${intlPrefix}.polaris.empty.des` })}
+          access
         />
       );
     }
   }
+
+  useInterval(loadData, delay);
 
   return (
     <div className={`${prefixCls}-polaris-wrap`}>

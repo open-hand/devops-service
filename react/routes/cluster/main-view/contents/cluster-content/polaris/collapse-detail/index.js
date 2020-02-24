@@ -23,6 +23,8 @@ const collapseDetail = observer(({ loading }) => {
     clusterSummaryDs,
     envDetailDs,
   } = useClusterContentStore();
+
+  const [collapseType, setCollapseType] = useState('summary');
   
   const clusterSummary = useMemo(() => (['healthCheck', 'imageCheck', 'networkCheck', 'resourceCheck', 'securityCheck']), []);
   const clusterSummaryData = useMemo(() => {
@@ -32,6 +34,10 @@ const collapseDetail = observer(({ loading }) => {
     return {};
   }, [clusterSummaryDs.current]);
   const isLoading = useMemo(() => loading || clusterSummaryDs.status === 'loading', [loading, clusterSummaryDs.status]);
+
+  function handleRadioChange(value) {
+    setCollapseType(value);
+  }
 
   function getClusterHeader(item) {
     const checked = clusterSummaryData.checked;
