@@ -233,6 +233,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(projectId)
                         .withRefType("project")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_BRANCH),
                 builder -> builder
@@ -495,6 +496,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(devopsEnvironmentDTO.getProjectId())
                         .withRefType("env")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_SYNC_GITOPS),
                 builder -> builder

@@ -651,6 +651,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(devopsEnvironmentDTO.getProjectId())
                         .withRefType("env")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_PERSISTENTVOLUME),
                 builder -> builder

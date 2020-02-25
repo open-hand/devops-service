@@ -351,6 +351,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(devopsEnvironmentDTO.getProjectId())
                         .withRefType("env")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_PERSISTENTVOLUMECLAIM),
                 builder -> builder
@@ -514,6 +515,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(devopsEnvironmentDTO.getProjectId())
                         .withRefType("env")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_PERSISTENTVOLUMECLAIM),
                 builder -> builder
