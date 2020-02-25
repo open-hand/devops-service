@@ -2,7 +2,7 @@ import React, { Fragment, Suspense, useMemo, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Spin, Button, Icon } from 'choerodon-ui';
 import { useEnvironmentStore } from '../../stores';
-import Radar from '../components/Radar';
+import Radar from '../../../../../../../components/Radar';
 import { useResourceStore } from '../../../../../stores';
 
 import './index.less';

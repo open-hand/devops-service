@@ -1310,6 +1310,8 @@ const cluster = {
   'c7ncd.cluster.polaris.scanning': '扫描',
   'c7ncd.cluster.polaris.lastedScanDate': '上次扫描结束时间：',
   'c7ncd.cluster.polaris.KubernetesVersion': 'Kubernetes版本',
+  'c7ncd.cluster.env.internal': 'Choerodon平台环境',
+  'c7ncd.cluster.env.external': '非Choerodon平台环境',
 };
 
 const zhCN = {
