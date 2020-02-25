@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -11,7 +12,8 @@ import io.swagger.annotations.ApiModelProperty;
 public class DevopsEnvWithPolarisResultVO {
     @ApiModelProperty("namespace")
     private String namespace;
-    @ApiModelProperty("是否是内部环境(猪齿鱼管理的环境)")
+    @ApiModelProperty(value = "是否是内部环境(猪齿鱼管理的环境)", hidden = true)
+    @JsonIgnore
     private Boolean internal;
     @ApiModelProperty("namespace下是否有error级别的配置项")
     private Boolean hasErrors;

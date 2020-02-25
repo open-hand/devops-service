@@ -257,7 +257,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     }
 
     @Override
-    public List<DevopsEnvWithPolarisResultVO> clusterPolarisEnvDetail(Long projectId, Long clusterId) {
+    public ClusterPolarisEnvDetailsVO clusterPolarisEnvDetail(Long projectId, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO == null || !Objects.equals(devopsClusterDTO.getProjectId(), projectId)) {
             throw new CommonException("error.cluster.not.exist", clusterId);
@@ -273,7 +273,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         return handleEnvWithPolaris(devopsPolarisNamespaceResultMapper.queryEnvWithPolarisResult(recordDTO.getId(), recordDTO.getScopeId()));
     }
 
-    private List<DevopsEnvWithPolarisResultVO> handleEnvWithoutPolaris(List<DevopsEnvWithPolarisResultVO> results) {
+    private ClusterPolarisEnvDetailsVO handleEnvWithoutPolaris(List<DevopsEnvWithPolarisResultVO> results) {
         Set<Long> projectIds = results.stream()
                 .map(DevopsEnvWithPolarisResultVO::getProjectId)
                 .filter(Objects::nonNull)
@@ -295,13 +295,13 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             }
         });
 
-        return results;
+        return new ClusterPolarisEnvDetailsVO(results, Collections.emptyList());
     }
 
     /**
      * 主要是填充项目信息
      */
-    private List<DevopsEnvWithPolarisResultVO> handleEnvWithPolaris(List<DevopsEnvWithPolarisResultVO> results) {
+    private ClusterPolarisEnvDetailsVO handleEnvWithPolaris(List<DevopsEnvWithPolarisResultVO> results) {
         Set<Long> projectIds = results.stream()
                 .map(DevopsEnvWithPolarisResultVO::getProjectId)
                 .filter(Objects::nonNull)
@@ -312,7 +312,14 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             projectDTOS.forEach(p -> map.put(p.getId(), p));
         }
 
+        List<DevopsEnvWithPolarisResultVO> internals = new ArrayList<>();
+        List<DevopsEnvWithPolarisResultVO> externals = new ArrayList<>();
         results.forEach(result -> {
+            if (Boolean.TRUE.equals(result.getInternal())) {
+                internals.add(result);
+            } else {
+                externals.add(result);
+            }
             if (result.getProjectId() != null) {
                 ProjectDTO projectDTO = map.get(result.getProjectId());
                 if (projectDTO != null) {
@@ -321,8 +328,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
                 }
             }
         });
-
-        return results;
+        return new ClusterPolarisEnvDetailsVO(internals, externals);
     }
 
     @Override

@@ -32,34 +32,35 @@
 
     <select id="queryEnvWithPolarisResult"
             resultType="io.choerodon.devops.api.vo.DevopsEnvWithPolarisResultVO">
-        SELECT tmp.*
-        FROM ((SELECT dpnr.namespace            AS namespace,
-                      de.name                   AS env_name,
-                      de.id                     AS env_id,
-                      dpnr.has_errors           AS has_errors,
-                      de.project_id             AS project_id,
-                      (dpnr.env_id is not null) AS internal,
-                      dpnd.detail               AS detail_json,
-                      TRUE                      AS checked
-               FROM devops_polaris_namespace_result dpnr
-                        LEFT JOIN devops_env de ON dpnr.env_id = de.id
-                        LEFT JOIN devops_polaris_namespace_detail dpnd ON dpnr.detail_id = dpnd.id
-               WHERE dpnr.record_id = #{recordId,jdbcType=BIGINT})
-              UNION ALL
-              (SELECT de.code       AS namespace,
-                      de.name       AS env_name,
-                      de.id         AS env_id,
-                      FALSE         AS has_errors,
-                      de.project_id AS project_id,
-                      TRUE          AS internal,
-                      '[]'          AS detail_json,
-                      TRUE          AS checked
-               FROM devops_env de
-                        LEFT JOIN devops_polaris_namespace_result dpnr2 ON de.id = dpnr2.env_id AND dpnr2.record_id = #{recordId,jdbcType=BIGINT}
-               WHERE de.cluster_id = #{clusterId,jdbcType=BIGINT}
-                 AND de.type = 'user'
-                 AND dpnr2.env_id IS NULL)) tmp
-        ORDER BY tmp.internal DESC
+        (SELECT dpnr.namespace            AS namespace,
+        de.name                   AS env_name,
+        de.id                     AS env_id,
+        dpnr.has_errors           AS has_errors,
+        de.project_id             AS project_id,
+        (dpnr.env_id is not null) AS internal,
+        dpnd.detail               AS detail_json,
+        TRUE                      AS checked
+        FROM devops_polaris_namespace_result dpnr
+        LEFT JOIN devops_env de ON dpnr.env_id = de.id
+        LEFT JOIN devops_polaris_namespace_detail dpnd ON dpnr.detail_id = dpnd.id
+        WHERE dpnr.record_id = #{recordId,jdbcType=BIGINT})
+
+        UNION ALL
+
+        (SELECT de.code       AS namespace,
+        de.name       AS env_name,
+        de.id         AS env_id,
+        FALSE         AS has_errors,
+        de.project_id AS project_id,
+        TRUE          AS internal,
+        '[]'          AS detail_json,
+        TRUE          AS checked
+        FROM devops_env de
+        LEFT JOIN devops_polaris_namespace_result dpnr2 ON de.id = dpnr2.env_id AND dpnr2.record_id =
+        #{recordId,jdbcType=BIGINT}
+        WHERE de.cluster_id = #{clusterId,jdbcType=BIGINT}
+        AND de.type = 'user'
+        AND dpnr2.env_id IS NULL);
     </select>
 
     <select id="queryEnvWithoutPolarisResult" resultType="io.choerodon.devops.api.vo.DevopsEnvWithPolarisResultVO">
