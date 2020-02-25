@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Spin, Button, Icon } from 'choerodon-ui';
 import { useClusterMainStore } from '../../../../stores';
 import { useClusterContentStore } from '../../stores';
-import Radar from '../components/Radar';
+import Radar from '../../../../../../../components/Radar';
 import './index.less';
 
 const checkGroup = [

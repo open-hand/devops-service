@@ -61,14 +61,9 @@ const collapseDetail = observer(({ loading }) => {
   }
 
   function getEnvHeader(envRecord) {
-    const { envName, namespace, projectName, internal, hasErrors } = envRecord.toData() || {};
+    const { envName, namespace, projectName, hasErrors } = envRecord || {};
     return (
       <div className={`${prefixCls}-polaris-tabs-header`}>
-        <div className={`${prefixCls}-polaris-tabs-header-item`}>
-          <span className={`${prefixCls}-polaris-tabs-header-env-${internal}`}>
-            {formatMessage({ id: `${intlPrefix}.polaris.internal.${internal}` })}
-          </span>
-        </div>
         {envName && (
           <div className={`${prefixCls}-polaris-tabs-header-item`}>
             <span className={`${prefixCls}-polaris-tabs-header-text`}>{formatMessage({ id: 'environment' })}:</span>
@@ -126,8 +121,7 @@ const collapseDetail = observer(({ loading }) => {
   }
 
   function getEnvContent(envRecord) {
-    const checked = envRecord.get('checked');
-    const detailJson = envRecord.get('detailJson');
+    const { checked, detailJson } = envRecord || {};
     const list = detailJson ? JSON.parse(detailJson) : [];
     if (isLoading) {
       return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: `${intlPrefix}.polaris.check.operating` })}</span>;
@@ -206,9 +200,22 @@ const collapseDetail = observer(({ loading }) => {
           tab={formatMessage({ id: `${intlPrefix}.polaris.env` })}
           key="environment"
         >
+          <div className={`${prefixCls}-polaris-tabs-collapse-title`}>
+            {formatMessage({ id: `${intlPrefix}.env.internal` })}
+          </div>
           <Collapse bordered={false} className={`${prefixCls}-polaris-tabs-collapse`}>
-            {map(envDetailDs.data, (envRecord) => (
+            {envDetailDs.current && map(envDetailDs.current.get('internal'), (envRecord) => (
               <Panel header={getEnvHeader(envRecord)} key={envRecord.id}>
+                {getEnvContent(envRecord)}
+              </Panel>
+            ))}
+          </Collapse>
+          <div className={`${prefixCls}-polaris-tabs-collapse-title`}>
+            {formatMessage({ id: `${intlPrefix}.env.external` })}
+          </div>
+          <Collapse bordered={false} className={`${prefixCls}-polaris-tabs-collapse`}>
+            {envDetailDs.current && map(envDetailDs.current.get('external'), (envRecord, index) => (
+              <Panel header={getEnvHeader(envRecord)} key={`${envRecord.namespace}-${index}`}>
                 {getEnvContent(envRecord)}
               </Panel>
             ))}

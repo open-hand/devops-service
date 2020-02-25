@@ -1,6 +1,15 @@
 .c7ncd-cluster-polaris-tabs {
   margin-top: .16rem;
 
+  .c7n-tabs-nav {
+    box-shadow: 0 2px 6px 0 rgba(48, 63, 159, 0.2);
+    margin-bottom: .1rem;
+
+    .c7n-tabs-tab .c7n-ripple {
+      background: none;
+    }
+  }
+
   .c7n-tabs-bar,
   .c7n-tabs-tab {
     background: #fff !important;
@@ -13,7 +22,11 @@
 
   &-collapse {
     border-top: 0.01rem solid #e0e0e0;
-    margin-top: .2rem;
+
+    &-title {
+      margin: .2rem 0 .1rem;
+      color: #3f51b5;
+    }
   }
 
   &-header {
@@ -30,7 +43,7 @@
       }
 
       &:first-child {
-        margin-right: .1rem;
+        margin-left: .1rem;
       }
     }
 

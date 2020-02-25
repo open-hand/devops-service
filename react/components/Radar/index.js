@@ -1,17 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react/index';
 import { observer } from 'mobx-react-lite';
 import { Icon } from 'choerodon-ui';
 import _ from 'lodash';
 
-import { useClusterMainStore } from '../../../../../stores';
-
 import './index.less';
 
 const RadarApp = observer((props) => {
-  const {
-    prefixCls,
-  } = useClusterMainStore();
-
   const {
     num,
     loading,
@@ -31,12 +25,28 @@ const RadarApp = observer((props) => {
     function blueCircle(n) {
       context.save();
       const g = context.createLinearGradient(0, 0, 200, 100); // 创建渐变对象  渐变开始点和渐变结束点
-      g.addColorStop(0, '#F77A70'); // 添加颜色点
-      g.addColorStop(1, '#6E41F3');
+      g.addColorStop(0, '#6E41F3'); // 添加颜色点
+      g.addColorStop(1, '#F77A70');
       context.strokeStyle = g; // 设置描边样式
       context.lineWidth = 3; // 设置线宽
       context.beginPath(); // 路径开始
       context.arc(centerX, centerY, 67, -Math.PI / 2, -Math.PI / 2 + n * rad, false); // 用于绘制圆弧context.arc(x坐标，y坐标，半径，起始角度，终止角度，顺时针/逆时针)
+      context.stroke(); // 绘制
+      context.closePath(); // 路径结束
+      context.restore();
+    }
+    function blueDot(n) {
+      context.save();
+      const angle = 2.5 * Math.PI - n * rad; // 转换成逆时针方向的弧度（三角函数中的）
+      const xPos = Math.cos(angle) * 67 + centerX; // 红色圆 圆心的x坐标
+      const yPos = -Math.sin(angle) * 67 + centerY; // 红色圆 圆心的y坐标
+      context.lineCap = 'round';
+      context.strokeStyle = '#6E41F3'; // 设置描边样式
+      context.lineWidth = 3; // 设置线宽
+      context.fillStyle = '#6E41F3';
+      context.beginPath(); // 路径开始
+      context.arc(xPos, yPos, 3, 0, 3 * Math.PI, false); // 用于绘制圆弧context.arc(x坐标，y坐标，半径，起始角度，终止角度，顺时针/逆时针)
+      context.fill();
       context.stroke(); // 绘制
       context.closePath(); // 路径结束
       context.restore();
@@ -74,6 +84,7 @@ const RadarApp = observer((props) => {
       whiteCircle();
       // text(speed);
       blueCircle(speed);
+      blueDot(speed);
       if (speed > 100) {
         speed = 0;
       }
@@ -129,7 +140,7 @@ const RadarApp = observer((props) => {
         </div>
         {
           _.isNull(num) && !loading ? '' : (
-            <canvas id="canvas" width="140" height="140" />
+            <canvas id="canvas" width="145" height="145" />
           )
         }
       </div>
