@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -20,4 +21,8 @@ public interface DevopsDeployRecordMapper extends Mapper<DevopsDeployRecordDTO> 
     void deleteRelatedRecordOfInstance(@Param("instanceId") Long instanceId);
 
     void batchInsertSelective(@Param("records") List<DevopsDeployRecordDTO> records);
+
+    List<DevopsDeployRecordDTO> selectByProjectIdAndDate(@Param("projectId") Long projectId,
+                                                         @Param("startTime") java.sql.Date startTime,
+                                                         @Param("endTime") java.sql.Date endTime);
 }
