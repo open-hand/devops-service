@@ -140,6 +140,7 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(devopsEnvironmentDTO.getProjectId())
                         .withRefType("env")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE)
                         .withPayloadAndSerialize(instanceSagaPayload)
@@ -230,6 +231,7 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(devopsEnvironmentDTO.getProjectId())
                         .withRefType("env")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE)
                         .withPayloadAndSerialize(instanceSagaPayload)
@@ -294,6 +296,7 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(devopsEnvironmentDTO.getProjectId())
                         .withRefType("env")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE)
                         .withPayloadAndSerialize(instanceSagaPayload)

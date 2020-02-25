@@ -1586,6 +1586,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(projectId)
                         .withRefType("")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_SET_ENV_ERR),
                 builder -> builder

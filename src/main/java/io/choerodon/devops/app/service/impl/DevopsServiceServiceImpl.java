@@ -1059,6 +1059,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(devopsEnvironmentDTO.getProjectId())
                         .withRefType("env")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_SERVICE),
                 builder -> builder

@@ -597,6 +597,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     StartSagaBuilder
                             .newBuilder()
                             .withLevel(ResourceLevel.PROJECT)
+                            .withSourceId(devopsEnvironmentDTO.getProjectId())
                             .withRefType("env")
                             .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE),
                     builder -> builder
@@ -838,6 +839,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(devopsEnvironmentDTO.getProjectId())
                         .withRefType("env")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE),
                 builder -> builder
