@@ -48,6 +48,16 @@ public class GitOpsConstants {
     public static final String RELEASE_PREFIX = "release-";
 
     /**
+     * service文件对应的gitlab文件前缀
+     */
+    public static final String SERVICE_PREFIX = "svc-";
+
+    /**
+     * ingress文件对应的gitlab文件前缀
+     */
+    public static final String INGRESS_PREFIX = "ing-";
+
+    /**
      * 系统环境code
      */
     public static final String SYSTEM_NAMESPACE = "choerodon";
@@ -63,4 +73,6 @@ public class GitOpsConstants {
     public static final String NO_COMMIT_SHA = "0000000000000000000000000000000000000000";
 
     public static final String MASTER_REF = "refs/heads/master";
+
+    public static final String BATCH_DEPLOYMENT_COMMIT_MESSAGE = "[ADD] batch deployment";
 }

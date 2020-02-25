@@ -8,10 +8,13 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.kubernetes.client.models.V1Service;
+import io.kubernetes.client.models.V1beta1Ingress;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -30,15 +33,19 @@ import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.validator.AppInstanceValidator;
+import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
 import io.choerodon.devops.api.vo.kubernetes.ImagePullSecret;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.api.vo.kubernetes.Metadata;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.BatchDeploymentPayload;
+import io.choerodon.devops.app.eventhandler.payload.IngressSagaPayload;
 import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
+import io.choerodon.devops.app.eventhandler.payload.ServiceSagaPayLoad;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -138,6 +145,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private DevopsClusterResourceMapper devopsClusterResourceMapper;
     @Autowired
     private DevopsPrometheusMapper devopsPrometheusMapper;
+    @Autowired
+    private DevopsIngressService devopsIngressService;
 
     @Override
     public AppServiceInstanceInfoVO queryInfoById(Long instanceId) {
@@ -990,7 +999,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      * @param isFromPipeline 是否从流水自动部署中进行校验，如果是，不再校验流水线中的将要创建的实例名称是否存在
      */
     private void checkNameInternal(String code, Long envId, boolean isFromPipeline) {
-        AppInstanceValidator.checkName(code);
+        AppServiceInstanceValidator.checkName(code);
 
         // 这里校验集群下code唯一而不是环境下code唯一是因为helm的release是需要集群下唯一的
         if (appServiceInstanceMapper.checkCodeExist(code, envId)) {
@@ -1166,6 +1175,176 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return appServiceInstanceMapper.countInstanceByCondition(envId, status, appServiceId);
     }
 
+    private InstanceSagaPayload processSingleOfBatch(Long projectId, DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO userAttrDTO, AppServiceDeployVO appServiceDeployVO) {
+        //校验values
+        FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
+
+        AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
+
+        if (appServiceDTO == null) {
+            throw new CommonException("error.app.service.not.exist");
+        }
+
+        if (!Boolean.TRUE.equals(appServiceDTO.getActive())) {
+            throw new CommonException("error.app.service.disabled");
+        }
+
+        AppServiceVersionDTO appServiceVersionDTO =
+                appServiceVersionService.baseQuery(appServiceDeployVO.getAppServiceVersionId());
+
+        //初始化ApplicationInstanceDTO,DevopsEnvCommandDTO,DevopsEnvCommandValueDTO
+        AppServiceInstanceDTO appServiceInstanceDTO = initApplicationInstanceDTO(appServiceDeployVO);
+        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(appServiceDeployVO);
+        DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = initDevopsEnvCommandValueDTO(appServiceDeployVO);
+
+        //获取部署实例时授权secret的code
+        String secretCode = getSecret(appServiceDTO, appServiceDeployVO.getAppServiceVersionId(), devopsEnvironmentDTO);
+
+        // 初始化自定义实例名
+        String code;
+        if (appServiceDeployVO.getInstanceName() == null || appServiceDeployVO.getInstanceName().trim().equals("")) {
+            code = String.format("%s-%s", appServiceDTO.getCode(), GenerateUUID.generateUUID().substring(0, 5));
+        } else {
+            checkNameInternal(appServiceDeployVO.getInstanceName(), appServiceDeployVO.getEnvironmentId(), false);
+            code = appServiceDeployVO.getInstanceName();
+        }
+
+        //存储数据
+        createEnvAppRelationShipIfNon(appServiceDeployVO.getAppServiceId(), appServiceDeployVO.getEnvironmentId());
+        appServiceInstanceDTO.setCode(code);
+        appServiceInstanceDTO.setId(baseCreate(appServiceInstanceDTO).getId());
+        devopsEnvCommandDTO.setObjectId(appServiceInstanceDTO.getId());
+        devopsEnvCommandDTO.setValueId(devopsEnvCommandValueService.baseCreate(devopsEnvCommandValueDTO).getId());
+        appServiceInstanceDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+        baseUpdate(appServiceInstanceDTO);
+
+        appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
+        appServiceDeployVO.setInstanceName(code);
+        if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
+            appServiceDeployVO.getDevopsServiceReqVO().setDevopsIngressVO(appServiceDeployVO.getDevopsIngressVO());
+        }
+        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId().intValue());
+        instanceSagaPayload.setApplicationDTO(appServiceDTO);
+        instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
+        instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
+        instanceSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+        instanceSagaPayload.setDevopsIngressVO(appServiceDeployVO.getDevopsIngressVO());
+        instanceSagaPayload.setDevopsServiceReqVO(appServiceDeployVO.getDevopsServiceReqVO());
+        return instanceSagaPayload;
+    }
+
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_BATCH_DEPLOYMENT, inputSchemaClass = BatchDeploymentPayload.class, description = "批量部署实例")
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public void batchDeployment(Long projectId, List<AppServiceDeployVO> appServiceDeployVOS) {
+        // TODO by zmf
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceDeployVOS.get(0).getEnvironmentId());
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+        List<InstanceSagaPayload> instances = new ArrayList<>();
+        List<ServiceSagaPayLoad> services = new ArrayList<>();
+        List<IngressSagaPayload> ingresses = new ArrayList<>();
+        List<Long> instanceIds = new ArrayList<>();
+
+        for (AppServiceDeployVO appServiceDeployVO : appServiceDeployVOS) {
+            InstanceSagaPayload payload = processSingleOfBatch(projectId, devopsEnvironmentDTO, userAttrDTO, appServiceDeployVO);
+            instances.add(payload);
+            instanceIds.add(payload.getAppServiceDeployVO().getInstanceId());
+
+            //创建实例时，如果选择了创建网络
+            if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
+                appServiceDeployVO.getDevopsServiceReqVO().setAppServiceId(payload.getApplicationDTO().getId());
+                ServiceSagaPayLoad serviceSagaPayLoad = devopsServiceService.createForBatchDeployment(devopsEnvironmentDTO, userAttrDTO, projectId, appServiceDeployVO.getDevopsServiceReqVO());
+                services.add(serviceSagaPayLoad);
+
+                //创建实例时，如果选了创建域名
+                if (appServiceDeployVO.getDevopsIngressVO() != null) {
+                    appServiceDeployVO.getDevopsIngressVO().setAppServiceId(serviceSagaPayLoad.getDevopsServiceDTO().getTargetAppServiceId());
+                    List<DevopsIngressPathVO> devopsIngressPathVOS = appServiceDeployVO.getDevopsIngressVO().getPathList();
+                    devopsIngressPathVOS.forEach(devopsIngressPathVO -> {
+                        DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(devopsIngressPathVO.getServiceName(), devopsEnvironmentDTO.getId());
+                        if (devopsServiceDTO != null) {
+                            devopsIngressPathVO.setServiceId(devopsServiceDTO.getId());
+                        }
+                    });
+                    appServiceDeployVO.getDevopsIngressVO().setPathList(devopsIngressPathVOS);
+                    ingresses.add(devopsIngressService.createForBatchDeployment(devopsEnvironmentDTO, userAttrDTO, projectId, appServiceDeployVO.getDevopsIngressVO()));
+                }
+            }
+        }
+
+
+        // TODO by zmf 添加批量部署的部署纪录
+        BatchDeploymentPayload batchDeploymentPayload = new BatchDeploymentPayload();
+        batchDeploymentPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+        batchDeploymentPayload.setProjectId(projectId);
+        batchDeploymentPayload.setInstanceSagaPayloads(instances);
+        batchDeploymentPayload.setServiceSagaPayLoads(services);
+        batchDeploymentPayload.setIngressSagaPayloads(ingresses);
+        batchDeploymentPayload.setGitlabUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        batchDeploymentPayload.setIamUserId(userAttrDTO.getIamUserId());
+
+        producer.apply(StartSagaBuilder.newBuilder()
+                .withLevel(ResourceLevel.PROJECT)
+                .withSourceId(projectId)
+                .withRefId(String.valueOf(devopsEnvironmentDTO.getId()))
+                .withRefType("env")
+                .withSagaCode(SagaTopicCodeConstants.DEVOPS_BATCH_DEPLOYMENT)
+                .withJson(JSONObject.toJSONString(batchDeploymentPayload)), LambdaUtil.doNothingConsumer());
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public void batchDeploymentSaga(BatchDeploymentPayload batchDeploymentPayload) {
+        Map<String, String> pathContentMap = new HashMap<>();
+
+        List<InstanceSagaPayload> instanceSagaPayloads = batchDeploymentPayload.getInstanceSagaPayloads();
+        for (InstanceSagaPayload instanceSagaPayload : instanceSagaPayloads) {
+            //在gitops库处理instance文件
+            ResourceConvertToYamlHandler<C7nHelmRelease> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            resourceConvertToYamlHandler.setType(getC7NHelmRelease(
+                    instanceSagaPayload.getAppServiceDeployVO().getInstanceName(),
+                    instanceSagaPayload.getAppServiceVersionDTO().getRepository(),
+                    instanceSagaPayload.getApplicationDTO().getId(),
+                    instanceSagaPayload.getCommandId(),
+                    instanceSagaPayload.getApplicationDTO().getCode(),
+                    instanceSagaPayload.getAppServiceVersionDTO().getVersion(),
+                    instanceSagaPayload.getAppServiceDeployVO().getValues(),
+                    instanceSagaPayload.getAppServiceDeployVO().getAppServiceVersionId(),
+                    instanceSagaPayload.getSecretCode(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO()));
+
+            String instanceContent = resourceConvertToYamlHandler.getCreationResourceContentForBatchDeployment();
+            String fileName = GitOpsConstants.RELEASE_PREFIX + instanceSagaPayload.getAppServiceDeployVO().getInstanceName() + GitOpsConstants.YAML_FILE_SUFFIX;
+            pathContentMap.put(fileName, instanceContent);
+        }
+
+        for (ServiceSagaPayLoad serviceSagaPayLoad : batchDeploymentPayload.getServiceSagaPayLoads()) {
+            ResourceConvertToYamlHandler<V1Service> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            resourceConvertToYamlHandler.setType(serviceSagaPayLoad.getV1Service());
+            String serviceContent = resourceConvertToYamlHandler.getCreationResourceContentForBatchDeployment();
+            String fileName = GitOpsConstants.SERVICE_PREFIX + serviceSagaPayLoad.getDevopsServiceDTO().getName() + GitOpsConstants.YAML_FILE_SUFFIX;
+            pathContentMap.put(fileName, serviceContent);
+        }
+
+        for (IngressSagaPayload ingressSagaPayload : batchDeploymentPayload.getIngressSagaPayloads()) {
+            ResourceConvertToYamlHandler<V1beta1Ingress> ingressResourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            ingressResourceConvertToYamlHandler.setType(ingressSagaPayload.getV1beta1Ingress());
+            String ingressContent = ingressResourceConvertToYamlHandler.getCreationResourceContentForBatchDeployment();
+            String fileName = GitOpsConstants.INGRESS_PREFIX + ingressSagaPayload.getDevopsIngressDTO().getName() + GitOpsConstants.YAML_FILE_SUFFIX;
+            pathContentMap.put(fileName, ingressContent);
+        }
+
+        gitlabServiceClientOperator.createGitlabFiles(
+                TypeUtil.objToInteger(batchDeploymentPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()),
+                batchDeploymentPayload.getGitlabUserId(),
+                GitOpsConstants.MASTER,
+                pathContentMap,
+                GitOpsConstants.BATCH_DEPLOYMENT_COMMIT_MESSAGE);
+    }
 
     private void handleStartOrStopInstance(Long instanceId, String type) {
 

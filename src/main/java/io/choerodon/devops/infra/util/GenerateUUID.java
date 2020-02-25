@@ -19,4 +19,13 @@ public class GenerateUUID {
     public static String generateRandomGitlabPassword() {
         return UUID.randomUUID().toString().replaceAll("-", "").substring(0, 10);
     }
+
+    /**
+     * 生成随机的字符串用于环境本地目录
+     *
+     * @return 10位的随机字符串
+     */
+    public static String generateRandomString() {
+        return UUID.randomUUID().toString().replaceAll("-", "").substring(0, 10);
+    }
 }

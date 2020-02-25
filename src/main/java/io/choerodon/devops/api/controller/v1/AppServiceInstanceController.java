@@ -18,6 +18,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import io.choerodon.core.annotation.Permission;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
@@ -43,6 +44,8 @@ public class AppServiceInstanceController {
     private DevopsEnvResourceService devopsEnvResourceService;
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
+    @Autowired
+    private AppServiceInstanceValidator appServiceInstanceValidator;
 
 
     /**
@@ -849,4 +852,19 @@ public class AppServiceInstanceController {
         return new ResponseEntity<>(devopsDeployRecordService.queryByBatchDeployRecordId(recordId), HttpStatus.OK);
     }
 
+    @ApiOperation(value = "批量部署服务")
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @PostMapping("/batch_deployment")
+    public ResponseEntity batchDeployment(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "批量部署信息数组", required = true)
+            @RequestBody List<AppServiceDeployVO> appServiceDeployVOs) {
+        // 校验参数正确性
+        appServiceInstanceValidator.validateBatchDeployment(appServiceDeployVOs);
+        appServiceInstanceService.batchDeployment(projectId, appServiceDeployVOs);
+        return new ResponseEntity(HttpStatus.OK);
+    }
 }

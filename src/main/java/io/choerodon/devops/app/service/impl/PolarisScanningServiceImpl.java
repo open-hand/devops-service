@@ -295,6 +295,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             }
         });
 
+        // 没有扫描时，查出来的环境都是内部环境
         return new ClusterPolarisEnvDetailsVO(results, Collections.emptyList());
     }
 

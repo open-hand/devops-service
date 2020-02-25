@@ -265,11 +265,7 @@ public interface GitlabServiceClient {
     /**
      * 创建merge请求
      *
-     * @param projectId    工程ID
-     * @param sourceBranch 源分支
-     * @param targetBranch 目标分支
-     * @param title        标题
-     * @param description  描述
+     * @param projectId 工程ID
      * @return 创建的merge请求
      */
     @PostMapping("/v1/projects/{projectId}/merge_requests")
@@ -311,8 +307,6 @@ public interface GitlabServiceClient {
      * 创建tag
      *
      * @param projectId 工程ID
-     * @param name      tag名称
-     * @param ref       创建tag的源
      * @return 创建的tag
      */
     @PostMapping("/v1/projects/{projectId}/repository/tags")
@@ -324,9 +318,7 @@ public interface GitlabServiceClient {
     /**
      * 更新 tag
      *
-     * @param projectId    项目id
-     * @param name         标签名
-     * @param releaseNotes 发布日志
+     * @param projectId 项目id
      * @return Tag
      */
     @PutMapping("/v1/projects/{projectId}/repository/tags")
@@ -383,8 +375,6 @@ public interface GitlabServiceClient {
      * 创建新分支的接口
      *
      * @param projectId 工程ID
-     * @param name      创建的分支名
-     * @param source    源分支名
      * @return 创建的分支
      */
     @PostMapping("/v1/projects/{projectId}/repository/branches")
@@ -511,4 +501,14 @@ public interface GitlabServiceClient {
             @PathVariable("groupId") Integer groupId,
             @ApiParam(value = "被拒绝的用户id")
             @RequestParam("user_id") Integer userId);
+
+    @PostMapping(value = "/v1/projects/{projectId}/repository/commits")
+    @ApiOperation("创建commit，可以批量操作文件")
+    ResponseEntity createCommit(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "projectId") Integer projectId,
+            @ApiParam(value = "用户名", required = true)
+            @RequestParam(value = "user_id") Integer userId,
+            @ApiParam(value = "操作文件相关的信息")
+            @RequestBody CommitPayloadDTO commitPayloadDTO);
 }
