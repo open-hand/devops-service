@@ -28,10 +28,10 @@ $ helm delete devops-service
 Parameter | Description	| Default
 --- |  ---  |  ---  
 replicaCount| ReplicaSet数量 | 1
-image.repository| 镜像仓库地址 | registry.cn-hangzhou.aliyuncs.com/choerodon-devops/devops-service
+image.repository| 镜像仓库地址 | registry.cn-shanghai.aliyuncs.com/c7n/devops-service
 image.pullPolicy|镜像拉取策略 | IfNotPresent
 preJob.timeout|初始化job超时时间 | 1200
-preJob.image|初始化job镜像 | registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.6.4
+preJob.image|初始化job镜像 | registry.cn-shanghai.aliyuncs.com/c7n/dbtool:0.6.7
 preJob.preConfig.enable|是否执行初始化配置job|true
 preJob.preConfig.configFile|初始化配置解析的文件|application.yml
 preJob.preConfig.configType|初始化配置的方式|k8s
