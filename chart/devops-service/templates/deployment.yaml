@@ -43,7 +43,7 @@ spec:
         command:
         - sh
         - -c
-        - cp -rf /skywalking/agent/* /agent
+        - cp -rfp /skywalking/agent/* /agent
         volumeMounts:
         - name: skywalking-agent
           mountPath: /agent

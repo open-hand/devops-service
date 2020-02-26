@@ -3,7 +3,7 @@ preJob:
   # job 超时时间
   timeout: 1200
   # 工具 jar 包镜像库地址
-  image: registry.cn-shanghai.aliyuncs.com/c7n/dbtool:0.6.4
+  image: registry.cn-shanghai.aliyuncs.com/c7n/dbtool:0.6.7
   # 初始化配置 job 定义
   preConfig:
     # 是否初始化配置至配置服务
