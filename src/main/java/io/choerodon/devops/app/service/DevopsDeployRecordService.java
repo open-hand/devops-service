@@ -3,9 +3,12 @@ package io.choerodon.devops.app.service;
 
 import com.github.pagehelper.PageInfo;
 
+import io.choerodon.devops.api.vo.DeployRecordCountVO;
 import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.DevopsDeployRecordVO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
+
+import java.util.Date;
 
 /**
  * Created by Sheep on 2019/7/29.
@@ -35,4 +38,14 @@ public interface DevopsDeployRecordService {
      * @param instanceId 实例id
      */
     void deleteRelatedRecordOfInstance(Long instanceId);
+
+    /**
+     * 按时间段，统计项目每日的部署次数
+     *
+     * @param projectId
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    DeployRecordCountVO countByDate(Long projectId, Date startTime, Date endTime);
 }

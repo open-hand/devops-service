@@ -157,9 +157,24 @@
 		    GROUP BY t.id
 			ORDER BY t.id desc
     </select>
-	
+    <select id="selectByProjectIdAndDate" resultType="io.choerodon.devops.infra.dto.DevopsDeployRecordDTO">
+		SELECT *
+		FROM devops_deploy_record ddr
+		<where>
+			<if test="projectId">
+				ddr.project_id = #{projectId}
+			</if>
+			<if test="startTime">
+				AND ddr.deploy_time >= CONCAT('','${startTime}',' 00:00:00')
+			</if>
+			<if test="endTime">
+				AND ddr.deploy_time <![CDATA[<=]]> CONCAT('','${endTime}',' 23:59:59')
+			</if>
+		</where>
+	</select>
 
-	<delete id="deleteRelatedRecordOfInstance">
+
+    <delete id="deleteRelatedRecordOfInstance">
         DELETE
         FROM devops_deploy_record
         WHERE deploy_type = 'manual'

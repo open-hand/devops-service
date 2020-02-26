@@ -1,15 +1,17 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.api.vo.DeployRecordCountVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,13 +28,13 @@ import io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.springframework.util.CollectionUtils;
 
 /**
  * Created by Sheep on 2019/7/29.
  */
 @Service
 public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService {
-    private static final String COMMA = ",";
     private static final String DEPLOY_STATUS = "deployStatus";
     private static final String DEPLOY_TYPE = "deployType";
     private static final String RUNNING = "running";
@@ -124,5 +126,36 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     @Override
     public void deleteRelatedRecordOfInstance(Long instanceId) {
         devopsDeployRecordMapper.deleteRelatedRecordOfInstance(instanceId);
+    }
+
+    @Override
+    public DeployRecordCountVO countByDate(Long projectId, Date startTime, Date endTime) {
+        DeployRecordCountVO deployRecordCountVO = new DeployRecordCountVO();
+        deployRecordCountVO.setId(projectId);
+
+        List<DevopsDeployRecordDTO> devopsDeployRecordDTOList = devopsDeployRecordMapper.selectByProjectIdAndDate(projectId,
+                new java.sql.Date(startTime.getTime()),
+                new java.sql.Date(endTime.getTime()));
+        // 按日期分组
+        Map<String, List<DevopsDeployRecordDTO>> map = devopsDeployRecordDTOList.stream()
+                .collect(Collectors.groupingBy(t -> new java.sql.Date(t.getDeployTime().getTime()).toString()));
+
+        ZoneId zoneId = ZoneId.systemDefault();
+        LocalDate startDate = startTime.toInstant().atZone(zoneId).toLocalDate();
+        LocalDate endDate = endTime.toInstant().atZone(zoneId).toLocalDate();
+
+        while (startDate.isBefore(endDate) || startDate.isEqual(endDate)) {
+            String date = startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            long countNum = 0;
+            // 计算成功发送的邮件数
+            List<DevopsDeployRecordDTO> devopsDeployRecordDTOS = map.get(date);
+            if (!CollectionUtils.isEmpty(devopsDeployRecordDTOS)) {
+                countNum = devopsDeployRecordDTOS.size();
+            }
+
+            deployRecordCountVO.getData().add(countNum);
+            startDate = startDate.plusDays(1);
+        }
+        return deployRecordCountVO;
     }
 }
