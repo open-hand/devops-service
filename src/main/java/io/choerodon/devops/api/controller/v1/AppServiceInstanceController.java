@@ -843,6 +843,9 @@ public class AppServiceInstanceController {
     }
 
     @ApiOperation("根据批量部署的部署纪录id查询对应的实例")
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
     @GetMapping("/query_by_deploy_record_id")
     public ResponseEntity<List<AppServiceInstanceForRecordVO>> queryByBatchDeployRecordId(
             @ApiParam(value = "项目ID", required = true)
