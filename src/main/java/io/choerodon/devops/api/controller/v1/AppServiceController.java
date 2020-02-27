@@ -22,10 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by younger on 2018/4/4.
@@ -825,10 +822,11 @@ public class AppServiceController {
     @Permission(type = ResourceType.ORGANIZATION, roles = InitRoleCode.ORGANIZATION_ADMINISTRATOR)
     @ApiOperation(value = "查询项目下应用服务的数量")
     @GetMapping("/list_by_project_id")
-    public ResponseEntity<Integer> countByProjectId(
+    public ResponseEntity<Map<Long,Integer>> countByProjectId(
             @ApiParam(value = "项目Id")
-            @PathVariable(value = "project_id") Long projectId) {
-        return new ResponseEntity<>(applicationServiceService.countByProjectId(projectId), HttpStatus.OK);
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam(value = "longList") List<Long> longList) {
+        return new ResponseEntity<>(applicationServiceService.countByProjectId(longList), HttpStatus.OK);
     }
 }
 
