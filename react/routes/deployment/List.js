@@ -14,6 +14,7 @@ import Process from './modals/process';
 import ManualDetail from './modals/manualDetail';
 import AutoDetail from './modals/autoDetail';
 import Deploy from './modals/deploy';
+import BatchDeploy from './modals/batch-deploy';
 import ClickText from '../../components/click-text';
 import PendingCheckModal from './components/pendingCheckModal';
 import Tips from '../../components/new-tips';
@@ -26,6 +27,7 @@ const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
 const modalKey3 = Modal.key();
 const modalKey4 = Modal.key();
+const batchDeployModalKey = Modal.key();
 const modalStyle1 = {
   width: 380,
 };
@@ -178,6 +180,28 @@ const Deployment = withRouter(observer((props) => {
       afterClose: () => {
         deployStore.setCertificates([]);
         deployStore.setAppService([]);
+        deployStore.setConfigValue('');
+      },
+      okText: formatMessage({ id: 'deployment' }),
+    });
+  }
+
+  function openBatchDeploy() {
+    Modal.open({
+      key: batchDeployModalKey,
+      style: modalStyle2,
+      drawer: true,
+      title: formatMessage({ id: `${intlPrefix}.batch` }),
+      children: <BatchDeploy
+        deployStore={deployStore}
+        refresh={deployAfter}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+      />,
+      afterClose: () => {
+        deployStore.setCertificates([]);
+        deployStore.setAppService([]);
+        deployStore.setShareAppService([]);
         deployStore.setConfigValue('');
       },
       okText: formatMessage({ id: 'deployment' }),
@@ -343,6 +367,16 @@ const Deployment = withRouter(observer((props) => {
             onClick={openDeploy}
           >
             <FormattedMessage id={`${intlPrefix}.manual`} />
+          </Button>
+        </Permission>
+        <Permission
+          service={['devops-service.app-service-instance.deploy']}
+        >
+          <Button
+            icon="jsfiddle"
+            onClick={openBatchDeploy}
+          >
+            <FormattedMessage id={`${intlPrefix}.batch`} />
           </Button>
         </Permission>
         <Permission
