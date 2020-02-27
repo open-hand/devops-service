@@ -10,11 +10,17 @@
         dpro.grafana_domain,
         dpro.object_version_number,
         (SELECT dpv.name FROM devops_pv dpv
-        WHERE dpv.id = dpro.prometheus_pv_id and dpv.status='Available') AS prometheus_pv_name,
+        WHERE dpv.id = dpro.prometheus_pv_id ) AS prometheus_pv_name,
         (SELECT dpv.name FROM devops_pv dpv
-        WHERE dpv.id = dpro.grafana_pv_id and dpv.status='Available') AS grafana_pv_name,
+        WHERE dpv.id = dpro.grafana_pv_id ) AS grafana_pv_name,
         (SELECT dpv.name FROM devops_pv dpv
-        WHERE dpv.id = dpro.alertmanager_pv_id and dpv.status='Available') AS alertmanager_pv_name,
+        WHERE dpv.id = dpro.alertmanager_pv_id ) AS alertmanager_pv_name,
+        (SELECT dpv.status FROM devops_pv dpv
+        WHERE dpv.id = dpro.prometheus_pv_id) AS prometheus_pv_status,
+        (SELECT dpv.status FROM devops_pv dpv
+        WHERE dpv.id = dpro.grafana_pv_id ) AS grafana_pv_status,
+        (SELECT dpv.status FROM devops_pv dpv
+        WHERE dpv.id = dpro.alertmanager_pv_id ) AS alertmanager_pv_status,
         prometheus_pv_id,
         grafana_pv_id,
         alertmanager_pv_id
