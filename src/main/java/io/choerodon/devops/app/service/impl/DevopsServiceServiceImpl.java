@@ -21,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -35,6 +36,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.ServiceSagaPayLoad;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -61,12 +63,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public static final String ENDPOINTS = "Endpoints";
     public static final String LOADBALANCER = "LoadBalancer";
     public static final String SERVICE = "Service";
-    public static final String SERVICE_PREFIX = "svc-";
     private static final String SERVICE_LABLE = "choerodon.io/network";
     private static final String SERVICE_LABLE_VALUE = "service";
-    private static final String MASTER = "master";
 
-    public static final String YAML_SUFFIX = ".yaml";
 
     private Gson gson = new Gson();
     private JSON json = new JSON();
@@ -199,6 +198,34 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //在gitops库处理service文件
         operateEnvGitLabFile(v1Service, v1Endpoints, true, devopsServiceDTO, beforeDevopsServiceAppInstanceDTOS, devopsEnvCommandDTO, userAttrDTO, devopsServiceReqVO.getDevopsIngressVO());
         return true;
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public ServiceSagaPayLoad createForBatchDeployment(DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO userAttrDTO, Long projectId, DevopsServiceReqVO devopsServiceReqVO) {
+        //处理创建service对象数据
+        DevopsServiceDTO devopsServiceDTO = handlerCreateService(devopsServiceReqVO);
+
+        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(CommandType.CREATE.getType());
+
+        //初始化V1Service对象
+        V1Service v1Service = initV1Service(devopsServiceReqVO, null);
+
+        // 先创建网络纪录
+        baseCreate(devopsServiceDTO);
+
+        Long serviceId = devopsServiceDTO.getId();
+        devopsEnvCommandDTO.setObjectId(serviceId);
+        devopsServiceDTO.setId(serviceId);
+        devopsServiceDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+        baseUpdate(devopsServiceDTO);
+
+        ServiceSagaPayLoad serviceSagaPayLoad = new ServiceSagaPayLoad(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());
+        serviceSagaPayLoad.setDevopsServiceDTO(devopsServiceDTO);
+        serviceSagaPayLoad.setV1Service(v1Service);
+        serviceSagaPayLoad.setCreated(true);
+        serviceSagaPayLoad.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+        return serviceSagaPayLoad;
     }
 
 
@@ -348,17 +375,17 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         if (devopsEnvFileResourceDTO == null) {
             baseDelete(id);
             devopsServiceInstanceService.baseDeleteByOptions(id, null);
-            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
-                    SERVICE_PREFIX + devopsServiceDTO.getName() + YAML_SUFFIX)) {
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.MASTER,
+                    GitOpsConstants.SERVICE_PREFIX + devopsServiceDTO.getName() + GitOpsConstants.YAML_FILE_SUFFIX)) {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
-                        SERVICE_PREFIX + devopsServiceDTO.getName() + YAML_SUFFIX,
+                        GitOpsConstants.SERVICE_PREFIX + devopsServiceDTO.getName() + GitOpsConstants.YAML_FILE_SUFFIX,
                         "DELETE FILE",
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             }
             return;
         } else {
-            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
+            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
 
                 baseDelete(id);
@@ -371,7 +398,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         //如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
         if (devopsEnvFileResourceDTOS.size() == 1) {
-            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
@@ -1097,7 +1124,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             resourceConvertToYamlHandler.setType(serviceSagaPayLoad.getV1Service());
 
             resourceConvertToYamlHandler.operationEnvGitlabFile(
-                    SERVICE_PREFIX + serviceSagaPayLoad.getDevopsServiceDTO().getName(),
+                    GitOpsConstants.SERVICE_PREFIX + serviceSagaPayLoad.getDevopsServiceDTO().getName(),
                     serviceSagaPayLoad.getDevopsEnvironmentDTO().getGitlabEnvProjectId().intValue(),
                     serviceSagaPayLoad.getCreated() ? CommandType.CREATE.getType() : CommandType.UPDATE.getType(),
                     serviceSagaPayLoad.getGitlabUserId(),
@@ -1123,9 +1150,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             DevopsServiceDTO devopsServiceDTO = baseQuery(serviceSagaPayLoad.getDevopsServiceDTO().getId());
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                     .baseQueryByEnvIdAndResourceId(serviceSagaPayLoad.getDevopsEnvironmentDTO().getId(), devopsServiceDTO.getId(), SERVICE);
-            String filePath = devopsEnvFileResourceDTO == null ? SERVICE_PREFIX + devopsServiceDTO.getName() + YAML_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
+            String filePath = devopsEnvFileResourceDTO == null ? GitOpsConstants.SERVICE_PREFIX + devopsServiceDTO.getName() + GitOpsConstants.YAML_FILE_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
             // 只有创建时判断并处理超时
-            if (serviceSagaPayLoad.getCreated() && !gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(serviceSagaPayLoad.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
+            if (serviceSagaPayLoad.getCreated() && !gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(serviceSagaPayLoad.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), GitOpsConstants.MASTER,
                     filePath)) {
                 devopsServiceDTO.setStatus(CommandStatus.FAILED.getStatus());
                 baseUpdate(devopsServiceDTO);

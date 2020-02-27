@@ -8,8 +8,10 @@ import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.api.vo.DevopsServiceVO;
 import io.choerodon.devops.app.eventhandler.payload.ServiceSagaPayLoad;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsServiceQueryDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -25,6 +27,21 @@ public interface DevopsServiceService {
      */
     Boolean create(Long projectId, DevopsServiceReqVO devopsServiceReqVO);
 
+    /**
+     * 为批量部署创建网络
+     * 要求在调用方法前对环境和权限以及参数进行必要的校验
+     *
+     * @param devopsEnvironmentDTO 环境信息
+     * @param userAttrDTO          用户信息
+     * @param projectId            项目id
+     * @param devopsServiceReqVO   网络信息
+     * @return 网络信息处理后的结果
+     */
+    ServiceSagaPayLoad createForBatchDeployment(
+            DevopsEnvironmentDTO devopsEnvironmentDTO,
+            UserAttrDTO userAttrDTO,
+            Long projectId,
+            DevopsServiceReqVO devopsServiceReqVO);
 
     /**
      * 部署网络,GitOps

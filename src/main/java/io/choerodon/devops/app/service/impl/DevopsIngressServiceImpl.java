@@ -17,15 +17,16 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
@@ -35,6 +36,7 @@ import io.choerodon.devops.api.vo.DevopsServiceVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.IngressSagaPayload;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -67,9 +69,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private static final String CERT_NOT_ACTIVE = "error.cert.notActive";
     private static final String INGRESS_NOT_EXIST = "ingress.not.exist";
     private static final Gson gson = new Gson();
-    public static final String INGRESS_PREFIX = "ing-";
-    private static final String YAML_SUFFIX = ".yaml";
-    private static final String MASTER = "master";
+
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
     @Autowired
@@ -152,6 +152,48 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         // 在gitops库处理ingress文件
         operateEnvGitLabFile(
                 TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), false, v1beta1Ingress, true, null, devopsIngressDO, userAttrDTO, devopsEnvCommandDTO, appServiceIds);
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public IngressSagaPayload createForBatchDeployment(DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO userAttrDTO, Long projectId, DevopsIngressVO devopsIngressVO) {
+        // 校验port是否属于该网络
+        devopsIngressVO.getPathList().forEach(devopsIngressPathDTO -> {
+            DevopsServiceDTO devopsServiceDTO = devopsServiceMapper.selectByPrimaryKey(devopsIngressPathDTO.getServiceId());
+            if (dealWithPorts(devopsServiceDTO.getPorts()).stream().map(PortMapVO::getPort).noneMatch(port -> port.equals(devopsIngressPathDTO.getServicePort()))) {
+                throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
+            }
+        });
+
+        // 校验创建应用下域名时，所选的网络是否都是同一个应用下的
+        if (devopsIngressVO.getAppServiceId() != null) {
+            Set<Long> serviceIds = devopsIngressVO.getPathList().stream().map(DevopsIngressPathVO::getServiceId).collect(Collectors.toSet());
+            if (!isAllServiceInApp(devopsIngressVO.getAppServiceId(), serviceIds)) {
+                throw new CommonException("error.ingress.service.application");
+            }
+        }
+
+        // 初始化V1beta1Ingress对象
+        String certName = getCertName(devopsIngressVO.getCertId());
+        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName);
+
+        // 处理创建域名数据
+        DevopsIngressDTO devopsIngressDTO = handlerIngress(devopsIngressVO, projectId, v1beta1Ingress);
+
+        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(CREATE);
+
+        Long ingressId = baseCreateIngressAndPath(devopsIngressDTO).getId();
+        devopsEnvCommandDTO.setObjectId(ingressId);
+        devopsIngressDTO.setId(ingressId);
+        devopsIngressDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+        baseUpdate(devopsIngressDTO);
+
+        IngressSagaPayload ingressSagaPayload = new IngressSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());
+        ingressSagaPayload.setDevopsIngressDTO(devopsIngressDTO);
+        ingressSagaPayload.setCreated(true);
+        ingressSagaPayload.setV1beta1Ingress(v1beta1Ingress);
+        ingressSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+        return ingressSagaPayload;
     }
 
 
@@ -423,18 +465,18 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         if (devopsEnvFileResourceDTO == null) {
             baseDelete(ingressId);
             baseDeletePathByIngressId(ingressId);
-            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
-                    INGRESS_PREFIX + ingressDO.getName() + YAML_SUFFIX)) {
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.MASTER,
+                    GitOpsConstants.INGRESS_PREFIX + ingressDO.getName() + GitOpsConstants.YAML_FILE_SUFFIX)) {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
-                        INGRESS_PREFIX + ingressDO.getName() + YAML_SUFFIX,
+                        GitOpsConstants.INGRESS_PREFIX + ingressDO.getName() + GitOpsConstants.YAML_FILE_SUFFIX,
                         "DELETE FILE",
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             }
             return;
 
         } else {
-            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
+            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 baseDelete(ingressId);
 
@@ -447,7 +489,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         //如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
         if (devopsEnvFileResourceDTOS.size() == 1) {
-            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
@@ -611,7 +653,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             resourceConvertToYamlHandler.setType(ingressSagaPayload.getV1beta1Ingress());
 
             resourceConvertToYamlHandler.operationEnvGitlabFile(
-                    INGRESS_PREFIX + ingressSagaPayload.getDevopsIngressDTO().getName(),
+                    GitOpsConstants.INGRESS_PREFIX + ingressSagaPayload.getDevopsIngressDTO().getName(),
                     ingressSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId().intValue(),
                     ingressSagaPayload.getCreated() ? CREATE : UPDATE,
                     ingressSagaPayload.getGitlabUserId(),
@@ -622,9 +664,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             DevopsIngressDTO devopsIngressDTO = baseQuery(ingressSagaPayload.getDevopsIngressDTO().getId());
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                     .baseQueryByEnvIdAndResourceId(ingressSagaPayload.getDevopsEnvironmentDTO().getId(), devopsIngressDTO.getId(), INGRESS);
-            String filePath = devopsEnvFileResourceDTO == null ? INGRESS_PREFIX + devopsIngressDTO.getName() + YAML_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
+            String filePath = devopsEnvFileResourceDTO == null ? GitOpsConstants.INGRESS_PREFIX + devopsIngressDTO.getName() + GitOpsConstants.YAML_FILE_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
             // 只处理创建时可能的超时情况
-            if (ingressSagaPayload.getCreated() && !gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(ingressSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
+            if (ingressSagaPayload.getCreated() && !gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(ingressSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), GitOpsConstants.MASTER,
                     filePath)) {
                 devopsIngressDTO.setStatus(IngressStatus.FAILED.getStatus());
                 baseUpdate(devopsIngressDTO);

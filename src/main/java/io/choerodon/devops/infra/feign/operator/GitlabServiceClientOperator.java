@@ -1019,4 +1019,24 @@ public class GitlabServiceClientOperator {
             }
         });
     }
+
+    /**
+     * 创建gitlab文件并创建提交
+     *
+     * @param gitlabProjectId gitlab项目id
+     * @param gitlabUserId    用户id
+     * @param branch          分支名
+     * @param pathContent     文件路径和内容的映射，不能为空
+     * @param commitMessage   提交信息
+     */
+    public void createGitlabFiles(Integer gitlabProjectId, Integer gitlabUserId, String branch, Map<String, String> pathContent, String commitMessage) {
+        try {
+            List<CommitActionDTO> actions = new ArrayList<>();
+            pathContent.forEach((filePath, fileContent) -> actions.add(new CommitActionDTO(CommitActionDTO.Action.CREATE, filePath, fileContent)));
+            CommitPayloadDTO commitPayloadDTO = new CommitPayloadDTO(Objects.requireNonNull(branch), Objects.requireNonNull(commitMessage), actions);
+            gitlabServiceClient.createCommit(Objects.requireNonNull(gitlabProjectId), Objects.requireNonNull(gitlabUserId), commitPayloadDTO);
+        } catch (FeignException ex) {
+            throw new CommonException("error.manipulate.gitlab.files");
+        }
+    }
 }

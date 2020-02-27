@@ -3,11 +3,13 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-
 import org.springframework.data.domain.Pageable;
+
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.app.eventhandler.payload.IngressSagaPayload;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsIngressDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 
 
 public interface DevopsIngressService {
@@ -19,6 +21,22 @@ public interface DevopsIngressService {
      * @param devopsIngressVO 项目Id
      */
     void createIngress(Long projectId, DevopsIngressVO devopsIngressVO);
+
+    /**
+     * 为批量部署创建域名
+     * 要求在调用方法前对环境和权限以及参数进行必要的校验
+     *
+     * @param devopsEnvironmentDTO 环境信息
+     * @param userAttrDTO          用户信息
+     * @param projectId            项目id
+     * @param devopsIngressVO      域名信息
+     * @return 域名信息处理后的结果
+     */
+    IngressSagaPayload createForBatchDeployment(
+            DevopsEnvironmentDTO devopsEnvironmentDTO,
+            UserAttrDTO userAttrDTO,
+            Long projectId,
+            DevopsIngressVO devopsIngressVO);
 
     /**
      * 项目下创建域名,GitOps
@@ -104,9 +122,9 @@ public interface DevopsIngressService {
     /**
      * 环境总览域名查询
      *
-     * @param projectId   项目Id
-     * @param pageable 分页参数
-     * @param params      模糊查询参数
+     * @param projectId 项目Id
+     * @param pageable  分页参数
+     * @param params    模糊查询参数
      * @return Page
      */
     PageInfo<DevopsIngressVO> pageByEnv(Long projectId, Long envId, Pageable pageable, String params);

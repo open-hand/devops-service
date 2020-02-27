@@ -52,7 +52,7 @@ public class GitOpsUtil {
     }
 
     /**
-     * get local path to store environment repository
+     * 获取存储本地环境库的路径, 其中会加入随机值防止并发操作本地文件
      *
      * @param orgCode     组织code
      * @param projectCode 项目code
