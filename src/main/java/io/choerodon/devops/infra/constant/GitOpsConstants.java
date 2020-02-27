@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.constant;
 
+import java.io.File;
+
 /**
  * 和GitOps有关的常量
  *
@@ -38,7 +40,7 @@ public class GitOpsConstants {
      * local path to store env
      * gitops/${orgCode}/${proCode}/${clusterCode}/${envCode}
      */
-    public static final String LOCAL_ENV_PATH = "gitops/%s/%s/%s/%s";
+    public static final String LOCAL_ENV_PATH = "gitops" + File.separator + "%s" + File.separator + "%s" + File.separator + "%s" + File.separator + "%s";
 
     public static final String YAML_FILE_SUFFIX = ".yaml";
 
