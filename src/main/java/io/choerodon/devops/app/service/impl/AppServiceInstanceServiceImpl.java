@@ -1024,7 +1024,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         String fileName = GenerateUUID.generateUUID() + YAML_SUFFIX;
-        String path = FileSystemFilePathAllocator.getFilePath("deployfile");
+        String path = "deployfile";
         FileUtil.saveDataToFile(path, fileName, versionValue + "\n" + "---" + "\n" + deployValue);
         InstanceValueVO instanceValueVO;
         String absoluteFilePath = path + System.getProperty(FILE_SEPARATOR) + fileName;

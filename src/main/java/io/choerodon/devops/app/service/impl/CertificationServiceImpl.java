@@ -1,20 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.api.vo.C7nCertificationVO;
@@ -35,6 +24,16 @@ import io.choerodon.devops.infra.mapper.DevopsCertificationFileMapper;
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
 import io.choerodon.devops.infra.mapper.DevopsIngressMapper;
 import io.choerodon.devops.infra.util.*;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by n!Ck
@@ -113,7 +112,7 @@ public class CertificationServiceImpl implements CertificationService {
 
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        String path = FileSystemFilePathAllocator.getFilePath(String.format("tmp%s%s%s%s", FILE_SEPARATOR, projectDTO.getCode(), FILE_SEPARATOR, devopsEnvironmentDTO.getCode()));
+        String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, projectDTO.getCode(), FILE_SEPARATOR, devopsEnvironmentDTO.getCode());
 
         String certFileName;
         String keyFileName;
