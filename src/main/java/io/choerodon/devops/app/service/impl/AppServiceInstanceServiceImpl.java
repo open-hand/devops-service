@@ -1286,7 +1286,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         // 构造saga的payload
         BatchDeploymentPayload batchDeploymentPayload = new BatchDeploymentPayload();
-        batchDeploymentPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+        batchDeploymentPayload.setEnvId(devopsEnvironmentDTO.getId());
         batchDeploymentPayload.setProjectId(projectId);
         batchDeploymentPayload.setInstanceSagaPayloads(instances);
         batchDeploymentPayload.setServiceSagaPayLoads(services);
@@ -1300,12 +1300,17 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 .withRefId(String.valueOf(devopsEnvironmentDTO.getId()))
                 .withRefType("env")
                 .withSagaCode(SagaTopicCodeConstants.DEVOPS_BATCH_DEPLOYMENT)
-                .withJson(JSONObject.toJSONString(batchDeploymentPayload)), LambdaUtil.doNothingConsumer());
+                .withPayloadAndSerialize(batchDeploymentPayload), LambdaUtil.doNothingConsumer());
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public void batchDeploymentSaga(BatchDeploymentPayload batchDeploymentPayload) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(batchDeploymentPayload.getEnvId());
+        if (devopsEnvironmentDTO == null) {
+            throw new CommonException("error.env.id.not.exist", batchDeploymentPayload.getEnvId());
+        }
+
         Map<String, String> pathContentMap = new HashMap<>();
 
         List<InstanceSagaPayload> instanceSagaPayloads = batchDeploymentPayload.getInstanceSagaPayloads();
@@ -1346,7 +1351,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         gitlabServiceClientOperator.createGitlabFiles(
-                TypeUtil.objToInteger(batchDeploymentPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()),
+                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                 batchDeploymentPayload.getGitlabUserId(),
                 GitOpsConstants.MASTER,
                 pathContentMap,

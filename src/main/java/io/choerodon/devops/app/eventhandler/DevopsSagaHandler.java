@@ -482,6 +482,12 @@ public class DevopsSagaHandler {
             description = "Devops消费批量部署事件", maxRetryCount = 3,
             seq = 1)
     public void batchDeployment(String payload) {
-        appServiceInstanceService.batchDeploymentSaga(JSONObject.parseObject(payload, BatchDeploymentPayload.class));
+        BatchDeploymentPayload batchDeploymentPayload = null;
+        try {
+            batchDeploymentPayload = new ObjectMapper().readValue(payload, BatchDeploymentPayload.class);
+            appServiceInstanceService.batchDeploymentSaga(batchDeploymentPayload);
+        } catch (IOException e) {
+            throw new CommonException("Error deserializing the data of batch-deployment when consuming batch-deployment event", e);
+        }
     }
 }
