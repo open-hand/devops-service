@@ -1237,7 +1237,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public void batchDeployment(Long projectId, List<AppServiceDeployVO> appServiceDeployVOS) {
-        // TODO by zmf
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceDeployVOS.get(0).getEnvironmentId());
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -1247,12 +1246,17 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         List<InstanceSagaPayload> instances = new ArrayList<>();
         List<ServiceSagaPayLoad> services = new ArrayList<>();
         List<IngressSagaPayload> ingresses = new ArrayList<>();
-        List<Long> instanceIds = new ArrayList<>();
+        List<DevopsDeployRecordInstanceDTO> recordInstances = new ArrayList<>();
 
         for (AppServiceDeployVO appServiceDeployVO : appServiceDeployVOS) {
             InstanceSagaPayload payload = processSingleOfBatch(projectId, devopsEnvironmentDTO, userAttrDTO, appServiceDeployVO);
             instances.add(payload);
-            instanceIds.add(payload.getAppServiceDeployVO().getInstanceId());
+            recordInstances.add(new DevopsDeployRecordInstanceDTO(
+                    null,
+                    payload.getAppServiceDeployVO().getInstanceId(),
+                    payload.getAppServiceDeployVO().getInstanceName(),
+                    payload.getAppServiceVersionDTO().getVersion(),
+                    payload.getApplicationDTO().getId()));
 
             //创建实例时，如果选择了创建网络
             if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
@@ -1276,8 +1280,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             }
         }
 
+        // 插入批量部署的部署纪录及其相关信息
+        devopsDeployRecordService.createRecordForBatchDeployment(projectId, devopsEnvironmentDTO.getId(), recordInstances);
 
-        // TODO by zmf 添加批量部署的部署纪录
+        // 构造saga的payload
         BatchDeploymentPayload batchDeploymentPayload = new BatchDeploymentPayload();
         batchDeploymentPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
         batchDeploymentPayload.setProjectId(projectId);
