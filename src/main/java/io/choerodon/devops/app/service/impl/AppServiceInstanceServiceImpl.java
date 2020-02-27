@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1beta1Ingress;
 import org.apache.commons.lang.StringUtils;
@@ -1300,7 +1301,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 .withRefId(String.valueOf(devopsEnvironmentDTO.getId()))
                 .withRefType("env")
                 .withSagaCode(SagaTopicCodeConstants.DEVOPS_BATCH_DEPLOYMENT)
-                .withPayloadAndSerialize(batchDeploymentPayload), LambdaUtil.doNothingConsumer());
+                .withJson(new JSON().serialize(batchDeploymentPayload)), LambdaUtil.doNothingConsumer());
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
