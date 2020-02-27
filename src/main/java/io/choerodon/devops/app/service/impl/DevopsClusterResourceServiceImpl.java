@@ -616,38 +616,4 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         }
 
     }
-
-    private void setPvStatus(DevopsPvDTO devopsPvDTO, String type, DevopsPrometheusVO devopsPrometheusVO) {
-        String boundPVCName = devopsPvDTO.getPvcName();
-        String pvName = devopsPvDTO.getName();
-
-        // 判断指定给Prometheus的PV是否被其他PVC绑定，判断依据是Prometheus需要的PVC的名称只有如下三种情况，如果名称里不包含如下三种情况，则未绑上。
-        // Prometheus绑定的PV会出现三种可能状态，1、Available 2、Bound 3、Released
-        // Available状态是PV指定给了Prometheus，但是还没有被使用，该情况下可以继续使用
-        // Bound    状态是PV指定给了Prometheus，并且Prometheus创建的PVC也绑定了该PV，也可以继续使用
-        // Released  状态是PV指定给了Prometheus，并且在安装过程中，Prometheus创建的PVC也绑定了该PV，但是安装过程出现错误，PVC被删除，该PV也就不可继续使用，需要重新选择PV
-
-        // 如果状态是Released，则不设置PvName，前端会根据PvName字段判断是否重新选择PV，为空则重新选择，反之则禁止选择
-        if ("Released".equals(devopsPvDTO.getStatus())) {
-            return;
-        }
-        if (boundPVCName != null && boundPVCName.contains(type)) {
-            switch (type) {
-                case "alertmanager":
-                    devopsPrometheusVO.setAlertmanagerPvId(devopsPvDTO.getId());
-                    devopsPrometheusVO.setAlertmanagerPvName(pvName);
-                    break;
-                case "grafana":
-                    devopsPrometheusVO.setGrafanaPvId(devopsPvDTO.getId());
-                    devopsPrometheusVO.setGrafanaPvName(pvName);
-                    break;
-                case "prometheus":
-                    devopsPrometheusVO.setPrometheusPvId(devopsPvDTO.getId());
-                    devopsPrometheusVO.setPrometheusPvName(pvName);
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
 }
