@@ -329,17 +329,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Override
     public DevopsPrometheusVO queryPrometheus(Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
-        DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.queryPrometheusByClusterId(clusterId);
-        DevopsPvDTO alertManagerPv = devopsPvMapper.selectByPrimaryKey(devopsPrometheusDTO.getAlertmanagerPvId());
-        DevopsPvDTO grafanaPv = devopsPvMapper.selectByPrimaryKey(devopsPrometheusDTO.getGrafanaPvId());
-        DevopsPvDTO prometheusPv = devopsPvMapper.selectByPrimaryKey(devopsPrometheusDTO.getPrometheusPvId());
-
-        DevopsPrometheusVO devopsPrometheusVO = devopsPrometheusMapper.queryPrometheusWithPvById(devopsClusterResourceDTO.getConfigId());
-        setPvStatus(alertManagerPv, "alertmanager", devopsPrometheusVO);
-        setPvStatus(grafanaPv, "grafana", devopsPrometheusVO);
-        setPvStatus(prometheusPv, "prometheus", devopsPrometheusVO);
-
-        return devopsPrometheusVO;
+        return devopsPrometheusMapper.queryPrometheusWithPvById(devopsClusterResourceDTO.getConfigId());
     }
 
     @Override
