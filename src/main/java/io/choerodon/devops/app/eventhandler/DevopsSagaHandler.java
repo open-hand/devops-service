@@ -10,6 +10,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import io.kubernetes.client.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -482,12 +483,6 @@ public class DevopsSagaHandler {
             description = "Devops消费批量部署事件", maxRetryCount = 3,
             seq = 1)
     public void batchDeployment(String payload) {
-        BatchDeploymentPayload batchDeploymentPayload = null;
-        try {
-            batchDeploymentPayload = new ObjectMapper().readValue(payload, BatchDeploymentPayload.class);
-            appServiceInstanceService.batchDeploymentSaga(batchDeploymentPayload);
-        } catch (IOException e) {
-            throw new CommonException("Error deserializing the data of batch-deployment when consuming batch-deployment event", e);
-        }
+        appServiceInstanceService.batchDeploymentSaga(new JSON().deserialize(payload, BatchDeploymentPayload.class));
     }
 }
