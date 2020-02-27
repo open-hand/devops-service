@@ -72,17 +72,17 @@ public class AppServiceInstanceValidator {
                     }
                 }
                 if (serviceNames.contains(appServiceDeployVO.getDevopsServiceReqVO().getName())) {
-                    throw new CommonException("error.service.name.exist");
+                    throw new CommonException("error.service.name.check");
                 }
                 serviceNames.add(appServiceDeployVO.getDevopsServiceReqVO().getName());
             }
 
-            // TODO ingress 相关校验未加上
-            if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
-                if (ingressNames.contains(appServiceDeployVO.getDevopsServiceReqVO().getName())) {
-                    throw new CommonException("error.ingress.name.exist");
+            if (appServiceDeployVO.getDevopsIngressVO() != null) {
+                if (ingressNames.contains(appServiceDeployVO.getDevopsIngressVO().getName())) {
+                    throw new CommonException("error.ingress.check");
                 }
-                ingressNames.add(appServiceDeployVO.getDevopsServiceReqVO().getName());
+                ingressNames.add(appServiceDeployVO.getDevopsIngressVO().getName());
+                DevopsIngressValidator.checkVOForBatchDeployment(appServiceDeployVO.getDevopsIngressVO());
             }
         }
     }
