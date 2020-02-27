@@ -370,7 +370,7 @@ const Deployment = withRouter(observer((props) => {
           </Button>
         </Permission>
         <Permission
-          service={['devops-service.app-service-instance.deploy']}
+          service={['devops-service.app-service-instance.batchDeployment']}
         >
           <Button
             icon="jsfiddle"
