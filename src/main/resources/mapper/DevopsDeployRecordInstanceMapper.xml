@@ -6,13 +6,13 @@
 	<insert id="batchInsert">
 		INSERT INTO devops_deploy_record_instance (deploy_record_id, instance_id, instance_code, instance_version, app_service_id, env_id)
 		VALUES
-		<foreach collection="items" item="item" separator="," open="(" close=")">
-			#{item.deployRecordId,jdbcType=BIGINT},
+		<foreach collection="items" item="item" separator=",">
+			(#{item.deployRecordId,jdbcType=BIGINT},
 		 	#{item.instanceId,jdbcType=BIGINT},
 		 	#{item.instanceCode,jdbcType=VARCHAR},
 		 	#{item.instanceVersion,jdbcType=VARCHAR},
 		 	#{item.appServiceId,jdbcType=BIGINT},
-		 	#{item.envId,jdbcType=BIGINT}
+		 	#{item.envId,jdbcType=BIGINT})
 		</foreach>
 	</insert>
 
