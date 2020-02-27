@@ -41,7 +41,7 @@ public class AppServiceInstanceValidator {
     /**
      * 校验批量部署的请求参数
      *
-     * @param appServiceDeployVOS
+     * @param appServiceDeployVOS 批量部署的信息
      */
     public void validateBatchDeployment(List<AppServiceDeployVO> appServiceDeployVOS) {
         if (appServiceDeployVOS.isEmpty()) {
