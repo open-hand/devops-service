@@ -108,17 +108,17 @@ const BatchDeployModal = injectIntl(observer(() => {
 
   return (
     <div className={`${prefixCls}-batch-deploy`}>
-      <Form record={batchDeployDs.current} columns={2}>
-        {!envId && <Select
+      {!envId && <Form record={batchDeployDs.current} columns={2}>
+        <Select
           name="environmentId"
           searchable
           clearButton={false}
           optionRenderer={renderEnvOption}
           notFoundContent={<FormattedMessage id={`${intlPrefix}.env.empty`} />}
           onOption={renderOptionProperty}
-        />}
+        />
         <span colSpan={1} />
-      </Form>
+      </Form>}
       <div className={`${prefixCls}-batch-deploy-content`}>
         <div className={`${prefixCls}-batch-deploy-content-app`}>
           {map(batchDeployDs.data, (formRecord) => {
@@ -219,8 +219,6 @@ const BatchDeployModal = injectIntl(observer(() => {
             <TextField
               name="instanceName"
               addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.instance.tips` })} />}
-              colSpan={!envId ? 1 : 2}
-              newLine={!!envId}
             />
             <Select
               name="valueId"

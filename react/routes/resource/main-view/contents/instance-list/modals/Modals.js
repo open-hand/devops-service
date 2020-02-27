@@ -7,12 +7,13 @@ import { useModalStore } from './stores';
 import { useIstListStore } from '../stores';
 import useDeployStore from '../../../../../deployment/stores/useStore';
 import Deploy from '../../../../../deployment/modals/deploy';
+import BatchDeploy from '../../../../../deployment/modals/batch-deploy';
 
 const modalStyle = {
   width: '26%',
 };
 const deployKey = Modal.key();
-
+const batchDeployKey = Modal.key();
 
 const CustomModals = observer(() => {
   const {
@@ -64,6 +65,29 @@ const CustomModals = observer(() => {
     });
   }
 
+  function openBatchDeploy() {
+    Modal.open({
+      key: batchDeployKey,
+      style: configModalStyle,
+      drawer: true,
+      title: formatMessage({ id: `${intlPrefixDeploy}.manual` }),
+      children: <BatchDeploy
+        deployStore={deployStore}
+        refresh={refresh}
+        intlPrefix={intlPrefixDeploy}
+        prefixCls="c7ncd-deploy"
+        envId={envId}
+      />,
+      afterClose: () => {
+        deployStore.setCertificates([]);
+        deployStore.setAppService([]);
+        deployStore.setShareAppService([]);
+        deployStore.setConfigValue('');
+      },
+      okText: formatMessage({ id: 'deployment' }),
+    });
+  }
+
   const buttons = useMemo(() => {
     const record = baseInfoDs.current;
     const notReady = !record;
@@ -75,6 +99,14 @@ const CustomModals = observer(() => {
       name: formatMessage({ id: `${intlPrefixDeploy}.manual` }),
       icon: 'jsfiddle',
       handler: openDeploy,
+      display: true,
+      group: 1,
+    }, {
+      permissions: ['devops-service.app-service-instance.batchDeployment'],
+      disabled: configDisabled,
+      name: formatMessage({ id: `${intlPrefixDeploy}.batch` }),
+      icon: 'jsfiddle',
+      handler: openBatchDeploy,
       display: true,
       group: 1,
     }, {
