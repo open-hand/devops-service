@@ -9,18 +9,19 @@ import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.annotation.Permission;
-import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
+import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -40,6 +41,8 @@ public class AppServiceInstanceController {
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private DevopsEnvResourceService devopsEnvResourceService;
+    @Autowired
+    private DevopsDeployRecordService devopsDeployRecordService;
 
 
     /**
@@ -834,6 +837,16 @@ public class AppServiceInstanceController {
         return Optional.ofNullable(appServiceInstanceService.countByOptions(env_id, status, app_service_id))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.query.instance.count"));
+    }
+
+    @ApiOperation("根据批量部署的部署纪录id查询对应的实例")
+    @GetMapping("/query_by_deploy_record_id")
+    public ResponseEntity<List<AppServiceInstanceForRecordVO>> queryByBatchDeployRecordId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "批量部署的部署纪录id", required = true)
+            @RequestParam(value = "record_id") Long recordId) {
+        return new ResponseEntity<>(devopsDeployRecordService.queryByBatchDeployRecordId(recordId), HttpStatus.OK);
     }
 
 }

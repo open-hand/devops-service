@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 
-import io.choerodon.devops.infra.enums.PipelineStatus;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.web.util.PageableHelper;
@@ -48,9 +48,6 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineTaskDTO;
-import io.choerodon.devops.infra.enums.CommandType;
-import io.choerodon.devops.infra.enums.PipelineNoticeType;
-import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
@@ -818,7 +815,7 @@ public class PipelineServiceImpl implements PipelineService {
 
         List<PipelineRecordDTO> pipelineRecordDTOS = pipelineRecordMapper.listAllPipelineRecordAndEnv(pipelineRecordDTO.getId());
 
-        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(pipelineRecordDTOS.get(0).getProjectId(), "auto", pipelineRecordDTO.getId(), pipelineRecordDTOS.get(0).getEnv(), pipelineRecordDTO.getCreationDate());
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(pipelineRecordDTOS.get(0).getProjectId(), DeployType.AUTO.getType(), pipelineRecordDTO.getId(), pipelineRecordDTOS.get(0).getEnv(), pipelineRecordDTO.getCreationDate());
         devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
     }
 

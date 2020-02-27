@@ -17,8 +17,11 @@ public class DevopsDeployRecordDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @ApiModelProperty("项目id")
     private Long projectId;
+    @ApiModelProperty("部署类型: auto / manual / batch")
     private String deployType;
+    @ApiModelProperty("部署id：对于type为manual，是实例的CommandId，对于type是auto，是流水线纪录id，对于type是batch，此值为null")
     private Long deployId;
     private String env;
     private Date deployTime;
