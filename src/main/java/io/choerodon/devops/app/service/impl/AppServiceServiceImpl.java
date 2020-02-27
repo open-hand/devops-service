@@ -676,7 +676,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
 
         // clone外部代码仓库
-        String applicationDir = FileSystemFilePathAllocator.getFilePath(APPLICATION + GenerateUUID.generateUUID());
+        String applicationDir = APPLICATION + GenerateUUID.generateUUID();
 
         if (devOpsAppServiceImportPayload.getTemplate() != null && devOpsAppServiceImportPayload.getTemplate()) {
             String[] tempUrl = devOpsAppServiceImportPayload.getRepositoryUrl().split(TEMP_MODAL);
@@ -1932,8 +1932,8 @@ public class AppServiceServiceImpl implements AppServiceService {
             oldGroup = String.format(SITE_APP_GROUP_NAME_FORMAT, oldApplicationDTO.getCode());
         }
         //拉取代码
-        String applicationDir = FileSystemFilePathAllocator.getFilePath(APPLICATION + System.currentTimeMillis());
         // 获取push代码所需的access token
+        String applicationDir = APPLICATION + System.currentTimeMillis();
         String pushToken = getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
 
         //获取admin的token

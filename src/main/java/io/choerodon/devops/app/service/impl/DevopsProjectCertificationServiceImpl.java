@@ -170,7 +170,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     public void createOrUpdate(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationVO projectCertificationVO) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        String path = FileSystemFilePathAllocator.getFilePath(String.format("tmp%s%s%s%s", FILE_SEPARATOR, organizationDTO.getCode(), FILE_SEPARATOR, GenerateUUID.generateUUID().substring(0, 5)));
+        String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, organizationDTO.getCode(), FILE_SEPARATOR, GenerateUUID.generateUUID().substring(0, 5));
         String certFileName;
         String keyFileName;
         //如果是选择上传文件方式

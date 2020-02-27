@@ -125,9 +125,9 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         appServiceVersionDTO.setHelmConfigId(devopsConfigDTO.getId());
 
         appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getCode() + "/" + projectDTO.getCode() + "/" : helmUrl + "/" + organization.getCode() + "/" + projectDTO.getCode() + "/");
-        String storeFilePath = FileSystemFilePathAllocator.getFilePath(STORE_PATH + version);
+        String storeFilePath = STORE_PATH + version;
 
-        String destFilePath = FileSystemFilePathAllocator.getFilePath(DESTINATION_PATH + version);
+        String destFilePath = DESTINATION_PATH + version;
         String path = FileUtil.multipartFileToFile(storeFilePath, files);
         //上传chart包到chartmuseum
         chartUtil.uploadChart(helmUrl, organization.getCode(), projectDTO.getCode(), new File(path));
