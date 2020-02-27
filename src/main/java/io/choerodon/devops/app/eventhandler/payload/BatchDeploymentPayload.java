@@ -13,8 +13,8 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
  * @since 2/24/20
  */
 public class BatchDeploymentPayload {
-    @ApiModelProperty("环境信息")
-    private DevopsEnvironmentDTO devopsEnvironmentDTO;
+    @ApiModelProperty("环境id")
+    private Long envId;
 
     @ApiModelProperty("操作人的猪齿鱼用户id")
     private Long iamUserId;
@@ -34,13 +34,12 @@ public class BatchDeploymentPayload {
     @ApiModelProperty("域名相关信息，可为空,其中元素不需要环境的信息")
     private List<IngressSagaPayload> ingressSagaPayloads;
 
-
-    public DevopsEnvironmentDTO getDevopsEnvironmentDTO() {
-        return devopsEnvironmentDTO;
+    public Long getEnvId() {
+        return envId;
     }
 
-    public void setDevopsEnvironmentDTO(DevopsEnvironmentDTO devopsEnvironmentDTO) {
-        this.devopsEnvironmentDTO = devopsEnvironmentDTO;
+    public void setEnvId(Long envId) {
+        this.envId = envId;
     }
 
     public Long getIamUserId() {
