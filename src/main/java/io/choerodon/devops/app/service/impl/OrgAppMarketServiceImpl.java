@@ -202,7 +202,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     @Transactional(rollbackFor = Exception.class)
     public void uploadAPP(AppMarketUploadPayload marketUploadVO) {
         List<String> zipFileList = new ArrayList<>();
-        String appFilePath = gitUtil.getWorkingDirectory(APPLICATION + System.currentTimeMillis());
+        String appFilePath = gitUtil.getWorkingDirectory(FileSystemFilePathAllocator.getFilePath(APPLICATION + System.currentTimeMillis()));
         try {
             //解析打包
             MarketImageUrlVO marketImageUrlVO = appUploadResolver(marketUploadVO, zipFileList, appFilePath);
@@ -221,7 +221,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     @Override
     public void uploadAPPFixVersion(AppMarketFixVersionPayload appMarketFixVersionPayload) {
         List<String> zipFileList = new ArrayList<>();
-        String appFilePath = gitUtil.getWorkingDirectory(APPLICATION + System.currentTimeMillis());
+        String appFilePath = gitUtil.getWorkingDirectory(FileSystemFilePathAllocator.getFilePath(APPLICATION + System.currentTimeMillis()));
         try {
             MarketImageUrlVO marketImageUrlVO = appUploadResolver(appMarketFixVersionPayload.getFixVersionUploadPayload(), zipFileList, appFilePath);
             fileUploadFixVersion(zipFileList, appMarketFixVersionPayload, marketImageUrlVO);
@@ -266,7 +266,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 }
                 AppDownloadDevopsReqVO appDownloadDevopsReqVO = new AppDownloadDevopsReqVO();
                 appDownloadDevopsReqVO.setServiceId(appServiceDTO.getId());
-                String applicationDir = APPLICATION + System.currentTimeMillis();
+                String applicationDir = FileSystemFilePathAllocator.getFilePath(APPLICATION + System.currentTimeMillis());
                 String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
                 //推送git和上传chart
                 appDownloadDevopsReqVO.setServiceVersionIds(createAppServiceVersion(downloadPayload, appServiceDTO, appMarketDownloadVO.getAppCode(), isFirst, accessToken, appMarketDownloadVO.getDownloadAppType()));
@@ -360,18 +360,18 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private Set<Long> createAppServiceVersion(AppServiceDownloadPayload downloadPayload, AppServiceDTO appServiceDTO, String appCode, Boolean isFirst, String accessToken, String downloadType) {
         Long appServiceId = appServiceDTO.getId();
         Set<Long> serviceVersionIds = new HashSet<>();
-        FileUtil.createDirectory(APPLICATION);
+        FileUtil.createDirectory(FileSystemFilePathAllocator.getFilePath(APPLICATION));
         downloadPayload.getAppServiceVersionDownloadPayloads().forEach(appServiceVersionPayload -> {
             AppServiceVersionDTO versionDTO = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceId, appServiceVersionPayload.getVersion());
             versionDTO = versionDTO == null ? new AppServiceVersionDTO() : versionDTO;
             if (!downloadType.equals(DOWNLOAD_ONLY)) {
-                String chartFilePath = String.format("%s%s%s%s", APPLICATION, File.separator, APPLICATION + System.currentTimeMillis(), TGZ);
+                String chartFilePath = FileSystemFilePathAllocator.getFilePath(String.format("%s%s%s%s", APPLICATION, File.separator, APPLICATION + System.currentTimeMillis(), TGZ));
                 fileDownload(appServiceVersionPayload.getChartFilePath(), chartFilePath);
                 AppServiceVersionDTO appServiceVersionDTO = chartResolver(appServiceVersionPayload, downloadPayload.getAppId(), appServiceId, appCode, downloadPayload.getAppServiceCode(), new File(chartFilePath), versionDTO);
                 serviceVersionIds.add(appServiceVersionDTO.getId());
             }
             if (!downloadType.equals(DEPLOY_ONLY)) {
-                String repoFilePath = String.format("%s%s%s%s", APPLICATION, File.separator, APPLICATION + System.currentTimeMillis(), ZIP);
+                String repoFilePath = FileSystemFilePathAllocator.getFilePath(String.format("%s%s%s%s", APPLICATION, File.separator, APPLICATION + System.currentTimeMillis(), ZIP));
                 fileDownload(appServiceVersionPayload.getRepoFilePath(), repoFilePath);
                 AppServiceVersionDTO appServiceVersionDTO = gitResolver(appServiceVersionPayload, isFirst, appCode, new File(repoFilePath), downloadPayload, accessToken, versionDTO, appServiceId);
                 serviceVersionIds.add(appServiceVersionDTO.getId());
@@ -381,7 +381,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     }
 
     /**
-     * 文件路径
+     * 文件路径(2020-02-27改动，将以下文件都放进choerodon目录)
      * 源码下载后文件存放路径：
      * ——APPLICATION + 时间戳
      * ————repo
@@ -478,7 +478,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
         String groupPath = String.format(SITE_APP_GROUP_NAME_FORMAT, appCode);
         String repositoryUrl = repoUrl + groupPath + "/" + downloadPayload.getAppServiceCode() + GIT;
-        String unZipFilePath = gitUtil.getWorkingDirectory(REPO + System.currentTimeMillis());
+        String unZipFilePath = gitUtil.getWorkingDirectory(FileSystemFilePathAllocator.getFilePath(REPO + System.currentTimeMillis()));
         String appServiceDir = null;
         try {
             FileUtil.unZipFiles(file, unZipFilePath);
@@ -486,7 +486,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             if (isFirst) {
                 git = gitUtil.initGit(new File(repoFilePath));
             } else {
-                appServiceDir = APPLICATION + System.currentTimeMillis();
+                appServiceDir = FileSystemFilePathAllocator.getFilePath(APPLICATION + System.currentTimeMillis());
                 String appServiceFilePath = gitUtil.clone(appServiceDir, repositoryUrl, accessToken);
                 git = gitUtil.combineAppMarket(appServiceFilePath, repoFilePath);
             }
@@ -558,7 +558,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 FileUtil.deleteDirectory(zipDirectory);
                 throw new CommonException("error.zip.empty");
             }
-            newTgzFile = String.format("%s%s%s", APPLICATION, File.separator, CHART + System.currentTimeMillis());
+            newTgzFile = FileSystemFilePathAllocator.getFilePath(String.format("%s%s%s", APPLICATION, File.separator, CHART + System.currentTimeMillis()));
             FileUtil.toTgz(String.format(APP_TEMP_PATH_FORMAT, unZipPath, File.separator, appServiceCode), newTgzFile);
             chartUtil.uploadChart(helmUrl, MARKET_PRO, appCode, new File(newTgzFile + TGZ));
         } catch (Exception e) {
@@ -586,6 +586,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         //1.创建目录 应用服务仓库
+        // TODO 这里是不是路径用Separator
         String appServiceRepositoryPath = String.format("%s/%s_%s", appFilePath, appServiceDTO.getId(), appServiceDTO.getCode());
 
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
