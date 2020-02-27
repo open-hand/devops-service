@@ -687,7 +687,8 @@ const deploy = {
   'c7ncd.deploy.config.tips': '您可在此选择一个部署配置并使用其中的配置信息；或者直接在已有基础上进行修改后部署',
   'c7ncd.deploy.resource.tips': '您可在部署实例的同时，为此实例创建一个网络和一个域名，从而完成资源的配置；此步骤为可选执行',
   'c7ncd.deploy.process.tips': '下方展示的均是人工触发流水线，您可在此批量选择并启动这些人工触发流水线',
-  'c7ncd.deploy.add.appService': '添加应用服务',
+  'c7ncd.deploy.add.appService.normal': '添加项目应用服务',
+  'c7ncd.deploy.add.appService.share': '添加共享应用服务',
 };
 
 const repository = {

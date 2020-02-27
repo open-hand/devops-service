@@ -13,9 +13,8 @@ function getRandomName(prefix = '') {
     : randomString.substring(0, 30);
 }
 
-export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOptionsDs, versionOptionsDs, deployStore, networkDs, domainDs }) => {
+export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, deployStore, networkDs, domainDs }) => {
   function handleCreate({ dataSet, record }) {
-    deployStore.loadAppService(projectId, record.get('appServiceSource'));
     const defaultEnvId = (dataSet.records)[0].get('environmentId');
     defaultEnvId && record.set('environmentId', defaultEnvId);
   }
@@ -24,15 +23,10 @@ export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOp
     const networkRecord = record.getCascadeRecords('devopsServiceReqVO')[0];
     const domainRecord = record.getCascadeRecords('devopsIngressVO')[0];
     switch (name) {
-      case 'appServiceSource':
-        deployStore.setAppService([]);
-        deployStore.loadAppService(projectId, value);
-        record.get('appServiceId') && record.set('appServiceId', null);
-        break;
       case 'environmentId':
         dataSet.forEach((eachRecord) => eachRecord !== record && eachRecord.set('environmentId', value));
         record.getField('instanceName').checkValidity();
-        loadValueList(record);
+        record.set('valueId', null);
         networkRecord.getField('name').checkValidity();
         domainRecord.getField('name').checkValidity();
         forEach(domainRecord.getCascadeRecords('pathList'), (pathRecord) => {
@@ -51,7 +45,7 @@ export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOp
           });
           record.set('instanceName', getRandomName(value.split('__')[1]));
         }
-        loadValueList(record);
+        record.set('valueId', null);
         break;
       case 'appServiceVersionId':
         if (!record.get('valueId')) {
@@ -73,14 +67,13 @@ export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOp
     }
   }
 
-  function loadValueList(record) {
+  function getValueIdLookUp({ record }) {
     if (record.get('environmentId') && record.get('appServiceId')) {
-      valueIdOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/deploy_value/list_by_env_and_app?env_id=${record.get('environmentId')}&app_service_id=${record.get('appServiceId').split('__')[0]}`;
-      valueIdOptionsDs.query();
-    } else {
-      valueIdOptionsDs.removeAll();
+      return {
+        url: `/devops/v1/projects/${projectId}/deploy_value/list_by_env_and_app?env_id=${record.get('environmentId')}&app_service_id=${record.get('appServiceId').split('__')[0]}`,
+        method: 'get',
+      };
     }
-    record.set('valueId', null);
   }
 
   async function checkName(value, name, record) {
@@ -147,7 +140,7 @@ export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOp
         });
 
         return ({
-          url: `/devops/v1/projects/${projectId}/app_service_instances`,
+          url: `/devops/v1/projects/${projectId}/app_service_instances/batch_deployment`,
           method: 'post',
           data: newData,
         });
@@ -158,7 +151,16 @@ export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOp
       { name: 'appServiceVersionId', type: 'number', textField: 'version', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.app.version` }), required: true },
       { name: 'environmentId', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: 'environment' }), required: true, options: envOptionsDs },
       { name: 'instanceName', type: 'string', label: formatMessage({ id: `${intlPrefix}.instance.name` }), required: true, validator: checkName },
-      { name: 'valueId', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.config` }), options: valueIdOptionsDs },
+      {
+        name: 'valueId',
+        type: 'number',
+        textField: 'name',
+        valueField: 'id',
+        label: formatMessage({ id: `${intlPrefix}.config` }),
+        dynamicProps: {
+          lookupAxiosConfig: getValueIdLookUp,
+        },
+      },
       { name: 'values', type: 'string' },
       { name: 'type', type: 'string', defaultValue: 'create' },
       { name: 'isNotChange', type: 'boolean', defaultValue: false },

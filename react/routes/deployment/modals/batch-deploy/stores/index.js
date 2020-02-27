@@ -28,17 +28,18 @@ export const StoreProvider = injectIntl(inject('AppState')(
 
     const envOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
     const valueIdOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
-    const versionOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
 
     const pathListDs = useMemo(() => new DataSet(PathListDataSet({ formatMessage, projectId })), [projectId]);
     const domainDs = useMemo(() => new DataSet(DomainDataSet({ formatMessage, projectId, pathListDs })), [projectId]);
     const portsDs = useMemo(() => new DataSet(PortDataSet({ formatMessage, pathListDs })), []);
     const networkDs = useMemo(() => new DataSet(NetworkDataSet({ formatMessage, projectId, portsDs, pathListDs })), []);
-    const batchDeployDs = useMemo(() => new DataSet(BatchDeployDataSet({ intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOptionsDs, versionOptionsDs, deployStore, networkDs, domainDs })), [projectId]);
+    const batchDeployDs = useMemo(() => new DataSet(BatchDeployDataSet({ intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOptionsDs, deployStore, networkDs, domainDs })), [projectId]);
 
     useEffect(() => {
       envOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/list_by_active?active=true`;
       envOptionsDs.query();
+      deployStore.loadAppService(projectId, 'normal_service');
+      deployStore.loadShareAppService(projectId);
     }, [projectId]);
 
     const value = {

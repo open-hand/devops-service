@@ -201,6 +201,7 @@ const Deployment = withRouter(observer((props) => {
       afterClose: () => {
         deployStore.setCertificates([]);
         deployStore.setAppService([]);
+        deployStore.setShareAppService([]);
         deployStore.setConfigValue('');
       },
       okText: formatMessage({ id: 'deployment' }),

@@ -96,8 +96,9 @@ const BatchDeployModal = injectIntl(observer(() => {
     batchDeployDs.remove(formRecord);
   }
 
-  function handleAddForm() {
+  function handleAddForm(appServiceType) {
     batchDeployDs.create();
+    batchDeployDs.current.init('appServiceSource', appServiceType);
     deployStore.setConfigValue('');
   }
 
@@ -116,44 +117,95 @@ const BatchDeployModal = injectIntl(observer(() => {
           notFoundContent={<FormattedMessage id={`${intlPrefix}.env.empty`} />}
           onOption={renderOptionProperty}
         />}
+        <span colSpan={1} />
       </Form>
       <div className={`${prefixCls}-batch-deploy-content`}>
         <div className={`${prefixCls}-batch-deploy-content-app`}>
-          {map(batchDeployDs.data, (formRecord) => (
-            <div
-              className={batchDeployDs.current === formRecord ? `${prefixCls}-batch-deploy-content-app-active` : ''}
-            >
-              <Form record={formRecord} columns={5}>
-                <Select
-                  name="appServiceId"
-                  searchable
-                  colSpan={4}
-                  notFoundContent={<FormattedMessage id={`${intlPrefix}.app.empty`} />}
-                  onClick={() => handleClickAppService(formRecord)}
+          {map(batchDeployDs.data, (formRecord) => {
+            if (formRecord.get('appServiceSource') === 'normal_service') {
+              return (
+                <div
+                  className={batchDeployDs.current === formRecord ? `${prefixCls}-batch-deploy-content-app-active` : ''}
                 >
-                  {map(deployStore.getAppService[0] && deployStore.getAppService[0].appServiceList, ({ id, name, code }) => (
-                    <Option value={`${id}__${code}`} key={id}>{name}</Option>
-                  ))}
-                </Select>
-                {batchDeployDs.data.length > 1 ? (
-                  <Button
-                    funcType="flat"
-                    icon="delete"
-                    colSpan={1}
-                    className="appService-delete-btn"
-                    onClick={() => handleRemoveForm(formRecord)}
-                  />
-                ) : <span colSpan={1} />}
-              </Form>
-            </div>
-          ))}
+                  <Form record={formRecord} columns={5}>
+                    <Select
+                      name="appServiceId"
+                      searchable
+                      colSpan={4}
+                      notFoundContent={<FormattedMessage id={`${intlPrefix}.app.empty`} />}
+                      onClick={() => handleClickAppService(formRecord)}
+                    >
+                      {map(deployStore.getAppService[0] && deployStore.getAppService[0].appServiceList, ({ id, name, code }) => (
+                        <Option value={`${id}__${code}`} key={id}>{name}</Option>
+                      ))}
+                    </Select>
+                    {batchDeployDs.data.length > 1 ? (
+                      <Button
+                        funcType="flat"
+                        icon="delete"
+                        colSpan={1}
+                        className="appService-delete-btn"
+                        onClick={() => handleRemoveForm(formRecord)}
+                      />
+                    ) : <span colSpan={1} />}
+                  </Form>
+                </div>
+              );
+            }
+          })}
           <Button
             funcType="flat"
             color="primary"
             icon="add"
-            onClick={handleAddForm}
+            className="appService-add-btn"
+            onClick={() => handleAddForm('normal_service')}
           >
-            {formatMessage({ id: `${intlPrefix}.add.appService` })}
+            {formatMessage({ id: `${intlPrefix}.add.appService.normal` })}
+          </Button>
+          {map(batchDeployDs.data, (formRecord) => {
+            if (formRecord.get('appServiceSource') === 'share_service') {
+              return (
+                <div
+                  className={batchDeployDs.current === formRecord ? `${prefixCls}-batch-deploy-content-app-active` : ''}
+                >
+                  <Form record={formRecord} columns={5}>
+                    <Select
+                      name="appServiceId"
+                      searchable
+                      colSpan={4}
+                      notFoundContent={<FormattedMessage id={`${intlPrefix}.app.empty`} />}
+                      onClick={() => handleClickAppService(formRecord)}
+                    >
+                      {map(deployStore.getShareAppService, ({ id: groupId, name: groupName, appServiceList }) => (
+                        <OptGroup label={groupName} key={groupId}>
+                          {map(appServiceList, ({ id, name, code }) => (
+                            <Option value={`${id}__${code}`} key={id}>{name}</Option>
+                          ))}
+                        </OptGroup>
+                      ))}
+                    </Select>
+                    {batchDeployDs.data.length > 1 ? (
+                      <Button
+                        funcType="flat"
+                        icon="delete"
+                        colSpan={1}
+                        className="appService-delete-btn"
+                        onClick={() => handleRemoveForm(formRecord)}
+                      />
+                    ) : <span colSpan={1} />}
+                  </Form>
+                </div>
+              );
+            }
+          })}
+          <Button
+            funcType="flat"
+            color="primary"
+            icon="add"
+            className="appService-add-btn"
+            onClick={() => handleAddForm('share_service')}
+          >
+            {formatMessage({ id: `${intlPrefix}.add.appService.share` })}
           </Button>
         </div>
         <div className={`${prefixCls}-batch-deploy-content-form`}>
@@ -175,6 +227,7 @@ const BatchDeployModal = injectIntl(observer(() => {
               searchable
               colSpan={2}
               newLine
+              disabled={record && (!record.get('appServiceId') || !record.get('environmentId'))}
               addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.config.tips` })} />}
               notFoundContent={<FormattedMessage id={`${intlPrefix}.config.empty`} />}
             />
