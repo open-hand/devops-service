@@ -329,7 +329,19 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Override
     public DevopsPrometheusVO queryPrometheus(Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
-        return devopsPrometheusMapper.queryPrometheusWithPvById(devopsClusterResourceDTO.getConfigId());
+        DevopsPrometheusVO devopsPrometheusVO = devopsPrometheusMapper.queryPrometheusWithPvById(devopsClusterResourceDTO.getConfigId());
+
+        // 如果PV的状态为null，说明PV已经被删除，则将prometheus绑定的对应PV的id置为null
+        if (devopsPrometheusVO.getGrafanaPvStatus() == null) {
+            devopsPrometheusVO.setGrafanaPvId(null);
+        }
+        if (devopsPrometheusVO.getPrometheusPvStatus() == null) {
+            devopsPrometheusVO.setPrometheusPvId(null);
+        }
+        if (devopsPrometheusVO.getAlertmanagerPvStatus() == null) {
+            devopsPrometheusVO.setPrometheusPvId(null);
+        }
+        return devopsPrometheusVO;
     }
 
     @Override
