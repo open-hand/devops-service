@@ -63,7 +63,7 @@ public class GitOpsUtil {
     public static String getLocalPathToStoreEnv(
             String orgCode, String projectCode, String clusterCode, String envCode) {
         //本地路径
-        return String.format(LOCAL_ENV_PATH, orgCode, projectCode, clusterCode, envCode);
+        return FileSystemFilePathAllocator.getFilePath(String.format(LOCAL_ENV_PATH, orgCode, projectCode, clusterCode, envCode));
     }
 
     /**
