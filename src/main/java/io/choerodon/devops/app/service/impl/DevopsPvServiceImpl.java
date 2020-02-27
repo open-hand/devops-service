@@ -172,17 +172,17 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean deletePvById(Long pvId) {
 
-        // 如果删除的PV与Prometheus进行了绑定，则抛出异常，终止删除操作
-        List<Long> boundPvIds = getBoundPvIds(devopsPrometheusMapper);
-
-        if (boundPvIds.contains(pvId)) {
-            throw new CommonException("error.pv.bound.with.prometheus");
-        }
-
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
 
         if (devopsPvDTO == null) {
             return false;
+        }
+
+        // 如果删除的PV与Prometheus进行了绑定且PV状态为Available，则抛出异常，终止删除操作
+        List<Long> boundPvIds = getBoundPvIds(devopsPrometheusMapper, 1);
+
+        if ("Available".equals(devopsPvDTO.getStatus())&&boundPvIds.contains(pvId)) {
+            throw new CommonException("error.pv.bound.with.prometheus");
         }
 
         // 创建pv的环境是所选集群关联的系统环境
@@ -707,7 +707,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     }
 
     @Override
-    public List<DevopsPvVO> queryPvcRelatedPv(Long projectId, Long envId, Long clusterId, String params) {
+    public List<DevopsPvVO> queryPvcRelatedPv(Long projectId, Long envId, Long clusterId, String params, Integer mode) {
         if (clusterId == null) {
             if (envId != null) {
                 DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
@@ -756,7 +756,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         String pvcStorage = map.get("requestResource");
         // 筛选容量大于或等于pvc容量且集群agent处于连接状态且未与Prometheus进行绑定
-        List<Long> boundPvIds = getBoundPvIds(devopsPrometheusMapper);
+        List<Long> boundPvIds = getBoundPvIds(devopsPrometheusMapper, mode);
         if (pvcStorage != null) {
             return projectRelatedPvList.stream()
                     .filter(e -> compareResource(e.getRequestResource(), pvcStorage) > 0 && e.getPvcName() == null)
@@ -778,7 +778,11 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         return devopsPvMapper.select(devopsPvDTO);
     }
 
-    private List<Long> getBoundPvIds(DevopsPrometheusMapper devopsPrometheusMapper) {
+    private List<Long> getBoundPvIds(DevopsPrometheusMapper devopsPrometheusMapper, Integer mode) {
+        // 0表示不需要查出与Prometheus绑定过的PV,直接返回空链表
+        if (mode == 0) {
+            return new ArrayList<>();
+        }
         List<DevopsPrometheusDTO> devopsPrometheusDTOList = devopsPrometheusMapper.selectAll();
         List<Long> boundPvIds = new ArrayList<>();
         for (DevopsPrometheusDTO prometheusDTO : devopsPrometheusDTOList) {

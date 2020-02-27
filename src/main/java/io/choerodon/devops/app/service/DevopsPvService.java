@@ -163,7 +163,7 @@ public interface DevopsPvService {
      * @param params
      * @return
      */
-    List<DevopsPvVO> queryPvcRelatedPv(Long projectId, Long envId, Long clusterId, String params);
+    List<DevopsPvVO> queryPvcRelatedPv(Long projectId, Long envId, Long clusterId, String params, Integer mode);
 
     /**
      * 根据集群ID查询集群

@@ -200,9 +200,11 @@ public class DevopsPvController {
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "集群id")
             @RequestParam(value = "cluster_id", required = false) Long clusterId,
+            @ApiParam(value = "PV查询方式，默认为1,即过滤掉与Prometheus绑定的PV,0是不过滤")
+            @RequestParam(value = "mode", required = false, defaultValue = "1") Integer mode,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvService.queryPvcRelatedPv(projectId, envId, clusterId, params))
+        return Optional.ofNullable(devopsPvService.queryPvcRelatedPv(projectId, envId, clusterId, params, mode))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
     }
