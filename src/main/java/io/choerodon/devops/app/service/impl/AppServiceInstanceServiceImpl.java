@@ -1256,7 +1256,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     payload.getAppServiceDeployVO().getInstanceId(),
                     payload.getAppServiceDeployVO().getInstanceName(),
                     payload.getAppServiceVersionDTO().getVersion(),
-                    payload.getApplicationDTO().getId()));
+                    payload.getApplicationDTO().getId(),
+                    devopsEnvironmentDTO.getId()));
 
             //创建实例时，如果选择了创建网络
             if (appServiceDeployVO.getDevopsServiceReqVO() != null) {

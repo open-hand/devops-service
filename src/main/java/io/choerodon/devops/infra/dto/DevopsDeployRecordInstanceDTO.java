@@ -43,12 +43,13 @@ public class DevopsDeployRecordInstanceDTO extends BaseDTO {
     public DevopsDeployRecordInstanceDTO() {
     }
 
-    public DevopsDeployRecordInstanceDTO(Long deployRecordId, Long instanceId, String instanceCode, String instanceVersion, Long appServiceId) {
+    public DevopsDeployRecordInstanceDTO(Long deployRecordId, Long instanceId, String instanceCode, String instanceVersion, Long appServiceId, Long envId) {
         this.deployRecordId = deployRecordId;
         this.instanceId = instanceId;
         this.instanceCode = instanceCode;
         this.instanceVersion = instanceVersion;
         this.appServiceId = appServiceId;
+        this.envId = envId;
     }
 
     public Long getId() {
