@@ -14,6 +14,7 @@ import io.choerodon.devops.infra.enums.GitPlatformType;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -481,5 +482,5 @@ public interface AppServiceService {
      */
     List<AppServiceSimpleVO> listAppServiceHavingVersions(Long projectId);
 
-    Integer countByProjectId(Long projectId);
+    Map<Long, Integer> countByProjectId(List<Long> longList);
 }
