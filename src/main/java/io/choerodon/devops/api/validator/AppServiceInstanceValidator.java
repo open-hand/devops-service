@@ -70,7 +70,7 @@ public class AppServiceInstanceValidator {
             // 校验网络
             if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
                 Set<ConstraintViolation<DevopsServiceReqVO>> serviceSet = validator.validate(appServiceDeployVO.getDevopsServiceReqVO());
-                if (!CollectionUtils.isEmpty(set)) {
+                if (!CollectionUtils.isEmpty(serviceSet)) {
                     for (ConstraintViolation<DevopsServiceReqVO> cv : serviceSet) {
                         LOGGER.info("App-service-validator: invalid service. the message is {}", cv.getMessageTemplate());
                         throw new CommonException(cv.getMessageTemplate());
