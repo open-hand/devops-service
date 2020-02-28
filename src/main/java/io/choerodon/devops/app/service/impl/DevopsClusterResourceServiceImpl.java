@@ -331,15 +331,22 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         DevopsPrometheusVO devopsPrometheusVO = devopsPrometheusMapper.queryPrometheusWithPvById(devopsClusterResourceDTO.getConfigId());
 
-        // 如果PV的状态为null，说明PV已经被删除，则将prometheus绑定的对应PV的id置为null
-        if (devopsPrometheusVO.getGrafanaPvStatus() == null) {
+        // 如果PV的状态为null，说明PV已经被删除，则将prometheus绑定的对应PV的状态和id置为null
+        // 如果PV的状态是Released，说明PV已经不能使用，也将状态和id置为null
+        if (devopsPrometheusVO.getGrafanaPvStatus() == null || "Released".equals(devopsPrometheusVO.getGrafanaPvStatus())) {
             devopsPrometheusVO.setGrafanaPvId(null);
+            devopsPrometheusVO.setGrafanaPvStatus(null);
         }
-        if (devopsPrometheusVO.getPrometheusPvStatus() == null) {
+
+        if (devopsPrometheusVO.getPrometheusPvStatus() == null || "Released".equals(devopsPrometheusVO.getPrometheusPvStatus())) {
             devopsPrometheusVO.setPrometheusPvId(null);
+            devopsPrometheusVO.setPrometheusPvStatus(null);
         }
-        if (devopsPrometheusVO.getAlertmanagerPvStatus() == null) {
-            devopsPrometheusVO.setPrometheusPvId(null);
+
+        if (devopsPrometheusVO.getAlertmanagerPvStatus() == null || "Released".equals(devopsPrometheusVO.getAlertmanagerPvStatus())) {
+            devopsPrometheusVO.setAlertmanagerPvId(null);
+            devopsPrometheusVO.setAlertmanagerPvStatus(null);
+
         }
         return devopsPrometheusVO;
     }
