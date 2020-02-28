@@ -11,7 +11,7 @@ alertmanager:
             requests:
               storage: {{altermanagerStorage}}
           # 通过 seletor 选择绑定的 pv
-        /v1/projects/1370/cluster_resource/prometheus   selector:
+          selector:
             matchLabels:
               choerodon.io/name: {{alertmanager-pv}}
 
