@@ -68,7 +68,7 @@ export default observer((props) => {
     const record = formDs.current;
     const { name, status } = pvSelectEdit[item];
     if (isModify && record.getPristineValue(name) && record.getPristineValue(item) && record.getPristineValue(status) !== 'Available') {
-      return <TextField name={pvSelectEdit[item]} key={item} disabled />;
+      return <TextField name={name} key={item} disabled />;
     } else {
       return (
         <Select
