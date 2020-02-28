@@ -7,6 +7,8 @@ import java.util.regex.Pattern;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -23,6 +25,7 @@ import io.choerodon.devops.api.vo.DevopsServiceReqVO;
  */
 @Component
 public class AppServiceInstanceValidator {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AppServiceInstanceValidator.class);
     //appServiceInstance name
     private static final String NAME_PATTERN = "[a-z]([-a-z0-9]*[a-z0-9])?";
     @Autowired
@@ -55,11 +58,12 @@ public class AppServiceInstanceValidator {
             Set<ConstraintViolation<AppServiceDeployVO>> set = validator.validate(appServiceDeployVO);
             if (!CollectionUtils.isEmpty(set)) {
                 for (ConstraintViolation<AppServiceDeployVO> cv : set) {
-                    throw new CommonException(cv.getMessage());
+                    LOGGER.info("App-service-validator: invalid instance. the message is {}", cv.getMessageTemplate());
+                    throw new CommonException(cv.getMessageTemplate());
                 }
             }
             if (instanceCodes.contains(appServiceDeployVO.getInstanceName())) {
-                throw new CommonException("error.app.instance.name.already.exist");
+                throw new CommonException("error.app.service.name.duplicated.in.list", appServiceDeployVO.getInstanceName());
             }
             instanceCodes.add(appServiceDeployVO.getInstanceName());
 
@@ -68,18 +72,19 @@ public class AppServiceInstanceValidator {
                 Set<ConstraintViolation<DevopsServiceReqVO>> serviceSet = validator.validate(appServiceDeployVO.getDevopsServiceReqVO());
                 if (!CollectionUtils.isEmpty(set)) {
                     for (ConstraintViolation<DevopsServiceReqVO> cv : serviceSet) {
-                        throw new CommonException(cv.getMessage());
+                        LOGGER.info("App-service-validator: invalid service. the message is {}", cv.getMessageTemplate());
+                        throw new CommonException(cv.getMessageTemplate());
                     }
                 }
                 if (serviceNames.contains(appServiceDeployVO.getDevopsServiceReqVO().getName())) {
-                    throw new CommonException("error.service.name.check");
+                    throw new CommonException("error.service.name.duplicated.in.list", appServiceDeployVO.getDevopsServiceReqVO().getName());
                 }
                 serviceNames.add(appServiceDeployVO.getDevopsServiceReqVO().getName());
             }
 
             if (appServiceDeployVO.getDevopsIngressVO() != null) {
                 if (ingressNames.contains(appServiceDeployVO.getDevopsIngressVO().getName())) {
-                    throw new CommonException("error.ingress.check");
+                    throw new CommonException("error.ingress.name.duplicated.in.list", appServiceDeployVO.getDevopsIngressVO().getName());
                 }
                 ingressNames.add(appServiceDeployVO.getDevopsIngressVO().getName());
                 DevopsIngressValidator.checkVOForBatchDeployment(appServiceDeployVO.getDevopsIngressVO());
