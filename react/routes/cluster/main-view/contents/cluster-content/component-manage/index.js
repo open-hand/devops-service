@@ -66,7 +66,7 @@ export default observer((props) => {
           buttonData = [
             {
               text: formatMessage({ id: 'install' }),
-              onClick: () => installMonitor(message ? 'edit' : 'create'),
+              onClick: () => installMonitor(message ? 'edit' : 'create', true),
               disabled,
             },
           ];
@@ -166,7 +166,7 @@ export default observer((props) => {
     }
   }
 
-  function installMonitor(type) {
+  function installMonitor(type, showPassword = false) {
     Modal.open({
       key: monitorInstallKey,
       style: modalStyle,
@@ -178,6 +178,7 @@ export default observer((props) => {
         refresh={refresh}
         type={type}
         clusterId={clusterId}
+        showPassword={showPassword}
       />,
       okText: formatMessage({ id: 'install' }),
     });

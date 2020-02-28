@@ -41,9 +41,18 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ...props,
       pvSelect: ['prometheusPvId', 'grafanaPvId', 'alertmanagerPvId'],
       pvSelectEdit: {
-        prometheusPvId: 'prometheusPvName',
-        grafanaPvId: 'grafanaPvName',
-        alertmanagerPvId: 'alertmanagerPvName',
+        prometheusPvId: {
+          name: 'prometheusPvName',
+          status: 'prometheusPvStatus',
+        },
+        grafanaPvId: {
+          name: 'grafanaPvName',
+          status: 'grafanaPvStatus',
+        },
+        alertmanagerPvId: {
+          name: 'alertmanagerPvName',
+          status: 'alertmanagerPvStatus',
+        },
       },
       formDs,
       store,
