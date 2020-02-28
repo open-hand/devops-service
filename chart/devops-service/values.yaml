@@ -100,8 +100,6 @@ env:
     SERVICES_GITLAB_URL: http://git.example.com
     # Gitlab ssh 协议访问地址
     SERVICES_GITLAB_SSHURL: git@git.example.com
-    # 新建 Gitlab 用户的默认密码
-    SERVICES_GITLAB_PASSWORD: abc123456
     # 新建 Gitlab 用户的默认可创建仓库数量
     SERVICES_GITLAB_PROJECTLIMIT: 100
 
