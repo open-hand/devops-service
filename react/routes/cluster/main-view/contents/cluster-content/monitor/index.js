@@ -39,7 +39,7 @@ export default observer((props) => {
         <iframe
           height={700}
           width="100%"
-          src={`${getGrafanaUrl}?kiosk=tv${code ? `&var-cluster=${code}` : ''}`}
+          src={`${getGrafanaUrl}?kiosk=tv`}
           title="grafana"
           frameBorder={0}
           sandbox

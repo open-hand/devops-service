@@ -54,7 +54,7 @@ export default observer((props) => {
         <iframe
           height={700}
           width="100%"
-          src={`${getGrafanaUrl}?kiosk=tv&var-cluster=${code}&var-node=${name}`}
+          src={`${getGrafanaUrl}?kiosk=tv&var-node=${name}`}
           title="grafanaNode"
           frameBorder={0}
           sandbox

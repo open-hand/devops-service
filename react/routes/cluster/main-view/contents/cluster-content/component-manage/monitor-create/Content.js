@@ -20,6 +20,7 @@ export default observer((props) => {
     store,
     AppState: { currentMenuType: { projectId } },
     clusterId,
+    showPassword,
   } = usePrometheusStore();
 
   const isModify = useMemo(() => {
@@ -65,7 +66,8 @@ export default observer((props) => {
 
   function getSelectContent(item) {
     const record = formDs.current;
-    if (isModify && record.getPristineValue(pvSelectEdit[item])) {
+    const { name, status } = pvSelectEdit[item];
+    if (isModify && record.getPristineValue(name) && record.getPristineValue(item) && record.getPristineValue(status) !== 'Available') {
       return <TextField name={pvSelectEdit[item]} key={item} disabled />;
     } else {
       return (
@@ -82,7 +84,7 @@ export default observer((props) => {
   return (
     <div>
       <Form dataSet={formDs}>
-        {!isModify && <Password name="adminPassword" autoFocus />}
+        {(!isModify || showPassword) && <Password name="adminPassword" autoFocus />}
         <TextField name="grafanaDomain" autoFocus={isModify} />
       </Form>
       <div className={`${prefixCls}-monitor-create-pv`}>
