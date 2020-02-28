@@ -113,10 +113,11 @@ export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOp
         const appServiceId = Number(data.appServiceId.split('__')[0]);
         res.appServiceId = appServiceId;
         if (data.devopsServiceReqVO[0] && data.devopsServiceReqVO[0].name) {
-          const newPorts = map(data.devopsServiceReqVO[0].ports, ({ port, targetPort, nodePort }) => ({
+          const newPorts = map(data.devopsServiceReqVO[0].ports, ({ port, targetPort, nodePort, protocol }) => ({
             port: Number(port),
             targetPort: Number(targetPort),
             nodePort: nodePort ? Number(nodePort) : null,
+            protocol: data.devopsServiceReqVO[0].type === 'NodePort' ? protocol : null,
           }));
           data.devopsServiceReqVO[0].ports = newPorts;
           res.devopsServiceReqVO = data.devopsServiceReqVO[0];

@@ -73,12 +73,14 @@ export default injectIntl(observer((props) => {
                 <span className={`${prefixCls}-detail-batch-text`}>
                   {formatMessage({ id: `${intlPrefix}.instance` })}
                 </span>
-                <span
+                {record.get('deleted') ? (<span>
+                  {formatMessage({ id: 'deleted' })}
+                </span>) : (<span
                   onClick={() => linkToInstance(record)}
                   className={`${prefixCls}-detail-batch-instance`}
                 >
                   {record.get('instanceName')}
-                </span>
+                </span>)}
               </li>
             </ul>
           </Panel>

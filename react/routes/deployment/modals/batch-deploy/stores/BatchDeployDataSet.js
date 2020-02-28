@@ -25,7 +25,7 @@ export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, deploySto
     switch (name) {
       case 'environmentId':
         dataSet.forEach((eachRecord) => eachRecord !== record && eachRecord.set('environmentId', value));
-        record.getField('instanceName').checkValidity();
+        record.get('instanceName') && record.getField('instanceName').checkValidity();
         record.set('valueId', null);
         networkRecord.getField('name').checkValidity();
         domainRecord.getField('name').checkValidity();
@@ -115,23 +115,24 @@ export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, deploySto
           res.appServiceId = appServiceId;
           if (devopsServiceReqVO && devopsServiceReqVO.get('name')) {
             const newPorts = map(devopsServiceReqVO.getCascadeRecords('ports'), (portRecord) => {
-              const { port, targetPort, nodePort } = portRecord.toData();
+              const { port, targetPort, nodePort, protocol } = portRecord.toData();
               return ({
                 port: Number(port),
                 targetPort: Number(targetPort),
                 nodePort: nodePort ? Number(nodePort) : null,
+                protocol: devopsServiceReqVO.get('type') === 'NodePort' ? protocol : null,
               });
             });
             const externalIp = devopsServiceReqVO.get('externalIp');
-            res.devopsServiceReqVO = devopsServiceReqVO.toData();
+            res.devopsServiceReqVO = omit(devopsServiceReqVO.toData(), ['__dirty']);
             res.devopsServiceReqVO.ports = newPorts;
             res.devopsServiceReqVO.externalIp = externalIp && externalIp.length ? externalIp.join(',') : null;
             res.devopsServiceReqVO.targetInstanceCode = res.instanceName;
             res.devopsServiceReqVO.envId = res.environmentId;
           }
           if (devopsIngressVO && devopsIngressVO.get('name')) {
-            const pathList = map(devopsIngressVO.getCascadeRecords('pathList'), (pathRecord) => pathRecord.toData());
-            res.devopsIngressVO = devopsIngressVO.toData();
+            const pathList = map(devopsIngressVO.getCascadeRecords('pathList'), (pathRecord) => omit(pathRecord.toData(), ['ports', '__dirty']));
+            res.devopsIngressVO = omit(devopsIngressVO.toData(), ['__dirty', 'isNormal']);
             res.devopsIngressVO.envId = res.environmentId;
             res.devopsIngressVO.appServiceId = appServiceId;
             res.devopsIngressVO.pathList = pathList;
