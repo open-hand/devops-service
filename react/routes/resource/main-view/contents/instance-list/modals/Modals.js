@@ -18,12 +18,13 @@ const batchDeployKey = Modal.key();
 const CustomModals = observer(() => {
   const {
     intl: { formatMessage },
-    resourceStore,
+    resourceStore: {
+      getSelectedMenu: { parentId },
+    },
     treeDs,
   } = useResourceStore();
   const {
     istListDs,
-    baseInfoDs,
     envId,
   } = useIstListStore();
 
@@ -89,10 +90,9 @@ const CustomModals = observer(() => {
   }
 
   const buttons = useMemo(() => {
-    const record = baseInfoDs.current;
-    const notReady = !record;
-    const connect = record && record.get('connect');
-    const configDisabled = !connect || notReady;
+    const envRecord = treeDs.find((record) => record.get('key') === parentId);
+    const connect = envRecord && envRecord.get('connect');
+    const configDisabled = !connect;
     return [{
       permissions: ['devops-service.app-service-instance.deploy'],
       disabled: configDisabled,

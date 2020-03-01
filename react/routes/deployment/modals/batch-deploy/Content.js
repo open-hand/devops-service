@@ -25,6 +25,7 @@ const BatchDeployModal = injectIntl(observer(() => {
     modal,
     intl: { formatMessage },
     envId,
+    isInstanceView,
   } = useBatchDeployStore();
 
   const record = useMemo(() => batchDeployDs.current, [batchDeployDs.current]);
@@ -48,9 +49,10 @@ const BatchDeployModal = injectIntl(observer(() => {
   modal.handleOk(async () => {
     if (hasYamlFailed) return false;
     try {
+      const environmentId = batchDeployDs.current.get('environmentId');
       const res = await batchDeployDs.submit();
       if (res !== false) {
-        refresh(res.list[0]);
+        refresh({ envId: environmentId }, 'resource');
       } else {
         return false;
       }

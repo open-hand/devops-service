@@ -4,7 +4,7 @@ import { viewTypeMappings } from './mappings';
 
 const { IST_VIEW_TYPE } = viewTypeMappings;
 
-export default function useStore() {
+export default function useStore(viewType) {
   return useLocalStore(() => ({
     showHeader: true,
     setShowHeader(flag) {
@@ -15,7 +15,7 @@ export default function useStore() {
     },
 
     selectedMenu: {},
-    viewType: IST_VIEW_TYPE,
+    viewType: viewType || IST_VIEW_TYPE,
     setSelectedMenu(data) {
       this.selectedMenu = data;
     },
