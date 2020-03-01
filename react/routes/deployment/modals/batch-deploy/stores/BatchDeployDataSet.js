@@ -104,38 +104,32 @@ export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, deploySto
       devopsIngressVO: domainDs,
     },
     transport: {
-      create: ({ data, dataSet }) => {
+      create: ({ data }) => {
         const newData = [];
-        forEach(data, (item, index) => {
+        forEach(data, (item) => {
           const res = omit(item, ['__id', '__status', 'appServiceSource', 'devopsServiceReqVO', 'devopsIngressVO']);
           const appServiceId = Number(item.appServiceId.split('__')[0]);
-          const record = (dataSet.data)[index];
-          const devopsServiceReqVO = record ? record.getCascadeRecords('devopsServiceReqVO')[0] : null;
-          const devopsIngressVO = record ? record.getCascadeRecords('devopsIngressVO')[0] : null;
+          const devopsServiceReqVO = item.devopsServiceReqVO ? omit(item.devopsServiceReqVO[0], ['__id', '__status']) : null;
+          const devopsIngressVO = item.devopsIngressVO ? omit(item.devopsIngressVO[0], ['__id', '__status']) : null;
           res.appServiceId = appServiceId;
-          if (devopsServiceReqVO && devopsServiceReqVO.get('name')) {
-            const newPorts = map(devopsServiceReqVO.getCascadeRecords('ports'), (portRecord) => {
-              const { port, targetPort, nodePort, protocol } = portRecord.toData();
-              return ({
-                port: Number(port),
-                targetPort: Number(targetPort),
-                nodePort: nodePort ? Number(nodePort) : null,
-                protocol: devopsServiceReqVO.get('type') === 'NodePort' ? protocol : null,
-              });
-            });
-            const externalIp = devopsServiceReqVO.get('externalIp');
-            res.devopsServiceReqVO = omit(devopsServiceReqVO.toData(), ['__dirty']);
-            res.devopsServiceReqVO.ports = newPorts;
-            res.devopsServiceReqVO.externalIp = externalIp && externalIp.length ? externalIp.join(',') : null;
-            res.devopsServiceReqVO.targetInstanceCode = res.instanceName;
-            res.devopsServiceReqVO.envId = res.environmentId;
+          if (devopsServiceReqVO && devopsServiceReqVO.name) {
+            const newPorts = map(devopsServiceReqVO.ports || [], ({ port, targetPort, nodePort, protocol }) => ({
+              port: Number(port),
+              targetPort: Number(targetPort),
+              nodePort: nodePort ? Number(nodePort) : null,
+              protocol: devopsServiceReqVO.type === 'NodePort' ? protocol : null,
+            }));
+            const externalIp = devopsServiceReqVO.externalIp;
+            devopsServiceReqVO.ports = newPorts;
+            devopsServiceReqVO.externalIp = externalIp && externalIp.length ? externalIp.join(',') : null;
+            devopsServiceReqVO.targetInstanceCode = res.instanceName;
+            devopsServiceReqVO.envId = res.environmentId;
+            res.devopsServiceReqVO = devopsServiceReqVO;
           }
-          if (devopsIngressVO && devopsIngressVO.get('name')) {
-            const pathList = map(devopsIngressVO.getCascadeRecords('pathList'), (pathRecord) => omit(pathRecord.toData(), ['ports', '__dirty']));
-            res.devopsIngressVO = omit(devopsIngressVO.toData(), ['__dirty', 'isNormal']);
-            res.devopsIngressVO.envId = res.environmentId;
-            res.devopsIngressVO.appServiceId = appServiceId;
-            res.devopsIngressVO.pathList = pathList;
+          if (devopsIngressVO && devopsIngressVO.name) {
+            devopsIngressVO.envId = res.environmentId;
+            devopsIngressVO.appServiceId = appServiceId;
+            res.devopsIngressVO = devopsIngressVO;
           }
           newData.push(res);
         });
