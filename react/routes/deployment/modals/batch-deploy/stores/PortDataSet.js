@@ -33,7 +33,7 @@ export default ({ formatMessage, pathListDs }) => {
    */
   function checkPort(value, type, record) {
     const p = /^([1-9]\d*|0)$/;
-    const isRepeat = record.dataSet.some((r) => record.id !== r.id && r.get(type) === value);
+    const isRepeat = record.dataSet.some((r) => record.id === r.id) && record.dataSet.some((r) => record.id !== r.id && r.get(type) === value);
 
     const data = {
       typeMsg: '',
@@ -87,8 +87,8 @@ export default ({ formatMessage, pathListDs }) => {
   }
 
   function isRequired({ dataSet, record }) {
-    const name = record.cascadeParent.get('name');
-    const dirty = dataSet.some((portRecord) => portRecord.dirty);
+    const name = record.cascadeParent && record.cascadeParent.get('name');
+    const dirty = dataSet.some((portRecord) => portRecord === record) && dataSet.some((portRecord) => portRecord.dirty);
     return dirty || !!name;
   }
 

@@ -57,8 +57,8 @@ export default ({ formatMessage, projectId, ingressId }) => {
 
   function isRequired({ dataSet, record }) {
     const parentRecord = record.cascadeParent;
-    const hasValue = parentRecord.get('name') || parentRecord.get('domain') || parentRecord.get('certId');
-    const dirty = dataSet.some((pathRecord) => pathRecord.dirty);
+    const hasValue = record.cascadeParent ? parentRecord.get('name') || parentRecord.get('domain') || parentRecord.get('certId') : false;
+    const dirty = dataSet.some((pathRecord) => pathRecord === record) && dataSet.some((pathRecord) => pathRecord.dirty);
     return dirty || !!hasValue;
   }
 
