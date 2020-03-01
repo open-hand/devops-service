@@ -22,24 +22,38 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
       children,
       location,
     } = props;
-    const resourceStore = useStore();
-    const viewType = resourceStore.getViewType;
     const viewTypeMemo = useMemo(() => viewTypeMappings, []);
     const itemTypes = useMemo(() => itemTypeMappings, []);
+    const { viewType: newViewType = viewTypeMemo.IST_VIEW_TYPE } = location.state || {};
+    const resourceStore = useStore(newViewType);
+    const viewType = resourceStore.getViewType;
     const treeDs = useMemo(() => new DataSet(TreeDataSet({ store: resourceStore, type: viewType, projectId: id, formatMessage })), [viewType, id]);
 
     useEffect(() => {
       // NOTE: 这里只对部署跳转进来的这一种情况处理，若之后添加新的情况可在此处做
+      const { IST_VIEW_TYPE, RES_VIEW_TYPE } = viewTypeMemo;
       if (location.state) {
         const { envId, appServiceId, instanceId } = location.state;
-        const parentId = `${envId}-${appServiceId}`;
-        resourceStore.setSelectedMenu({
-          id: instanceId,
-          parentId,
-          key: `${parentId}-${instanceId}`,
-          itemType: itemTypes.IST_ITEM,
-        });
-        resourceStore.setExpandedKeys([`${envId}`, `${envId}-${appServiceId}`]);
+        if (newViewType === IST_VIEW_TYPE) {
+          const parentId = `${envId}-${appServiceId}`;
+          resourceStore.setSelectedMenu({
+            id: instanceId,
+            parentId,
+            key: `${parentId}-${instanceId}`,
+            itemType: itemTypes.IST_ITEM,
+          });
+          resourceStore.setExpandedKeys([`${envId}`, `${envId}-${appServiceId}`]);
+        } else {
+          resourceStore.setSelectedMenu({
+            id: 0,
+            name: formatMessage({ id: 'instances' }),
+            key: `${envId}-instances`,
+            isGroup: true,
+            itemType: 'group_instances',
+            parentId: String(envId),
+          });
+          resourceStore.setExpandedKeys([`${envId}`]);
+        }
       }
     }, []);
 

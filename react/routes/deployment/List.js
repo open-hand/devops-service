@@ -243,7 +243,7 @@ const Deployment = withRouter(observer((props) => {
     history.push(`/devops/resource${search}`);
   }
 
-  function deployAfter(instance) {
+  function deployAfter(instance, type = 'instance') {
     const { history, location: { search } } = props;
 
     if (!instance) history.push(`/devops/resource${search}`);
@@ -255,6 +255,7 @@ const Deployment = withRouter(observer((props) => {
         instanceId: instance.id,
         appServiceId: instance.appServiceId,
         envId: instance.envId,
+        viewType: type,
       },
     });
   }
