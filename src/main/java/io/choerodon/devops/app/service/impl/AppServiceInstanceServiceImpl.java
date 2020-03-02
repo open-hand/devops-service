@@ -637,29 +637,21 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     public void createInstanceBySaga(InstanceSagaPayload instanceSagaPayload) {
         //更新实例的时候判断当前容器目录下是否存在环境对应的GitOps文件目录，不存在则克隆
         String filePath = null;
-        try {
-            if (instanceSagaPayload.getAppServiceDeployVO().getType().equals(UPDATE)) {
-                filePath = clusterConnectionHandler.handDevopsEnvGitRepository(
-                        instanceSagaPayload.getProjectId(),
-                        instanceSagaPayload.getDevopsEnvironmentDTO().getCode(),
-                        instanceSagaPayload.getDevopsEnvironmentDTO().getId(),
-                        instanceSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa(),
-                        instanceSagaPayload.getDevopsEnvironmentDTO().getType(),
-                        instanceSagaPayload.getDevopsEnvironmentDTO().getClusterCode());
-            }
-        } catch (Exception ex) {
-            String exceptionContent = LogUtil.readContentOfThrowable(ex);
-            LOGGER.info("Failed to clone repository, the ex is {}", exceptionContent);
-            AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceSagaPayload.getAppServiceDeployVO().getInstanceId());
-            appServiceInstanceDTO.setStatus(InstanceStatus.FAILED.getStatus());
-            baseUpdate(appServiceInstanceDTO);
-            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
-            devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
-            devopsEnvCommandDTO.setError(LogUtil.cutOutString("Clone repository failed. The exception is: " + exceptionContent, 5000));
-            devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+        if (instanceSagaPayload.getAppServiceDeployVO().getType().equals(UPDATE)) {
+            filePath = clusterConnectionHandler.handDevopsEnvGitRepository(
+                    instanceSagaPayload.getProjectId(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getCode(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getId(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getType(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getClusterCode());
+        }
 
-            // 这里不需要发送创建实例失败的通知，因为只用update才可能导致抛异常
-            return;
+
+        //创建实例时，如果选择了创建网络
+        if (instanceSagaPayload.getDevopsServiceReqVO() != null) {
+            instanceSagaPayload.getDevopsServiceReqVO().setAppServiceId(instanceSagaPayload.getApplicationDTO().getId());
+            devopsServiceService.create(instanceSagaPayload.getDevopsEnvironmentDTO().getProjectId(), instanceSagaPayload.getDevopsServiceReqVO());
         }
 
         try {
@@ -684,37 +676,18 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     instanceSagaPayload.getGitlabUserId(),
                     instanceSagaPayload.getAppServiceDeployVO().getInstanceId(), C7NHELM_RELEASE, null, false, instanceSagaPayload.getDevopsEnvironmentDTO().getId(), filePath);
 
-            //创建实例时，如果选择了创建网络
-            if (instanceSagaPayload.getDevopsServiceReqVO() != null) {
-                instanceSagaPayload.getDevopsServiceReqVO().setAppServiceId(instanceSagaPayload.getApplicationDTO().getId());
-                devopsServiceService.create(instanceSagaPayload.getDevopsEnvironmentDTO().getProjectId(), instanceSagaPayload.getDevopsServiceReqVO());
-            }
-
         } catch (Exception e) {
             //有异常更新实例以及command的状态
             AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceSagaPayload.getAppServiceDeployVO().getInstanceId());
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                     .baseQueryByEnvIdAndResourceId(instanceSagaPayload.getDevopsEnvironmentDTO().getId(), appServiceInstanceDTO.getId(), HELM_RELEASE);
             filePath = devopsEnvFileResourceDTO == null ? RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
-            // 这里只考虑了创建失败的情况，这说明是真的创建失败，而不是gitlab超时
-            if (CREATE.equals(instanceSagaPayload.getAppServiceDeployVO().getType()) && !gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(instanceSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
+            // 这里只考虑了创建失败的情况，这说明是gitlab超时
+            if (!CREATE.equals(instanceSagaPayload.getAppServiceDeployVO().getType()) || !gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(instanceSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
                     filePath)) {
-                String exceptionContent = LogUtil.readContentOfThrowable(e);
-                LOGGER.info("Exception occurred when creating instance by saga.  Now the ex is {}", exceptionContent);
-                appServiceInstanceDTO.setStatus(CommandStatus.FAILED.getStatus());
-                baseUpdate(appServiceInstanceDTO);
-                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
-                devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
-                devopsEnvCommandDTO.setError(LogUtil.cutOutString("create or update gitOps file failed! The exception is: " + exceptionContent, 5000));
-                devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
-                LOGGER.info("Successfully update the status of instance with name {} to failed after exception occurred.", appServiceInstanceDTO.getCode());
-
-                // 已经判断了是创建时失败，直接发送实例创建失败通知
-                sendNotificationService.sendWhenInstanceCreationFailure(appServiceInstanceDTO.getEnvId(), appServiceInstanceDTO.getCode(), appServiceInstanceDTO.getCreatedBy(), null);
-            } else {
-                // 更新的超时情况暂未处理
                 throw e;
             }
+            // 更新的超时情况暂未处理
         }
     }
 
