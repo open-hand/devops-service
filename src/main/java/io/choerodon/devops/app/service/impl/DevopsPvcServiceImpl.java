@@ -133,7 +133,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         baseUpdate(devopsPvcDTO);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
 
         // 查询对象所在文件中是否含有其它对象
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
@@ -364,6 +364,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
             // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
             String path = clusterConnectionHandler.handDevopsEnvGitRepository(persistentVolumeClaimPayload.getProjectId(),
                     persistentVolumeClaimPayload.getDevopsEnvironmentDTO().getCode(),
+                    persistentVolumeClaimPayload.getDevopsEnvironmentDTO().getId(),
                     persistentVolumeClaimPayload.getDevopsEnvironmentDTO().getEnvIdRsa(),
                     persistentVolumeClaimPayload.getDevopsEnvironmentDTO().getType(),
                     persistentVolumeClaimPayload.getDevopsEnvironmentDTO().getClusterCode());

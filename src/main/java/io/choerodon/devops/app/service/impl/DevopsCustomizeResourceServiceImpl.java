@@ -139,6 +139,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(
                     devopsEnvironmentDTO.getProjectId(),
                     devopsEnvironmentDTO.getCode(),
+                    devopsEnvironmentDTO.getId(),
                     devopsEnvironmentDTO.getEnvIdRsa(),
                     devopsEnvironmentDTO.getType(),
                     devopsEnvironmentDTO.getClusterCode());
@@ -186,6 +187,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(
                 devopsEnvironmentDTO.getProjectId(),
                 devopsEnvironmentDTO.getCode(),
+                devopsEnvironmentDTO.getId(),
                 devopsEnvironmentDTO.getEnvIdRsa(),
                 devopsEnvironmentDTO.getType(),
                 devopsEnvironmentDTO.getClusterCode());
