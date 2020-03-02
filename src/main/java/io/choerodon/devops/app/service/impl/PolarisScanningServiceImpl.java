@@ -370,6 +370,8 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             List<String> namespaces = null;
             try {
                 namespaces = JSONArray.parseArray(allNamespaces, String.class);
+            } catch (Exception ex) {
+                // Do nothing
             } finally {
                 if (!CollectionUtils.isEmpty(namespaces)) {
                     externalEmptyNamespaces = namespaces.stream()
