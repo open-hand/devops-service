@@ -84,4 +84,12 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
             @Param("appServiceId") Long appServiceId);
 
     List<InstanceWithPolarisStorageVO> queryInstancesWithAppServiceByIds(@Param("instanceIds") List<Long> instanceIds);
+
+    /**
+     * 根据实例id查询实例的信息
+     *
+     * @param instanceIds 实例id，集合不能为空
+     * @return 信息
+     */
+    List<AppServiceInstanceDTO> queryByInstanceIds(@Param("instanceIds") List<Long> instanceIds);
 }
