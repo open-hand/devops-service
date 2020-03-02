@@ -354,7 +354,7 @@ const Deployment = withRouter(observer((props) => {
         default:
           break;
       }
-    } else {
+    } else if (record.get('deployType') === 'manual') {
       actionData = [{
         text: formatMessage({ id: `${intlPrefix}.view.instance` }),
         service: ['devops-service.devops-environment.listByActive'],
