@@ -420,6 +420,7 @@ const deployment = {
   'c7ncd.deployment.active': '生效',
   'c7ncd.deployment.choose.version': '选择版本',
   'c7ncd.deployment.polaris.empty.des': '当前环境下暂无实例，无法执行健康检查。',
+  'c7ncd.deployment.polaris.check.empty': '该实例为空',
 
 };
 
@@ -1311,11 +1312,13 @@ const cluster = {
   'c7ncd.cluster.polaris.check.null': '暂无检测结果',
   'c7ncd.cluster.polaris.check.operating': '配置项扫描中...',
   'c7ncd.cluster.polaris.check.success': '配置项检测通过',
+  'c7ncd.cluster.polaris.check.empty': '该环境为空',
   'c7ncd.cluster.polaris.scanning': '扫描',
   'c7ncd.cluster.polaris.lastedScanDate': '上次扫描结束时间：',
   'c7ncd.cluster.polaris.KubernetesVersion': 'Kubernetes版本',
   'c7ncd.cluster.env.internal': 'Choerodon平台环境',
   'c7ncd.cluster.env.external': '非Choerodon平台环境',
+  'c7ncd.cluster.env.external.tips': '此处仅展示不为空的非Choerodon平台环境',
 };
 
 const zhCN = {

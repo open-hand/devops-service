@@ -84,7 +84,9 @@ const RadarApp = observer((props) => {
       whiteCircle();
       // text(speed);
       blueCircle(speed);
-      blueDot(speed);
+      if (speed !== 0) {
+        blueDot(speed);
+      }
       if (speed > 100) {
         speed = 0;
       }
