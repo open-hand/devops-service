@@ -36,6 +36,15 @@ public class DevopsEnvWithPolarisResultVO {
     @ApiModelProperty("是否扫描过")
     private Boolean checked;
 
+    public DevopsEnvWithPolarisResultVO() {
+    }
+
+    public DevopsEnvWithPolarisResultVO(String namespace, Boolean internal, Boolean checked) {
+        this.namespace = namespace;
+        this.internal = internal;
+        this.checked = checked;
+    }
+
     public String getNamespace() {
         return namespace;
     }
