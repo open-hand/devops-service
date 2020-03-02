@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -267,18 +269,28 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         DevopsPolarisRecordDTO recordDTO = queryRecordByScopeIdAndScope(clusterId, PolarisScopeType.CLUSTER.getValue());
 
         if (recordDTO == null || !PolarisScanningStatus.FINISHED.getStatus().equals(recordDTO.getStatus())) {
-            return handleEnvWithoutPolaris(devopsPolarisNamespaceResultMapper.queryEnvWithoutPolarisResult(clusterId));
+            return handleEnvWithoutPolaris(devopsPolarisNamespaceResultMapper.queryEnvWithoutPolarisResult(clusterId), devopsClusterDTO.getNamespaces());
         }
 
-        return handleEnvWithPolaris(devopsPolarisNamespaceResultMapper.queryEnvWithPolarisResult(recordDTO.getId(), recordDTO.getScopeId()));
+        return handleEnvWithPolaris(devopsPolarisNamespaceResultMapper.queryEnvWithPolarisResult(recordDTO.getId(), recordDTO.getScopeId()), devopsClusterDTO.getNamespaces());
     }
 
-    private ClusterPolarisEnvDetailsVO handleEnvWithoutPolaris(List<DevopsEnvWithPolarisResultVO> results) {
+    /**
+     * 处理未扫描时获取集群的namespace信息
+     * 内部环境数据从传入的results参数取
+     * 外部环境数据从allNamespaces参数解析得到
+     *
+     * @param results       内部环境结果
+     * @param allNamespaces 从cluster纪录的namespaces纪录获取的内容
+     * @return 处理后的结果
+     */
+    private ClusterPolarisEnvDetailsVO handleEnvWithoutPolaris(List<DevopsEnvWithPolarisResultVO> results, String allNamespaces) {
         Set<Long> projectIds = results.stream()
                 .map(DevopsEnvWithPolarisResultVO::getProjectId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         List<ProjectDTO> projectDTOS = baseServiceClientOperator.queryProjectsByIds(projectIds);
+        List<String> internalNamespaces = new ArrayList<>();
 
         Map<Long, ProjectDTO> map = new HashMap<>();
         if (!CollectionUtils.isEmpty(projectDTOS)) {
@@ -286,6 +298,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         }
 
         results.forEach(result -> {
+            internalNamespaces.add(result.getNamespace());
             if (result.getProjectId() != null) {
                 ProjectDTO projectDTO = map.get(result.getProjectId());
                 if (projectDTO != null) {
@@ -295,14 +308,19 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             }
         });
 
-        // 没有扫描时，查出来的环境都是内部环境
-        return new ClusterPolarisEnvDetailsVO(results, Collections.emptyList());
+        List<DevopsEnvWithPolarisResultVO> externalNamespaces = generateExternalNamespaces(internalNamespaces, allNamespaces, Boolean.FALSE);
+
+        return new ClusterPolarisEnvDetailsVO(results, externalNamespaces);
     }
 
     /**
      * 主要是填充项目信息
+     * 和填充空的外部环境
+     *
+     * @param results       数据的查询结果
+     * @param allNamespaces cluster纪录的namespaces字段
      */
-    private ClusterPolarisEnvDetailsVO handleEnvWithPolaris(List<DevopsEnvWithPolarisResultVO> results) {
+    private ClusterPolarisEnvDetailsVO handleEnvWithPolaris(List<DevopsEnvWithPolarisResultVO> results, String allNamespaces) {
         Set<Long> projectIds = results.stream()
                 .map(DevopsEnvWithPolarisResultVO::getProjectId)
                 .filter(Objects::nonNull)
@@ -313,9 +331,12 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             projectDTOS.forEach(p -> map.put(p.getId(), p));
         }
 
+        List<String> existedNamespaces = new ArrayList<>();
+
         List<DevopsEnvWithPolarisResultVO> internals = new ArrayList<>();
         List<DevopsEnvWithPolarisResultVO> externals = new ArrayList<>();
         results.forEach(result -> {
+            existedNamespaces.add(result.getNamespace());
             if (Boolean.TRUE.equals(result.getInternal())) {
                 internals.add(result);
             } else {
@@ -329,7 +350,36 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
                 }
             }
         });
+
+        externals.addAll(generateExternalNamespaces(existedNamespaces, allNamespaces, Boolean.TRUE));
+
         return new ClusterPolarisEnvDetailsVO(internals, externals);
+    }
+
+    /**
+     * 生成空的外部环境的纪录
+     *
+     * @param existedNamespaces 数据库查询已经有的namespace纪录
+     * @param allNamespaces     集群的所有namespace的json数组字符串
+     * @param checked           是否扫描过
+     * @return 空的外部环境的纪录
+     */
+    private List<DevopsEnvWithPolarisResultVO> generateExternalNamespaces(List<String> existedNamespaces, String allNamespaces, Boolean checked) {
+        List<DevopsEnvWithPolarisResultVO> externalEmptyNamespaces = Collections.emptyList();
+        if (!StringUtils.isEmpty(allNamespaces)) {
+            List<String> namespaces = null;
+            try {
+                namespaces = JSONArray.parseArray(allNamespaces, String.class);
+            } finally {
+                if (!CollectionUtils.isEmpty(namespaces)) {
+                    externalEmptyNamespaces = namespaces.stream()
+                            .filter(n -> !existedNamespaces.contains(n))
+                            .map(n -> new DevopsEnvWithPolarisResultVO(n, Boolean.FALSE, checked))
+                            .collect(Collectors.toList());
+                }
+            }
+        }
+        return externalEmptyNamespaces;
     }
 
     @Override
