@@ -310,6 +310,9 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
         devopsPrometheusDTO.setAdminPassword(devopsPrometheusVO.getAdminPassword());
         devopsPrometheusDTO.setGrafanaDomain(devopsPrometheusVO.getGrafanaDomain());
+        devopsPrometheusDTO.setPrometheusPvId(devopsPrometheusVO.getPrometheusPvId());
+        devopsPrometheusDTO.setGrafanaPvId(devopsPrometheusVO.getGrafanaPvId());
+        devopsPrometheusDTO.setAlertmanagerPvId(devopsPrometheusVO.getAlertmanagerPvId());
         if (devopsPrometheusMapper.updateByPrimaryKey(devopsPrometheusDTO) != 1) {
             throw new CommonException("error.prometheus.update");
         }
