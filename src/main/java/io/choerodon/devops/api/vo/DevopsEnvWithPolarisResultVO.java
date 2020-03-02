@@ -39,10 +39,11 @@ public class DevopsEnvWithPolarisResultVO {
     public DevopsEnvWithPolarisResultVO() {
     }
 
-    public DevopsEnvWithPolarisResultVO(String namespace, Boolean internal, Boolean checked) {
+    public DevopsEnvWithPolarisResultVO(String namespace, Boolean internal, Boolean checked, String detailJson) {
         this.namespace = namespace;
         this.internal = internal;
         this.checked = checked;
+        this.detailJson = detailJson;
     }
 
     public String getNamespace() {

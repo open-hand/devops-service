@@ -374,7 +374,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
                 if (!CollectionUtils.isEmpty(namespaces)) {
                     externalEmptyNamespaces = namespaces.stream()
                             .filter(n -> !existedNamespaces.contains(n))
-                            .map(n -> new DevopsEnvWithPolarisResultVO(n, Boolean.FALSE, checked))
+                            .map(n -> new DevopsEnvWithPolarisResultVO(n, Boolean.FALSE, checked, checked ? "[]" : null))
                             .collect(Collectors.toList());
                 }
             }
