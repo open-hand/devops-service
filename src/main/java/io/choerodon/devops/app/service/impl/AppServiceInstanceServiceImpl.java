@@ -642,6 +642,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 filePath = clusterConnectionHandler.handDevopsEnvGitRepository(
                         instanceSagaPayload.getProjectId(),
                         instanceSagaPayload.getDevopsEnvironmentDTO().getCode(),
+                        instanceSagaPayload.getDevopsEnvironmentDTO().getId(),
                         instanceSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa(),
                         instanceSagaPayload.getDevopsEnvironmentDTO().getType(),
                         instanceSagaPayload.getDevopsEnvironmentDTO().getClusterCode());
@@ -883,7 +884,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(
+                devopsEnvironmentDTO.getProjectId(),
+                devopsEnvironmentDTO.getCode(),
+                devopsEnvironmentDTO.getId(),
+                devopsEnvironmentDTO.getEnvIdRsa(),
+                devopsEnvironmentDTO.getType(),
+                devopsEnvironmentDTO.getClusterCode());
 
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(), instanceId, C7NHELM_RELEASE);

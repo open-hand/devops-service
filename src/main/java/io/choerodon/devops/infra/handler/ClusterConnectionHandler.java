@@ -153,11 +153,11 @@ public class ClusterConnectionHandler {
     }
 
 
-    public String handDevopsEnvGitRepository(Long projectId, String envCode, String envRsa, String envType, String clusterCode) {
+    public String handDevopsEnvGitRepository(Long projectId, String envCode, Long envId, String envRsa, String envType, String clusterCode) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         //本地路径
-        String path = GitOpsUtil.getLocalPathToStoreEnv(organizationDTO.getCode(), projectDTO.getCode(), clusterCode, envCode);
+        String path = GitOpsUtil.getLocalPathToStoreEnv(organizationDTO.getCode(), projectDTO.getCode(), clusterCode, envCode, envId);
         //生成环境git仓库ssh地址
         String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organizationDTO.getCode(),
                 projectDTO.getCode(), envCode, EnvironmentType.forValue(envType), clusterCode);

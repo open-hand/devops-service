@@ -38,9 +38,9 @@ public class GitOpsConstants {
 
     /**
      * local path to store env
-     * gitops/${orgCode}/${proCode}/${clusterCode}/${envCode}
+     * gitops/${orgCode}/${proCode}/${clusterCode}/${envCode}/${envId}
      */
-    public static final String LOCAL_ENV_PATH = "gitops" + File.separator + "%s" + File.separator + "%s" + File.separator + "%s" + File.separator + "%s";
+    public static final String LOCAL_ENV_PATH = "gitops" + File.separator + "%s" + File.separator + "%s" + File.separator + "%s" + File.separator + "%s" + File.separator + "%s";
 
     public static final String YAML_FILE_SUFFIX = ".yaml";
 

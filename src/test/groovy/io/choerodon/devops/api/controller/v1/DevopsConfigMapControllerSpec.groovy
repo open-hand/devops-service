@@ -188,7 +188,7 @@ class DevopsConfigMapControllerSpec extends Specification {
 
         and: 'mock envUtil'
         envUtil.checkEnvConnection(_ as Long) >> null
-        envUtil.handDevopsEnvGitRepository(_ as Long, _ as String, _ as String, _ as String) >> "src/test/gitops/testConfigMap"
+        envUtil.handDevopsEnvGitRepository(_ as Long, _ as String, _ as Long, _ as String, _ as String, _ as String) >> "src/test/gitops/testConfigMap"
 
         when: '创建'
         restTemplate.postForObject(MAPPING, devopsConfigMapDTO, Object.class, 1L)

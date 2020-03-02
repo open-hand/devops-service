@@ -205,6 +205,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         String path = clusterConnectionHandler.handDevopsEnvGitRepository(
                 devopsEnvironmentDTO.getProjectId(),
                 devopsEnvironmentDTO.getCode(),
+                devopsEnvironmentDTO.getId(),
                 devopsEnvironmentDTO.getEnvIdRsa(),
                 devopsEnvironmentDTO.getType(),
                 devopsEnvironmentDTO.getClusterCode());
@@ -676,6 +677,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
             String path = clusterConnectionHandler.handDevopsEnvGitRepository(persistentVolumePayload.getDevopsEnvironmentDTO().getProjectId(),
                     persistentVolumePayload.getDevopsEnvironmentDTO().getCode(),
+                    persistentVolumePayload.getDevopsEnvironmentDTO().getId(),
                     persistentVolumePayload.getDevopsEnvironmentDTO().getEnvIdRsa(),
                     persistentVolumePayload.getDevopsEnvironmentDTO().getType(),
                     persistentVolumePayload.getDevopsEnvironmentDTO().getClusterCode());

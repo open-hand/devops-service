@@ -250,7 +250,7 @@ public class CertificationServiceImpl implements CertificationService {
                                       C7nCertification c7nCertification) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentDTO, userAttrDTO);
-        clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa(), EnvironmentType.USER.getValue(), devopsEnvironmentDTO.getClusterCode());
+        clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), EnvironmentType.USER.getValue(), devopsEnvironmentDTO.getClusterCode());
 
         ResourceConvertToYamlHandler<C7nCertification> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
         resourceConvertToYamlHandler.setType(c7nCertification);
@@ -327,7 +327,13 @@ public class CertificationServiceImpl implements CertificationService {
             certificationOperation.operationEnvGitlabFile(
                     null, gitLabEnvProjectId,
                     "delete", userAttrDTO.getGitlabUserId(), certId, certificateType, null, false, certEnvId,
-                    clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode()));
+                    clusterConnectionHandler.handDevopsEnvGitRepository(
+                            devopsEnvironmentDTO.getProjectId(),
+                            devopsEnvironmentDTO.getCode(),
+                            devopsEnvironmentDTO.getId(),
+                            devopsEnvironmentDTO.getEnvIdRsa(),
+                            devopsEnvironmentDTO.getType(),
+                            devopsEnvironmentDTO.getClusterCode()));
         }
     }
 
