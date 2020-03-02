@@ -71,7 +71,7 @@ const numberDetail = observer(({ isLoading }) => {
     return checkGroup.map((item, key) => <div className={`${prefixCls}-number-check`} key={item.checkType}>
       <Icon type={item.icon} />
       <span>
-        {!isLoading ? (polarisNumDS.current && polarisNumDS.current.get(item.checkType)) : '-'}&nbsp;
+        {!isLoading ? (polarisNumDS.current && (polarisNumDS.current.get(item.checkType) || 0)) : '-'}&nbsp;
         {item.text}
       </span>
     </div>);

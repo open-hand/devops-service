@@ -7,6 +7,7 @@ import { Collapse, Progress, Icon } from 'choerodon-ui';
 import { useClusterMainStore } from '../../../../stores';
 import { useClusterContentStore } from '../../stores';
 import ProgressBar from '../components/Progress';
+import Tips from '../../../../../../../components/new-tips';
 
 import './index.less';
 
@@ -130,7 +131,7 @@ const collapseDetail = observer(({ loading }) => {
       return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: `${intlPrefix}.polaris.check.null` })}</span>;
     }
     if (isEmpty(list)) {
-      return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: 'c7ncd.cluster.polaris.check.empty' })}</span>;
+      return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: `${intlPrefix}.polaris.check.empty` })}</span>;
     }
     return (map(list, ({ hasErrors, kind, name, podResult }, index) => {
       const containers = podResult ? podResult.containerResults : [];
@@ -188,7 +189,7 @@ const collapseDetail = observer(({ loading }) => {
           className={`${prefixCls}-polaris-tabs-item`}
           key="cluster"
         >
-          <Collapse bordered={false} className={`${prefixCls}-polaris-tabs-collapse`}>
+          <Collapse bordered={false} className={`${prefixCls}-polaris-tabs-collapse-mgt`}>
             {map(clusterSummary, (item) => (
               <Panel header={getClusterHeader(item)} key={item}>
                 {getClusterContent(item)}
@@ -203,23 +204,28 @@ const collapseDetail = observer(({ loading }) => {
           <div className={`${prefixCls}-polaris-tabs-collapse-title`}>
             {formatMessage({ id: `${intlPrefix}.env.internal` })}
           </div>
-          <Collapse bordered={false} className={`${prefixCls}-polaris-tabs-collapse`}>
-            {envDetailDs.current && map(envDetailDs.current.get('internal'), (envRecord) => (
-              <Panel header={getEnvHeader(envRecord)} key={envRecord.id}>
-                {getEnvContent(envRecord)}
-              </Panel>
-            ))}
-          </Collapse>
+          {envDetailDs.current && !isEmpty(envDetailDs.current.get('internal')) ? (
+            <Collapse bordered={false} className={`${prefixCls}-polaris-tabs-collapse`}>
+              {map(envDetailDs.current.get('internal'), (envRecord) => (
+                <Panel header={getEnvHeader(envRecord)} key={envRecord.id}>
+                  {getEnvContent(envRecord)}
+                </Panel>
+              ))}
+            </Collapse>) : <span className={`${prefixCls}-polaris-empty-text`}>{formatMessage({ id: 'empty.title.env' })}</span>}
           <div className={`${prefixCls}-polaris-tabs-collapse-title`}>
-            {formatMessage({ id: `${intlPrefix}.env.external` })}
+            <Tips
+              title={formatMessage({ id: `${intlPrefix}.env.external` })}
+              helpText={formatMessage({ id: `${intlPrefix}.env.external.tips` })}
+            />
           </div>
-          <Collapse bordered={false} className={`${prefixCls}-polaris-tabs-collapse`}>
-            {envDetailDs.current && map(envDetailDs.current.get('external'), (envRecord, index) => (
-              <Panel header={getEnvHeader(envRecord)} key={`${envRecord.namespace}-${index}`}>
-                {getEnvContent(envRecord)}
-              </Panel>
-            ))}
-          </Collapse>
+          {envDetailDs.current && !isEmpty(envDetailDs.current.get('external')) ? (
+            <Collapse bordered={false} className={`${prefixCls}-polaris-tabs-collapse`}>
+              {map(envDetailDs.current.get('external'), (envRecord, index) => (
+                <Panel header={getEnvHeader(envRecord)} key={`${envRecord.namespace}-${index}`}>
+                  {getEnvContent(envRecord)}
+                </Panel>
+              ))}
+            </Collapse>) : <span className={`${prefixCls}-polaris-empty-text`}>{formatMessage({ id: 'empty.title.env' })}</span>}
         </TabPane>
       </Tabs>
     </div>

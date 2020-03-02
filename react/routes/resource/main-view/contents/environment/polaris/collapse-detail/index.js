@@ -17,6 +17,7 @@ const collapseDetail = observer(({ loading }) => {
   const {
     intl: { formatMessage },
     istSummaryDs,
+    intlPrefix,
   } = useEnvironmentStore();
 
   const isLoading = useMemo(() => loading || istSummaryDs.status === 'loading', [loading, istSummaryDs.status]);
@@ -48,7 +49,7 @@ const collapseDetail = observer(({ loading }) => {
       return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: 'c7ncd.cluster.polaris.check.null' })}</span>;
     }
     if (isEmpty(items)) {
-      return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: 'c7ncd.cluster.polaris.check.empty' })}</span>;
+      return <span className={`${prefixCls}-polaris-tabs-content`}>{formatMessage({ id: `${intlPrefix}.polaris.check.empty` })}</span>;
     }
     return (map(items, ({ hasErrors, kind, name, podResult }, index) => {
       const containers = podResult ? podResult.containerResults : [];
