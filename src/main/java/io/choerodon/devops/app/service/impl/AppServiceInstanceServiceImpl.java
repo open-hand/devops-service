@@ -1237,7 +1237,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Saga(code = SagaTopicCodeConstants.DEVOPS_BATCH_DEPLOYMENT, inputSchemaClass = BatchDeploymentPayload.class, description = "批量部署实例")
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
-    public void batchDeployment(Long projectId, List<AppServiceDeployVO> appServiceDeployVOS) {
+    public List<AppServiceInstanceVO> batchDeployment(Long projectId, List<AppServiceDeployVO> appServiceDeployVOS) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceDeployVOS.get(0).getEnvironmentId());
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -1248,6 +1248,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         List<ServiceSagaPayLoad> services = new ArrayList<>();
         List<IngressSagaPayload> ingresses = new ArrayList<>();
         List<DevopsDeployRecordInstanceDTO> recordInstances = new ArrayList<>();
+        List<Long> instanceIds = new ArrayList<>();
 
         for (AppServiceDeployVO appServiceDeployVO : appServiceDeployVOS) {
             InstanceSagaPayload payload = processSingleOfBatch(projectId, devopsEnvironmentDTO, userAttrDTO, appServiceDeployVO);
@@ -1259,6 +1260,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     payload.getAppServiceVersionDTO().getVersion(),
                     payload.getApplicationDTO().getId(),
                     devopsEnvironmentDTO.getId()));
+            instanceIds.add(payload.getAppServiceDeployVO().getInstanceId());
 
             //创建实例时，如果选择了创建网络
             if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
@@ -1302,6 +1304,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 .withRefType("env")
                 .withSagaCode(SagaTopicCodeConstants.DEVOPS_BATCH_DEPLOYMENT)
                 .withJson(new JSON().serialize(batchDeploymentPayload)), LambdaUtil.doNothingConsumer());
+
+        return ConvertUtils.convertList(appServiceInstanceMapper.queryByInstanceIds(instanceIds), AppServiceInstanceVO.class);
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)

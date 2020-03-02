@@ -639,4 +639,13 @@
             #{instanceId,jdbcType=BIGINT}
         </foreach>
     </select>
+
+    <select id="queryByInstanceIds" resultType="io.choerodon.devops.infra.dto.AppServiceInstanceDTO">
+        SELECT dasi.*
+        FROM devops_app_service_instance dasi
+        WHERE dasi.id IN
+        <foreach collection="instanceIds" item="instanceId" open="(" close=")" separator=",">
+            #{instanceId,jdbcType=BIGINT}
+        </foreach>
+    </select>
 </mapper>

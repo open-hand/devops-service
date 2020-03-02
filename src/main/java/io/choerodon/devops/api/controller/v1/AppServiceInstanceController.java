@@ -860,14 +860,13 @@ public class AppServiceInstanceController {
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @PostMapping("/batch_deployment")
-    public ResponseEntity batchDeployment(
+    public ResponseEntity<List<AppServiceInstanceVO>> batchDeployment(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "批量部署信息数组", required = true)
             @RequestBody List<AppServiceDeployVO> appServiceDeployVOs) {
         // 校验参数正确性
         appServiceInstanceValidator.validateBatchDeployment(appServiceDeployVOs);
-        appServiceInstanceService.batchDeployment(projectId, appServiceDeployVOs);
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity<>(appServiceInstanceService.batchDeployment(projectId, appServiceDeployVOs), HttpStatus.OK);
     }
 }

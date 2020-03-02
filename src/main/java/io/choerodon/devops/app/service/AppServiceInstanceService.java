@@ -345,8 +345,9 @@ public interface AppServiceInstanceService {
      * 批量部署实例（及其网络、域名）
      *
      * @param appServiceDeployVOS 批量部署信息
+     * @return 返回部署的实例信息
      */
-    void batchDeployment(Long projectId, List<AppServiceDeployVO> appServiceDeployVOS);
+    List<AppServiceInstanceVO> batchDeployment(Long projectId, List<AppServiceDeployVO> appServiceDeployVOS);
 
     /**
      * 处理批量部署事件
