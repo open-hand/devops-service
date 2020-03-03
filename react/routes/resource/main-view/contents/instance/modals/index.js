@@ -181,9 +181,12 @@ const IstModals = injectIntl(observer(() => {
   }
 
   function getHeader() {
+    const [envId] = parentId.split('-');
+    const envRecord = treeDs.find((record) => record.get('key') === envId);
+    const connect = envRecord && envRecord.get('connect');
     const record = baseDs.current;
     const status = record ? record.get('status') : '';
-    const btnDisabled = !status || (status !== 'failed' && status !== 'running');
+    const btnDisabled = !connect || !status || (status !== 'failed' && status !== 'running');
 
     const buttons = [{
       name: formatMessage({ id: `${intlPrefix}.modal.values` }),
