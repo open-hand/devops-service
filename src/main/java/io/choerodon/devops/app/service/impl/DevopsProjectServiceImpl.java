@@ -1,8 +1,22 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectReqVO;
@@ -18,24 +32,6 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.PageInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.web.server.ui.LoginPageGeneratingWebFilter;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Created by Sheep on 2019/7/15.
@@ -182,7 +178,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
             List<IamUserDTO> iamUserDTOList = baseServiceClientOperator.queryUsersByUserIds(selectedIamUserIds);
             if (!CollectionUtils.isEmpty(iamUserDTOList)) {
                 iamUserDTOList.forEach(iamUserDTO -> {
-                    if (allMember.size() != 0) {
+                    if (!allMember.isEmpty()) {
                         allMember.remove(iamUserDTO);
                         allMember.add(0, iamUserDTO);
                     } else {

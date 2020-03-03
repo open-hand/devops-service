@@ -173,7 +173,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 }
             }
         }
-        return CollectionUtils.isEmpty(ids) ? false : true;
+        return !CollectionUtils.isEmpty(ids);
     }
 
 

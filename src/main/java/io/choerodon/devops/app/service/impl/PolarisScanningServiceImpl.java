@@ -527,7 +527,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
                 return;
             }
             // 挑选出各个层级未通过的检测项放入到要作为json传出到数据库的对象中
-            map.computeIfAbsent(instanceId, (id) -> new ArrayList<>()).add(analyzePolarisResult(result));
+            map.computeIfAbsent(instanceId, id -> new ArrayList<>()).add(analyzePolarisResult(result));
         });
 
         // 查出实例信息

@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -16,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
@@ -40,7 +40,6 @@ import io.choerodon.devops.infra.enums.PipelineNoticeType;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.springframework.util.CollectionUtils;
 
 
 /**

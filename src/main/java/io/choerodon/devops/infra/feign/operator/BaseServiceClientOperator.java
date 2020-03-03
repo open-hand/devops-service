@@ -1,17 +1,27 @@
 package io.choerodon.devops.infra.feign.operator;
 
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ExceptionResponse;
 import io.choerodon.core.exception.FeignException;
-import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
 import io.choerodon.devops.api.vo.iam.RemoteTokenAuthorizationVO;
-import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.enums.LabelType;
@@ -20,23 +30,6 @@ import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.util.FeignParamUtils;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.core.iam.InitRoleCode.PROJECT_MEMBER;
-import static io.choerodon.core.iam.InitRoleCode.PROJECT_OWNER;
 
 /**
  * Created by Sheep on 2019/7/11.

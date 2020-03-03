@@ -464,7 +464,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
 
     public DevopsConfigDTO baseQueryDefaultConfig(String type) {
         DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
-        if (type.equals("harbor")) {
+        if (type.equals(HARBOR)) {
             devopsConfigDTO.setName(DevopsCommandRunner.HARBOR_NAME);
         } else {
             devopsConfigDTO.setName(DevopsCommandRunner.CHART_NAME);

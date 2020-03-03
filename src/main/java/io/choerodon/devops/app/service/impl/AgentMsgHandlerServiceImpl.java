@@ -500,7 +500,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     break;
             }
         } catch (IOException e) {
-            logger.info("Unexpected exception occurred when processing resourceUpdate. The exception is {}", e.toString());
+            logger.info("Unexpected exception occurred when processing resourceUpdate. The exception is {}", e);
         }
     }
 

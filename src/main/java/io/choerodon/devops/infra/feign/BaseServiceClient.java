@@ -1,27 +1,25 @@
 package io.choerodon.devops.infra.feign;
 
-import com.github.pagehelper.PageInfo;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.validation.Valid;
 
-import io.choerodon.core.annotation.Permission;
-import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
+import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
-import io.choerodon.devops.api.vo.iam.*;
+import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
+import io.choerodon.devops.api.vo.iam.RemoteTokenAuthorizationVO;
+import io.choerodon.devops.api.vo.iam.RoleVO;
 import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
-
-import io.swagger.annotations.ApiOperation;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-import java.net.CacheResponse;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by younger on 2018/3/29.

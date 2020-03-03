@@ -4,8 +4,6 @@ import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-
 /**
  * 批量部署的信息
  *
