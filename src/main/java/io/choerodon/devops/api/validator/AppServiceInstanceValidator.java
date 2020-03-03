@@ -57,10 +57,10 @@ public class AppServiceInstanceValidator {
         for (AppServiceDeployVO appServiceDeployVO : appServiceDeployVOS) {
             Set<ConstraintViolation<AppServiceDeployVO>> set = validator.validate(appServiceDeployVO);
             if (!CollectionUtils.isEmpty(set)) {
-                for (ConstraintViolation<AppServiceDeployVO> cv : set) {
+                set.stream().findFirst().ifPresent(cv -> {
                     LOGGER.info("App-service-validator: invalid instance. the message is {}", cv.getMessageTemplate());
                     throw new CommonException(cv.getMessageTemplate());
-                }
+                });
             }
             if (instanceCodes.contains(appServiceDeployVO.getInstanceName())) {
                 throw new CommonException("error.app.service.name.duplicated.in.list", appServiceDeployVO.getInstanceName());
@@ -71,10 +71,10 @@ public class AppServiceInstanceValidator {
             if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
                 Set<ConstraintViolation<DevopsServiceReqVO>> serviceSet = validator.validate(appServiceDeployVO.getDevopsServiceReqVO());
                 if (!CollectionUtils.isEmpty(serviceSet)) {
-                    for (ConstraintViolation<DevopsServiceReqVO> cv : serviceSet) {
+                    serviceSet.stream().findFirst().ifPresent(cv -> {
                         LOGGER.info("App-service-validator: invalid service. the message is {}", cv.getMessageTemplate());
                         throw new CommonException(cv.getMessageTemplate());
-                    }
+                    });
                 }
                 if (serviceNames.contains(appServiceDeployVO.getDevopsServiceReqVO().getName())) {
                     throw new CommonException("error.service.name.duplicated.in.list", appServiceDeployVO.getDevopsServiceReqVO().getName());

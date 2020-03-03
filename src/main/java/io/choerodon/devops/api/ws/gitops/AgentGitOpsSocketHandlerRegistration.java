@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.PingMessage;
 import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.server.HandshakeFailureException;
 
 import io.choerodon.devops.api.vo.ClusterSessionVO;
 import io.choerodon.devops.api.ws.WebSocketTool;
@@ -29,8 +27,6 @@ import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.util.KeyParseUtil;
-import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.websocket.connect.SocketHandlerRegistration;
 import io.choerodon.websocket.helper.WebSocketHelper;
