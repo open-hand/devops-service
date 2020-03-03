@@ -1,10 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.google.gson.Gson;
 import org.slf4j.Logger;
@@ -153,6 +150,8 @@ public class HarborServiceImpl implements HarborService {
             //给项目绑定角色
             Response<List<ProjectDetail>> projects = harborClient.listProject(organizationDTO.getCode() + "-" + projectDTO.getCode()).execute();
             if (!CollectionUtils.isEmpty(projects.body())) {
+                Integer harborProjectId = devopsConfigService.getHarborProjectId(projects.body(), organizationDTO.getCode() + "-" + projectDTO.getCode());
+
                 Response<SystemInfo> systemInfoResponse = harborClient.getSystemInfo().execute();
                 if (systemInfoResponse.raw().code() != 200) {
                     throw new CommonException(systemInfoResponse.errorBody().string());
@@ -161,14 +160,14 @@ public class HarborServiceImpl implements HarborService {
                     Role role = new Role();
                     role.setUsername(user.getUsername());
                     role.setRoles(roles);
-                    result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), role).execute();
+                    result = harborClient.setProjectMember(harborProjectId, role).execute();
                 } else {
                     ProjectMember projectMember = new ProjectMember();
                     MemberUser memberUser = new MemberUser();
                     projectMember.setRoleId(roles.get(0));
                     memberUser.setUsername(user.getUsername());
                     projectMember.setMemberUser(memberUser);
-                    result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), projectMember).execute();
+                    result = harborClient.setProjectMember(harborProjectId, projectMember).execute();
                 }
                 if (result.raw().code() != 201 && result.raw().code() != 200 && result.raw().code() != 409) {
                     throw new CommonException(result.errorBody().string());
