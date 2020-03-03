@@ -109,7 +109,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         List<String> roleLabels = gitlabGroupMemberVO.getRoleLabels();
         if (roleLabels.contains(LabelType.ORGANIZATION_GITLAB_OWNER.getValue())) {
             List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(gitlabGroupMemberVO.getResourceId());
-            if (projectDTOS != null || projectDTOS.size() > 0) {
+            if (projectDTOS != null && projectDTOS.size() > 0) {
                 if (isCreate) {
                     projectDTOS.stream().forEach(projectDTO -> {
                         assignGitLabGroupMemeberForOwner(projectDTO, gitlabGroupMemberVO.getUserId());
@@ -586,7 +586,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     public void assignGitLabGroupOwner(Long groupId, MemberDTO groupMemberDTO, MemberDTO memberDTO) {
         if (Objects.isNull(groupMemberDTO)) {
-            LOGGER.info("Group member user is null ,create group member user");
             gitlabServiceClientOperator.createGroupMember(TypeUtil.objToInteger(groupId), memberDTO);
         } else {
             if (!AccessLevel.OWNER.toValue().equals(groupMemberDTO.getAccessLevel())) {
@@ -607,12 +606,10 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             MemberDTO appMemberDTO = gitlabServiceClientOperator.queryGroupMember(
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (!Objects.isNull(devopsProjectDTO.getDevopsAppGroupId())) {
-                LOGGER.info("assign app service gitlab owner , group id is {}", devopsProjectDTO.getDevopsAppGroupId());
                 assignGitLabGroupOwner(devopsProjectDTO.getDevopsAppGroupId(), appMemberDTO, memberDTO);
             }
             if (!Objects.isNull(devopsProjectDTO.getDevopsEnvGroupId())) {
                 //添加环境的owner权限
-                LOGGER.info("assign env service gitlab owner , group id is {}", devopsProjectDTO.getDevopsEnvGroupId());
                 MemberDTO envMemberDTO1 = gitlabServiceClientOperator.queryGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
                 assignGitLabGroupOwner(devopsProjectDTO.getDevopsEnvGroupId(), envMemberDTO1, memberDTO);
             }
@@ -620,7 +617,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             //添加集群配置库的owner,一些旧项目的集群group是采用懒加载的方式创建的,组可能为null
             if (!Objects.isNull(devopsProjectDTO.getDevopsClusterEnvGroupId())) {
                 MemberDTO clusterMemberDTO1 = gitlabServiceClientOperator.queryGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-                LOGGER.info("assign env service gitlab owner , group id is {}", devopsProjectDTO.getDevopsClusterEnvGroupId());
                 assignGitLabGroupOwner(devopsProjectDTO.getDevopsClusterEnvGroupId(), clusterMemberDTO1, memberDTO);
             }
         }
