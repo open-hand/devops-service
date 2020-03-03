@@ -691,6 +691,7 @@ const deploy = {
   'c7ncd.deploy.process.tips': '下方展示的均是人工触发流水线，您可在此批量选择并启动这些人工触发流水线',
   'c7ncd.deploy.add.appService.normal': '添加项目应用服务',
   'c7ncd.deploy.add.appService.share': '添加共享应用服务',
+  'c7ncd.deploy.batch.deploy.error': '请完善所选应用服务的部署信息',
 };
 
 const repository = {

@@ -34,7 +34,8 @@ const BatchDeployModal = injectIntl(observer(() => {
   const [resourceIsExpand, setResourceIsExpand] = useState(false);
   const [netIsExpand, setNetIsExpand] = useState(false);
   const [ingressIsExpand, setIngressIsExpand] = useState(false);
-  
+  const [showError, setShowError] = useState(false);
+
   useEffect(() => {
     if (envId) {
       record.init('environmentId', envId);
@@ -49,11 +50,11 @@ const BatchDeployModal = injectIntl(observer(() => {
   modal.handleOk(async () => {
     if (hasYamlFailed) return false;
     try {
-      const environmentId = batchDeployDs.current.get('environmentId');
       const res = await batchDeployDs.submit();
       if (res !== false) {
-        refresh({ envId: environmentId }, 'resource');
+        refresh(res.list ? res.list[0] : {}, 'resource');
       } else {
+        setShowError(true);
         return false;
       }
     } catch (e) {
@@ -209,6 +210,9 @@ const BatchDeployModal = injectIntl(observer(() => {
           >
             {formatMessage({ id: `${intlPrefix}.add.appService.share` })}
           </Button>
+          {showError && <div className={`${prefixCls}-batch-deploy-error`}>
+            {formatMessage({ id: `${intlPrefix}.batch.deploy.error` })}
+          </div>}
         </div>
         <div className={`${prefixCls}-batch-deploy-content-form`}>
           <Form record={batchDeployDs.current} columns={3}>
