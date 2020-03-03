@@ -2,8 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import javax.annotation.Nullable;
 
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

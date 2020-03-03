@@ -46,10 +46,8 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     public static final String CUSTOM = "custom";
     public static final String LABELS = "labels";
     public static final String KIND = "kind";
-    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
     private static final String FILE_NAME_PATTERN = "custom-%s.yaml";
 
-    private static Gson gson = new Gson();
     private static final List<String> RESOURCE_TYPE = Arrays.asList(ResourceType.SERVICE.getType(), ResourceType.INGRESS.getType(),
             ResourceType.CONFIGMAP.getType(), ResourceType.SECRET.getType(),
             ResourceType.C7NHELMRELEASE.getType(), ResourceType.CERTIFICATE.getType(),

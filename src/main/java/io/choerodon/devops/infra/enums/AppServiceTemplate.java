@@ -1,9 +1,7 @@
 package io.choerodon.devops.infra.enums;
 
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 
 public enum AppServiceTemplate {
     MICROSERVICE_TEMPLATE("MicroService"),

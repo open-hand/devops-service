@@ -1,8 +1,17 @@
 package io.choerodon.devops.app.service.impl;
 
 
-import com.github.pagehelper.PageInfo;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import com.google.gson.Gson;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.vo.DevopsNotificationTransferDataVO;
@@ -21,17 +30,6 @@ import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsNotificationMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -88,7 +86,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         resourceCheckVO.setMethod(method.stream().collect(Collectors.joining(",")));
         resourceCheckVO.setNotificationId(messageSettingVO.getId());
         List<TargetUserDTO> targetUserDTOS = messageSettingVO.getTargetUserDTOS();
-        if (targetUserDTOS == null || targetUserDTOS.size() == 0) {
+        if (CollectionUtils.isEmpty(targetUserDTOS)) {
             return new ResourceCheckVO();
         }
         List<String> userList = new ArrayList<>();
@@ -180,7 +178,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         notifyVO.setNotifyType(NOTIFY_TYPE);
         List<TargetUserDTO> targetUserDTOS = messageSettingVO.getTargetUserDTOS();
         //通知对象为null，则不发消息
-        if (targetUserDTOS == null || targetUserDTOS.size() == 0) {
+        if (CollectionUtils.isEmpty(targetUserDTOS)) {
             return;
         }
         List<NoticeSendDTO.User> users = new ArrayList<>();

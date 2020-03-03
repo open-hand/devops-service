@@ -6,7 +6,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
-import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +14,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.notify.NoticeSendDTO;
+import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.NoticeCodeConstants;
 import io.choerodon.devops.infra.dto.*;
@@ -30,7 +30,6 @@ import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 发送DevOps相关通知的实现类

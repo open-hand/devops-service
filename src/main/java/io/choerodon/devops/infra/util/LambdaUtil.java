@@ -7,7 +7,10 @@ import java.util.function.Consumer;
  * @author zmf
  * @since 2/24/20
  */
-public class LambdaUtil {
+public final class LambdaUtil {
+    private LambdaUtil() {
+    }
+
     private static final Consumer DO_NOTHING = no -> {
     };
 

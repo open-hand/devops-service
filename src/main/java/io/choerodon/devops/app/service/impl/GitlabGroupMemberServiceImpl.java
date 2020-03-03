@@ -3,14 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Collections2;
-import com.netflix.discovery.converters.Auto;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.LabelType;
-import io.choerodon.devops.infra.feign.BaseServiceClient;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +21,15 @@ import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.EnvironmentType;
 import io.choerodon.devops.infra.enums.GitlabGroupType;
+import io.choerodon.devops.infra.enums.LabelType;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
+import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 
@@ -111,9 +107,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(gitlabGroupMemberVO.getResourceId());
             if (projectDTOS != null && projectDTOS.size() > 0) {
                 if (isCreate) {
-                    projectDTOS.stream().forEach(projectDTO -> {
-                        assignGitLabGroupMemeberForOwner(projectDTO, gitlabGroupMemberVO.getUserId());
-                    });
+                    projectDTOS.forEach(projectDTO -> assignGitLabGroupMemeberForOwner(projectDTO, gitlabGroupMemberVO.getUserId()));
                 } else {
                     deleteGitLabPermissions(projectDTOS, gitlabGroupMemberVO);
                 }
@@ -134,9 +128,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     public void deleteGitlabGroupMemberRole(List<GitlabGroupMemberVO> gitlabGroupMemberVOList) {
         gitlabGroupMemberVOList.stream()
                 .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(PROJECT))
-                .forEach(gitlabGroupMemberVO -> {
-                    deleteProcess(gitlabGroupMemberVO);
-                });
+                .forEach(this::deleteProcess);
         //组织root的标签，那么删除在组织下的root的权限
         gitlabGroupMemberVOList.stream().filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceType.ORGANIZATION.value())).forEach(gitlabGroupMemberVO -> {
             screenOrgLable(gitlabGroupMemberVO, Boolean.FALSE);

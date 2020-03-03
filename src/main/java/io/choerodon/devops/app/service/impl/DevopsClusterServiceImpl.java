@@ -663,7 +663,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public ClusterOverViewVO getClusterOverview(Long organizationId) {
-        ClusterOverViewVO clusterOverViewVO = new ClusterOverViewVO();
         List<Long> connectedClusterList = clusterConnectionHandler.getConnectedClusterList();
         List<DevopsClusterDTO> clusterDTOList = devopsClusterMapper.listByOrganizationId(organizationId);
         if (CollectionUtils.isEmpty(clusterDTOList)) {

@@ -8,13 +8,6 @@ import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-
-import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
-import io.choerodon.web.util.PageableHelper;
-
-import com.netflix.discovery.converters.Auto;
 import io.reactivex.Emitter;
 import io.reactivex.Observable;
 import io.reactivex.ObservableOnSubscribe;
@@ -26,15 +19,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import org.springframework.data.domain.Pageable;
-import org.springframework.util.CollectionUtils;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.notify.NoticeSendDTO;
@@ -48,13 +40,17 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineTaskDTO;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.mapper.PipelineAppServiceDeployMapper;
 import io.choerodon.devops.infra.mapper.PipelineMapper;
 import io.choerodon.devops.infra.mapper.PipelineRecordMapper;
 import io.choerodon.devops.infra.util.*;
+import io.choerodon.web.util.PageableHelper;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -152,8 +148,8 @@ public class PipelineServiceImpl implements PipelineService {
             List<Long> pipelineEnvIds = getAllAppDeploy(t.getId()).stream().map(PipelineAppServiceDeployDTO::getEnvId).collect(Collectors.toList());
             t.setEdit(checkPipelineEnvPermission(pipelineEnvIds, projectOwnerOrRoot));
             List<PipelineDTO> pipelineDTOS = pipelineMapper.selectByProjectId(t.getId());
-            if (!CollectionUtils.isEmpty(pipelineDTOS)){
-                t.setEnvName(pipelineDTOS.stream().map(e->e.getEnvName()).distinct().collect(Collectors.joining(",")));
+            if (!CollectionUtils.isEmpty(pipelineDTOS)) {
+                t.setEnvName(pipelineDTOS.stream().map(e -> e.getEnvName()).distinct().collect(Collectors.joining(",")));
             }
         }).collect(Collectors.toList()));
 
@@ -797,7 +793,7 @@ public class PipelineServiceImpl implements PipelineService {
             CustomUserDetails details = DetailsHelper.getUserDetails();
             createWorkFlow(pipelineDTO.getProjectId(), devopsPipelineDTO, details.getUsername(), details.getUserId(), details.getOrganizationId());
             List<PipelineStageRecordDTO> stageRecordES = pipelineStageRecordService.baseListByRecordAndStageId(pipelineRecordDTO.getId(), null);
-            if (stageRecordES != null && stageRecordES.size() > 0) {
+            if (!CollectionUtils.isEmpty(stageRecordES)) {
                 PipelineStageRecordDTO stageRecordE = stageRecordES.get(0);
                 stageRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
                 stageRecordE.setExecutionTime(TypeUtil.objToString(System.currentTimeMillis()));
@@ -1631,7 +1627,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     private Boolean checkEnvStatus(Long pipelineId, PipelineRecordDTO pipelineRecordDTO) {
         List<Long> envIds = pipelineMapper.listEnvIdByPipelineId(pipelineId);
-        if (envIds != null && envIds.size() > 0) {
+        if (!CollectionUtils.isEmpty(envIds)) {
             if (devopsEnvironmentMapper.queryEnvConutByEnvIds(envIds) != envIds.size()) {
                 pipelineRecordDTO.setErrorInfo(PIPELINE_ERROR_INFO);
                 pipelineRecordDTO.setStatus(PipelineStatus.FAILED.toValue());

@@ -1,6 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -9,12 +12,6 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.zaxxer.hikari.util.UtilityElf;
-import io.choerodon.devops.app.service.DevopsProjectService;
-import io.choerodon.devops.app.service.GitlabGroupMemberService;
-import io.choerodon.devops.infra.dto.DevopsProjectDTO;
-import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.AccessLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +20,12 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.kubernetes.CheckLog;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
+import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.DevopsCheckLogDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
@@ -51,8 +50,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private UserAttrService userAttrService;
-    @Autowired
-    private DevopsProjectService devopsProjectService;
     @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
 
@@ -101,7 +98,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 devopsCheckLogDTO.setEndCheckDate(new Date());
 
                 devopsCheckLogMapper.insert(devopsCheckLogDTO);
-            } catch (Throwable ex) {
+            } catch (Exception ex) {
                 printRetryNotice();
                 LOGGER.warn("Exception occurred when applying data migration. The ex is: {}", ex);
             }

@@ -1,22 +1,25 @@
 package io.choerodon.devops.infra.feign.fallback;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.validation.Valid;
+
 import com.github.pagehelper.PageInfo;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
-import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
-import io.choerodon.devops.api.vo.iam.*;
-import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
-import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
-import io.choerodon.devops.infra.dto.iam.*;
-import io.choerodon.devops.infra.feign.BaseServiceClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
+import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
+import io.choerodon.devops.api.vo.iam.RemoteTokenAuthorizationVO;
+import io.choerodon.devops.api.vo.iam.RoleVO;
+import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
+import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
+import io.choerodon.devops.infra.dto.iam.*;
+import io.choerodon.devops.infra.feign.BaseServiceClient;
 
 /**
  * Created by younger on 2018/3/29.
