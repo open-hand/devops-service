@@ -230,12 +230,14 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             try {
                 Response<List<ProjectDetail>> projects = harborClient.listProject(organizationDTO.getCode() + "-" + projectDTO.getCode()).execute();
                 if (!CollectionUtils.isEmpty(projects.body())) {
+                    Integer harborProjectId = getHarborProjectId(projects.body(), organizationDTO.getCode() + "-" + projectDTO.getCode());
+
                     //1.更新harbor项目为公开
                     ProjectDetail projectDetail = new ProjectDetail();
                     Metadata metadata = new Metadata();
                     metadata.setHarborPublic("true");
                     projectDetail.setMetadata(metadata);
-                    Response<Void> result = harborClient.updateProject(projects.body().get(0).getProjectId(), projectDetail).execute();
+                    Response<Void> result = harborClient.updateProject(harborProjectId, projectDetail).execute();
                     if (result.raw().code() != 200) {
                         throw new CommonException("error.update.harbor.project");
                     }
@@ -254,7 +256,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                             if (devopsProjectDTO.getHarborPullUserId() != null) {
                                 for (User user : users.body()) {
                                     try {
-                                        harborClient.deleteLowVersionMember(projects.body().get(0).getProjectId(), user.getUserId().intValue()).execute();
+                                        harborClient.deleteLowVersionMember(harborProjectId, user.getUserId().intValue()).execute();
                                     } catch (IOException e) {
                                         throw new CommonException("error.delete.harbor.member");
                                     }
@@ -262,7 +264,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                             }
                         }
                     } else {
-                        Response<List<ProjectMember>> projectMembers = harborClient.getProjectMembers(projects.body().get(0).getProjectId(), String.format(USER_PREFIX, organizationDTO.getId(), projectId)).execute();
+                        Response<List<ProjectMember>> projectMembers = harborClient.getProjectMembers(harborProjectId, String.format(USER_PREFIX, organizationDTO.getId(), projectId)).execute();
                         if (projectMembers.raw().code() != 200) {
                             throw new CommonException("error.list.harbor.project.member");
                         }
@@ -270,7 +272,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                             if (devopsProjectDTO.getHarborPullUserId() != null) {
                                 for (ProjectMember projectMember : projectMembers.body()) {
                                     try {
-                                        harborClient.deleteMember(projects.body().get(0).getProjectId(), projectMember.getId()).execute();
+                                        harborClient.deleteMember(harborProjectId, projectMember.getId()).execute();
                                     } catch (IOException e) {
                                         throw new CommonException("error.delete.harbor.member");
                                     }
@@ -575,7 +577,11 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         try {
             projectResponse = listProject.execute();
             if (projectResponse != null && projectResponse.body() != null) {
-                if ("false".equals(projectResponse.body().get(0).getMetadata().getHarborPublic())) {
+                Optional<ProjectDetail> optional = projectResponse.body().stream().filter(t -> t.getName().equals(devopsConfigVO.getConfig().getProject())).findFirst();
+                if (optional == null || !optional.isPresent()) {
+                    throw new CommonException("error.harbor.get.project");
+                }
+                if ("false".equals(optional.get().getMetadata().getHarborPublic())) {
                     devopsConfigVO.getConfig().setPrivate(true);
                 } else {
                     devopsConfigVO.getConfig().setPrivate(false);
@@ -621,11 +627,13 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             projects = harborClient.listProject(organizationDTO.getCode() + "-" + projectDTO.getCode()).execute();
 
             if (projects.body() != null && !projects.body().isEmpty()) {
+                Integer harborProjectId = getHarborProjectId(projects.body(), organizationDTO.getCode() + "-" + projectDTO.getCode());
+
                 ProjectDetail projectDetail = new ProjectDetail();
                 Metadata metadata = new Metadata();
                 metadata.setHarborPublic("false");
                 projectDetail.setMetadata(metadata);
-                result = harborClient.updateProject(projects.body().get(0).getProjectId(), projectDetail).execute();
+                result = harborClient.updateProject(harborProjectId, projectDetail).execute();
                 if (result.raw().code() != 200) {
                     throw new CommonException("error.update.harbor.project");
                 }
@@ -638,14 +646,14 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     Role role = new Role();
                     role.setUsername(user.getUsername());
                     role.setRoles(roles);
-                    result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), role).execute();
+                    result = harborClient.setProjectMember(harborProjectId, role).execute();
                 } else {
                     ProjectMember projectMember = new ProjectMember();
                     MemberUser memberUser = new MemberUser();
                     projectMember.setRoleId(roles.get(0));
                     memberUser.setUsername(user.getUsername());
                     projectMember.setMemberUser(memberUser);
-                    result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), projectMember).execute();
+                    result = harborClient.setProjectMember(harborProjectId, projectMember).execute();
                 }
                 if (result.raw().code() != 201 && result.raw().code() != 200 && result.raw().code() != 409) {
                     throw new CommonException("error.create.harbor.project.member");
@@ -654,6 +662,15 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         } catch (Exception e) {
             throw new CommonException(e);
         }
+    }
+
+    @Override
+    public Integer getHarborProjectId(List<ProjectDetail> projectDetailList, String harborProjectName) {
+        Optional<ProjectDetail> optional = projectDetailList.stream().filter(t -> t.getName().equals(harborProjectName)).findFirst();
+        if (optional == null || !optional.isPresent()) {
+            throw new CommonException("error.harbor.get.project");
+        }
+        return optional.get().getProjectId();
     }
 }
 
