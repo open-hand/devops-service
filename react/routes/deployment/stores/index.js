@@ -80,6 +80,7 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
         'devops-service.pipeline.audit',
         'devops-service.pipeline.retry',
         'devops-service.pipeline.failed',
+        'devops-service.app-service-instance.batchDeployment',
       ],
       intlPrefix,
       listDs,
