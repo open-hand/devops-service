@@ -96,10 +96,7 @@ const CodeQuality = withRouter(observer(() => {
    * 图表函数
    */
   function getOption() {
-    if (!chartsDs.current) {
-      return;
-    }
-    const getCodeQuality = chartsDs.current.toData();
+    const getCodeQuality = chartsDs.current ? chartsDs.current.toData() : {};
     const objectType = record.get('objectType');
     const series = [];
     const legend = [];
