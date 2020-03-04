@@ -158,6 +158,7 @@ const DeployModal = injectIntl(observer(({ form }) => {
           searchable
           colSpan={2}
           newLine
+          clearButton
           addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.config.tips` })} />}
           notFoundContent={<FormattedMessage id={`${intlPrefix}.config.empty`} />}
         />

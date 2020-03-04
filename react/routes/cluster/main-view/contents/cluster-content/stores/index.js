@@ -2,6 +2,7 @@ import React, { createContext, useMemo, useContext, useEffect } from 'react';
 import { inject } from 'mobx-react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
+import { axios } from '@choerodon/boot';
 import { DataSet } from 'choerodon-ui/pro';
 import { useClusterStore } from '../../../../stores';
 import { useClusterMainStore } from '../../../stores';
@@ -90,7 +91,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
           contentStore.loadComponentList(projectId, id);
           break;
         case tabs.MONITOR_TAB:
-          contentStore.loadGrafanaUrl(projectId, id);
+          loadMonitor();
           break;
         case tabs.POLARIS_TAB:
           clusterSummaryDs.transport.read.url = `/devops/v1/projects/${projectId}/polaris/clusters/${id}/summary`;
@@ -108,6 +109,18 @@ export const StoreProvider = injectIntl(inject('AppState')(
         polarisNumDS.query();
         clusterSummaryDs.query();
         envDetailDs.query();
+      }
+    }
+    async function loadMonitor() {
+      const res = await contentStore.loadGrafanaUrl(projectId, id);
+      if (res) {
+        const uri = escape(`${window.location}`);
+        axios.get('/oauth/is_login', { withCredentials: true })
+          .then((response) => {
+            if (!response) {
+              window.location = `${window._env_.API_HOST}/oauth/oauth/authorize?response_type=token&client_id=${window._env_.CLIENT_ID}&state=&redirect_uri=${uri}%26redirectFlag`;
+            }
+          });
       }
     }
 

@@ -36,7 +36,7 @@ export default function Permissions() {
         action: handleDelete,
       },
     ];
-    const isOwner = record.get('gitlabProjectOwner');
+    const isOwner = !record.get('gitlabProjectOwner');
     return isOwner && <Action data={actionData} />;
   }
 
