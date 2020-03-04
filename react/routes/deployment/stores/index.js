@@ -37,6 +37,10 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
           text: formatMessage({ id: `${intlPrefix}.manual` }),
           value: 'manual',
         },
+        {
+          text: formatMessage({ id: `${intlPrefix}.batch` }),
+          value: 'batch',
+        },
       ],
       selection: 'single',
     }), []);

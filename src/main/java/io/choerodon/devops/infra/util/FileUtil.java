@@ -431,6 +431,7 @@ public class FileUtil {
         try {
 
             String command = EXEC_PATH + " " + path;
+            // TODO 这里每次执行都是开启了一个新进程，可能开销不小
             Process p = Runtime.getRuntime().exec(command);
 
             stdInput = new BufferedReader(new
