@@ -73,6 +73,7 @@ export default function useStore() {
         const res = await axios.get(`/devops/v1/projects/${projectId}/deploy_value?value_id=${id}`);
         if (handlePromptError(res)) {
           this.setConfigValue(res.value);
+          return res.value;
         }
       } catch (e) {
         Choerodon.handleResponseError(e);
@@ -84,6 +85,7 @@ export default function useStore() {
         const res = await axios.get(`/devops/v1/projects/${projectId}/app_service_instances/deploy_value?version_id=${id}&type=create`);
         if (handlePromptError(res)) {
           this.setConfigValue(res.yaml);
+          return res.yaml;
         }
       } catch (e) {
         Choerodon.handleResponseError(e);
