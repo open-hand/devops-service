@@ -245,6 +245,7 @@ const Submission = observer(() => {
         >
           <Select
             name="apps"
+            searchable
             placeholder={formatMessage({ id: 'report.app.noselect' })}
             maxTagCount={3}
             // value={appId || []}

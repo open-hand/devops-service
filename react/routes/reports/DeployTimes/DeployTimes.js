@@ -401,7 +401,7 @@ const DeployTimes = observer(() => {
 
   const handleDateChoose = (type) => { setDateType(type); };
 
-  const maxTagNode = (data, value) => <MaxTagPopover dataSource={data} value={value} />;
+  const maxTagNode = (values) => <MaxTagPopover dataSource={env} value={values} />;
 
   const echartsLoading = ReportsStore.getEchartsLoading;
   const envData = ReportsStore.getEnvCard;
@@ -419,12 +419,13 @@ const DeployTimes = observer(() => {
     <div className="c7n-report-screen c7n-report-select">
       <Form style={{ width: 620, marginRight: 60 }} dataSet={DeployTimesSelectDataSet} columns={3}>
         <Select
+          searchable
           name="deployTimeApps"
           notFoundContent={formatMessage({ id: 'envoverview.noEnv' })}
           colSpan={2}
           maxTagCount={3}
           onChange={handleEnvSelect}
-          maxTagPlaceholder={maxTagNode(env)}
+          maxTagPlaceholder={(omittedValues) => maxTagNode(omittedValues)}
           optionFilterProp="children"
           filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
           filter
