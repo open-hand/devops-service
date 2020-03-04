@@ -259,6 +259,12 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         MemberDTO memberDTO = gitlabServiceClientOperator
                 .queryGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()),
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+
+        // 跳过Root用户
+        if (Boolean.TRUE.equals(userAttrDTO.getGitlabAdmin())) {
+            return;
+        }
+
         if (memberDTO != null && memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
             return;
         }
