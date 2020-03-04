@@ -1,18 +1,15 @@
 import React, { Component } from 'react';
-import { observer } from 'mobx-react';
+import { observer } from 'mobx-react-lite';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { Button, Tooltip, Table, Popover } from 'choerodon-ui';
 import { Permission, stores } from '@choerodon/boot';
-import TimeAgo from 'timeago-react';
 import MouserOverWrapper from '../../../../components/MouseOverWrapper';
-import ReportsStore from '../../stores';
 import '../../../code-manager/contents/ciPipelineManage/index.less';
 import './BuildTable.less';
 import TimePopover from '../../../../components/timePopover/TimePopover';
 import UserInfo from '../../../../components/userInfo';
-
-const { AppState } = stores;
+import { useReportsStore } from '../../stores';
 
 const ICONS = {
   passed: {
@@ -79,42 +76,41 @@ const ICONS_ACTION = {
   },
 };
 
-@observer
-class BuildTable extends Component {
-  constructor(props, context) {
-    super(props, context);
-    this.state = {
-    };
-  }
+const BuildTable = withRouter(observer((props) => {
+  const {
+    intl: { formatMessage },
+    AppState,
+    ReportsStore,
+  } = useReportsStore();
 
-  getColumns() {
+  function getColumns() {
     return [
       {
         title: <FormattedMessage id="ciPipeline.status" />,
         dataIndex: 'status',
-        render: (status, record) => this.renderStatus(status, record),
+        render: (status, record) => renderStatus(status, record),
       },
       {
         title: <FormattedMessage id="network.column.version" />,
         dataIndex: 'version',
-        render: (version) => this.renderVersion(version),
+        render: (version) => renderVersion(version),
       },
       {
         title: <FormattedMessage id="ciPipeline.commit" />,
         dataIndex: 'commit',
-        render: (commit, record) => this.renderCommit(commit, record),
+        render: (commit, record) => renderCommit(commit, record),
       },
       {
         title: <FormattedMessage id="ciPipeline.jobs" />,
         dataIndex: 'stages',
-        render: (stages, record) => this.renderstages(stages, record),
+        render: (stages, record) => renderstages(stages, record),
       },
       {
         title: <FormattedMessage id="ciPipeline.time" />,
         dataIndex: 'pipelineTime',
         render: (pipelineTime, record) => (
           <span>
-            {this.renderTime(pipelineTime, record)}
+            {renderTime(pipelineTime, record)}
           </span>
         ),
       },
@@ -126,12 +122,12 @@ class BuildTable extends Component {
       {
         width: 56,
         key: 'action',
-        render: (record) => this.renderAction(record),
+        render: (record) => renderAction(record),
       },
     ];
   }
 
-  renderStatus = (status, record) => (
+  const renderStatus = (status, record) => (
     <div className="c7n-status">
       <a
         href={record.gitlabUrl ? `${record.gitlabUrl.slice(0, -4)}/pipelines/${record.pipelineId}` : null}
@@ -145,14 +141,14 @@ class BuildTable extends Component {
     </div>
   );
 
-  renderVersion = (version) => {
+  const renderVersion = (version) => {
     if (version) {
       return <div>{version}</div>;
     }
     return <div><FormattedMessage id="report.build-duration.noversion" /></div>;
   };
 
-  renderCommit = (commit, record) => (
+  const renderCommit = (commit, record) => (
     <div className="c7n-commit">
       <div className="c7n-title-commit">
         <i className="icon icon-branch mr7" />
@@ -202,7 +198,7 @@ class BuildTable extends Component {
     </div>
   );
 
-  renderstages = (stages, record) => {
+  const renderstages = (stages, record) => {
     const pipeStage = [];
     if (stages && stages.length) {
       for (let i = 0, l = stages.length; i < l; i += 1) {
@@ -240,8 +236,7 @@ class BuildTable extends Component {
     );
   };
 
-  renderTime = (pipelineTime, record) => {
-    const { intl: { formatMessage } } = this.props;
+  const renderTime = (pipelineTime, record) => {
     if (pipelineTime) {
       if (pipelineTime.split('.')[1] === '00') {
         pipelineTime = `${pipelineTime.toString().split('.')[0]}${formatMessage({ id: 'minutes' })}`;
@@ -258,7 +253,7 @@ class BuildTable extends Component {
     }
   };
 
-  renderAction = (record) => {
+  const renderAction = (record) => {
     const projectId = AppState.currentMenuType.id;
     const organizationId = AppState.currentMenuType.organizationId;
     const type = AppState.currentMenuType.type;
@@ -277,7 +272,7 @@ class BuildTable extends Component {
             <Button
               size="small"
               shape="circle"
-              onClick={this.handleAction.bind(this, record)}
+              onClick={() => handleAction(record)}
             >
               <span className={`icon ${ICONS_ACTION[record.status] ? ICONS_ACTION[record.status].icon : ''} c7n-icon-action c7n-icon-sm`} />
             </Button>
@@ -289,20 +284,20 @@ class BuildTable extends Component {
     }
   };
 
-  handleAction(record) {
+  function handleAction(record) {
     if (record.status === 'running' || record.status === 'pending') {
       ReportsStore.cancelPipeline(record.gitlabProjectId, record.pipelineId);
     } else {
       ReportsStore.retryPipeline(record.gitlabProjectId, record.pipelineId);
     }
-    this.tableChange(ReportsStore.pageInfo);
+    tableChange(ReportsStore.pageInfo);
   }
 
   /**
    * 表格改变函数
    * @param pagination 分页
    */
-  tableChange = (pagination) => {
+  const tableChange = (pagination) => {
     const projectId = AppState.currentMenuType.id;
     const appId = ReportsStore.getAppId;
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
@@ -310,21 +305,19 @@ class BuildTable extends Component {
     ReportsStore.loadBuildTable(projectId, appId, startTime, endTime, pagination.current, pagination.pageSize);
   };
 
-  render() {
-    const { loading, pageInfo, allData } = ReportsStore;
-    return (
-      <Table
-        onChange={this.tableChange}
-        loading={loading}
-        columns={this.getColumns()}
-        className="c7n-buildTable-table"
-        dataSource={allData}
-        pagination={pageInfo}
-        filterBar={false}
-        rowKey={(record) => record.pipelineId}
-      />
-    );
-  }
-}
+  const { loading, pageInfo, allData } = ReportsStore;
+  return (
+    <Table
+      onChange={tableChange}
+      loading={loading}
+      columns={getColumns()}
+      className="c7n-buildTable-table"
+      dataSource={allData}
+      pagination={pageInfo}
+      filterBar={false}
+      rowKey={(record) => record.pipelineId}
+    />
+  );
+}));
 
-export default withRouter(injectIntl(BuildTable));
+export default BuildTable;

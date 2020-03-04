@@ -1,3 +1,9 @@
-import DeployDuration from './DeployDuration';
+import React from 'react';
+import { StoreProvider } from './stores';
+import Content from './DeployDuration';
 
-export default DeployDuration;
+export default (props) => (
+  <StoreProvider {...props}>
+    <Content />
+  </StoreProvider>
+);

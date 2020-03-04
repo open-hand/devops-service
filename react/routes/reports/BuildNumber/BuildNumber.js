@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
-import { observer } from 'mobx-react';
-import { injectIntl, FormattedMessage } from 'react-intl';
-import { Page, Header, Content, stores, Breadcrumb } from '@choerodon/boot';
-import { Select, Button, Tooltip, Spin } from 'choerodon-ui';
+import React, { useState, useEffect, useCallback } from 'react';
+import { observer } from 'mobx-react-lite';
+import { FormattedMessage } from 'react-intl';
+import { Page, Header, Content, Breadcrumb } from '@choerodon/boot';
+import { Form, Select, Button, Tooltip } from 'choerodon-ui/pro';
 import _ from 'lodash';
 import moment from 'moment';
 import ChartSwitch from '../Component/ChartSwitch';
@@ -12,60 +12,93 @@ import NoChart from '../Component/NoChart';
 import BuildTable from './BuildTable/BuildTable';
 import LoadingBar from '../../../components/loading';
 import BuildChart from './BuildChart';
+import { useReportsStore } from '../stores';
+import { useBuildNumberStore } from './stores';
 
-const { AppState } = stores;
 const { Option } = Select;
 const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 
-@observer
-class BuildNumber extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      dateType: 'seven',
+const BuildNumber = observer(() => {
+  const {
+    ReportsStore,
+    ReportsStore: {
+      getProRole,
+      changeIsRefresh,
+      getStartTime,
+      setAllData,
+      setBuildNumber,
+      setStartTime,
+      setEndTime,
+      setAppId,
+      setPageInfo,
+      setStartDate,
+      setEndDate,
+      setAllApps,
+      loadAllApps,
+      pageInfo,
+      getAllApps,
+      appId,
+      getStartDate,
+      getEndDate,
+      echartsLoading,
+      isRefresh,
+      getAppId,
+      getEndTime,
+      loadBuildNumber,
+      loadBuildTable,
+    },
+    intl: { formatMessage },
+    AppState,
+    history,
+    history: { location: { state, search } },
+  } = useReportsStore();
+
+  const {
+    BuildNumberSelectDataSet,
+  } = useBuildNumberStore();
+
+  const record = BuildNumberSelectDataSet.current;
+
+  const [dateType, setDateType] = useState('seven');
+
+  useEffect(() => {
+    changeIsRefresh(true);
+    loadDatas();
+
+    return () => {
+      setAllData([]);
+      setBuildNumber({});
+      setStartTime(moment().subtract(6, 'days'));
+      setEndTime(moment());
+      setAppId(null);
+      setPageInfo({ pageNum: 0, total: 0, pageSize: 10 });
+      setStartDate();
+      setEndDate();
+      setAllApps([]);
     };
-  }
+  }, []);
 
-  componentDidMount() {
-    const { ReportsStore } = this.props;
-    ReportsStore.changeIsRefresh(true);
-    this.loadDatas();
-  }
-
-  componentWillUnmount() {
-    const { ReportsStore } = this.props;
-    ReportsStore.setAllData([]);
-    ReportsStore.setBuildNumber({});
-    ReportsStore.setStartTime(moment().subtract(6, 'days'));
-    ReportsStore.setEndTime(moment());
-    ReportsStore.setAppId(null);
-    ReportsStore.setPageInfo({ pageNum: 0, total: 0, pageSize: 10 });
-    ReportsStore.setStartDate();
-    ReportsStore.setEndDate();
-    ReportsStore.setAllApps([]);
-  }
+  useEffect(() => {
+    record.set('buildNumberApps', appId);
+  }, [appId]);
 
   /**
    * 加载数据
    */
-  loadDatas = () => {
-    const {
-      ReportsStore,
-      history: { location: { state } },
-    } = this.props;
+  const loadDatas = () => {
     let historyAppId = null;
     if (state && state.appId) {
       historyAppId = state.appId;
     }
     const { id } = AppState.currentMenuType;
-    ReportsStore.loadAllApps(id).then((data) => {
+    loadAllApps(id).then((data) => {
       if (data && data.length) {
         let selectApp = data[0].id;
         if (historyAppId) {
           selectApp = historyAppId;
         }
-        ReportsStore.setAppId(selectApp);
-        this.loadCharts();
+        setAppId(selectApp);
+        loadCharts();
       }
     });
   };
@@ -73,117 +106,113 @@ class BuildNumber extends Component {
   /**
    * 刷新
    */
-  handleRefresh = () => {
-    const { ReportsStore } = this.props;
+  const handleRefresh = () => {
     const { id } = AppState.currentMenuType;
-    const { pageInfo } = ReportsStore;
-    ReportsStore.loadAllApps(id);
-    this.loadCharts(pageInfo);
+    loadAllApps(id);
+    loadCharts(pageInfo);
   };
 
   /**
    * 选择应用
    * @param value
    */
-  handleAppSelect = (value) => {
-    const { ReportsStore } = this.props;
-    ReportsStore.setAppId(value);
-    this.loadCharts();
+  const handleAppSelect = (value) => {
+    setAppId(value);
+    loadCharts();
   };
 
-  loadCharts = (pageInfo) => {
-    const { ReportsStore } = this.props;
+  const loadCharts = useCallback((pageInfoCurrent) => {
     const projectId = AppState.currentMenuType.id;
-    const appId = ReportsStore.getAppId;
-    const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
-    const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
-    ReportsStore.loadBuildNumber(projectId, appId, startTime, endTime);
-    if (pageInfo) {
-      ReportsStore.loadBuildTable(projectId, appId, startTime, endTime, pageInfo.current, pageInfo.pageSize);
+    const startTime = getStartTime.format().split('T')[0].replace(/-/g, '/');
+    const appIdCurrent = ReportsStore.getAppId;
+    const endTime = getEndTime.format().split('T')[0].replace(/-/g, '/');
+    loadBuildNumber(projectId, appIdCurrent, startTime, endTime);
+    if (pageInfoCurrent) {
+      loadBuildTable(projectId, appIdCurrent, startTime, endTime, pageInfoCurrent.current, pageInfoCurrent.pageSize);
     } else {
-      ReportsStore.loadBuildTable(projectId, appId, startTime, endTime);
+      loadBuildTable(projectId, appIdCurrent, startTime, endTime);
     }
+  }, [appId]);
+
+  const handleDateChoose = (type) => {
+    setDateType(type);
   };
 
-  handleDateChoose = (type) => {
-    this.setState({ dateType: type });
-  };
+  const { id, name, type, organizationId } = AppState.currentMenuType;
+  const backPath = state && state.backPath ? state.backPath : 'reports';
 
-  render() {
-    const { intl: { formatMessage }, history, ReportsStore } = this.props;
-    const { dateType } = this.state;
-    const { id, name, type, organizationId } = AppState.currentMenuType;
-    const { location: { state, search } } = history;
-    const backPath = state && state.backPath ? state.backPath : 'reports';
-    const { getAllApps, appId, echartsLoading, isRefresh } = ReportsStore;
-
-    const content = (getAllApps.length ? <React.Fragment>
-      <div className="c7n-buildNumber-select">
+  const content = (getAllApps.length ? <React.Fragment>
+    <div className="c7n-buildNumber-select">
+      <Form
+        dataSet={BuildNumberSelectDataSet}
+        className="c7n-app-select_247"
+      >
         <Select
-          label={formatMessage({ id: 'chooseApp' })}
-          className="c7n-app-select_247"
-          defaultValue={appId}
-          value={appId}
+          name="buildNumberApps"
+          // defaultValue={appId}
+          // value={appId}
           optionFilterProp="children"
           filterOption={(input, option) => option.props.children.props.children.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
           filter
-          onChange={this.handleAppSelect}
+          onChange={handleAppSelect}
         >
           {
             _.map(getAllApps, (app, index) => (
+
               <Option value={app.id} key={index}>
-                <Tooltip title={app.code}>
-                  <span className="c7n-app-select-tooltip">
-                    {app.name}
-                  </span>
-                </Tooltip>
+                {app.name}
+                {/* {app.name} */}
+                {/* <Tooltip title={app.code}> */}
+                {/*  <span className="c7n-app-select-tooltip"> */}
+                {/*    {app.name} */}
+                {/*  </span> */}
+                {/* </Tooltip> */}
               </Option>))
           }
         </Select>
-        <TimePicker
-          startTime={ReportsStore.getStartDate}
-          endTime={ReportsStore.getEndDate}
-          func={this.loadCharts}
-          type={dateType}
-          onChange={this.handleDateChoose}
-          store={ReportsStore}
-        />
-      </div>
-      <BuildChart echartsLoading={echartsLoading} height="400px" top="15%" languageType="report" />
-      <BuildTable />
-    </React.Fragment> : <NoChart type="app" />);
+      </Form>
+      <TimePicker
+        startTime={getStartDate}
+        endTime={getEndDate}
+        func={loadCharts}
+        type={dateType}
+        onChange={handleDateChoose}
+        store={ReportsStore}
+      />
+    </div>
+    <BuildChart ReportsStore={ReportsStore} echartsLoading={echartsLoading} height="400px" top="15%" languageType="report" />
+    <BuildTable />
+  </React.Fragment> : <NoChart getProRole={getProRole} type="app" />);
 
-    return (<Page
-      className="c7n-region c7n-ciPipeline"
-      service={[
-        'devops-service.application.listByActive',
-        'devops-service.devops-gitlab-pipeline.listPipelineFrequency',
-        'devops-service.devops-gitlab-pipeline.pagePipeline',
-        'devops-service.project-pipeline.cancel',
-        'devops-service.project-pipeline.retry',
-      ]}
+  return (<Page
+    className="c7n-region c7n-ciPipeline"
+    service={[
+      'devops-service.application.listByActive',
+      'devops-service.devops-gitlab-pipeline.listPipelineFrequency',
+      'devops-service.devops-gitlab-pipeline.pagePipeline',
+      'devops-service.project-pipeline.cancel',
+      'devops-service.project-pipeline.retry',
+    ]}
+  >
+    <Header
+      title={formatMessage({ id: 'report.build-number.head' })}
+      backPath={`/charts${search}`}
     >
-      <Header
-        title={formatMessage({ id: 'report.build-number.head' })}
-        backPath={`/charts${search}`}
+      <ChartSwitch
+        history={history}
+        current="build-number"
+      />
+      <Button
+        icon="refresh"
+        onClick={handleRefresh}
       >
-        <ChartSwitch
-          history={history}
-          current="build-number"
-        />
-        <Button
-          icon="refresh"
-          onClick={this.handleRefresh}
-        >
-          <FormattedMessage id="refresh" />
-        </Button>
-      </Header>
-      <Breadcrumb title={formatMessage({ id: 'report.build-number.head' })} />
-      <Content className="c7n-buildNumber-content">
-        {isRefresh ? <LoadingBar display={isRefresh} /> : content}
-      </Content>
-    </Page>);
-  }
-}
-
-export default injectIntl(BuildNumber);
+        <FormattedMessage id="refresh" />
+      </Button>
+    </Header>
+    <Breadcrumb title={formatMessage({ id: 'report.build-number.head' })} />
+    <Content className="c7n-buildNumber-content">
+      {isRefresh ? <LoadingBar display={isRefresh} /> : content}
+    </Content>
+  </Page>);
+});
+export default BuildNumber;

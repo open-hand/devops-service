@@ -1,6 +1,6 @@
-import React, { Component, Fragment } from 'react';
+import React, { Fragment } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Avatar, Pagination, Spin, Tooltip } from 'choerodon-ui';
+import { Pagination, Spin, Tooltip } from 'choerodon-ui';
 import TimePopover from '../../../components/timePopover';
 import UserInfo from '../../../components/userInfo';
 import './Submission.less';
@@ -29,7 +29,7 @@ export default function CommitHistory(props) {
             </div>
           </div>
         </div>
-          
+
       );
     });
   } else {
