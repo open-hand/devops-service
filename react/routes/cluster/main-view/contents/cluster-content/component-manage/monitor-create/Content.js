@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Choerodon } from '@choerodon/boot';
-import { Form, Password, Select, TextField } from 'choerodon-ui/pro';
+import { Form, Password, Select, Spin, TextField } from 'choerodon-ui/pro';
 import { filter, forEach, map } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { usePrometheusStore } from './stores';
@@ -79,6 +79,10 @@ export default observer((props) => {
         />
       );
     }
+  }
+
+  if (!formDs.current) {
+    return <Spin />;
   }
 
   return (

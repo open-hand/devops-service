@@ -162,6 +162,7 @@ export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, deploySto
       { name: 'type', type: 'string', defaultValue: 'create' },
       { name: 'isNotChange', type: 'boolean', defaultValue: false },
       { name: 'appServiceSource', type: 'string', defaultValue: 'normal_service' },
+      { name: 'hasError', type: 'boolean', defaultValue: false, ignore: 'always' },
     ],
     events: {
       create: handleCreate,

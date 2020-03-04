@@ -41,7 +41,7 @@ export default function Permissions() {
         action: handleDelete,
       },
     ];
-    const displayAction = isOwner && !skipCheckPermission;
+    const displayAction = !isOwner && !skipCheckPermission;
     return displayAction ? <Action data={actionData} /> : null;
   }
 

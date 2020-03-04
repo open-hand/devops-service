@@ -35,15 +35,6 @@ export default observer((props) => {
   } = useClusterContentStore();
   const handleChange = (key) => {
     contentStore.setTabKey(key);
-    if (key === MONITOR_TAB) {
-      const uri = escape(`${window.location}`);
-      axios.get('/oauth/is_login', { withCredentials: true })
-        .then((response) => {
-          if (!response) {
-            window.location = `${window._env_.API_HOST}/oauth/oauth/authorize?response_type=token&client_id=${window._env_.CLIENT_ID}&state=&redirect_uri=${uri}%26redirectFlag`;
-          }
-        });
-    }
   };
 
   const title = useMemo(() => {

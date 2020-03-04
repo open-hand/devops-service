@@ -44,6 +44,18 @@ const BatchDeployModal = injectIntl(observer(() => {
   modal.handleOk(async () => {
     if (hasYamlFailed) return false;
     try {
+      let hasError = false;
+      batchDeployDs.forEach(async (eachRecord) => {
+        const result = await eachRecord.validate();
+        if (!result) {
+          hasError = true;
+        }
+        eachRecord.set('hasError', !result);
+      });
+      if (hasError) {
+        setShowError(true);
+        return false;
+      }
       const res = await batchDeployDs.submit();
       if (res !== false) {
         refresh(res.list ? res.list[0] : {}, 'resource');
@@ -124,11 +136,11 @@ const BatchDeployModal = injectIntl(observer(() => {
                 <div
                   className={batchDeployDs.current === formRecord ? `${prefixCls}-batch-deploy-content-app-active` : ''}
                 >
-                  <Form record={formRecord} columns={5}>
+                  <Form record={formRecord} columns={8}>
                     <Select
                       name="appServiceId"
                       searchable
-                      colSpan={4}
+                      colSpan={6}
                       notFoundContent={<FormattedMessage id={`${intlPrefix}.app.empty`} />}
                       onClick={() => handleClickAppService(formRecord)}
                     >
@@ -144,6 +156,9 @@ const BatchDeployModal = injectIntl(observer(() => {
                         className="appService-delete-btn"
                         onClick={() => handleRemoveForm(formRecord)}
                       />
+                    ) : <span colSpan={1} />}
+                    {formRecord.get('hasError') ? (
+                      <Icon type="error" colSpan={1} className="appService-error-icon" />
                     ) : <span colSpan={1} />}
                   </Form>
                 </div>
@@ -166,11 +181,11 @@ const BatchDeployModal = injectIntl(observer(() => {
                 <div
                   className={batchDeployDs.current === formRecord ? `${prefixCls}-batch-deploy-content-app-active` : ''}
                 >
-                  <Form record={formRecord} columns={5}>
+                  <Form record={formRecord} columns={8}>
                     <Select
                       name="appServiceId"
                       searchable
-                      colSpan={4}
+                      colSpan={6}
                       notFoundContent={<FormattedMessage id={`${intlPrefix}.app.empty`} />}
                       onClick={() => handleClickAppService(formRecord)}
                     >
@@ -190,6 +205,9 @@ const BatchDeployModal = injectIntl(observer(() => {
                         className="appService-delete-btn"
                         onClick={() => handleRemoveForm(formRecord)}
                       />
+                    ) : <span colSpan={1} />}
+                    {formRecord.get('hasError') ? (
+                      <Icon type="error" colSpan={1} className="appService-error-icon" />
                     ) : <span colSpan={1} />}
                   </Form>
                 </div>
@@ -227,6 +245,7 @@ const BatchDeployModal = injectIntl(observer(() => {
               searchable
               colSpan={2}
               newLine
+              clearButton
               disabled={record && (!record.get('appServiceId') || !record.get('environmentId'))}
               addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.config.tips` })} />}
               notFoundContent={<FormattedMessage id={`${intlPrefix}.config.empty`} />}
