@@ -8,17 +8,7 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "services.gitlab")
 @Validated
 public class GitlabConfigurationProperties {
-
-    private String password;
     private Integer projectLimit;
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
 
     public Integer getProjectLimit() {
         return projectLimit;

@@ -8,7 +8,11 @@ import { useClusterMainStore } from '../../../stores';
 import useStore from './useStore';
 import NodeListDataSet from './NodeListDataSet';
 import PermissionDataSet from './PermissionDataSet';
+import PolarisNumDataSet from './PalarisNumDataSet';
+
 import getTablePostData from '../../../../../../utils/getTablePostData';
+import SummaryDataSet from './SummaryDataSet';
+import EnvDetailDataSet from './EnvDetailDataSet';
 
 const Store = createContext();
 
@@ -21,6 +25,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
   observer((props) => {
     const tabs = useMemo(() => ({
       NODE_TAB: 'node',
+      POLARIS_TAB: 'polaris',
       ASSIGN_TAB: 'assign',
       COMPONENT_TAB: 'component',
       MONITOR_TAB: 'monitor',
@@ -44,6 +49,10 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const record = ClusterDetailDs.current;
     const NodeListDs = useMemo(() => new DataSet(NodeListDataSet({ formatMessage, intlPrefix })), []);
     const PermissionDs = useMemo(() => new DataSet(PermissionDataSet({ formatMessage, intlPrefix, projectId, id, skipCheckProjectPermission: record && record.get('skipCheckProjectPermission') })), [record]);
+    const clusterSummaryDs = useMemo(() => new DataSet(SummaryDataSet()), []);
+    const envDetailDs = useMemo(() => new DataSet(EnvDetailDataSet()), []);
+
+    const polarisNumDS = useMemo(() => new DataSet(PolarisNumDataSet({ formatMessage, intlPrefix, projectId, id })), [record]);
 
     const contentStore = useStore(tabs);
     let URL = '';
@@ -83,9 +92,24 @@ export const StoreProvider = injectIntl(inject('AppState')(
         case tabs.MONITOR_TAB:
           contentStore.loadGrafanaUrl(projectId, id);
           break;
+        case tabs.POLARIS_TAB:
+          clusterSummaryDs.transport.read.url = `/devops/v1/projects/${projectId}/polaris/clusters/${id}/summary`;
+          envDetailDs.transport.read.url = `/devops/v1/projects/${projectId}/polaris/clusters/${id}/env_detail`;
+          polarisNumDS.transport.read.url = `devops/v1/projects/${projectId}/polaris/records?scope=cluster&scope_id=${id}`;
+          loadPolaris();
+          break;
         default:
       }
-    }, [projectId, id, tabkey, record]);
+    }, [projectId, tabkey, record]);
+
+    async function loadPolaris() {
+      const res = await contentStore.checkHasEnv(projectId, id);
+      if (res) {
+        polarisNumDS.query();
+        clusterSummaryDs.query();
+        envDetailDs.query();
+      }
+    }
 
     const value = {
       ...props,
@@ -96,8 +120,11 @@ export const StoreProvider = injectIntl(inject('AppState')(
       intlPrefix,
       formatMessage,
       ClusterDetailDs,
+      polarisNumDS,
       projectId,
       clusterId: id,
+      clusterSummaryDs,
+      envDetailDs,
     };
     return (
       <Store.Provider value={value}>

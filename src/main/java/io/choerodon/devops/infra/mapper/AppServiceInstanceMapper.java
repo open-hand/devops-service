@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 
+import io.choerodon.devops.api.vo.polaris.InstanceWithPolarisStorageVO;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.mybatis.common.Mapper;
 
@@ -70,10 +71,25 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
 
     List<DevopsEnvAppServiceDTO> listAllDistinctWithoutDeleted();
 
-    List<AppServiceInstanceDTO> listByProjectIdsAndAppServiceId(@Param("projectIds") Set<Long> projectIds,@Param("appServiceId") Long appServiceId);
+    List<AppServiceInstanceDTO> listByProjectIdsAndAppServiceId(@Param("projectIds") Set<Long> projectIds, @Param("appServiceId") Long appServiceId);
 
     List<AppServiceInstanceDTO> queryOtherInstancesOfComponents(
             @Param("envId") Long envId,
             @Param("instanceCode") String instanceCode,
             @Param("componentChartName") String componentChartName);
+
+    int countInstanceByCondition(
+            @Param("envId") Long envId,
+            @Param("status") String status,
+            @Param("appServiceId") Long appServiceId);
+
+    List<InstanceWithPolarisStorageVO> queryInstancesWithAppServiceByIds(@Param("instanceIds") List<Long> instanceIds);
+
+    /**
+     * 根据实例id查询实例的信息
+     *
+     * @param instanceIds 实例id，集合不能为空
+     * @return 信息
+     */
+    List<AppServiceInstanceDTO> queryByInstanceIds(@Param("instanceIds") List<Long> instanceIds);
 }

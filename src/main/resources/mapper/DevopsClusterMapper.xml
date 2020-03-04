@@ -27,15 +27,15 @@
         <if test='searchParam != null'>
             <if test='searchParam.code != null and searchParam.code.length > 0'>
                 AND
-                    dc.code LIKE CONCAT(CONCAT('%', #{searchParam.code, jdbcType=VARCHAR}),'%')
+                dc.code LIKE CONCAT(CONCAT('%', #{searchParam.code, jdbcType=VARCHAR}),'%')
             </if>
             <if test='searchParam.name != null and searchParam.name.length > 0'>
                 AND
-                    dc.name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
+                dc.name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
             </if>
             <if test='searchParam.description != null and searchParam.description.length > 0'>
                 AND
-                    dc.name LIKE CONCAT(CONCAT('%', #{searchParam.description, jdbcType=VARCHAR}),'%')
+                dc.name LIKE CONCAT(CONCAT('%', #{searchParam.description, jdbcType=VARCHAR}),'%')
             </if>
         </if>
         <if test='params != null and params.size > 0'>
@@ -56,7 +56,7 @@
         INNER JOIN devops_env env ON instance.env_id = env.id
         INNER JOIN devops_cluster cluster ON env.cluster_id = cluster.id
         WHERE cluster.id = #{clusterId}
-          AND pod.node_name = #{nodeName}
+        AND pod.node_name = #{nodeName}
         <if test='searchParam != null'>
             <if test='searchParam.name != null and searchParam.name.length > 0'>
                 AND pod.name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
@@ -100,5 +100,12 @@
     </select>
     <select id="queryClusterIdBySystemEnvId" resultType="java.lang.Long">
         SELECT dc.id FROM devops_cluster dc WHERE dc.system_env_id=#{systemEnvId}
+    </select>
+    <select id="listByOrganizationId" resultType="io.choerodon.devops.infra.dto.DevopsClusterDTO">
+        SELECT
+        dc.id
+        FROM
+        devops_cluster dc
+        WHERE dc.organization_id=#{organizationId}
     </select>
 </mapper>

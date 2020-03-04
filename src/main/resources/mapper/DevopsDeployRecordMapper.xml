@@ -149,6 +149,46 @@
 				)
 			</foreach>
 		</if>
+        UNION ALL
+        SELECT batch.id,
+        batch.project_id,
+        batch.deploy_type,
+        batch.id AS deploy_id,
+        batch.deploy_time,
+        NULL AS deployStatus,
+        batch.created_by AS deployCreatedBy,
+        NULL AS pipelineName,
+        NULL AS pipelineTriggerType,
+        NULL AS pipelineId,
+        NULL AS instanceId,
+        batch.env AS envId,
+        NULL AS env,
+        NULL AS appServiceId
+        FROM devops_deploy_record batch
+        WHERE batch.project_id = #{projectId,jdbcType=BIGINT}
+        AND batch.deploy_type = 'batch'
+        <if test='searchParam != null'>
+                <if test='searchParam.deployType != null and searchParam.deployType.length > 0'>
+                    AND
+                    batch.deploy_type LIKE CONCAT(CONCAT('%', #{searchParam.deployType, jdbcType=VARCHAR}),'%')
+                </if>
+                <if test='searchParam.env != null'>
+                    AND
+                    batch.env =#{searchParam.env}
+                </if>
+                <if test='searchParam.deployId != null'>
+                    AND
+                    batch.deploy_id = #{searchParam.deployId}
+                </if>
+        </if>
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                (batch.deploy_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR batch.env LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                )
+            </foreach>
+        </if>
 			) t
 			where t.project_id=#{projectId}
 		    <if test="searchParam.pipelineId != null">
@@ -157,9 +197,24 @@
 		    GROUP BY t.id
 			ORDER BY t.id desc
     </select>
-	
+    <select id="selectByProjectIdAndDate" resultType="io.choerodon.devops.infra.dto.DevopsDeployRecordDTO">
+		SELECT *
+		FROM devops_deploy_record ddr
+		<where>
+			<if test="projectId">
+				ddr.project_id = #{projectId}
+			</if>
+			<if test="startTime">
+				AND ddr.deploy_time >= CONCAT('','${startTime}',' 00:00:00')
+			</if>
+			<if test="endTime">
+				AND ddr.deploy_time <![CDATA[<=]]> CONCAT('','${endTime}',' 23:59:59')
+			</if>
+		</where>
+	</select>
 
-	<delete id="deleteRelatedRecordOfInstance">
+
+    <delete id="deleteRelatedRecordOfInstance">
         DELETE
         FROM devops_deploy_record
         WHERE deploy_type = 'manual'
@@ -180,4 +235,27 @@
             #{record.deployTime})
         </foreach>
 	</insert>
+
+	<select id="queryByBatchDeployRecordId" resultType="io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO">
+		SELECT  ddri.instance_id      AS instance_id,
+				ddri.app_service_id   AS app_service_id,
+				ddri.env_id           AS env_id,
+				ddri.instance_code    AS instance_name,
+				das.name              AS app_service_name,
+				ddri.instance_version AS app_service_version,
+				de.name               AS env_name,
+				(dasi.id IS NULL)     AS deleted
+		FROM devops_deploy_record_instance ddri
+		LEFT JOIN devops_app_service_instance dasi ON ddri.instance_id = dasi.id
+		LEFT JOIN devops_app_service das ON ddri.app_service_id = das.id
+		LEFT JOIN devops_env de ON ddri.env_id = de.id
+		WHERE ddri.deploy_record_id = #{recordId,jdbcType=BIGINT}
+	</select>
+
+    <select id="queryRecordIdByEnvIdAndDeployType" resultType="java.lang.Long">
+        SELECT ddr.id
+        FROM devops_deploy_record ddr
+        WHERE ddr.env = #{envId,jdbcType=VARCHAR}
+        AND ddr.deploy_type = #{deployType,jdbcType=VARCHAR}
+    </select>
 </mapper>

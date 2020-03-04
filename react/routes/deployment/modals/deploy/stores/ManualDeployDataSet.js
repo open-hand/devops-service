@@ -1,4 +1,6 @@
 import omit from 'lodash/omit';
+import forEach from 'lodash/forEach';
+import map from 'lodash/map';
 import uuidV1 from 'uuid/v1';
 import { axios } from '@choerodon/boot';
 
@@ -11,12 +13,14 @@ function getRandomName(prefix = '') {
     : randomString.substring(0, 30);
 }
 
-export default ((intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOptionsDs, versionOptionsDs, deployStore) => {
+export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOptionsDs, versionOptionsDs, deployStore, networkDs, domainDs }) => {
   function handleCreate({ dataSet, record }) {
     deployStore.loadAppService(projectId, record.get('appServiceSource'));
   }
   
   function handleUpdate({ dataSet, record, name, value }) {
+    const networkRecord = record.getCascadeRecords('devopsServiceReqVO')[0];
+    const domainRecord = record.getCascadeRecords('devopsIngressVO')[0];
     switch (name) {
       case 'appServiceSource':
         deployStore.setAppService([]);
@@ -26,6 +30,13 @@ export default ((intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOpti
       case 'environmentId':
         record.getField('instanceName').checkValidity();
         loadValueList(record);
+        networkRecord.getField('name').checkValidity();
+        domainRecord.getField('name').checkValidity();
+        forEach(domainRecord.getCascadeRecords('pathList'), (pathRecord) => {
+          pathRecord.getField('path').checkValidity();
+        });
+        domainRecord.get('certId') && domainRecord.set('certId', null);
+        domainRecord.getField('certId').fetchLookup();
         break;
       case 'appServiceId':
         record.get('appServiceVersionId') && record.set('appServiceVersionId', null);
@@ -92,10 +103,38 @@ export default ((intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOpti
     autoCreate: true,
     autoQuery: false,
     paging: false,
+    children: {
+      devopsServiceReqVO: networkDs,
+      devopsIngressVO: domainDs,
+    },
     transport: {
       create: ({ data: [data] }) => {
         const res = omit(data, ['__id', '__status', 'appServiceSource']);
-        res.appServiceId = Number(data.appServiceId.split('__')[0]);
+        const appServiceId = Number(data.appServiceId.split('__')[0]);
+        res.appServiceId = appServiceId;
+        if (data.devopsServiceReqVO[0] && data.devopsServiceReqVO[0].name) {
+          const newPorts = map(data.devopsServiceReqVO[0].ports, ({ port, targetPort, nodePort, protocol }) => ({
+            port: Number(port),
+            targetPort: Number(targetPort),
+            nodePort: nodePort ? Number(nodePort) : null,
+            protocol: data.devopsServiceReqVO[0].type === 'NodePort' ? protocol : null,
+          }));
+          data.devopsServiceReqVO[0].ports = newPorts;
+          res.devopsServiceReqVO = data.devopsServiceReqVO[0];
+          const externalIp = res.devopsServiceReqVO.externalIp;
+          res.devopsServiceReqVO.externalIp = externalIp && externalIp.length ? externalIp.join(',') : null;
+          res.devopsServiceReqVO.targetInstanceCode = data.instanceName;
+          res.devopsServiceReqVO.envId = data.environmentId;
+        } else {
+          res.devopsServiceReqVO = null;
+        }
+        if (data.devopsIngressVO[0] && data.devopsIngressVO[0].name) {
+          res.devopsIngressVO = data.devopsIngressVO[0];
+          res.devopsIngressVO.envId = data.environmentId;
+          res.devopsIngressVO.appServiceId = appServiceId;
+        } else {
+          res.devopsIngressVO = null;
+        }
 
         return ({
           url: `/devops/v1/projects/${projectId}/app_service_instances`,

@@ -610,4 +610,42 @@
         AND dasi.component_chart_name = #{componentChartName,jdbcType=VARCHAR}
         AND dasi.code != #{instanceCode}
     </select>
+
+    <select id="countInstanceByCondition" resultType="java.lang.Integer">
+        SELECT
+        COUNT(dasi.id)
+        FROM devops_app_service_instance dasi
+        WHERE dasi.env_id=#{envId}
+        <if test="status !=null and status !=''">
+            and dasi.status=#{status}
+        </if>
+        <if test="appServiceId !=null ">
+            and dasi.app_service_id=#{appServiceId}
+        </if>
+    </select>
+
+    <select id="queryInstancesWithAppServiceByIds"
+            resultType="io.choerodon.devops.api.vo.polaris.InstanceWithPolarisStorageVO">
+        SELECT
+        dasi.id AS instance_id,
+        dasi.code AS instance_code,
+        das.id AS app_service_id,
+        das.name AS app_service_name,
+        das.code AS app_service_code
+        FROM devops_app_service_instance dasi
+        LEFT JOIN devops_app_service das ON dasi.app_service_id = das.id
+        WHERE dasi.id IN
+        <foreach collection="instanceIds" item="instanceId" open="(" close=")" separator=",">
+            #{instanceId,jdbcType=BIGINT}
+        </foreach>
+    </select>
+
+    <select id="queryByInstanceIds" resultType="io.choerodon.devops.infra.dto.AppServiceInstanceDTO">
+        SELECT dasi.*
+        FROM devops_app_service_instance dasi
+        WHERE dasi.id IN
+        <foreach collection="instanceIds" item="instanceId" open="(" close=")" separator=",">
+            #{instanceId,jdbcType=BIGINT}
+        </foreach>
+    </select>
 </mapper>

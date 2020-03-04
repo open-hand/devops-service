@@ -4,15 +4,11 @@ import { Modal, Button, Spin } from 'choerodon-ui/pro';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
+import { Prompt } from 'react-router-dom';
 import { useRepositoryStore } from './stores';
 import RepositoryForm from '../repository/repository-form';
 
 import './index.less';
-
-const modalKey = Modal.key();
-const modalStyle = {
-  width: 380,
-};
 
 const ProRepository = withRouter(observer((props) => {
   const {
@@ -21,38 +17,13 @@ const ProRepository = withRouter(observer((props) => {
     intlPrefix,
     prefixCls,
     permissions,
-    homeDs,
     detailDs,
     repositoryStore,
+    promptMsg,
   } = useRepositoryStore();
 
-  useEffect(() => {
-    detailDs.query();
-  }, []);
-
   function refresh() {
-    homeDs.query();
-  }
-
-  async function openModal() {
-    await detailDs.query();
-    Modal.open({
-      key: modalKey,
-      style: modalStyle,
-      drawer: true,
-      title: formatMessage({ id: intlPrefix }),
-      children: <RepositoryForm
-        record={detailDs.current}
-        dataSet={detailDs}
-        store={repositoryStore}
-        id={id}
-        isProject
-        intlPrefix={intlPrefix}
-        prefixCls={prefixCls}
-        refresh={refresh}
-      />,
-      okText: formatMessage({ id: 'save' }),
-    });
+    detailDs.query();
   }
 
   return (
@@ -60,6 +31,7 @@ const ProRepository = withRouter(observer((props) => {
       service={permissions}
     >
       <Breadcrumb />
+      <Prompt message={promptMsg} when={detailDs.current ? detailDs.current.dirty : false} />
       <Content className={`${prefixCls}-home`}>
         {detailDs.current ? <RepositoryForm
           record={detailDs.current}

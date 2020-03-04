@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.constant;
 
+import java.io.File;
+
 /**
  * 和GitOps有关的常量
  *
@@ -36,9 +38,9 @@ public class GitOpsConstants {
 
     /**
      * local path to store env
-     * gitops/${orgCode}/${proCode}/${clusterCode}/${envCode}
+     * gitops/${orgCode}/${proCode}/${clusterCode}/${envCode}/${envId}
      */
-    public static final String LOCAL_ENV_PATH = "gitops/%s/%s/%s/%s";
+    public static final String LOCAL_ENV_PATH = "gitops" + File.separator + "%s" + File.separator + "%s" + File.separator + "%s" + File.separator + "%s" + File.separator + "%s";
 
     public static final String YAML_FILE_SUFFIX = ".yaml";
 
@@ -46,6 +48,16 @@ public class GitOpsConstants {
      * release文件对应的gitlab文件前缀
      */
     public static final String RELEASE_PREFIX = "release-";
+
+    /**
+     * service文件对应的gitlab文件前缀
+     */
+    public static final String SERVICE_PREFIX = "svc-";
+
+    /**
+     * ingress文件对应的gitlab文件前缀
+     */
+    public static final String INGRESS_PREFIX = "ing-";
 
     /**
      * 系统环境code
@@ -63,4 +75,6 @@ public class GitOpsConstants {
     public static final String NO_COMMIT_SHA = "0000000000000000000000000000000000000000";
 
     public static final String MASTER_REF = "refs/heads/master";
+
+    public static final String BATCH_DEPLOYMENT_COMMIT_MESSAGE = "[ADD] batch deployment";
 }

@@ -45,6 +45,22 @@ export default function useStore({ NODE_TAB }) {
       return this.prometheusLoading;
     },
 
+    hasEnv: false,
+    setHasEnv(flag) {
+      this.hasEnv = flag;
+    },
+    get getHasEnv() {
+      return this.hasEnv;
+    },
+
+    polarisLoading: true,
+    setPolarisLoading(flag) {
+      this.polarisLoading = flag;
+    },
+    get getPolarisLoading() {
+      return this.polarisLoading;
+    },
+
 
     async loadGrafanaUrl(projectId, clusterId) {
       try {
@@ -123,6 +139,32 @@ export default function useStore({ NODE_TAB }) {
         const res = await axios.get(`/devops/v1/projects/${projectId}/cluster_resource/prometheus/retry?cluster_id=${clusterId}`);
         return handlePromptError(res);
       } catch (e) {
+        return false;
+      }
+    },
+
+    async checkHasEnv(projectId, clusterId) {
+      try {
+        this.setPolarisLoading(true);
+        const res = await axios.get(`/devops/v1/projects/${projectId}/envs/count_by_options?cluster_id=${clusterId}`);
+        const result = handlePromptError(res);
+        this.setHasEnv(result);
+        this.setPolarisLoading(false);
+        return result;
+      } catch (e) {
+        Choerodon.handleResponseError(e);
+        this.setPolarisLoading(false);
+        return false;
+      }
+    },
+
+    async ManualScan(projectId, clusterId) {
+      try {
+        const res = await axios.post(`/devops/v1/projects/${projectId}/polaris/clusters/${clusterId}`);
+        const result = handlePromptError(res);
+        return result;
+      } catch (e) {
+        Choerodon.handleResponseError(e);
         return false;
       }
     },

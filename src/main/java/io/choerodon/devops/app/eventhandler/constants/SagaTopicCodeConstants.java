@@ -237,6 +237,10 @@ public class SagaTopicCodeConstants {
      */
     public static final String DELETE_ADMIN = "base-delete-admin";
 
+    /**
+     * 批量部署
+     */
+    public static final String DEVOPS_BATCH_DEPLOYMENT = "devops-batch-deployment";
 
     private SagaTopicCodeConstants() {
     }

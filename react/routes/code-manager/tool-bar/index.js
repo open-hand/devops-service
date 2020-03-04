@@ -99,7 +99,7 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
       </Form>
     </div>
   );
-  
+
   function renderAppServiceOption({ value, text }) {
     const record = appServiceDs.find((appServiceRecord) => appServiceRecord.get('id') === value);
     if (record) {

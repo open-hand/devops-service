@@ -7,7 +7,7 @@ import HeaderButtons from '../../../../../../components/header-buttons';
 import { useResourceStore } from '../../../../stores';
 import { useModalStore } from './stores';
 import { useKeyValueStore } from '../stores';
-import KeyValueModal from '../../application/modals/key-value';
+import KeyValueModal from '../../application/modals/key-value/KeyValueProIndex';
 
 const modalKey = Modal.key();
 const modalStyle = {

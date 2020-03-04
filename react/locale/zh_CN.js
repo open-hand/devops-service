@@ -37,6 +37,7 @@ const commonField = {
   appName: '应用名称',
   environment: '环境',
   envName: '环境名称',
+  envCode: '环境编码',
   instance: '实例',
   network: '网络',
   label: '标签',
@@ -191,6 +192,7 @@ const deployment = {
   'c7ncd.deployment.environment.tabs.sync': 'GitOps日志',
   'c7ncd.deployment.environment.tabs.config': '部署配置',
   'c7ncd.deployment.environment.tabs.assignPermissions': '权限分配',
+  'c7ncd.deployment.environment.tabs.polaris': '健康检查',
   'c7ncd.deployment.environment.error.logs': '错误日志',
   'c7ncd.deployment.environment.error.tips': '此处将显示解析过程中产生的错误信息以及错误的文件源。若错误日志为空，则表示解析过程正常',
   'c7ncd.deployment.environment.error.info': '错误信息',
@@ -417,6 +419,8 @@ const deployment = {
   'c7ncd.deployment.pvc.delete.des': '确定要删除该PVC吗？',
   'c7ncd.deployment.active': '生效',
   'c7ncd.deployment.choose.version': '选择版本',
+  'c7ncd.deployment.polaris.empty.des': '当前环境下暂无实例，无法执行健康检查。',
+  'c7ncd.deployment.polaris.check.empty': '该实例为空',
 
 };
 
@@ -634,10 +638,12 @@ const deploy = {
   'c7ncd.deploy.trigger.auto': '自动触发',
   'c7ncd.deploy.number': '编号',
   'c7ncd.deploy.manual': '手动部署',
+  'c7ncd.deploy.batch': '批量部署',
   'c7ncd.deploy.auto': '流水线部署',
   'c7ncd.deploy.start': '启动部署流程',
   'c7ncd.deploy.detail.auto.title': '部署流程"#{name}"的详情',
   'c7ncd.deploy.detail.manual.title': '部署"#{name}"的详情',
+  'c7ncd.deploy.detail.batch.title': '批量部署"#{name}"的详情',
   'c7ncd.deploy.service': '部署服务',
   'c7ncd.deploy.version': '部署版本',
   'c7ncd.deploy.instance': '生成实例',
@@ -675,7 +681,7 @@ const deploy = {
   'c7ncd.deploy.env.empty': '暂无环境',
   'c7ncd.deploy.pipeline.empty': '暂无流水线',
   'c7ncd.deploy.id.tips': '平台中每条部署记录仅会对应一个编号',
-  'c7ncd.deploy.type.tips': '此处是指记录的部署类型，分为手动部署与流水线部署',
+  'c7ncd.deploy.type.tips': '此处是指记录的部署类型，分为手动部署、批量部署和流水线部署',
   'c7ncd.deploy.pipeline.tips': '此处是指部署记录对应的流水线名称；手动部署的部署记录此项为空',
   'c7ncd.deploy.trigger.tips': '此处是指流水线的部署记录所对应的触发方式，分为人工触发与自动触发；手动部署的部署记录此项为空',
   'c7ncd.deploy.source.tips': '您可在此选择项目下已有的应用服务以及组织中其他项目共享出的应用服务',
@@ -683,6 +689,9 @@ const deploy = {
   'c7ncd.deploy.config.tips': '您可在此选择一个部署配置并使用其中的配置信息；或者直接在已有基础上进行修改后部署',
   'c7ncd.deploy.resource.tips': '您可在部署实例的同时，为此实例创建一个网络和一个域名，从而完成资源的配置；此步骤为可选执行',
   'c7ncd.deploy.process.tips': '下方展示的均是人工触发流水线，您可在此批量选择并启动这些人工触发流水线',
+  'c7ncd.deploy.add.appService.normal': '添加项目应用服务',
+  'c7ncd.deploy.add.appService.share': '添加共享应用服务',
+  'c7ncd.deploy.batch.deploy.error': '请完善所选应用服务的部署信息',
 };
 
 const repository = {
@@ -709,6 +718,8 @@ const repository = {
   'c7ncd.repository.tab.repo': '仓库',
   'c7ncd.repository.tab.info.project': '项目信息',
   'c7ncd.repository.tab.application': '应用配置',
+  'c7ncd.repository.prompt.inform.title': '离开此页',
+  'c7ncd.repository.prompt.inform.message': '此页面修改项尚未保存，确定要离开此页面？',
 };
 
 const pvManager = {
@@ -756,6 +767,7 @@ const codeManagement = {
 const emptyPage = {
   'empty.title.app': '暂无应用服务',
   'empty.title.env': '暂无环境',
+  'empty.title.instance': '暂无实例',
   'empty.title.prohibited': '暂无权限',
   'empty.tips.app.owner': '当前项目下无应用服务，请创建',
   'empty.tips.env.owner': '当前项目下无可用环境，请创建',
@@ -1218,6 +1230,7 @@ const cluster = {
   'c7ncd.cluster.permission.assign': '权限分配',
   'c7ncd.cluster.monitor': '集群监控',
   'c7ncd.cluster.component': '组件管理',
+  'c7ncd.cluster.polaris': '健康检查',
   'c7ncd.cluster.node.resource': '资源分配',
   'c7ncd.cluster.node.monitor': '节点监控',
   'c7ncd.cluster.node.assign.overview': '分配概览',
@@ -1285,6 +1298,28 @@ const cluster = {
     '当选择将权限分配至组织下所有项目时，此时便不能在列表中删除任何项目的权限；仅在选择将权限分配给组织下特定项目时，才能在下方列表中管理项目的权限',
   'c7ncd.cluster.permission.some.tips': '若本项目想使用该集群，同样需要为本项目授权',
   'c7ncd.cluster.code.tips': '限制为30个字符，且在项目下唯一',
+  'c7ncd.cluster.polaris.cluster': '集群概览',
+  'c7ncd.cluster.polaris.env': '环境详情',
+  'c7ncd.cluster.belong.project': '所属项目',
+  'c7ncd.cluster.polaris.internal.true': '内',
+  'c7ncd.cluster.polaris.internal.false': '外',
+  'c7ncd.cluster.polaris.score': '分值',
+  'c7ncd.cluster.polaris.healthCheck': '健康检查',
+  'c7ncd.cluster.polaris.imageCheck': '镜像检查',
+  'c7ncd.cluster.polaris.networkCheck': '网络配置',
+  'c7ncd.cluster.polaris.resourceCheck': '资源分配',
+  'c7ncd.cluster.polaris.securityCheck': '安全',
+  'c7ncd.cluster.polaris.empty.des': '当前集群下暂无环境，无法执行健康检查。',
+  'c7ncd.cluster.polaris.check.null': '暂无检测结果',
+  'c7ncd.cluster.polaris.check.operating': '配置项扫描中...',
+  'c7ncd.cluster.polaris.check.success': '配置项检测通过',
+  'c7ncd.cluster.polaris.check.empty': '该环境为空',
+  'c7ncd.cluster.polaris.scanning': '扫描',
+  'c7ncd.cluster.polaris.lastedScanDate': '上次扫描结束时间：',
+  'c7ncd.cluster.polaris.KubernetesVersion': 'Kubernetes版本',
+  'c7ncd.cluster.env.internal': 'Choerodon平台环境',
+  'c7ncd.cluster.env.external': '非Choerodon平台环境',
+  'c7ncd.cluster.env.external.tips': '此处仅展示不为空的非Choerodon平台环境',
 };
 
 const zhCN = {

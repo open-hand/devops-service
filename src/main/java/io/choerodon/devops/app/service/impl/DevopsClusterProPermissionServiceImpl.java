@@ -39,7 +39,7 @@ public class DevopsClusterProPermissionServiceImpl implements DevopsClusterProPe
         DevopsClusterProPermissionDTO devopsClusterProPermissionDTO = new DevopsClusterProPermissionDTO();
         devopsClusterProPermissionDTO.setProjectId(Objects.requireNonNull(projectId));
         devopsClusterProPermissionDTO.setClusterId(Objects.requireNonNull(clusterId));
-        return devopsClusterProPermissionMapper.selectByPrimaryKey(devopsClusterProPermissionDTO);
+        return devopsClusterProPermissionMapper.selectOne(devopsClusterProPermissionDTO);
     }
 
     @Override
@@ -79,14 +79,17 @@ public class DevopsClusterProPermissionServiceImpl implements DevopsClusterProPe
     }
 
     @Override
-    public void baseDeletePermission(DevopsClusterProPermissionDTO devopsClusterProPermissionDTO) {
+    public void baseDeletePermissionByClusterIdAndProjectId(Long clusterId, Long projectId) {
+        DevopsClusterProPermissionDTO devopsClusterProPermissionDTO = new DevopsClusterProPermissionDTO();
+        devopsClusterProPermissionDTO.setProjectId(Objects.requireNonNull(projectId));
+        devopsClusterProPermissionDTO.setClusterId(Objects.requireNonNull(clusterId));
         devopsClusterProPermissionMapper.delete(devopsClusterProPermissionDTO);
     }
 
     @Override
     public void baseDeleteByClusterId(Long clusterId) {
         DevopsClusterProPermissionDTO devopsClusterProPermissionDTO = new DevopsClusterProPermissionDTO();
-        devopsClusterProPermissionDTO.setClusterId(clusterId);
+        devopsClusterProPermissionDTO.setClusterId(Objects.requireNonNull(clusterId));
         devopsClusterProPermissionMapper.delete(devopsClusterProPermissionDTO);
     }
 }

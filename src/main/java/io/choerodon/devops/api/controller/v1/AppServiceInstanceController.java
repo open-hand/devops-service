@@ -9,18 +9,20 @@ import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.annotation.Permission;
-import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
+import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -40,6 +42,10 @@ public class AppServiceInstanceController {
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private DevopsEnvResourceService devopsEnvResourceService;
+    @Autowired
+    private DevopsDeployRecordService devopsDeployRecordService;
+    @Autowired
+    private AppServiceInstanceValidator appServiceInstanceValidator;
 
 
     /**
@@ -65,10 +71,10 @@ public class AppServiceInstanceController {
     /**
      * 分页查询环境下实例信息（基本信息）
      *
-     * @param projectId   项目id
-     * @param pageable 分页参数
-     * @param envId       环境id
-     * @param params      搜索参数
+     * @param projectId 项目id
+     * @param pageable  分页参数
+     * @param envId     环境id
+     * @param params    搜索参数
      * @return page of AppInstanceInfoVO
      */
     @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
@@ -592,7 +598,7 @@ public class AppServiceInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
-        appServiceInstanceService.deleteInstance(instanceId,false);
+        appServiceInstanceService.deleteInstance(instanceId, false);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -817,4 +823,50 @@ public class AppServiceInstanceController {
                 .orElseThrow(() -> new CommonException("error.application.instance.get"));
     }
 
+
+    @ApiOperation("计算环境下实例的数量")
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @GetMapping("/count_by_options")
+    public ResponseEntity<Integer> countByOptions(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id", required = true)
+            @RequestParam("env_id") Long envId,
+            @ApiParam(value = "实例状态, 不填是查全部", required = false)
+            @RequestParam String status,
+            @ApiParam(value = "应用服务id", required = false)
+            @RequestParam("app_service_id") Long appServiceId) {
+        return Optional.ofNullable(appServiceInstanceService.countByOptions(envId, status, appServiceId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.query.instance.count"));
+    }
+
+    @ApiOperation("根据批量部署的部署纪录id查询对应的实例")
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @GetMapping("/query_by_deploy_record_id")
+    public ResponseEntity<List<AppServiceInstanceForRecordVO>> queryByBatchDeployRecordId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "批量部署的部署纪录id", required = true)
+            @RequestParam(value = "record_id") Long recordId) {
+        return new ResponseEntity<>(devopsDeployRecordService.queryByBatchDeployRecordId(recordId), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "批量部署服务")
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @PostMapping("/batch_deployment")
+    public ResponseEntity<List<AppServiceInstanceVO>> batchDeployment(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "批量部署信息数组", required = true)
+            @RequestBody List<AppServiceDeployVO> appServiceDeployVOs) {
+        // 校验参数正确性
+        appServiceInstanceValidator.validateBatchDeployment(appServiceDeployVOs);
+        return new ResponseEntity<>(appServiceInstanceService.batchDeployment(projectId, appServiceDeployVOs), HttpStatus.OK);
+    }
 }

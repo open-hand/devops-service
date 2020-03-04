@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsPolarisNamespaceResultMapper">
+    <select id="queryInstanceWithoutResult" resultType="io.choerodon.devops.api.vo.polaris.InstanceWithPolarisStorageVO">
+        SELECT
+        dasi.id AS instance_id,
+        dasi.code AS instance_code,
+        das.id AS app_service_id,
+        das.code AS app_service_code,
+        das.name AS app_service_name,
+        FALSE AS checked
+        FROM devops_app_service_instance dasi
+        LEFT JOIN devops_app_service das ON dasi.app_service_id = das.id
+        WHERE dasi.env_id = #{envId,jdbcType=BIGINT}
+    </select>
+
+    <insert id="batchInsert">
+        INSERT INTO devops_polaris_namespace_result(env_id, namespace, record_id, detail_id, has_errors) VALUES
+        <foreach collection="items" item="item" separator=",">
+            (#{item.envId},#{item.namespace},#{item.recordId},#{item.detailId}, #{item.hasErrors})
+        </foreach>
+    </insert>
+
+    <select id="queryNamespaceResultDetail" resultType="java.lang.String">
+        SELECT dpnd.detail
+        FROM devops_polaris_namespace_result dpnr
+        LEFT JOIN devops_polaris_namespace_detail dpnd ON dpnr.detail_id = dpnd.id
+        WHERE dpnr.record_id = #{recordId,jdbcType=BIGINT}
+        AND dpnr.env_id = #{envId,jdbcType=BIGINT}
+    </select>
+
+    <select id="queryEnvWithPolarisResult"
+            resultType="io.choerodon.devops.api.vo.DevopsEnvWithPolarisResultVO">
+        (SELECT dpnr.namespace            AS namespace,
+        de.name                   AS env_name,
+        de.id                     AS env_id,
+        dpnr.has_errors           AS has_errors,
+        de.project_id             AS project_id,
+        (dpnr.env_id is not null) AS internal,
+        dpnd.detail               AS detail_json,
+        TRUE                      AS checked
+        FROM devops_polaris_namespace_result dpnr
+        LEFT JOIN devops_env de ON dpnr.env_id = de.id
+        LEFT JOIN devops_polaris_namespace_detail dpnd ON dpnr.detail_id = dpnd.id
+        WHERE dpnr.record_id = #{recordId,jdbcType=BIGINT})
+
+        UNION ALL
+
+        (SELECT de.code       AS namespace,
+        de.name       AS env_name,
+        de.id         AS env_id,
+        FALSE         AS has_errors,
+        de.project_id AS project_id,
+        TRUE          AS internal,
+        '[]'          AS detail_json,
+        TRUE          AS checked
+        FROM devops_env de
+        LEFT JOIN devops_polaris_namespace_result dpnr2 ON de.id = dpnr2.env_id AND dpnr2.record_id =
+        #{recordId,jdbcType=BIGINT}
+        WHERE de.cluster_id = #{clusterId,jdbcType=BIGINT}
+        AND de.type = 'user'
+        AND dpnr2.env_id IS NULL);
+    </select>
+
+    <select id="queryEnvWithoutPolarisResult" resultType="io.choerodon.devops.api.vo.DevopsEnvWithPolarisResultVO">
+        SELECT
+        de.code AS namespace,
+        de.name AS env_name,
+        de.id AS env_id,
+        de.project_id AS project_id,
+        FALSE AS checked,
+        TRUE AS internal
+        FROM devops_env de
+        WHERE de.cluster_id = #{clusterId,jdbcType=BIGINT}
+        AND de.type = 'user'
+    </select>
+</mapper>

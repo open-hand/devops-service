@@ -1,9 +1,24 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.PageSerializable;
 import com.google.gson.Gson;
+import io.kubernetes.client.custom.Quantity;
+import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
@@ -26,23 +41,10 @@ import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
+import io.choerodon.devops.infra.mapper.DevopsPrometheusMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
-import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class DevopsPvServiceImpl implements DevopsPvService {
@@ -84,6 +86,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     TransactionalProducer producer;
     @Autowired
     DevopsEnvUserPermissionService devopsEnvUserPermissionService;
+    @Autowired
+    DevopsPrometheusMapper devopsPrometheusMapper;
 
     private Gson gson = new Gson();
 
@@ -168,10 +172,18 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean deletePvById(Long pvId) {
+
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
 
         if (devopsPvDTO == null) {
             return false;
+        }
+
+        // 如果删除的PV与Prometheus进行了绑定且PV状态为Available，则抛出异常，终止删除操作
+        List<Long> boundPvIds = getBoundPvIds(devopsPrometheusMapper, 1);
+
+        if ("Available".equals(devopsPvDTO.getStatus())&&boundPvIds.contains(pvId)) {
+            throw new CommonException("error.pv.bound.with.prometheus");
         }
 
         // 创建pv的环境是所选集群关联的系统环境
@@ -194,6 +206,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         String path = clusterConnectionHandler.handDevopsEnvGitRepository(
                 devopsEnvironmentDTO.getProjectId(),
                 devopsEnvironmentDTO.getCode(),
+                devopsEnvironmentDTO.getId(),
                 devopsEnvironmentDTO.getEnvIdRsa(),
                 devopsEnvironmentDTO.getType(),
                 devopsEnvironmentDTO.getClusterCode());
@@ -651,6 +664,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(devopsEnvironmentDTO.getProjectId())
                         .withRefType("env")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_PERSISTENTVOLUME),
                 builder -> builder
@@ -664,6 +678,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
             String path = clusterConnectionHandler.handDevopsEnvGitRepository(persistentVolumePayload.getDevopsEnvironmentDTO().getProjectId(),
                     persistentVolumePayload.getDevopsEnvironmentDTO().getCode(),
+                    persistentVolumePayload.getDevopsEnvironmentDTO().getId(),
                     persistentVolumePayload.getDevopsEnvironmentDTO().getEnvIdRsa(),
                     persistentVolumePayload.getDevopsEnvironmentDTO().getType(),
                     persistentVolumePayload.getDevopsEnvironmentDTO().getClusterCode());
@@ -695,7 +710,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     }
 
     @Override
-    public List<DevopsPvVO> queryPvcRelatedPv(Long projectId, Long envId, Long clusterId, String params) {
+    public List<DevopsPvVO> queryPvcRelatedPv(Long projectId, Long envId, Long clusterId, String params, Integer mode) {
         if (clusterId == null) {
             if (envId != null) {
                 DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
@@ -743,14 +758,17 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         List<Long> connectedClusterList = clusterConnectionHandler.getConnectedClusterList();
 
         String pvcStorage = map.get("requestResource");
-        // 筛选容量大于或等于pvc容量且集群agent处于连接状态
+        // 筛选容量大于或等于pvc容量且集群agent处于连接状态且未与Prometheus进行绑定
+        List<Long> boundPvIds = getBoundPvIds(devopsPrometheusMapper, mode);
         if (pvcStorage != null) {
             return projectRelatedPvList.stream()
                     .filter(e -> compareResource(e.getRequestResource(), pvcStorage) > 0 && e.getPvcName() == null)
                     .filter(e -> connectedClusterList.contains(e.getClusterId()))
+                    .filter(e -> !boundPvIds.contains(e.getId()))
                     .collect(Collectors.toList());
         } else {
             return projectRelatedPvList.stream()
+                    .filter(e -> !boundPvIds.contains(e.getId()))
                     .filter(e -> e.getPvcName() == null)
                     .collect(Collectors.toList());
         }
@@ -761,5 +779,20 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         DevopsPvDTO devopsPvDTO = new DevopsPvDTO();
         devopsPvDTO.setClusterId(clusterId);
         return devopsPvMapper.select(devopsPvDTO);
+    }
+
+    private List<Long> getBoundPvIds(DevopsPrometheusMapper devopsPrometheusMapper, Integer mode) {
+        // 0表示不需要查出与Prometheus绑定过的PV,直接返回空链表
+        if (mode == 0) {
+            return new ArrayList<>();
+        }
+        List<DevopsPrometheusDTO> devopsPrometheusDTOList = devopsPrometheusMapper.selectAll();
+        List<Long> boundPvIds = new ArrayList<>();
+        for (DevopsPrometheusDTO prometheusDTO : devopsPrometheusDTOList) {
+            boundPvIds.add(prometheusDTO.getGrafanaPvId());
+            boundPvIds.add(prometheusDTO.getPrometheusPvId());
+            boundPvIds.add(prometheusDTO.getAlertmanagerPvId());
+        }
+        return boundPvIds;
     }
 }

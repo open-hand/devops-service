@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.CertManagerMsgVO;
 import io.choerodon.devops.api.vo.ClusterResourceVO;
 import io.choerodon.devops.api.vo.DevopsPrometheusVO;
 import io.choerodon.devops.api.vo.PrometheusStageVO;

@@ -1,18 +1,17 @@
 package io.choerodon.devops.app.service;
 
 
+import java.util.List;
+
 import com.github.pagehelper.PageInfo;
+import org.springframework.data.domain.Pageable;
+
 import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
 import io.choerodon.devops.api.vo.DevopsPvReqVO;
 import io.choerodon.devops.api.vo.DevopsPvVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.eventhandler.payload.PersistentVolumePayload;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsPvDTO;
-import io.choerodon.devops.infra.dto.UserAttrDTO;
-import org.springframework.data.domain.Pageable;
-
-import java.util.List;
 
 
 public interface DevopsPvService {
@@ -163,7 +162,7 @@ public interface DevopsPvService {
      * @param params
      * @return
      */
-    List<DevopsPvVO> queryPvcRelatedPv(Long projectId, Long envId, Long clusterId, String params);
+    List<DevopsPvVO> queryPvcRelatedPv(Long projectId, Long envId, Long clusterId, String params, Integer mode);
 
     /**
      * 根据集群ID查询集群

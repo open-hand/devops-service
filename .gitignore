@@ -29,7 +29,7 @@ application-localtest.yml
 /dist/
 /nbdist/
 /.nb-gradle/
-application-default.*
+src/main/resources/application-default.yml
 init-local-database.sh
 values_yaml.spec
 

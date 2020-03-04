@@ -3,7 +3,7 @@ export default (projectId, clusterId) => ({
   paging: false,
   transport: {
     read: {
-      url: `/devops/v1/projects/${projectId}/pvs/pv_available?cluster_id=${clusterId}`,
+      url: `/devops/v1/projects/${projectId}/pvs/pv_available?cluster_id=${clusterId}&mode=0`,
       method: 'post',
       data: {
         params: [],

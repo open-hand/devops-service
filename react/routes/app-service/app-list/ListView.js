@@ -222,8 +222,22 @@ const ListView = withRouter(observer((props) => {
     });
   }
 
+  // 因为在应用服务那边做了最近访问前端缓存，如果要删除，也必须要删除这个缓存
+  function checkLocalstorage(appId) {
+    const recentApp = JSON.parse(localStorage.getItem('recent-app'));
+    if (recentApp && recentApp[projectId]) {
+      const currentProjectApp = recentApp[projectId];
+      const hasData = currentProjectApp.filter(item => item.id !== appId);
+      if (hasData.length < currentProjectApp.length) {
+        recentApp[projectId] = hasData;
+        localStorage.setItem('recent-app', JSON.stringify(recentApp));
+      }
+    }
+  }
+
   function handleDelete() {
     const record = listDs.current;
+    const appId = record.get('id');
     const modalProps = {
       title: formatMessage({ id: `${intlPrefix}.delete.title` }, { name: record.get('name') }),
       children: formatMessage({ id: `${intlPrefix}.delete.des` }),
@@ -232,6 +246,7 @@ const ListView = withRouter(observer((props) => {
       cancelProps: { color: 'dark' },
     };
     listDs.delete(record, modalProps);
+    checkLocalstorage(appId);
   }
 
   async function changeActive(active) {
@@ -251,6 +266,7 @@ const ListView = withRouter(observer((props) => {
   async function handleChangeActive(active) {
     try {
       if (await appServiceStore.changeActive(projectId, listDs.current.get('id'), active)) {
+        checkLocalstorage(listDs.current.get('id'));
         refresh();
       } else {
         return false;

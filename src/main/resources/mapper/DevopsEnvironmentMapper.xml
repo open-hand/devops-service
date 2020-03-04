@@ -86,99 +86,79 @@
 
 
     <select id="listAllInstanceEnvTree" resultMap="instanceEnvTree">
-        SELECT env.id         as           env_id,
-               env.name       as           env_name,
-               app.id         as           app_service_id,
-               app.name       as           app_name,
-               ins.id         as           ins_id,
-               ins.code       as           ins_code,
-               ins.status     as           ins_status,
-               env.cluster_id as           cluster_id,
-               (SELECT count(1)
-                FROM devops_env_pod dp
-                WHERE dp.instance_id = ins.id
-                  AND dp.namespace = env.code
-                  AND env.id = ins.env_id) pod_count,
-               (SELECT count(1)
-                FROM devops_env_pod dp
-                WHERE dp.instance_id = ins.id
-                  AND dp.`status` = 'Running'
-                  AND dp.is_ready = TRUE
-                  AND dp.namespace = env.code
-                  AND env.id = ins.env_id) pod_running_count
+        SELECT
+              any_value(env.id)         as           env_id,
+              any_value(env.name)       as           env_name,
+              any_value( app.id)        as           app_service_id,
+              any_value (app.name)      as           app_name,
+              any_value(ins.id)         as           ins_id,
+              any_value(ins.code )      as           ins_code,
+              any_value(ins.status)     as           ins_status,
+              any_value(env.cluster_id) as           cluster_id,
+            SUM(CASE WHEN dp.namespace = env.code and env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_count,
+ 			SUM(CASE WHEN dp.`status` = 'Running'  AND dp.is_ready = TRUE  AND dp.namespace = env.code  AND env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_running_count
         FROM devops_env env
                  LEFT JOIN devops_env_app_service env_app ON env.id = env_app.env_id
                  LEFT JOIN devops_app_service app ON env_app.app_service_id = app.id AND (app.is_active = TRUE OR app.is_active is NULL)
                  LEFT JOIN devops_app_service_instance ins ON app.id = ins.app_service_id
                                                           AND env.id = ins.env_id AND ins.status != 'deleted'
+                 LEFT JOIN devops_env_pod dp ON dp.instance_id = ins.id
         WHERE env.project_id = #{projectId}
           AND env.is_active = TRUE
           AND env.is_failed = FALSE
           AND env.is_synchro = TRUE
           AND env.type = 'user'
+          GROUP BY env.name,app.id,ins.id
     </select>
 
     <select id="listMemberInstanceEnvTree" resultMap="instanceEnvTree">
-        (SELECT env.id         as           env_id,
-                env.name       as           env_name,
-                app.id         as           app_service_id,
-                app.name       as           app_name,
-                ins.id         as           ins_id,
-                ins.code       as           ins_code,
-                ins.status     as           ins_status,
-                env.cluster_id as           cluster_id,
-                (SELECT count(1)
-                 FROM devops_env_pod dp
-                 WHERE dp.instance_id = ins.id
-                   AND dp.namespace = env.code
-                   AND env.id = ins.env_id) pod_count,
-                (SELECT count(1)
-                 FROM devops_env_pod dp
-                 WHERE dp.instance_id = ins.id
-                   AND dp.`status` = 'Running'
-                   AND dp.is_ready = TRUE
-                   AND dp.namespace = env.code
-                   AND env.id = ins.env_id) pod_running_count
+        (SELECT
+              any_value(env.id)         as           env_id,
+              any_value(env.name)       as           env_name,
+              any_value( app.id)        as           app_service_id,
+              any_value (app.name)      as           app_name,
+              any_value(ins.id)         as           ins_id,
+              any_value(ins.code )      as           ins_code,
+              any_value(ins.status)     as           ins_status,
+              any_value(env.cluster_id) as           cluster_id,
+ 			  SUM(CASE WHEN dp.namespace = env.code and env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_count,
+ 			  SUM(CASE WHEN dp.`status` = 'Running'  AND dp.is_ready = TRUE  AND dp.namespace = env.code  AND env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_running_count
          FROM devops_env env
                   LEFT JOIN devops_env_app_service env_app ON env.id = env_app.env_id
                   LEFT JOIN devops_app_service app ON env_app.app_service_id = app.id AND (app.is_active = TRUE OR app.is_active is NULL)
                   LEFT JOIN devops_app_service_instance ins ON app.id = ins.app_service_id
                                                                    AND env.id = ins.env_id AND ins.status != 'deleted'
+                  LEFT JOIN devops_env_pod dp ON dp.instance_id = ins.id
+
          WHERE env.project_id = #{projectId}
            AND env.is_skip_check_permission = TRUE
            AND env.is_synchro = TRUE
            AND env.is_active = TRUE
            AND env.is_failed = FALSE
-           AND env.type = 'user')
+           AND env.type = 'user'
+           GROUP BY env.name,app.id,ins.id)
 
         UNION ALL
                 (
-                SELECT env.id         as           env_id,
-                       env.name       as           env_name,
-                       app.id         as           app_service_id,
-                       app.name       as           app_name,
-                       ins.id         as           ins_id,
-                       ins.code       as           ins_code,
-                       ins.status     as           ins_status,
-                       env.cluster_id as           cluster_id,
-                       (SELECT count(1)
-                        FROM devops_env_pod dp
-                        WHERE dp.instance_id = ins.id
-                          AND dp.namespace = env.code
-                          AND env.id = ins.env_id) pod_count,
-                       (SELECT count(1)
-                        FROM devops_env_pod dp
-                        WHERE dp.instance_id = ins.id
-                          AND dp.`status` = 'Running'
-                          AND dp.is_ready = TRUE
-                          AND dp.namespace = env.code
-                          AND env.id = ins.env_id) pod_running_count
+                SELECT
+                      any_value(env.id)         as           env_id,
+                      any_value(env.name)       as           env_name,
+                      any_value( app.id)        as           app_service_id,
+                      any_value (app.name)      as           app_name,
+                      any_value(ins.id)         as           ins_id,
+                      any_value(ins.code )      as           ins_code,
+                      any_value(ins.status)     as           ins_status,
+                      any_value(env.cluster_id) as           cluster_id,
+ 			          SUM(CASE WHEN dp.namespace = env.code and env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_count,
+ 			          SUM(CASE WHEN dp.`status` = 'Running'  AND dp.is_ready = TRUE  AND dp.namespace = env.code  AND env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_running_count
+
                 FROM devops_env env
                          LEFT JOIN devops_env_app_service env_app ON env.id = env_app.env_id
                          LEFT JOIN devops_app_service app ON env_app.app_service_id = app.id AND (app.is_active = TRUE OR app.is_active is NULL)
                          LEFT JOIN devops_app_service_instance ins ON app.id = ins.app_service_id
                                                                           AND env.id = ins.env_id AND ins.status != 'deleted'
                          LEFT JOIN devops_env_user_permission deup ON env.id = deup.env_id
+                         LEFT JOIN devops_env_pod dp ON dp.instance_id = ins.id
                 WHERE env.project_id = #{projectId}
                   AND env.type = 'user'
                   AND env.is_skip_check_permission = FALSE
@@ -186,6 +166,7 @@
                   AND env.is_failed = FALSE
                   AND env.is_synchro = TRUE
                   AND deup.iam_user_id = #{memberId}
+                  GROUP BY env.name,app.id,ins.id
                 )
     </select>
 
@@ -241,82 +222,61 @@
     </select>
 
     <select id="listAllResourceEnvTree" resultMap="resourceEnvTree">
-        SELECT env.id         as           env_id,
-               env.name       as           env_name,
-               ins.id         as           ins_id,
-               ins.status     as           ins_status,
-               ins.code       as           ins_code,
-               env.cluster_id as           cluster_id,
-               (SELECT count(1)
-                FROM devops_env_pod dp
-                WHERE dp.instance_id = ins.id
-                  AND dp.namespace = env.code
-                  AND env.id = ins.env_id) pod_count,
-               (SELECT count(1)
-                FROM devops_env_pod dp
-                WHERE dp.instance_id = ins.id
-                  AND dp.`status` = 'Running'
-                  AND dp.is_ready = TRUE
-                  AND dp.namespace = env.code
-                  AND env.id = ins.env_id) pod_running_count
+        SELECT
+              any_value(env.id)         as           env_id,
+              any_value(env.name)       as           env_name,
+              any_value(ins.id )        as           ins_id,
+              any_value(ins.status)     as           ins_status,
+              any_value(ins.code)       as           ins_code,
+              any_value(env.cluster_id) as           cluster_id,
+			SUM(CASE WHEN dp.namespace = env.code and env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_count,
+ 			SUM(CASE WHEN dp.`status` = 'Running'  AND dp.is_ready = TRUE  AND dp.namespace = env.code  AND env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_running_count
         FROM devops_env env
                  LEFT JOIN devops_app_service_instance ins ON env.id = ins.env_id AND ins.status != 'deleted'
+                LEFT JOIN devops_env_pod dp ON dp.instance_id = ins.id
         WHERE env.project_id = #{projectId}
           AND env.is_active = TRUE
           AND env.is_failed = FALSE
           AND env.is_synchro = TRUE
           AND env.type = 'user'
+          GROUP BY env.name,ins.id
     </select>
 
     <select id="listMemberResourceEnvTree" resultMap="resourceEnvTree">
-        (SELECT env.id         as           env_id,
-               env.name       as           env_name,
-               ins.id         as           ins_id,
-               ins.status     as           ins_status,
-               ins.code       as           ins_code,
-               env.cluster_id as           cluster_id,
-               (SELECT count(1)
-                FROM devops_env_pod dp
-                WHERE dp.instance_id = ins.id
-                  AND dp.namespace = env.code
-                  AND env.id = ins.env_id) pod_count,
-               (SELECT count(1)
-                FROM devops_env_pod dp
-                WHERE dp.instance_id = ins.id
-                  AND dp.`status` = 'Running'
-                  AND dp.is_ready = TRUE
-                  AND dp.namespace = env.code
-                  AND env.id = ins.env_id) pod_running_count
+        (SELECT
+              any_value(env.id)         as           env_id,
+              any_value(env.name)       as           env_name,
+              any_value(ins.id )        as           ins_id,
+              any_value(ins.status)     as           ins_status,
+              any_value(ins.code)       as           ins_code,
+              any_value(env.cluster_id) as           cluster_id,
+			SUM(CASE WHEN dp.namespace = env.code and env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_count,
+ 			SUM(CASE WHEN dp.`status` = 'Running'  AND dp.is_ready = TRUE  AND dp.namespace = env.code  AND env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_running_count
         FROM devops_env env
                  LEFT JOIN devops_app_service_instance ins ON env.id = ins.env_id AND ins.status != 'deleted'
+                 LEFT JOIN devops_env_pod dp ON dp.instance_id = ins.id
         WHERE env.project_id = #{projectId}
           AND env.is_skip_check_permission = TRUE
           AND env.is_active = TRUE
           AND env.is_synchro = TRUE
-          AND env.is_failed = FALSE)
+          AND env.is_failed = FALSE
+          GROUP BY env.name,ins.id
+          )
         UNION ALL
         (
-        SELECT env.id         as           env_id,
-               env.name       as           env_name,
-               ins.id         as           ins_id,
-               ins.status     as           ins_status,
-               ins.code       as           ins_code,
-               env.cluster_id as           cluster_id,
-               (SELECT count(1)
-                FROM devops_env_pod dp
-                WHERE dp.instance_id = ins.id
-                  AND dp.namespace = env.code
-                  AND env.id = ins.env_id) pod_count,
-               (SELECT count(1)
-                FROM devops_env_pod dp
-                WHERE dp.instance_id = ins.id
-                  AND dp.`status` = 'Running'
-                  AND dp.is_ready = TRUE
-                  AND dp.namespace = env.code
-                  AND env.id = ins.env_id) pod_running_count
+        SELECT
+              any_value(env.id)        as           env_id,
+              any_value(env.name)       as           env_name,
+              any_value(ins.id )        as           ins_id,
+              any_value(ins.status)     as           ins_status,
+              any_value(ins.code)       as           ins_code,
+              any_value(env.cluster_id) as           cluster_id,
+			  SUM(CASE WHEN dp.namespace = env.code and env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_count,
+ 			  SUM(CASE WHEN dp.`status` = 'Running'  AND dp.is_ready = TRUE  AND dp.namespace = env.code  AND env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_running_count
         FROM devops_env env
                  LEFT JOIN devops_app_service_instance ins ON env.id = ins.env_id AND ins.status != 'deleted'
                  LEFT JOIN devops_env_user_permission deup ON env.id = deup.env_id
+                 LEFT JOIN devops_env_pod dp ON dp.instance_id = ins.id
         WHERE env.project_id = #{projectId}
           AND env.is_skip_check_permission = FALSE
           AND env.is_active = TRUE
@@ -324,6 +284,7 @@
           AND env.is_synchro = TRUE
           AND env.type = 'user'
           AND deup.iam_user_id = #{memberId}
+          GROUP BY env.name,ins.id
         )
     </select>
 
@@ -480,13 +441,31 @@
 
     <select id="queryEnvConutByEnvIds" resultType="java.lang.Integer">
         SELECT
-            count(*)
+        count(*)
         FROM
-            devops_env de
+        devops_env de
         WHERE
-            de.id IN
+        de.id IN
         <foreach collection="envIds" item="envId" open="(" separator="," close=")">
-           #{envId}
+            #{envId}
         </foreach>
+    </select>
+
+    <select id="countByOptions" resultType="int">
+      SELECT COUNT(1)
+      FROM devops_env de
+      WHERE 1 = 1
+      <if test="clusterId != null">
+          AND de.cluster_id = #{clusterId,jdbcType=BIGINT}
+      </if>
+      <if test="projectId != null">
+          AND de.project_id = #{projectId,jdbcType=BIGINT}
+      </if>
+      <if test="isFailed != null">
+          AND de.is_failed = #{isFailed,jdbcType=BOOLEAN}
+      </if>
+      <if test="type != null and type != ''">
+          AND de.type = #{type,jdbcType=VARCHAR}
+      </if>
     </select>
 </mapper>

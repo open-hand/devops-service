@@ -1,25 +1,29 @@
 package io.choerodon.devops.infra.handler;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.ClusterSessionVO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.EnvironmentType;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.util.GitOpsUtil;
-import io.choerodon.devops.infra.util.GitUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.ClusterSessionVO;
+import io.choerodon.devops.app.service.DevopsClusterService;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.EnvironmentType;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.util.*;
 
 /**
  * Creator: Runge
@@ -30,8 +34,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class ClusterConnectionHandler {
-
+    private static final String CLUSTER_ID = "clusterId";
     public static final String CLUSTER_SESSION = "cluster-sessions-cache";
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClusterConnectionHandler.class);
 
     private Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     @Value("${agent.version}")
@@ -44,6 +49,8 @@ public class ClusterConnectionHandler {
     private GitUtil gitUtil;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private DevopsClusterService devopsClusterService;
 
     public static int compareVersion(String a, String b) {
         if (!a.contains("-") && !b.contains("-")) {
@@ -146,11 +153,11 @@ public class ClusterConnectionHandler {
     }
 
 
-    public String handDevopsEnvGitRepository(Long projectId, String envCode, String envRsa, String envType, String clusterCode) {
+    public String handDevopsEnvGitRepository(Long projectId, String envCode, Long envId, String envRsa, String envType, String clusterCode) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         //本地路径
-        String path = GitOpsUtil.getLocalPathToStoreEnv(organizationDTO.getCode(), projectDTO.getCode(), clusterCode, envCode);
+        String path = GitOpsUtil.getLocalPathToStoreEnv(organizationDTO.getCode(), projectDTO.getCode(), clusterCode, envCode, envId);
         //生成环境git仓库ssh地址
         String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organizationDTO.getCode(),
                 projectDTO.getCode(), envCode, EnvironmentType.forValue(envType), clusterCode);
@@ -169,5 +176,51 @@ public class ClusterConnectionHandler {
             }
         }
         return path;
+    }
+
+    /**
+     * 校验ws连接参数是否正确
+     *
+     * @param request 请求
+     * @return true表示正确，false表示不正确
+     */
+    public boolean validConnectionParameter(HttpServletRequest request) {
+        //校验ws连接参数是否正确
+        String key = request.getParameter("key");
+        String clusterId = request.getParameter(CLUSTER_ID);
+        String token = request.getParameter("token");
+        String version = request.getParameter("version");
+        if (key == null || key.trim().isEmpty()) {
+            LOGGER.warn("Agent Handshake : Key is null");
+            return false;
+        }
+        if (!KeyParseUtil.matchPattern(key)) {
+            LOGGER.warn("Agent Handshake : Key not match the pattern");
+            return false;
+        }
+        if (clusterId == null || clusterId.trim().isEmpty()) {
+            LOGGER.warn("Agent Handshake : ClusterId is null");
+            return false;
+        }
+        if (token == null || token.trim().isEmpty()) {
+            LOGGER.warn("Agent Handshake : Token is null");
+            return false;
+        }
+        if (version == null || version.trim().isEmpty()) {
+            LOGGER.warn("Agent Handshake : Version is null");
+            return false;
+        }
+        //检验连接过来的agent和集群是否匹配
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(TypeUtil.objToLong(clusterId));
+        if (devopsClusterDTO == null) {
+            LogUtil.loggerWarnObjectNullWithId("Cluster", TypeUtil.objToLong(clusterId), LOGGER);
+            return false;
+        }
+        if (!token.equals(devopsClusterDTO.getToken())) {
+            LOGGER.warn("Cluster with id {} exists but its token doesn't match the token that agent offers as {}", clusterId, token);
+            return false;
+        }
+
+        return true;
     }
 }

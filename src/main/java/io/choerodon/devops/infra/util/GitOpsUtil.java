@@ -52,18 +52,25 @@ public class GitOpsUtil {
     }
 
     /**
-     * get local path to store environment repository
+     * 获取存储本地环境库的路径
+     * 加入envId是为了防止环境删除后又创建同名的环境导致的脏数据
      *
      * @param orgCode     组织code
      * @param projectCode 项目code
      * @param clusterCode 集群code
      * @param envCode     环境code
+     * @param envId       环境id
      * @return 存储环境库的本地路径
      */
     public static String getLocalPathToStoreEnv(
-            String orgCode, String projectCode, String clusterCode, String envCode) {
+            String orgCode, String projectCode, String clusterCode, String envCode, Long envId) {
         //本地路径
-        return String.format(LOCAL_ENV_PATH, orgCode, projectCode, clusterCode, envCode);
+        return String.format(LOCAL_ENV_PATH,
+                Objects.requireNonNull(orgCode),
+                Objects.requireNonNull(projectCode),
+                Objects.requireNonNull(clusterCode),
+                Objects.requireNonNull(envCode),
+                Objects.requireNonNull(envId));
     }
 
     /**

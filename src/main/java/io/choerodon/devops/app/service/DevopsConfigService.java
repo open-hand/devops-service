@@ -10,6 +10,7 @@ import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.api.vo.DevopsConfigRepVO;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
+import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
 
 /**
  * @author zongw.lee@gmail.com
@@ -85,6 +86,8 @@ public interface DevopsConfigService {
     void operateConfig(Long organizationId, String resourceType, DevopsConfigRepVO devopsConfigRepVO);
 
     void deleteByConfigIds(Set<Long> configIds);
+
+    Integer getHarborProjectId(List<ProjectDetail> projectDetailList, String harborProjectName);
 
 }
 

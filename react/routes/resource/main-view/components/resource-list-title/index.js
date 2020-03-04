@@ -16,7 +16,9 @@ function ResourceListTitle({ type }) {
 
   function getEnvName() {
     const envRecord = treeDs.find((record) => record.get('key') === parentId);
-    return envRecord.get('name');
+    if (envRecord) {
+      return envRecord.get('name');
+    }
   }
 
   return (

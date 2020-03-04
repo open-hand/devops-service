@@ -1,9 +1,8 @@
 package io.choerodon.devops.api.vo.notify;
 
-import io.swagger.annotations.ApiModelProperty;
-
-import javax.validation.constraints.NotEmpty;
 import java.util.List;
+
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * User: Mr.Wang
@@ -49,9 +48,11 @@ public class MessageSettingVO {
     public String getEventName() {
         return eventName;
     }
+
     public void setEventName(String eventName) {
         this.eventName = eventName;
     }
+
     public Long getEnvId() {
         return envId;
     }

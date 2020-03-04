@@ -15,6 +15,7 @@ const { TabPane } = Tabs;
 
 const SyncSituation = lazy(() => import('./sync-situation'));
 const Permissions = lazy(() => import('./Permissions'));
+const Polaris = lazy(() => import('./polaris'));
 
 const EnvContent = observer(() => {
   const {
@@ -30,6 +31,7 @@ const EnvContent = observer(() => {
       SYNC_TAB,
       CONFIG_TAB,
       ASSIGN_TAB,
+      POLARIS_TAB,
     },
     envStore,
   } = useEnvironmentStore();
@@ -116,6 +118,14 @@ const EnvContent = observer(() => {
         >
           <Suspense fallback={<Spin />}>
             <Config />
+          </Suspense>
+        </TabPane>
+        <TabPane
+          key={POLARIS_TAB}
+          tab={formatMessage({ id: `${intlPrefix}.environment.tabs.polaris` })}
+        >
+          <Suspense fallback={<Spin />}>
+            <Polaris />
           </Suspense>
         </TabPane>
         {envStore.getPermission && <TabPane

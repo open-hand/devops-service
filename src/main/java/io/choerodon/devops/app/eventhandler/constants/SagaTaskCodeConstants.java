@@ -233,6 +233,11 @@ public class SagaTaskCodeConstants {
     public static final String DEVOPS_DELETE_ADMIN = "devops-delete-admin";
 
 
+    /**
+     * DevOps消费批量部署事件
+     */
+    public static final String DEVOPS_BATCH_DEPLOYMENT = "devops-handle-batch-deployment";
+
     private SagaTaskCodeConstants() {
     }
 }

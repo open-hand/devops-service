@@ -316,7 +316,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                             appServiceInstanceDTO.setEffectCommandId(releasePayloadVO.getCommand());
                             logger.info("Set the effect command from agent. The instance id is {} and the command id is {}", appServiceInstanceDTO.getId(), releasePayloadVO.getCommand());
                         } else {
-                            logger.info("The effect command from agent is invalid for instance {}. It is {}", appServiceInstanceDTO.getId(),releasePayloadVO.getCommand());
+                            logger.info("The effect command from agent is invalid for instance {}. It is {}", appServiceInstanceDTO.getId(), releasePayloadVO.getCommand());
                         }
                     }
                 }
@@ -500,7 +500,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     break;
             }
         } catch (IOException e) {
-            logger.info("Unexpected exception occurred when processing resourceUpdate. The exception is {}", e.toString());
+            logger.info("Unexpected exception occurred when processing resourceUpdate. The exception is {}", e);
         }
     }
 
@@ -1987,6 +1987,14 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
     }
 
+    @Override
+    public void handleClusterInfo(AgentMsgVO msg) {
+        Long clusterId = TypeUtil.objToLong(msg.getClusterId());
+        // 应该要有 version, namespaces, pods, nodes字段
+        ClusterSummaryInfoVO clusterSummaryInfoVO = JSONObject.parseObject(msg.getPayload(), ClusterSummaryInfoVO.class);
+        devopsClusterService.saveClusterSummaryInfo(clusterId, clusterSummaryInfoVO);
+    }
+
 
     @Override
     public void handleConfigUpdate(String key, String msg, Long clusterId) {
@@ -2020,12 +2028,17 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Override
     public void operateDockerRegistrySecretResp(String key, String result, Long clusterId) {
-        Long envId = getEnvId(key, clusterId);
-        if (envId == null) {
-            logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
+        String namespace = KeyParseUtil.getNamespace(key);
+        String resourceName = KeyParseUtil.getResourceName(key);
+        if (clusterId == null || namespace == null || resourceName == null) {
+            logger.info("Bad response for registry secret: clusterId: {}, namespace: {}, resourceName: {}", clusterId, namespace, resourceName);
             return;
         }
-        DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndName(envId, KeyParseUtil.getResourceName(key));
+        DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByClusterAndNamespaceAndName(clusterId, namespace, resourceName);
+        if (devopsRegistrySecretDTO == null) {
+            logger.info("Registry-secret with name {} wasn't found. The clusterId is {}, the namespace is {}", resourceName, clusterId, namespace);
+            return;
+        }
         if (result.equals("failed")) {
             devopsRegistrySecretService.baseUpdateStatus(devopsRegistrySecretDTO.getId(), false);
         } else {

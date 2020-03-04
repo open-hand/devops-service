@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.kubernetes.client.JSON;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
@@ -99,7 +98,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String SONAR = "sonar";
     private static final String NORMAL = "normal";
     private static final String APP_SERVICE = "appService";
-    private static final String ERROR_USER_NOT_OWNER = "error.user.not.owner";
+    private static final String ERROR_USER_NOT_GITLAB_OWNER = "error.user.not.gitlab.owner";
     private static final String METRICS = "metrics";
     private static final String SONAR_NAME = "sonar_default";
     private static final String APPLICATION = "application";
@@ -210,7 +209,8 @@ public class AppServiceServiceImpl implements AppServiceService {
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
-                throw new CommonException(ERROR_USER_NOT_OWNER);
+
+                throw new CommonException(ERROR_USER_NOT_GITLAB_OWNER);
             }
         }
 
@@ -304,8 +304,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppServicePayload.setIamProjectId(projectId);
         //删除应用服务后需要发送消息，这里将消息的内容封近paylod
         List<DevopsUserPermissionVO> list = pagePermissionUsers(appServiceDTO.getProjectId(), appServiceDTO.getId(), CustomPageRequest.of(0, 0), null).getList();
-        for (DevopsUserPermissionVO devopsUserPermissionVO : list) {
-            devopsUserPermissionVO.setCreationDate(null);
+        if (!CollectionUtils.isEmpty(list)){
+            list.stream().forEach(devopsUserPermissionVO -> {
+                devopsUserPermissionVO.setCreationDate(null);
+            });
         }
         devOpsAppServicePayload.setAppServiceDTO(appServiceDTO);
         devOpsAppServicePayload.setDevopsUserPermissionVOS(list);
@@ -792,6 +794,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(projectId)
                         .withRefType("")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL),
                 builder -> builder
@@ -835,6 +838,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{ DOCKER_USERNAME }}", harborProjectConfig.getUserName());
             params.put("{{ DOCKER_PASSWORD }}", harborProjectConfig.getPassword());
             params.put("{{ HARBOR_CONFIG_ID }}", harborConfigDTO.getId().toString());
+            // TODO 能不能优化为只读一次，读入内存?
             return FileUtil.replaceReturnString(inputStream, params);
         } catch (CommonException e) {
             return null;
@@ -948,7 +952,8 @@ public class AppServiceServiceImpl implements AppServiceService {
 
             // 校验用户的gitlab权限
             if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
-                throw new CommonException(ERROR_USER_NOT_OWNER);
+
+                throw new CommonException(ERROR_USER_NOT_GITLAB_OWNER);
             }
         }
 
@@ -974,6 +979,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(projectId)
                         .withRefType("")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT),
                 builder -> builder
@@ -1750,6 +1756,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(projectId)
                         .withRefType("app")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_GITLAB_USERS),
                 builder -> builder
@@ -1773,6 +1780,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(projectId)
                         .withRefType("app")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_GITLAB_USERS),
                 builder -> builder
@@ -1848,7 +1856,8 @@ public class AppServiceServiceImpl implements AppServiceService {
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
 
                 if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
-                    throw new CommonException(ERROR_USER_NOT_OWNER);
+
+                    throw new CommonException(ERROR_USER_NOT_GITLAB_OWNER);
                 }
             }
 
@@ -2316,7 +2325,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 List<Long> appServiceIds = new ArrayList<>();
                 baseServiceClientOperator.listIamProjectByOrgId(organizationId)
                         .forEach(pro ->
-                                baseListAll(pro.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
+                                baseSelectAll(pro.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
                         );
                 list.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, serviceType, params));
                 Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()
@@ -2366,6 +2375,12 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     private List<AppServiceDTO> baseListAll(Long projectId) {
         return appServiceMapper.listAll(projectId);
+    }
+
+    private List<AppServiceDTO> baseSelectAll(Long projectId) {
+        AppServiceDTO appServiceDTO = new AppServiceDTO();
+        appServiceDTO.setProjectId(projectId);
+        return appServiceMapper.select(appServiceDTO);
     }
 
     private AppServiceDTO fromImportVoToDto(AppServiceImportVO appServiceImportVO) {
@@ -2554,6 +2569,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         return checkCanDisable(appServiceId, projectId);
     }
 
+    @Override
+    public List<AppServiceSimpleVO> listAppServiceHavingVersions(Long projectId) {
+        return ConvertUtils.convertList(appServiceMapper.queryAppServicesHavingVersions(projectId), app -> new AppServiceSimpleVO(app.getId(), app.getName(), app.getCode()));
+    }
+
     private AppServiceVO dtoTOVo(AppServiceDTO appServiceDTO, Map<Long, List<AppServiceVersionDTO>> appVerisonMap) {
         AppServiceVO appServiceVO = new AppServiceVO();
         BeanUtils.copyProperties(appServiceDTO, appServiceVO);
@@ -2576,6 +2596,18 @@ public class AppServiceServiceImpl implements AppServiceService {
             appServiceVO.setStatus(AppServiceStatus.ESTABLISH.getStatus());
         }
         return appServiceVO;
+    }
+
+    @Override
+    public Map<Long, Integer> countByProjectId(List<Long> longList) {
+        Map<Long, Integer> map = new HashMap<>();
+        longList.stream().forEach(projectId -> {
+            AppServiceDTO appServiceDTO = new AppServiceDTO();
+            appServiceDTO.setProjectId(projectId);
+            List<AppServiceDTO> select = appServiceMapper.select(appServiceDTO);
+            map.put(projectId, CollectionUtils.isEmpty(select) == true ? 0 : select.size());
+        });
+        return map;
     }
 
     /**

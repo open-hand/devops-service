@@ -12,7 +12,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.choerodon.devops.infra.mapper.*;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.V1Service;
+import io.kubernetes.client.models.V1beta1Ingress;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -31,15 +33,19 @@ import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.validator.AppInstanceValidator;
+import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
 import io.choerodon.devops.api.vo.kubernetes.ImagePullSecret;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.api.vo.kubernetes.Metadata;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.BatchDeploymentPayload;
+import io.choerodon.devops.app.eventhandler.payload.IngressSagaPayload;
 import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
+import io.choerodon.devops.app.eventhandler.payload.ServiceSagaPayLoad;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -48,6 +54,7 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 
 
@@ -61,7 +68,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private static final String CHOERODON = "choerodon-test";
     private static final String HARBOR = "harbor";
     private static final String AUTHTYPE = "pull";
-    private static final String MANUAL = "manual";
     private static final String APP_SERVICE = "appService";
     private static final String HELM_RELEASE = "C7NHelmRelease";
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AppServiceInstanceServiceImpl.class);
@@ -139,6 +145,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private DevopsClusterResourceMapper devopsClusterResourceMapper;
     @Autowired
     private DevopsPrometheusMapper devopsPrometheusMapper;
+    @Autowired
+    private DevopsIngressService devopsIngressService;
 
     @Override
     public AppServiceInstanceInfoVO queryInfoById(Long instanceId) {
@@ -345,15 +353,19 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     public void deployTestApp(AppServiceDeployVO appServiceDeployVO) {
 
         String versionValue = appServiceVersionService.baseQueryValue(appServiceDeployVO.getAppServiceVersionId());
-        AppServiceDTO applicationDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
+        AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
 
-        String secretCode = getSecretForTestApp(applicationDTO.getId(), applicationDTO.getProjectId(), appServiceDeployVO.getAppServiceVersionId(), appServiceDeployVO.getEnvironmentId(), CHOERODON);
+        DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
+        devopsEnvironmentDTO.setClusterId(appServiceDeployVO.getEnvironmentId());
+        devopsEnvironmentDTO.setCode(CHOERODON);
+        // 测试应用没有环境id
+        String secretCode = getSecret(appServiceDTO, appServiceDeployVO.getAppServiceVersionId(), devopsEnvironmentDTO);
 
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceDeployVO.getAppServiceVersionId());
         FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
         String deployValue = getReplaceResult(versionValue,
                 appServiceDeployVO.getValues()).getDeltaYaml().trim();
-        agentCommandService.deployTestApp(applicationDTO, appServiceVersionDTO, appServiceDeployVO.getInstanceName(), secretCode, appServiceDeployVO.getEnvironmentId(), deployValue);
+        agentCommandService.deployTestApp(appServiceDTO, appServiceVersionDTO, appServiceDeployVO.getInstanceName(), secretCode, appServiceDeployVO.getEnvironmentId(), deployValue);
     }
 
 
@@ -440,6 +452,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     public DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId) {
+        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectByPrimaryKey(instanceId);
+        if (appServiceInstanceDTO == null) {
+            return null;
+        }
+
         // 获取相关的pod
         List<DevopsEnvPodVO> devopsEnvPodDTOS = ConvertUtils.convertList(devopsEnvPodService.baseListByInstanceId(instanceId), DevopsEnvPodVO.class);
 
@@ -567,7 +584,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
             //插入部署记录
             if (!isFromPipeline) {
-                DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), MANUAL, devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
+                DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), DeployType.MANUAL.getType(), devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
                 devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
             }
 
@@ -588,6 +605,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     StartSagaBuilder
                             .newBuilder()
                             .withLevel(ResourceLevel.PROJECT)
+                            .withSourceId(devopsEnvironmentDTO.getProjectId())
                             .withRefType("env")
                             .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE),
                     builder -> builder
@@ -618,28 +636,21 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     public void createInstanceBySaga(InstanceSagaPayload instanceSagaPayload) {
         //更新实例的时候判断当前容器目录下是否存在环境对应的GitOps文件目录，不存在则克隆
         String filePath = null;
-        try {
-            if (instanceSagaPayload.getAppServiceDeployVO().getType().equals(UPDATE)) {
-                filePath = clusterConnectionHandler.handDevopsEnvGitRepository(
-                        instanceSagaPayload.getProjectId(),
-                        instanceSagaPayload.getDevopsEnvironmentDTO().getCode(),
-                        instanceSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa(),
-                        instanceSagaPayload.getDevopsEnvironmentDTO().getType(),
-                        instanceSagaPayload.getDevopsEnvironmentDTO().getClusterCode());
-            }
-        } catch (Exception ex) {
-            String exceptionContent = LogUtil.readContentOfThrowable(ex);
-            LOGGER.info("Failed to clone repository, the ex is {}", exceptionContent);
-            AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceSagaPayload.getAppServiceDeployVO().getInstanceId());
-            appServiceInstanceDTO.setStatus(InstanceStatus.FAILED.getStatus());
-            baseUpdate(appServiceInstanceDTO);
-            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
-            devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
-            devopsEnvCommandDTO.setError(LogUtil.cutOutString("Clone repository failed. The exception is: " + exceptionContent, 5000));
-            devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+        if (instanceSagaPayload.getAppServiceDeployVO().getType().equals(UPDATE)) {
+            filePath = clusterConnectionHandler.handDevopsEnvGitRepository(
+                    instanceSagaPayload.getProjectId(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getCode(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getId(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getType(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getClusterCode());
+        }
 
-            // 这里不需要发送创建实例失败的通知，因为只用update才可能导致抛异常
-            return;
+
+        //创建实例时，如果选择了创建网络
+        if (instanceSagaPayload.getDevopsServiceReqVO() != null) {
+            instanceSagaPayload.getDevopsServiceReqVO().setAppServiceId(instanceSagaPayload.getApplicationDTO().getId());
+            devopsServiceService.create(instanceSagaPayload.getDevopsEnvironmentDTO().getProjectId(), instanceSagaPayload.getDevopsServiceReqVO());
         }
 
         try {
@@ -664,37 +675,18 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     instanceSagaPayload.getGitlabUserId(),
                     instanceSagaPayload.getAppServiceDeployVO().getInstanceId(), C7NHELM_RELEASE, null, false, instanceSagaPayload.getDevopsEnvironmentDTO().getId(), filePath);
 
-            //创建实例时，如果选择了创建网络
-            if (instanceSagaPayload.getDevopsServiceReqVO() != null) {
-                instanceSagaPayload.getDevopsServiceReqVO().setAppServiceId(instanceSagaPayload.getApplicationDTO().getId());
-                devopsServiceService.create(instanceSagaPayload.getDevopsEnvironmentDTO().getProjectId(), instanceSagaPayload.getDevopsServiceReqVO());
-            }
-
         } catch (Exception e) {
             //有异常更新实例以及command的状态
             AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceSagaPayload.getAppServiceDeployVO().getInstanceId());
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                     .baseQueryByEnvIdAndResourceId(instanceSagaPayload.getDevopsEnvironmentDTO().getId(), appServiceInstanceDTO.getId(), HELM_RELEASE);
             filePath = devopsEnvFileResourceDTO == null ? RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
-            // 这里只考虑了创建失败的情况，这说明是真的创建失败，而不是gitlab超时
-            if (CREATE.equals(instanceSagaPayload.getAppServiceDeployVO().getType()) && !gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(instanceSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
+            // 这里只考虑了创建失败的情况，这说明是gitlab超时
+            if (!CREATE.equals(instanceSagaPayload.getAppServiceDeployVO().getType()) || !gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(instanceSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
                     filePath)) {
-                String exceptionContent = LogUtil.readContentOfThrowable(e);
-                LOGGER.info("Exception occurred when creating instance by saga.  Now the ex is {}", exceptionContent);
-                appServiceInstanceDTO.setStatus(CommandStatus.FAILED.getStatus());
-                baseUpdate(appServiceInstanceDTO);
-                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
-                devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
-                devopsEnvCommandDTO.setError(LogUtil.cutOutString("create or update gitOps file failed! The exception is: " + exceptionContent, 5000));
-                devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
-                LOGGER.info("Successfully update the status of instance with name {} to failed after exception occurred.", appServiceInstanceDTO.getCode());
-
-                // 已经判断了是创建时失败，直接发送实例创建失败通知
-                sendNotificationService.sendWhenInstanceCreationFailure(appServiceInstanceDTO.getEnvId(), appServiceInstanceDTO.getCode(), appServiceInstanceDTO.getCreatedBy(), null);
-            } else {
-                // 更新的超时情况暂未处理
                 throw e;
             }
+            // 更新的超时情况暂未处理
         }
     }
 
@@ -747,7 +739,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         //插入部署记录
-        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), MANUAL, devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), DeployType.MANUAL.getType(), devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
         devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
 
 
@@ -791,7 +783,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
-        AppServiceDTO applicationDTO = applicationService.baseQuery(appServiceInstanceDTO.getAppServiceId());
+        AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceInstanceDTO.getAppServiceId());
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService
                 .baseQuery(devopsEnvCommandDTO.getObjectVersionId());
 
@@ -805,10 +797,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATING.getStatus());
 
         //获取授权secret
-        String secretCode = getSecret(applicationDTO, appServiceVersionDTO.getId(), devopsEnvironmentDTO);
+        String secretCode = getSecret(appServiceDTO, appServiceVersionDTO.getId(), devopsEnvironmentDTO);
 
         //插入部署记录
-        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), MANUAL, devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), DeployType.MANUAL.getType(), devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
         devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
 
 
@@ -819,7 +811,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         appServiceDeployVO.setAppServiceVersionId(appServiceVersionDTO.getId());
         appServiceDeployVO.setInstanceName(appServiceInstanceDTO.getCode());
         InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, devopsEnvCommandDTO.getId().intValue());
-        instanceSagaPayload.setApplicationDTO(applicationDTO);
+        instanceSagaPayload.setApplicationDTO(appServiceDTO);
         instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
         instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
         instanceSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
@@ -829,6 +821,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(devopsEnvironmentDTO.getProjectId())
                         .withRefType("env")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE),
                 builder -> builder
@@ -863,7 +856,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(
+                devopsEnvironmentDTO.getProjectId(),
+                devopsEnvironmentDTO.getCode(),
+                devopsEnvironmentDTO.getId(),
+                devopsEnvironmentDTO.getEnvIdRsa(),
+                devopsEnvironmentDTO.getType(),
+                devopsEnvironmentDTO.getClusterCode());
 
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(), instanceId, C7NHELM_RELEASE);
@@ -980,7 +979,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      * @param isFromPipeline 是否从流水自动部署中进行校验，如果是，不再校验流水线中的将要创建的实例名称是否存在
      */
     private void checkNameInternal(String code, Long envId, boolean isFromPipeline) {
-        AppInstanceValidator.checkName(code);
+        AppServiceInstanceValidator.checkName(code);
 
         // 这里校验集群下code唯一而不是环境下code唯一是因为helm的release是需要集群下唯一的
         if (appServiceInstanceMapper.checkCodeExist(code, envId)) {
@@ -1151,6 +1150,197 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return configVO;
     }
 
+    @Override
+    public Integer countByOptions(Long envId, String status, Long appServiceId) {
+        return appServiceInstanceMapper.countInstanceByCondition(envId, status, appServiceId);
+    }
+
+    private InstanceSagaPayload processSingleOfBatch(Long projectId, DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO userAttrDTO, AppServiceDeployVO appServiceDeployVO) {
+        //校验values
+        FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
+
+        AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
+
+        if (appServiceDTO == null) {
+            throw new CommonException("error.app.service.not.exist");
+        }
+
+        if (!Boolean.TRUE.equals(appServiceDTO.getActive())) {
+            throw new CommonException("error.app.service.disabled");
+        }
+
+        AppServiceVersionDTO appServiceVersionDTO =
+                appServiceVersionService.baseQuery(appServiceDeployVO.getAppServiceVersionId());
+
+        //初始化ApplicationInstanceDTO,DevopsEnvCommandDTO,DevopsEnvCommandValueDTO
+        AppServiceInstanceDTO appServiceInstanceDTO = initApplicationInstanceDTO(appServiceDeployVO);
+        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(appServiceDeployVO);
+        DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = initDevopsEnvCommandValueDTO(appServiceDeployVO);
+
+        //获取部署实例时授权secret的code
+        String secretCode = getSecret(appServiceDTO, appServiceDeployVO.getAppServiceVersionId(), devopsEnvironmentDTO);
+
+        // 初始化自定义实例名
+        String code;
+        if (appServiceDeployVO.getInstanceName() == null || appServiceDeployVO.getInstanceName().trim().equals("")) {
+            code = String.format("%s-%s", appServiceDTO.getCode(), GenerateUUID.generateUUID().substring(0, 5));
+        } else {
+            checkNameInternal(appServiceDeployVO.getInstanceName(), appServiceDeployVO.getEnvironmentId(), false);
+            code = appServiceDeployVO.getInstanceName();
+        }
+
+        //存储数据
+        createEnvAppRelationShipIfNon(appServiceDeployVO.getAppServiceId(), appServiceDeployVO.getEnvironmentId());
+        appServiceInstanceDTO.setCode(code);
+        appServiceInstanceDTO.setId(baseCreate(appServiceInstanceDTO).getId());
+        devopsEnvCommandDTO.setObjectId(appServiceInstanceDTO.getId());
+        devopsEnvCommandDTO.setValueId(devopsEnvCommandValueService.baseCreate(devopsEnvCommandValueDTO).getId());
+        appServiceInstanceDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+        baseUpdate(appServiceInstanceDTO);
+
+        appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
+        appServiceDeployVO.setInstanceName(code);
+        if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
+            appServiceDeployVO.getDevopsServiceReqVO().setDevopsIngressVO(appServiceDeployVO.getDevopsIngressVO());
+        }
+        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId().intValue());
+        instanceSagaPayload.setApplicationDTO(appServiceDTO);
+        instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
+        instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
+        instanceSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+        instanceSagaPayload.setDevopsIngressVO(appServiceDeployVO.getDevopsIngressVO());
+        instanceSagaPayload.setDevopsServiceReqVO(appServiceDeployVO.getDevopsServiceReqVO());
+        return instanceSagaPayload;
+    }
+
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_BATCH_DEPLOYMENT, inputSchemaClass = BatchDeploymentPayload.class, description = "批量部署实例")
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public List<AppServiceInstanceVO> batchDeployment(Long projectId, List<AppServiceDeployVO> appServiceDeployVOS) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceDeployVOS.get(0).getEnvironmentId());
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+        List<InstanceSagaPayload> instances = new ArrayList<>();
+        List<ServiceSagaPayLoad> services = new ArrayList<>();
+        List<IngressSagaPayload> ingresses = new ArrayList<>();
+        List<DevopsDeployRecordInstanceDTO> recordInstances = new ArrayList<>();
+        List<Long> instanceIds = new ArrayList<>();
+
+        for (AppServiceDeployVO appServiceDeployVO : appServiceDeployVOS) {
+            InstanceSagaPayload payload = processSingleOfBatch(projectId, devopsEnvironmentDTO, userAttrDTO, appServiceDeployVO);
+            instances.add(payload);
+            recordInstances.add(new DevopsDeployRecordInstanceDTO(
+                    null,
+                    payload.getAppServiceDeployVO().getInstanceId(),
+                    payload.getAppServiceDeployVO().getInstanceName(),
+                    payload.getAppServiceVersionDTO().getVersion(),
+                    payload.getApplicationDTO().getId(),
+                    devopsEnvironmentDTO.getId()));
+            instanceIds.add(payload.getAppServiceDeployVO().getInstanceId());
+
+            //创建实例时，如果选择了创建网络
+            if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
+                appServiceDeployVO.getDevopsServiceReqVO().setAppServiceId(payload.getApplicationDTO().getId());
+                ServiceSagaPayLoad serviceSagaPayLoad = devopsServiceService.createForBatchDeployment(devopsEnvironmentDTO, userAttrDTO, projectId, appServiceDeployVO.getDevopsServiceReqVO());
+                services.add(serviceSagaPayLoad);
+
+                //创建实例时，如果选了创建域名
+                if (appServiceDeployVO.getDevopsIngressVO() != null) {
+                    appServiceDeployVO.getDevopsIngressVO().setAppServiceId(serviceSagaPayLoad.getDevopsServiceDTO().getTargetAppServiceId());
+                    List<DevopsIngressPathVO> devopsIngressPathVOS = appServiceDeployVO.getDevopsIngressVO().getPathList();
+                    devopsIngressPathVOS.forEach(devopsIngressPathVO -> {
+                        DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(devopsIngressPathVO.getServiceName(), devopsEnvironmentDTO.getId());
+                        if (devopsServiceDTO != null) {
+                            devopsIngressPathVO.setServiceId(devopsServiceDTO.getId());
+                        }
+                    });
+                    appServiceDeployVO.getDevopsIngressVO().setPathList(devopsIngressPathVOS);
+                    ingresses.add(devopsIngressService.createForBatchDeployment(devopsEnvironmentDTO, userAttrDTO, projectId, appServiceDeployVO.getDevopsIngressVO()));
+                }
+            }
+        }
+
+        // 插入批量部署的部署纪录及其相关信息
+        devopsDeployRecordService.createRecordForBatchDeployment(projectId, devopsEnvironmentDTO.getId(), recordInstances);
+
+        // 构造saga的payload
+        BatchDeploymentPayload batchDeploymentPayload = new BatchDeploymentPayload();
+        batchDeploymentPayload.setEnvId(devopsEnvironmentDTO.getId());
+        batchDeploymentPayload.setProjectId(projectId);
+        batchDeploymentPayload.setInstanceSagaPayloads(instances);
+        batchDeploymentPayload.setServiceSagaPayLoads(services);
+        batchDeploymentPayload.setIngressSagaPayloads(ingresses);
+        batchDeploymentPayload.setGitlabUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        batchDeploymentPayload.setIamUserId(userAttrDTO.getIamUserId());
+
+        producer.apply(StartSagaBuilder.newBuilder()
+                .withLevel(ResourceLevel.PROJECT)
+                .withSourceId(projectId)
+                .withRefId(String.valueOf(devopsEnvironmentDTO.getId()))
+                .withRefType("env")
+                .withSagaCode(SagaTopicCodeConstants.DEVOPS_BATCH_DEPLOYMENT)
+                .withJson(new JSON().serialize(batchDeploymentPayload)), LambdaUtil.doNothingConsumer());
+
+        return ConvertUtils.convertList(appServiceInstanceMapper.queryByInstanceIds(instanceIds), AppServiceInstanceVO.class);
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public void batchDeploymentSaga(BatchDeploymentPayload batchDeploymentPayload) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(batchDeploymentPayload.getEnvId());
+        if (devopsEnvironmentDTO == null) {
+            throw new CommonException("error.env.id.not.exist", batchDeploymentPayload.getEnvId());
+        }
+
+        Map<String, String> pathContentMap = new HashMap<>();
+
+        List<InstanceSagaPayload> instanceSagaPayloads = batchDeploymentPayload.getInstanceSagaPayloads();
+        for (InstanceSagaPayload instanceSagaPayload : instanceSagaPayloads) {
+            //在gitops库处理instance文件
+            ResourceConvertToYamlHandler<C7nHelmRelease> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            resourceConvertToYamlHandler.setType(getC7NHelmRelease(
+                    instanceSagaPayload.getAppServiceDeployVO().getInstanceName(),
+                    instanceSagaPayload.getAppServiceVersionDTO().getRepository(),
+                    instanceSagaPayload.getApplicationDTO().getId(),
+                    instanceSagaPayload.getCommandId(),
+                    instanceSagaPayload.getApplicationDTO().getCode(),
+                    instanceSagaPayload.getAppServiceVersionDTO().getVersion(),
+                    instanceSagaPayload.getAppServiceDeployVO().getValues(),
+                    instanceSagaPayload.getAppServiceDeployVO().getAppServiceVersionId(),
+                    instanceSagaPayload.getSecretCode(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO()));
+
+            String instanceContent = resourceConvertToYamlHandler.getCreationResourceContentForBatchDeployment();
+            String fileName = GitOpsConstants.RELEASE_PREFIX + instanceSagaPayload.getAppServiceDeployVO().getInstanceName() + GitOpsConstants.YAML_FILE_SUFFIX;
+            pathContentMap.put(fileName, instanceContent);
+        }
+
+        for (ServiceSagaPayLoad serviceSagaPayLoad : batchDeploymentPayload.getServiceSagaPayLoads()) {
+            ResourceConvertToYamlHandler<V1Service> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            resourceConvertToYamlHandler.setType(serviceSagaPayLoad.getV1Service());
+            String serviceContent = resourceConvertToYamlHandler.getCreationResourceContentForBatchDeployment();
+            String fileName = GitOpsConstants.SERVICE_PREFIX + serviceSagaPayLoad.getDevopsServiceDTO().getName() + GitOpsConstants.YAML_FILE_SUFFIX;
+            pathContentMap.put(fileName, serviceContent);
+        }
+
+        for (IngressSagaPayload ingressSagaPayload : batchDeploymentPayload.getIngressSagaPayloads()) {
+            ResourceConvertToYamlHandler<V1beta1Ingress> ingressResourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            ingressResourceConvertToYamlHandler.setType(ingressSagaPayload.getV1beta1Ingress());
+            String ingressContent = ingressResourceConvertToYamlHandler.getCreationResourceContentForBatchDeployment();
+            String fileName = GitOpsConstants.INGRESS_PREFIX + ingressSagaPayload.getDevopsIngressDTO().getName() + GitOpsConstants.YAML_FILE_SUFFIX;
+            pathContentMap.put(fileName, ingressContent);
+        }
+
+        gitlabServiceClientOperator.createGitlabFiles(
+                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
+                batchDeploymentPayload.getGitlabUserId(),
+                GitOpsConstants.MASTER,
+                pathContentMap,
+                GitOpsConstants.BATCH_DEPLOYMENT_COMMIT_MESSAGE);
+    }
 
     private void handleStartOrStopInstance(Long instanceId, String type) {
 
@@ -1391,45 +1581,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return devopsEnvCommandValueDTO;
     }
 
-    /**
-     * 获取用于拉取测试应用的镜像拉取Secret(注：此处每次都创建且不存储生成的Secret，更好的修复方式需要修改数据库结构且迁移数据)
-     *
-     * @param appServiceId        应用服务id
-     * @param projectId           项目id
-     * @param appServiceVersionId 版本id
-     * @param clusterId           集群id
-     * @param envCode             环境code
-     * @return secret名称
-     */
-    private String getSecretForTestApp(Long appServiceId, Long projectId, Long appServiceVersionId, Long clusterId, String envCode) {
-        String secretCode = null;
-        //如果应用绑定了私有镜像库,则处理secret
-        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceVersionId);
-        DevopsConfigDTO devopsConfigDTO;
-        if (appServiceVersionDTO.getHarborConfigId() != null) {
-            devopsConfigDTO = devopsConfigService.baseQuery(appServiceVersionDTO.getHarborConfigId());
-        } else {
-            devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, HARBOR, AUTHTYPE);
-        }
-        if (devopsConfigDTO != null) {
-            ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
-            if (devopsConfigDTO.getName() != null && devopsConfigDTO.getName().equals("harbor_default") && projectId != null) {
-                configVO = queryDefaultConfig(projectId, configVO);
-            }
-            if (configVO.getPrivate() != null && configVO.getPrivate()) {
-                List<DevopsRegistrySecretDTO> devopsRegistrySecretDTOS = devopsRegistrySecretService.baseListByConfig(devopsConfigDTO.getId());
-                if (devopsRegistrySecretDTOS.isEmpty()) {
-                    secretCode = String.format("%s%s%s%s", "registry-secret-", devopsConfigDTO.getId(), "-", GenerateUUID.generateUUID().substring(0, 5));
-                } else {
-                    secretCode = devopsRegistrySecretDTOS.get(0).getSecretCode();
-                }
-                // 这里无论创建还是更新都用更新类型，agent那边这个0.20.x实现是用的createOrUpdate的形式
-                agentCommandService.operateSecret(clusterId, envCode, secretCode, configVO, UPDATE);
-            }
-        }
-        return secretCode;
-    }
-
     private String getSecret(AppServiceDTO appServiceDTO, Long appServiceVersionId, DevopsEnvironmentDTO devopsEnvironmentDTO) {
         String secretCode = null;
         //如果应用绑定了私有镜像库,则处理secret
@@ -1446,7 +1597,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 configVO = queryDefaultConfig(appServiceDTO.getProjectId(), configVO);
             }
             if (configVO.getPrivate() != null && configVO.getPrivate()) {
-                DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndId(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId());
+                DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByClusterIdAndNamespace(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsConfigDTO.getId(), appServiceDTO.getProjectId());
                 if (devopsRegistrySecretDTO == null) {
                     //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
                     List<DevopsRegistrySecretDTO> devopsRegistrySecretDTOS = devopsRegistrySecretService.baseListByConfig(devopsConfigDTO.getId());
@@ -1455,13 +1606,14 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     } else {
                         secretCode = devopsRegistrySecretDTOS.get(0).getSecretCode();
                     }
-                    devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), secretCode, gson.toJson(configVO));
+                    // 测试应用的secret是没有环境id的，此处环境id只是暂存，之后不使用，考虑后续版本删除此字段
+                    devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), secretCode, gson.toJson(configVO), appServiceDTO.getProjectId());
                     devopsRegistrySecretService.baseCreate(devopsRegistrySecretDTO);
                     agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, configVO, CREATE);
                 } else {
                     //判断如果某个配置有发生过修改，则需要修改secret信息，并通知k8s更新secret
-                    if (!devopsRegistrySecretDTO.getSecretDetail().equals(gson.toJson(devopsConfigDTO.getConfig()))) {
-                        devopsRegistrySecretDTO.setSecretDetail(gson.toJson(devopsConfigDTO.getConfig()));
+                    if (!devopsRegistrySecretDTO.getSecretDetail().equals(gson.toJson(configVO))) {
+                        devopsRegistrySecretDTO.setSecretDetail(gson.toJson(configVO));
                         devopsRegistrySecretService.baseUpdate(devopsRegistrySecretDTO);
                         agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsRegistrySecretDTO.getSecretCode(), configVO, UPDATE);
                     } else {

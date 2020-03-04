@@ -233,6 +233,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(projectId)
                         .withRefType("project")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_BRANCH),
                 builder -> builder
@@ -495,6 +496,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(devopsEnvironmentDTO.getProjectId())
                         .withRefType("env")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_SYNC_GITOPS),
                 builder -> builder
@@ -528,7 +530,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         //本地路径
         final String path = GitOpsUtil.getLocalPathToStoreEnv(organizationDTO.getCode(),
-                projectDTO.getCode(), devopsEnvironmentDTO.getClusterCode(), devopsEnvironmentDTO.getCode());
+                projectDTO.getCode(), devopsEnvironmentDTO.getClusterCode(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId());
         //生成环境git仓库ssh地址
         final String url = GitUtil.getGitlabSshUrl(
                 pattern, gitlabSshUrl, organizationDTO.getCode(), projectDTO.getCode(),

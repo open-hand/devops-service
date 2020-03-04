@@ -61,10 +61,12 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
     }
 
     @Override
-    public DevopsRegistrySecretDTO baseQueryByEnvAndId(Long envId, Long configId) {
+    public DevopsRegistrySecretDTO baseQueryByClusterIdAndNamespace(Long clusterId, String namespace, Long configId, Long projectId) {
         DevopsRegistrySecretDTO devopsRegistrySecretDTO = new DevopsRegistrySecretDTO();
-        devopsRegistrySecretDTO.setConfigId(configId);
-        devopsRegistrySecretDTO.setEnvId(envId);
+        devopsRegistrySecretDTO.setConfigId(Objects.requireNonNull(configId));
+        devopsRegistrySecretDTO.setClusterId(Objects.requireNonNull(clusterId));
+        devopsRegistrySecretDTO.setNamespace(Objects.requireNonNull(namespace));
+        devopsRegistrySecretDTO.setProjectId(Objects.requireNonNull(projectId));
         return devopsRegistrySecretMapper.selectOne(devopsRegistrySecretDTO);
     }
 
@@ -76,10 +78,11 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
     }
 
     @Override
-    public DevopsRegistrySecretDTO baseQueryByEnvAndName(Long envId, String name) {
+    public DevopsRegistrySecretDTO baseQueryByClusterAndNamespaceAndName(Long clusterId, String namespace, String name) {
         DevopsRegistrySecretDTO devopsRegistrySecretDTO = new DevopsRegistrySecretDTO();
-        devopsRegistrySecretDTO.setSecretCode(name);
-        devopsRegistrySecretDTO.setEnvId(envId);
+        devopsRegistrySecretDTO.setSecretCode(Objects.requireNonNull(name));
+        devopsRegistrySecretDTO.setClusterId(Objects.requireNonNull(clusterId));
+        devopsRegistrySecretDTO.setNamespace(Objects.requireNonNull(namespace));
         return devopsRegistrySecretMapper.selectOne(devopsRegistrySecretDTO);
     }
 

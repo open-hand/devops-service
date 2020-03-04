@@ -541,7 +541,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     File valuesFile = appMarkets.get(0);
                     String imageRepository = String.format("%s%s-%s/%s", getDomain(harborUrl), MARKET_PRO, appId, appServiceCode);
                     Map<String, String> params = new HashMap<>();
-                    params.put(appServiceVersionPayload.getImage().substring(0, appServiceVersionPayload.getImage().indexOf(":")), imageRepository);
+                    params.put(appServiceVersionPayload.getImage().substring(0, appServiceVersionPayload.getImage().indexOf(':')), imageRepository);
 
                     FileUtil.fileToInputStream(valuesFile, params);
                     //10. 创建appServiceValue

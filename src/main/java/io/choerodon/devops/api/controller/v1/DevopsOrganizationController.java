@@ -4,7 +4,10 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.vo.ClusterOverViewVO;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
+import io.choerodon.devops.app.service.DevopsClusterService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +34,8 @@ public class DevopsOrganizationController {
     AppServiceService applicationServiceService;
     @Autowired
     private DevopsCheckLogService devopsCheckLogService;
+    @Autowired
+    private DevopsClusterService devopsClusterService;
 
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "批量查询应用服务")
@@ -58,4 +63,15 @@ public class DevopsOrganizationController {
     public void syncOrgRoot() {
         devopsCheckLogService.checkLog("0.21.0");
     }
+
+    @Permission(type = ResourceType.ORGANIZATION, roles = InitRoleCode.ORGANIZATION_ADMINISTRATOR)
+    @GetMapping("/cluster/overview")
+    @ApiOperation("组织层概览，返回集群的概览")
+    public ResponseEntity<ClusterOverViewVO> clusterOverview(
+            @PathVariable(name = "organization_id") Long organizationId) {
+        return Optional.ofNullable(devopsClusterService.getClusterOverview(organizationId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.list.cluster.org.id"));
+    }
+
 }

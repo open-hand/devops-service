@@ -58,7 +58,7 @@ public class AppServiceInstanceInfoVO {
     private String effectCommandStatus;
 
     @JsonIgnore
-    @ApiModelProperty("集群id")
+    @ApiModelProperty(value = "集群id", hidden = true)
     private Long clusterId;
 
     public Long getEffectCommandId() {

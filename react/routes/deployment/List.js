@@ -14,6 +14,8 @@ import Process from './modals/process';
 import ManualDetail from './modals/manualDetail';
 import AutoDetail from './modals/autoDetail';
 import Deploy from './modals/deploy';
+import BatchDeploy from './modals/batch-deploy';
+import BatchDetail from './modals/batch-detail';
 import ClickText from '../../components/click-text';
 import PendingCheckModal from './components/pendingCheckModal';
 import Tips from '../../components/new-tips';
@@ -26,6 +28,7 @@ const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
 const modalKey3 = Modal.key();
 const modalKey4 = Modal.key();
+const batchDeployModalKey = Modal.key();
 const modalStyle1 = {
   width: 380,
 };
@@ -94,34 +97,49 @@ const Deployment = withRouter(observer((props) => {
     const deployType = type || listDs.current.get('deployType');
     const deployId = pipelineRecordId || listDs.current.get('deployId');
     let params;
-    if (deployType === 'auto') {
-      detailDs.transport.read.url = `/devops/v1/projects/${id}/pipeline/${deployId}/record_detail`;
-      await detailDs.query();
+    switch (deployType) {
+      case 'auto':
+        detailDs.transport.read.url = `/devops/v1/projects/${id}/pipeline/${deployId}/record_detail`;
+        await detailDs.query();
 
-      params = {
-        style: modalStyle2,
-        children: <AutoDetail
-          dataSet={detailDs}
-          id={deployId}
-          projectId={id}
-          PipelineStore={pipelineStore}
-          intlPrefix={intlPrefix}
-          prefixCls={prefixCls}
-          refresh={refresh}
-        />,
-      };
-    } else {
-      detailDs.transport.read.url = `/devops/v1/projects/${id}/app_service_instances/query_by_command/${listDs.current.get('deployId')}`;
-      await detailDs.query();
+        params = {
+          style: modalStyle2,
+          children: <AutoDetail
+            dataSet={detailDs}
+            id={deployId}
+            projectId={id}
+            PipelineStore={pipelineStore}
+            intlPrefix={intlPrefix}
+            prefixCls={prefixCls}
+            refresh={refresh}
+          />,
+        };
+        break;
+      case 'manual':
+        detailDs.transport.read.url = `/devops/v1/projects/${id}/app_service_instances/query_by_command/${listDs.current.get('deployId')}`;
+        await detailDs.query();
 
-      params = {
-        style: modalStyle1,
-        children: <ManualDetail
-          record={detailDs.current}
-          intlPrefix={intlPrefix}
-          prefixCls={prefixCls}
-        />,
-      };
+        params = {
+          style: modalStyle1,
+          children: <ManualDetail
+            record={detailDs.current}
+            intlPrefix={intlPrefix}
+            prefixCls={prefixCls}
+          />,
+        };
+        break;
+      case 'batch':
+        params = {
+          style: modalStyle1,
+          children: <BatchDetail
+            recordId={deployId}
+            intlPrefix={intlPrefix}
+            prefixCls={prefixCls}
+          />,
+        };
+        break;
+      default:
+        break;
     }
 
     Modal.open({
@@ -184,6 +202,28 @@ const Deployment = withRouter(observer((props) => {
     });
   }
 
+  function openBatchDeploy() {
+    Modal.open({
+      key: batchDeployModalKey,
+      style: modalStyle2,
+      drawer: true,
+      title: formatMessage({ id: `${intlPrefix}.batch` }),
+      children: <BatchDeploy
+        deployStore={deployStore}
+        refresh={deployAfter}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+      />,
+      afterClose: () => {
+        deployStore.setCertificates([]);
+        deployStore.setAppService([]);
+        deployStore.setShareAppService([]);
+        deployStore.setConfigValue('');
+      },
+      okText: formatMessage({ id: 'deployment' }),
+    });
+  }
+
   function linkToInstance(record) {
     const { history, location: { search } } = props;
     if (record) {
@@ -203,7 +243,7 @@ const Deployment = withRouter(observer((props) => {
     history.push(`/devops/resource${search}`);
   }
 
-  function deployAfter(instance) {
+  function deployAfter(instance, type = 'instance') {
     const { history, location: { search } } = props;
 
     if (!instance) history.push(`/devops/resource${search}`);
@@ -215,6 +255,7 @@ const Deployment = withRouter(observer((props) => {
         instanceId: instance.id,
         appServiceId: instance.appServiceId,
         envId: instance.envId,
+        viewType: type,
       },
     });
   }
@@ -222,10 +263,11 @@ const Deployment = withRouter(observer((props) => {
   function renderNumber({ value, record }) {
     const errorInfo = record.get('errorInfo');
     const deployStatus = record.get('deployStatus');
+    const letter = (record.get('deployType') || 'M').slice(0, 1).toUpperCase();
     return (
       <Fragment>
         <div className={`${prefixCls}-content-table-mark ${prefixCls}-content-table-mark-${record.get('deployType')}`}>
-          <span>{record.get('deployType') === 'auto' ? 'A' : 'M'}</span>
+          <span>{letter}</span>
         </div>
         <ClickText
           value={`#${value}`}
@@ -245,7 +287,10 @@ const Deployment = withRouter(observer((props) => {
     return value && <FormattedMessage id={`${intlPrefix}.${value}`} />;
   }
 
-  function renderDeployStatus({ value }) {
+  function renderDeployStatus({ value, record }) {
+    if (record.get('deployType') === 'batch') {
+      return;
+    }
     const newValue = value === 'running' || value === 'operating' ? 'executing' : value;
     const message = newValue === 'stop' ? 'terminated' : newValue;
     return (
@@ -309,7 +354,7 @@ const Deployment = withRouter(observer((props) => {
         default:
           break;
       }
-    } else {
+    } else if (record.get('deployType') === 'manual') {
       actionData = [{
         text: formatMessage({ id: `${intlPrefix}.view.instance` }),
         service: ['devops-service.devops-environment.listByActive'],
@@ -343,6 +388,16 @@ const Deployment = withRouter(observer((props) => {
             onClick={openDeploy}
           >
             <FormattedMessage id={`${intlPrefix}.manual`} />
+          </Button>
+        </Permission>
+        <Permission
+          service={['devops-service.app-service-instance.batchDeployment']}
+        >
+          <Button
+            icon="jsfiddle"
+            onClick={openBatchDeploy}
+          >
+            <FormattedMessage id={`${intlPrefix}.batch`} />
           </Button>
         </Permission>
         <Permission

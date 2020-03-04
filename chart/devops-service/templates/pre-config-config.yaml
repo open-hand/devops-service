@@ -20,7 +20,7 @@ spec:
       - command:
         - sh
         - -c
-        - cp -rf /var/choerodon/* /tools
+        - cp -rfp /var/choerodon/* /tools
         image: {{ .Values.preJob.image }}
         imagePullPolicy: IfNotPresent
         name: tools
@@ -45,7 +45,7 @@ spec:
           -Dservice.name={{ .Chart.Name }}
           -Dservice.version={{ default (.Chart.Version) .Values.image.tag }}
           -Dconfig.file={{ .Values.preJob.preConfig.configFile }}
-          -Dconfig.jar=/{{ .Chart.Name }}.jar
+          -Dconfig.jar=/choerodon/{{ .Chart.Name }}.jar
           -jar /var/choerodon/choerodon-tool-config.jar;
         volumeMounts:
         - mountPath: /var/choerodon

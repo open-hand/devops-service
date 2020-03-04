@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 import com.alibaba.fastjson.JSONArray;
 import io.codearte.props2yaml.Props2YAML;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -433,5 +435,21 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         msg.setType(HelmType.CERT_MANAGER_UNINSTALL.toValue());
         msg.setPayload("{" + "\"" + CertManagerConstants.RELEASE_NAME + "\"" + ":" + "\"" + CertManagerConstants.CERT_MANAGER_REALASE_NAME + "\"" + "}");
         sendToWebsocket(clusterId, msg);
+    }
+
+    @Override
+    public void scanCluster(Long clusterId, Long recordId, @Nullable String namespace) {
+        LOGGER.info("Polaris: start to send the polaris scan message...");
+        AgentMsgVO msg = new AgentMsgVO();
+        msg.setKey(String.format(CLUSTER_FORMAT, clusterId));
+        ClusterPolarisScanningVO clusterPolarisScanningVO = new ClusterPolarisScanningVO(Objects.requireNonNull(recordId), namespace);
+        try {
+            msg.setPayload(mapper.writeValueAsString(clusterPolarisScanningVO));
+        } catch (IOException e) {
+            throw new CommonException("Unexpected error occurred when serializing clusterPolarisScanningVO. {}", clusterPolarisScanningVO);
+        }
+        msg.setType(HelmType.POLARIS_SCAN_CLUSTER.toValue());
+        sendToWebsocket(clusterId, msg);
+        LOGGER.info("Polaris: successfully sent the polaris scan message...");
     }
 }

@@ -11,6 +11,7 @@ import { useModalStore } from './stores';
 import Tips from '../../../../../../components/new-tips';
 import DeployConfigForm from './deploy-config';
 import Deploy from '../../../../../deployment/modals/deploy';
+import BatchDeploy from '../../../../../deployment/modals/batch-deploy';
 
 import '../../../../../../components/dynamic-select/style/index.less';
 
@@ -19,6 +20,7 @@ const modalKey2 = Modal.key();
 const modalKey3 = Modal.key();
 const configKey = Modal.key();
 const deployKey = Modal.key();
+const batchDeployKey = Modal.key();
 
 const EnvModals = observer(() => {
   const modalStyle = useMemo(() => ({
@@ -45,6 +47,7 @@ const EnvModals = observer(() => {
       SYNC_TAB,
       ASSIGN_TAB,
       CONFIG_TAB,
+      POLARIS_TAB,
     },
     permissionsDs,
     gitopsLogDs,
@@ -52,6 +55,8 @@ const EnvModals = observer(() => {
     baseInfoDs,
     configFormDs,
     configDs,
+    polarisNumDS,
+    istSummaryDs,
   } = useEnvironmentStore();
 
   const ModalStores = useModalStore();
@@ -70,13 +75,30 @@ const EnvModals = observer(() => {
     baseInfoDs.query();
     treeDs.query();
     const tabKey = envStore.getTabKey;
-    if (tabKey === SYNC_TAB) {
-      gitopsSyncDs.query();
-      gitopsLogDs.query();
-    } else if (tabKey === ASSIGN_TAB) {
-      permissionsDs.query();
-    } else if (tabKey === CONFIG_TAB) {
-      configDs.query();
+    switch (tabKey) {
+      case SYNC_TAB:
+        gitopsSyncDs.query();
+        gitopsLogDs.query();
+        break;
+      case ASSIGN_TAB:
+        permissionsDs.query();
+        break;
+      case CONFIG_TAB:
+        configDs.query();
+        break;
+      case POLARIS_TAB:
+        loadPolaris();
+        break;
+      default:
+        break;
+    }
+  }
+
+  async function loadPolaris() {
+    const res = await envStore.checkHasInstance(projectId, id);
+    if (res) {
+      polarisNumDS.query();
+      istSummaryDs.query();
     }
   }
 
@@ -215,6 +237,29 @@ const EnvModals = observer(() => {
     });
   }
 
+  function openBatchDeploy() {
+    Modal.open({
+      key: batchDeployKey,
+      style: configModalStyle,
+      drawer: true,
+      title: formatMessage({ id: `${intlPrefixDeploy}.manual` }),
+      children: <BatchDeploy
+        deployStore={deployStore}
+        refresh={deployAfter}
+        intlPrefix={intlPrefixDeploy}
+        prefixCls="c7ncd-deploy"
+        envId={id}
+      />,
+      afterClose: () => {
+        deployStore.setCertificates([]);
+        deployStore.setAppService([]);
+        deployStore.setShareAppService([]);
+        deployStore.setConfigValue('');
+      },
+      okText: formatMessage({ id: 'deployment' }),
+    });
+  }
+
   function getButtons() {
     const record = baseInfoDs.current;
     const notReady = !record;
@@ -240,6 +285,14 @@ const EnvModals = observer(() => {
       name: formatMessage({ id: `${intlPrefixDeploy}.manual` }),
       icon: 'jsfiddle',
       handler: openDeploy,
+      display: true,
+      group: 1,
+    }, {
+      permissions: ['devops-service.app-service-instance.batchDeployment'],
+      disabled: configDisabled,
+      name: formatMessage({ id: `${intlPrefixDeploy}.batch` }),
+      icon: 'jsfiddle',
+      handler: openBatchDeploy,
       display: true,
       group: 1,
     }, {

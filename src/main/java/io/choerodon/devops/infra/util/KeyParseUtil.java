@@ -25,6 +25,14 @@ public class KeyParseUtil {
         return true;
     }
 
+    /**
+     * 将形如 env:1.namespace:c7n-system 的key解析为map
+     * key的构建规则（由这个类文件中解析的逻辑概括总结）：
+     * ([^.]+:[^.]+\.)(资源类型:资源名称)
+     *
+     * @param key 待解析的key
+     * @return map
+     */
     public static Map<String, String> parseKey(String key) {
         Map<String, String> keyMap = new HashMap<>();
         String[] pairs = key.split("\\.");

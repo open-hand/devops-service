@@ -1,6 +1,7 @@
 import React from 'react';
 import { Action } from '@choerodon/boot';
 import { Table } from 'choerodon-ui/pro';
+import map from 'lodash/map';
 import TimePopover from '../../../../../components/time-popover';
 import { useEnvironmentStore } from '../../../stores';
 import { useDetailStore } from './stores';
@@ -32,7 +33,7 @@ export default function Permissions() {
 
   function renderActions({ record }) {
     const { skipCheckPermission } = getSelectedMenu;
-    const role = record.get('role');
+    const isOwner = record.get('gitlabProjectOwner');
     const actionData = [
       {
         service: [],
@@ -40,7 +41,7 @@ export default function Permissions() {
         action: handleDelete,
       },
     ];
-    const displayAction = role === 'member' && !skipCheckPermission;
+    const displayAction = isOwner && !skipCheckPermission;
     return displayAction ? <Action data={actionData} /> : null;
   }
 
@@ -49,7 +50,8 @@ export default function Permissions() {
   }
 
   function renderRole({ value }) {
-    return value && formatMessage({ id: value });
+    const roles = map(value || [], 'name');
+    return roles.join();
   }
 
   function getActionColumn() {
@@ -67,7 +69,7 @@ export default function Permissions() {
       <Column name="realName" sortable />
       {getActionColumn()}
       <Column name="loginName" sortable />
-      <Column name="role" renderer={renderRole} />
+      <Column name="roles" renderer={renderRole} />
       <Column name="creationDate" renderer={renderDate} sortable />
     </Table>
   </div>);

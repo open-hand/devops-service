@@ -101,4 +101,22 @@
           AND dep.name = der.name
           AND de.type = 'user'
     </select>
+
+    <select id="countByOptions" resultType="int">
+        SELECT COUNT(1)
+        FROM devops_env_pod dep
+        WHERE 1 = 1
+        <if test="instanceId != null">
+            AND dep.instance_id = #{instanceId,jdbcType=BIGINT}
+        </if>
+        <if test="namespace != null and namespace != ''">
+            AND dep.namespace = #{namespace,jdbcType=VARCHAR}
+        </if>
+        <if test="is_ready != null">
+            AND dep.is_ready = #{is_ready,jdbcType=TINYINT}
+        </if>
+        <if test="status != null and status != ''">
+            AND dep.status = #{status,jdbcType=VARCHAR}
+        </if>
+    </select>
 </mapper>

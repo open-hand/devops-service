@@ -602,4 +602,24 @@ public class DevopsEnvironmentController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
     }
+
+    /**
+     * 获取环境的数量
+     *
+     * @param isFailed  是否失败
+     * @param clusterId 集群id
+     * @return 环境数量
+     */
+    @ApiOperation("查询环境的数量")
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER}, type = ResourceType.PROJECT)
+    @GetMapping("/count_by_options")
+    public ResponseEntity<Long> countEnvByOptions(
+            @ApiParam("项目id")
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "环境是否失败", required = false)
+            @RequestParam(value = "is_failed", required = false) Boolean isFailed,
+            @ApiParam(value = "集群id，传此值时表示查询集群下的环境，不传则查询项目下环境", required = false)
+            @RequestParam(value = "cluster_id", required = false) Long clusterId) {
+        return new ResponseEntity<>(devopsEnvironmentService.countEnvByOption(projectId, clusterId, isFailed), HttpStatus.OK);
+    }
 }

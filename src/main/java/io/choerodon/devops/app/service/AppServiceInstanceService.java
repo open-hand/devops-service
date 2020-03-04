@@ -5,10 +5,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.github.pagehelper.PageInfo;
-
 import org.springframework.data.domain.Pageable;
+
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
+import io.choerodon.devops.app.eventhandler.payload.BatchDeploymentPayload;
 import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.AppServiceInstanceOverViewDTO;
@@ -46,7 +47,7 @@ public interface AppServiceInstanceService {
      * 分页查询应用部署
      *
      * @param projectId    项目id
-     * @param pageable  分页参数
+     * @param pageable     分页参数
      * @param envId        环境Id
      * @param versionId    版本Id
      * @param appServiceId 应用Id
@@ -132,7 +133,7 @@ public interface AppServiceInstanceService {
      *
      * @param instanceId 实例id
      */
-    void deleteInstance(Long instanceId,Boolean deletePrmotheus);
+    void deleteInstance(Long instanceId, Boolean deletePrmotheus);
 
 
     /**
@@ -337,4 +338,21 @@ public interface AppServiceInstanceService {
     void updateStatus(AppServiceInstanceDTO appServiceInstanceDTO);
 
     ConfigVO queryDefaultConfig(Long projectId, ConfigVO configVO);
+
+    Integer countByOptions(Long envId, String status, Long appServiceId);
+
+    /**
+     * 批量部署实例（及其网络、域名）
+     *
+     * @param appServiceDeployVOS 批量部署信息
+     * @return 返回部署的实例信息
+     */
+    List<AppServiceInstanceVO> batchDeployment(Long projectId, List<AppServiceDeployVO> appServiceDeployVOS);
+
+    /**
+     * 处理批量部署事件
+     *
+     * @param batchDeploymentPayload 批量部署信息
+     */
+    void batchDeploymentSaga(BatchDeploymentPayload batchDeploymentPayload);
 }

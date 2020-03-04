@@ -332,7 +332,7 @@ function Branch(props) {
         'devops-service.devops-git.pageTagsByOptions',
       ]}
     >
-      { !appServiceId || appServiceDs.status !== 'ready' ? <Loading display /> : tableBranch()}
+      {!appServiceId || appServiceDs.status !== 'ready' ? <Loading display /> : tableBranch()}
     </Page>
   );
 }

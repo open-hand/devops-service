@@ -17,7 +17,6 @@ import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.api.vo.DevopsConfigRepVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsConfigService;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
  * @author zongw.lee@gmail.com

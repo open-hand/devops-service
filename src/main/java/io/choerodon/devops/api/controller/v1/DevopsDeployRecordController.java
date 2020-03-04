@@ -1,8 +1,10 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.Date;
 import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.api.vo.DeployRecordCountVO;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,5 +53,16 @@ public class DevopsDeployRecordController {
         return Optional.ofNullable(devopsDeployRecordService.pageByProjectId(projectId, params, pageable))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.value.list"));
+    }
+
+    @Permission(type = ResourceType.PROJECT, permissionWithin = true)
+    @ApiOperation(value = "统计项目下指定时间段内每日部署次数")
+    @CustomPageRequest
+    @GetMapping("/count_by_date")
+    public ResponseEntity<DeployRecordCountVO> countByDate(
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam("startTime") Date startTime,
+            @RequestParam("endTime") Date endTime) {
+        return ResponseEntity.ok(devopsDeployRecordService.countByDate(projectId, startTime, endTime));
     }
 }

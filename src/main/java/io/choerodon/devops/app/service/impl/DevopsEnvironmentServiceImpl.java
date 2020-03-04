@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 
 import com.alibaba.fastjson.JSONArray;
@@ -174,6 +175,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsRegistrySecretService devopsRegistrySecretService;
     @Autowired
     private DevopsClusterProPermissionService devopsClusterProPermissionService;
+    @Autowired
+    private DevopsEnvFileService devopsEnvFileService;
+    @Autowired
+    private DevopsEnvFileResourceService devopsEnvFileResourceService;
+    @Autowired
+    private DevopsEnvFileErrorService devopsEnvFileErrorService;
+    @Autowired
+    private PolarisScanningService polarisScanningService;
 
     @PostConstruct
     private void init() {
@@ -228,7 +237,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()),
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
-                throw new CommonException("error.user.not.owner");
+                throw new CommonException("error.user.not.gitlab.owner");
             }
         }
 
@@ -1294,6 +1303,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public void deleteEnvSaga(Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
+        if (devopsEnvironmentDTO == null) {
+            LogUtil.loggerInfoObjectNullWithId("env",envId , LOGGER);
+            LOGGER.info("Delete env: environment with id {} is skipped", envId);
+            return;
+        }
+
         // 删除对应的环境-应用服务关联关系
         DevopsEnvAppServiceDTO deleteCondition = new DevopsEnvAppServiceDTO();
         deleteCondition.setEnvId(envId);
@@ -1315,7 +1330,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsServiceService.baseDeleteServiceAndInstanceByEnvId(envId);
 
         // 删除实例对应的部署纪录
-        devopsDeployRecordService.deleteManualRecordByEnv(envId);
+        devopsDeployRecordService.deleteManualAndBatchRecordByEnv(envId);
 
         // 删除环境对应的secret
         devopsSecretService.baseListByEnv(envId).forEach(secretE ->
@@ -1341,6 +1356,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 删除RegistrySecret
         devopsRegistrySecretService.deleteByEnvId(envId);
+
+        // 删除文件解析相关纪录
+        devopsEnvFileService.deleteByEnvId(envId);
+        devopsEnvFileResourceService.deleteByEnvId(envId);
+        devopsEnvFileErrorService.deleteByEnvId(envId);
+
+        // 删除polaris扫描相关的数据
+        polarisScanningService.deleteAllByScopeAndScopeId(PolarisScopeType.ENV, envId);
 
         // 删除环境
         baseDeleteById(envId);
@@ -1533,6 +1556,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
+    public Long countEnvByOption(final Long projectId, @Nullable Long clusterId, @Nullable Boolean isFailed) {
+        // 如果集群id有值，projectId就不传值
+        final Long projectIdValue = clusterId == null ? projectId : null;
+        return (long) devopsEnvironmentMapper.countByOptions(clusterId, projectIdValue, isFailed, EnvironmentType.USER.getValue());
+    }
+
+    @Override
     public List<DevopsClusterRepVO> listDevopsCluster(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         List<DevopsClusterRepVO> devopsClusterRepVOS = ConvertUtils.convertList(devopsClusterService.baseListByProjectId(projectId, projectDTO.getOrganizationId()), DevopsClusterRepVO.class);
@@ -1556,6 +1586,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(projectId)
                         .withRefType("")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_SET_ENV_ERR),
                 builder -> builder
@@ -1566,8 +1597,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public DevopsEnvironmentRepVO queryByCode(Long clusterId, String code) {
-        return ConvertUtils.convertObject(baseQueryByProjectIdAndCode(clusterId, code), DevopsEnvironmentRepVO.class);
+    public DevopsEnvironmentRepVO queryByCode(Long projectId, String code) {
+        return ConvertUtils.convertObject(baseQueryByProjectIdAndCode(projectId, code), DevopsEnvironmentRepVO.class);
     }
 
 
@@ -1644,8 +1675,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public DevopsEnvironmentDTO baseQueryByClusterIdAndCode(Long clusterId, String code) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
-        devopsEnvironmentDTO.setClusterId(clusterId);
-        devopsEnvironmentDTO.setCode(code);
+        devopsEnvironmentDTO.setClusterId(Objects.requireNonNull(clusterId));
+        devopsEnvironmentDTO.setCode(Objects.requireNonNull(code));
         return devopsEnvironmentMapper.selectOne(devopsEnvironmentDTO);
     }
 

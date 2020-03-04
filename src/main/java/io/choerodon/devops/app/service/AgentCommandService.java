@@ -3,6 +3,8 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.DescribeResourceVO;
 import io.choerodon.devops.api.vo.PipeRequestVO;
@@ -52,4 +54,15 @@ public interface AgentCommandService {
     void deletePod(String podName, String namespace, Long clusterId);
 
     void unloadCertManager(Long clusterId);
+
+    /**
+     * polaris扫描集群或集群某个namespace
+     *
+     * @param clusterId 集群id
+     * @param recordId  关联的扫描纪录id
+     * @param namespace namespace
+     *                  为null时表示扫描整个集群所有的namespace，
+     *                  有值时表示扫描一个指定的namespace
+     */
+    void scanCluster(Long clusterId, Long recordId, @Nullable String namespace);
 }

@@ -13,6 +13,14 @@ export default function useStore() {
       return this.appService.slice();
     },
 
+    shareAppService: [],
+    setShareAppService(data) {
+      this.shareAppService = data;
+    },
+    get getShareAppService() {
+      return this.shareAppService.slice();
+    },
+
     configValue: '',
     setConfigValue(data) {
       this.configValue = data;
@@ -43,6 +51,17 @@ export default function useStore() {
         const res = await axios.get(`/devops/v1/projects/${projectId}/app_service/list_all_app_services?service_type=normal&deploy_only=true&type=${type}`);
         if (handlePromptError(res)) {
           this.setAppService(res);
+        }
+      } catch (e) {
+        Choerodon.handleResponseError(e);
+      }
+    },
+
+    async loadShareAppService(projectId) {
+      try {
+        const res = await axios.get(`/devops/v1/projects/${projectId}/app_service/list_all_app_services?service_type=normal&deploy_only=true&type=share_service`);
+        if (handlePromptError(res)) {
+          this.setShareAppService(res);
         }
       } catch (e) {
         Choerodon.handleResponseError(e);

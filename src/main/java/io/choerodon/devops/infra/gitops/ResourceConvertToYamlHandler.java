@@ -51,6 +51,11 @@ public class ResourceConvertToYamlHandler<T> {
         this.type = type;
     }
 
+    public String getCreationResourceContentForBatchDeployment() {
+        Tag tag = new Tag(type.getClass().toString());
+        Yaml yaml = getYamlObject(tag, true);
+        return yaml.dump(type).replace("!<" + tag.getValue() + ">", "---");
+    }
     /**
      * operate files in GitLab
      *

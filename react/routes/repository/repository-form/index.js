@@ -34,22 +34,22 @@ export default injectIntl(observer(({
 
   function handleDefault() {
     if (!isEmpty(record.get('harbor'))) {
-      record.set('harborCustom', 'custom');
+      record.init('harborCustom', 'custom');
       forEach(record.get('harbor').config, (value, key) => {
         if (key !== 'project' || isProject) {
-          record.set(key, value);
+          record.init(key, value);
         }
       });
-      isProject && record.set('harborPrivate', record.get('harbor').harborPrivate);
+      isProject && record.init('harborPrivate', record.get('harbor').harborPrivate);
     } else {
-      record.set('harborCustom', 'default');
+      record.init('harborCustom', 'default');
     }
     if (!isEmpty(record.get('chart'))) {
       const { url } = record.get('chart').config || {};
-      record.set('chartCustom', 'custom');
-      record.set('chartUrl', url);
+      record.init('chartCustom', 'custom');
+      record.init('chartUrl', url);
     } else {
-      record.set('chartCustom', 'default');
+      record.init('chartCustom', 'default');
     }
   }
 

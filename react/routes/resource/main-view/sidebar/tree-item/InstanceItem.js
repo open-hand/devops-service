@@ -114,6 +114,11 @@ function InstanceItem({
     const istId = record.get('id');
     const istName = record.get('name');
     const [envId] = record.get('parentId').split('-');
+    const envRecord = treeDs.find((eachRecord) => eachRecord.get('key') === envId);
+    const connect = envRecord && envRecord.get('connect');
+    if (!connect) {
+      return;
+    }
     let actionData;
     const actionItems = {
       stop: {
