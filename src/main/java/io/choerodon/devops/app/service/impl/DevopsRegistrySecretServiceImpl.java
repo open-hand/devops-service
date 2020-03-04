@@ -32,7 +32,7 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRED)
     public DevopsRegistrySecretDTO baseCreate(DevopsRegistrySecretDTO devopsRegistrySecretDTO) {
         if (devopsRegistrySecretMapper.insert(devopsRegistrySecretDTO) != 1) {
             throw new CommonException("error.registry.secret.create.error");
@@ -62,12 +62,11 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
 
     @Override
     public DevopsRegistrySecretDTO baseQueryByClusterIdAndNamespace(Long clusterId, String namespace, Long configId, Long projectId) {
-        DevopsRegistrySecretDTO devopsRegistrySecretDTO = new DevopsRegistrySecretDTO();
-        devopsRegistrySecretDTO.setConfigId(Objects.requireNonNull(configId));
-        devopsRegistrySecretDTO.setClusterId(Objects.requireNonNull(clusterId));
-        devopsRegistrySecretDTO.setNamespace(Objects.requireNonNull(namespace));
-        devopsRegistrySecretDTO.setProjectId(Objects.requireNonNull(projectId));
-        return devopsRegistrySecretMapper.selectOne(devopsRegistrySecretDTO);
+        return devopsRegistrySecretMapper.baseQueryByClusterIdAndNamespace(
+                Objects.requireNonNull(configId),
+                Objects.requireNonNull(clusterId),
+                Objects.requireNonNull(namespace),
+                Objects.requireNonNull(projectId));
     }
 
     @Override

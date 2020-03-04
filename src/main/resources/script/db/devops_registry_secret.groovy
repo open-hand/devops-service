@@ -49,4 +49,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_registry_secret.groovy') {
             SET drs.project_id = (SELECT project_id FROM devops_env de WHERE de.id = drs.env_id)
         """)
     }
+
+    changeSet(id: '2020-03-04-registry-secret-add-unique-constraint', author: 'zmf', failOnError: false) {
+        addUniqueConstraint(tableName: 'devops_registry_secret',
+                constraintName: 'registry_secret_uk_config_cluster_namespace', columnNames: 'config_id,cluster_id,namespace,project_id')
+    }
 }
