@@ -10,6 +10,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -86,7 +88,7 @@ public class AppServiceInstanceController {
     public ResponseEntity<PageInfo<AppServiceInstanceInfoVO>> pageInstanceInfoByOptions(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiIgnore
+            @ApiIgnore @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiParam(value = "分页参数") Pageable pageable,
             @ApiParam(value = "环境ID")
             @RequestParam(value = "env_id") Long envId,
