@@ -18,11 +18,11 @@ public class WebSocketBufferSizeConfiguration {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketBufferSizeConfiguration.class);
 
     /**
-     * 单位 byte, 默认 128 * 1024
+     * 单位 byte, 默认 4 * 1024 * 1024
      */
-    @Value("${websocket.buffer.maxTextMessageSize:131072}")
+    @Value("${websocket.buffer.maxTextMessageSize:4194304}")
     private Integer maxTextMessageSize;
-    @Value("${websocket.buffer.maxBinaryMessageSize:131072}")
+    @Value("${websocket.buffer.maxBinaryMessageSize:4194304}")
     private Integer maxBinaryMessageSize;
 
     //初始化servletServerContainer 消息缓冲池大小
