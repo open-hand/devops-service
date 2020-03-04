@@ -25,7 +25,6 @@ const BatchDeployModal = injectIntl(observer(() => {
     modal,
     intl: { formatMessage },
     envId,
-    isInstanceView,
   } = useBatchDeployStore();
 
   const record = useMemo(() => batchDeployDs.current, [batchDeployDs.current]);
@@ -41,11 +40,6 @@ const BatchDeployModal = injectIntl(observer(() => {
       record.init('environmentId', envId);
     }
   }, [envId]);
-
-  useEffect(() => {
-    ChangeConfigValue(deployStore.getConfigValue);
-  }, [deployStore.getConfigValue]);
-  
 
   modal.handleOk(async () => {
     if (hasYamlFailed) return false;
@@ -162,6 +156,7 @@ const BatchDeployModal = injectIntl(observer(() => {
             icon="add"
             className="appService-add-btn"
             onClick={() => handleAddForm('normal_service')}
+            disabled={batchDeployDs.data.length >= 20}
           >
             {formatMessage({ id: `${intlPrefix}.add.appService.normal` })}
           </Button>
@@ -207,6 +202,7 @@ const BatchDeployModal = injectIntl(observer(() => {
             icon="add"
             className="appService-add-btn"
             onClick={() => handleAddForm('share_service')}
+            disabled={batchDeployDs.data.length >= 20}
           >
             {formatMessage({ id: `${intlPrefix}.add.appService.share` })}
           </Button>
@@ -239,8 +235,7 @@ const BatchDeployModal = injectIntl(observer(() => {
               colSpan={3}
               newLine
               readOnly={false}
-              originValue={deployStore.getConfigValue}
-              value={(record ? record.get('values') : '') || deployStore.getConfigValue}
+              value={record ? record.get('values') : ''}
               onValueChange={ChangeConfigValue}
               handleEnableNext={handleEnableNext}
             />

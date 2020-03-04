@@ -19,7 +19,7 @@ export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, deploySto
     defaultEnvId && record.set('environmentId', defaultEnvId);
   }
   
-  function handleUpdate({ dataSet, record, name, value }) {
+  async function handleUpdate({ dataSet, record, name, value }) {
     const networkRecord = record.getCascadeRecords('devopsServiceReqVO')[0];
     const domainRecord = record.getCascadeRecords('devopsIngressVO')[0];
     switch (name) {
@@ -49,17 +49,19 @@ export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, deploySto
         break;
       case 'appServiceVersionId':
         if (!record.get('valueId')) {
-          value && deployStore.loadDeployValue(projectId, value);
-          !value && deployStore.setConfigValue('');
+          if (value) {
+            const values = await deployStore.loadDeployValue(projectId, value);
+            record.set('values', values);
+          }
         }
         break;
       case 'valueId':
         if (value) {
-          deployStore.loadConfigValue(projectId, value);
+          const values = await deployStore.loadConfigValue(projectId, value);
+          record.set('values', values);
         } else if (record.get('appServiceVersionId')) {
-          deployStore.loadDeployValue(projectId, record.get('appServiceVersionId'));
-        } else {
-          deployStore.setConfigValue('');
+          const values = await deployStore.loadDeployValue(projectId, record.get('appServiceVersionId'));
+          record.set('values', values);
         }
         break;
       default:
