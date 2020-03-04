@@ -84,3 +84,15 @@ logging:
     io.choerodon.feign: warn
 #    io.choerodon.devops.app.service: debug
   config: classpath:logback-spring.xml
+
+# 批量部署的请求条数限制
+devops:
+  batch:
+    deployment:
+      maxSize: 20
+
+# websocket的最大缓冲区大小，单位字节byte
+websocket:
+  buffer:
+    maxTextMessageSize: 4194304
+    maxBinaryMessageSize: 4194304

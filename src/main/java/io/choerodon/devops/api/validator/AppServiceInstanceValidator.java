@@ -10,11 +10,13 @@ import javax.validation.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
+import io.choerodon.devops.api.vo.DevopsIngressPathVO;
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 
 /**
@@ -30,6 +32,11 @@ public class AppServiceInstanceValidator {
     private static final String NAME_PATTERN = "[a-z]([-a-z0-9]*[a-z0-9])?";
     @Autowired
     private Validator validator;
+    /**
+     * 允许的最大部署条数
+     */
+    @Value("${devops.batch.deployment.maxSize:20}")
+    private int batchDeploymentMaxSize;
 
     private AppServiceInstanceValidator() {
     }
@@ -50,9 +57,15 @@ public class AppServiceInstanceValidator {
         if (appServiceDeployVOS.isEmpty()) {
             throw new CommonException("error.request.instance.empty");
         }
-        List<String> instanceCodes = new ArrayList<>();
-        List<String> serviceNames = new ArrayList<>();
-        List<String> ingressNames = new ArrayList<>();
+        int size = appServiceDeployVOS.size();
+        if (size > batchDeploymentMaxSize) {
+            throw new CommonException("error.batch.deployment.size", size);
+        }
+
+        List<String> instanceCodes = new ArrayList<>(size);
+        List<String> serviceNames = new ArrayList<>(size);
+        List<String> ingressNames = new ArrayList<>(size);
+
         // 校验实例
         for (AppServiceDeployVO appServiceDeployVO : appServiceDeployVOS) {
             Set<ConstraintViolation<AppServiceDeployVO>> set = validator.validate(appServiceDeployVO);
@@ -82,6 +95,7 @@ public class AppServiceInstanceValidator {
                 serviceNames.add(appServiceDeployVO.getDevopsServiceReqVO().getName());
             }
 
+            // 校验Ingress
             if (appServiceDeployVO.getDevopsIngressVO() != null) {
                 if (ingressNames.contains(appServiceDeployVO.getDevopsIngressVO().getName())) {
                     throw new CommonException("error.ingress.name.duplicated.in.list", appServiceDeployVO.getDevopsIngressVO().getName());
