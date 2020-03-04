@@ -47,7 +47,7 @@ public class PageRequestUtil {
      * 获取排序SQL字符串
      *
      * @param sort            {@link Pageable#getSort()}中的sort对象
-     * @param orderByFieldMap 前端传入的字段与mybatis中字段的映射。如果前端传入的字段在map中不存在就使用前端传入的字段
+     * @param orderByFieldMap 前端传入的字段与mybatis中字段的映射。如果前端传入的字段在map中不存在就抛异常，防止SQL注入
      * @return 排序SQL字段
      */
     public static String getOrderString(Sort sort, Map<String, String> orderByFieldMap) {

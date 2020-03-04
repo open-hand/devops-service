@@ -148,6 +148,20 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     private DevopsIngressService devopsIngressService;
 
+    /**
+     * 前端传入的排序字段和Mapper文件中的字段名的映射
+     */
+    private static final Map<String, String> orderByFieldMap;
+
+    static {
+        Map<String, String> map = new HashMap<>();
+        map.put("id", "id");
+        map.put("appServiceName", "app_service_name");
+        map.put("versionName", "version_name");
+        map.put("code", "code");
+        orderByFieldMap = Collections.unmodifiableMap(map);
+    }
+
     @Override
     public AppServiceInstanceInfoVO queryInfoById(Long instanceId) {
         AppServiceInstanceInfoDTO appServiceInstanceInfoDTO = appServiceInstanceMapper.queryInfoById(instanceId);
@@ -164,7 +178,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public PageInfo<AppServiceInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, Pageable pageable, String params) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
-        PageInfo<AppServiceInstanceInfoVO> pageInfo = ConvertUtils.convertPage(PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable))
+        PageInfo<AppServiceInstanceInfoVO> pageInfo = ConvertUtils.convertPage(PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderString(pageable.getSort(), orderByFieldMap))
                         .doSelectPageInfo(() -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(
                                 envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
                 AppServiceInstanceInfoVO.class);
