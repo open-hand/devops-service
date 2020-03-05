@@ -68,20 +68,22 @@ function StoreProvider(props) {
         networkInfoDs.query()
           .then((res) => {
             const { type, target, target: { instances, targetAppServiceId }, appServiceId: currentAppServiceId } = res;
-            appInstanceOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service_instances/list_running_instance?env_id=${envId}&app_service_id=${currentAppServiceId}`;
             loadInfo({ data: res, formatMessage, targetLabelsDs, portDs, endPointsDs, formDs, networkInfoDs });
             // 这里做兼容旧数据的处理 一个网络对应部分实例
-            appInstanceOptionsDs.query()
-              .then(() => {
-                if (!targetAppServiceId && instances && instances.length) {
-                  forEach(instances, (item, index) => {
-                    if (!appInstanceOptionsDs.find((record) => record.get('code') === item.code)) {
-                      const record = appInstanceOptionsDs.create(item);
-                      appInstanceOptionsDs.push(record);
-                    }
-                  });
-                }
-              });
+            if (appServiceId || targetAppServiceId) {
+              appInstanceOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service_instances/list_running_instance?env_id=${envId}&app_service_id=${currentAppServiceId || targetAppServiceId}`;
+              appInstanceOptionsDs.query()
+                .then(() => {
+                  if (!targetAppServiceId && instances && instances.length) {
+                    forEach(instances, (item, index) => {
+                      if (!appInstanceOptionsDs.find((record) => record.get('code') === item.code)) {
+                        const record = appInstanceOptionsDs.create(item);
+                        appInstanceOptionsDs.push(record);
+                      }
+                    });
+                  }
+                });
+            }
           });
       }
     }

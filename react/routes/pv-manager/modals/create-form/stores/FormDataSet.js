@@ -62,8 +62,9 @@ export default (({ intlPrefix, formatMessage, projectId, typeDs, modeDs, storage
     transport: {
       create: ({ data: [data] }) => {
         const res = omit(data, ['__id', '__status', 'storage', 'unit', 'server', 'path', 'projects']);
+        const arr = data.type === 'NFS' ? ['server', 'path'] : ['path'];
         res.requestResource = `${data.storage}${data.unit}`;
-        res.valueConfig = JSON.stringify(pick(data, ['server', 'path']));
+        res.valueConfig = JSON.stringify(pick(data, arr));
         res.projectIds = data.skipCheckProjectPermission ? [] : compact(map(data.projects, 'projectId') || []);
         return ({
           url: `/devops/v1/projects/${projectId}/pvs`,
