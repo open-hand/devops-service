@@ -63,7 +63,7 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     @Override
     public void checkProjectOwnerOrRoot(Long projectId, Long iamUserId) {
         if (!isGitlabProjectOwnerOrRoot(projectId, iamUserId)) {
-            throw new CommonException("error.user.not.owner");
+            throw new CommonException("error.user.not.gitlab.owner");
         }
     }
 
