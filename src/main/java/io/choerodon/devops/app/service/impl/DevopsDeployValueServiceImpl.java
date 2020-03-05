@@ -82,7 +82,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
         Long userId = DetailsHelper.getUserDetails().getUserId();
         PageInfo<DevopsDeployValueDTO> deployValueDTOPageInfo;
-        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrRoot(projectId, userId);
+        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
 
         if (projectOwnerOrRoot) {
             deployValueDTOPageInfo = basePageByOptionsWithOwner(projectId, appServiceId, envId, userId, pageable, params);

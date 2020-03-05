@@ -506,7 +506,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public PageInfo<AppServiceRepVO> pageCodeRepository(Long projectId, Pageable pageable, String params) {
         UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Boolean isProjectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrRoot(projectId, userAttrDTO);
+        Boolean isProjectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userAttrDTO);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         Map maps = gson.fromJson(params, Map.class);
@@ -524,7 +524,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public List<AppServiceRepVO> listByActive(Long projectId) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrRoot(projectId, userId);
+        boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         List<AppServiceDTO> applicationDTOServiceList;
         if (projectOwner) {
             applicationDTOServiceList = appServiceMapper.listByActive(projectId);
@@ -542,7 +542,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public Integer countByActive(Long projectId) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrRoot(projectId, userId);
+        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         int count;
         if (projectOwnerOrRoot) {
             count = appServiceMapper.countByActive(projectId);
@@ -1987,7 +1987,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         Long userId = DetailsHelper.getUserDetails().getUserId();
 
-        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrRoot(projectId, userId);
+        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         List<AppServiceDTO> list;
         if (projectOwnerOrRoot) {
             //是否需要分页

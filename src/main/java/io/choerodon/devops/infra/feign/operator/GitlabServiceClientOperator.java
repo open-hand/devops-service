@@ -567,7 +567,7 @@ public class GitlabServiceClientOperator {
 
 
     public PageInfo<TagDTO> pageTag(ProjectDTO projectDTO, Integer gitlabProjectId, String path, Integer page, String params, Integer size, Integer userId) {
-        if (!permissionHelper.isGitlabProjectOwnerOrRoot(projectDTO.getId())) {
+        if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectDTO.getId())) {
             MemberDTO memberDTO = getProjectMember(
                     gitlabProjectId,
                     userId);

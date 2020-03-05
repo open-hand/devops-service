@@ -24,32 +24,32 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     private BaseServiceClientOperator baseServiceClientOperator;
 
     @Override
-    public boolean isRoot(Long userId) {
+    public boolean isGitlabAdmin(Long userId) {
         UserAttrDTO result = userAttrService.baseQueryById(userId);
         return result != null && result.getGitlabAdmin();
     }
 
     @Override
-    public boolean isRoot() {
+    public boolean isGitlabAdmin() {
         if (DetailsHelper.getUserDetails() == null || DetailsHelper.getUserDetails().getUserId() == null) {
             return false;
         }
-        return isRoot(DetailsHelper.getUserDetails().getUserId());
+        return isGitlabAdmin(DetailsHelper.getUserDetails().getUserId());
     }
 
     @Override
-    public boolean isGitlabProjectOwnerOrRoot(Long projectId) {
+    public boolean isGitlabProjectOwnerOrGitlabAdmin(Long projectId) {
         Long iamUserId = DetailsHelper.getUserDetails().getUserId();
-        return isRoot(iamUserId) || isGitlabProjectOwnerOrgitlabOrganizationOwner(iamUserId, projectId);
+        return isGitlabAdmin(iamUserId) || isGitlabProjectOwnerOrgitlabOrganizationOwner(iamUserId, projectId);
     }
 
     @Override
-    public boolean isGitlabProjectOwnerOrRoot(Long projectId, Long iamUserId) {
-        return isRoot(iamUserId) || isGitlabProjectOwnerOrgitlabOrganizationOwner(iamUserId, projectId);
+    public boolean isGitlabProjectOwnerOrGitlabAdmin(Long projectId, Long iamUserId) {
+        return isGitlabAdmin(iamUserId) || isGitlabProjectOwnerOrgitlabOrganizationOwner(iamUserId, projectId);
     }
 
     @Override
-    public boolean isGitlabProjectOwnerOrRoot(Long projectId, @Nullable UserAttrDTO userAttrDTO) {
+    public boolean isGitlabProjectOwnerOrGitlabAdmin(Long projectId, @Nullable UserAttrDTO userAttrDTO) {
         if (userAttrDTO == null || userAttrDTO.getIamUserId() == null) {
             return false;
         }
@@ -61,15 +61,15 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     }
 
     @Override
-    public void checkProjectOwnerOrRoot(Long projectId, Long iamUserId) {
-        if (!isGitlabProjectOwnerOrRoot(projectId, iamUserId)) {
+    public void checkProjectOwnerOrGitlabAdmin(Long projectId, Long iamUserId) {
+        if (!isGitlabProjectOwnerOrGitlabAdmin(projectId, iamUserId)) {
             throw new CommonException("error.user.not.gitlab.owner");
         }
     }
 
     @Override
-    public void checkProjectOwnerOrRoot(Long projectId, @Nullable UserAttrDTO userAttrDTO) {
-        if (!isGitlabProjectOwnerOrRoot(projectId, userAttrDTO)) {
+    public void checkProjectOwnerOrGitlabAdmin(Long projectId, @Nullable UserAttrDTO userAttrDTO) {
+        if (!isGitlabProjectOwnerOrGitlabAdmin(projectId, userAttrDTO)) {
             throw new CommonException("error.user.not.owner");
         }
     }
