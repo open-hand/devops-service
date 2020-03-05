@@ -209,10 +209,10 @@ public class BaseServiceClientOperator {
         }
 
         // 查出项目下的所有成员
-        List<IamUserDTO> list = this.listUsersWithGitlabLabel(projectId, new RoleAssignmentSearchVO(), LabelType.GITLAB_PROJECT_DEVELOPER.getValue());
+        List<IamUserDTO> list = this.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_DEVELOPER.getValue());
         List<Long> memberIds = list.stream().filter(IamUserDTO::getEnabled).map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
-        this.listUsersWithGitlabLabel(projectId, new RoleAssignmentSearchVO(), LabelType.GITLAB_PROJECT_OWNER.getValue())
+        this.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_OWNER.getValue())
                 .stream().filter(IamUserDTO::getEnabled).forEach(t -> {
             if (!memberIds.contains(t.getId())) {
                 list.add(t);
