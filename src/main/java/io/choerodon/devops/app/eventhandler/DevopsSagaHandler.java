@@ -433,6 +433,13 @@ public class DevopsSagaHandler {
     public String setAppErr(String data) {
         DevOpsAppServicePayload devOpsAppServicePayload = gson.fromJson(data, DevOpsAppServicePayload.class);
         AppServiceDTO applicationDTO = appServiceService.baseQuery(devOpsAppServicePayload.getAppServiceId());
+
+        // 考虑应用被删除的情况
+        if (applicationDTO == null) {
+            LOGGER.info("Set application-service failed: app-service with id {} does not exist. It may be deleted, so skip it...", devOpsAppServicePayload.getAppServiceId());
+            return data;
+        }
+
         applicationDTO.setSynchro(true);
         applicationDTO.setFailed(true);
         appServiceService.baseUpdate(applicationDTO);
