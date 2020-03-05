@@ -69,4 +69,27 @@ public interface PermissionHelper {
      * @param userAttrDTO 用户纪录
      */
     void checkProjectOwnerOrGitlabAdmin(Long projectId, @Nullable UserAttrDTO userAttrDTO);
+
+    /**
+     * 判断指定用户是否是root用户
+     * @param userId
+     * @return
+     */
+    Boolean isRoot(Long userId);
+
+    /**
+     * 判断指定用户是否是组织Root用户
+     * @param userId
+     * @param organizationId
+     * @return
+     */
+    Boolean isOrganzationRoot(Long userId, Long organizationId);
+
+    /**
+     * 判断指定用户是否是项目所有者
+     * @param userId
+     * @param projectId
+     * @return
+     */
+    Boolean isProjectOwner(Long userId, Long projectId);
 }

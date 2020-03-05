@@ -431,4 +431,36 @@ public class BaseServiceClientOperator {
         ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.queryAllOrgRoot();
         return responseEntity == null ? Collections.emptyList() : responseEntity.getBody();
     }
+
+    /**
+     * 判断用户是否是root用户
+     * @param userId
+     * @return
+     */
+    public Boolean isRoot(Long userId) {
+        ResponseEntity<Boolean> responseEntity = baseServiceClient.checkIsRoot(userId);
+        return responseEntity == null ? false : responseEntity.getBody();
+    }
+
+    /**
+     * 判段用户是否是组织root用户
+     * @param organizationId
+     * @param userId
+     * @return
+     */
+    public Boolean isOrganzationRoot(Long userId, Long organizationId) {
+        ResponseEntity<Boolean> responseEntity = baseServiceClient.checkIsOrgRoot(organizationId, userId);
+        return responseEntity == null ? false : responseEntity.getBody();
+    }
+
+    /**
+     * 校验用户是否是项目所有者
+     * @param userId
+     * @param projectId
+     * @return
+     */
+    public Boolean isProjectOwner(Long userId, Long projectId) {
+        ResponseEntity<Boolean> responseEntity = baseServiceClient.checkIsProjectOwner(projectId, userId);
+        return responseEntity == null ? false : responseEntity.getBody();
+    }
 }

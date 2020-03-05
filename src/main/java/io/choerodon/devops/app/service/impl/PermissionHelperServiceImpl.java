@@ -73,4 +73,19 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
             throw new CommonException("error.user.not.owner");
         }
     }
+
+    @Override
+    public Boolean isRoot(Long userId) {
+        return baseServiceClientOperator.isRoot(userId);
+    }
+
+    @Override
+    public Boolean isOrganzationRoot(Long userId, Long organizationId) {
+        return baseServiceClientOperator.isOrganzationRoot(userId, organizationId);
+    }
+
+    @Override
+    public Boolean isProjectOwner(Long userId, Long projectId) {
+        return baseServiceClientOperator.isProjectOwner(userId, projectId);
+    }
 }

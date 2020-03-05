@@ -81,6 +81,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private PolarisScanningService polarisScanningService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
 
     @Override
@@ -627,38 +629,22 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public Boolean checkUserClusterPermission(Long clusterId, Long userId) {
-        DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
-        devopsClusterDTO.setId(clusterId);
-        DevopsClusterDTO devopsClusterDTO1 = devopsClusterMapper.selectByPrimaryKey(devopsClusterDTO);
-        if (ObjectUtils.isEmpty(devopsClusterDTO1)) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        if (ObjectUtils.isEmpty(devopsClusterDTO)) {
             throw new CommonException("error.devops.cluster.is.not.exist");
         }
-        // 获取用户的项目权限为项目所有者的所有项目Ids
-        List<ProjectWithRoleVO> projectWithRoleVOS = baseServiceClientOperator.listProjectWithRole(userId, 0, 0);
-        if (CollectionUtils.isEmpty(projectWithRoleVOS)) {
-            return false;
+        if (Boolean.TRUE.equals(permissionHelper.isRoot(userId)) || Boolean.TRUE.equals(permissionHelper.isOrganzationRoot(userId, devopsClusterDTO.getOrganizationId()))) {
+            return true;
         }
-        Set<Long> ownerRoleProjectIds = new HashSet<>();
-        projectWithRoleVOS.stream().forEach(v -> {
-            if (CollectionUtils.isEmpty(v.getRoles())) {
-                return;
-            }
-            Set<Long> collect = v.getRoles().stream().filter(role -> PROJECT_OWNER.equals(role.getCode())).map(RoleVO::getId).collect(Collectors.toSet());
-            if (!CollectionUtils.isEmpty(collect)) {
-                ownerRoleProjectIds.add(v.getId());
-            }
-        });
-        if (CollectionUtils.isEmpty(ownerRoleProjectIds)) {
-            return false;
+        if (Boolean.TRUE.equals(permissionHelper.isProjectOwner(userId, devopsClusterDTO.getProjectId()))) {
+            return true;
         }
         // 获取集群和集群分配的项目Ids
         List<DevopsClusterProPermissionDTO> devopsClusterProPermissionDTOS = devopsClusterProPermissionService.baseListByClusterId(clusterId);
-        Set<Long> clusterBelongToProjectIds = devopsClusterProPermissionDTOS.stream().map(DevopsClusterProPermissionDTO::getProjectId).collect(Collectors.toSet());
-        clusterBelongToProjectIds.add(devopsClusterDTO1.getProjectId());
 
-        // 集合做差集处理
-        clusterBelongToProjectIds.retainAll(ownerRoleProjectIds);
-        return !CollectionUtils.isEmpty(clusterBelongToProjectIds);
+        return devopsClusterProPermissionDTOS.stream()
+                .anyMatch(devopsClusterProPermissionDTO ->
+                        permissionHelper.isProjectOwner(userId, devopsClusterProPermissionDTO.getProjectId()));
     }
 
     @Override
