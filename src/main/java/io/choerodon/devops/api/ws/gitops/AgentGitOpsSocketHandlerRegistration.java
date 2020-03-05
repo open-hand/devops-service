@@ -102,8 +102,10 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
         List<Long> notUpgraded = clusterConnectionHandler.getUpdatedClusterList();
         if (!notUpgraded.contains(clusterId)) {
             DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+            logger.info("Upgrade agent: upgrade agent with cluster id {} from version {}", clusterId, clusterSession.getVersion());
             agentCommandService.upgradeCluster(devopsClusterDTO);
         } else {
+            logger.info("Init agent: init agent with cluster id {} and version {}", clusterId, clusterSession.getVersion());
             agentCommandService.initCluster(clusterId);
         }
     }
