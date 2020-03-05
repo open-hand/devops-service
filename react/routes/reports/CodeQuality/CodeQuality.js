@@ -263,8 +263,13 @@ const CodeQuality = withRouter(observer(() => {
             searchable
             optionRenderer={renderAppServiceOption}
             className="c7ncd-codeQuality-select-item"
+            clearButton={false}
           />
-          <Select name="objectType" className="c7ncd-codeQuality-select-item" />
+          <Select
+            name="objectType"
+            clearButton={false}
+            className="c7ncd-codeQuality-select-item"
+          />
         </Form>
         <TimePicker
           startTime={getStartDate}

@@ -273,6 +273,7 @@ const DeployDuration = observer(() => {
             name="envId"
             searchable
             colSpan={1}
+            clearButton={false}
           />
           <Select
             name="appServiceIds"

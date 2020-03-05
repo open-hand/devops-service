@@ -440,6 +440,7 @@ const DeployTimes = observer(() => {
           optionFilterProp="children"
           filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
           filter
+          clearButton={false}
         >
           {appDom}
           {appDom ? <Option key="all" value="all">{formatMessage({ id: 'report.all-app' })}</Option> : null}
