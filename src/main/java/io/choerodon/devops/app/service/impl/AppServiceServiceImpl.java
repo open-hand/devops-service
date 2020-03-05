@@ -789,17 +789,17 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL,
             description = "Devops设置application状态为创建失败(devops set app status create err)", inputSchema = "{}")
-    public void setAppErrStatus(String input, Long projectId) {
+    public void setAppErrStatus(String input, Long projectId, Long appServiceId) {
         producer.applyAndReturn(
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
                         .withSourceId(projectId)
-                        .withRefType("")
+                        .withRefType("app")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL),
                 builder -> builder
                         .withJson(input)
-                        .withRefId("")
+                        .withRefId(String.valueOf(appServiceId))
                         .withSourceId(projectId));
     }
 
@@ -980,11 +980,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
                         .withSourceId(projectId)
-                        .withRefType("")
+                        .withRefType("app")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT),
                 builder -> builder
                         .withPayloadAndSerialize(devOpsAppImportServicePayload)
-                        .withRefId("")
+                        .withRefId(String.valueOf(appServiceId))
                         .withSourceId(projectId));
 
         return ConvertUtils.convertObject(baseQuery(appServiceId), AppServiceRepVO.class);

@@ -170,7 +170,7 @@ public class DevopsSagaHandler {
         try {
             appServiceService.operationApplication(devOpsAppServicePayload);
         } catch (Exception e) {
-            appServiceService.setAppErrStatus(data, devOpsAppServicePayload.getIamProjectId());
+            appServiceService.setAppErrStatus(data, devOpsAppServicePayload.getIamProjectId(), devOpsAppServicePayload.getAppServiceId());
             throw e;
         }
         return data;
@@ -189,7 +189,7 @@ public class DevopsSagaHandler {
         try {
             appServiceService.operationAppServiceImport(devOpsAppImportPayload);
         } catch (Exception e) {
-            appServiceService.setAppErrStatus(data, devOpsAppImportPayload.getIamProjectId());
+            appServiceService.setAppErrStatus(data, devOpsAppImportPayload.getIamProjectId(), devOpsAppImportPayload.getAppServiceId());
             throw e;
         }
         return data;
@@ -416,7 +416,7 @@ public class DevopsSagaHandler {
         } catch (Exception e) {
             DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
             devOpsAppServicePayload.setAppServiceId(appServiceImportPayload.getAppServiceId());
-            appServiceService.setAppErrStatus(gson.toJson(devOpsAppServicePayload), appServiceImportPayload.getProjectId());
+            appServiceService.setAppErrStatus(gson.toJson(devOpsAppServicePayload), appServiceImportPayload.getProjectId(), appServiceImportPayload.getAppServiceId());
             throw e;
         }
         return data;
