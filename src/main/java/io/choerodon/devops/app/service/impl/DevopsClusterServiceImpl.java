@@ -636,7 +636,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         if (Boolean.TRUE.equals(permissionHelper.isRoot(userId)) || Boolean.TRUE.equals(permissionHelper.isOrganzationRoot(userId, devopsClusterDTO.getOrganizationId()))) {
             return true;
         }
-        if (Boolean.TRUE.equals(permissionHelper.isProjectOwner(userId, devopsClusterDTO.getProjectId()))) {
+        if (Boolean.TRUE.equals(permissionHelper.isGitlabProjectOwner(userId, devopsClusterDTO.getProjectId()))) {
             return true;
         }
         // 获取集群和集群分配的项目Ids
@@ -644,7 +644,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
         return devopsClusterProPermissionDTOS.stream()
                 .anyMatch(devopsClusterProPermissionDTO ->
-                        permissionHelper.isProjectOwner(userId, devopsClusterProPermissionDTO.getProjectId()));
+                        permissionHelper.isGitlabProjectOwner(userId, devopsClusterProPermissionDTO.getProjectId()));
     }
 
     @Override

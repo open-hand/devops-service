@@ -92,4 +92,12 @@ public interface PermissionHelper {
      * @return
      */
     Boolean isProjectOwner(Long userId, Long projectId);
+    /**
+     * 判断指定用户是否是gitlab owner
+     * @param userId
+     * @param projectId
+     * @return
+     */
+    Boolean isGitlabProjectOwner(Long userId, Long projectId);
+
 }

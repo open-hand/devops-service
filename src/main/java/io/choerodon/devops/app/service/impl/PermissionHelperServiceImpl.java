@@ -88,4 +88,9 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     public Boolean isProjectOwner(Long userId, Long projectId) {
         return baseServiceClientOperator.isProjectOwner(userId, projectId);
     }
+
+    @Override
+    public Boolean isGitlabProjectOwner(Long userId, Long projectId) {
+        return baseServiceClientOperator.isGitlabProjectOwner(userId, projectId);
+    }
 }
