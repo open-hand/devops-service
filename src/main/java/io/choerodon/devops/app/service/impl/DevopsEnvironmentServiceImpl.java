@@ -1568,15 +1568,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public List<DevopsClusterRepVO> listDevopsCluster(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         List<DevopsClusterRepVO> devopsClusterRepVOS = ConvertUtils.convertList(devopsClusterService.baseListByProjectId(projectId, projectDTO.getOrganizationId()), DevopsClusterRepVO.class);
-        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedClusterList();
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
-        devopsClusterRepVOS.forEach(t -> {
-            if (connectedClusterList.contains(t.getId()) && upgradeClusterList.contains(t.getId())) {
-                t.setConnect(true);
-            } else {
-                t.setConnect(false);
-            }
-        });
+        devopsClusterRepVOS.forEach(t -> t.setConnect(upgradeClusterList.contains(t.getId())));
         return devopsClusterRepVOS;
     }
 

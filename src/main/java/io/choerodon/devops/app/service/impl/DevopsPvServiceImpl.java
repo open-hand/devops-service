@@ -749,7 +749,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             projectRelatedPvList = ConvertUtils.convertList(devopsPvMapper.listByPvIds(projectRelatedPvIdsList), DevopsPvVO.class);
         }
 
-        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedClusterList();
+        List<Long> updatedClusterList = clusterConnectionHandler.getUpdatedClusterList();
 
         String pvcStorage = map.get("requestResource");
         // 筛选容量大于或等于pvc容量且集群agent处于连接状态且未与Prometheus进行绑定
@@ -757,7 +757,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         if (pvcStorage != null) {
             return projectRelatedPvList.stream()
                     .filter(e -> compareResource(e.getRequestResource(), pvcStorage) > 0 && e.getPvcName() == null)
-                    .filter(e -> connectedClusterList.contains(e.getClusterId()))
+                    .filter(e -> updatedClusterList.contains(e.getClusterId()))
                     .filter(e -> !boundPvIds.contains(e.getId()))
                     .collect(Collectors.toList());
         } else {
