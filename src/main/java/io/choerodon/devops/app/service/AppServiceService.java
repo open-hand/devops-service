@@ -476,7 +476,7 @@ public interface AppServiceService {
     AppServiceMsgVO checkAppService(Long projectId, Long appServiceId);
 
     /**
-     * 列出项目下有版本的应用服务，任何角色可以查到所有的的应用服务
+     * 列出项目下有版本的普通应用服务，任何角色可以查到所有的的应用服务
      * 无论有没有权限
      *
      * @param projectId 项目id

@@ -811,7 +811,7 @@ public class AppServiceController {
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "列出项目下有版本的应用服务，任何角色可以查到所有的的应用服务")
+    @ApiOperation(value = "列出项目下有版本的普通应用服务，任何角色可以查到所有的的应用服务")
     @GetMapping(value = "/list_app_services_having_versions")
     public ResponseEntity<List<AppServiceSimpleVO>> listHavingVersions(
             @ApiParam(value = "项目Id")
