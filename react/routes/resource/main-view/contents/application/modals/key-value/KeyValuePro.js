@@ -237,9 +237,10 @@ const FormView = observer(() => {
           placeholder="键"
         />
         <span className="c7n-config-equal">=</span>
-        <TextField
+        <TextArea
           className="c7n-config-value"
           name="value"
+          rows={1}
           placeholder="值"
           onBlur={() => checkErrorData(null, false)}
         />
