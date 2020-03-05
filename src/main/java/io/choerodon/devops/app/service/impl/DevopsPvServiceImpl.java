@@ -108,14 +108,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                         TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))
                 ));
 
-        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedClusterList();
-        pvDTOPageInfo.getList().forEach(i -> {
-            if (connectedClusterList.contains(i.getClusterId())) {
-                i.setClusterConnect(true);
-            } else {
-                i.setClusterConnect(false);
-            }
-        });
+        List<Long> updatedClusterList = clusterConnectionHandler.getUpdatedClusterList();
+        pvDTOPageInfo.getList().forEach(i -> i.setClusterConnect(updatedClusterList.contains(i.getClusterId())));
         return pvDTOPageInfo;
     }
 
