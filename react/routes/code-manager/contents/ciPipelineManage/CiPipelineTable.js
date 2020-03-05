@@ -10,7 +10,6 @@ import Loading from '../../../../components/loading';
 import handleMapStore from '../../main-view/store/handleMapStore';
 import { usePipelineStore } from './stores';
 import { useCodeManagerStore } from '../../stores';
-import store from '../../../reports/stores/ReportsStore';
 
 import '../../../main.less';
 import './index.less';
@@ -69,6 +68,11 @@ const { Column } = Table;
 export default injectIntl(observer(() => {
   const {
     ciTableDS,
+    pipelineActionStore: {
+      cancelPipeline,
+      retryPipeline,
+    },
+    organizationId,
     intl: { formatMessage },
   } = usePipelineStore();
 
@@ -168,9 +172,9 @@ export default injectIntl(observer(() => {
     const gitlabProjectId = record && record.get('gitlabProjectId');
     const pipelineId = record && record.get('pipelineId');
     if (status === 'running' || status === 'pending') {
-      store.cancelPipeline(gitlabProjectId, pipelineId);
+      cancelPipeline(gitlabProjectId, pipelineId, organizationId);
     } else {
-      store.retryPipeline(gitlabProjectId, pipelineId);
+      retryPipeline(gitlabProjectId, pipelineId, organizationId);
     }
     ciTableDS.query();
   }
