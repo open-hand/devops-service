@@ -242,7 +242,7 @@ const EnvModals = observer(() => {
       key: batchDeployKey,
       style: configModalStyle,
       drawer: true,
-      title: formatMessage({ id: `${intlPrefixDeploy}.manual` }),
+      title: formatMessage({ id: `${intlPrefixDeploy}.batch` }),
       children: <BatchDeploy
         deployStore={deployStore}
         refresh={deployAfter}

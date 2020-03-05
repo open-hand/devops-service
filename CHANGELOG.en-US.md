@@ -1,6 +1,36 @@
 # Changelog
 All notable changes to devops-service will be documented in this file.
 
+## [0.21.0] 2020-03-04
+
+#### Add
+- Added "component management" function to the cluster module, which supports the installation and uninstallation of management monitoring components (Prometheus, Grafana, AlertManager)
+- Added "cluster monitoring" function to the cluster module, and supports monitoring the resource usage of all nodes in the cluster on the premise that the monitoring components are installed
+- Added the "node monitoring" function to the detail page of each node in the cluster. After installing the monitoring component, it supports viewing the resource usage details of each node and the resource usage of all pods under the node
+- The cluster module has a new "health check" function and integrates Polaris components to support detection of configuration issues in the cluster and environment that may affect stability, reliability, scalability, and security
+- Instance view: Added the function of "health check" of the environment in the environment layer, which supports detection of configuration problems in each instance configuration file that may affect stability, reliability, scalability, and security
+- Resource view: Added "Commit Synchronization" display in the environment layer, which supports viewing the submission synchronization status and GitOps error log of the corresponding environment here
+- New "Batch Deployment" function in deployment module, instance view and resource view, which supports the function of batch deployment of multiple application services to the same environment at the same time
+- "Instance-Run Details -- More Details", added "YAML Format View" function, support to view details of instance configuration files in YAML format
+- Added "Reset Gitlab Password" function in "Personal Center", which supports resetting GitLab password with one click
+
+#### Fix
+- Fixed an issue where Pods could not be added or deleted after the instance update failed
+- Fixed the issue that every page of latest branch in continuous integration pipeline
+
+#### Optimization
+- Optimized the timeout logic of the application service creation process to avoid the situation that has been processing, resulting in the application service cannot be deleted
+- Optimized pull shared application service image
+- Optimized PV creation process, allowing users to directly assign permissions to specific projects to avoid incorrect binding
+- Optimized the display problem of "Instance-Run Details" interface and improved the display of missing fields
+- Added the status of clusters in the "owned cluster" column in the PV list
+- Added "PV type" display to PVC list
+- Added "Deployment Environment" column to the pipeline list to show the environment corresponding to the deployment tasks included in the pipeline
+
+#### Remove
+- Removed line chart of CPU and memory usage of Pods in "Resource View-Network Details" interface
+- Removed the list of memory and CPU usage in "Resource View-Environment Layer"
+
 ## [0.20.0] 2019-12-09
 #### Add
 - Added "component management" function to the cluster module to support the management of the installation and uninstallation of CertManager components

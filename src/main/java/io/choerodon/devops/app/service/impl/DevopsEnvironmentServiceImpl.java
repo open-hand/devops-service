@@ -1202,6 +1202,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 StartSagaBuilder.newBuilder()
                         .withSourceId(preEnvironmentDTO.getProjectId())
                         .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("env")
+                        .withRefId(String.valueOf(preEnvironmentDTO.getId()))
                         .withPayloadAndSerialize(userPayload)
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_ENV_PERMISSION),
                 builder -> {
