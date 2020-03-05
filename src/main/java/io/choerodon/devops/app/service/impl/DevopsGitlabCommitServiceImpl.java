@@ -195,6 +195,11 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                 List<Date> date = new ArrayList<>();
                 list.forEach(e -> date.add(e.getCommitDate()));
                 commitFormUserVOS.add(new CommitFormUserVO(userId, name, imgUrl, date));
+            } else {
+                String name = "Unknown" + "(" + userId + ")";
+                List<Date> date = new ArrayList<>();
+                list.forEach(e -> date.add(e.getCommitDate()));
+                commitFormUserVOS.add(new CommitFormUserVO(userId, name, null, date));
             }
         });
         return commitFormUserVOS;
