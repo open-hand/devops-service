@@ -1,5 +1,6 @@
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
+import { Tooltip } from 'choerodon-ui';
 
 import './index.less';
 
@@ -34,14 +35,16 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
         <span className="detail-item-text">
           {formatMessage({ id: `${intlPrefix}.service.url` })}
         </span>
-        <a
-          href={record.get('repoUrl')}
-          className="detail-item-url"
-          target="_blank"
-          rel="nofollow me noopener noreferrer"
-        >
-          <span>{record.get('repoUrl')}</span>
-        </a>
+        <Tooltip title={record.get('repoUrl')}>
+          <a
+            href={record.get('repoUrl')}
+            className="detail-item-url"
+            target="_blank"
+            rel="nofollow me noopener noreferrer"
+          >
+            <span>{record.get('repoUrl')}</span>
+          </a>
+        </Tooltip>
       </li>
     </ul>
   );

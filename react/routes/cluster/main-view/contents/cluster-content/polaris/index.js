@@ -62,7 +62,7 @@ const polaris = observer((props) => {
       }
     } catch (e) {
       Choerodon.handleResponseError(e);
-      setDelay(5000);
+      setDelay(false);
     }
   }
 
