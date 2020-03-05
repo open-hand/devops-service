@@ -383,7 +383,9 @@ public class AppServiceServiceImpl implements AppServiceService {
             harbor.setType(HARBOR);
             devopsConfigVOS.add(harbor);
         } else {
-            devopsConfigVOS.add(appServiceUpdateDTO.getHarbor());
+            harbor = appServiceUpdateDTO.getHarbor();
+            harbor.setHarborPrivate(harbor.getHarborPrivate() == null ? true : harbor.getHarborPrivate());
+            devopsConfigVOS.add(harbor);
         }
 
         if (ObjectUtils.isEmpty(appServiceUpdateDTO.getChart())) {

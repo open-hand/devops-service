@@ -541,7 +541,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             configVOS.add(harbor);
         } else {
             harbor = devopsConfigRepVO.getHarbor();
-            harbor.setHarborPrivate(true);
+            harbor.setHarborPrivate(harbor.getHarborPrivate() == null ? true : harbor.getHarborPrivate());
             configVOS.add(harbor);
         }
 
