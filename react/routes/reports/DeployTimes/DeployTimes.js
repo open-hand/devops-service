@@ -67,7 +67,7 @@ const DeployTimes = observer(() => {
     } else {
       setEnvIds([]);
     }
-    loadCharts();
+    loadCharts(appId, ids || []);
   };
 
   /**
@@ -101,10 +101,14 @@ const DeployTimes = observer(() => {
       multilpleRecord.set('deployTimeApps', []);
     }
     if (appDom) {
-      multilpleRecord.set('deployTimeName', appId);
-    } else {
-      multilpleRecord.set('deployTimeName', null);
+      if (appId) {
+        multilpleRecord.set('deployTimeName', appId);
+      }
     }
+    // else {
+    //   debugger;
+    //   multilpleRecord.set('deployTimeName', null);
+    // }
   }, [envIds, appId]);
 
   /**
@@ -126,7 +130,7 @@ const DeployTimes = observer(() => {
           }
           setEnv(envCurrent);
           setEnvIds(selectEnv);
-          loadCharts();
+          loadCharts(appId, selectEnv);
         } else {
           ReportsStore.judgeRole();
         }
@@ -158,12 +162,12 @@ const DeployTimes = observer(() => {
   /**
    * 加载图表数据
    */
-  const loadCharts = (id = 'all') => {
+  const loadCharts = (id = appId, eIds = envIds) => {
     const projectId = AppState.currentMenuType.id;
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
     const appIDCurrent = (id === 'all') ? [] : id;
-    ReportsStore.loadDeployTimesChart(projectId, appIDCurrent, startTime, endTime, envIds.slice())
+    ReportsStore.loadDeployTimesChart(projectId, appIDCurrent, startTime, endTime, eIds.slice())
       .then((res) => {
         if (res) {
           setDateArr(res.creationDates);
@@ -172,20 +176,20 @@ const DeployTimes = observer(() => {
           setAllArr(res.deployFrequencys);
         }
       });
-    loadTables(id);
+    loadTables(id, eIds);
   };
 
   /**
    * 加载table数据
    */
-  const loadTables = (id = 'all') => {
+  const loadTables = (id = 'all', eIds) => {
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
     const appIDCurrent = (id === 'all') ? [] : id;
     DeployTimesTableDataSet.setQueryParameter('appId', appIDCurrent);
     DeployTimesTableDataSet.setQueryParameter('endTime', endTime);
     DeployTimesTableDataSet.setQueryParameter('startTime', startTime);
-    DeployTimesTableDataSet.setQueryParameter('envIds', envIds.slice());
+    DeployTimesTableDataSet.setQueryParameter('envIds', eIds.slice());
     DeployTimesTableDataSet.query();
   };
 
@@ -364,7 +368,7 @@ const DeployTimes = observer(() => {
       >
         <Column
           name="status"
-          renderer={({ record }) => <StatusTags name={formatMessage({ id: record.status })} colorCode={record.status} error={record.error} />}
+          renderer={({ record }) => <StatusTags name={formatMessage({ id: record.get('status') })} colorCode={record.get('status')} error={record.get('error')} />}
         />
         <Column
           name="creationDate"

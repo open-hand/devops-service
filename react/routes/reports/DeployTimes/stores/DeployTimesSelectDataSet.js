@@ -10,7 +10,7 @@ export default ({ formatMessage }) => ({
     label: formatMessage({ id: 'deploy.envName' }),
   }, {
     name: 'deployTimeName',
-    type: 'numbewr',
+    type: 'string',
     label: formatMessage({ id: 'deploy.appName' }),
     defaultValue: 'all',
   }],
