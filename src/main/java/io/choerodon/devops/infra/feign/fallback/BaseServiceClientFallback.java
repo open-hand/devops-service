@@ -206,6 +206,11 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
+    public ResponseEntity<List<IamUserDTO>> listProjectOwnerByProjectId(Long projectId) {
+        throw new CommonException("error.check.is.project.owner");
+    }
+
+    @Override
     public ResponseEntity<IamUserDTO> query(String loginName) {
         throw new CommonException("error.query.user.by.login.name", loginName);
     }

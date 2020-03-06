@@ -192,10 +192,10 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 users.add(user);
             }
             if (TriggerObject.PROJECT_OWNER.getObject().equals(e.getType())) {
-                List<IamUserDTO> allOwnerUsersPage = baseServiceClientOperator
-                        .listUsersWithGitlabLabel(devopsEnvironmentDTO.getProjectId(), new RoleAssignmentSearchVO(), LabelType.GITLAB_PROJECT_DEVELOPER.getValue());
-                if (!allOwnerUsersPage.isEmpty()) {
-                    allOwnerUsersPage.stream().forEach(v -> {
+                List<IamUserDTO> iamUserDTOS = baseServiceClientOperator
+                        .listProjectOwnerByProjectId(devopsEnvironmentDTO.getProjectId());
+                if (!iamUserDTOS.isEmpty()) {
+                    iamUserDTOS.stream().forEach(v -> {
                         NoticeSendDTO.User user = new NoticeSendDTO.User();
                         user.setEmail(v.getEmail());
                         user.setId(v.getId());

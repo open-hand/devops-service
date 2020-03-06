@@ -434,6 +434,7 @@ public class BaseServiceClientOperator {
 
     /**
      * 判断用户是否是root用户
+     *
      * @param userId
      * @return
      */
@@ -444,6 +445,7 @@ public class BaseServiceClientOperator {
 
     /**
      * 判段用户是否是组织root用户
+     *
      * @param organizationId
      * @param userId
      * @return
@@ -455,6 +457,7 @@ public class BaseServiceClientOperator {
 
     /**
      * 校验用户是否是项目所有者
+     *
      * @param userId
      * @param projectId
      * @return
@@ -462,5 +465,16 @@ public class BaseServiceClientOperator {
     public Boolean isProjectOwner(Long userId, Long projectId) {
         ResponseEntity<Boolean> responseEntity = baseServiceClient.checkIsProjectOwner(projectId, userId);
         return responseEntity == null ? false : responseEntity.getBody();
+    }
+
+    /**
+     * 查询项目下的项目所有者，用于发送通知
+     *
+     * @param projectId
+     * @return
+     */
+    public List<IamUserDTO> listProjectOwnerByProjectId(Long projectId) {
+        ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.listProjectOwnerByProjectId(projectId);
+        return responseEntity == null ? Collections.emptyList() : responseEntity.getBody();
     }
 }

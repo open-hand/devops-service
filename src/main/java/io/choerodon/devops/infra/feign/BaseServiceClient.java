@@ -200,6 +200,7 @@ public interface BaseServiceClient {
 
     /**
      * 判断用户是否是平台root用户
+     *
      * @param id
      * @return
      */
@@ -208,6 +209,7 @@ public interface BaseServiceClient {
 
     /**
      * 判段用户是否是组织root用户
+     *
      * @param organizationId
      * @param userId
      * @return
@@ -218,6 +220,7 @@ public interface BaseServiceClient {
 
     /**
      * 校验用户是否是项目所有者
+     *
      * @param id
      * @param projectId
      * @return
@@ -226,4 +229,7 @@ public interface BaseServiceClient {
     ResponseEntity<Boolean> checkIsProjectOwner(
             @PathVariable("id") Long id,
             @PathVariable("project_id") Long projectId);
+
+    @GetMapping("/v1/projects/{project_id}/owner/list")
+    ResponseEntity<List<IamUserDTO>> listProjectOwnerByProjectId(@PathVariable("project_id") Long projectId);
 }
