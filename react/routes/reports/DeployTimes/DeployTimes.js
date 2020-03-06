@@ -44,7 +44,7 @@ const DeployTimes = observer(() => {
   const [env, setEnv] = useState([]);
   const [app, setApp] = useState([]);
   const [envIds, setEnvIds] = useState([]);
-  const [appId, setAppId] = useState('all');
+  const [appId, setAppId] = useState(0);
   const [appArr, setAppArr] = useState([]);
   const [dateArr, setDateArr] = useState([]);
   const [successArr, setSuccessArr] = useState([]);
@@ -101,7 +101,7 @@ const DeployTimes = observer(() => {
       multilpleRecord.set('deployTimeApps', []);
     }
     if (appDom) {
-      if (appId) {
+      if (appId || appId === 0) {
         multilpleRecord.set('deployTimeName', appId);
       }
     }
@@ -149,7 +149,7 @@ const DeployTimes = observer(() => {
     ReportsStore.loadApps(id)
       .then((appCurrent) => {
         if (appCurrent.length) {
-          let selectApp = appId || 'all';
+          let selectApp = appId || 0;
           if (historyAppId) {
             selectApp = historyAppId;
           }
@@ -166,7 +166,7 @@ const DeployTimes = observer(() => {
     const projectId = AppState.currentMenuType.id;
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
-    const appIDCurrent = (id === 'all') ? [] : id;
+    const appIDCurrent = (id === 0) ? [] : id;
     ReportsStore.loadDeployTimesChart(projectId, appIDCurrent, startTime, endTime, eIds.slice())
       .then((res) => {
         if (res) {
@@ -182,10 +182,10 @@ const DeployTimes = observer(() => {
   /**
    * 加载table数据
    */
-  const loadTables = (id = 'all', eIds) => {
+  const loadTables = (id = 0, eIds) => {
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
-    const appIDCurrent = (id === 'all') ? [] : id;
+    const appIDCurrent = (id === 0) ? [] : id;
     DeployTimesTableDataSet.setQueryParameter('appId', appIDCurrent);
     DeployTimesTableDataSet.setQueryParameter('endTime', endTime);
     DeployTimesTableDataSet.setQueryParameter('startTime', startTime);
@@ -395,7 +395,7 @@ const DeployTimes = observer(() => {
   const tableChange = (pagination) => {
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
-    const appIDCurrent = (appId === 'all') ? [] : appId;
+    const appIDCurrent = (appId === 0) ? [] : appId;
     DeployTimesTableDataSet.setQueryParameter('appId', appIDCurrent);
     DeployTimesTableDataSet.setQueryParameter('endTime', endTime);
     DeployTimesTableDataSet.setQueryParameter('startTime', startTime);
@@ -448,7 +448,7 @@ const DeployTimes = observer(() => {
           clearButton={false}
         >
           {appDom}
-          {appDom ? <Option key="all" value="all">{formatMessage({ id: 'report.all-app' })}</Option> : null}
+          {appDom ? <Option key="all" value={0}>{formatMessage({ id: 'report.all-app' })}</Option> : null}
         </Select>
       </Form>
       <TimePicker
