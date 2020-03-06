@@ -13,7 +13,7 @@ preJob:
     # 初始化到配置中心存储方式: k8s/db
     configType: k8s
     # 初始化配置策略: not/add/override/update
-    updatePolicy: add
+    updatePolicy: override
     # 当 configType 值为 k8s 时配置注册中心地址
     registerHost: http://register-server:8000
     # 当 configType 值为 db 时配置 manager-service 的数据库
