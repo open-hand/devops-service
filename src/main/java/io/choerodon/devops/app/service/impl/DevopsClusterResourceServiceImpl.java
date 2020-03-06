@@ -526,10 +526,13 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         Integer totalNum = 0;
         //健康检查，ready=true的pod大于1就是可用的
         for (DevopsEnvPodVO devopsEnvPodVO : devopsEnvPodDTOS) {
-            if (Boolean.TRUE.equals(devopsEnvPodVO.getReady())) {
+            if (Boolean.TRUE.equals(devopsEnvPodVO.getReady()) && devopsEnvPodVO.getContainers() != null) {
                 readyContainers.addAll(devopsEnvPodVO.getContainers().stream().filter(ContainerVO::getReady).collect(Collectors.toList()));
+                totalNum = totalNum + devopsEnvPodVO.getContainers().size();
+            } else{
+                clusterResourceVO.setStatus(ClusterResourceStatus.DISABLED.getStatus());
+                return;
             }
-            totalNum = totalNum + devopsEnvPodVO.getContainers().size();
         }
         if (!readyContainers.isEmpty() && readyContainers.size() == totalNum) {
             clusterResourceVO.setStatus(ClusterResourceStatus.AVAILABLE.getStatus());
