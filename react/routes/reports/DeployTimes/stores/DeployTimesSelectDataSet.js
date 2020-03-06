@@ -12,5 +12,6 @@ export default ({ formatMessage }) => ({
     name: 'deployTimeName',
     type: 'numbewr',
     label: formatMessage({ id: 'deploy.appName' }),
+    defaultValue: 'all',
   }],
 });

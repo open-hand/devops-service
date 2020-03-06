@@ -53,8 +53,12 @@ const NoChart = observer((props) => {
         <div className={`c7n-no-chart-pic-${getProRole}`} />
       </div>
       <div className="c7n-no-chart-desc">
-        <div className="c7n-no-chart-title"><FormattedMessage id={noChart[getProRole].title} /></div>
-        <div className="c7n-no-chart-des"><FormattedMessage id={noChart[getProRole].des} /></div>
+        <div className="c7n-no-chart-title">
+          {getProRole === '' ? '' : <FormattedMessage id={noChart[getProRole].title} />}
+        </div>
+        <div className="c7n-no-chart-des">
+          {getProRole === '' ? '' : <FormattedMessage id={noChart[getProRole].des} />}
+        </div>
         {getProRole === 'owner' && (
         <Button
           type="primary"

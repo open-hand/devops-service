@@ -263,6 +263,7 @@ const BuildDuration = observer(() => {
           name="buildDurationApps"
           // defaultValue={appId}
           // value={appId}
+          searchable
           optionFilterProp="children"
           filterOption={(input, option) => option.props.children.props.children.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
           filter

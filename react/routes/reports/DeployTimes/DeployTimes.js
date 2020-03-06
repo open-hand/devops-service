@@ -76,7 +76,7 @@ const DeployTimes = observer(() => {
    */
   const handleAppSelect = (id) => {
     setAppId(id);
-    loadCharts();
+    loadCharts(id);
   };
 
   useEffect(() => {
@@ -158,11 +158,11 @@ const DeployTimes = observer(() => {
   /**
    * 加载图表数据
    */
-  const loadCharts = () => {
+  const loadCharts = (id = 'all') => {
     const projectId = AppState.currentMenuType.id;
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
-    const appIDCurrent = (appId === 'all') ? [] : appId;
+    const appIDCurrent = (id === 'all') ? [] : id;
     ReportsStore.loadDeployTimesChart(projectId, appIDCurrent, startTime, endTime, envIds.slice())
       .then((res) => {
         if (res) {
@@ -172,16 +172,16 @@ const DeployTimes = observer(() => {
           setAllArr(res.deployFrequencys);
         }
       });
-    loadTables();
+    loadTables(id);
   };
 
   /**
    * 加载table数据
    */
-  const loadTables = () => {
+  const loadTables = (id = 'all') => {
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
-    const appIDCurrent = (appId === 'all') ? [] : appId;
+    const appIDCurrent = (id === 'all') ? [] : id;
     DeployTimesTableDataSet.setQueryParameter('appId', appIDCurrent);
     DeployTimesTableDataSet.setQueryParameter('endTime', endTime);
     DeployTimesTableDataSet.setQueryParameter('startTime', startTime);
@@ -371,15 +371,15 @@ const DeployTimes = observer(() => {
         />
         <Column
           name="appServiceInstanceCode"
-          renderer={({ record }) => <MouserOverWrapper text={record.appServiceInstanceCode} width={0.2}>{record.appServiceInstanceCode}</MouserOverWrapper>}
+          renderer={({ record }) => <MouserOverWrapper text={record.get('appServiceInstanceCode')} width={0.2}>{record.get('appServiceInstanceCode')}</MouserOverWrapper>}
         />
         <Column
           name="appServiceName"
-          renderer={({ record }) => <MouserOverWrapper text={record.appServiceName} width={0.2}>{record.appServiceName}</MouserOverWrapper>}
+          renderer={({ record }) => <MouserOverWrapper text={record.get('appServiceName')} width={0.2}>{record.get('appServiceName')}</MouserOverWrapper>}
         />
         <Column
           name="appServiceVersion"
-          renderer={({ record }) => <MouserOverWrapper text={record.appServiceVersion} width={0.2}>{record.appServiceVersion}</MouserOverWrapper>}
+          renderer={({ record }) => <MouserOverWrapper text={record.get('appServiceVersion')} width={0.2}>{record.get('appServiceVersion')}</MouserOverWrapper>}
         />
         <Column
           name="lastUpdatedName"
@@ -434,6 +434,7 @@ const DeployTimes = observer(() => {
         </Select>
         <Select
           colSpan={1}
+          searchable
           name="deployTimeName"
           notFoundContent={formatMessage({ id: 'report.no.app.tips' })}
           onChange={handleAppSelect}
