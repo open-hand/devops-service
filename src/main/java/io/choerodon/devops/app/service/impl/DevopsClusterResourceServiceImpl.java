@@ -529,7 +529,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 readyPod.addAll(devopsEnvPodVO.getContainers().stream().filter(ContainerVO::getReady).collect(Collectors.toList()));
             }
         });
-        if (!readyPod.isEmpty()) {
+        if (!readyPod.isEmpty() && readyPod.size() == devopsEnvPodDTOS.size()) {
             clusterResourceVO.setStatus(ClusterResourceStatus.AVAILABLE.getStatus());
         } else {
             clusterResourceVO.setStatus(ClusterResourceStatus.DISABLED.getStatus());
