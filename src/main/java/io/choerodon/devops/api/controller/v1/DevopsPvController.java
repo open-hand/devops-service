@@ -190,7 +190,7 @@ public class DevopsPvController {
                 .orElseThrow(() -> new CommonException(ERROR_PROJECT_QUERY));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据pvc的条件筛选查询可用的pv")
     @PostMapping("/pv_available")
     public ResponseEntity<List<DevopsPvVO>> queryPvcRelatedPv(
