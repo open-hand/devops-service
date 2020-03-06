@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.PageSerializable;
@@ -108,14 +109,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                         TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))
                 ));
 
-        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedClusterList();
-        pvDTOPageInfo.getList().forEach(i -> {
-            if (connectedClusterList.contains(i.getClusterId())) {
-                i.setClusterConnect(true);
-            } else {
-                i.setClusterConnect(false);
-            }
-        });
+        List<Long> updatedClusterList = clusterConnectionHandler.getUpdatedClusterList();
+        pvDTOPageInfo.getList().forEach(i -> i.setClusterConnect(updatedClusterList.contains(i.getClusterId())));
         return pvDTOPageInfo;
     }
 
@@ -127,6 +122,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void createPv(Long projectId, DevopsPvReqVO devopsPvReqVo) {
+        // valueConfig直接复制了，在initV1PersistentVolume方法中对其进行再次处理并设置对应类型的值
         DevopsPvDTO devopsPvDTO = ConvertUtils.convertObject(devopsPvReqVo, DevopsPvDTO.class);
         devopsPvDTO.setProjectId(projectId);
         devopsPvDTO.setStatus(PvStatus.OPERATING.getStatus());
@@ -146,7 +142,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         //校验环境信息
         checkEnv(devopsEnvironmentDTO);
 
-        //将pvDTO转换成pv文件对象
+        // 根据pv对象初始化Kubernetes对象，同时对传入的对象的valueConfig字段根据type更改
         V1PersistentVolume v1PersistentVolume = initV1PersistentVolume(devopsPvDTO);
 
         //创建pv命令
@@ -182,7 +178,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         // 如果删除的PV与Prometheus进行了绑定且PV状态为Available，则抛出异常，终止删除操作
         List<Long> boundPvIds = getBoundPvIds(devopsPrometheusMapper, 1);
 
-        if ("Available".equals(devopsPvDTO.getStatus())&&boundPvIds.contains(pvId)) {
+        if ("Available".equals(devopsPvDTO.getStatus()) && boundPvIds.contains(pvId)) {
             throw new CommonException("error.pv.bound.with.prometheus");
         }
 
@@ -544,6 +540,12 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         }
     }
 
+    /**
+     * 根据pv对象初始化Kubernetes对象，同时对传入的对象的valueConfig字段根据type更改
+     *
+     * @param devopsPvDTO pv对象
+     * @return Kubernetes对象
+     */
     private V1PersistentVolume initV1PersistentVolume(DevopsPvDTO devopsPvDTO) {
         V1PersistentVolume v1PersistentVolume = new V1PersistentVolume();
         v1PersistentVolume.setApiVersion("v1");
@@ -583,12 +585,14 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 //反序列成对象之后进行校验
                 DevopsPvValidator.checkConfigValue(nfs, volumeTypeEnum);
                 v1PersistentVolumeSpec.setNfs(nfs);
+                devopsPvDTO.setValueConfig(JSONObject.toJSONString(nfs));
                 break;
             case HOSTPATH:
                 V1HostPathVolumeSource hostPath = gson.fromJson(devopsPvDTO.getValueConfig(), V1HostPathVolumeSource.class);
                 //反序列成对象之后进行校验
                 DevopsPvValidator.checkConfigValue(hostPath, volumeTypeEnum);
                 v1PersistentVolumeSpec.setHostPath(hostPath);
+                devopsPvDTO.setValueConfig(JSONObject.toJSONString(hostPath));
                 break;
         }
         v1PersistentVolume.setSpec(v1PersistentVolumeSpec);
@@ -755,7 +759,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             projectRelatedPvList = ConvertUtils.convertList(devopsPvMapper.listByPvIds(projectRelatedPvIdsList), DevopsPvVO.class);
         }
 
-        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedClusterList();
+        List<Long> updatedClusterList = clusterConnectionHandler.getUpdatedClusterList();
 
         String pvcStorage = map.get("requestResource");
         // 筛选容量大于或等于pvc容量且集群agent处于连接状态且未与Prometheus进行绑定
@@ -763,7 +767,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         if (pvcStorage != null) {
             return projectRelatedPvList.stream()
                     .filter(e -> compareResource(e.getRequestResource(), pvcStorage) > 0 && e.getPvcName() == null)
-                    .filter(e -> connectedClusterList.contains(e.getClusterId()))
+                    .filter(e -> updatedClusterList.contains(e.getClusterId()))
                     .filter(e -> !boundPvIds.contains(e.getId()))
                     .collect(Collectors.toList());
         } else {

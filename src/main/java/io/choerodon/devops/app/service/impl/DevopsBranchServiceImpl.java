@@ -51,7 +51,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
         }
         oldDevopsBranchDTO.setIssueId(devopsBranchDTO.getIssueId());
         oldDevopsBranchDTO.setObjectVersionNumber(devopsBranchDTO.getObjectVersionNumber());
-        devopsBranchMapper.updateByPrimaryKeySelective(oldDevopsBranchDTO);
+        devopsBranchMapper.updateBranchById(oldDevopsBranchDTO);
     }
 
     @Override

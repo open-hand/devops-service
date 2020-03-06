@@ -170,7 +170,7 @@ public class DevopsSagaHandler {
         try {
             appServiceService.operationApplication(devOpsAppServicePayload);
         } catch (Exception e) {
-            appServiceService.setAppErrStatus(data, devOpsAppServicePayload.getIamProjectId());
+            appServiceService.setAppErrStatus(data, devOpsAppServicePayload.getIamProjectId(), devOpsAppServicePayload.getAppServiceId());
             throw e;
         }
         return data;
@@ -189,7 +189,7 @@ public class DevopsSagaHandler {
         try {
             appServiceService.operationAppServiceImport(devOpsAppImportPayload);
         } catch (Exception e) {
-            appServiceService.setAppErrStatus(data, devOpsAppImportPayload.getIamProjectId());
+            appServiceService.setAppErrStatus(data, devOpsAppImportPayload.getIamProjectId(), devOpsAppImportPayload.getAppServiceId());
             throw e;
         }
         return data;
@@ -416,7 +416,7 @@ public class DevopsSagaHandler {
         } catch (Exception e) {
             DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
             devOpsAppServicePayload.setAppServiceId(appServiceImportPayload.getAppServiceId());
-            appServiceService.setAppErrStatus(gson.toJson(devOpsAppServicePayload), appServiceImportPayload.getProjectId());
+            appServiceService.setAppErrStatus(gson.toJson(devOpsAppServicePayload), appServiceImportPayload.getProjectId(), appServiceImportPayload.getAppServiceId());
             throw e;
         }
         return data;
@@ -433,6 +433,13 @@ public class DevopsSagaHandler {
     public String setAppErr(String data) {
         DevOpsAppServicePayload devOpsAppServicePayload = gson.fromJson(data, DevOpsAppServicePayload.class);
         AppServiceDTO applicationDTO = appServiceService.baseQuery(devOpsAppServicePayload.getAppServiceId());
+
+        // 考虑应用被删除的情况
+        if (applicationDTO == null) {
+            LOGGER.info("Set application-service failed: app-service with id {} does not exist. It may be deleted, so skip it...", devOpsAppServicePayload.getAppServiceId());
+            return data;
+        }
+
         applicationDTO.setSynchro(true);
         applicationDTO.setFailed(true);
         appServiceService.baseUpdate(applicationDTO);

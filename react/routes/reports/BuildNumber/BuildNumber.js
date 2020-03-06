@@ -154,7 +154,9 @@ const BuildNumber = observer(() => {
           optionFilterProp="children"
           filterOption={(input, option) => option.props.children.props.children.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
           filter
+          searchable
           onChange={handleAppSelect}
+          clearButton={false}
         >
           {
             _.map(getAllApps, (app, index) => (

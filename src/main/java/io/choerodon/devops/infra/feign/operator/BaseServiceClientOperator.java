@@ -209,10 +209,10 @@ public class BaseServiceClientOperator {
         }
 
         // 查出项目下的所有成员
-        List<IamUserDTO> list = this.listUsersWithGitlabLabel(projectId, new RoleAssignmentSearchVO(), LabelType.GITLAB_PROJECT_DEVELOPER.getValue());
+        List<IamUserDTO> list = this.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_DEVELOPER.getValue());
         List<Long> memberIds = list.stream().filter(IamUserDTO::getEnabled).map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
-        this.listUsersWithGitlabLabel(projectId, new RoleAssignmentSearchVO(), LabelType.GITLAB_PROJECT_OWNER.getValue())
+        this.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_OWNER.getValue())
                 .stream().filter(IamUserDTO::getEnabled).forEach(t -> {
             if (!memberIds.contains(t.getId())) {
                 list.add(t);
@@ -429,6 +429,52 @@ public class BaseServiceClientOperator {
      */
     public List<IamUserDTO> queryAllOrgRoot() {
         ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.queryAllOrgRoot();
+        return responseEntity == null ? Collections.emptyList() : responseEntity.getBody();
+    }
+
+    /**
+     * 判断用户是否是root用户
+     *
+     * @param userId
+     * @return
+     */
+    public Boolean isRoot(Long userId) {
+        ResponseEntity<Boolean> responseEntity = baseServiceClient.checkIsRoot(userId);
+        return responseEntity == null ? false : responseEntity.getBody();
+    }
+
+    /**
+     * 判段用户是否是组织root用户
+     *
+     * @param organizationId
+     * @param userId
+     * @return
+     */
+    public Boolean isOrganzationRoot(Long userId, Long organizationId) {
+        ResponseEntity<Boolean> responseEntity = baseServiceClient.checkIsOrgRoot(organizationId, userId);
+        return responseEntity == null ? false : responseEntity.getBody();
+    }
+
+    /**
+     * 校验用户是否是项目所有者
+     *
+     * @param userId
+     * @param projectId
+     * @return
+     */
+    public Boolean isProjectOwner(Long userId, Long projectId) {
+        ResponseEntity<Boolean> responseEntity = baseServiceClient.checkIsProjectOwner(projectId, userId);
+        return responseEntity == null ? false : responseEntity.getBody();
+    }
+
+    /**
+     * 查询项目下的项目所有者，用于发送通知
+     *
+     * @param projectId
+     * @return
+     */
+    public List<IamUserDTO> listProjectOwnerByProjectId(Long projectId) {
+        ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.listProjectOwnerByProjectId(projectId);
         return responseEntity == null ? Collections.emptyList() : responseEntity.getBody();
     }
 }

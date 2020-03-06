@@ -50,6 +50,8 @@ public class DevopsCommandRunner implements CommandLineRunner {
     private String servicesHarborUsername;
     @Value("${services.harbor.password}")
     private String servicesHarborPassword;
+    @Value("${services.harbor.update:true}")
+    private Boolean servicesHarborUpdate;
     @Value("${services.sonarqube.url:}")
     private String sonarqubeUrl;
     @Value("${services.gateway.url}")
@@ -61,21 +63,23 @@ public class DevopsCommandRunner implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
-        try {
-            ConfigVO harborConfig = new ConfigVO();
-            harborConfig.setUrl(servicesHarborBaseUrl);
-            harborConfig.setUserName(servicesHarborUsername);
-            harborConfig.setPassword(servicesHarborPassword);
-            initConfig(harborConfig, HARBOR_NAME, ProjectConfigType.HARBOR.getType());
+        if (servicesHarborUpdate) {
+            try {
+                ConfigVO harborConfig = new ConfigVO();
+                harborConfig.setUrl(servicesHarborBaseUrl);
+                harborConfig.setUserName(servicesHarborUsername);
+                harborConfig.setPassword(servicesHarborPassword);
+                initConfig(harborConfig, HARBOR_NAME, ProjectConfigType.HARBOR.getType());
 
-            ConfigVO chartConfig = new ConfigVO();
-            chartConfig.setUrl(servicesHelmUrl);
-            initConfig(chartConfig, CHART_NAME, ProjectConfigType.CHART.getType());
-            if (sonarqubeUrl != null && !sonarqubeUrl.isEmpty()) {
-                createSonarToken();
+                ConfigVO chartConfig = new ConfigVO();
+                chartConfig.setUrl(servicesHelmUrl);
+                initConfig(chartConfig, CHART_NAME, ProjectConfigType.CHART.getType());
+                if (sonarqubeUrl != null && !sonarqubeUrl.isEmpty()) {
+                    createSonarToken();
+                }
+            } catch (Exception e) {
+                throw new CommonException("error.init.project.config", e);
             }
-        } catch (Exception e) {
-            throw new CommonException("error.init.project.config", e);
         }
     }
 

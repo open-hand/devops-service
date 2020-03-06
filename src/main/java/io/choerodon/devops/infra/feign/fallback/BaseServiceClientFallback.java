@@ -191,6 +191,26 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
+    public ResponseEntity<Boolean> checkIsRoot(Long id) {
+        throw new CommonException("error.check.is.root");
+    }
+
+    @Override
+    public ResponseEntity<Boolean> checkIsOrgRoot(Long organizationId, Long userId) {
+        throw new CommonException("error.check.is.org.root");
+    }
+
+    @Override
+    public ResponseEntity<Boolean> checkIsProjectOwner(Long id, Long projectId) {
+        throw new CommonException("error.check.is.project.owner");
+    }
+
+    @Override
+    public ResponseEntity<List<IamUserDTO>> listProjectOwnerByProjectId(Long projectId) {
+        throw new CommonException("error.check.is.project.owner");
+    }
+
+    @Override
     public ResponseEntity<IamUserDTO> query(String loginName) {
         throw new CommonException("error.query.user.by.login.name", loginName);
     }

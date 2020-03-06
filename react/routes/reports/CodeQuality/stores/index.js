@@ -7,7 +7,6 @@ import DetailDataSet from './DetailDataSet';
 import AppOptionsDataSet from './AppOptionsDataSet';
 import ChartsDataSet from './ChartsDataSet';
 import { useReportsStore } from '../../stores';
-// import useStore from './useStore';
 
 const Store = createContext();
 
@@ -53,8 +52,6 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
     const appServiceDs = useMemo(() => new DataSet(AppOptionsDataSet({ projectId })), [projectId]);
     const chartsDs = useMemo(() => new DataSet(ChartsDataSet({ projectId })), [projectId]);
     const detailDs = useMemo(() => new DataSet(DetailDataSet({ intlPrefix, formatMessage, appServiceDs, objectTypeDs, chartsDs, defaultObjectType })), [defaultObjectType]);
-
-    // const repositoryStore = useStore();
 
     useEffect(() => {
       loadData();

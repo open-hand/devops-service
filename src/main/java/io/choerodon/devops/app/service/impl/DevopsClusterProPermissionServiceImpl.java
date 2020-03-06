@@ -64,6 +64,7 @@ public class DevopsClusterProPermissionServiceImpl implements DevopsClusterProPe
         DevopsClusterProPermissionDTO permission = new DevopsClusterProPermissionDTO();
         permission.setClusterId(clusterId);
         projectIds.forEach(p -> {
+            permission.setId(null);
             permission.setProjectId(p);
             if (devopsClusterProPermissionMapper.selectOne(permission) == null) {
                 devopsClusterProPermissionMapper.insert(permission);

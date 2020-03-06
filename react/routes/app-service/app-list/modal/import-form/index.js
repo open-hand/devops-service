@@ -59,6 +59,10 @@ const ImportForm = injectIntl(observer((props) => {
         if (isEmpty(repeatName) && isEmpty(repeatCode) && isEmpty(res.listCode) && isEmpty(res.listName)) {
           setHasFailed(false);
           record.set('appServiceList', lists);
+          selectedDs.forEach((item) => {
+            item.set('nameFailed', false);
+            item.set('codeFailed', false);
+          });
           return true;
         } else {
           selectedDs.forEach((item) => {

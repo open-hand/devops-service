@@ -213,10 +213,7 @@ const collapseDetail = observer(({ loading }) => {
               ))}
             </Collapse>) : <span className={`${prefixCls}-polaris-empty-text`}>{formatMessage({ id: 'empty.title.env' })}</span>}
           <div className={`${prefixCls}-polaris-tabs-collapse-title`}>
-            <Tips
-              title={formatMessage({ id: `${intlPrefix}.env.external` })}
-              helpText={formatMessage({ id: `${intlPrefix}.env.external.tips` })}
-            />
+            {formatMessage({ id: `${intlPrefix}.env.external` })}
           </div>
           {envDetailDs.current && !isEmpty(envDetailDs.current.get('external')) ? (
             <Collapse bordered={false} className={`${prefixCls}-polaris-tabs-collapse`}>

@@ -127,7 +127,7 @@ public class PipelineServiceImpl implements PipelineService {
         String sortSqlUnder = HumpToUnderlineUtil.toUnderLine(sortSql);
         List<PipelineVO> pipelineVOS = ConvertUtils.convertList(pipelineMapper.listByOptions(projectId, pipelineSearchVO, userId, sortSqlUnder), PipelineVO.class);
         List<PipelineVO> pipelineVOList;
-        Boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrRoot(projectId);
+        Boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId);
 
         if (pipelineSearchVO != null && pipelineSearchVO.getManager() != null && pipelineSearchVO.getManager()) {
             pipelineVOList = pipelineVOS.stream().filter(t -> {
@@ -497,7 +497,7 @@ public class PipelineServiceImpl implements PipelineService {
         if (allAppDeploys.isEmpty()) {
             return checkDeployDTO;
         }
-        if (!permissionHelper.isGitlabProjectOwnerOrRoot(projectId, userId)) {
+        if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId)) {
             List<Long> envIds = devopsEnvUserPermissionService
                     .listByUserId(userId)
                     .stream()
@@ -639,7 +639,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     public PipelineRecordReqVO getRecordById(Long projectId, Long pipelineRecordId) {
-        Boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrRoot(projectId);
+        Boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId);
         PipelineRecordReqVO recordReqDTO = new PipelineRecordReqVO();
         PipelineRecordDTO pipelineRecordE = pipelineRecordService.baseQueryById(pipelineRecordId);
         BeanUtils.copyProperties(pipelineRecordE, recordReqDTO);
@@ -1034,7 +1034,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     private Boolean getTaskEnvPermission(Long projectId) {
         Boolean envPermission = true;
-        if (!permissionHelper.isGitlabProjectOwnerOrRoot(projectId)) {
+        if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId)) {
             List<Long> envIds = devopsEnvUserPermissionService
                     .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
                     .filter(DevopsEnvUserPermissionDTO::getPermitted)

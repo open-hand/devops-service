@@ -198,4 +198,38 @@ public interface BaseServiceClient {
     ResponseEntity<List<IamUserDTO>> queryAllOrgRoot();
 
 
+    /**
+     * 判断用户是否是平台root用户
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/v1/users/{id}/check_is_root")
+    ResponseEntity<Boolean> checkIsRoot(@PathVariable("id") Long id);
+
+    /**
+     * 判段用户是否是组织root用户
+     *
+     * @param organizationId
+     * @param userId
+     * @return
+     */
+    @GetMapping(value = "/v1/organizations/{organization_id}/users/{user_id}/check_is_root")
+    ResponseEntity<Boolean> checkIsOrgRoot(@PathVariable(name = "organization_id") Long organizationId,
+                                           @PathVariable(name = "user_id") Long userId);
+
+    /**
+     * 校验用户是否是项目所有者
+     *
+     * @param id
+     * @param projectId
+     * @return
+     */
+    @GetMapping("/v1/users/{id}/projects/{project_id}/check_is_owner")
+    ResponseEntity<Boolean> checkIsProjectOwner(
+            @PathVariable("id") Long id,
+            @PathVariable("project_id") Long projectId);
+
+    @GetMapping("/v1/projects/{project_id}/owner/list")
+    ResponseEntity<List<IamUserDTO>> listProjectOwnerByProjectId(@PathVariable("project_id") Long projectId);
 }

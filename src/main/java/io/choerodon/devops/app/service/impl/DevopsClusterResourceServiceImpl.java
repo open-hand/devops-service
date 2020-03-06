@@ -522,14 +522,19 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         List<DevopsEnvPodVO> devopsEnvPodDTOS = ConvertUtils.convertList(devopsEnvPodService.baseListByInstanceId(instanceId), DevopsEnvPodVO.class);
         //查询pod状态
         devopsEnvPodDTOS.forEach(devopsEnvPodVO -> devopsEnvPodService.fillContainers(devopsEnvPodVO));
-        List<ContainerVO> readyPod = new ArrayList<>();
+        List<ContainerVO> readyContainers = new ArrayList<>();
+        Integer totalNum = 0;
         //健康检查，ready=true的pod大于1就是可用的
-        devopsEnvPodDTOS.forEach(devopsEnvPodVO -> {
-            if (Boolean.TRUE.equals(devopsEnvPodVO.getReady())) {
-                readyPod.addAll(devopsEnvPodVO.getContainers().stream().filter(ContainerVO::getReady).collect(Collectors.toList()));
+        for (DevopsEnvPodVO devopsEnvPodVO : devopsEnvPodDTOS) {
+            if (Boolean.TRUE.equals(devopsEnvPodVO.getReady()) && devopsEnvPodVO.getContainers() != null) {
+                readyContainers.addAll(devopsEnvPodVO.getContainers().stream().filter(ContainerVO::getReady).collect(Collectors.toList()));
+                totalNum = totalNum + devopsEnvPodVO.getContainers().size();
+            } else{
+                clusterResourceVO.setStatus(ClusterResourceStatus.DISABLED.getStatus());
+                return;
             }
-        });
-        if (!readyPod.isEmpty()) {
+        }
+        if (!readyContainers.isEmpty() && readyContainers.size() == totalNum) {
             clusterResourceVO.setStatus(ClusterResourceStatus.AVAILABLE.getStatus());
         } else {
             clusterResourceVO.setStatus(ClusterResourceStatus.DISABLED.getStatus());

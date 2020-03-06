@@ -35,7 +35,7 @@ const Content = observer(() => {
         <span>{item}</span>
       </li>
     )) : <span style={{ color: 'rgba(0,0,0,.65)' }}>{formatMessage({ id: 'nodata' })}</span>;
-    const ingressNode = ingresses ? map(ingresses, (item) => (
+    const ingressNode = ingresses && ingresses.length > 0 ? map(ingresses, (item) => (
       <li className={`${prefixCls}-detail-section-li`}>
         <span>{item}</span>
       </li>

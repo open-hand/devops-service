@@ -383,7 +383,9 @@ public class AppServiceServiceImpl implements AppServiceService {
             harbor.setType(HARBOR);
             devopsConfigVOS.add(harbor);
         } else {
-            devopsConfigVOS.add(appServiceUpdateDTO.getHarbor());
+            harbor = appServiceUpdateDTO.getHarbor();
+            harbor.setHarborPrivate(harbor.getHarborPrivate() == null ? true : harbor.getHarborPrivate());
+            devopsConfigVOS.add(harbor);
         }
 
         if (ObjectUtils.isEmpty(appServiceUpdateDTO.getChart())) {
@@ -504,7 +506,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public PageInfo<AppServiceRepVO> pageCodeRepository(Long projectId, Pageable pageable, String params) {
         UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Boolean isProjectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrRoot(projectId, userAttrDTO);
+        Boolean isProjectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userAttrDTO);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         Map maps = gson.fromJson(params, Map.class);
@@ -522,7 +524,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public List<AppServiceRepVO> listByActive(Long projectId) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrRoot(projectId, userId);
+        boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         List<AppServiceDTO> applicationDTOServiceList;
         if (projectOwner) {
             applicationDTOServiceList = appServiceMapper.listByActive(projectId);
@@ -540,7 +542,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public Integer countByActive(Long projectId) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrRoot(projectId, userId);
+        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         int count;
         if (projectOwnerOrRoot) {
             count = appServiceMapper.countByActive(projectId);
@@ -789,17 +791,17 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL,
             description = "Devops设置application状态为创建失败(devops set app status create err)", inputSchema = "{}")
-    public void setAppErrStatus(String input, Long projectId) {
+    public void setAppErrStatus(String input, Long projectId, Long appServiceId) {
         producer.applyAndReturn(
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
                         .withSourceId(projectId)
-                        .withRefType("")
+                        .withRefType("app")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL),
                 builder -> builder
                         .withJson(input)
-                        .withRefId("")
+                        .withRefId(String.valueOf(appServiceId))
                         .withSourceId(projectId));
     }
 
@@ -980,11 +982,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
                         .withSourceId(projectId)
-                        .withRefType("")
+                        .withRefType("app")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT),
                 builder -> builder
                         .withPayloadAndSerialize(devOpsAppImportServicePayload)
-                        .withRefId("")
+                        .withRefId(String.valueOf(appServiceId))
                         .withSourceId(projectId));
 
         return ConvertUtils.convertObject(baseQuery(appServiceId), AppServiceRepVO.class);
@@ -1878,10 +1880,10 @@ public class AppServiceServiceImpl implements AppServiceService {
                     StartSagaBuilder
                             .newBuilder()
                             .withLevel(ResourceLevel.PROJECT)
-                            .withRefType("")
+                            .withRefType("app")
                             .withSagaCode(SagaTopicCodeConstants.DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE)
                             .withPayloadAndSerialize(payload)
-                            .withRefId("")
+                            .withRefId(String.valueOf(payload.getAppServiceId()))
                             .withSourceId(projectId),
                     builder -> {
                     });
@@ -1985,7 +1987,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         Long userId = DetailsHelper.getUserDetails().getUserId();
 
-        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrRoot(projectId, userId);
+        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         List<AppServiceDTO> list;
         if (projectOwnerOrRoot) {
             //是否需要分页

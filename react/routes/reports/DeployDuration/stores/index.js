@@ -11,7 +11,6 @@ import ChartsDataSet from './ChartsDataSet';
 import { useReportsStore } from '../../stores';
 import EnvOptionsDataSet from './EnvOptionsDataSet';
 import TableDataSet from './TableDataSet';
-// import useStore from './useStore';
 
 const Store = createContext();
 
@@ -30,8 +29,6 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
     const {
       ReportsStore,
     } = useReportsStore();
-    const { appId, type } = state || {};
-    const defaultObjectType = type || 'issue';
     const backPath = state && state.appId ? '/devops/code-management' : '/charts';
 
     const envDs = useMemo(() => new DataSet(EnvOptionsDataSet({ projectId })), [projectId]);

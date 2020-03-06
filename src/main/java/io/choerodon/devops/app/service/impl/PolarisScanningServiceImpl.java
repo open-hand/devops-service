@@ -99,7 +99,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             }
             devopsEnvUserPermissionService.checkEnvDeployPermission(DetailsHelper.getUserDetails().getUserId(), scopeId);
         } else {
-            permissionHelper.checkProjectOwnerOrRoot(projectId, userId);
+            permissionHelper.checkProjectOwnerOrGitlabAdmin(projectId, userId);
         }
 
         // 以上是预检
@@ -239,11 +239,9 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
 
         DevopsPolarisSummaryVO summaryVO = new DevopsPolarisSummaryVO(Boolean.TRUE);
         List<ClusterPolarisSummaryItemVO> items = devopsPolarisCategoryResultMapper.queryPolarisSummary(devopsPolarisRecordDTO.getId());
-        LOGGER.info("Polaris: item size: {}", items.size());
         Map<PolarisItemCategory, ClusterPolarisSummaryItemVO> map = new HashMap<>();
 
         items.forEach(i -> {
-            LOGGER.info("Polaris: category: {}", i.getCategory());
             PolarisItemCategory category = PolarisItemCategory.forValue(i.getCategory());
             if (category != null) {
                 map.put(category, i);

@@ -471,7 +471,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .filter(DevopsEnvUserPermissionDTO::getPermitted)
                 .map(DevopsEnvUserPermissionDTO::getEnvId).collect(Collectors.toList());
         // 查询当前用户是否为项目所有者
-        Boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrRoot(projectId);
+        Boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId);
 
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = baseListByProjectIdAndActive(projectId, active).stream()
@@ -491,7 +491,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsEnvironmentViewVO> connectedEnvs = new ArrayList<>();
         List<DevopsEnvironmentViewVO> unConnectedEnvs = new ArrayList<>();
 
-        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrRoot(projectId);
+        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId);
 
         List<DevopsEnvironmentViewDTO> views;
         if (projectOwnerOrRoot) {
@@ -540,7 +540,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsResourceEnvOverviewVO> connectedEnvs = new ArrayList<>();
         List<DevopsResourceEnvOverviewVO> unConnectedEnvs = new ArrayList<>();
 
-        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrRoot(projectId);
+        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId);
 
         List<DevopsResourceEnvOverviewDTO> views;
         if (projectOwnerOrRoot) {
@@ -1202,6 +1202,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 StartSagaBuilder.newBuilder()
                         .withSourceId(preEnvironmentDTO.getProjectId())
                         .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("env")
+                        .withRefId(String.valueOf(preEnvironmentDTO.getId()))
                         .withPayloadAndSerialize(userPayload)
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_ENV_PERMISSION),
                 builder -> {
@@ -1566,15 +1568,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public List<DevopsClusterRepVO> listDevopsCluster(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         List<DevopsClusterRepVO> devopsClusterRepVOS = ConvertUtils.convertList(devopsClusterService.baseListByProjectId(projectId, projectDTO.getOrganizationId()), DevopsClusterRepVO.class);
-        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedClusterList();
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
-        devopsClusterRepVOS.forEach(t -> {
-            if (connectedClusterList.contains(t.getId()) && upgradeClusterList.contains(t.getId())) {
-                t.setConnect(true);
-            } else {
-                t.setConnect(false);
-            }
-        });
+        devopsClusterRepVOS.forEach(t -> t.setConnect(upgradeClusterList.contains(t.getId())));
         return devopsClusterRepVOS;
     }
 

@@ -38,7 +38,6 @@ function Branch(props) {
     appServiceId,
     formatMessage,
   } = useTableStore();
-
   useEffect(() => {
     handleMapStore.setCodeManagerBranch({
       refresh: handleRefresh,
@@ -62,12 +61,21 @@ function Branch(props) {
         <Button
           onClick={openCreateBranchModal}
           icon="playlist_add"
-          disabled={!(appServiceId && appServiceDs.toData() && tableDs.toData().length)}
+          disabled={!(appServiceId && renderEmpty())}
         >
           <FormattedMessage id="branch.create" />
         </Button>
       </Permission>);
 
+  function renderEmpty() {
+    if (!appServiceDs.toData()) {
+      return false;
+    } else {
+      const appArr = appServiceDs.current && appServiceDs.toData();
+      const select = appArr.filter((item) => item.id === appServiceId);
+      return !select[0].emptyRepository;
+    }
+  }
   // 打开创建分支模态框
   function openCreateBranchModal() {
     ProModal.open({
@@ -221,8 +229,8 @@ function Branch(props) {
         {record.get('commitUserUrl') && record.get('commitUserName') ? <Tooltip title={`${record.get('commitUserName')}${record.get('commitUserRealName') ? ` (${record.get('commitUserRealName')})` : ''}`}>
           <div className="branch-user-img" style={{ backgroundImage: `url(${record.get('commitUserUrl')})` }} />
         </Tooltip> : <Tooltip title={record.get('commitUserName') ? `${record.get('commitUserName')}${record.get('commitUserRealName') ? ` (${record.get('commitUserRealName')})` : ''}` : ''}>
-          <div className="branch-user-img">{record.get('commitUserName') && record.get('commitUserName').slice(0, 1)}</div>
-        </Tooltip>}
+            <div className="branch-user-img">{record.get('commitUserName') && record.get('commitUserName').slice(0, 1)}</div>
+          </Tooltip>}
         <MouserOverWrapper text={text} width={0.2} className="branch-col-icon">
           {text}
         </MouserOverWrapper>

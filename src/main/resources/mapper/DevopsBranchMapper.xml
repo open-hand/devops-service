@@ -72,5 +72,13 @@ FROM
             WHERE
             app_service_id = #{appServiceId}
    </delete>
+    <update id="updateBranchById" parameterType="io.choerodon.devops.infra.dto.DevopsBranchDTO">
+        update
+          devops_branch
+        set
+          issue_id=#{devopsBranchDTO.issueId}
+        where
+          id=#{devopsBranchDTO.id}
+    </update>
 
 </mapper>

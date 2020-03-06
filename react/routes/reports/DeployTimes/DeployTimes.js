@@ -44,7 +44,7 @@ const DeployTimes = observer(() => {
   const [env, setEnv] = useState([]);
   const [app, setApp] = useState([]);
   const [envIds, setEnvIds] = useState([]);
-  const [appId, setAppId] = useState('all');
+  const [appId, setAppId] = useState(0);
   const [appArr, setAppArr] = useState([]);
   const [dateArr, setDateArr] = useState([]);
   const [successArr, setSuccessArr] = useState([]);
@@ -67,7 +67,7 @@ const DeployTimes = observer(() => {
     } else {
       setEnvIds([]);
     }
-    loadCharts();
+    loadCharts(appId, ids || []);
   };
 
   /**
@@ -76,7 +76,7 @@ const DeployTimes = observer(() => {
    */
   const handleAppSelect = (id) => {
     setAppId(id);
-    loadCharts();
+    loadCharts(id);
   };
 
   useEffect(() => {
@@ -101,10 +101,14 @@ const DeployTimes = observer(() => {
       multilpleRecord.set('deployTimeApps', []);
     }
     if (appDom) {
-      multilpleRecord.set('deployTimeName', appId);
-    } else {
-      multilpleRecord.set('deployTimeName', null);
+      if (appId || appId === 0) {
+        multilpleRecord.set('deployTimeName', appId);
+      }
     }
+    // else {
+    //   debugger;
+    //   multilpleRecord.set('deployTimeName', null);
+    // }
   }, [envIds, appId]);
 
   /**
@@ -126,7 +130,7 @@ const DeployTimes = observer(() => {
           }
           setEnv(envCurrent);
           setEnvIds(selectEnv);
-          loadCharts();
+          loadCharts(appId, selectEnv);
         } else {
           ReportsStore.judgeRole();
         }
@@ -145,7 +149,7 @@ const DeployTimes = observer(() => {
     ReportsStore.loadApps(id)
       .then((appCurrent) => {
         if (appCurrent.length) {
-          let selectApp = appId || 'all';
+          let selectApp = appId || 0;
           if (historyAppId) {
             selectApp = historyAppId;
           }
@@ -158,12 +162,12 @@ const DeployTimes = observer(() => {
   /**
    * 加载图表数据
    */
-  const loadCharts = () => {
+  const loadCharts = (id = appId, eIds = envIds) => {
     const projectId = AppState.currentMenuType.id;
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
-    const appIDCurrent = (appId === 'all') ? [] : appId;
-    ReportsStore.loadDeployTimesChart(projectId, appIDCurrent, startTime, endTime, envIds.slice())
+    const appIDCurrent = (id === 0) ? [] : id;
+    ReportsStore.loadDeployTimesChart(projectId, appIDCurrent, startTime, endTime, eIds.slice())
       .then((res) => {
         if (res) {
           setDateArr(res.creationDates);
@@ -172,20 +176,20 @@ const DeployTimes = observer(() => {
           setAllArr(res.deployFrequencys);
         }
       });
-    loadTables();
+    loadTables(id, eIds);
   };
 
   /**
    * 加载table数据
    */
-  const loadTables = () => {
+  const loadTables = (id = 0, eIds) => {
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
-    const appIDCurrent = (appId === 'all') ? [] : appId;
+    const appIDCurrent = (id === 0) ? [] : id;
     DeployTimesTableDataSet.setQueryParameter('appId', appIDCurrent);
     DeployTimesTableDataSet.setQueryParameter('endTime', endTime);
     DeployTimesTableDataSet.setQueryParameter('startTime', startTime);
-    DeployTimesTableDataSet.setQueryParameter('envIds', envIds.slice());
+    DeployTimesTableDataSet.setQueryParameter('envIds', eIds.slice());
     DeployTimesTableDataSet.query();
   };
 
@@ -364,22 +368,22 @@ const DeployTimes = observer(() => {
       >
         <Column
           name="status"
-          renderer={({ record }) => <StatusTags name={formatMessage({ id: record.status })} colorCode={record.status} error={record.error} />}
+          renderer={({ record }) => <StatusTags name={formatMessage({ id: record.get('status') })} colorCode={record.get('status')} error={record.get('error')} />}
         />
         <Column
           name="creationDate"
         />
         <Column
           name="appServiceInstanceCode"
-          renderer={({ record }) => <MouserOverWrapper text={record.appServiceInstanceCode} width={0.2}>{record.appServiceInstanceCode}</MouserOverWrapper>}
+          renderer={({ record }) => <MouserOverWrapper text={record.get('appServiceInstanceCode')} width={0.2}>{record.get('appServiceInstanceCode')}</MouserOverWrapper>}
         />
         <Column
           name="appServiceName"
-          renderer={({ record }) => <MouserOverWrapper text={record.appServiceName} width={0.2}>{record.appServiceName}</MouserOverWrapper>}
+          renderer={({ record }) => <MouserOverWrapper text={record.get('appServiceName')} width={0.2}>{record.get('appServiceName')}</MouserOverWrapper>}
         />
         <Column
           name="appServiceVersion"
-          renderer={({ record }) => <MouserOverWrapper text={record.appServiceVersion} width={0.2}>{record.appServiceVersion}</MouserOverWrapper>}
+          renderer={({ record }) => <MouserOverWrapper text={record.get('appServiceVersion')} width={0.2}>{record.get('appServiceVersion')}</MouserOverWrapper>}
         />
         <Column
           name="lastUpdatedName"
@@ -391,7 +395,7 @@ const DeployTimes = observer(() => {
   const tableChange = (pagination) => {
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
-    const appIDCurrent = (appId === 'all') ? [] : appId;
+    const appIDCurrent = (appId === 0) ? [] : appId;
     DeployTimesTableDataSet.setQueryParameter('appId', appIDCurrent);
     DeployTimesTableDataSet.setQueryParameter('endTime', endTime);
     DeployTimesTableDataSet.setQueryParameter('startTime', startTime);
@@ -434,15 +438,17 @@ const DeployTimes = observer(() => {
         </Select>
         <Select
           colSpan={1}
+          searchable
           name="deployTimeName"
           notFoundContent={formatMessage({ id: 'report.no.app.tips' })}
           onChange={handleAppSelect}
           optionFilterProp="children"
           filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
           filter
+          clearButton={false}
         >
           {appDom}
-          {appDom ? <Option key="all" value="all">{formatMessage({ id: 'report.all-app' })}</Option> : null}
+          {appDom ? <Option key="all" value={0}>{formatMessage({ id: 'report.all-app' })}</Option> : null}
         </Select>
       </Form>
       <TimePicker

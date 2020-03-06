@@ -38,20 +38,4 @@ public class  DevopsCheckController {
         devopsCheckLogService.checkLog(version);
         return new ResponseEntity<>(System.currentTimeMillis() + "", HttpStatus.OK);
     }
-
-    /**
-     * 给po的webhook json格式测试接口
-     * 发版本之前删除
-     * 各位大佬看见请提醒删除
-     *
-     * @return
-     */
-    @Permission(permissionPublic = true)
-    @ApiOperation(value = "webhook测试接口")
-    @PostMapping(value = "/test")
-    public ResponseEntity<String> testJson(
-            @RequestBody NoticeSendDTO dto) {
-        logger.info("测试webhook内容：{}", gson.toJson(dto));
-        return new ResponseEntity<>(System.currentTimeMillis() + "", HttpStatus.OK);
-    }
 }

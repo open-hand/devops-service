@@ -300,7 +300,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (userAttrDTO == null) {
             throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
         }
-        if (!permissionHelper.isGitlabProjectOwnerOrRoot(projectId)) {
+        if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId)) {
             MemberDTO memberDTO = gitlabServiceClientOperator.getProjectMember(applicationDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (memberDTO == null) {
                 throw new CommonException("error.user.not.in.gitlab.project");
