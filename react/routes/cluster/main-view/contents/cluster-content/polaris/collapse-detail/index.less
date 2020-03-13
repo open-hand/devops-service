@@ -4,6 +4,8 @@
   .c7n-tabs-nav {
     box-shadow: 0 2px 6px 0 rgba(48, 63, 159, 0.2);
     margin-bottom: .1rem;
+    border-radius: 6px;
+    margin-left: 0.04rem;
 
     .c7n-tabs-tab .c7n-ripple {
       background: none;
@@ -15,9 +17,15 @@
     background: #fff !important;
     border: none !important;
     color: #5266d4 !important;
+    height: .36rem !important;
+    border-radius: 6px !important;
   }
   .c7n-tabs-tab-active {
     background: rgba(140, 158, 255, 0.16) !important;
+  }
+
+  .c7n-tabs-nav-container {
+    height: auto !important;
   }
 
   &-collapse {
@@ -40,10 +48,11 @@
     font-size: .14rem;
 
     &-item {
-      width: 2.2rem;
+      width: 2rem;
       display: inline-block;
 
-      &:first-child {
+      &:first-child,
+      &-external {
         margin-left: .1rem;
       }
     }
@@ -55,7 +64,7 @@
       font-size: .13rem;
       &-project {
         display: inline-block;
-        width: 1rem;
+        width: 1.2rem;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -159,4 +168,8 @@
     color: rgba(0, 0, 0, 0.65);
     margin-left: .28rem;
   }
+}
+
+.c7ncd-cluster-polaris-wrap-collapse {
+  margin-top: .16rem;
 }

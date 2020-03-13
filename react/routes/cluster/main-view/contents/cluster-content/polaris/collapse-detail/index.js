@@ -71,7 +71,7 @@ const collapseDetail = observer(({ loading }) => {
             {!isLoading && hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
           </div>
         )}
-        <div className={`${prefixCls}-polaris-tabs-header-item`}>
+        <div className={`${prefixCls}-polaris-tabs-header-item${!projectName ? '-external' : ''}`}>
           <span className={`${prefixCls}-polaris-tabs-header-text`}>{formatMessage({ id: 'envCode' })}:</span>
           <span>{namespace}</span>
           {!isLoading && !envName && hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
