@@ -130,15 +130,11 @@ const CodeQuality = withRouter(observer(() => {
         axisPointer: {
           type: 'line',
         },
-        backgroundColor: '#fff',
+        backgroundColor: 'rgba(0,0,0,0.75)',
         textStyle: {
-          color: '#000',
-          fontSize: 13,
-          lineHeight: 20,
+          color: '#fff',
         },
-        padding: [10, 15],
-        extraCssText:
-          'box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2); border: 1px solid #ddd; border-radius: 0;',
+        extraCssText: '0px 2px 8px 0px rgba(0,0,0,0.12);padding:15px 17px',
         formatter(params) {
           const percent = (params[1].value[1] / (params[0].value[1] * 100)).toFixed(1);
           const list = map(params, ({ color, value, seriesName }) => (

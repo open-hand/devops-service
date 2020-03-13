@@ -45,7 +45,7 @@ const LineChart = injectIntl(observer((props) => {
         textStyle: {
           color: '#fff',
         },
-        extraCssText: '0px 2px 8px 0px rgba(0,0,0,0.12)',
+        extraCssText: '0px 2px 8px 0px rgba(0,0,0,0.12);padding:15px 17px',
         formatter(obj) {
           return `${formatMessage({ id: `${languageType}.commit.date` })}${
             obj.name
