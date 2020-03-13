@@ -335,9 +335,16 @@ public class PipelineServiceImpl implements PipelineService {
             AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(taskRecordDTO.getInstanceName(), taskRecordDTO.getEnvId());
             Long instanceId = instanceE == null ? null : instanceE.getId();
             String type = instanceId == null ? CommandType.CREATE.getType() : CommandType.UPDATE.getType();
-            AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO(appServiceServiceE.getId(), taskRecordDTO.getEnvId(),
-                    devopsDeployValueService.baseQueryById(taskRecordDTO.getValueId()).getValue(), taskRecordDTO.getAppServiceId(), type, instanceId,
-                    taskRecordDTO.getInstanceName(), taskRecordDTO.getId(), taskRecordDTO.getValueId());
+            AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
+            appServiceDeployVO.setAppServiceVersionId(appServiceServiceE.getId());
+            appServiceDeployVO.setEnvironmentId(taskRecordDTO.getEnvId());
+            appServiceDeployVO.setValues(devopsDeployValueService.baseQueryById(taskRecordDTO.getValueId()).getValue());
+            appServiceDeployVO.setAppServiceId(taskRecordDTO.getAppServiceId());
+            appServiceDeployVO.setType(type);
+            appServiceDeployVO.setInstanceId(instanceId);
+            appServiceDeployVO.setInstanceName(taskRecordDTO.getInstanceName());
+            appServiceDeployVO.setRecordId(taskRecordDTO.getId());
+            appServiceDeployVO.setValueId(taskRecordDTO.getValueId());
             if (type.equals(CommandType.UPDATE.getType())) {
                 AppServiceInstanceDTO preInstance = appServiceInstanceService.baseQuery(appServiceDeployVO.getInstanceId());
                 DevopsEnvCommandDTO preCommand = devopsEnvCommandService.baseQuery(preInstance.getCommandId());
@@ -1567,7 +1574,7 @@ public class PipelineServiceImpl implements PipelineService {
                     if (!CollectionUtils.isEmpty(list)) {
                         Optional<PipelineTaskRecordDTO> taskRecordDTO = list.stream().filter(task -> task.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())).findFirst();
                         pipelineDetailVO.setStageName(devopsDeployRecordVO.getStageDTOList().get(i).getStageName());
-                        if (taskRecordDTO.isPresent()){
+                        if (taskRecordDTO.isPresent()) {
                             pipelineDetailVO.setTaskRecordId(taskRecordDTO.get().getId());
                             pipelineDetailVO.setExecute(checkTaskTriggerPermission(taskRecordDTO.get().getId()));
                         }

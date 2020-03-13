@@ -152,7 +152,11 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         operatePVGitlabFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                 v1PersistentVolume, devopsPvDTO, devopsEnvCommandDTO, devopsEnvironmentDTO, userAttrDTO);
 
-        DevopsPvPermissionUpdateVO permissionUpdateVO = new DevopsPvPermissionUpdateVO(devopsPvDTO.getId(), devopsPvReqVo.getProjectIds(), devopsPvReqVo.getSkipCheckProjectPermission(), devopsPvReqVo.getObjectVersionNumber());
+        DevopsPvPermissionUpdateVO permissionUpdateVO = new DevopsPvPermissionUpdateVO();
+        permissionUpdateVO.setPvId(devopsPvDTO.getId());
+        permissionUpdateVO.setProjectIds(devopsPvReqVo.getProjectIds());
+        permissionUpdateVO.setSkipCheckProjectPermission(devopsPvReqVo.getSkipCheckProjectPermission());
+        permissionUpdateVO.setObjectVersionNumber(devopsPvReqVo.getObjectVersionNumber());
         assignPermission(permissionUpdateVO);
     }
 

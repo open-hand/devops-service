@@ -42,29 +42,6 @@ public class ProjectCertificationVO {
     public ProjectCertificationVO() {
     }
 
-    public ProjectCertificationVO(String name, String domain) {
-        this.name = name;
-        this.domain = domain;
-    }
-
-    public ProjectCertificationVO(Long id, String name, String domain, Boolean skipCheckProjectPermission, Long objectVersionNumber) {
-        this.id = id;
-        this.name = name;
-        this.domain = domain;
-        this.skipCheckProjectPermission = skipCheckProjectPermission;
-        this.objectVersionNumber = objectVersionNumber;
-    }
-
-    public ProjectCertificationVO(Long id, String name, String domain, Boolean skipCheckProjectPermission, Long objectVersionNumber, String keyValue, String certValue) {
-        this.id = id;
-        this.name = name;
-        this.domain = domain;
-        this.skipCheckProjectPermission = skipCheckProjectPermission;
-        this.objectVersionNumber = objectVersionNumber;
-        this.keyValue = keyValue;
-        this.certValue = certValue;
-    }
-
     public String getName() {
         return name;
     }

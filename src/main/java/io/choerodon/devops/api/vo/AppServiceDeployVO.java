@@ -52,18 +52,6 @@ public class AppServiceDeployVO {
     public AppServiceDeployVO() {
     }
 
-    public AppServiceDeployVO(Long appServiceVersionId, Long environmentId, String values, @NotNull Long appServiceId, String type, Long instanceId, String instanceName, Long recordId, Long valueId) {
-        this.appServiceVersionId = appServiceVersionId;
-        this.environmentId = environmentId;
-        this.values = values;
-        this.appServiceId = appServiceId;
-        this.type = type;
-        this.instanceId = instanceId;
-        this.instanceName = instanceName;
-        this.recordId = recordId;
-        this.valueId = valueId;
-    }
-
     public Long getAppServiceVersionId() {
         return appServiceVersionId;
     }
