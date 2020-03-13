@@ -39,9 +39,6 @@ public class ProjectCertificationVO {
         this.type = type;
     }
 
-    public ProjectCertificationVO() {
-    }
-
     public String getName() {
         return name;
     }

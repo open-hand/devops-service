@@ -10,9 +10,6 @@ import java.util.List;
  */
 public class DevopsPvPermissionUpdateVO {
 
-    public DevopsPvPermissionUpdateVO() {
-
-    }
 
     @ApiModelProperty("pvId/必填")
     @NotNull(message = "error.pv.id.null")

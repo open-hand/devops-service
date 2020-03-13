@@ -49,8 +49,6 @@ public class AppServiceDeployVO {
     private DevopsServiceReqVO devopsServiceReqVO;
     private DevopsIngressVO devopsIngressVO;
 
-    public AppServiceDeployVO() {
-    }
 
     public Long getAppServiceVersionId() {
         return appServiceVersionId;
