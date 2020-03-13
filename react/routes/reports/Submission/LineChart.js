@@ -41,10 +41,11 @@ const LineChart = injectIntl(observer((props) => {
       },
       tooltip: {
         trigger: 'item',
-        backgroundColor: '#fff',
+        backgroundColor: 'rgba(0,0,0,0.75)',
         textStyle: {
-          color: '#000',
+          color: '#fff',
         },
+        extraCssText: '0px 2px 8px 0px rgba(0,0,0,0.12)',
         formatter(obj) {
           return `${formatMessage({ id: `${languageType}.commit.date` })}${
             obj.name
