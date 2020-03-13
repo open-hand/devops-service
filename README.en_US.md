@@ -102,7 +102,6 @@ DevOps Service integrated several open source tools to automate the process of `
     gitlab:
       url: "gitlab.example.com" # gitlab url
       sshUrl: "gitlab.example.com" # gitlab url for ssh operations
-      password: 12345678 # default password for user created by gitlab, length no less than 8
       projectLimit: 100 # the limit of the project number that a user can create
     helm:
       url: "helm.example.com" # the repository url to place helm charts
@@ -155,6 +154,18 @@ DevOps Service integrated several open source tools to automate the process of `
     ribbon:
       ConnectTimeout: 50000
       ReadTimeout: 50000
+
+  # 批量部署的请求条数限制
+  devops:
+    batch:
+      deployment:
+        maxSize: 20
+
+  # websocket的最大缓冲区大小，单位字节byte
+  websocket:
+    buffer:
+      maxTextMessageSize: 4194304
+      maxBinaryMessageSize: 4194304
   ```
 
 ## Installation and Getting Started
