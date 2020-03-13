@@ -7,12 +7,15 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by younger on 2018/3/29.
  */
 public class TypeUtil {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TypeUtil.class);
     public static final String SEARCH_PARAM = "searchParam";
     public static final String PARAMS = "params";
     private static final Gson gson = new Gson();
@@ -132,12 +135,10 @@ public class TypeUtil {
                 if (f.get(object) != null && StringUtils.isNotBlank(f.get(object).toString())) {
                     return false;
                 }
-
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.info("exception", e);
         }
-
         return true;
     }
 

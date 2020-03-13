@@ -199,7 +199,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         boolean isGitlabRoot = false;
 
-        if (Boolean.TRUE == userAttrDTO.getGitlabAdmin()) {
+        if (Boolean.TRUE.equals(userAttrDTO.getGitlabAdmin())) {
             // 如果这边表存了gitlabAdmin这个字段,那么gitlabUserId就不会为空,所以不判断此字段为空
             isGitlabRoot = gitlabServiceClientOperator.isGitlabAdmin(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
@@ -942,7 +942,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         boolean isGitlabRoot = false;
 
-        if (Boolean.TRUE == userAttrDTO.getGitlabAdmin()) {
+        if (Boolean.TRUE.equals(userAttrDTO.getGitlabAdmin())) {
             // 如果这边表存了gitlabAdmin这个字段,那么gitlabUserId就不会为空,所以不判断此字段为空
             isGitlabRoot = gitlabServiceClientOperator.isGitlabAdmin(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
@@ -1846,7 +1846,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
             boolean isGitlabRoot = false;
 
-            if (Boolean.TRUE == userAttrDTO.getGitlabAdmin()) {
+            if (Boolean.TRUE.equals(userAttrDTO.getGitlabAdmin())) {
                 // 如果这边表存了gitlabAdmin这个字段,那么gitlabUserId就不会为空,所以不判断此字段为空
                 isGitlabRoot = gitlabServiceClientOperator.isGitlabAdmin(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             }

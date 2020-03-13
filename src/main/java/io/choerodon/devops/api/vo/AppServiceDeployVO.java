@@ -52,7 +52,7 @@ public class AppServiceDeployVO {
     public AppServiceDeployVO() {
     }
 
-    public AppServiceDeployVO(Long appServiceVersionId, Long environmentId, String values, Long appServiceId, String type, Long instanceId, String instanceName, Long recordId, Long valueId) {
+    public AppServiceDeployVO(Long appServiceVersionId, Long environmentId, String values, @NotNull Long appServiceId, String type, Long instanceId, String instanceName, Long recordId, Long valueId) {
         this.appServiceVersionId = appServiceVersionId;
         this.environmentId = environmentId;
         this.values = values;

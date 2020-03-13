@@ -33,7 +33,7 @@ public enum AppServiceTemplate {
         return templateName;
     }
 
-    public static HashMap<String, String> templatePath = new HashMap<>(8);
+    public static final HashMap<String, String> templatePath = new HashMap<>(8);
 
     static {
         templatePath.put(AppServiceTemplate.MICROSERVICE_TEMPLATE.templateName, String.format(FORMAT_MODAL, TEMPLATE_URL, MICROSERVICE_PATH));

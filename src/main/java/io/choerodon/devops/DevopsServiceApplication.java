@@ -13,9 +13,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
 
-import java.util.ArrayList;
-import java.util.List;
-
 
 @EnableFeignClients("io.choerodon")
 @EnableEurekaClient
