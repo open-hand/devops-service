@@ -9,7 +9,7 @@ import io.choerodon.devops.infra.constant.NoticeCodeConstants;
  * @author zmf
  * @since 2/3/20
  */
-@NotifyBusinessType(code = NoticeCodeConstants.GITLAB_PASSWORD,
+@NotifyBusinessType(code = NoticeCodeConstants.GITLAB_PWD,
         name = "GitLab默认密码", level = Level.SITE,
         description = "GitLab默认密码", isManualRetry = true, categoryCode = "account-security-notice",
         pmEnabledFlag = true,
@@ -31,7 +31,7 @@ public class GitlabPasswordPmTemplate implements PmTemplate {
 
     @Override
     public String businessTypeCode() {
-        return NoticeCodeConstants.GITLAB_PASSWORD;
+        return NoticeCodeConstants.GITLAB_PWD;
     }
 
     @Override

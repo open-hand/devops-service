@@ -123,7 +123,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     public PageInfo<PipelineVO> pageByOptions(Long projectId, PipelineSearchVO pipelineSearchVO, Pageable pageable) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        String sortSql = pageable.getSort() != null ? PageableHelper.getSortSql(pageable.getSort()) : null;
+        String sortSql = PageableHelper.getSortSql(pageable.getSort());
         String sortSqlUnder = HumpToUnderlineUtil.toUnderLine(sortSql);
         List<PipelineVO> pipelineVOS = ConvertUtils.convertList(pipelineMapper.listByOptions(projectId, pipelineSearchVO, userId, sortSqlUnder), PipelineVO.class);
         List<PipelineVO> pipelineVOList;
@@ -335,9 +335,16 @@ public class PipelineServiceImpl implements PipelineService {
             AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(taskRecordDTO.getInstanceName(), taskRecordDTO.getEnvId());
             Long instanceId = instanceE == null ? null : instanceE.getId();
             String type = instanceId == null ? CommandType.CREATE.getType() : CommandType.UPDATE.getType();
-            AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO(appServiceServiceE.getId(), taskRecordDTO.getEnvId(),
-                    devopsDeployValueService.baseQueryById(taskRecordDTO.getValueId()).getValue(), taskRecordDTO.getAppServiceId(), type, instanceId,
-                    taskRecordDTO.getInstanceName(), taskRecordDTO.getId(), taskRecordDTO.getValueId());
+            AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
+            appServiceDeployVO.setAppServiceVersionId(appServiceServiceE.getId());
+            appServiceDeployVO.setEnvironmentId(taskRecordDTO.getEnvId());
+            appServiceDeployVO.setValues(devopsDeployValueService.baseQueryById(taskRecordDTO.getValueId()).getValue());
+            appServiceDeployVO.setAppServiceId(taskRecordDTO.getAppServiceId());
+            appServiceDeployVO.setType(type);
+            appServiceDeployVO.setInstanceId(instanceId);
+            appServiceDeployVO.setInstanceName(taskRecordDTO.getInstanceName());
+            appServiceDeployVO.setRecordId(taskRecordDTO.getId());
+            appServiceDeployVO.setValueId(taskRecordDTO.getValueId());
             if (type.equals(CommandType.UPDATE.getType())) {
                 AppServiceInstanceDTO preInstance = appServiceInstanceService.baseQuery(appServiceDeployVO.getInstanceId());
                 DevopsEnvCommandDTO preCommand = devopsEnvCommandService.baseQuery(preInstance.getCommandId());
@@ -1567,10 +1574,12 @@ public class PipelineServiceImpl implements PipelineService {
                     if (!CollectionUtils.isEmpty(list)) {
                         Optional<PipelineTaskRecordDTO> taskRecordDTO = list.stream().filter(task -> task.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())).findFirst();
                         pipelineDetailVO.setStageName(devopsDeployRecordVO.getStageDTOList().get(i).getStageName());
-                        pipelineDetailVO.setTaskRecordId(taskRecordDTO.get().getId());
+                        if (taskRecordDTO.isPresent()) {
+                            pipelineDetailVO.setTaskRecordId(taskRecordDTO.get().getId());
+                            pipelineDetailVO.setExecute(checkTaskTriggerPermission(taskRecordDTO.get().getId()));
+                        }
                         pipelineDetailVO.setStageRecordId(devopsDeployRecordVO.getStageDTOList().get(i).getId());
                         pipelineDetailVO.setType("task");
-                        pipelineDetailVO.setExecute(checkTaskTriggerPermission(taskRecordDTO.get().getId()));
                         break;
                     }
                 } else if (devopsDeployRecordVO.getStageDTOList().get(i).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {

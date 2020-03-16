@@ -152,7 +152,11 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         operatePVGitlabFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                 v1PersistentVolume, devopsPvDTO, devopsEnvCommandDTO, devopsEnvironmentDTO, userAttrDTO);
 
-        DevopsPvPermissionUpdateVO permissionUpdateVO = new DevopsPvPermissionUpdateVO(devopsPvDTO.getId(), devopsPvReqVo.getProjectIds(), devopsPvReqVo.getSkipCheckProjectPermission(), devopsPvReqVo.getObjectVersionNumber());
+        DevopsPvPermissionUpdateVO permissionUpdateVO = new DevopsPvPermissionUpdateVO();
+        permissionUpdateVO.setPvId(devopsPvDTO.getId());
+        permissionUpdateVO.setProjectIds(devopsPvReqVo.getProjectIds());
+        permissionUpdateVO.setSkipCheckProjectPermission(devopsPvReqVo.getSkipCheckProjectPermission());
+        permissionUpdateVO.setObjectVersionNumber(devopsPvReqVo.getObjectVersionNumber());
         assignPermission(permissionUpdateVO);
     }
 
@@ -606,7 +610,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         int level = ResourceUnitLevelEnum.valueOf(unit.toUpperCase()).ordinal();
 
         // 1024的一次方 对应ki 1024的2次方 对应Mi 以此类推
-        size = (long) (size * Math.pow(1024, level + 2));
+        size = (long) (size * Math.pow((double) 1024, (double) level + 2));
 
         return new BigDecimal(size);
     }
