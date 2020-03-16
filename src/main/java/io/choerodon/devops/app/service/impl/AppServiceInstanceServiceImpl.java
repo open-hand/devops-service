@@ -1390,7 +1390,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         //发送重启或停止实例的command
         Map<String, String> stopMap = new HashMap<>();
         stopMap.put(RELEASE_NAME, appServiceInstanceDTO.getCode());
-        stopMap.put(NAMESPACE, appServiceInstanceDTO.getEnvCode());
+        stopMap.put(NAMESPACE, devopsEnvironmentDTO.getCode());
         String payload = gson.toJson(stopMap);
         String instanceCommandType;
         if (CommandType.RESTART.getType().equals(type)) {
