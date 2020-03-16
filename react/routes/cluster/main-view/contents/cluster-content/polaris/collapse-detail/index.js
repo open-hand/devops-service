@@ -50,7 +50,7 @@ const collapseDetail = observer(({ loading }) => {
         <span className={`${prefixCls}-polaris-tabs-header-score`}>
           {formatMessage({ id: `${intlPrefix}.polaris.score` })}:
         </span>
-        {isLoading ? <Progress type="loading" size="small" /> : <span>{checked ? `${score}%` : '-'}</span>}
+        {isLoading ? <Progress type="loading" size="small" /> : <span className={`${prefixCls}-polaris-tabs-header-number-${checked}`}>{checked ? `${score}%` : '-'}</span>}
         {!isLoading && hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
         <ProgressBar
           loading={isLoading}
