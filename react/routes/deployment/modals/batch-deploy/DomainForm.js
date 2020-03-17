@@ -14,6 +14,7 @@ export default observer(() => {
     batchDeployDs,
     pathListDs,
     domainDs,
+    annotationDs,
   } = useBatchDeployStore();
 
   const record = domainDs.current;
@@ -24,6 +25,14 @@ export default observer(() => {
 
   function handleRemovePath(removeRecord) {
     pathListDs.remove(removeRecord);
+  }
+
+  function handleAddAnnotation() {
+    annotationDs.create();
+  }
+
+  function handleRemoveAnnotation(annotationRecord) {
+    annotationDs.remove(annotationRecord);
   }
 
   return (
@@ -65,6 +74,33 @@ export default observer(() => {
         onClick={handleAddPath}
       >
         {formatMessage({ id: 'domain.path.add' })}
+      </Button>
+      <div className={`${prefixCls}-resource-domain-annotation-title`}>
+        Annotations
+      </div>
+      {map(annotationDs.data, (annotationRecord) => (
+        <Form columns={14} record={annotationRecord} style={{ width: '103.3%' }} key={annotationRecord.id}>
+          <TextField colSpan={3} name="domain" />
+          <span className={`${prefixCls}-resource-domain-annotation-equal`}>/</span>
+          <TextField colSpan={3} name="key" />
+          <span className={`${prefixCls}-resource-domain-annotation-equal`}>=</span>
+          <TextField colSpan={5} name="value" />
+          {annotationDs.length > 1 ? (
+            <Button
+              funcType="flat"
+              icon="delete"
+              onClick={() => handleRemoveAnnotation(annotationRecord)}
+            />
+          ) : <span />}
+        </Form>
+      ))}
+      <Button
+        funcType="flat"
+        color="primary"
+        icon="add"
+        onClick={handleAddAnnotation}
+      >
+        {formatMessage({ id: 'domain.annotation.add' })}
       </Button>
     </div>
   );
