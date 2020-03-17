@@ -1,6 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -22,6 +25,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.infra.util.GitOpsUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -29,7 +33,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
 public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRelationsService<V1beta1Ingress> {
     public static final String INGRESS = "Ingress";
     private static final String GIT_SUFFIX = "/.git";
-    Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
+    private Pattern PATTERN = Pattern.compile("^[-+]?[\\d]*$");
     private Gson gson = new Gson();
     @Autowired
     private DevopsIngressService devopsIngressService;
@@ -60,16 +64,10 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
         //比较已存在域名和新增要处理的域名,获取新增域名，更新域名，删除域名
         List<V1beta1Ingress> addV1beta1Ingress = new ArrayList<>();
         List<V1beta1Ingress> updateV1beta1Ingress = new ArrayList<>();
-        v1beta1Ingresses.stream().forEach(v1beta1Ingress -> {
-            if (beforeIngress.contains(v1beta1Ingress.getMetadata().getName())) {
-                updateV1beta1Ingress.add(v1beta1Ingress);
-                beforeIngress.remove(v1beta1Ingress.getMetadata().getName());
-            } else {
-                addV1beta1Ingress.add(v1beta1Ingress);
-            }
-        });
+        GitOpsUtil.pickCUDResource(beforeIngress, v1beta1Ingresses, addV1beta1Ingress, updateV1beta1Ingress, v1beta1Ingress -> v1beta1Ingress.getMetadata().getName());
+
         //删除ingress,删除文件对象关联关系
-        beforeIngress.stream().forEach(ingressName -> {
+        beforeIngress.forEach(ingressName -> {
             DevopsIngressDTO devopsIngressDTO = devopsIngressService.baseCheckByEnvAndName(envId, ingressName);
             if (devopsIngressDTO != null) {
                 devopsIngressService.deleteIngressByGitOps(devopsIngressDTO.getId());
@@ -88,7 +86,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
     }
 
     private void addIngress(Map<String, String> objectPath, Long envId, Long projectId, List<V1beta1Ingress> addV1beta1Ingress, String path, Long userId) {
-        addV1beta1Ingress.stream()
+        addV1beta1Ingress
                 .forEach(v1beta1Ingress -> {
                     String filePath = "";
                     try {
@@ -130,11 +128,11 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
     }
 
     private void updateIngress(Map<String, String> objectPath, Long envId, Long projectId, List<V1beta1Ingress> updateV1beta1Ingress, String path, Long userId) {
-        updateV1beta1Ingress.stream()
+        updateV1beta1Ingress
                 .forEach(v1beta1Ingress -> {
                     String filePath = "";
                     try {
-                        Boolean isNotChange = false;
+                        boolean isNotChange = false;
                         filePath = objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode()));
                         DevopsIngressDTO devopsIngressDTO = devopsIngressService
                                 .baseCheckByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
@@ -190,11 +188,11 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
 
     private DevopsIngressVO getDevopsIngressDTO(V1beta1Ingress v1beta1Ingress,
                                                 Long envId, String filePath) {
-        Set<Long> appServiceIds = new HashSet<>();
         DevopsIngressVO devopsIngressVO = new DevopsIngressVO();
         devopsIngressVO.setDomain(v1beta1Ingress.getSpec().getRules().get(0).getHost()
         );
         devopsIngressVO.setName(v1beta1Ingress.getMetadata().getName());
+        devopsIngressVO.setAnnotations(v1beta1Ingress.getMetadata().getAnnotations());
         devopsIngressVO.setEnvId(envId);
         List<String> pathCheckList = new ArrayList<>();
         List<DevopsIngressPathVO> devopsIngressPathVOS = new ArrayList<>();
@@ -220,14 +218,13 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
 
             Long servicePort = null;
             IntOrString backendServicePort = backend.getServicePort();
-            if (backendServicePort.isInteger() || pattern.matcher(TypeUtil.objToString(backendServicePort)).matches()) {
+            if (backendServicePort.isInteger() || PATTERN.matcher(TypeUtil.objToString(backendServicePort)).matches()) {
                 servicePort = TypeUtil.objToLong(backendServicePort);
             } else {
                 if (devopsServiceDTO != null) {
                     List<PortMapVO> listPorts = gson.fromJson(devopsServiceDTO.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {
                     }.getType());
                     servicePort = listPorts.get(0).getPort();
-                    appServiceIds.add(devopsServiceDTO.getAppServiceId());
                 }
             }
             DevopsIngressPathVO devopsIngressPathVO = new DevopsIngressPathVO();

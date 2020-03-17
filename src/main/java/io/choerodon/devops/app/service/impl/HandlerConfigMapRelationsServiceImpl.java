@@ -23,6 +23,7 @@ import io.choerodon.devops.infra.dto.DevopsConfigMapDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.infra.util.GitOpsUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -61,14 +62,7 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
         //比较已存在configMap和新增要处理的configMap,获取新增configMap，更新configMap，删除configMap
         List<V1ConfigMap> addConfigMaps = new ArrayList<>();
         List<V1ConfigMap> updateConfigMaps = new ArrayList<>();
-        v1ConfigMaps.stream().forEach(configMap -> {
-            if (beforeConfigMaps.contains(configMap.getMetadata().getName())) {
-                updateConfigMaps.add(configMap);
-                beforeConfigMaps.remove(configMap.getMetadata().getName());
-            } else {
-                addConfigMaps.add(configMap);
-            }
-        });
+        GitOpsUtil.pickCUDResource(beforeConfigMaps, v1ConfigMaps, addConfigMaps, updateConfigMaps, configMap -> configMap.getMetadata().getName());
 
         //新增configMap
         addConfigMap(objectPath, envId, addConfigMaps, path, userId);

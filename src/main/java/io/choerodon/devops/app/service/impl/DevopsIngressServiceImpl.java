@@ -3,6 +3,9 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
@@ -20,6 +23,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -52,7 +56,7 @@ import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.ResourceCreatorInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
-@Component
+@Service
 public class DevopsIngressServiceImpl implements DevopsIngressService {
 
     private static final Logger logger = LoggerFactory.getLogger(DevopsIngressServiceImpl.class);
@@ -104,7 +108,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Lazy
     private SendNotificationService sendNotificationService;
 
-    private JSON json = new JSON();
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -122,6 +125,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         // 校验port是否属于该网络
         Set<Long> appServiceIds = new HashSet<>();
 
+        DevopsIngressValidator.checkAnnotations(devopsIngressVO.getAnnotations());
         devopsIngressVO.getPathList().forEach(devopsIngressPathDTO -> {
             DevopsServiceDTO devopsServiceDTO = devopsServiceMapper.selectByPrimaryKey(devopsIngressPathDTO.getServiceId());
             if (devopsServiceDTO.getAppServiceId() != null) {
@@ -142,7 +146,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         // 初始化V1beta1Ingress对象
         String certName = getCertName(devopsIngressVO.getCertId());
-        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName);
+        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations());
 
         // 处理创建域名数据
         DevopsIngressDTO devopsIngressDO = handlerIngress(devopsIngressVO, projectId, v1beta1Ingress);
@@ -175,7 +179,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         // 初始化V1beta1Ingress对象
         String certName = getCertName(devopsIngressVO.getCertId());
-        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName);
+        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations());
 
         // 处理创建域名数据
         DevopsIngressDTO devopsIngressDTO = handlerIngress(devopsIngressVO, projectId, v1beta1Ingress);
@@ -230,7 +234,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         // 初始化V1beta1Ingress对象
         String certName = getCertName(devopsIngressVO.getCertId());
-        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName);
+        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations());
         // 处理域名数据
         DevopsIngressDTO devopsIngressDO = handlerIngress(devopsIngressVO, projectId, v1beta1Ingress);
 
@@ -249,7 +253,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Transactional(rollbackFor = Exception.class)
     public void updateIngress(Long id, DevopsIngressVO devopsIngressVO, Long projectId) {
 
-        Boolean deleteCert = false;
+        boolean deleteCert = false;
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressVO.getEnvId()
 
@@ -259,7 +263,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         // 校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
-
+        DevopsIngressValidator.checkAnnotations(devopsIngressVO.getAnnotations());
         DevopsIngressDTO oldDevopsIngressDTO = baseQuery(id);
         if (oldDevopsIngressDTO.getCertId() != null && devopsIngressVO.getCertId() == null) {
             deleteCert = true;
@@ -300,7 +304,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         // 初始化V1beta1Ingress对象
         String certName = getCertName(devopsIngressVO.getCertId());
-        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName);
+        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations());
 
         // 处理域名数据
         devopsIngressVO.setId(id);
@@ -341,7 +345,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         // 初始化V1beta1Ingress对象
         String certName = devopsIngressVO.getCertName();
-        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName);
+        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations());
 
         // 处理域名数据
         devopsIngressVO.setId(id);
@@ -386,11 +390,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         DevopsIngressVO vo = new DevopsIngressVO();
         BeanUtils.copyProperties(devopsIngressDTO, vo);
         vo.setInstances(devopsIngressMapper.listInstanceNamesByIngressId(vo.getId()));
-
-        if (!StringUtils.isEmpty(devopsIngressDTO.getMessage())) {
-            V1beta1Ingress ingress = json.deserialize(devopsIngressDTO.getMessage(), V1beta1Ingress.class);
-            vo.setAnnotations(ingress.getMetadata().getAnnotations());
-        }
 
         if (devopsIngressDTO.getCertId() != null) {
             CertificationDTO certificationDTO = certificationService.baseQueryById(devopsIngressDTO.getCertId());
@@ -553,7 +552,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
 
-    private V1beta1Ingress initV1beta1Ingress(String host, String name, String certName) {
+    private V1beta1Ingress initV1beta1Ingress(String host, String name, @Nullable String certName, @Nullable Map<String, String> annotations) {
         V1beta1Ingress ingress = new V1beta1Ingress();
         ingress.setKind(INGRESS);
         ingress.setApiVersion("extensions/v1beta1");
@@ -563,7 +562,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         labels.put("choerodon.io/network", "ingress");
 
         metadata.setLabels(labels);
-        metadata.setAnnotations(new HashMap<>());
+        metadata.setAnnotations(annotations == null ? new HashMap<>() : annotations);
         ingress.setMetadata(metadata);
         V1beta1IngressSpec spec = new V1beta1IngressSpec();
 
@@ -691,11 +690,20 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         DevopsIngressValidator.checkIngressName(ingressName);
         String domain = devopsIngressVO.getDomain();
 
-        //处理pathlist,生成域名和service的关联对象列表
-        List<DevopsIngressPathDTO> devopsIngressPathDTOS = handlerPathList(devopsIngressVO.getPathList(), devopsIngressVO, v1beta1Ingress);
-
         //初始化ingressDO对象
         DevopsIngressDTO devopsIngressDO = new DevopsIngressDTO(devopsIngressVO.getId(), projectId, envId, domain, ingressName, IngressStatus.OPERATING.getStatus());
+
+        if (v1beta1Ingress.getMetadata().getAnnotations() != null) {
+            String annotations = gson.toJson(v1beta1Ingress.getMetadata().getAnnotations());
+            // 避免数据比数据库结构的size还大
+            if (annotations.length() > 2000) {
+                throw new CommonException("error.ingress.annotations.too.large");
+            }
+            devopsIngressDO.setAnnotations(annotations);
+        }
+
+        //处理pathlist,生成域名和service的关联对象列表
+        List<DevopsIngressPathDTO> devopsIngressPathDTOS = handlerPathList(devopsIngressVO.getPathList(), devopsIngressVO, v1beta1Ingress);
 
         //校验域名的domain和path是否在数据库中已存在
         if (devopsIngressPathDTOS.stream().noneMatch(
