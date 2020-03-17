@@ -228,7 +228,6 @@ public class ResourceConvertToYamlHandler<T> {
         if (objectType.equals(ResourceType.INGRESS.getType()) && v1beta1Ingress.getMetadata().getName().equals(((V1beta1Ingress) t).getMetadata().getName())) {
             if (operationType.equals(UPDATE)) {
                 newV1beta1Ingress = (V1beta1Ingress) t;
-                newV1beta1Ingress.getMetadata().setAnnotations(v1beta1Ingress.getMetadata().getAnnotations());
                 if (!deleteCert) {
                     if (newV1beta1Ingress.getSpec().getTls() != null && !newV1beta1Ingress.getSpec().getTls().isEmpty()) {
                         newV1beta1Ingress.getSpec().setTls(newV1beta1Ingress.getSpec().getTls());
