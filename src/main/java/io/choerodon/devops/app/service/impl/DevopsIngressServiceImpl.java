@@ -372,6 +372,12 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO(ingressId);
             devopsIngressPathMapper.select(devopsIngressPathDTO).forEach(e -> setDevopsIngressDTO(devopsIngressVO, e));
             devopsIngressDTO.setStatus(devopsIngressDTO.getStatus());
+
+            if (devopsIngressDTO.getAnnotations() != null) {
+                devopsIngressVO.setAnnotations(gson.fromJson(devopsIngressDTO.getAnnotations(), new TypeToken<Map<String, String>>() {
+                }.getType()));
+            }
+
             setIngressDTOCert(devopsIngressDTO.getCertId(), devopsIngressVO);
             return devopsIngressVO;
         }
@@ -388,7 +394,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
 
         DevopsIngressVO vo = new DevopsIngressVO();
-        BeanUtils.copyProperties(devopsIngressDTO, vo);
+        BeanUtils.copyProperties(devopsIngressDTO, vo, "annotations");
+        if (devopsIngressDTO.getAnnotations() != null) {
+            vo.setAnnotations(gson.fromJson(devopsIngressDTO.getAnnotations(), new TypeToken<Map<String, String>>() {
+            }.getType()));
+        }
         vo.setInstances(devopsIngressMapper.listInstanceNamesByIngressId(vo.getId()));
 
         if (devopsIngressDTO.getCertId() != null) {
@@ -845,6 +855,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             devopsIngressVO.setCommandStatus(t.getCommandStatus());
             devopsIngressVO.setCommandType(t.getCommandType());
             devopsIngressVO.setError(t.getError());
+            if (t.getAnnotations() != null) {
+                devopsIngressVO.setAnnotations(gson.fromJson(t.getAnnotations(), new TypeToken<Map<String, String>>() {}.getType()));
+            }
             setIngressDTOCert(t.getCertId(), devopsIngressVO);
             DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO(t.getId());
             devopsIngressPathMapper.select(devopsIngressPathDTO).forEach(e -> setDevopsIngressDTO(devopsIngressVO, e));
