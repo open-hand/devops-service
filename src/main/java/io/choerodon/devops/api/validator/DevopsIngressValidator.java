@@ -110,6 +110,7 @@ public class DevopsIngressValidator {
             if (parts.length > 2) {
                 throw new CommonException("error.ingress.annotation.key.too.many.slashes", key);
             } else if (parts.length == 2) {
+                // 有两段的情况
                 if (parts[0].length() > 253) {
                     throw new CommonException("error.ingress.annotation.key.sub.domain.part.too.long", key);
                 }
@@ -120,6 +121,14 @@ public class DevopsIngressValidator {
                     throw new CommonException("error.ingress.annotation.key.name.part.too.long", key);
                 }
                 if (!ANNOTATION_NAME_PATTERN.matcher(parts[1]).matches()) {
+                    throw new CommonException("error.ingress.annotation.key.name.part.invalid", key);
+                }
+            } else {
+                // 只有一段的情况
+                if (key.length() > 63) {
+                    throw new CommonException("error.ingress.annotation.key.name.part.too.long", key);
+                }
+                if (!ANNOTATION_NAME_PATTERN.matcher(key).matches()) {
                     throw new CommonException("error.ingress.annotation.key.name.part.invalid", key);
                 }
             }
