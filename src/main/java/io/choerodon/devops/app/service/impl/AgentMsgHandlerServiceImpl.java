@@ -277,6 +277,14 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
         ReleasePayloadVO releasePayloadVO = JSONArray.parseObject(msg, ReleasePayloadVO.class);
         List<Resource> resources = JSONArray.parseArray(releasePayloadVO.getResources(), Resource.class);
+        if (logger.isInfoEnabled()) {
+            if (resources == null) {
+                logger.info("Install resource: resources null...");
+            } else {
+                logger.info("Install resource: resource size: {}", resources.size());
+                resources.forEach(resource -> logger.info("Install resource: resource name {}", resource.getName()));
+            }
+        }
         String releaseName = releasePayloadVO.getName();
         AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
         if (appServiceInstanceDTO != null) {
