@@ -86,7 +86,7 @@ public class ResourceConvertToYamlHandler<T> {
             try {
                 content = JsonYamlConversionUtil.json2yaml(jsonStr);
             } catch (IOException e) {
-                LOGGER.info(e.getMessage());
+                throw new CommonException("error.dump.pv.or.pvc.to.yaml", e);
             }
         } else {
             content = yaml.dump(type).replace("!<" + tag.getValue() + ">", "---");
@@ -335,8 +335,13 @@ public class ResourceConvertToYamlHandler<T> {
             // 修改的如果不是这个对象，保留这个对象
             newPv = v1PersistentVolume;
         }
-        Tag tag = new Tag(PERSISTENT_VOLUME);
-        resultBuilder.append("\n").append(getYamlObject(tag, true).dump(newPv).replace(PERSISTENT_VOLUME, "---"));
+        JSON json = new JSON();
+        String jsonStr = json.serialize(newPv);
+        try {
+            resultBuilder.append("\n").append(JsonYamlConversionUtil.json2yaml(jsonStr));
+        } catch (IOException e) {
+            throw new CommonException("error.dump.pv.or.pvc.to.yaml", e);
+        }
     }
 
 
@@ -357,8 +362,13 @@ public class ResourceConvertToYamlHandler<T> {
             // 修改的如果不是这个对象，保留这个对象
             newPvc = v1PersistentVolumeClaim;
         }
-        Tag tag = new Tag(PERSISTENT_VOLUME_CLAIM);
-        resultBuilder.append("\n").append(getYamlObject(tag, true).dump(newPvc).replace(PERSISTENT_VOLUME_CLAIM, "---"));
+        JSON json = new JSON();
+        String jsonStr = json.serialize(newPvc);
+        try {
+            resultBuilder.append("\n").append(JsonYamlConversionUtil.json2yaml(jsonStr));
+        } catch (IOException e) {
+            throw new CommonException("error.dump.pv.or.pvc.to.yaml", e);
+        }
     }
 
     private void handleCustom(T t, String objectType, String operationType, StringBuilder resultBuilder,
