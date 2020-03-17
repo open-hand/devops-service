@@ -254,7 +254,7 @@ const BatchDeployModal = injectIntl(observer(() => {
               colSpan={3}
               newLine
               readOnly={false}
-              value={record ? record.get('values') : ''}
+              value={record ? record.get('values') || '' : ''}
               onValueChange={ChangeConfigValue}
               handleEnableNext={handleEnableNext}
             />
