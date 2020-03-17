@@ -31,12 +31,12 @@ public class DevopsIngressValidator {
     /**
      * 子域名正则, Annotation的Key的一部分，可参考(https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set)
      */
-    private static final Pattern SUB_DOMAIN_PATTERN = Pattern.compile("[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*");
+    private static final Pattern SUB_DOMAIN_PATTERN = Pattern.compile("^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$");
 
     /**
      * Annotation的name正则, Annotation的Key的一部分，可参考(https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set)
      */
-    private static final Pattern ANNOTATION_NAME_PATTERN = Pattern.compile("([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]");
+    private static final Pattern ANNOTATION_NAME_PATTERN = Pattern.compile("^([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$");
 
     private DevopsIngressValidator() {
     }
