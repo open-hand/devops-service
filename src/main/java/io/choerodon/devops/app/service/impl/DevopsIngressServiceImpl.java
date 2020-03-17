@@ -635,6 +635,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(devopsIngressDTO.getProjectId())
                         .withRefType("env")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INGRESS),
                 builder -> builder
