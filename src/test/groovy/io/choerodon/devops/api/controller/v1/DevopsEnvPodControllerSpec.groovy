@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.controller.v1
 
-import org.mockito.BDDMockito
-import org.springframework.http.ResponseEntity
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 

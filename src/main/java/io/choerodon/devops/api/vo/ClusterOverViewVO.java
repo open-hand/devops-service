@@ -1,13 +1,15 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * User: Mr.Wang
  * Date: 2020/2/24
  */
 public class ClusterOverViewVO {
-    //组织下已连接集群的数量
+    @ApiModelProperty("已连接集群的数量")
     private Integer connectedClusters;
-    //组织下未连接集群的数量
+    @ApiModelProperty("未连接集群的数量")
     private Integer unconnectedCluster;
 
     public ClusterOverViewVO() {

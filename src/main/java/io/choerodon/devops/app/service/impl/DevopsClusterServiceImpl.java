@@ -1,25 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
-import io.choerodon.devops.api.vo.iam.RoleVO;
-import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.PolarisScopeType;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
-import io.choerodon.devops.infra.mapper.DevopsPvProPermissionMapper;
-import io.choerodon.devops.infra.util.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -35,9 +23,18 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import java.io.InputStream;
-import java.util.*;
-import java.util.stream.Collectors;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.PolarisScopeType;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
+import io.choerodon.devops.infra.mapper.DevopsPvProPermissionMapper;
+import io.choerodon.devops.infra.util.*;
 
 
 @Service
@@ -648,23 +645,30 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public ClusterOverViewVO getClusterOverview(Long organizationId) {
-        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedClusterList();
+    public ClusterOverViewVO getOrganizationClusterOverview(Long organizationId) {
+        List<Long> updatedClusterList = clusterConnectionHandler.getUpdatedClusterList();
         List<DevopsClusterDTO> clusterDTOList = devopsClusterMapper.listByOrganizationId(organizationId);
         if (CollectionUtils.isEmpty(clusterDTOList)) {
 
             return new ClusterOverViewVO(0, 0);
         }
-        if (CollectionUtils.isEmpty(connectedClusterList)) {
-            return new ClusterOverViewVO(0, connectedClusterList.size());
+        if (CollectionUtils.isEmpty(updatedClusterList)) {
+            return new ClusterOverViewVO(0, updatedClusterList.size());
         }
-        List<Long> connectedClusterByOrgIdList = new ArrayList<>();
-        clusterDTOList.stream().forEach(v -> {
-            if (connectedClusterList.contains(v.getId())) {
-                connectedClusterByOrgIdList.add(v.getId());
+        int connectedCount = 0;
+        for (DevopsClusterDTO v : clusterDTOList) {
+            if (updatedClusterList.contains(v.getId())) {
+                connectedCount++;
             }
-        });
-        return new ClusterOverViewVO(connectedClusterByOrgIdList.size(), clusterDTOList.size() - connectedClusterByOrgIdList.size());
+        }
+        return new ClusterOverViewVO(connectedCount, clusterDTOList.size() - connectedCount);
+    }
+
+    @Override
+    public ClusterOverViewVO getSiteClusterOverview() {
+        int allCount = devopsClusterMapper.countByOptions(null, null);
+        int updatedCount = clusterConnectionHandler.getUpdatedClusterList().size();
+        return new ClusterOverViewVO(updatedCount, allCount - updatedCount);
     }
 
     /**

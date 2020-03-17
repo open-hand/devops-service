@@ -69,7 +69,7 @@ public class DevopsOrganizationController {
     @ApiOperation("组织层概览，返回集群的概览")
     public ResponseEntity<ClusterOverViewVO> clusterOverview(
             @PathVariable(name = "organization_id") Long organizationId) {
-        return Optional.ofNullable(devopsClusterService.getClusterOverview(organizationId))
+        return Optional.ofNullable(devopsClusterService.getOrganizationClusterOverview(organizationId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.cluster.org.id"));
     }
