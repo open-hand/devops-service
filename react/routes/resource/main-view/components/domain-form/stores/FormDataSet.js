@@ -2,8 +2,19 @@ import { axios } from '@choerodon/boot';
 import omit from 'lodash/omit';
 import forEach from 'lodash/forEach';
 import pick from 'lodash/pick';
+import isEmpty from 'lodash/isEmpty';
 
-export default ({ formatMessage, intlPrefix, projectId, envId, ingressId, pathListDs, serviceDs, appServiceId }) => {
+function formatAnnotation(postData, data, oldAnnotations) {
+  const annotations = {};
+  forEach(oldAnnotations || data.annotations, ({ domain, key, value }) => {
+    if (key && value) {
+      annotations[`${domain ? `${domain}/` : ''}${key}`] = value;
+    }
+  });
+  postData.annotations = isEmpty(annotations) ? null : annotations;
+}
+
+export default ({ formatMessage, intlPrefix, projectId, envId, ingressId, pathListDs, serviceDs, appServiceId, annotationDs }) => {
   async function checkName(value) {
     if (ingressId) return;
     const p = /^([a-z0-9]([-a-z0-9]?[a-z0-9])*)$/;
@@ -48,6 +59,7 @@ export default ({ formatMessage, intlPrefix, projectId, envId, ingressId, pathLi
 
   function handleLoad({ dataSet }) {
     const record = dataSet.current;
+    const annotations = [];
     record.init('isNormal', !record.get('certId'));
     forEach(record.get('pathList') || [], ({ serviceId, serviceStatus, serviceName, serviceError }) => {
       if (serviceStatus !== 'running') {
@@ -60,6 +72,18 @@ export default ({ formatMessage, intlPrefix, projectId, envId, ingressId, pathLi
         serviceDs.push(serviceRecord);
       }
     });
+    forEach(record.get('annotations') || [], (value, key) => {
+      const [annotationDomain, annotationKey] = key.split('/');
+      const annotation = { value };
+      if (annotationKey) {
+        annotation.domain = annotationDomain;
+        annotation.key = annotationKey;
+      } else {
+        annotation.key = annotationDomain;
+      }
+      annotations.push(annotation);
+    });
+    annotationDs.loadData(isEmpty(annotations) ? [{}] : annotations);
   }
 
   function renderLookupUrl({ record }) {
@@ -80,6 +104,7 @@ export default ({ formatMessage, intlPrefix, projectId, envId, ingressId, pathLi
     autoQueryAfterSubmit: false,
     children: {
       pathList: pathListDs,
+      annotations: annotationDs,
     },
     transport: {
       read: {
@@ -87,7 +112,8 @@ export default ({ formatMessage, intlPrefix, projectId, envId, ingressId, pathLi
         method: 'get',
       },
       create: ({ data: [data] }) => {
-        const postData = omit(data, '__id', '__status');
+        const postData = omit(data, '__id', '__status', 'annotations');
+        formatAnnotation(postData, data);
 
         return ({
           url: `/devops/v1/projects/${projectId}/ingress`,
@@ -99,6 +125,7 @@ export default ({ formatMessage, intlPrefix, projectId, envId, ingressId, pathLi
         const postData = pick(data, 'name', 'domain', 'envId', 'appServiceId', 'certId');
         postData.domainId = ingressId;
         postData.pathList = pathListDs.toData();
+        formatAnnotation(postData, data, annotationDs.toData());
 
         return ({
           url: `/devops/v1/projects/${projectId}/ingress/${ingressId}`,
