@@ -23,6 +23,7 @@ import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
+import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.JsonYamlConversionUtil;
@@ -40,6 +41,8 @@ public class ResourceConvertToYamlHandler<T> {
     private static final String CONFIGMAPTAG = "!!io.kubernetes.client.models.V1ConfigMap";
     private static final String SECRET = "!!io.kubernetes.client.models.V1Secret";
     private static final String ENDPOINTS = "!!io.kubernetes.client.models.V1Endpoints";
+    private static final String PERSISTENT_VOLUME = "!!io.kubernetes.client.models.V1PersistentVolume";
+    private static final String PERSISTENT_VOLUME_CLAIM = "!!io.kubernetes.client.models.V1PersistentVolumeClaim";
 
     private T type;
 
@@ -56,6 +59,7 @@ public class ResourceConvertToYamlHandler<T> {
         Yaml yaml = getYamlObject(tag, true);
         return yaml.dump(type).replace("!<" + tag.getValue() + ">", "---");
     }
+
     /**
      * operate files in GitLab
      *
@@ -160,6 +164,13 @@ public class ResourceConvertToYamlHandler<T> {
                         break;
                     case "Secret":
                         handleSecret(t, objectType, operationType, resultBuilder, jsonObject);
+                        break;
+                    case "PersistentVolume":
+                        handlePV(t, objectType, operationType, resultBuilder, jsonObject);
+                        break;
+                    case "PersistentVolumeClaim":
+                        // 这里不需要对遗留在自定义资源中的PVC做兼容判断，因为自定义资源中PVC的objectType是'custom'
+                        handlePVC(t, objectType, operationType, resultBuilder, jsonObject);
                         break;
                     case "Endpoints":
                         // 忽视掉Endpoints
@@ -306,6 +317,49 @@ public class ResourceConvertToYamlHandler<T> {
         }
         Tag tag1 = new Tag(SECRET);
         resultBuilder.append("\n").append(getYamlObject(tag1, true).dump(newV1Secret).replace(SECRET, "---"));
+    }
+
+    private void handlePV(T t, String objectType, String operationType, StringBuilder resultBuilder,
+                          JSONObject jsonObject) {
+        Yaml yaml = new Yaml();
+        V1PersistentVolume v1PersistentVolume = yaml.loadAs(jsonObject.toJSONString(), V1PersistentVolume.class);
+        V1PersistentVolume newPv;
+        if (objectType.equals(ResourceType.PERSISTENT_VOLUME.getType()) && v1PersistentVolume.getMetadata().getName().equals(((V1PersistentVolume) t).getMetadata().getName())) {
+            if (operationType.equals(UPDATE)) {
+                // 不允许更新
+                throw new CommonException(GitOpsObjectError.PERSISTENT_VOLUME_UNMODIFIED.getError(), v1PersistentVolume.getMetadata().getName());
+            } else {
+                // 删除任由此对象内容丢失
+                return;
+            }
+        } else {
+            // 修改的如果不是这个对象，保留这个对象
+            newPv = v1PersistentVolume;
+        }
+        Tag tag = new Tag(PERSISTENT_VOLUME);
+        resultBuilder.append("\n").append(getYamlObject(tag, true).dump(newPv).replace(PERSISTENT_VOLUME, "---"));
+    }
+
+
+    private void handlePVC(T t, String objectType, String operationType, StringBuilder resultBuilder,
+                          JSONObject jsonObject) {
+        Yaml yaml = new Yaml();
+        V1PersistentVolumeClaim v1PersistentVolumeClaim = yaml.loadAs(jsonObject.toJSONString(), V1PersistentVolumeClaim.class);
+        V1PersistentVolumeClaim newPvc;
+        if (objectType.equals(ResourceType.PERSISTENT_VOLUME_CLAIM.getType()) && v1PersistentVolumeClaim.getMetadata().getName().equals(((V1PersistentVolumeClaim) t).getMetadata().getName())) {
+            if (operationType.equals(UPDATE)) {
+                // 不允许更新
+                throw new CommonException(GitOpsObjectError.PERSISTENT_VOLUME_CLAIM_UNMODIFIED.getError(), v1PersistentVolumeClaim.getMetadata().getName());
+            } else {
+                // 删除任由此对象内容丢失
+                return;
+            }
+        } else {
+            // 修改的如果不是这个对象，保留这个对象
+            newPvc = v1PersistentVolumeClaim;
+        }
+        Tag tag = new Tag(PERSISTENT_VOLUME_CLAIM);
+        resultBuilder.append("\n").append(getYamlObject(tag, true).dump(newPvc).replace(PERSISTENT_VOLUME_CLAIM, "---"));
     }
 
     private void handleCustom(T t, String objectType, String operationType, StringBuilder resultBuilder,
