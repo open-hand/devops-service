@@ -57,12 +57,14 @@ export default ({ formatMessage }) => {
         name: 'domain',
         type: 'string',
         validator: checkDomain,
+        maxLength: 253,
         label: formatMessage({ id: 'domain.annotation' }),
       },
       {
         name: 'key',
         type: 'string',
         validator: checkKey,
+        maxLength: 63,
         label: formatMessage({ id: 'name' }),
       },
       {
