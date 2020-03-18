@@ -203,7 +203,6 @@ class CertificationControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-        clusterConnectionHandler.getConnectedClusterList() >> envList
         clusterConnectionHandler.getUpdatedClusterList() >> envList
         def url = BASE_URL + "/list_by_options?page=0&size=10&sort=id,desc&env_id={env_id}"
         def requestBody = "{\"searchParam\":{},\"param\":\"\"}"

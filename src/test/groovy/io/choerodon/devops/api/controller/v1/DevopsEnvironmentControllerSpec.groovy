@@ -414,7 +414,6 @@ class DevopsEnvironmentControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>(2)
         envList.add(1L)
         envList.add(2L)
-        PowerMockito.when(mockClusterConnectionHandler.getConnectedClusterList()).thenReturn(envList)
         PowerMockito.when(mockClusterConnectionHandler.getUpdatedClusterList()).thenReturn(envList)
 
         // mock AgentPodService

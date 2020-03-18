@@ -12,10 +12,6 @@ public class DevopsClusterBasicInfoVO {
     private String code;
     @ApiModelProperty(value = "是否已经连接")
     private Boolean connect;
-    @ApiModelProperty(value = "是否需要升级")
-    private Boolean upgrade;
-    @ApiModelProperty(value = "升级信息")
-    private String upgradeMessage;
     @ApiModelProperty(value = "节点列表")
     private List<String> nodes;
 
@@ -49,22 +45,6 @@ public class DevopsClusterBasicInfoVO {
 
     public void setConnect(Boolean connect) {
         this.connect = connect;
-    }
-
-    public Boolean getUpgrade() {
-        return upgrade;
-    }
-
-    public void setUpgrade(Boolean upgrade) {
-        this.upgrade = upgrade;
-    }
-
-    public String getUpgradeMessage() {
-        return upgradeMessage;
-    }
-
-    public void setUpgradeMessage(String upgradeMessage) {
-        this.upgradeMessage = upgradeMessage;
     }
 
     public List<String> getNodes() {
