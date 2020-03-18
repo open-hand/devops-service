@@ -32,10 +32,7 @@ function ClusterItem({
 
   function getStatus() {
     const connect = record.get('connect');
-    const upgrade = record.get('upgrade');
-    if (upgrade) {
-      return ['disconnect'];
-    } else if (connect) {
+    if (connect) {
       return ['running', 'connect'];
     }
     return ['disconnect'];
@@ -177,7 +174,7 @@ function ClusterItem({
       });
     }
     return <Action placement="bottomRight" data={Data} />;
-  }, []);
+  }, [record]);
 
   const clearClick = (e) => {
     e.stopPropagation();
