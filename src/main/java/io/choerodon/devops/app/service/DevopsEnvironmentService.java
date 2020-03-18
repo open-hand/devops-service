@@ -328,12 +328,12 @@ public interface DevopsEnvironmentService {
     void deleteSystemEnv(Long projectId, Long clusterId, String clusterCode, Long envId);
 
     /**
-     * 查出指定集群的所有环境
+     * 查出指定集群的所有环境创建成功的环境
      *
-     * @param clusterId
-     * @return
+     * @param clusterId 集群id
+     * @return 环境列表
      */
-    List<DevopsEnvironmentDTO> listAllEnvByClusterId(Long clusterId);
+    List<DevopsEnvironmentDTO> listEnvWithInstancesByClusterIdForAgent(Long clusterId);
 
     DevopsEnvironmentDTO queryByTokenWithClusterCode(@Param("token") String token);
 
