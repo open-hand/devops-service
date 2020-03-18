@@ -11,8 +11,9 @@ public class AppServiceVO {
     private String name;
     private String code;
     private String type;
-    List<AppServiceVersionVO> allAppServiceVersions;
+    private List<AppServiceVersionVO> allAppServiceVersions;
     private String status;
+    private Long gitlabProjectId;
 
     public List<AppServiceVersionVO> getAllAppServiceVersions() {
         return allAppServiceVersions;
@@ -60,5 +61,13 @@ public class AppServiceVO {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public Long getGitlabProjectId() {
+        return gitlabProjectId;
+    }
+
+    public void setGitlabProjectId(Long gitlabProjectId) {
+        this.gitlabProjectId = gitlabProjectId;
     }
 }
