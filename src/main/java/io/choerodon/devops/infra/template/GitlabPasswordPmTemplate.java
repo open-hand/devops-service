@@ -13,6 +13,8 @@ import io.choerodon.devops.infra.constant.NoticeCodeConstants;
         name = "GitLab默认密码", level = Level.SITE,
         description = "GitLab默认密码", isManualRetry = true, categoryCode = "account-security-notice",
         pmEnabledFlag = true,
+        webhookOtherEnabledFlag = false,
+        webhookJsonEnabledFlag = false,
         notifyType = ServiceNotifyType.DEVOPS_NOTIFY,
         isAllowConfig = false,
         targetUserType = {TargetUserType.TARGET_USER_SPECIFIER})

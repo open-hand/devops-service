@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
         name = "资源删除验证通知", level = Level.PROJECT,
         description = "资源删除验证通知", isAllowConfig = false, isManualRetry = true, categoryCode = "resource-security-notice",
         pmEnabledFlag = true,
+        webhookJsonEnabledFlag = false,webhookOtherEnabledFlag = false,
         emailEnabledFlag = true)
 @Component
 public class ResourceDeletePmTemplate implements PmTemplate {
