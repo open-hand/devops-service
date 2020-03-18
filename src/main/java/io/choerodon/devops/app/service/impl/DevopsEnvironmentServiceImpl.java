@@ -1721,10 +1721,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public List<DevopsEnvironmentDTO> listAllEnvByClusterId(Long clusterId) {
-        DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO();
-        devopsEnvironmentDO.setClusterId(clusterId);
-        return devopsEnvironmentMapper.select(devopsEnvironmentDO);
+    public List<DevopsEnvironmentDTO> listEnvWithInstancesByClusterIdForAgent(Long clusterId) {
+        return devopsEnvironmentMapper.listEnvWithInstancesByClusterIdForAgent(clusterId);
     }
 
     @Override

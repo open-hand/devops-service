@@ -15,6 +15,8 @@ import io.choerodon.mybatis.common.Mapper;
  * Created by younger on 2018/4/9.
  */
 public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDTO> {
+    List<DevopsEnvironmentDTO> listEnvWithInstancesByClusterIdForAgent(@Param("clusterId") Long clusterId);
+
     void updateDevopsEnvGroupIdNullByProjectIdAndGroupId(@Param("project_id") Long projectId,
                                                          @Param("env_group_id") Long envGroupId);
 
