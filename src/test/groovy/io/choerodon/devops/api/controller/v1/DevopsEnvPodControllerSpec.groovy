@@ -164,7 +164,6 @@ class DevopsEnvPodControllerSpec extends Specification {
         connectedEnvList.add(1L)
         List<Long> updateEnvList = new ArrayList<>()
         updateEnvList.add(1L)
-        envUtil.getConnectedClusterList() >> connectedEnvList
         envUtil.getUpdatedClusterList() >> updateEnvList
 
         when: '分页查询容器管理'

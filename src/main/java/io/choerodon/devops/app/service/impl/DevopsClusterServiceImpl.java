@@ -198,15 +198,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         PageInfo<DevopsClusterRepVO> devopsClusterRepVOPageInfo = ConvertUtils.convertPage(basePageClustersByOptions(projectId, doPage, pageable, params), DevopsClusterRepVO.class);
         PageInfo<ClusterWithNodesVO> devopsClusterRepDTOPage = ConvertUtils.convertPage(devopsClusterRepVOPageInfo, ClusterWithNodesVO.class);
 
-        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedClusterList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
-        devopsClusterRepVOPageInfo.getList().forEach(devopsClusterRepVO -> {
-            devopsClusterRepVO.setConnect(isConnect(connectedEnvList, updatedEnvList, devopsClusterRepVO.getId()));
-            devopsClusterRepVO.setUpgrade(isToUpgrade(connectedEnvList, updatedEnvList, devopsClusterRepVO.getId()));
-            if (devopsClusterRepVO.getUpgrade()) {
-                devopsClusterRepVO.setUpgradeMessage(UPGRADE_MESSAGE);
-            }
-        });
+        devopsClusterRepVOPageInfo.getList().forEach(devopsClusterRepVO -> devopsClusterRepVO.setConnect(updatedEnvList.contains(devopsClusterRepVO.getId())));
 
         devopsClusterRepDTOPage.setList(fromClusterE2ClusterWithNodesDTO(devopsClusterRepVOPageInfo.getList(), projectId));
         return devopsClusterRepDTOPage;
@@ -351,20 +344,28 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         devopsClusterDTO.setProjectId(projectId);
         List<DevopsClusterDTO> devopsClusterDTOList = devopsClusterMapper.select(devopsClusterDTO);
         List<DevopsClusterBasicInfoVO> devopsClusterBasicInfoVOList = ConvertUtils.convertList(devopsClusterDTOList, DevopsClusterBasicInfoVO.class);
-        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedClusterList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
 
+        // 连接的集群
+        List<DevopsClusterBasicInfoVO> connectedClusters = new ArrayList<>();
+        // 未连接的集群
+        List<DevopsClusterBasicInfoVO> unconnectedClusters = new ArrayList<>();
         devopsClusterBasicInfoVOList.forEach(devopsClusterBasicInfoVO -> {
-            devopsClusterBasicInfoVO.setConnect(isConnect(connectedEnvList, updatedEnvList, devopsClusterBasicInfoVO.getId()));
-            devopsClusterBasicInfoVO.setUpgrade(isToUpgrade(connectedEnvList, updatedEnvList, devopsClusterBasicInfoVO.getId()));
-            if (devopsClusterBasicInfoVO.getUpgrade()) {
-                devopsClusterBasicInfoVO.setUpgradeMessage(UPGRADE_MESSAGE);
+            boolean connect = updatedEnvList.contains(devopsClusterBasicInfoVO.getId());
+            devopsClusterBasicInfoVO.setConnect(connect);
+            if (connect) {
+                connectedClusters.add(devopsClusterBasicInfoVO);
+            } else {
+                unconnectedClusters.add(devopsClusterBasicInfoVO);
             }
         });
-        devopsClusterBasicInfoVOList.forEach(devopsClusterBasicInfoVO ->
+
+        // 将连接的集群放置在未连接的集群前
+        connectedClusters.addAll(unconnectedClusters);
+        connectedClusters.forEach(devopsClusterBasicInfoVO ->
                 devopsClusterBasicInfoVO.setNodes(clusterNodeInfoService.queryNodeName(projectId, devopsClusterBasicInfoVO.getId())));
 
-        return devopsClusterBasicInfoVOList;
+        return connectedClusters;
     }
 
     @Override
@@ -480,7 +481,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     public ClusterMsgVO checkConnectEnvsAndPV(Long clusterId) {
         ClusterMsgVO clusterMsgVO = new ClusterMsgVO(false, false);
-        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedClusterList();
+        List<Long> connectedEnvList = clusterConnectionHandler.getUpdatedClusterList();
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListUserEnvByClusterId(clusterId);
 
         if (connectedEnvList.contains(clusterId)) {
@@ -504,12 +505,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         if (result == null) {
             return null;
         }
-        List<Long> connectedList = clusterConnectionHandler.getConnectedClusterList();
         List<Long> upToDateList = clusterConnectionHandler.getUpdatedClusterList();
-        result.setConnect(isConnect(connectedList, upToDateList, clusterId));
-        result.setUpgrade(isToUpgrade(connectedList, upToDateList, clusterId));
-        result.setUpgradeMessage(result.getUpgrade() ? UPGRADE_MESSAGE : null);
-
+        result.setConnect(upToDateList.contains(clusterId));
         return result;
     }
 
@@ -706,14 +703,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     private DevopsClusterRepVO getDevopsClusterStatus(Long clusterId) {
         DevopsClusterRepVO devopsClusterRepVO = ConvertUtils.convertObject(baseQuery(clusterId), DevopsClusterRepVO.class);
-        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedClusterList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
 
-        devopsClusterRepVO.setConnect(isConnect(connectedEnvList, updatedEnvList, devopsClusterRepVO.getId()));
-        devopsClusterRepVO.setUpgrade(isToUpgrade(connectedEnvList, updatedEnvList, devopsClusterRepVO.getId()));
-        if (devopsClusterRepVO.getUpgrade()) {
-            devopsClusterRepVO.setUpgradeMessage(UPGRADE_MESSAGE);
-        }
+        devopsClusterRepVO.setConnect(updatedEnvList.contains(devopsClusterRepVO.getId()));
         return devopsClusterRepVO;
     }
 

@@ -18,12 +18,6 @@ public class DevopsClusterRepVO {
     @ApiModelProperty("是否连接")
     private Boolean connect;
 
-    @ApiModelProperty(value = "是否需要升级")
-    private Boolean upgrade;
-
-    @ApiModelProperty("升级信息")
-    private String upgradeMessage;
-
     @ApiModelProperty("集群描述")
     private String description;
 
@@ -86,23 +80,6 @@ public class DevopsClusterRepVO {
     public void setConnect(Boolean connect) {
         this.connect = connect;
     }
-
-    public Boolean getUpgrade() {
-        return upgrade;
-    }
-
-    public void setUpgrade(Boolean upgrade) {
-        this.upgrade = upgrade;
-    }
-
-    public String getUpgradeMessage() {
-        return upgradeMessage;
-    }
-
-    public void setUpgradeMessage(String upgradeMessage) {
-        this.upgradeMessage = upgradeMessage;
-    }
-
 
     public Long getCreateBy() {
         return createBy;

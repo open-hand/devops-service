@@ -112,9 +112,6 @@ class GitlabWebHookControllerSpec extends Specification {
 
             Mockito.doReturn(commit).when(mockGitlabServiceClientOperator).queryCommit(anyInt(), anyString(), anyInt())
 
-            // mock env util
-            Mockito.when(mockEnvUtil.getConnectedClusterList()).thenReturn(Arrays.asList(1L))
-
             IamUserDTO iamUserDTO=new IamUserDTO()
             iamUserDTO.setLoginName("aaa")
             iamUserDTO.setOrganizationId(1L)
