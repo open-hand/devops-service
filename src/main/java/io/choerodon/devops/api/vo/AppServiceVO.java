@@ -13,7 +13,7 @@ public class AppServiceVO {
     private String type;
     private List<AppServiceVersionVO> allAppServiceVersions;
     private String status;
-    private Long gitlabProjectId;
+    private Integer gitlabProjectId;
 
     public List<AppServiceVersionVO> getAllAppServiceVersions() {
         return allAppServiceVersions;
@@ -63,11 +63,11 @@ public class AppServiceVO {
         this.type = type;
     }
 
-    public Long getGitlabProjectId() {
+    public Integer getGitlabProjectId() {
         return gitlabProjectId;
     }
 
-    public void setGitlabProjectId(Long gitlabProjectId) {
+    public void setGitlabProjectId(Integer gitlabProjectId) {
         this.gitlabProjectId = gitlabProjectId;
     }
 }
