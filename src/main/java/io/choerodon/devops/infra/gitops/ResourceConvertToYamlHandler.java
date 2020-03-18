@@ -320,8 +320,8 @@ public class ResourceConvertToYamlHandler<T> {
 
     private void handlePV(T t, String objectType, String operationType, StringBuilder resultBuilder,
                           JSONObject jsonObject) {
-        Yaml yaml = new Yaml();
-        V1PersistentVolume v1PersistentVolume = yaml.loadAs(jsonObject.toJSONString(), V1PersistentVolume.class);
+        JSON json = new JSON();
+        V1PersistentVolume v1PersistentVolume = json.deserialize(jsonObject.toJSONString(), V1PersistentVolume.class);
         V1PersistentVolume newPv;
         if (objectType.equals(ResourceType.PERSISTENT_VOLUME.getType()) && v1PersistentVolume.getMetadata().getName().equals(((V1PersistentVolume) t).getMetadata().getName())) {
             if (operationType.equals(UPDATE)) {
@@ -335,7 +335,6 @@ public class ResourceConvertToYamlHandler<T> {
             // 修改的如果不是这个对象，保留这个对象
             newPv = v1PersistentVolume;
         }
-        JSON json = new JSON();
         String jsonStr = json.serialize(newPv);
         try {
             resultBuilder.append("\n").append(JsonYamlConversionUtil.json2yaml(jsonStr));
@@ -347,8 +346,8 @@ public class ResourceConvertToYamlHandler<T> {
 
     private void handlePVC(T t, String objectType, String operationType, StringBuilder resultBuilder,
                           JSONObject jsonObject) {
-        Yaml yaml = new Yaml();
-        V1PersistentVolumeClaim v1PersistentVolumeClaim = yaml.loadAs(jsonObject.toJSONString(), V1PersistentVolumeClaim.class);
+        JSON json = new JSON();
+        V1PersistentVolumeClaim v1PersistentVolumeClaim = json.deserialize(jsonObject.toJSONString(), V1PersistentVolumeClaim.class);
         V1PersistentVolumeClaim newPvc;
         if (objectType.equals(ResourceType.PERSISTENT_VOLUME_CLAIM.getType()) && v1PersistentVolumeClaim.getMetadata().getName().equals(((V1PersistentVolumeClaim) t).getMetadata().getName())) {
             if (operationType.equals(UPDATE)) {
@@ -362,7 +361,6 @@ public class ResourceConvertToYamlHandler<T> {
             // 修改的如果不是这个对象，保留这个对象
             newPvc = v1PersistentVolumeClaim;
         }
-        JSON json = new JSON();
         String jsonStr = json.serialize(newPvc);
         try {
             resultBuilder.append("\n").append(JsonYamlConversionUtil.json2yaml(jsonStr));
