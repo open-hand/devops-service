@@ -304,8 +304,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppServicePayload.setIamProjectId(projectId);
         //删除应用服务后需要发送消息，这里将消息的内容封近paylod
         List<DevopsUserPermissionVO> list = pagePermissionUsers(appServiceDTO.getProjectId(), appServiceDTO.getId(), CustomPageRequest.of(0, 0), null).getList();
-        if (!CollectionUtils.isEmpty(list)){
-            list.stream().forEach(devopsUserPermissionVO -> {
+        if (!CollectionUtils.isEmpty(list)) {
+            list.forEach(devopsUserPermissionVO -> {
                 devopsUserPermissionVO.setCreationDate(null);
             });
         }
@@ -2498,25 +2498,32 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public PageInfo<AppServiceVO> listAppServiceByIds(Long projectId, Set<Long> ids, Boolean doPage, Pageable pageable, String params) {
+    public PageInfo<AppServiceVO> listAppServiceByIds(Long projectId, Set<Long> ids, Boolean doPage, boolean withVersions, Pageable pageable, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         List<AppServiceDTO> appServiceDTOList = appServiceMapper.listAppServiceByIds(ids,
                 TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)));
-        List<AppServiceVersionDTO> appServiceVersionDTOS = new ArrayList<>();
-        if (!ObjectUtils.isEmpty(projectId)) {
-            appServiceVersionDTOS = appServiceVersionService.listAppServiceVersionByIdsAndProjectId(ids, projectId, null);
+        List<AppServiceVersionDTO> appServiceVersionDTOS;
+
+        if (withVersions) {
+            // 需要版本信息不查询
+            if (!ObjectUtils.isEmpty(projectId)) {
+                appServiceVersionDTOS = appServiceVersionService.listAppServiceVersionByIdsAndProjectId(ids, projectId, null);
+            } else {
+                appServiceVersionDTOS = new ArrayList<>(appServiceVersionService.listServiceVersionByAppServiceIds(ids, null, null, null));
+            }
         } else {
-            appServiceVersionDTOS.addAll(appServiceVersionService.listServiceVersionByAppServiceIds(ids, null, null, null));
+            // 不需要版本信息就不查询
+            appServiceVersionDTOS = new ArrayList<>();
         }
-        Map<Long, List<AppServiceVersionDTO>> appVerisonMap = appServiceVersionDTOS.stream().collect(Collectors.groupingBy(AppServiceVersionDTO::getAppServiceId));
+        Map<Long, List<AppServiceVersionDTO>> appVersionMap = appServiceVersionDTOS.stream().collect(Collectors.groupingBy(AppServiceVersionDTO::getAppServiceId));
         List<AppServiceVO> collect = appServiceDTOList.stream()
-                .filter(v -> !CollectionUtils.isEmpty(appVerisonMap.get(v.getId())))
-                .map(appServiceDTO -> dtoTOVo(appServiceDTO, appVerisonMap))
+                .filter(v -> !CollectionUtils.isEmpty(appVersionMap.get(v.getId())))
+                .map(appServiceDTO -> dtoTOVo(appServiceDTO, appVersionMap))
                 .collect(Collectors.toList());
         List<AppServiceVO> appServiceVOS = appServiceDTOList.stream()
-                .filter(v -> CollectionUtils.isEmpty(appVerisonMap.get(v.getId())))
-                .map(appServiceDTO -> dtoTOVo(appServiceDTO, appVerisonMap))
+                .filter(v -> CollectionUtils.isEmpty(appVersionMap.get(v.getId())))
+                .map(appServiceDTO -> dtoTOVo(appServiceDTO, appVersionMap))
                 .collect(Collectors.toList());
         collect.addAll(appServiceVOS);
         if (doPage == null || doPage) {
@@ -2603,11 +2610,11 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public Map<Long, Integer> countByProjectId(List<Long> longList) {
         Map<Long, Integer> map = new HashMap<>();
-        longList.stream().forEach(projectId -> {
+        longList.forEach(projectId -> {
             AppServiceDTO appServiceDTO = new AppServiceDTO();
             appServiceDTO.setProjectId(projectId);
             List<AppServiceDTO> select = appServiceMapper.select(appServiceDTO);
-            map.put(projectId, CollectionUtils.isEmpty(select) == true ? 0 : select.size());
+            map.put(projectId, CollectionUtils.isEmpty(select) ? 0 : select.size());
         });
         return map;
     }

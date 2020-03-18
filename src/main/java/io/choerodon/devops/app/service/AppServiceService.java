@@ -439,10 +439,15 @@ public interface AppServiceService {
     /**
      * 批量查询应用服务
      *
-     * @param ids
-     * @return
+     * @param projectId    项目id
+     * @param ids          应用服务id
+     * @param doPage       是否分页
+     * @param withVersions 是否需要版本信息
+     * @param pageable     分页参数
+     * @param params       查询参数
+     * @return 应用服务信息
      */
-    PageInfo<AppServiceVO> listAppServiceByIds(Long projectId, Set<Long> ids, Boolean doPage, Pageable pageable, String params);
+    PageInfo<AppServiceVO> listAppServiceByIds(Long projectId, Set<Long> ids, Boolean doPage, boolean withVersions, Pageable pageable, String params);
 
     /**
      * 根据导入应用类型查询应用所属的项目集合

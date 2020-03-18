@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,11 @@ public class UserAttrServiceImpl implements UserAttrService {
     @Override
     public UserAttrVO queryByUserId(Long userId) {
         return ConvertUtils.convertObject(baseQueryById(userId), UserAttrVO.class);
+    }
+
+    @Override
+    public List<UserAttrVO> listByUserIds(Set<Long> userIds) {
+        return ConvertUtils.convertList(baseListByUserIds(new ArrayList<>(userIds)), UserAttrVO.class);
     }
 
     @Override
