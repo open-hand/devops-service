@@ -719,6 +719,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             devopsEnvCommandDTO.setStatus(commandStatus);
             devopsEnvCommandDTO.setError(msg);
             devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+            // 如果是创建实例失败，发送通知
+            if (InstanceStatus.FAILED.getStatus().equals(instanceStatus)
+                    && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+                logger.debug("Sending instance notices: env id: {}, instance code {}, createdby: {}", instanceDTO.getEnvId(), instanceDTO.getCode(), instanceDTO.getCreatedBy());
+                sendNotificationService.sendWhenInstanceCreationFailure(instanceDTO.getEnvId(), instanceDTO.getCode(), instanceDTO.getCreatedBy(), devopsEnvCommandDTO.getId());
+            }
         }
     }
 

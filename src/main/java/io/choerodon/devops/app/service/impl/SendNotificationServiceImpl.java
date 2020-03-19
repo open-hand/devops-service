@@ -189,8 +189,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     /**
      * 删除数据消息发送同步执行
-     *
-     * @param appServiceId
      */
     @Override
     @Async
@@ -428,44 +426,46 @@ public class SendNotificationServiceImpl implements SendNotificationService {
      * @param resourceCommandId 资源commandId用于判断资源是否是在创建时失败的
      */
     private void doSendWhenResourceCreationFailure(String sendSettingCode, Long envId, String resourceName, Long creatorId, @Nullable Long resourceCommandId) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        doWithTryCatchAndLog(() -> {
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
 
-        // 校验资源是否是创建时失败
-        if (resourceCommandId != null) {
-            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(resourceCommandId);
-            if (devopsEnvCommandDTO == null) {
-                LogUtil.loggerInfoObjectNullWithId("DevOpsEnvCommand", resourceCommandId, LOGGER);
-                return;
-            } else {
-                if (!CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
-                    LOGGER.debug("Resource {} with name {} failed after updating instead of creating.", devopsEnvCommandDTO.getObject(), resourceName);
+            // 校验资源是否是创建时失败
+            if (resourceCommandId != null) {
+                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(resourceCommandId);
+                if (devopsEnvCommandDTO == null) {
+                    LogUtil.loggerInfoObjectNullWithId("DevOpsEnvCommand", resourceCommandId, LOGGER);
                     return;
+                } else {
+                    if (!CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+                        LOGGER.debug("Resource {} with name {} failed after updating instead of creating.", devopsEnvCommandDTO.getObject(), resourceName);
+                        return;
+                    }
                 }
             }
-        }
 
-        if (devopsEnvironmentDTO == null) {
-            LogUtil.loggerInfoObjectNullWithId("Environment", envId, LOGGER);
-            return;
-        }
+            if (devopsEnvironmentDTO == null) {
+                LogUtil.loggerInfoObjectNullWithId("Environment", envId, LOGGER);
+                return;
+            }
 
-        // 系统环境的实例失败不发送通知
-        if (EnvironmentType.SYSTEM.getValue().equals(devopsEnvironmentDTO.getType())) {
-            return;
-        }
+            // 系统环境的实例失败不发送通知
+            if (EnvironmentType.SYSTEM.getValue().equals(devopsEnvironmentDTO.getType())) {
+                return;
+            }
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
-        if (projectDTO == null) {
-            LogUtil.loggerInfoObjectNullWithId(PROJECT, devopsEnvironmentDTO.getProjectId(), LOGGER);
-            return;
-        }
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+            if (projectDTO == null) {
+                LogUtil.loggerInfoObjectNullWithId(PROJECT, devopsEnvironmentDTO.getProjectId(), LOGGER);
+                return;
+            }
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("projectName", Objects.requireNonNull(projectDTO.getName()));
-        params.put("envName", Objects.requireNonNull(devopsEnvironmentDTO.getName()));
-        params.put("resourceName", Objects.requireNonNull(resourceName));
+            Map<String, Object> params = new HashMap<>();
+            params.put("projectName", Objects.requireNonNull(projectDTO.getName()));
+            params.put("envName", Objects.requireNonNull(devopsEnvironmentDTO.getName()));
+            params.put("resourceName", Objects.requireNonNull(resourceName));
 
-        sendNotices(sendSettingCode, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(Objects.requireNonNull(creatorId))), params);
+            sendNotices(sendSettingCode, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(Objects.requireNonNull(creatorId))), params);
+        }, ex -> LOGGER.info("Exception occurred when send failure message about failed resource creation. the message code is {}, env id is {}, resource name is {}, and the ex is: {}", sendSettingCode, envId, resourceName, ex));
     }
 
     @Override
