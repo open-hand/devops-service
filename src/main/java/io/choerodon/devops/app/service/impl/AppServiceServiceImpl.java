@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -2530,6 +2531,23 @@ public class AppServiceServiceImpl implements AppServiceService {
             return PageInfoUtil.createPageFromList(collect, pageable);
         } else {
             return new PageInfo<>(collect);
+        }
+    }
+
+    @Override
+    public PageInfo<AppServiceVO> listByIdsOrPage(Long projectId, @Nullable Set<Long> ids, @Nullable Boolean doPage, Pageable pageable) {
+        // 如果没指定应用服务id，按照普通分页处理
+        if (CollectionUtils.isEmpty(ids)) {
+            return ConvertUtils.convertPage(basePageByOptions(projectId, null, null, null, null, doPage, pageable, null), AppServiceVO.class);
+        } else {
+            // 指定应用服务id，从这些id中根据参数决定是否分页
+            // 如果不分页
+            if (Boolean.FALSE.equals(doPage)) {
+                return new PageInfo<>(ConvertUtils.convertList(appServiceMapper.listAppServiceByIds(ids, null, null), AppServiceVO.class));
+            } else {
+                // 如果分页
+                return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> appServiceMapper.listAppServiceByIds(ids, null, null));
+            }
         }
     }
 

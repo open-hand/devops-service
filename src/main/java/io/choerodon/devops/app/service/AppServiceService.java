@@ -1,5 +1,11 @@
 package io.choerodon.devops.app.service;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.Nullable;
+
 import com.github.pagehelper.PageInfo;
 import org.springframework.data.domain.Pageable;
 
@@ -11,11 +17,6 @@ import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by younger on 2018/3/28.
@@ -448,6 +449,18 @@ public interface AppServiceService {
      * @return 应用服务信息
      */
     PageInfo<AppServiceVO> listAppServiceByIds(Long projectId, Set<Long> ids, Boolean doPage, boolean withVersions, Pageable pageable, String params);
+
+
+    /**
+     * 通过一组id分页查询或者不传id时进行分页查询
+     *
+     * @param projectId 项目id
+     * @param ids       应用服务Id
+     * @param doPage    是否分页
+     * @param pageable  分页参数
+     * @return 结果
+     */
+    PageInfo<AppServiceVO> listByIdsOrPage(Long projectId, @Nullable Set<Long> ids, @Nullable Boolean doPage, Pageable pageable);
 
     /**
      * 根据导入应用类型查询应用所属的项目集合
