@@ -775,6 +775,24 @@ public class AppServiceController {
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "通过一组id分页查询或者不传id时进行分页查询")
+    @GetMapping(value = "/list_by_ids_or_page")
+    public ResponseEntity<PageInfo<AppServiceVO>> listOrPage(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务Ids")
+            @RequestParam(value = "ids", required = false) Set<Long> ids,
+            @ApiParam(value = "是否分页")
+            @RequestParam(value = "doPage", required = false, defaultValue = "true") Boolean doPage,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore Pageable pageable) {
+        return Optional.ofNullable(
+                applicationServiceService.listByIdsOrPage(projectId, ids, doPage, pageable))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.list.app.service.ids"));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据导入类型查询应用服务所属的项目集合")
     @GetMapping(value = "/list_project_by_share")
     public ResponseEntity<List<ProjectVO>> listProjectByShare(
