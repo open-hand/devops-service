@@ -68,6 +68,17 @@ export default ((intlPrefix, formatMessage, projectId, id, organizationId) => ({
         method: 'get',
         url: `/base/v1/projects/${projectId}/except_self/with_limit`,
         data: params,
+        transformResponse(data) {
+          const array = JSON.parse(data);
+          if (array.length > 1) {
+            const obj = {
+              id: 'all',
+              name: formatMessage({ id: `${intlPrefix}.project.all` }),
+            };
+            array.unshift(obj);
+          }
+          return array;
+        },
       }),
     },
   ],
