@@ -79,7 +79,6 @@ const Share = () => {
       title: formatMessage({ id: `${intlPrefix}.share.rule.${isModify ? 'edit' : 'add'}` }),
       children: <ShareRule
         versionOptions={shareVersionsDs}
-        levelOptions={shareLevelDs}
         record={record || shareDs.current}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
