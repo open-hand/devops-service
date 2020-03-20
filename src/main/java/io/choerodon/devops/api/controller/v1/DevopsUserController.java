@@ -1,15 +1,16 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import io.choerodon.core.annotation.Permission;
 import io.choerodon.core.enums.ResourceType;
@@ -39,22 +40,6 @@ public class DevopsUserController {
             @ApiParam(value = "用户id", required = true)
             @PathVariable(value = "user_id") Long userId) {
         return Optional.ofNullable(userAttrService.queryByUserId(userId))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.user.get"));
-    }
-
-    /**
-     * 根据多个用户Id查询存在的多个用户信息
-     */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "根据多个用户Id查询存在的多个用户信息")
-    @GetMapping("/list_by_ids")
-    public ResponseEntity<List<UserAttrVO>> listByUserIds(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "用户id", required = true)
-            @RequestParam(value = "user_ids") Set<Long> iamUserIds) {
-        return Optional.ofNullable(userAttrService.listByUserIds(iamUserIds))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.user.get"));
     }
