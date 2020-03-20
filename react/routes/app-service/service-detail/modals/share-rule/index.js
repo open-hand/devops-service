@@ -13,7 +13,7 @@ import Tips from '../../../../../components/new-tips';
 const { Option } = Select;
 const VERSION_TYPE = ['master', 'feature', 'hotfix', 'bugfix', 'release'];
 
-export default observer(({ record, dataSet, versionOptions, levelOptions, projectId, store, formatMessage, appServiceId, intlPrefix, prefixCls, modal }) => {
+export default observer(({ record, dataSet, versionOptions, projectId, store, formatMessage, appServiceId, intlPrefix, prefixCls, modal }) => {
   const [hasFailed, setHasFailed] = useState(false);
   useEffect(() => {
     async function loadShareById() {
@@ -40,22 +40,6 @@ export default observer(({ record, dataSet, versionOptions, levelOptions, projec
         });
       }
     }
-  }, []);
-
-  useEffect(() => {
-    async function createOption() {
-      await levelOptions.query();
-      if (levelOptions.length > 1) {
-        const createdOption = levelOptions.create({
-          id: 'all',
-          name: formatMessage({ id: `${intlPrefix}.project.all` }),
-          appName: levelOptions.current.get('appName'),
-        });
-        levelOptions.unshift(createdOption);
-      }
-    }
-    createOption();
-    record.getField('shareLevel').set('options', levelOptions);
   }, []);
 
   useEffect(() => {
@@ -117,6 +101,7 @@ export default observer(({ record, dataSet, versionOptions, levelOptions, projec
       <Select
         name="shareLevel"
         searchable
+        searchMatcher="name"
         addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.detail.scope.tips` })} />}
       />
     </Form>

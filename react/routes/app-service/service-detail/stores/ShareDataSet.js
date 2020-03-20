@@ -13,7 +13,7 @@ function formatData(data) {
   }
 }
 
-export default ((intlPrefix, formatMessage, projectId, id) => ({
+export default ((intlPrefix, formatMessage, projectId, id, organizationId) => ({
   autoQuery: false,
   selection: false,
   pageSize: 10,
@@ -57,7 +57,19 @@ export default ((intlPrefix, formatMessage, projectId, id) => ({
     { name: 'id', type: 'number', label: formatMessage({ id: 'number' }) },
     { name: 'projectId', type: 'number' },
     { name: 'projectName', type: 'string', label: formatMessage({ id: `${intlPrefix}.share.range` }) },
-    { name: 'shareLevel', type: 'object', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.share.range` }), required: true },
+    {
+      name: 'shareLevel',
+      type: 'object',
+      textField: 'name',
+      valueField: 'id',
+      label: formatMessage({ id: `${intlPrefix}.share.range` }),
+      required: true,
+      lookupAxiosConfig: ({ dataSet, record, params, lookupCode }) => ({
+        method: 'get',
+        url: `/base/v1/projects/${projectId}/except_self/with_limit`,
+        data: params,
+      }),
+    },
   ],
   queryFields: [
     { name: 'id', type: 'number', label: formatMessage({ id: 'number' }) },
