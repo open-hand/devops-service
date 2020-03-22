@@ -194,10 +194,13 @@ public class PipelineServiceImpl implements PipelineService {
         removeStages(pipelineReqVO.getPipelineStageVOs(), pipelineId);
 
         for (int i = 0; i < pipelineReqVO.getPipelineStageVOs().size(); i++) {
+            Long oldStageId = pipelineReqVO.getPipelineStageVOs().get(i).getId();
             PipelineStageDTO pipelineStageDTO = createOrUpdateStage(pipelineReqVO.getPipelineStageVOs().get(i), pipelineId, projectId);
             List<PipelineTaskVO> taskDTOList = pipelineReqVO.getPipelineStageVOs().get(i).getPipelineTaskVOs();
+            if (taskDTOList != null && oldStageId != null) {
+                removeTasks(taskDTOList, oldStageId);
+            }
             if (taskDTOList != null) {
-                removeTasks(taskDTOList, pipelineStageDTO.getId());
                 taskDTOList.stream().filter(Objects::nonNull).forEach(t -> createOrUpdateTask(t, pipelineStageDTO.getId(), projectId));
             }
         }
