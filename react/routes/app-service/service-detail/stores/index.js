@@ -25,9 +25,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       match: { params: { id } },
       children,
     } = props;
-    const emptyDataSetConfig = { transport: { read: { method: 'get' } }, paging: false };
     const { appServiceStore, intlPrefix } = useAppTopStore();
-    const shareVersionsDs = useMemo(() => new DataSet(emptyDataSetConfig), []);
     const versionDs = useMemo(() => new DataSet(VersionDataSet(formatMessage, projectId, id)), [formatMessage, id, projectId]);
     const permissionDs = useMemo(() => new DataSet(AllocationDataSet(formatMessage, intlPrefix, projectId, id)), [formatMessage, id, projectId]);
     const shareDs = useMemo(() => new DataSet(ShareDataSet(intlPrefix, formatMessage, projectId, id, organizationId)), [formatMessage, id, projectId]);
@@ -56,7 +54,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
       detailDs,
       nonePermissionDs,
       permissionStore,
-      shareVersionsDs,
       params: {
         projectId,
         id,
