@@ -2,7 +2,7 @@ English | [简体中文](./README.md)
 
 # DevOps Service
 
-`DevOps Service` is the continuous delivery service of Choerodon. Current version: `0.19.0`
+`DevOps Service` is the continuous delivery service of Choerodon. Current version: `0.21.0`
 
 DevOps Service integrated several open source tools to automate the process of `planning`, `coding`, `building`, `testing`, `deployment`, `operation` and `monitoring`.
  After a little simple configuration, you'll get the smoothest development experience.
@@ -102,7 +102,6 @@ DevOps Service integrated several open source tools to automate the process of `
     gitlab:
       url: "gitlab.example.com" # gitlab url
       sshUrl: "gitlab.example.com" # gitlab url for ssh operations
-      password: 12345678 # default password for user created by gitlab, length no less than 8
       projectLimit: 100 # the limit of the project number that a user can create
     helm:
       url: "helm.example.com" # the repository url to place helm charts
@@ -155,6 +154,18 @@ DevOps Service integrated several open source tools to automate the process of `
     ribbon:
       ConnectTimeout: 50000
       ReadTimeout: 50000
+
+  # 批量部署的请求条数限制
+  devops:
+    batch:
+      deployment:
+        maxSize: 20
+
+  # websocket的最大缓冲区大小，单位字节byte
+  websocket:
+    buffer:
+      maxTextMessageSize: 4194304
+      maxBinaryMessageSize: 4194304
   ```
 
 ## Installation and Getting Started

@@ -104,6 +104,12 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
 
         // 以上是预检
         DevopsPolarisRecordDTO devopsPolarisRecordDTO = queryRecordByScopeIdAndScope(scopeId, scope);
+
+        // 检查是否超时
+        if (devopsPolarisRecordDTO != null && checkTimeout(devopsPolarisRecordDTO.getId())) {
+            devopsPolarisRecordDTO = devopsPolarisRecordMapper.selectByPrimaryKey(devopsPolarisRecordDTO.getId());
+        }
+
         if (devopsPolarisRecordDTO == null
                 || !PolarisScanningStatus.FINISHED.getStatus().equals(devopsPolarisRecordDTO.getStatus())) {
             return handleNullOrUnfinishedRecord(projectId, scopeType, scopeId, devopsPolarisRecordDTO);

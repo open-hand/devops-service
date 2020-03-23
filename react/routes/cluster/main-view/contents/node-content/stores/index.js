@@ -2,6 +2,7 @@ import React, { useContext, useMemo, useEffect, createContext } from 'react';
 import { inject } from 'mobx-react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
+import { axios } from '@choerodon/boot';
 import { DataSet } from 'choerodon-ui/pro/lib';
 import { useClusterStore } from '../../../../stores';
 import NodePodsDataSet from './NodePodsDataSet';
@@ -41,9 +42,22 @@ const NodeContentStoreProvider = injectIntl(inject('AppState')(observer((props) 
       nodePodsDs.transport.read.url = `devops/v1/projects/${projectId}/clusters/page_node_pods?cluster_id=${parentId}&node_name=${name}`;
       nodePodsDs.query();
     } else {
-      contentStore.loadGrafanaUrl(projectId, parentId);
+      loadMonitor();
     }
   }, [projectId, name, parentId, tabkey]);
+
+  async function loadMonitor() {
+    const res = await contentStore.loadGrafanaUrl(projectId, parentId);
+    if (res) {
+      const uri = escape(`${window.location}`);
+      axios.get('/oauth/is_login', { withCredentials: true })
+        .then((response) => {
+          if (!response) {
+            window.location = `${window._env_.API_HOST}/oauth/oauth/authorize?response_type=token&client_id=${window._env_.CLIENT_ID}&state=&redirect_uri=${uri}%26redirectFlag`;
+          }
+        });
+    }
+  }
 
   const value = {
     formatMessage,

@@ -2,7 +2,7 @@
  
 # DevOps Service  
 
-`DevOps Service` DevOps Service是Choerodon平台实现持续交付的基础. 当前版本为: `0.19.0`
+`DevOps Service` DevOps Service是Choerodon平台实现持续交付的基础. 当前版本为: `0.21.0`
 
 DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具，以此形成了计划、编码、测试、部署、运维以及监控的DevOps闭环。
 并且只需通过简单的配置，您便能获得最佳的开发体验。
@@ -102,7 +102,6 @@ DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具
     gitlab:
       url: "gitlab.example.com" # gitlab地址
       sshUrl: "gitlab.example.com" # 用于ssh操作的gitlab地址
-      password: 12345678 # gitlab创建用户的默认密码，不能少于8位
       projectLimit: 100 # gitlab用户可以创建的项目的数量限制
     helm:
       url: "helm.example.com" # 存放helm chart包的仓库地址
@@ -155,6 +154,18 @@ DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具
     ribbon:
       ConnectTimeout: 50000
       ReadTimeout: 50000
+
+  # 批量部署的请求条数限制
+  devops:
+    batch:
+      deployment:
+        maxSize: 20
+
+  # websocket的最大缓冲区大小，单位字节byte
+  websocket:
+    buffer:
+      maxTextMessageSize: 4194304
+      maxBinaryMessageSize: 4194304
   ```
 
 

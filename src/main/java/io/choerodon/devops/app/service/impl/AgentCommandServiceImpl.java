@@ -337,7 +337,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         gitEnvConfigVO.setEnvId(devopsEnvironmentDTO.getId());
         gitEnvConfigVO.setGitRsaKey(devopsEnvironmentDTO.getEnvIdRsa());
         gitEnvConfigVO.setGitUrl(repoUrl);
-        gitEnvConfigVO.setNamespace(devopsEnvironmentDTO.getCode());
+        gitEnvConfigVO.setNamespace(GitOpsUtil.getEnvNamespace(devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getType()));
         gitEnvConfigVOS.add(gitEnvConfigVO);
         gitConfigVO.setEnvs(gitEnvConfigVOS);
         gitConfigVO.setGitHost(gitlabSshUrl);

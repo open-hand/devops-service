@@ -1,6 +1,6 @@
 import React, { useState, Fragment, Suspense, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Tabs } from 'choerodon-ui/pro';
+import { Tabs, Tooltip } from 'choerodon-ui/pro';
 import map from 'lodash/map';
 import isEmpty from 'lodash/isEmpty';
 import { Collapse, Progress, Icon } from 'choerodon-ui';
@@ -26,7 +26,6 @@ const collapseDetail = observer(({ loading }) => {
   } = useClusterContentStore();
 
   const [collapseType, setCollapseType] = useState('summary');
-  
   const clusterSummary = useMemo(() => (['healthCheck', 'imageCheck', 'networkCheck', 'resourceCheck', 'securityCheck']), []);
   const clusterSummaryData = useMemo(() => {
     if (clusterSummaryDs.current) {
@@ -51,7 +50,7 @@ const collapseDetail = observer(({ loading }) => {
         <span className={`${prefixCls}-polaris-tabs-header-score`}>
           {formatMessage({ id: `${intlPrefix}.polaris.score` })}:
         </span>
-        {isLoading ? <Progress type="loading" size="small" /> : <span>{checked ? `${score}%` : '-'}</span>}
+        {isLoading ? <Progress type="loading" size="small" /> : <span className={`${prefixCls}-polaris-tabs-header-number-${checked}`}>{checked ? `${score}%` : '-'}</span>}
         {!isLoading && hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
         <ProgressBar
           loading={isLoading}
@@ -72,7 +71,7 @@ const collapseDetail = observer(({ loading }) => {
             {!isLoading && hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
           </div>
         )}
-        <div className={`${prefixCls}-polaris-tabs-header-item`}>
+        <div className={`${prefixCls}-polaris-tabs-header-item${!projectName ? '-external' : ''}`}>
           <span className={`${prefixCls}-polaris-tabs-header-text`}>{formatMessage({ id: 'envCode' })}:</span>
           <span>{namespace}</span>
           {!isLoading && !envName && hasErrors && <Icon type="cancel" className={`${prefixCls}-polaris-tabs-header-error`} />}
@@ -80,7 +79,9 @@ const collapseDetail = observer(({ loading }) => {
         {projectName && (
           <div className={`${prefixCls}-polaris-tabs-header-item`}>
             <span className={`${prefixCls}-polaris-tabs-header-text`}>{formatMessage({ id: `${intlPrefix}.belong.project` })}:</span>
-            <span>{projectName}</span>
+            <Tooltip title={projectName}>
+              <span className={`${prefixCls}-polaris-tabs-header-text-project`}>{projectName}</span>
+            </Tooltip>
           </div>
         )}
       </div>
