@@ -152,6 +152,7 @@ const ResourceSidebar = injectIntl(inject('AppState')(observer((props) => {
     setChangedValue(null);
     setHasEditorError(false);
     setShowError(false);
+    setFileDisabled(false);
     setMode(modeCurrent);
 
     modal.update({ okProps: { disabled: false } });
