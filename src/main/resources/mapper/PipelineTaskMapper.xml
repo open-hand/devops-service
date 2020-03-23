@@ -10,4 +10,28 @@
     WHERE
     dpt.app_service_deploy_id = #{appServiceDeployId}
 </select>
+
+    <delete id="deletePipelineTask">
+        DELETE dpt1,
+            dpasd1
+        FROM
+            devops_pipeline_task dpt1
+            LEFT JOIN devops_pipeline_app_service_deploy dpasd1 ON dpasd1.id = dpt1.app_service_deploy_id
+        WHERE
+            dpt1.id IN (
+                SELECT
+                    *
+                FROM
+                    (
+                        SELECT
+                            dpt.id
+                        FROM
+                            devops_pipeline_task dpt
+                            LEFT JOIN devops_pipeline_stage dps ON dpt.stage_id = dps.id
+                            LEFT JOIN devops_pipeline dp ON dps.pipeline_id = dp.id
+                        WHERE
+                            (dps.id IS NULL OR dp.id IS NULL)
+                    ) AS tmp
+            )
+    </delete>
 </mapper>

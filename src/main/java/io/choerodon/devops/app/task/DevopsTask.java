@@ -44,4 +44,14 @@ public class DevopsTask {
         devopsCheckLogService.checkLog("0.21.0");
     }
 
+    /**
+     * 升级0.20.0-0.21.0，修复组织管理员的数据
+     */
+    @JobTask(maxRetryCount = 3, code = "upgradeVersionTo21.1", description = "升级0.21.0-0.21.1，迁移数据")
+    @TimedTask(name = "upgradeVersionTo21.1", description = "升级0.21.0-0.21.1，迁移数据", oneExecution = true,
+            repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
+    public void syncPipeline(Map<String, Object> map) {
+        logger.info("begin to upgrade 0.21.0 to 0.21.1 Pipeline data.");
+        devopsCheckLogService.checkLog("0.21.1");
+    }
 }

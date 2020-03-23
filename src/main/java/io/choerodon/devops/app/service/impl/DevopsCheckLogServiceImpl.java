@@ -29,6 +29,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
+import io.choerodon.devops.infra.mapper.PipelineTaskMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 
@@ -52,6 +53,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private UserAttrService userAttrService;
     @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
+    @Autowired
+    private PipelineTaskMapper pipelineTaskMapper;
 
     @Override
     public void checkLog(String version) {
@@ -90,6 +93,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     syncRoot();
                     syncOrgRoot();
                     LOGGER.info("修复数据完成");
+                } else if("0.21.1".equals(version)){
+                    LOGGER.info("修复数据开始!");
+                    pipelineTaskMapper.deletePipelineTask();
+                    LOGGER.info("修复数据完成!!!!!!");
                 } else {
                     LOGGER.info("version not matched");
                 }
