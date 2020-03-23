@@ -1624,12 +1624,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     if (!devopsRegistrySecretDTO.getSecretDetail().equals(gson.toJson(configVO))) {
                         devopsRegistrySecretDTO.setSecretDetail(gson.toJson(configVO));
                         devopsRegistrySecretService.baseUpdate(devopsRegistrySecretDTO);
-                        agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsRegistrySecretDTO.getSecretCode(), configVO, UPDATE);
-                    } else {
-                        if (!devopsRegistrySecretDTO.getStatus()) {
-                            agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsRegistrySecretDTO.getSecretCode(), configVO, UPDATE);
-                        }
                     }
+                    // 无论是否修改，都通知agent创建secret，保证secret存在
+                    // 解决secret在Kubernetes集群中被删除而猪齿鱼无法感知的问题
+                    // 此为临时解决方案，应对0.21.x，在0.22版本将修改
+                    agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsRegistrySecretDTO.getSecretCode(), configVO, UPDATE);
                     secretCode = devopsRegistrySecretDTO.getSecretCode();
                 }
             }
