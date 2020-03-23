@@ -93,7 +93,7 @@ const numberDetail = observer(({ isLoading }) => {
       <Radar
         num={!isLoading ? score : null}
         loading={isLoading}
-        failed={polarisNumDS.current && polarisNumDS.current.get('status') === 'failed'}
+        failed={polarisNumDS.current && (polarisNumDS.current.get('status') === 'failed' || polarisNumDS.current.get('status') === 'timeout')}
       />
     );
   }

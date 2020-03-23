@@ -156,8 +156,7 @@ export default class Pods extends PureComponent {
       && sum !== currentPodTargetCount
       && connect
       && status === 'success';
-    const descIsEnable = btnDisable
-      || !connect
+    const descIsEnable = !connect
       || currentPodTargetCount <= 1
       || status !== 'success';
 
