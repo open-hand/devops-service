@@ -250,7 +250,7 @@ public class SagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String handleDeleteAdminEvent(String payload) {
-        DeleteAdminVO deleteAdminVO= JSONObject.parseObject(payload, DeleteAdminVO.class);
+        DeleteAdminVO deleteAdminVO = JSONObject.parseObject(payload, DeleteAdminVO.class);
         gitlabUserService.deleteAdmin(deleteAdminVO == null ? null : deleteAdminVO.getAdminUserId());
         return payload;
     }
