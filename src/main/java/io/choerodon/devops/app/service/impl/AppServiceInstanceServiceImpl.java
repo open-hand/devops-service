@@ -77,6 +77,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private static final String FILE_SEPARATOR = "file.separator";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
+    private static final String NAMESPACE = "namespace";
     private static Gson gson = new Gson();
 
     @Value("${services.helm.url}")
@@ -1389,6 +1390,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         //发送重启或停止实例的command
         Map<String, String> stopMap = new HashMap<>();
         stopMap.put(RELEASE_NAME, appServiceInstanceDTO.getCode());
+        stopMap.put(NAMESPACE, devopsEnvironmentDTO.getCode());
         String payload = gson.toJson(stopMap);
         String instanceCommandType;
         if (CommandType.RESTART.getType().equals(type)) {
@@ -1614,7 +1616,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByClusterIdAndNamespace(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsConfigDTO.getId(), appServiceDTO.getProjectId());
                 if (devopsRegistrySecretDTO == null) {
                     //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
-                    secretCode = String.format("%s%s", "secret-",  GenerateUUID.generateUUID().substring(0,20));
+                    secretCode = String.format("%s%s", "secret-", GenerateUUID.generateUUID().substring(0, 20));
                     // 测试应用的secret是没有环境id的，此处环境id只是暂存，之后不使用，考虑后续版本删除此字段
                     devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), secretCode, gson.toJson(configVO), appServiceDTO.getProjectId());
                     devopsRegistrySecretService.baseCreate(devopsRegistrySecretDTO);

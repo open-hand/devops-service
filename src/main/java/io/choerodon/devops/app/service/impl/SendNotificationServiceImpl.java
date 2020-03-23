@@ -508,7 +508,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     params.put("organizationId", organizationId);
                     params.put("gitlabPassword", Objects.requireNonNull(password));
 
-                    sendNotices(NoticeCodeConstants.GITLAB_PASSWORD, 0L, ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params);
+                    sendNotices(NoticeCodeConstants.GITLAB_PWD, 0L, ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params);
                 },
                 ex -> LOGGER.info("Error occurred when sending message about user's default password. The exception is {}.", ex));
     }

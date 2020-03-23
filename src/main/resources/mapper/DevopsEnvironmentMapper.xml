@@ -60,6 +60,20 @@
         <result property="description" column="description"/>
     </resultMap>
 
+    <resultMap id="envWithInstanceResultMap" type="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="code" column="code"/>
+        <result property="type" column="type"/>
+        <result property="clusterId" column="cluster_id"/>
+        <result property="envIdRsa" column="env_id_rsa"/>
+        <result property="projectId" column="project_id"/>
+        <result property="gitlabEnvProjectId" column="gitlab_env_project_id"/>
+        <collection property="instances" ofType="java.lang.String" javaType="java.util.List" notNullColumn="instance_code">
+            <result column="instance_code"/>
+        </collection>
+    </resultMap>
+
     <update id="updateDevopsEnvGroupId" parameterType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
         UPDATE devops_env de set de.devops_env_group_id = null where de.id = #{envId}
     </update>
@@ -467,5 +481,23 @@
       <if test="type != null and type != ''">
           AND de.type = #{type,jdbcType=VARCHAR}
       </if>
+    </select>
+
+    <select id="listEnvWithInstancesByClusterIdForAgent"
+            resultMap="envWithInstanceResultMap">
+        SELECT
+        de.id,
+        de.name,
+        de.code,
+        de.type,
+        de.cluster_id,
+        de.env_id_rsa,
+        de.project_id,
+        de.gitlab_env_project_id,
+        dasi.code AS instance_code
+        FROM devops_env de
+        LEFT JOIN devops_app_service_instance dasi ON de.id = dasi.env_id
+        WHERE de.cluster_id = #{clusterId,jdbcType=BIGINT}
+        AND de.gitlab_env_project_id IS NOT NULL
     </select>
 </mapper>

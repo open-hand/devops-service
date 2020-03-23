@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
-
 import javax.annotation.Nullable;
 
 import com.github.pagehelper.PageInfo;
@@ -203,5 +202,12 @@ public interface DevopsClusterService {
 
     Boolean checkUserClusterPermission(Long clusterId, Long userId);
 
-    ClusterOverViewVO getClusterOverview(Long organizationId);
+    ClusterOverViewVO getOrganizationClusterOverview(Long organizationId);
+
+    /**
+     * 获取平台级别的集群概览数据
+     *
+     * @return 平台的集群概览数据
+     */
+    ClusterOverViewVO getSiteClusterOverview();
 }

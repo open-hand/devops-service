@@ -30,8 +30,6 @@ const modalStyle2 = {
   width: 'calc(100vw - 3.52rem)',
 };
 
-// let stopModal;
-
 const ListView = withRouter(observer((props) => {
   const {
     intlPrefix,
@@ -42,13 +40,8 @@ const ListView = withRouter(observer((props) => {
   const {
     intl: { formatMessage },
     AppState: {
-      currentMenuType: {
-        id: projectId,
-      },
+      currentMenuType: { projectId },
     },
-    importDs,
-    importTableDs,
-    selectedDs,
     listDs,
   } = useAppServiceStore();
   const [isInit, setIsInit] = useState(true);
@@ -180,27 +173,18 @@ const ListView = withRouter(observer((props) => {
   }
 
   function openImport() {
-    importDs.reset();
-    importDs.create();
     Modal.open({
       key: modalKey2,
       drawer: true,
       style: modalStyle2,
-      title: <FormattedMessage id={`${intlPrefix}.import`} />,
+      title: formatMessage({ id: `${intlPrefix}.import` }),
       children: <ImportForm
-        dataSet={importDs}
-        tableDs={importTableDs}
-        record={importDs.current}
         appServiceStore={appServiceStore}
-        projectId={projectId}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
         refresh={refresh}
-        selectedDs={selectedDs}
       />,
       okText: formatMessage({ id: 'import' }),
-      afterClose: () => { selectedDs.removeAll(); },
-      onCancel: () => handleCancel(importDs),
     });
   }
 

@@ -15,6 +15,7 @@ export default observer(() => {
     formDs,
     pathListDs,
     serviceDs,
+    annotationDs,
     intl: { formatMessage },
     prefixCls,
     modal,
@@ -63,8 +64,16 @@ export default observer(() => {
     pathListDs.create();
   }
 
+  function handleAddAnnotation() {
+    annotationDs.create();
+  }
+
   function handleRemovePath(removeRecord) {
     pathListDs.remove(removeRecord);
+  }
+
+  function handleRemoveAnnotation(annotationRecord) {
+    annotationDs.remove(annotationRecord);
   }
 
   function renderService({ serviceRecord, text }) {
@@ -144,6 +153,33 @@ export default observer(() => {
         onClick={handleAddPath}
       >
         {formatMessage({ id: 'domain.path.add' })}
+      </Button>
+      <div className={`${prefixCls}-domain-form-annotation-title`}>
+        Annotations
+      </div>
+      {map(annotationDs.data, (annotationRecord) => (
+        <Form columns={14} record={annotationRecord} style={{ width: '103.3%' }} key={annotationRecord.id}>
+          <TextField colSpan={3} name="domain" />
+          <span className={`${prefixCls}-domain-form-annotation-equal`}>/</span>
+          <TextField colSpan={3} name="key" />
+          <span className={`${prefixCls}-domain-form-annotation-equal`}>=</span>
+          <TextField colSpan={5} name="value" />
+          {annotationDs.length > 1 ? (
+            <Button
+              funcType="flat"
+              icon="delete"
+              onClick={() => handleRemoveAnnotation(annotationRecord)}
+            />
+          ) : <span />}
+        </Form>
+      ))}
+      <Button
+        funcType="flat"
+        color="primary"
+        icon="add"
+        onClick={handleAddAnnotation}
+      >
+        {formatMessage({ id: 'domain.annotation.add' })}
       </Button>
     </div>
   );

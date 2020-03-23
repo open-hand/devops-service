@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.controller.v1
 
-import org.mockito.BDDMockito
-import org.springframework.http.ResponseEntity
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
@@ -166,7 +164,6 @@ class DevopsEnvPodControllerSpec extends Specification {
         connectedEnvList.add(1L)
         List<Long> updateEnvList = new ArrayList<>()
         updateEnvList.add(1L)
-        envUtil.getConnectedClusterList() >> connectedEnvList
         envUtil.getUpdatedClusterList() >> updateEnvList
 
         when: '分页查询容器管理'

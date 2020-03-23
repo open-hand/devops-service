@@ -1,40 +1,44 @@
 @import '~choerodon-ui/lib/style/themes/default';
 
 .c7ncd-pipeline-content {
-    margin-top: 0.01rem !important;
-    padding-bottom: 0;
-    padding-top: 0.06rem;
-    .@{c7n-pro-prefix}-table-advanced-query-bar {
-      .@{c7n-pro-prefix}-select-wrapper {
-        width: 2.8rem;
+  margin-top: 0.01rem !important;
+  padding-bottom: 0;
+  padding-top: 0.06rem;
+  .@{c7n-pro-prefix}-table-advanced-query-bar {
+    .@{c7n-pro-prefix}-select-wrapper {
+      width: 2.8rem;
+    }
+    .@{c7n-pro-prefix}-select-multiple-block {
+      background: none;
+      color: rgb(0, 0, 0);
+      padding-right: 0;
+
+      & > div:not(:last-child) {
+        max-width: 100%;
       }
-      .@{c7n-pro-prefix}-select-multiple-block {
-        background: none;
-        color: rgb(0, 0, 0);
-        padding-right: 0;
 
-        & > div:not(:last-child) {
-          max-width: 100%;
-        }
+      &:after {
+        content: ',';
+      }
 
-        &:after {
-          content: ',';
-        }
+      &:nth-last-child(2):after {
+        content: none;
+      }
 
-        &:nth-last-child(2):after {
-          content: none;
-        }
-
-        .icon {
-          display: none;
-        }
+      .icon {
+        display: none;
       }
     }
-    &-execute {
-      display: inline-block;
-      margin-left: 0.08rem;
-      vertical-align: middle;
-    }
+  }
+  &-execute {
+    display: inline-block;
+    margin-left: 0.08rem;
+    vertical-align: middle;
+  }
+
+  .@{c7n-pro-prefix}-table-advanced-query-bar-button > .c7n-pro-btn-default {
+    color: #3f51b5;
+  }
 }
 
 .c7ncd-pipeline-search {

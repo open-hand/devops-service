@@ -5,6 +5,7 @@ import { DataSet } from 'choerodon-ui/pro';
 import FormDataSet from './FormDataSet';
 import PathListDataSet from './PathListDataSet';
 import ServiceDataSet from './ServiceDataSet';
+import AnnotationDataSet from './AnnotationDataSet';
 
 const Store = createContext();
 
@@ -26,7 +27,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
 
     const serviceDs = useMemo(() => new DataSet(ServiceDataSet({ projectId, envId, appServiceId })), [projectId, envId, appServiceId]);
     const pathListDs = useMemo(() => new DataSet(PathListDataSet({ formatMessage, intlPrefix, projectId, envId, ingressId, serviceDs })), [projectId, envId, ingressId]);
-    const formDs = useMemo(() => new DataSet(FormDataSet({ formatMessage, intlPrefix, projectId, envId, ingressId, appServiceId, pathListDs, serviceDs })), [projectId, envId, ingressId, appServiceId]);
+    const annotationDs = useMemo(() => new DataSet(AnnotationDataSet({ formatMessage })), []);
+    const formDs = useMemo(() => new DataSet(FormDataSet({ formatMessage, intlPrefix, projectId, envId, ingressId, appServiceId, pathListDs, serviceDs, annotationDs })), [projectId, envId, ingressId, appServiceId]);
 
     useEffect(() => {
       if (ingressId) {
@@ -34,6 +36,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       } else {
         formDs.create();
         pathListDs.create();
+        annotationDs.create();
       }
     }, []);
 
@@ -42,6 +45,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       formDs,
       pathListDs,
       serviceDs,
+      annotationDs,
     };
     return (
       <Store.Provider value={value}>

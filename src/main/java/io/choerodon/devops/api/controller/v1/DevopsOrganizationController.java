@@ -52,7 +52,7 @@ public class DevopsOrganizationController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationServiceService.listAppServiceByIds(null, ids, doPage, pageable, params))
+                applicationServiceService.listAppServiceByIds(null, ids, doPage, true, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.service.ids"));
     }
@@ -69,7 +69,7 @@ public class DevopsOrganizationController {
     @ApiOperation("组织层概览，返回集群的概览")
     public ResponseEntity<ClusterOverViewVO> clusterOverview(
             @PathVariable(name = "organization_id") Long organizationId) {
-        return Optional.ofNullable(devopsClusterService.getClusterOverview(organizationId))
+        return Optional.ofNullable(devopsClusterService.getOrganizationClusterOverview(organizationId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.cluster.org.id"));
     }

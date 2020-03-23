@@ -11,15 +11,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.annotation.Permission;
-import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 
 @RestController
 @RequestMapping(value = "/v1/upgrade")
 public class  DevopsCheckController {
 
-    private final Logger logger = LoggerFactory.getLogger(DevopsCheckController.class);
-    private Gson gson = new Gson();
 
     @Autowired
     private DevopsCheckLogService devopsCheckLogService;

@@ -9,6 +9,7 @@ import io.kubernetes.client.models.V1beta1IngressRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.choerodon.devops.api.validator.DevopsIngressValidator;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
@@ -71,6 +72,9 @@ public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1
         }
         if (v1beta1Ingress.getApiVersion() == null) {
             throw new GitOpsExplainException(GitOpsObjectError.INGRESS_API_VERSION_NOT_FOUND.getError(), filePath);
+        }
+        if (v1beta1Ingress.getMetadata().getAnnotations() != null) {
+            DevopsIngressValidator.checkAnnotationsForGitOps(v1beta1Ingress.getMetadata().getAnnotations(), filePath);
         }
     }
 

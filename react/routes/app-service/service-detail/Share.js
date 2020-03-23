@@ -18,17 +18,13 @@ const modalStyle = {
 
 const Share = () => {
   const {
-    appServiceStore,
     intlPrefix,
     prefixCls,
   } = useAppTopStore();
   const {
     intl: { formatMessage },
     shareDs,
-    shareVersionsDs,
-    shareLevelDs,
     params: { id },
-    AppState: { currentMenuType: { projectId } },
     detailDs,
   } = useServiceDetailStore();
 
@@ -52,7 +48,7 @@ const Share = () => {
     return (
       <ClickText
         value={`#${value}`}
-        onClick={openModal}
+        onClick={() => openModal('edit')}
         clickAble
         permissionCode={['devops-service.app-share-rule.update']}
       />
@@ -71,38 +67,24 @@ const Share = () => {
     return <Action data={actionData} />;
   }
 
-  function openModal(record) {
-    const type = shareDs.current.status !== 'add' ? 'edit' : 'add';
-    const isModify = shareDs.current.status !== 'add';
+  function openModal(type) {
+    const record = shareDs.current;
+    const isModify = type !== 'add';
+    const shareId = isModify ? record.get('id') : null;
     Modal.open({
       key: modalKey,
-      title: formatMessage({ id: `${intlPrefix}.share.rule.${isModify ? 'edit' : 'add'}` }),
+      title: formatMessage({ id: `${intlPrefix}.share.rule.${type}` }),
       children: <ShareRule
-        versionOptions={shareVersionsDs}
-        levelOptions={shareLevelDs}
-        record={record || shareDs.current}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
-        formatMessage={formatMessage}
-        projectId={projectId}
         appServiceId={id}
-        store={appServiceStore}
-        dataSet={shareDs}
+        shareId={shareId}
+        refresh={refresh}
       />,
       drawer: true,
       style: modalStyle,
       okText: formatMessage({ id: isModify ? 'save' : 'add' }),
-      onCancel: handleCancel,
     });
-  }
-
-  function handleCancel() {
-    const { current } = shareDs;
-    if (current.status === 'add') {
-      shareDs.remove(current);
-    } else {
-      current.reset();
-    }
   }
 
   function handleDelete() {
@@ -129,7 +111,7 @@ const Share = () => {
         >
           <Button
             icon="playlist_add"
-            onClick={() => openModal(shareDs.create())}
+            onClick={() => openModal('add')}
             disabled={isStop}
           >
             <FormattedMessage id={`${intlPrefix}.share.rule.add`} />
