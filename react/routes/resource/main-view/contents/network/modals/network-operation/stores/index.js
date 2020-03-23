@@ -70,7 +70,7 @@ function StoreProvider(props) {
             const { type, target, target: { instances, targetAppServiceId }, appServiceId: currentAppServiceId } = res;
             loadInfo({ data: res, formatMessage, targetLabelsDs, portDs, endPointsDs, formDs, networkInfoDs });
             // 这里做兼容旧数据的处理 一个网络对应部分实例
-            if (appServiceId || targetAppServiceId) {
+            if (currentAppServiceId || targetAppServiceId) {
               appInstanceOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service_instances/list_running_instance?env_id=${envId}&app_service_id=${currentAppServiceId || targetAppServiceId}`;
               appInstanceOptionsDs.query()
                 .then(() => {
