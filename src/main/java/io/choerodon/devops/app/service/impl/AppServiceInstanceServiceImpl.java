@@ -16,7 +16,6 @@ import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1beta1Ingress;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -70,7 +69,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private static final String AUTHTYPE = "pull";
     private static final String APP_SERVICE = "appService";
     private static final String HELM_RELEASE = "C7NHelmRelease";
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AppServiceInstanceServiceImpl.class);
     private static final String MASTER = "master";
     private static final String YAML_SUFFIX = ".yaml";
     private static final String RELEASE_PREFIX = "release-";
