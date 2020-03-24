@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react/index';
+import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Icon } from 'choerodon-ui';
 import _ from 'lodash';

@@ -1,11 +1,15 @@
-import React, { createContext, useContext, useMemo, useEffect } from 'react/index';
+import React, { createContext, useContext, useMemo, useEffect } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
+import { axios } from '@choerodon/boot';
 import { DataSet } from 'choerodon-ui/pro';
+import forEach from 'lodash/forEach';
+import find from 'lodash/find';
 import FormDataSet from './FormDataSet';
 import PathListDataSet from './PathListDataSet';
 import ServiceDataSet from './ServiceDataSet';
 import AnnotationDataSet from './AnnotationDataSet';
+import { handlePromptError } from '../../../../../../utils';
 
 const Store = createContext();
 
@@ -33,12 +37,38 @@ export const StoreProvider = injectIntl(inject('AppState')(
     useEffect(() => {
       if (ingressId) {
         formDs.query();
+        loadData();
       } else {
+        serviceDs.query();
         formDs.create();
         pathListDs.create();
         annotationDs.create();
       }
     }, []);
+
+    async function loadData() {
+      const [ingress, serviceList] = await axios.all([formDs.query(), serviceDs.query()]);
+      if (handlePromptError(ingress) && handlePromptError(serviceList)) {
+        forEach(ingress.pathList || [], ({ serviceId, serviceStatus, serviceName, serviceError, path, servicePort }) => {
+          const service = serviceDs.find((eachRecord) => eachRecord.get('id') === serviceId);
+          const pathRecord = pathListDs.find((eachRecord) => eachRecord.get('serviceId') === serviceId && eachRecord.get('path') === path);
+          if (serviceStatus !== 'running' && !service) {
+            const serviceRecord = serviceDs.create({
+              id: serviceId,
+              name: serviceName,
+              status: serviceStatus,
+              serviceError,
+              ports: [{ port: servicePort }],
+            });
+            pathRecord.init('ports', [{ port: servicePort }]);
+            serviceDs.push(serviceRecord);
+          } else {
+            const { config, ports } = service.toData() || {};
+            pathRecord.init('ports', config ? config.ports || [] : ports);
+          }
+        });
+      }
+    }
 
     const value = {
       ...props,

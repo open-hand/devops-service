@@ -1,6 +1,6 @@
 export default ({ projectId, envId, appServiceId }) => ({
   autoCreate: false,
-  autoQuery: true,
+  autoQuery: false,
   selection: 'single',
   paging: false,
   transport: {

@@ -1,6 +1,6 @@
-import React, { Fragment } from 'react/index';
+import React, { Fragment, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Form, Select, TextField, SelectBox, Button, Icon, Tooltip } from 'choerodon-ui/pro';
+import { Form, Select, TextField, SelectBox, Button, Icon, Tooltip, Spin } from 'choerodon-ui/pro';
 import { Choerodon } from '@choerodon/boot';
 import map from 'lodash/map';
 import { useDomainFormStore } from './stores';
@@ -23,8 +23,10 @@ export default observer(() => {
     saveNetworkIds,
   } = useDomainFormStore();
 
-  const record = formDs.current;
-  if (!record) return;
+  const record = useMemo(() => formDs.current, [formDs.current]);
+  if (!record) {
+    return <Spin />;
+  }
   const isModify = record.status !== 'add';
 
   function formValidate() {

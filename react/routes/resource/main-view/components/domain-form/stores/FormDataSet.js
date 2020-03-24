@@ -61,17 +61,6 @@ export default ({ formatMessage, intlPrefix, projectId, envId, ingressId, pathLi
     const record = dataSet.current;
     const annotations = [];
     record.init('isNormal', !record.get('certId'));
-    forEach(record.get('pathList') || [], ({ serviceId, serviceStatus, serviceName, serviceError }) => {
-      if (serviceStatus !== 'running') {
-        const serviceRecord = serviceDs.create({
-          id: serviceId,
-          name: serviceName,
-          status: serviceStatus,
-          serviceError,
-        });
-        serviceDs.push(serviceRecord);
-      }
-    });
     forEach(record.get('annotations') || [], (value, key) => {
       const [annotationDomain, annotationKey] = key.split('/');
       const annotation = { value };
