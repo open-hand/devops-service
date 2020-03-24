@@ -736,6 +736,8 @@ public class GitUtil {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         List<DevopsEnvironmentDTO> devopsEnvironments = devopsEnvironmentService.listEnvWithInstancesByClusterIdForAgent(clusterId);
         GitConfigVO gitConfigVO = new GitConfigVO();
+        gitConfigVO.setAgentName("choerodon-cluster-agent-" + devopsClusterDTO.getCode());
+        LOGGER.info("Get git config to init cluster: agent name: {}", gitConfigVO.getAgentName());
         List<GitEnvConfigVO> gitEnvConfigDTOS = new ArrayList<>();
         devopsEnvironments.forEach(devopsEnvironmentDTO -> {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
