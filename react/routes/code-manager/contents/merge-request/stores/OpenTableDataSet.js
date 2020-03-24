@@ -1,6 +1,5 @@
 import React from 'react';
-
-import Tips from '../../../../../components/Tips';
+import Tips from '../../../../../components/new-tips';
 
 export default ((projectId, formatMessage, mergedRequestStore, appId, tabKey) => {
   function changeCount(count) {
@@ -38,11 +37,11 @@ export default ((projectId, formatMessage, mergedRequestStore, appId, tabKey) =>
     },
     fields: [
       { name: 'title', type: 'string', label: formatMessage({ id: 'app.name' }) },
-      { name: 'iid', type: 'number', label: <Tips type="title" data="app.code" /> },
+      { name: 'iid', type: 'number', label: <Tips title={formatMessage({ id: 'app.code' })} helpText={formatMessage({ id: 'app.code.tip' })} /> },
       { name: 'state', type: 'string', label: formatMessage({ id: 'merge.state' }) },
-      { name: 'targetBranch', type: 'string', label: <Tips type="title" data="app.branch" /> },
-      { name: 'createdAt', type: 'string', label: <Tips type="title" data="create" /> },
-      { name: 'commits', type: 'string', label: <Tips type="title" data="merge.commit" /> },
+      { name: 'targetBranch', type: 'string', label: <Tips title={formatMessage({ id: 'app.branch' })} helpText={formatMessage({ id: 'app.branch.tip' })} /> },
+      { name: 'createdAt', type: 'string', label: <Tips title={formatMessage({ id: 'create' })} helpText={formatMessage({ id: 'create.tip' })} /> },
+      { name: 'commits', type: 'string', label: <Tips title={formatMessage({ id: 'merge.commit' })} helpText={formatMessage({ id: 'merge.commit.tip' })} /> },
       { name: 'updatedAt', type: 'string', label: formatMessage({ id: 'merge.upDate' }) },
       { name: 'assignee', type: 'string', label: formatMessage({ id: 'merge.assignee' }) },
     ],
