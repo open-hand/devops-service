@@ -80,6 +80,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private PolarisScanningService polarisScanningService;
     @Autowired
     private PermissionHelper permissionHelper;
+    @Autowired
+    private SendNotificationService sendNotificationService;
 
 
     @Override
@@ -143,6 +145,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         params.put("{REPOURL}", agentRepoUrl);
         params.put("{CLUSTERID}", devopsClusterDTO
                 .getId().toString());
+
+        //创建集群成功发送web_hook
+        sendNotificationService.sendWhenCreateCluster(devopsClusterDTO, iamProject);
         // TODO 能不能优化为只读一次，读入内存?
         return FileUtil.replaceReturnString(inputStream, params);
     }
@@ -476,6 +481,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         polarisScanningService.deleteAllByScopeAndScopeId(PolarisScopeType.CLUSTER, clusterId);
 
         baseDelete(clusterId);
+        //删除集群后发送webhook
+        sendNotificationService.sendWhenDeleteCluster(devopsClusterDTO);
     }
 
     @Override

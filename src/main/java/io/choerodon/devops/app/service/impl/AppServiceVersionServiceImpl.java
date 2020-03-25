@@ -87,6 +87,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private AppServiceMapper appServiceMapper;
     @Autowired
     private DevopsConfigService devopsConfigService;
+    @Autowired
+    private SendNotificationService sendNotificationService;
 
 
     private Gson gson = new Gson();
@@ -104,6 +106,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             }
             throw new DevopsCiInvalidException(e);
         }
+
     }
 
     private void doCreate(String image, Long harborConfigId, String token, String version, String commit, MultipartFile files) {
@@ -120,7 +123,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         appServiceVersionDTO.setVersion(version);
         appServiceVersionDTO.setHarborConfigId(harborConfigId);
 
-        DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART,AUTHTYPE_PULL);
+        DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART, AUTHTYPE_PULL);
         String helmUrl = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class).getUrl();
         appServiceVersionDTO.setHelmConfigId(devopsConfigDTO.getId());
 
@@ -179,6 +182,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         FileUtil.deleteDirectories(destFilePath, storeFilePath);
         //流水线
         checkAutoDeploy(appServiceVersionDTO);
+        //生成版本成功后发送webhook json
+        sendNotificationService.sendWhenAppServiceVersion(appServiceVersionDTO, appServiceDTO, projectDTO);
     }
 
     /**
@@ -671,35 +676,35 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Override
     public void deleteByAppServiceId(Long appServiceId) {
         List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppServiceId(appServiceId, null);
-        if(!CollectionUtils.isEmpty(appServiceVersionDTOS)){
+        if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
             Set<Long> valueIds = new HashSet<>();
             Set<Long> readmeIds = new HashSet<>();
             Set<Long> configIds = new HashSet<>();
             Set<Long> versionIds = new HashSet<>();
             appServiceVersionDTOS.forEach(appServiceVersionDTO -> {
                 versionIds.add(appServiceVersionDTO.getId());
-                if(appServiceVersionDTO.getValueId() != null){
+                if (appServiceVersionDTO.getValueId() != null) {
                     valueIds.add(appServiceVersionDTO.getValueId());
                 }
-                if(appServiceVersionDTO.getReadmeValueId() != null){
+                if (appServiceVersionDTO.getReadmeValueId() != null) {
                     readmeIds.add(appServiceVersionDTO.getReadmeValueId());
                 }
 
-                if(appServiceVersionDTO.getHarborConfigId() != null){
+                if (appServiceVersionDTO.getHarborConfigId() != null) {
                     configIds.add(appServiceVersionDTO.getHarborConfigId());
                 }
-                if(appServiceVersionDTO.getHelmConfigId() != null){
+                if (appServiceVersionDTO.getHelmConfigId() != null) {
                     configIds.add(appServiceVersionDTO.getHelmConfigId());
                 }
 
             });
-            if(!CollectionUtils.isEmpty(valueIds)){
+            if (!CollectionUtils.isEmpty(valueIds)) {
                 appServiceVersionValueService.deleteByIds(valueIds);
             }
-            if(!CollectionUtils.isEmpty(readmeIds)){
+            if (!CollectionUtils.isEmpty(readmeIds)) {
                 appServiceVersionReadmeMapper.deleteByIds(readmeIds);
             }
-            if(!CollectionUtils.isEmpty(configIds)){
+            if (!CollectionUtils.isEmpty(configIds)) {
                 devopsConfigService.deleteByConfigIds(configIds);
             }
             appServiceVersionMapper.deleteByIds(versionIds);

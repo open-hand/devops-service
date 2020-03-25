@@ -1,12 +1,17 @@
 package io.choerodon.devops.app.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
+import com.google.gson.JsonObject;
 import io.choerodon.core.notify.NoticeSendDTO;
+import io.choerodon.core.notify.WebHookJsonSendDTO;
 import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 
 /**
  * 发送通知的服务
@@ -24,7 +29,14 @@ public interface SendNotificationService {
      * @param targetUsers     目标用户
      * @param params          参数映射
      */
-    void sendNotices(String sendSettingCode, Long sourceId, List<NoticeSendDTO.User> targetUsers, Map<String, Object> params);
+    void sendNotices(String sendSettingCode, Long sourceId, List<NoticeSendDTO.User> targetUsers, Map<String, Object> params, WebHookJsonSendDTO webHookJsonSendDTO);
+
+    /**
+     * 创建应用服务发送webhook通知
+     *
+     * @param appServiceDTO
+     */
+    void sendWhenAppServiceCreate(AppServiceDTO appServiceDTO);
 
     /**
      * 当应用服务创建失败后，发送消息
@@ -46,6 +58,8 @@ public interface SendNotificationService {
      * @param appServiceId 应用服务id
      */
     void sendWhenAppServiceDisabled(Long appServiceId);
+
+    WebHookJsonSendDTO getWebHookJsonSendDTO(JsonObject jsonObject, String code, Long createdBy, Date lastUpdateDate);
 
     /**
      * 删除应用服务通知
@@ -138,4 +152,76 @@ public interface SendNotificationService {
      * @param password 密码
      */
     void sendForUserDefaultPassword(String userId, String password);
+
+    /**
+     * 创建环境成功发送webhook
+     *
+     * @param devopsEnvironmentDTO
+     * @param organizationId
+     */
+    void sendWhenEnvCreate(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId);
+
+    /**
+     * 启用环境发送webhook
+     *
+     * @param devopsEnvironmentDTO
+     * @param organizationId
+     */
+    void sendWhenEnvEnable(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId);
+
+    void sendWhenEnvDisable(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId);
+
+    /**
+     * 删除环境发送webhook
+     *
+     * @param devopsEnvironmentDTO
+     * @param organizationId
+     */
+    void sendWhenEnvDelete(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId);
+
+    /**
+     * 创建环境失败发送消息
+     *
+     * @param devopsEnvironmentDTO
+     * @param organizationId
+     */
+    void sendWhenCreateEnvFailed(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId);
+
+    /**
+     * 分配权限发送webhook json
+     *
+     * @param
+     * @param projectDTO
+     */
+    void sendWhenEnvUpdatePermissions(DevopsEnvUserPayload devopsEnvUserPayload, ProjectDTO projectDTO);
+
+    void sendWhenCreateCluster(DevopsClusterDTO devopsClusterDTO, ProjectDTO iamProject);
+
+    /**
+     * 激活集群发送webhook
+     *
+     * @param devopsClusterDTO
+     */
+    void sendWhenActiviteCluster(DevopsClusterDTO devopsClusterDTO);
+
+    /**
+     * 删除集群
+     *
+     * @param devopsClusterDTO
+     */
+    void sendWhenDeleteCluster(DevopsClusterDTO devopsClusterDTO);
+
+    /**
+     * 组件安装失败发送webhook
+     *
+     * @param value
+     * @param type
+     * @param clusterId
+     * @param payload
+     */
+    void sendWhenResourceInstallFailed(DevopsClusterResourceDTO devopsClusterResourceDTO, String value, String type, Long clusterId, String payload);
+
+    void sendWhenCDSuccess(AppServiceDTO appServiceDTO, String pipelineOperatorUserName);
+
+    void sendWhenAppServiceVersion(AppServiceVersionDTO appServiceVersionDTO, AppServiceDTO appServiceDTO, ProjectDTO projectDTO);
 }

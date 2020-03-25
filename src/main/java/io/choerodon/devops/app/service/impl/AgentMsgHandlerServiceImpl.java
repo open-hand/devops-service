@@ -1738,6 +1738,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.AVAILABLE.getStatus().toLowerCase(), null);
                 } else {
                     devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.DISABLED.getStatus().toLowerCase(), agentMsgVO.getPayload());
+                    //安装cert-manager失败返回
+                    sendNotificationService.sendWhenResourceInstallFailed(devopsClusterResourceDTO,SendSettingEnum.RESOURCE_INSTALLFAILED.value(), ClusterResourceType.CERTMANAGER.getType(), clusterId, agentMsgVO.getPayload());
                 }
             }
             //卸载返回

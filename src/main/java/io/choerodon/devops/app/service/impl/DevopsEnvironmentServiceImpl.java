@@ -183,6 +183,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsEnvFileErrorService devopsEnvFileErrorService;
     @Autowired
     private PolarisScanningService polarisScanningService;
+    @Autowired
+    private SendNotificationService sendNotificationService;
 
     @PostConstruct
     private void init() {
@@ -252,7 +254,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         gitlabProjectPayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()));
         gitlabProjectPayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         gitlabProjectPayload.setPath(devopsEnvironmentReqVO.getCode());
-        gitlabProjectPayload.setOrganizationId(null);
+        gitlabProjectPayload.setOrganizationId(organizationDTO.getId());
         gitlabProjectPayload.setType(ENV);
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrDTO.getIamUserId());
         gitlabProjectPayload.setLoginName(iamUserDTO.getLoginName());
@@ -593,6 +595,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         devopsEnvironmentDTO.setActive(active);
         baseUpdate(devopsEnvironmentDTO);
+        //发送web hook
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        if (Boolean.TRUE.equals(active)) {
+            sendNotificationService.sendWhenEnvEnable(devopsEnvironmentDTO, projectDTO.getOrganizationId());
+        }
+        if (Boolean.FALSE.equals(active)) {
+            sendNotificationService.sendWhenEnvDisable(devopsEnvironmentDTO, projectDTO.getOrganizationId());
+        }
         return true;
     }
 
@@ -1145,6 +1155,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         userPayload.setGitlabProjectId(preEnvironmentDTO.getGitlabEnvProjectId().intValue());
         userPayload.setIamProjectId(preEnvironmentDTO.getProjectId());
         userPayload.setIamUserIds(devopsEnvPermissionUpdateVO.getUserIds());
+        userPayload.setDevopsEnvironmentDTO(preEnvironmentDTO);
 
         List<Long> addIamUserIds = devopsEnvPermissionUpdateVO.getUserIds();
         // 判断更新的情况
@@ -1306,7 +1317,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public void deleteEnvSaga(Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
         if (devopsEnvironmentDTO == null) {
-            LogUtil.loggerInfoObjectNullWithId("env",envId , LOGGER);
+            LogUtil.loggerInfoObjectNullWithId("env", envId, LOGGER);
             LOGGER.info("Delete env: environment with id {} is skipped", envId);
             return;
         }

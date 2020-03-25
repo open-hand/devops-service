@@ -6,6 +6,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+import com.alibaba.fastjson.JSON;
+import com.google.gson.JsonObject;
+import io.choerodon.core.notify.WebHookJsonSendDTO;
+import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
+import io.choerodon.devops.infra.enums.SendSettingEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +35,7 @@ import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
+import org.springframework.util.CollectionUtils;
 
 /**
  * 发送DevOps相关通知的实现类
@@ -64,6 +70,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
+    @Autowired
+    private DevopsClusterService devopsClusterService;
 
     /**
      * 发送和应用服务失败、启用和停用的消息(调用此方法时注意在外层捕获异常，此方法不保证无异常抛出)
@@ -72,7 +80,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
      * @param sendSettingCode 消息code
      * @param targetSupplier  转换目标用户
      */
-    private void sendNoticeAboutAppService(Long appServiceId, String sendSettingCode, Function<AppServiceDTO, List<NoticeSendDTO.User>> targetSupplier) {
+    private void sendNoticeAboutAppService(Long appServiceId, String sendSettingCode, Function<AppServiceDTO, List<NoticeSendDTO.User>> targetSupplier, WebHookJsonSendDTO webHookJsonSendDTO) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         if (appServiceDTO == null) {
             LogUtil.loggerInfoObjectNullWithId("AppService", appServiceId, LOGGER);
@@ -92,10 +100,17 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         List<NoticeSendDTO.User> targetUsers = targetSupplier.apply(appServiceDTO);
         LOGGER.debug("AppService notice {}. Target users size: {}", sendSettingCode, targetUsers.size());
 
-        sendNotices(sendSettingCode, projectDTO.getId(), targetUsers, makeAppServiceParams(organizationDTO.getId(), projectDTO.getId(), projectDTO.getName(), projectDTO.getCategory(), appServiceDTO.getName()));
+        sendNotices(sendSettingCode, projectDTO.getId(), targetUsers, makeAppServiceParams(organizationDTO.getId(), projectDTO.getId(), projectDTO.getName(), projectDTO.getCategory(), appServiceDTO.getName()), webHookJsonSendDTO);
     }
 
-    private void sendNoticeAboutAppService(AppServiceDTO appServiceDTO, String sendSettingCode, Function<AppServiceDTO, List<NoticeSendDTO.User>> targetSupplier) {
+    /**
+     * 创建，删除应用服务发送消息
+     *
+     * @param appServiceDTO
+     * @param sendSettingCode
+     * @param targetSupplier
+     */
+    private void sendNoticeAboutAppService(AppServiceDTO appServiceDTO, String sendSettingCode, Function<AppServiceDTO, List<NoticeSendDTO.User>> targetSupplier, WebHookJsonSendDTO webHookJsonSendDTO) {
         if (appServiceDTO == null) {
             LogUtil.loggerInfoObjectNullWithId("AppService", null, LOGGER);
             return;
@@ -114,7 +129,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         List<NoticeSendDTO.User> targetUsers = targetSupplier.apply(appServiceDTO);
         LOGGER.debug("AppService notice {}. Target users size: {}", sendSettingCode, targetUsers.size());
 
-        sendNotices(sendSettingCode, projectDTO.getId(), targetUsers, makeAppServiceParams(organizationDTO.getId(), projectDTO.getId(), projectDTO.getName(), projectDTO.getCategory(), appServiceDTO.getName()));
+        sendNotices(sendSettingCode, projectDTO.getId(), targetUsers, makeAppServiceParams(organizationDTO.getId(), projectDTO.getId(), projectDTO.getName(), projectDTO.getCategory(), appServiceDTO.getName()), webHookJsonSendDTO);
     }
 
     /**
@@ -145,15 +160,52 @@ public class SendNotificationServiceImpl implements SendNotificationService {
      * @param targetUsers     目标用户
      * @param params          参数映射
      */
-    public void sendNotices(String sendSettingCode, Long sourceId, List<NoticeSendDTO.User> targetUsers, Map<String, Object> params) {
-        notifyClient.sendMessage(constructNotice(sendSettingCode, sourceId, targetUsers, params));
+    public void sendNotices(String sendSettingCode, Long sourceId, List<NoticeSendDTO.User> targetUsers, Map<String, Object> params, WebHookJsonSendDTO webHookJsonSendDTO) {
+        notifyClient.sendMessage(constructNotice(sendSettingCode, sourceId, targetUsers, params, webHookJsonSendDTO));
+    }
+
+    @Override
+    public void sendWhenAppServiceCreate(AppServiceDTO appServiceDTO) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("appServerId", appServiceDTO.getId());
+        jsonObject.addProperty("appServerCode", appServiceDTO.getCode());
+        jsonObject.addProperty("appServerName", appServiceDTO.getName());
+        jsonObject.addProperty("appServerType", appServiceDTO.getType());
+        jsonObject.addProperty("projectId", appServiceDTO.getProjectId());
+        doWithTryCatchAndLog(
+                () -> sendNoticeAboutAppService(appServiceDTO, SendSettingEnum.CREATE_APPSERVICE.value(),
+                        app -> ArrayUtil.singleAsList(constructTargetUser(app.getCreatedBy())),
+                        getWebHookJsonSendDTO(jsonObject,
+                                SendSettingEnum.CREATE_APPSERVICE.value(),
+                                appServiceDTO.getCreatedBy(), appServiceDTO.getCreationDate())
+                ),
+                ex -> LOGGER.info("Error occurred when sending message about of app-service-create. The exception is {}.", ex));
+    }
+
+    private WebHookJsonSendDTO.User getWebHookuser(Long createdBy) {
+        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(Arrays.asList(createdBy));
+        return CollectionUtils.isEmpty(iamUserDTOS) ?
+                new WebHookJsonSendDTO.User("0", "unknown") :
+                new WebHookJsonSendDTO.User(iamUserDTOS.get(0).getLoginName(), iamUserDTOS.get(0).getRealName());
     }
 
     @Override
     public void sendWhenAppServiceFailure(Long appServiceId) {
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        if (Objects.isNull(appServiceDTO)) {
+            return;
+        }
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("appServerId", appServiceDTO.getId());
+        jsonObject.addProperty("appServerCode", appServiceDTO.getCode());
+        jsonObject.addProperty("appServerName", appServiceDTO.getName());
+        jsonObject.addProperty("appServerType", appServiceDTO.getType());
+        jsonObject.addProperty("projectId", appServiceDTO.getProjectId());
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.APP_SERVICE_CREATION_FAILED,
-                        app -> ArrayUtil.singleAsList(constructTargetUser(app.getCreatedBy()))),
+                        app -> ArrayUtil.singleAsList(constructTargetUser(app.getCreatedBy())),
+                        getWebHookJsonSendDTO(jsonObject, SendSettingEnum.APPSERVICE_CREATIONFAILURE.value(),
+                                appServiceDTO.getCreatedBy(), appServiceDTO.getLastUpdateDate())),
                 ex -> LOGGER.info("Error occurred when sending message about failure of app-service. The exception is {}.", ex));
     }
 
@@ -164,26 +216,62 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Override
     @Async
     public void sendWhenAppServiceEnabled(Long appServiceId) {
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        if (Objects.isNull(appServiceDTO)) {
+            return;
+        }
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("appServerId", appServiceDTO.getId());
+        jsonObject.addProperty("appServerCode", appServiceDTO.getCode());
+        jsonObject.addProperty("appServerName", appServiceDTO.getName());
+        jsonObject.addProperty("appServerType", appServiceDTO.getType());
+        jsonObject.addProperty("projectId", appServiceDTO.getProjectId());
+        jsonObject.addProperty("enabled", appServiceDTO.getActive());
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.APP_SERVICE_ENABLED,
                         app -> mapNullListToEmpty(appServiceService.pagePermissionUsers(app.getProjectId(), app.getId(), CustomPageRequest.of(0, 0), null)
                                 .getList())
                                 .stream()
                                 .map(p -> constructTargetUser(p.getIamUserId()))
-                                .collect(Collectors.toList())),
+                                .collect(Collectors.toList()),
+                        getWebHookJsonSendDTO(jsonObject, SendSettingEnum.ENABLE_APPSERVICE.value(), appServiceDTO.getCreatedBy(), appServiceDTO.getLastUpdateDate())
+                ),
                 ex -> LOGGER.info("Error occurred when sending message about app-service-enable. The exception is {}.", ex));
     }
+
+    public WebHookJsonSendDTO getWebHookJsonSendDTO(JsonObject jsonObject, String code, Long createdBy, Date lastUpdateDate) {
+        WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                code,
+                SendSettingEnum.getEventName(code),
+                jsonObject,
+                lastUpdateDate,
+                getWebHookuser(createdBy));
+        return webHookJsonSendDTO;
+    }
+
 
     @Override
     @Async
     public void sendWhenAppServiceDisabled(Long appServiceId) {
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        if (Objects.isNull(appServiceDTO)) {
+            return;
+        }
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("appServerId", appServiceDTO.getId());
+        jsonObject.addProperty("appServerCode", appServiceDTO.getCode());
+        jsonObject.addProperty("appServerName", appServiceDTO.getName());
+        jsonObject.addProperty("appServerType", appServiceDTO.getType());
+        jsonObject.addProperty("projectId", appServiceDTO.getProjectId());
+        jsonObject.addProperty("enabled", appServiceDTO.getActive());
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.APP_SERVICE_DISABLE,
                         app -> mapNullListToEmpty(appServiceService.pagePermissionUsers(app.getProjectId(), app.getId(), CustomPageRequest.of(0, 0), null)
                                 .getList())
                                 .stream()
                                 .map(p -> constructTargetUser(p.getIamUserId()))
-                                .collect(Collectors.toList())),
+                                .collect(Collectors.toList()),
+                        getWebHookJsonSendDTO(jsonObject, SendSettingEnum.ENABLE_APPSERVICE.value(), appServiceDTO.getCreatedBy(), appServiceDTO.getLastUpdateDate())),
                 ex -> LOGGER.info("Error occurred when sending message about app-service-disable. The exception is {}.", ex));
     }
 
@@ -193,12 +281,19 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Override
     @Async
     public void sendWhenAppServiceDelete(List<DevopsUserPermissionVO> devopsUserPermissionVOS, AppServiceDTO appServiceDTO) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("appServerId", appServiceDTO.getId());
+        jsonObject.addProperty("appServerCode", appServiceDTO.getCode());
+        jsonObject.addProperty("appServerName", appServiceDTO.getName());
+        jsonObject.addProperty("appServerType", appServiceDTO.getType());
+        jsonObject.addProperty("projectId", appServiceDTO.getProjectId());
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceDTO, NoticeCodeConstants.DELETE_APP_SERVICE,
                         app -> mapNullListToEmpty(devopsUserPermissionVOS)
                                 .stream()
                                 .map(p -> constructTargetUser(p.getIamUserId()))
-                                .collect(Collectors.toList())),
+                                .collect(Collectors.toList()),
+                        getWebHookJsonSendDTO(jsonObject, SendSettingEnum.DELETE_APPSERVICE.value(), appServiceDTO.getCreatedBy(), new Date())),
                 ex -> LOGGER.info("Error occurred when sending message about app-service-delete. The exception is {}.", ex));
     }
 
@@ -234,9 +329,92 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(pipelineOperatorUserName);
 
-                    sendNotices(NoticeCodeConstants.GITLAB_CONTINUOUS_DELIVERY_FAILURE, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params);
+                    //
+                    JsonObject jsonObject = new JsonObject();
+                    jsonObject.addProperty("projectId", projectDTO.getId());
+                    jsonObject.addProperty("projectName", projectDTO.getName());
+                    jsonObject.addProperty("appServiceId", appServiceDTO.getId());
+                    jsonObject.addProperty("appServiceName", appServiceDTO.getName());
+                    jsonObject.addProperty("status", "failed");
+                    WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                            SendSettingEnum.GITLAB_CD_FAILURE.value(),
+                            SendSettingEnum.getEventName(SendSettingEnum.GITLAB_CD_FAILURE.value()),
+                            jsonObject,
+                            new Date(),
+                            getWebHookuser(appServiceDTO.getCreatedBy())
+                    );
+                    sendNotices(NoticeCodeConstants.GITLAB_CONTINUOUS_DELIVERY_FAILURE, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params, webHookJsonSendDTO);
                 },
                 ex -> LOGGER.info("Error occurred when sending message about gitlab-pipeline-failure. The exception is {}.", ex));
+    }
+
+    @Override
+    public void sendWhenCDSuccess(AppServiceDTO appServiceDTO, String pipelineOperatorUserName) {
+        doWithTryCatchAndLog(() -> {
+            if (appServiceDTO == null) {
+                LOGGER.info("Parameter appServiceDTO is null when sending gitlab pipeline success notice");
+                return;
+            }
+
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+            if (projectDTO == null) {
+                LogUtil.loggerInfoObjectNullWithId(PROJECT, appServiceDTO.getProjectId(), LOGGER);
+                return;
+            }
+
+            OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            if (organizationDTO == null) {
+                LogUtil.loggerInfoObjectNullWithId(ORGANIZATION, projectDTO.getOrganizationId(), LOGGER);
+                return;
+            }
+            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(pipelineOperatorUserName);
+
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("projectId", projectDTO.getId());
+            jsonObject.addProperty("projectName", projectDTO.getName());
+            jsonObject.addProperty("appServiceId", appServiceDTO.getId());
+            jsonObject.addProperty("appServiceName", appServiceDTO.getName());
+            jsonObject.addProperty("status", "success");
+            WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                    SendSettingEnum.GITLAB_CD_SUCCESS.value(),
+                    SendSettingEnum.getEventName(SendSettingEnum.GITLAB_CD_SUCCESS.value()),
+                    jsonObject,
+                    new Date(),
+                    getWebHookuser(appServiceDTO.getCreatedBy())
+            );
+            sendNotices(SendSettingEnum.GITLAB_CD_SUCCESS.value(),
+                    projectDTO.getId(),
+                    ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())),
+                    null,
+                    webHookJsonSendDTO);
+        }, ex -> LOGGER.info("Error occurred when sending message about gitlab-pipeline-success. The exception is {}.", ex));
+    }
+
+    @Override
+    public void sendWhenAppServiceVersion(AppServiceVersionDTO appServiceVersionDTO, AppServiceDTO appServiceDTO, ProjectDTO projectDTO) {
+        doWithTryCatchAndLog(() -> {
+                    JsonObject jsonObject = new JsonObject();
+                    jsonObject.addProperty("projectid", projectDTO.getId());
+                    jsonObject.addProperty("projectName", projectDTO.getName());
+                    jsonObject.addProperty("appServiceId", appServiceDTO.getId());
+                    jsonObject.addProperty("appServiceName", appServiceDTO.getName());
+                    jsonObject.addProperty("appServiceVersionId", appServiceVersionDTO.getId());
+                    jsonObject.addProperty("version", appServiceVersionDTO.getVersion());
+                    WebHookJsonSendDTO webHookJsonSendDTO = new WebHookJsonSendDTO(
+                            SendSettingEnum.CREATE_APPSERVICE_VERSION.value(),
+                            SendSettingEnum.getEventName(SendSettingEnum.CREATE_APPSERVICE_VERSION.value()),
+                            jsonObject,
+                            appServiceVersionDTO.getCreationDate(),
+                            getWebHookuser(appServiceVersionDTO.getCreatedBy()));
+                    sendNotices(
+                            SendSettingEnum.CREATE_APPSERVICE_VERSION.value(),
+                            projectDTO.getId(),
+                            ArrayUtil.singleAsList(constructTargetUser(appServiceVersionDTO.getCreatedBy())),
+                            null,
+                            webHookJsonSendDTO
+                    );
+                },
+                ex -> LOGGER.info("Error occurred when sending message about appservice-version. The exception is {}.", ex));
     }
 
     /**
@@ -333,7 +511,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     Map<String, Object> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getCode(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), authorUser.getRealName(), mergeRequestId);
 
-                    sendNotices(NoticeCodeConstants.AUDIT_MERGE_REQUEST, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params);
+                    sendNotices(NoticeCodeConstants.AUDIT_MERGE_REQUEST, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params, null);
                 },
                 ex -> LOGGER.info("Error occurred when sending message about merge-request-audit. The exception is {}.", ex));
     }
@@ -400,7 +578,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     Map<String, Object> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getCode(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), authorUser.getRealName(), mergeRequestId);
 
-                    sendNotices(sendSettingCode, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params);
+                    sendNotices(sendSettingCode, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params, null);
                 },
                 ex -> LOGGER.info("Error occurred when sending message about {}. The exception is {}.", sendSettingCode, ex));
     }
@@ -464,7 +642,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             params.put("envName", Objects.requireNonNull(devopsEnvironmentDTO.getName()));
             params.put("resourceName", Objects.requireNonNull(resourceName));
 
-            sendNotices(sendSettingCode, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(Objects.requireNonNull(creatorId))), params);
+            sendNotices(sendSettingCode, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(Objects.requireNonNull(creatorId))), params, null);
         }, ex -> LOGGER.info("Exception occurred when send failure message about failed resource creation. the message code is {}, env id is {}, resource name is {}, and the ex is: {}", sendSettingCode, envId, resourceName, ex));
     }
 
@@ -508,7 +686,208 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     params.put("organizationId", organizationId);
                     params.put("gitlabPassword", Objects.requireNonNull(password));
 
-                    sendNotices(NoticeCodeConstants.GITLAB_PWD, 0L, ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params);
+                    sendNotices(NoticeCodeConstants.GITLAB_PWD, 0L, ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params, null);
+                },
+                ex -> LOGGER.info("Error occurred when sending message about user's default password. The exception is {}.", ex));
+    }
+
+    @Override
+    public void sendWhenEnvCreate(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizatioinId) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("enveId", devopsEnvironmentDTO.getId());
+        jsonObject.addProperty("envCode", devopsEnvironmentDTO.getCode());
+        jsonObject.addProperty("envName", devopsEnvironmentDTO.getName());
+        jsonObject.addProperty("clusterId", devopsEnvironmentDTO.getClusterId());
+        jsonObject.addProperty("organizationId", organizatioinId);
+        doWithTryCatchAndLog(
+                () -> {
+                    sendNotices(SendSettingEnum.CREATE_ENV.value(), devopsEnvironmentDTO.getProjectId(),
+                            null,
+                            null,
+                            getWebHookJsonSendDTO(jsonObject, SendSettingEnum.CREATE_ENV.value(), devopsEnvironmentDTO.getCreatedBy(), devopsEnvironmentDTO.getCreationDate()));
+                },
+                ex -> LOGGER.info("Error occurred when sending message about user's default password. The exception is {}.", ex));
+    }
+
+    @Override
+    public void sendWhenEnvEnable(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("enveId", devopsEnvironmentDTO.getId());
+        jsonObject.addProperty("envCode", devopsEnvironmentDTO.getCode());
+        jsonObject.addProperty("envName", devopsEnvironmentDTO.getName());
+        jsonObject.addProperty("clusterId", devopsEnvironmentDTO.getClusterId());
+        jsonObject.addProperty("organizationId", organizationId);
+        doWithTryCatchAndLog(
+                () -> {
+                    sendNotices(SendSettingEnum.ENABLE_ENV.value(), devopsEnvironmentDTO.getProjectId(),
+                            null,
+                            null,
+                            getWebHookJsonSendDTO(jsonObject, SendSettingEnum.ENABLE_ENV.value(), devopsEnvironmentDTO.getCreatedBy(), devopsEnvironmentDTO.getLastUpdateDate()));
+                },
+                ex -> LOGGER.info("Error occurred when sending message about user's default password. The exception is {}.", ex));
+    }
+
+    @Override
+    public void sendWhenEnvDisable(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("enveId", devopsEnvironmentDTO.getId());
+        jsonObject.addProperty("envCode", devopsEnvironmentDTO.getCode());
+        jsonObject.addProperty("envName", devopsEnvironmentDTO.getName());
+        jsonObject.addProperty("clusterId", devopsEnvironmentDTO.getClusterId());
+        jsonObject.addProperty("organizationId", organizationId);
+        doWithTryCatchAndLog(
+                () -> {
+                    sendNotices(SendSettingEnum.DISABLE_ENV.value(), devopsEnvironmentDTO.getProjectId(),
+                            null,
+                            null,
+                            getWebHookJsonSendDTO(jsonObject, SendSettingEnum.DISABLE_ENV.value(), devopsEnvironmentDTO.getCreatedBy(), devopsEnvironmentDTO.getLastUpdateDate()));
+                },
+                ex -> LOGGER.info("Error occurred when sending message about user's default password. The exception is {}.", ex));
+    }
+
+    @Override
+    public void sendWhenEnvDelete(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("enveId", devopsEnvironmentDTO.getId());
+        jsonObject.addProperty("envCode", devopsEnvironmentDTO.getCode());
+        jsonObject.addProperty("envName", devopsEnvironmentDTO.getName());
+        jsonObject.addProperty("clusterId", devopsEnvironmentDTO.getClusterId());
+        jsonObject.addProperty("organizationId", organizationId);
+        doWithTryCatchAndLog(
+                () -> {
+                    sendNotices(SendSettingEnum.DELETE_ENV.value(), devopsEnvironmentDTO.getProjectId(),
+                            null,
+                            null,
+                            getWebHookJsonSendDTO(jsonObject, SendSettingEnum.DELETE_ENV.value(), devopsEnvironmentDTO.getCreatedBy(), new Date()));
+                },
+                ex -> LOGGER.info("Error occurred when sending message about user's default password. The exception is {}.", ex));
+    }
+
+    @Override
+    public void sendWhenCreateEnvFailed(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("enveId", devopsEnvironmentDTO.getId());
+        jsonObject.addProperty("envCode", devopsEnvironmentDTO.getCode());
+        jsonObject.addProperty("envName", devopsEnvironmentDTO.getName());
+        jsonObject.addProperty("clusterId", devopsEnvironmentDTO.getClusterId());
+        jsonObject.addProperty("organizationId", organizationId);
+        doWithTryCatchAndLog(
+                () -> {
+                    sendNotices(SendSettingEnum.CREATE_ENVFAILED.value(), devopsEnvironmentDTO.getProjectId(),
+                            null,
+                            null,
+                            getWebHookJsonSendDTO(jsonObject, SendSettingEnum.CREATE_ENVFAILED.value(), devopsEnvironmentDTO.getCreatedBy(), new Date()));
+                },
+                ex -> LOGGER.info("Error occurred when sending message about user's default password. The exception is {}.", ex));
+    }
+
+    @Override
+    public void sendWhenEnvUpdatePermissions(DevopsEnvUserPayload devopsEnvUserPayload, ProjectDTO projectDTO) {
+        doWithTryCatchAndLog(
+                () -> {
+                    DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvUserPayload.getDevopsEnvironmentDTO();
+                    JsonObject jsonObject = new JsonObject();
+                    jsonObject.addProperty("enveId", devopsEnvironmentDTO.getId());
+                    jsonObject.addProperty("envCode", devopsEnvironmentDTO.getCode());
+                    jsonObject.addProperty("envName", devopsEnvironmentDTO.getName());
+                    jsonObject.addProperty("clusterId", devopsEnvironmentDTO.getClusterId());
+                    jsonObject.addProperty("organizationId", projectDTO.getOrganizationId());
+                    List<Long> iamUserIds = devopsEnvUserPayload.getIamUserIds();
+                    List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(iamUserIds);
+                    List<WebHookJsonSendDTO.User> userList = new ArrayList<>();
+                    if (!CollectionUtils.isEmpty(iamUserDTOS)) {
+                        iamUserDTOS.stream().forEach(iamUserDTO -> {
+                            WebHookJsonSendDTO.User user = new WebHookJsonSendDTO.User(iamUserDTO.getLoginName(), iamUserDTO.getRealName());
+                            userList.add(user);
+                        });
+                    }
+                    jsonObject.addProperty("users", JSON.toJSONString(userList));
+                    sendNotices(SendSettingEnum.UPDATE_ENV_PERMISSIONS.value(), devopsEnvironmentDTO.getProjectId(),
+                            null,
+                            null,
+                            getWebHookJsonSendDTO(jsonObject, SendSettingEnum.UPDATE_ENV_PERMISSIONS.value(), devopsEnvironmentDTO.getCreatedBy(), new Date()));
+                },
+                ex -> LOGGER.info("Error occurred when sending message about user's default password. The exception is {}.", ex));
+    }
+
+    @Override
+    public void sendWhenCreateCluster(DevopsClusterDTO devopsClusterDTO, ProjectDTO iamProject) {
+        doWithTryCatchAndLog(
+                () -> {
+                    JsonObject jsonObject = new JsonObject();
+                    jsonObject.addProperty("clusterId", devopsClusterDTO.getId());
+                    jsonObject.addProperty("clusterCode", devopsClusterDTO.getCode());
+                    jsonObject.addProperty("clusterName", devopsClusterDTO.getName());
+                    jsonObject.addProperty("organizationId", iamProject.getOrganizationId());
+                    sendNotices(SendSettingEnum.CREATE_CLUSTER.value(), devopsClusterDTO.getProjectId(),
+                            null,
+                            null,
+                            getWebHookJsonSendDTO(jsonObject, SendSettingEnum.CREATE_CLUSTER.value(), devopsClusterDTO.getCreatedBy(), devopsClusterDTO.getCreationDate()));
+                },
+                ex -> LOGGER.info("Error occurred when sending message about user's default password. The exception is {}.", ex));
+    }
+
+    @Override
+    public void sendWhenActiviteCluster(DevopsClusterDTO devopsClusterDTO) {
+        doWithTryCatchAndLog(
+                () -> {
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsClusterDTO.getProjectId());
+                    if (Objects.isNull(projectDTO)) {
+                        return;
+                    }
+                    JsonObject jsonObject = new JsonObject();
+                    jsonObject.addProperty("clusterId", devopsClusterDTO.getId());
+                    jsonObject.addProperty("clusterCode", devopsClusterDTO.getCode());
+                    jsonObject.addProperty("clusterName", devopsClusterDTO.getName());
+                    jsonObject.addProperty("organizationId", projectDTO.getOrganizationId());
+                    sendNotices(SendSettingEnum.ACTIVITE_CLUSTER.value(), devopsClusterDTO.getProjectId(),
+                            null,
+                            null,
+                            getWebHookJsonSendDTO(jsonObject, SendSettingEnum.ACTIVITE_CLUSTER.value(), devopsClusterDTO.getCreatedBy(), devopsClusterDTO.getLastUpdateDate()));
+                },
+                ex -> LOGGER.info("Error occurred when sending message about user's default password. The exception is {}.", ex));
+    }
+
+    @Override
+    public void sendWhenDeleteCluster(DevopsClusterDTO devopsClusterDTO) {
+        doWithTryCatchAndLog(
+                () -> {
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsClusterDTO.getProjectId());
+                    if (Objects.isNull(projectDTO)) {
+                        return;
+                    }
+                    JsonObject jsonObject = new JsonObject();
+                    jsonObject.addProperty("clusterId", devopsClusterDTO.getId());
+                    jsonObject.addProperty("clusterCode", devopsClusterDTO.getCode());
+                    jsonObject.addProperty("clusterName", devopsClusterDTO.getName());
+                    jsonObject.addProperty("organizationId", projectDTO.getOrganizationId());
+                    sendNotices(SendSettingEnum.DELETE_CLUSTER.value(), devopsClusterDTO.getProjectId(),
+                            null,
+                            null,
+                            getWebHookJsonSendDTO(jsonObject, SendSettingEnum.DELETE_CLUSTER.value(), devopsClusterDTO.getCreatedBy(), new Date()));
+                },
+                ex -> LOGGER.info("Error occurred when sending message about user's default password. The exception is {}.", ex));
+    }
+
+
+    @Override
+    public void sendWhenResourceInstallFailed(DevopsClusterResourceDTO devopsClusterResourceDTO, String value, String type, Long clusterId, String payload) {
+        doWithTryCatchAndLog(
+                () -> {
+                    DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+                    if (Objects.isNull(devopsClusterDTO)) {
+                        return;
+                    }
+                    JsonObject jsonObject = new JsonObject();
+                    jsonObject.addProperty("resourceId", devopsClusterResourceDTO.getId());
+                    jsonObject.addProperty("resourceType", type);
+                    jsonObject.addProperty("clusterId", clusterId);
+                    jsonObject.addProperty("organizationId", devopsClusterDTO.getOrganizationId());
+                    jsonObject.addProperty("msg", payload);
+                    sendNotices(value, devopsClusterDTO.getProjectId(),
+                            null,
+                            null,
+                            getWebHookJsonSendDTO(jsonObject, value, devopsClusterResourceDTO.getCreatedBy(), new Date()));
                 },
                 ex -> LOGGER.info("Error occurred when sending message about user's default password. The exception is {}.", ex));
     }
@@ -547,13 +926,14 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         return targetUser;
     }
 
-    private static NoticeSendDTO constructNotice(String sendSettingCode, Long sourceId, List<NoticeSendDTO.User> targetUsers, Map<String, Object> params) {
+    private static NoticeSendDTO constructNotice(String sendSettingCode, Long sourceId, List<NoticeSendDTO.User> targetUsers, Map<String, Object> params, WebHookJsonSendDTO webHookJsonSendDTO) {
         NoticeSendDTO noticeSendDTO = new NoticeSendDTO();
         noticeSendDTO.setCode(Objects.requireNonNull(sendSettingCode));
         noticeSendDTO.setSourceId(Objects.requireNonNull(sourceId));
         noticeSendDTO.setTargetUsers(Objects.requireNonNull(targetUsers));
         noticeSendDTO.setParams(Objects.requireNonNull(params));
         noticeSendDTO.setNotifyType(NOTIFY_TYPE);
+        noticeSendDTO.setWebHookJsonSendDTO(webHookJsonSendDTO);
         return noticeSendDTO;
     }
 }
