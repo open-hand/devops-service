@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+
 import java.util.List;
 
 /**
@@ -13,6 +15,15 @@ public class DevopsEnvUserPayload {
     private List<Integer> addGitlabUserIds;
     private List<Integer> deleteGitlabUserIds;
     private Integer option;
+    private DevopsEnvironmentDTO devopsEnvironmentDTO;
+
+    public DevopsEnvironmentDTO getDevopsEnvironmentDTO() {
+        return devopsEnvironmentDTO;
+    }
+
+    public void setDevopsEnvironmentDTO(DevopsEnvironmentDTO devopsEnvironmentDTO) {
+        this.devopsEnvironmentDTO = devopsEnvironmentDTO;
+    }
 
     public Long getIamProjectId() {
         return iamProjectId;

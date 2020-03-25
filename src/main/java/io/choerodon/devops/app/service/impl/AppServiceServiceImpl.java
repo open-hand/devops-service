@@ -231,7 +231,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppServicePayload.setIamProjectId(projectId);
         devOpsAppServicePayload.setTemplateAppServiceId(appServiceReqVO.getTemplateAppServiceId());
         devOpsAppServicePayload.setTemplateAppServiceVersionId(appServiceReqVO.getTemplateAppServiceVersionId());
-
+        devOpsAppServicePayload.setAppServiceDTO(appServiceDTO);
         producer.apply(
                 StartSagaBuilder
                         .newBuilder()

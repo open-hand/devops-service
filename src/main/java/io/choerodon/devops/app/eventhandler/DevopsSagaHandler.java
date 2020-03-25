@@ -4,11 +4,17 @@ import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConsta
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Objects;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.SendSettingEnum;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.kubernetes.client.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,10 +38,6 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.app.service.impl.UpdateAppUserPermissionServiceImpl;
 import io.choerodon.devops.app.service.impl.UpdateEnvUserPermissionServiceImpl;
 import io.choerodon.devops.app.service.impl.UpdateUserPermissionService;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
-import io.choerodon.devops.infra.dto.PipelineTaskRecordDTO;
 import io.choerodon.devops.infra.enums.PipelineNoticeType;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
@@ -86,6 +88,8 @@ public class DevopsSagaHandler {
     @Autowired
     @Lazy
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
 
 
     /**
@@ -113,6 +117,9 @@ public class DevopsSagaHandler {
             devopsEnvironmentDTO.setFailed(false);
             devopsEnvironmentService.baseUpdate(devopsEnvironmentDTO);
         }
+
+        //既然环境创建成功，那就发webhook吧
+        sendNotificationService.sendWhenEnvCreate(devopsEnvironmentDTO, gitlabProjectPayload.getOrganizationId());
         return data;
     }
 
@@ -132,6 +139,8 @@ public class DevopsSagaHandler {
         devopsEnvironmentDTO.setSynchro(true);
         devopsEnvironmentDTO.setFailed(true);
         devopsEnvironmentService.baseUpdate(devopsEnvironmentDTO);
+        //环境创建失败发送web_hook
+        sendNotificationService.sendWhenCreateEnvFailed(devopsEnvironmentDTO, gitlabProjectPayload.getOrganizationId());
         return data;
     }
 
@@ -173,6 +182,8 @@ public class DevopsSagaHandler {
             appServiceService.setAppErrStatus(data, devOpsAppServicePayload.getIamProjectId(), devOpsAppServicePayload.getAppServiceId());
             throw e;
         }
+        //创建成功发送webhook
+        sendNotificationService.sendWhenAppServiceCreate(devOpsAppServicePayload.getAppServiceDTO());
         return data;
     }
 
@@ -235,6 +246,13 @@ public class DevopsSagaHandler {
             LOGGER.error("update environment gitlab permission for iam users {} error", devopsEnvUserPayload.getIamUserIds());
             throw e;
         }
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvUserPayload.getDevopsEnvironmentDTO();
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        if (Objects.isNull(projectDTO)) {
+            return payload;
+        }
+        //
+        sendNotificationService.sendWhenEnvUpdatePermissions(devopsEnvUserPayload, projectDTO);
         return payload;
     }
 
@@ -303,7 +321,19 @@ public class DevopsSagaHandler {
             NoticeSendDTO.User user = new NoticeSendDTO.User();
             user.setEmail(GitUserNameUtil.getEmail());
             user.setId(GitUserNameUtil.getUserId().longValue());
-            pipelineService.sendSiteMessage(pipelineRecordId, PipelineNoticeType.PIPELINEFAILED.toValue(), Collections.singletonList(user), new HashMap<>());
+            PipelineDTO pipelineDTO = pipelineService.baseQueryById(pipelineTaskRecordDTO.getStageRecordId());;
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("pipelineId", pipelineDTO.getId());
+            jsonObject.addProperty("pipelineName", pipelineDTO.getName());
+            jsonObject.addProperty("triggerType", pipelineDTO.getTriggerType());
+            jsonObject.addProperty("projectId", pipelineDTO.getProjectId());
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(pipelineDTO.getProjectId());
+            jsonObject.addProperty("projectName", projectDTO.getId());
+            pipelineService.sendSiteMessage(pipelineRecordId,
+                    PipelineNoticeType.PIPELINEFAILED.toValue(),
+                    Collections.singletonList(user), new HashMap<>(),
+                    sendNotificationService.getWebHookJsonSendDTO(jsonObject, SendSettingEnum.PIPELINE_FAILED.value(), pipelineDTO.getCreatedBy(), new Date())
+            );
             LOGGER.info("send pipeline failed message to the user. The user id is {}", user.getId());
         }
     }
@@ -458,9 +488,15 @@ public class DevopsSagaHandler {
     public void deleteEnv(String data) {
         JsonObject jsonObject = gson.fromJson(data, JsonObject.class);
         Long envId = jsonObject.get("envId").getAsLong();
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         devopsEnvironmentService.deleteEnvSaga(envId);
         LOGGER.info("================删除环境成功，envId：{}", envId);
-
+        //删除环境成功，发送webhook
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        if (Objects.isNull(projectDTO)) {
+            return;
+        }
+        sendNotificationService.sendWhenEnvDelete(devopsEnvironmentDTO, projectDTO.getOrganizationId());
     }
 
     /**
