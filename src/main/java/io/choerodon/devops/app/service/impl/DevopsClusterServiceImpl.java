@@ -57,8 +57,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private String agentServiceUrl;
     @Value("${agent.repoUrl}")
     private String agentRepoUrl;
-    @Value("${choerodon.organization.resourceLimit.clusterNumber:10}")
-    private Integer clusterNumber;
+    @Value("${choerodon.organization.resourceLimit.clusterMaxNumber:10}")
+    private Integer clusterMaxNumber;
     private Gson gson = new Gson();
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
@@ -160,7 +160,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             DevopsClusterDTO example = new DevopsClusterDTO();
             example.setOrganizationId(organizationId);
             int num = devopsClusterMapper.selectCount(example);
-            if (num >= clusterNumber) {
+            if (num >= clusterMaxNumber) {
                 throw new CommonException(ERROR_ORGANIZATION_CLUSTER_NUM_MAX);
             }
         }

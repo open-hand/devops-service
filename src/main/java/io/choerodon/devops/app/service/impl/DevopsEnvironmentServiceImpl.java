@@ -90,8 +90,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
 
-    @Value("${choerodon.organization.resourceLimit.envNumber:30}")
-    private Integer envNumber;
+    @Value("${choerodon.organization.resourceLimit.envMaxNumber:30}")
+    private Integer envMaxNumber;
     @Autowired
     private DevopsServiceService devopsServiceService;
     @Autowired
@@ -292,7 +292,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             DevopsEnvironmentDTO example = new DevopsEnvironmentDTO();
             example.setClusterId(clusterId);
             int num = devopsEnvironmentMapper.selectCount(example);
-            if (num >= envNumber) {
+            if (num >= envMaxNumber) {
                 throw new CommonException(ERROR_CLUSTER_ENV_NUM_MAX);
             }
         }
