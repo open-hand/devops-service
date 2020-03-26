@@ -2581,7 +2581,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         Map<Long, OrganizationDTO> orgMap = organizationDTOS.stream().collect(Collectors.toMap(OrganizationDTO::getId, Functions.identity()));
 
         // 设置仓库地址和ssh地址
-        List<AppServiceRepVO> collect = appServiceDTOList.stream().map(app -> ConvertUtils.convertObject(app, AppServiceRepVO.class)).peek(app -> {
+        List<AppServiceRepVO> collect = appServiceDTOList.stream().map(app -> {
+            AppServiceRepVO rep = ConvertUtils.convertObject(app, AppServiceRepVO.class);
+            rep.setGitlabProjectId(TypeUtil.objToLong(app.getGitlabProjectId()));
+            return rep;
+        }).peek(app -> {
             ProjectDTO project = projectDTOMap.get(app.getProjectId());
             OrganizationDTO org = orgMap.get(project.getOrganizationId());
             app.setRepoUrl(concatRepoUrl(org.getCode(), project.getCode(), app.getCode()));
