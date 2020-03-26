@@ -73,7 +73,9 @@ const Content = observer(() => {
 
   function renderAnno(value, key) {
     return <li className={`${prefixCls}-detail-section-li`}>
-      <span className="ingress-detail-annotation">{key}</span>
+      <Tooltip title={key}>
+        <span className="ingress-detail-annotation">{key}</span>
+      </Tooltip>
       <Tooltip title={<div className={`${prefixCls}-detail-section-li-tooltip`}>{value}</div>} arrowPointAtCenter>
         <span className="ingress-detail-annotation-value">{value}</span>
       </Tooltip>
