@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
-import com.google.gson.JsonObject;
+import com.alibaba.fastjson.JSONObject;
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.core.notify.WebHookJsonSendDTO;
 import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
@@ -59,7 +59,7 @@ public interface SendNotificationService {
      */
     void sendWhenAppServiceDisabled(Long appServiceId);
 
-    WebHookJsonSendDTO getWebHookJsonSendDTO(JsonObject jsonObject, String code, Long createdBy, Date lastUpdateDate);
+    WebHookJsonSendDTO getWebHookJsonSendDTO(JSONObject JSONObject, String code, Long createdBy, Date lastUpdateDate);
 
     /**
      * 删除应用服务通知
@@ -113,7 +113,7 @@ public interface SendNotificationService {
      * @param creatorId         资源创建者的id
      * @param resourceCommandId 资源的command id (不为null时校验command的commandType是不是create)
      */
-    void sendWhenInstanceCreationFailure(Long envId, String resourceName, Long creatorId, @Nullable Long resourceCommandId);
+    void sendWhenInstanceCreationFailure(AppServiceInstanceDTO appServiceInstanceDTO, Long creatorId, @Nullable Long resourceCommandId);
 
     /**
      * 当创建网络失败后
@@ -123,7 +123,7 @@ public interface SendNotificationService {
      * @param creatorId         资源创建者的id
      * @param resourceCommandId 资源的command id (不为null时校验command的commandType是不是create)
      */
-    void sendWhenServiceCreationFailure(Long envId, String resourceName, Long creatorId, @Nullable Long resourceCommandId);
+    void sendWhenServiceCreationFailure(DevopsServiceDTO devopsServiceDTO, Long creatorId, DevopsEnvironmentDTO devopsEnvironmentDTO, @Nullable Long resourceCommandId);
 
     /**
      * 当创建域名失败后
@@ -133,7 +133,7 @@ public interface SendNotificationService {
      * @param creatorId         资源创建者的id
      * @param resourceCommandId 资源的command id (不为null时校验command的commandType是不是create)
      */
-    void sendWhenIngressCreationFailure(Long envId, String resourceName, Long creatorId, @Nullable Long resourceCommandId);
+    void sendWhenIngressCreationFailure(DevopsIngressDTO devopsIngressDTO, Long creatorId, @Nullable Long resourceCommandId);
 
     /**
      * 当创建证书失败后
@@ -143,7 +143,7 @@ public interface SendNotificationService {
      * @param creatorId         资源创建者的id
      * @param resourceCommandId 资源的command id (不为null时校验command的commandType是不是create)
      */
-    void sendWhenCertificationCreationFailure(Long envId, String resourceName, Long creatorId, @Nullable Long resourceCommandId);
+    void sendWhenCertificationCreationFailure(CertificationDTO certificationDTO, Long creatorId, @Nullable Long resourceCommandId);
 
     /**
      * 当创建用户时，将用户的默认随机密码发送给用户
@@ -224,4 +224,39 @@ public interface SendNotificationService {
     void sendWhenCDSuccess(AppServiceDTO appServiceDTO, String pipelineOperatorUserName);
 
     void sendWhenAppServiceVersion(AppServiceVersionDTO appServiceVersionDTO, AppServiceDTO appServiceDTO, ProjectDTO projectDTO);
+
+    void sendWhenCreateClusterFail(DevopsClusterDTO devopsClusterDTO, ProjectDTO iamProject, String error);
+
+    /**
+     * 创建PVC资源成功或者失败webhook json 通知
+     *
+     * @param devopsPvcDTO
+     * @param devopsEnvironmentDTO
+     * @param code
+     */
+    void sendWhenPVCResource(DevopsPvcDTO devopsPvcDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, String code);
+
+    void sendWhenServiceCreationSuccessOrDelete(DevopsServiceDTO devopsServiceDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, String code);
+
+    /**
+     * 实例创建成功 删除发送webhook json
+     *
+     * @param appServiceInstanceDTO
+     * @param value
+     */
+    void sendWhenInstanceSuccessOrDelete(AppServiceInstanceDTO appServiceInstanceDTO, String value);
+
+    /**
+     * 域名创建 删除 发送webhook 通知
+     *
+     * @param devopsIngressDTO
+     * @param code
+     */
+    void sendWhenIngressSuccessOrDelete(DevopsIngressDTO devopsIngressDTO, String code);
+
+    void sendWhenCertSuccessOrDelete(CertificationDTO certificationDTO, String code);
+
+    void sendWhenConfigMap(DevopsConfigMapDTO devopsConfigMapDTO, String value);
+
+    void sendWhenSecret(DevopsSecretDTO devopsSecretDTO, String code);
 }

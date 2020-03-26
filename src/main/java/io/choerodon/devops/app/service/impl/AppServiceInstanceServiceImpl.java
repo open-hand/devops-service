@@ -688,6 +688,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     instanceSagaPayload.getGitlabUserId(),
                     instanceSagaPayload.getAppServiceDeployVO().getInstanceId(), C7NHELM_RELEASE, null, false, instanceSagaPayload.getDevopsEnvironmentDTO().getId(), filePath);
 
+            //创建实例成功 发送web hook json
+            if (CREATE.equals(instanceSagaPayload.getAppServiceDeployVO().getType())) {
+                AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectByPrimaryKey(instanceSagaPayload.getAppServiceDeployVO().getInstanceId());
+                sendNotificationService.sendWhenInstanceSuccessOrDelete(appServiceInstanceDTO, SendSettingEnum.CREATE_RESOURCE.value());
+            }
         } catch (Exception e) {
             //有异常更新实例以及command的状态
             AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceSagaPayload.getAppServiceDeployVO().getInstanceId());
@@ -698,6 +703,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             if (!CREATE.equals(instanceSagaPayload.getAppServiceDeployVO().getType()) || !gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(instanceSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
                     filePath)) {
                 throw e;
+            }
+            if (CREATE.equals(instanceSagaPayload.getAppServiceDeployVO().getType())) {
+                //创建实例资源失败，发送webhook json
+                sendNotificationService.sendWhenInstanceCreationFailure(appServiceInstanceDTO, appServiceInstanceDTO.getCreatedBy(), null);
             }
             // 更新的超时情况暂未处理
         }
@@ -932,6 +941,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     userAttrDTO.getGitlabUserId(),
                     appServiceInstanceDTO.getId(), C7NHELM_RELEASE, null, false, devopsEnvironmentDTO.getId(), path);
         }
+        //删除实例发送web hook josn通知
+        sendNotificationService.sendWhenInstanceSuccessOrDelete(appServiceInstanceDTO, SendSettingEnum.DELETE_RESOURCE.value());
     }
 
 
