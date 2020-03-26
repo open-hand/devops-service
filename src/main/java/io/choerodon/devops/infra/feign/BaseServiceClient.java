@@ -249,6 +249,6 @@ public interface BaseServiceClient {
      * @param organizationId
      * @return
      */
-    @GetMapping("/{organization_id}/check_is_new")
+    @GetMapping("/v1/organizations/{organization_id}/check_is_new")
     ResponseEntity<Boolean> checkOrganizationIsNew(@PathVariable(name = "organization_id") Long organizationId);
 }
