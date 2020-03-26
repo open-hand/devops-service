@@ -43,7 +43,7 @@ public interface BaseServiceClient {
      * @param ids id集合，去重
      * @return 组织集合
      */
-    @PostMapping("/ids")
+    @PostMapping("/v1/organizations/ids")
     ResponseEntity<List<OrganizationDTO>> queryOrgByIds(@RequestBody Set<Long> ids);
 
     @GetMapping("v1/organizations")
