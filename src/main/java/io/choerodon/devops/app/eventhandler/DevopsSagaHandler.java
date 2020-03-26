@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Objects;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -322,17 +323,17 @@ public class DevopsSagaHandler {
             user.setEmail(GitUserNameUtil.getEmail());
             user.setId(GitUserNameUtil.getUserId().longValue());
             PipelineDTO pipelineDTO = pipelineService.baseQueryById(pipelineTaskRecordDTO.getStageRecordId());;
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("pipelineId", pipelineDTO.getId());
-            jsonObject.addProperty("pipelineName", pipelineDTO.getName());
-            jsonObject.addProperty("triggerType", pipelineDTO.getTriggerType());
-            jsonObject.addProperty("projectId", pipelineDTO.getProjectId());
+            JSONObject JSONObject = new JSONObject();
+            JSONObject.put("pipelineId", pipelineDTO.getId());
+            JSONObject.put("pipelineName", pipelineDTO.getName());
+            JSONObject.put("triggerType", pipelineDTO.getTriggerType());
+            JSONObject.put("projectId", pipelineDTO.getProjectId());
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(pipelineDTO.getProjectId());
-            jsonObject.addProperty("projectName", projectDTO.getId());
+            JSONObject.put("projectName", projectDTO.getId());
             pipelineService.sendSiteMessage(pipelineRecordId,
                     PipelineNoticeType.PIPELINEFAILED.toValue(),
                     Collections.singletonList(user), new HashMap<>(),
-                    sendNotificationService.getWebHookJsonSendDTO(jsonObject, SendSettingEnum.PIPELINE_FAILED.value(), pipelineDTO.getCreatedBy(), new Date())
+                    sendNotificationService.getWebHookJsonSendDTO(JSONObject, SendSettingEnum.PIPELINE_FAILED.value(), pipelineDTO.getCreatedBy(), new Date())
             );
             LOGGER.info("send pipeline failed message to the user. The user id is {}", user.getId());
         }
@@ -486,8 +487,8 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public void deleteEnv(String data) {
-        JsonObject jsonObject = gson.fromJson(data, JsonObject.class);
-        Long envId = jsonObject.get("envId").getAsLong();
+        JsonObject JSONObject = gson.fromJson(data, JsonObject.class);
+        Long envId = JSONObject.get("envId").getAsLong();
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         devopsEnvironmentService.deleteEnvSaga(envId);
         LOGGER.info("================删除环境成功，envId：{}", envId);

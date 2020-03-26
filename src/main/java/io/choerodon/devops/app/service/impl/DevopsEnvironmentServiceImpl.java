@@ -11,7 +11,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -1318,8 +1317,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         devopsEnvironmentDTO.setSynchro(Boolean.FALSE);
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("envId", envId);
+        JSONObject JSONObject = new JSONObject();
+        JSONObject.put("envId", envId);
         devopsEnvironmentMapper.updateByPrimaryKeySelective(devopsEnvironmentDTO);
         producer.apply(
                 StartSagaBuilder
@@ -1327,7 +1326,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                         .withLevel(ResourceLevel.PROJECT)
                         .withRefType("env")
                         .withRefId(String.valueOf(envId))
-                        .withJson(jsonObject.toString())
+                        .withJson(JSONObject.toString())
                         .withSourceId(projectId)
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_DELETE_ENV),
                 builder -> {

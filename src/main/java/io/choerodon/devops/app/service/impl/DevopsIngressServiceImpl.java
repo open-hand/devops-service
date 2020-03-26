@@ -522,6 +522,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                     ingressDO.getId(), INGRESS, null, false, devopsEnvironmentDTO.getId(), path);
         }
 
+        //删除域名成功发送web hook json
+        sendNotificationService.sendWhenIngressSuccessOrDelete(devopsIngressDTO, SendSettingEnum.DELETE_RESOURCE.value());
     }
 
 
@@ -669,6 +671,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                     ingressSagaPayload.getCreated() ? CREATE : UPDATE,
                     ingressSagaPayload.getGitlabUserId(),
                     ingressSagaPayload.getDevopsIngressDTO().getId(), INGRESS, null, false, ingressSagaPayload.getDevopsEnvironmentDTO().getId(), filePath);
+            if (ingressSagaPayload.getCreated()) {
+                sendNotificationService.sendWhenIngressSuccessOrDelete(ingressSagaPayload.getDevopsIngressDTO(), SendSettingEnum.CREATE_RESOURCE.value());
+            }
         } catch (Exception e) {
             logger.info("create or update Ingress failed!", e);
             //有异常更新实例以及command的状态
@@ -687,7 +692,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
 
                 // 发送创建失败通知
-                sendNotificationService.sendWhenIngressCreationFailure(devopsIngressDTO.getEnvId(), devopsIngressDTO.getName(), devopsIngressDTO.getCreatedBy(), null);
+                sendNotificationService.sendWhenIngressCreationFailure(devopsIngressDTO, devopsIngressDTO.getCreatedBy(), null);
             } else {
                 throw e;
             }
@@ -857,7 +862,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             devopsIngressVO.setCommandType(t.getCommandType());
             devopsIngressVO.setError(t.getError());
             if (t.getAnnotations() != null) {
-                devopsIngressVO.setAnnotations(gson.fromJson(t.getAnnotations(), new TypeToken<Map<String, String>>() {}.getType()));
+                devopsIngressVO.setAnnotations(gson.fromJson(t.getAnnotations(), new TypeToken<Map<String, String>>() {
+                }.getType()));
             }
             setIngressDTOCert(t.getCertId(), devopsIngressVO);
             DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO(t.getId());

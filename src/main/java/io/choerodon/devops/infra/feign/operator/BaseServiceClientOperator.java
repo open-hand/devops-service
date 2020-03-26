@@ -56,6 +56,9 @@ public class BaseServiceClientOperator {
         if (projectDTO == null || projectDTO.getId() == null) {
             throw new CommonException("error.project.query.by.id", projectId);
         }
+        if (Objects.isNull(projectDTOResponseEntity.getBody().getId())) {
+            throw new CommonException("not.project.id", projectId);
+        }
         return projectDTOResponseEntity.getBody();
     }
 

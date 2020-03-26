@@ -1,6 +1,8 @@
 package io.choerodon.devops.infra.enums;
 
 
+import io.choerodon.devops.infra.dto.DevopsServiceDTO;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +31,8 @@ public enum SendSettingEnum {
     GITLAB_CD_SUCCESS("gitLabContinuousDeliverySuccess"),
     CREATE_APPSERVICE_VERSION("createAppServiceVersion"),
     CREATE_RESOURCE_FAILED("createResourceFailed"),
+    CREATE_RESOURCE("createResource"),
+    DELETE_RESOURCE("deleteResource"),
     PIPELINE_SUCCESS("pipelinesuccess"),
     PIPELINE_FAILED("pipelinefailed"),
     PIPELINE_PASS("pipelinepass"),
@@ -61,10 +65,13 @@ public enum SendSettingEnum {
         map.put(SendSettingEnum.GITLAB_CD_SUCCESS.value(), GitLabCD.SUCCESS);
         map.put(SendSettingEnum.CREATE_APPSERVICE_VERSION.value(), AppService.CREATE_VERSION);
         map.put(SendSettingEnum.CREATE_RESOURCE_FAILED.value(), Resource.CREATE_FAILED);
+        map.put(SendSettingEnum.CREATE_RESOURCE.value(), Resource.CREATE);
+        map.put(SendSettingEnum.DELETE_RESOURCE.value(), Resource.DELETE);
         map.put(SendSettingEnum.PIPELINE_SUCCESS.value(), Pipeline.SUCCESS);
         map.put(SendSettingEnum.PIPELINE_FAILED.value(), Pipeline.FAILED);
         map.put(SendSettingEnum.PIPELINE_PASS.value(), Pipeline.PASS);
         map.put(SendSettingEnum.PIPELINE_STOP.value(), Pipeline.STOP);
+
     }
 
     SendSettingEnum(String sendSettingCode) {
@@ -106,7 +113,9 @@ public enum SendSettingEnum {
 
     private interface Resource {
         String INSTALL_FAILED = "组件安装失败";
+        String CREATE = "资源创建";
         String CREATE_FAILED = "创建资源失败";
+        String DELETE = "删除资源";
     }
 
     private interface GitLabCD {

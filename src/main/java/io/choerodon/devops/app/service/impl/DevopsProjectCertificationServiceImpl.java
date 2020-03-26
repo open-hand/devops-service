@@ -11,15 +11,18 @@ import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsCertificationProRelationshipService;
 import io.choerodon.devops.app.service.DevopsProjectCertificationService;
+import io.choerodon.devops.app.service.SendNotificationService;
 import io.choerodon.devops.infra.dto.CertificationDTO;
 import io.choerodon.devops.infra.dto.CertificationFileDTO;
 import io.choerodon.devops.infra.dto.DevopsCertificationProRelationshipDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.SendSettingEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCertificationFileMapper;
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
 import io.choerodon.devops.infra.util.*;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -52,6 +55,8 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     private DevopsCertificationMapper devopsCertificationMapper;
     @Autowired
     private DevopsCertificationFileMapper devopsCertificationFileMapper;
+    @Autowired
+    private SendNotificationService sendNotificationService;
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
@@ -280,9 +285,11 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
 
     @Override
     public void deleteCert(Long certId) {
-        if (certificationService.baseQueryById(certId) == null) {
+        CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
+        if (certificationDTO == null) {
             return;
         }
+
 
         List<CertificationDTO> certificationDTOS = certificationService.baseListByOrgCertId(certId);
         if (certificationDTOS.isEmpty()) {
@@ -291,6 +298,8 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         } else {
             throw new CommonException("error.cert.related");
         }
+        //删除证书资源发送webhook
+        sendNotificationService.sendWhenCertSuccessOrDelete(certificationDTO,SendSettingEnum.DELETE_RESOURCE.value());
     }
 
     @Override

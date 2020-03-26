@@ -120,34 +120,54 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     @Transactional
     public String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
-        ProjectDTO iamProject = baseServiceClientOperator.queryIamProjectById(projectId);
-        // 判断组织下是否还能创建集群
-        checkEnableCreate(iamProject.getOrganizationId());
-
-
-        // 插入记录
-        DevopsClusterDTO devopsClusterDTO = ConvertUtils.convertObject(devopsClusterReqVO, DevopsClusterDTO.class);
-        devopsClusterDTO.setToken(GenerateUUID.generateUUID());
-        devopsClusterDTO.setProjectId(projectId);
-        devopsClusterDTO.setOrganizationId(iamProject.getOrganizationId());
-        devopsClusterDTO.setSkipCheckProjectPermission(true);
-        devopsClusterDTO = baseCreateCluster(devopsClusterDTO);
-
-
-        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
-
-        // 渲染激活环境的命令参数
-        InputStream inputStream = this.getClass().getResourceAsStream("/shell/cluster.sh");
+        ProjectDTO iamProject = null;
+        DevopsClusterDTO devopsClusterDTO = null;
+        InputStream inputStream = null;
         Map<String, String> params = new HashMap<>();
-        params.put("{VERSION}", agentExpectVersion);
-        params.put("{NAME}", "choerodon-cluster-agent-" + devopsClusterDTO.getCode());
-        params.put("{SERVICEURL}", agentServiceUrl);
-        params.put("{TOKEN}", devopsClusterDTO.getToken());
-        params.put("{EMAIL}", iamUserDTO == null ? "" : iamUserDTO.getEmail());
-        params.put("{CHOERODONID}", devopsClusterDTO.getChoerodonId());
-        params.put("{REPOURL}", agentRepoUrl);
-        params.put("{CLUSTERID}", devopsClusterDTO
-                .getId().toString());
+        try {
+            iamProject = baseServiceClientOperator.queryIamProjectById(projectId);
+            // 判断组织下是否还能创建集群
+            checkEnableCreate(iamProject.getOrganizationId());
+            // 插入记录
+            devopsClusterDTO = ConvertUtils.convertObject(devopsClusterReqVO, DevopsClusterDTO.class);
+            devopsClusterDTO.setToken(GenerateUUID.generateUUID());
+            devopsClusterDTO.setProjectId(projectId);
+            devopsClusterDTO.setOrganizationId(iamProject.getOrganizationId());
+            devopsClusterDTO.setSkipCheckProjectPermission(true);
+            devopsClusterDTO = baseCreateCluster(devopsClusterDTO);
+
+
+            // 继续判断id是够为空是因为可能会返回 CommonException 但是也会被反序列化为  ProjectDTO
+            if (iamProject == null || iamProject.getId() == null) {
+                throw new CommonException("error.project.query.by.id", projectId);
+            }
+            // 插入记录
+            devopsClusterDTO = ConvertUtils.convertObject(devopsClusterReqVO, DevopsClusterDTO.class);
+            devopsClusterDTO.setToken(GenerateUUID.generateUUID());
+            devopsClusterDTO.setProjectId(projectId);
+            devopsClusterDTO.setOrganizationId(iamProject.getOrganizationId());
+            devopsClusterDTO.setSkipCheckProjectPermission(true);
+            devopsClusterDTO = baseCreateCluster(devopsClusterDTO);
+
+
+            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
+
+            // 渲染激活环境的命令参数
+            inputStream = this.getClass().getResourceAsStream("/shell/cluster.sh");
+            params.put("{VERSION}", agentExpectVersion);
+            params.put("{NAME}", "choerodon-cluster-agent-" + devopsClusterDTO.getCode());
+            params.put("{SERVICEURL}", agentServiceUrl);
+            params.put("{TOKEN}", devopsClusterDTO.getToken());
+            params.put("{EMAIL}", iamUserDTO == null ? "" : iamUserDTO.getEmail());
+            params.put("{CHOERODONID}", devopsClusterDTO.getChoerodonId());
+            params.put("{REPOURL}", agentRepoUrl);
+            params.put("{CLUSTERID}", devopsClusterDTO
+                    .getId().toString());
+        } catch (Exception e) {
+            //创建集群失败发送webhook json
+            sendNotificationService.sendWhenCreateClusterFail(devopsClusterDTO, iamProject,e.getMessage());
+            throw e;
+        }
 
         //创建集群成功发送web_hook
         sendNotificationService.sendWhenCreateCluster(devopsClusterDTO, iamProject);
