@@ -258,7 +258,8 @@ public class AppServiceServiceImpl implements AppServiceService {
      * @param projectId
      */
     private void checkEnableCreate(Long projectId) {
-        if (baseServiceClientOperator.checkOrganizationIsNew(projectId)) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        if (baseServiceClientOperator.checkOrganizationIsNew(projectDTO.getOrganizationId())) {
             AppServiceDTO example = new AppServiceDTO();
             example.setProjectId(projectId);
             int num = appServiceMapper.selectCount(example);
