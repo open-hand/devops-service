@@ -216,6 +216,11 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
+    public ResponseEntity<Boolean> checkOrganizationIsNew(Long organizationId) {
+        throw new CommonException("error.check.organization.is.new");
+    }
+
+    @Override
     public ResponseEntity<IamUserDTO> query(String loginName) {
         throw new CommonException("error.query.user.by.login.name", loginName);
     }

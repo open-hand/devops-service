@@ -77,6 +77,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private static final String LOGIN_NAME = "loginName";
     private static final String REAL_NAME = "realName";
     private static final Pattern CODE = Pattern.compile("[a-z]([-a-z0-9]*[a-z0-9])?");
+    private static final String ERROR_CLUSTER_ENV_NUM_MAX = "error.cluster.env.num.max";
 
     /**
      * gitlab用于环境库的webhook地址
@@ -89,6 +90,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
 
+    @Value("${choerodon.organization.resourceLimit.envNumber:30}")
+    private Integer envNumber;
     @Autowired
     private DevopsServiceService devopsServiceService;
     @Autowired
@@ -197,7 +200,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Transactional(rollbackFor = Exception.class)
     public void create(Long projectId, DevopsEnvironmentReqVO devopsEnvironmentReqVO) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = ConvertUtils.convertObject(devopsEnvironmentReqVO, DevopsEnvironmentDTO.class);
-
+        checkEnableCreate(projectId, devopsEnvironmentReqVO.getClusterId());
         if (!devopsClusterProPermissionService.projectHasClusterPermission(projectId, devopsEnvironmentReqVO.getClusterId())) {
             throw new CommonException("error.project.miss.cluster.permission");
         }
@@ -276,6 +279,24 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 }
         );
         agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentReqVO.getClusterId());
+    }
+
+    /**
+     * 判断是否还能创建环境
+     * @param clusterId
+     * @param projectId
+     */
+    private void checkEnableCreate(Long projectId, Long clusterId) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        if (baseServiceClientOperator.checkOrganizationIsNew(projectDTO.getOrganizationId())) {
+            DevopsEnvironmentDTO example = new DevopsEnvironmentDTO();
+            example.setClusterId(clusterId);
+            int num = devopsEnvironmentMapper.selectCount(example);
+            if (num >= envNumber) {
+                throw new CommonException(ERROR_CLUSTER_ENV_NUM_MAX);
+            }
+        }
+
     }
 
     @Override
