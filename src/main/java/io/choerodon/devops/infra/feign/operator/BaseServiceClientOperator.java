@@ -51,7 +51,9 @@ public class BaseServiceClientOperator {
 
     public ProjectDTO queryIamProjectById(Long projectId) {
         ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProject(projectId);
-        if (!projectDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
+        ProjectDTO projectDTO = projectDTOResponseEntity.getBody();
+        // 判断id是否为空是因为可能会返回 CommonException 但是也会被反序列化为  ProjectDTO
+        if (projectDTO == null || projectDTO.getId() == null) {
             throw new CommonException("error.project.query.by.id", projectId);
         }
         return projectDTOResponseEntity.getBody();
@@ -489,5 +491,15 @@ public class BaseServiceClientOperator {
     public List<IamUserDTO> listProjectOwnerByProjectId(Long projectId) {
         ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.listProjectOwnerByProjectId(projectId);
         return responseEntity == null ? Collections.emptyList() : responseEntity.getBody();
+    }
+
+    /**
+     * 判断组织是否是新组织
+     * @param organizationId
+     * @return
+     */
+    public Boolean checkOrganizationIsNew(Long organizationId) {
+        ResponseEntity<Boolean> responseEntity = baseServiceClient.checkOrganizationIsNew(organizationId);
+        return responseEntity.getBody();
     }
 }

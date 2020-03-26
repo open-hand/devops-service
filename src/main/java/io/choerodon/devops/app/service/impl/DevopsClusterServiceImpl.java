@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -49,12 +50,15 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private static final String UPGRADE_MESSAGE = "Version is too low, please upgrade!";
     private static final String ERROR_CLUSTER_NOT_EXIST = "error.cluster.not.exist";
     private static final String PROJECT_OWNER = "role/project/default/project-owner";
+    private static final String ERROR_ORGANIZATION_CLUSTER_NUM_MAX = "error.organization.cluster.num.max";
     @Value("${agent.version}")
     private String agentExpectVersion;
     @Value("${agent.serviceUrl}")
     private String agentServiceUrl;
     @Value("${agent.repoUrl}")
     private String agentRepoUrl;
+    @Value("${choerodon.organization.resourceLimit.clusterNumber:10}")
+    private Integer clusterNumber;
     private Gson gson = new Gson();
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
@@ -81,6 +85,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Autowired
     private PermissionHelper permissionHelper;
     @Autowired
+    @Lazy
     private SendNotificationService sendNotificationService;
 
 
@@ -116,11 +121,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Transactional
     public String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
         ProjectDTO iamProject = baseServiceClientOperator.queryIamProjectById(projectId);
+        // 判断组织下是否还能创建集群
+        checkEnableCreate(iamProject.getOrganizationId());
 
-        // 继续判断id是够为空是因为可能会返回 CommonException 但是也会被反序列化为  ProjectDTO
-        if (iamProject == null || iamProject.getId() == null) {
-            throw new CommonException("error.project.query.by.id", projectId);
-        }
 
         // 插入记录
         DevopsClusterDTO devopsClusterDTO = ConvertUtils.convertObject(devopsClusterReqVO, DevopsClusterDTO.class);
@@ -150,6 +153,17 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         sendNotificationService.sendWhenCreateCluster(devopsClusterDTO, iamProject);
         // TODO 能不能优化为只读一次，读入内存?
         return FileUtil.replaceReturnString(inputStream, params);
+    }
+
+    private void checkEnableCreate(Long organizationId) {
+        if (baseServiceClientOperator.checkOrganizationIsNew(organizationId)) {
+            DevopsClusterDTO example = new DevopsClusterDTO();
+            example.setOrganizationId(organizationId);
+            int num = devopsClusterMapper.selectCount(example);
+            if (num >= clusterNumber) {
+                throw new CommonException(ERROR_ORGANIZATION_CLUSTER_NUM_MAX);
+            }
+        }
     }
 
     @Override

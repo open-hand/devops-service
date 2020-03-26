@@ -111,6 +111,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String TEMP_MODAL = "\\?version=";
     private static final String LOGIN_NAME = "loginName";
     private static final String REAL_NAME = "realName";
+    private static final String ERROR_PROJECT_APP_SVC_NUM_MAX = "error.project.app.svc.num.max";
     @Autowired
     DevopsSagaHandler devopsSagaHandler;
     private Gson gson = new Gson();
@@ -129,6 +130,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private String userName;
     @Value("${services.sonarqube.password:}")
     private String password;
+    @Value("${choerodon.organization.resourceLimit.appSvcNumber:100}")
+    private Integer appSvcNumber;
     @Autowired
     private GitUtil gitUtil;
     @Autowired
@@ -188,6 +191,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         ApplicationValidator.checkApplicationService(appServiceReqVO.getCode());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
+        // 判断项目下是否还能创建应用服务
+        checkEnableCreate(projectId);
+
         // 校验模板id和模板版本id是否都有值或者都为空
         boolean isTemplateNull = appServiceReqVO.getTemplateAppServiceId() == null;
         boolean isTemplateVersionNull = appServiceReqVO.getTemplateAppServiceVersionId() == null;
@@ -245,6 +251,21 @@ public class AppServiceServiceImpl implements AppServiceService {
                 builder -> {
                 });
         return ConvertUtils.convertObject(baseQueryByCode(appServiceDTO.getCode(), appServiceDTO.getProjectId()), AppServiceRepVO.class);
+    }
+
+    /**
+     * 判断项目下是否还能创建应用服务
+     * @param projectId
+     */
+    private void checkEnableCreate(Long projectId) {
+        if (baseServiceClientOperator.checkOrganizationIsNew(projectId)) {
+            AppServiceDTO example = new AppServiceDTO();
+            example.setProjectId(projectId);
+            int num = appServiceMapper.selectCount(example);
+            if (num >= appSvcNumber) {
+                throw new CommonException(ERROR_PROJECT_APP_SVC_NUM_MAX);
+            }
+        }
     }
 
     @Override
@@ -912,6 +933,10 @@ public class AppServiceServiceImpl implements AppServiceService {
             description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
     @Transactional(rollbackFor = Exception.class)
     public AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO, Boolean isTemplate) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+
+        checkEnableCreate(projectId);
+
         // 获取当前操作的用户的信息
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -933,7 +958,6 @@ public class AppServiceServiceImpl implements AppServiceService {
             GitPlatformType gitPlatformType = GitPlatformType.from(appServiceImportVO.getPlatformType());
             checkRepositoryUrlAndToken(gitPlatformType, appServiceImportVO.getRepositoryUrl(), appServiceImportVO.getAccessToken());
         }
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         appServiceDTO = fromImportVoToDto(appServiceImportVO);
 
@@ -1817,6 +1841,8 @@ public class AppServiceServiceImpl implements AppServiceService {
             description = "Devops创建应用服务", inputSchema = "{}")
     public void importAppServiceInternal(Long projectId, List<ApplicationImportInternalVO> importInternalVOS) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+
+        checkEnableCreate(projectId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         List<AppServiceImportPayload> importPayloadList = new ArrayList<>();

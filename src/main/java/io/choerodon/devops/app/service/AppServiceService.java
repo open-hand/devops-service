@@ -514,4 +514,5 @@ public interface AppServiceService {
     List<AppServiceSimpleVO> listAppServiceHavingVersions(Long projectId);
 
     Map<Long, Integer> countByProjectId(List<Long> longList);
+
 }
