@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.base.Functions;
 import com.google.gson.Gson;
 import io.kubernetes.client.JSON;
 import org.eclipse.jgit.api.Git;
@@ -264,13 +265,18 @@ public class AppServiceServiceImpl implements AppServiceService {
             });
         }
         //url地址拼接
-        String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         if (appServiceDTO.getGitlabProjectId() != null) {
-            appServiceRepVO.setRepoUrl(gitlabUrl + urlSlash
-                    + organizationDTO.getCode() + "-" + projectDTO.getCode() + "/"
-                    + appServiceDTO.getCode() + ".git");
+            appServiceRepVO.setRepoUrl(concatRepoUrl(organizationDTO.getCode(), projectDTO.getCode(), appServiceDTO.getCode()));
         }
         return appServiceRepVO;
+    }
+
+    private String concatRepoUrl(String orgCode, String projectCode, String appServiceCode) {
+        //url地址拼接
+        String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+        return gitlabUrl + urlSlash
+                + orgCode + "-" + projectCode + "/"
+                + appServiceCode + ".git";
     }
 
     @Saga(code = SagaTopicCodeConstants.DEVOPS_APP_DELETE,
@@ -2527,6 +2533,35 @@ public class AppServiceServiceImpl implements AppServiceService {
                 .map(appServiceDTO -> dtoTOVo(appServiceDTO, appVersionMap))
                 .collect(Collectors.toList());
         collect.addAll(appServiceVOS);
+        if (doPage == null || doPage) {
+            return PageInfoUtil.createPageFromList(collect, pageable);
+        } else {
+            return new PageInfo<>(collect);
+        }
+    }
+
+    @Override
+    public PageInfo<AppServiceRepVO> listAppServiceByIds(Set<Long> ids, Boolean doPage, Pageable pageable, String params) {
+        Map<String, Object> mapParams = TypeUtil.castMapParams(params);
+        List<AppServiceDTO> appServiceDTOList = appServiceMapper.listAppServiceByIds(ids,
+                TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)));
+
+        // 查询相关的组织和项目数据
+        List<ProjectDTO> projectDTOS = baseServiceClientOperator.queryProjectsByIds(appServiceDTOList.stream().map(AppServiceDTO::getProjectId).collect(toSet()));
+        List<OrganizationDTO> organizationDTOS = baseServiceClientOperator.listOrganizationByIds(projectDTOS.stream().map(ProjectDTO::getOrganizationId).collect(toSet()));
+        Map<Long, ProjectDTO> projectDTOMap = projectDTOS.stream().collect(Collectors.toMap(ProjectDTO::getId, Functions.identity()));
+        Map<Long, OrganizationDTO> orgMap = organizationDTOS.stream().collect(Collectors.toMap(OrganizationDTO::getId, Functions.identity()));
+
+        // 设置仓库地址和ssh地址
+        List<AppServiceRepVO> collect = appServiceDTOList.stream().map(app -> ConvertUtils.convertObject(app, AppServiceRepVO.class)).peek(app -> {
+            ProjectDTO project = projectDTOMap.get(app.getProjectId());
+            OrganizationDTO org = orgMap.get(project.getOrganizationId());
+            app.setRepoUrl(concatRepoUrl(org.getCode(), project.getCode(), app.getCode()));
+            app.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, org.getCode(), project.getCode(), app.getCode()));
+        }).collect(toList());
+
+
         if (doPage == null || doPage) {
             return PageInfoUtil.createPageFromList(collect, pageable);
         } else {

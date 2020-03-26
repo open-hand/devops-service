@@ -37,6 +37,15 @@ public interface BaseServiceClient {
     @GetMapping("/v1/organizations/{organizationId}")
     ResponseEntity<OrganizationDTO> queryOrganizationById(@PathVariable("organizationId") Long organizationId);
 
+    /**
+     * 根据id集合查询组织
+     *
+     * @param ids id集合，去重
+     * @return 组织集合
+     */
+    @PostMapping("/ids")
+    ResponseEntity<List<OrganizationDTO>> queryOrgByIds(@RequestBody Set<Long> ids);
+
     @GetMapping("v1/organizations")
     ResponseEntity<PageInfo<OrganizationDTO>> listOrganizations(@RequestParam("page") Integer page,
                                                                 @RequestParam("size") Integer size);

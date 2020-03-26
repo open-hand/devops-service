@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -58,6 +59,18 @@ public class BaseServiceClientOperator {
 
     public OrganizationDTO queryOrganizationById(Long organizationId) {
         ResponseEntity<OrganizationDTO> organizationDTOResponseEntity = baseServiceClient.queryOrganizationById(organizationId);
+        if (organizationDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
+            return organizationDTOResponseEntity.getBody();
+        } else {
+            throw new CommonException("error.organization.get");
+        }
+    }
+
+    public List<OrganizationDTO> listOrganizationByIds(Set<Long> organizationIds) {
+        if (CollectionUtils.isEmpty(organizationIds)) {
+            return Collections.emptyList();
+        }
+        ResponseEntity<List<OrganizationDTO>> organizationDTOResponseEntity = baseServiceClient.queryOrgByIds(organizationIds);
         if (organizationDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
             return organizationDTOResponseEntity.getBody();
         } else {
