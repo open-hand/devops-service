@@ -2584,12 +2584,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<AppServiceRepVO> collect = appServiceDTOList.stream().map(app -> {
             AppServiceRepVO rep = ConvertUtils.convertObject(app, AppServiceRepVO.class);
             rep.setGitlabProjectId(TypeUtil.objToLong(app.getGitlabProjectId()));
-            return rep;
-        }).peek(app -> {
-            ProjectDTO project = projectDTOMap.get(app.getProjectId());
+            ProjectDTO project = projectDTOMap.get(rep.getProjectId());
             OrganizationDTO org = orgMap.get(project.getOrganizationId());
-            app.setRepoUrl(concatRepoUrl(org.getCode(), project.getCode(), app.getCode()));
-            app.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, org.getCode(), project.getCode(), app.getCode()));
+            rep.setRepoUrl(concatRepoUrl(org.getCode(), project.getCode(), rep.getCode()));
+            rep.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, org.getCode(), project.getCode(), rep.getCode()));
+            return rep;
         }).collect(toList());
 
 
