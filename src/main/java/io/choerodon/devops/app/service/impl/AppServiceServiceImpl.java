@@ -130,8 +130,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private String userName;
     @Value("${services.sonarqube.password:}")
     private String password;
-    @Value("${choerodon.organization.resourceLimit.appSvcNumber:100}")
-    private Integer appSvcNumber;
+    @Value("${choerodon.organization.resourceLimit.appSvcMaxNumber:100}")
+    private Integer appSvcMaxNumber;
     @Autowired
     private GitUtil gitUtil;
     @Autowired
@@ -263,7 +263,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             AppServiceDTO example = new AppServiceDTO();
             example.setProjectId(projectId);
             int num = appServiceMapper.selectCount(example);
-            if (num >= appSvcNumber) {
+            if (num >= appSvcMaxNumber) {
                 throw new CommonException(ERROR_PROJECT_APP_SVC_NUM_MAX);
             }
         }
