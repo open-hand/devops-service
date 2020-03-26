@@ -452,6 +452,17 @@ public interface AppServiceService {
 
 
     /**
+     * 批量查询应用服务
+     *
+     * @param ids          应用服务id
+     * @param doPage       是否分页
+     * @param pageable     分页参数
+     * @param params       查询参数
+     * @return 应用服务信息
+     */
+    PageInfo<AppServiceRepVO> listAppServiceByIds(Set<Long> ids, Boolean doPage, Pageable pageable, String params);
+
+    /**
      * 通过一组id分页查询或者不传id时进行分页查询
      *
      * @param projectId 项目id

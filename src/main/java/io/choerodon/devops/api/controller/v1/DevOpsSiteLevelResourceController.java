@@ -19,7 +19,7 @@ import io.choerodon.core.annotation.Permission;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.AppServiceVO;
+import io.choerodon.devops.api.vo.AppServiceRepVO;
 import io.choerodon.devops.api.vo.ClusterOverViewVO;
 import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.app.service.AppServiceService;
@@ -67,11 +67,11 @@ public class DevOpsSiteLevelResourceController {
     @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation(value = "批量查询应用服务")
     @GetMapping(value = "/app_service/list_app_service_by_ids")
-    public ResponseEntity<PageInfo<AppServiceVO>> batchQueryAppService(
+    public ResponseEntity<PageInfo<AppServiceRepVO>> batchQueryAppService(
             @ApiParam(value = "应用服务Ids, 不能为空，也不能为空数组", required = true)
             @RequestParam(value = "ids") Set<Long> ids) {
         return Optional.ofNullable(
-                appServiceService.listAppServiceByIds(null, ids, false, false, null, null))
+                appServiceService.listAppServiceByIds(ids, false, null, null))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.service.ids"));
     }
