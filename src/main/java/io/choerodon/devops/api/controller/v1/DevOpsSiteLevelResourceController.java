@@ -10,16 +10,14 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.annotation.Permission;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.AppServiceRepVO;
+import io.choerodon.devops.api.vo.AppServiceVO;
 import io.choerodon.devops.api.vo.ClusterOverViewVO;
 import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.app.service.AppServiceService;
@@ -54,10 +52,10 @@ public class DevOpsSiteLevelResourceController {
      */
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据多个用户Id查询存在的多个用户信息")
-    @GetMapping("/users/list_by_ids")
+    @PostMapping("/users/list_by_ids")
     public ResponseEntity<List<UserAttrVO>> listByUserIds(
             @ApiParam(value = "用户id", required = true)
-            @RequestParam(value = "user_ids") Set<Long> iamUserIds) {
+            @RequestBody Set<Long> iamUserIds) {
         return Optional.ofNullable(userAttrService.listByUserIds(iamUserIds))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.user.get"));
@@ -66,10 +64,10 @@ public class DevOpsSiteLevelResourceController {
 
     @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation(value = "批量查询应用服务")
-    @GetMapping(value = "/app_service/list_app_service_by_ids")
+    @PostMapping(value = "/app_service/list_app_service_by_ids")
     public ResponseEntity<PageInfo<AppServiceRepVO>> batchQueryAppService(
             @ApiParam(value = "应用服务Ids, 不能为空，也不能为空数组", required = true)
-            @RequestParam(value = "ids") Set<Long> ids) {
+            @RequestBody Set<Long> ids) {
         return Optional.ofNullable(
                 appServiceService.listAppServiceByIds(ids, false, null, null))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))

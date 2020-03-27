@@ -728,7 +728,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             String accessToken = getToken(devOpsAppServiceImportPayload.getGitlabProjectId(), applicationDir, userAttrDTO);
             try {
                 gitUtil.commitAndPushForMaster(newGit, appServiceDTO.getRepoUrl(), templateVersion, accessToken);
-            } catch (CommonException e) {
+            } catch (Exception e) {
                 releaseResources(applicationWorkDir, newGit);
                 throw e;
             }
