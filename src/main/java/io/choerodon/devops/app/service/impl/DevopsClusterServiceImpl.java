@@ -127,7 +127,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         try {
             iamProject = baseServiceClientOperator.queryIamProjectById(projectId);
             // 判断组织下是否还能创建集群
-            checkEnableCreate(iamProject.getOrganizationId());
+            checkEnableCreateClusterOrThrowE(projectId);
             // 插入记录
             devopsClusterDTO = ConvertUtils.convertObject(devopsClusterReqVO, DevopsClusterDTO.class);
             devopsClusterDTO.setToken(GenerateUUID.generateUUID());
@@ -174,16 +174,23 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         // TODO 能不能优化为只读一次，读入内存?
         return FileUtil.replaceReturnString(inputStream, params);
     }
+    private void checkEnableCreateClusterOrThrowE(Long projectId) {
+        if (Boolean.FALSE.equals(checkEnableCreateCluster(projectId))) {
+            throw new CommonException(ERROR_ORGANIZATION_CLUSTER_NUM_MAX);
+        }
+    }
 
-    private void checkEnableCreate(Long organizationId) {
+    @Override
+    public Boolean checkEnableCreateCluster(Long projectId) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        Long organizationId = projectDTO.getOrganizationId();
         if (baseServiceClientOperator.checkOrganizationIsNew(organizationId)) {
             DevopsClusterDTO example = new DevopsClusterDTO();
             example.setOrganizationId(organizationId);
             int num = devopsClusterMapper.selectCount(example);
-            if (num >= clusterMaxNumber) {
-                throw new CommonException(ERROR_ORGANIZATION_CLUSTER_NUM_MAX);
-            }
+            return num < clusterMaxNumber;
         }
+        return true;
     }
 
     @Override

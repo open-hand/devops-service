@@ -11,14 +11,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 〈功能简述〉
- * 〈组织资源限制Controller〉
+ * 〈组织资源controller〉
  *
  * @author wanghao
- * @Date 2020/3/26 21:46
+ * @Date 2020/3/27 11:31
  */
 @RestController
 @RequestMapping("v1/organizations/resource_limit")
-public class ResourceLimitController {
+public class OrganizationResourceController {
 
     @Value("${choerodon.organization.resourceLimit.appSvcMaxNumber:100}")
     private Integer appSvcMaxNumber;
@@ -29,7 +29,7 @@ public class ResourceLimitController {
 
     @Permission(permissionWithin = true)
     @ApiOperation(value = "查询资源限制值")
-    @GetMapping
+    @GetMapping("/resource_limit")
     public ResponseEntity<ResourceLimitVO> queryResourceLimit() {
         ResourceLimitVO resourceLimitVO = new ResourceLimitVO();
         resourceLimitVO.setAppSvcMaxNumber(appSvcMaxNumber);
@@ -37,4 +37,5 @@ public class ResourceLimitController {
         resourceLimitVO.setEnvMaxNumber(envMaxNumber);
         return ResponseEntity.ok(resourceLimitVO);
     }
+
 }

@@ -210,4 +210,11 @@ public interface DevopsClusterService {
      * @return 平台的集群概览数据
      */
     ClusterOverViewVO getSiteClusterOverview();
+
+    /**
+     * 检查是否还能创建集群
+     * @param projectId
+     * @return
+     */
+    Boolean checkEnableCreateCluster(Long projectId);
 }
