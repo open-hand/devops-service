@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @Date 2020/3/27 11:31
  */
 @RestController
-@RequestMapping("v1/organizations/resource_limit")
+@RequestMapping("v1/organizations")
 public class OrganizationResourceController {
 
     @Value("${choerodon.organization.resourceLimit.appSvcMaxNumber:100}")
