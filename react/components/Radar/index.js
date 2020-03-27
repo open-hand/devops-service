@@ -141,7 +141,7 @@ const RadarApp = observer((props) => {
           {renderCircle()}
         </div>
         {
-          _.isNull(num) && !loading ? '' : (
+          _.isNull(num) && !loading && !failed ? '' : (
             <canvas id="canvas" width="145" height="145" />
           )
         }
