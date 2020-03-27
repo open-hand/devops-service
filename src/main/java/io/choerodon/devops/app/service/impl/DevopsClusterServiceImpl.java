@@ -128,14 +128,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             iamProject = baseServiceClientOperator.queryIamProjectById(projectId);
             // 判断组织下是否还能创建集群
             checkEnableCreateClusterOrThrowE(projectId);
-            // 插入记录
-            devopsClusterDTO = ConvertUtils.convertObject(devopsClusterReqVO, DevopsClusterDTO.class);
-            devopsClusterDTO.setToken(GenerateUUID.generateUUID());
-            devopsClusterDTO.setProjectId(projectId);
-            devopsClusterDTO.setOrganizationId(iamProject.getOrganizationId());
-            devopsClusterDTO.setSkipCheckProjectPermission(true);
-            devopsClusterDTO = baseCreateCluster(devopsClusterDTO);
-
 
             // 继续判断id是够为空是因为可能会返回 CommonException 但是也会被反序列化为  ProjectDTO
             if (iamProject == null || iamProject.getId() == null) {
