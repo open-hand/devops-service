@@ -25,7 +25,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
 
     useEffect(() => {
       appListStore.checkCreate(projectId);
-    }, []);
+    }, [projectId]);
 
     const value = {
       ...props,
