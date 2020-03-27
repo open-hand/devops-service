@@ -410,4 +410,10 @@ public class DevopsClusterController {
             @RequestParam(value = "node_name") String nodeName) {
         return new ResponseEntity<>(clusterNodeInfoService.queryNodeInfo(projectId, clusterId, nodeName), HttpStatus.OK);
     }
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "检查是否还能创建集群")
+    @GetMapping("/check_enable_create")
+    public ResponseEntity<Boolean> checkEnableCreateCluster(@PathVariable(name = "project_id") Long projectId) {
+        return ResponseEntity.ok(devopsClusterService.checkEnableCreateCluster(projectId));
+    }
 }

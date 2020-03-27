@@ -514,5 +514,9 @@ public interface AppServiceService {
     List<AppServiceSimpleVO> listAppServiceHavingVersions(Long projectId);
 
     Map<Long, Integer> countByProjectId(List<Long> longList);
-
+    /**
+     * 判断项目下是否还能创建应用服务
+     * @param projectId
+     */
+    Boolean checkEnableCreateAppSvc(Long projectId);
 }

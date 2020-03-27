@@ -838,7 +838,7 @@ public class AppServiceController {
         return new ResponseEntity<>(applicationServiceService.listAppServiceHavingVersions(projectId), HttpStatus.OK);
     }
 
-    @Permission(type = ResourceType.ORGANIZATION, roles = InitRoleCode.ORGANIZATION_ADMINISTRATOR)
+    @Permission(permissionWithin = true)
     @ApiOperation(value = "查询项目下应用服务的数量")
     @GetMapping("/list_by_project_id")
     public ResponseEntity<Map<Long, Integer>> countByProjectId(
@@ -846,6 +846,12 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam(value = "longList") List<Long> longList) {
         return new ResponseEntity<>(applicationServiceService.countByProjectId(longList), HttpStatus.OK);
+    }
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "检查是否还能创建应用服务")
+    @GetMapping("/check_enable_create")
+    public ResponseEntity<Boolean> checkEnableCreateAppSvc(@PathVariable(name = "project_id") Long projectId) {
+        return ResponseEntity.ok(applicationServiceService.checkEnableCreateAppSvc(projectId));
     }
 }
 

@@ -192,7 +192,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         // 判断项目下是否还能创建应用服务
-        checkEnableCreate(projectId);
+        checkEnableCreateAppSvcOrThrowE(projectId);
 
         // 校验模板id和模板版本id是否都有值或者都为空
         boolean isTemplateNull = appServiceReqVO.getTemplateAppServiceId() == null;
@@ -257,15 +257,9 @@ public class AppServiceServiceImpl implements AppServiceService {
      * 判断项目下是否还能创建应用服务
      * @param projectId
      */
-    private void checkEnableCreate(Long projectId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        if (baseServiceClientOperator.checkOrganizationIsNew(projectDTO.getOrganizationId())) {
-            AppServiceDTO example = new AppServiceDTO();
-            example.setProjectId(projectId);
-            int num = appServiceMapper.selectCount(example);
-            if (num >= appSvcMaxNumber) {
-                throw new CommonException(ERROR_PROJECT_APP_SVC_NUM_MAX);
-            }
+    private void checkEnableCreateAppSvcOrThrowE(Long projectId) {
+        if (checkEnableCreateAppSvc(projectId)) {
+            throw new CommonException(ERROR_PROJECT_APP_SVC_NUM_MAX);
         }
     }
 
@@ -936,7 +930,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO, Boolean isTemplate) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
-        checkEnableCreate(projectId);
+        checkEnableCreateAppSvcOrThrowE(projectId);
 
         // 获取当前操作的用户的信息
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -1843,7 +1837,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public void importAppServiceInternal(Long projectId, List<ApplicationImportInternalVO> importInternalVOS) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
-        checkEnableCreate(projectId);
+        checkEnableCreateAppSvcOrThrowE(projectId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         List<AppServiceImportPayload> importPayloadList = new ArrayList<>();
@@ -2700,6 +2694,18 @@ public class AppServiceServiceImpl implements AppServiceService {
             map.put(projectId, CollectionUtils.isEmpty(select) ? 0 : select.size());
         });
         return map;
+    }
+
+    @Override
+    public Boolean checkEnableCreateAppSvc(Long projectId) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        if (baseServiceClientOperator.checkOrganizationIsNew(projectDTO.getOrganizationId())) {
+            AppServiceDTO example = new AppServiceDTO();
+            example.setProjectId(projectId);
+            int num = appServiceMapper.selectCount(example);
+            return num < appSvcMaxNumber;
+        }
+        return true;
     }
 
     /**
