@@ -1,10 +1,10 @@
 import React, { useEffect, useState, Fragment } from 'react';
-import { Table, Modal, Tooltip } from 'choerodon-ui/pro';
+import { Table, Modal } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';
 import { FormattedMessage } from 'react-intl';
 import { withRouter, Link } from 'react-router-dom';
 import { Page, Content, Header, Permission, Action, Breadcrumb, Choerodon } from '@choerodon/boot';
-import { Button, Spin } from 'choerodon-ui';
+import { Button, Spin, Tooltip } from 'choerodon-ui';
 import pick from 'lodash/pick';
 import TimePopover from '../../../components/timePopover';
 import { useAppTopStore } from '../stores';
@@ -13,9 +13,9 @@ import CreateForm from '../modals/creat-form';
 import EditForm from '../modals/edit-form';
 import ImportForm from './modal/import-form';
 import StatusTag from '../components/status-tag';
+import { handlePromptError } from '../../../utils';
 
 import './index.less';
-import { handlePromptError } from '../../../utils';
 
 const { Column } = Table;
 const modalKey1 = Modal.key();
@@ -43,6 +43,7 @@ const ListView = withRouter(observer((props) => {
       currentMenuType: { projectId },
     },
     listDs,
+    appListStore,
   } = useAppServiceStore();
   const [isInit, setIsInit] = useState(true);
 
@@ -60,6 +61,7 @@ const ListView = withRouter(observer((props) => {
 
   function refresh() {
     listDs.query();
+    appListStore.checkCreate(projectId);
   }
 
   function renderName({ value, record }) {
@@ -313,30 +315,37 @@ const ListView = withRouter(observer((props) => {
 
 
   function getHeader() {
+    const disabled = !appListStore.getCanCreate;
+    const disabledMessage = disabled ? formatMessage({ id: `${intlPrefix}.create.disabled` }) : '';
     return <Header title={<FormattedMessage id="app.head" />}>
       <Permission
         service={['devops-service.app-service.create']}
       >
-        <Button
-          icon="playlist_add"
-          onClick={openCreate}
-        >
-          <FormattedMessage id={`${intlPrefix}.create`} />
-        </Button>
+        <Tooltip title={disabledMessage} placement="bottom">
+          <Button
+            icon="playlist_add"
+            disabled={disabled}
+            onClick={openCreate}
+          >
+            <FormattedMessage id={`${intlPrefix}.create`} />
+          </Button>
+        </Tooltip>
       </Permission>
       <Permission
         service={['devops-service.app-service.importApp']}
       >
-        <Button
-          icon="archive"
-          onClick={openImport}
-        >
-          <FormattedMessage id={`${intlPrefix}.import`} />
-        </Button>
+        <Tooltip title={disabledMessage} placement="bottom">
+          <Button
+            icon="archive"
+            onClick={openImport}
+          >
+            <FormattedMessage id={`${intlPrefix}.import`} />
+          </Button>
+        </Tooltip>
       </Permission>
       <Button
         icon="refresh"
-        onClick={() => refresh()}
+        onClick={refresh}
       >
         <FormattedMessage id="refresh" />
       </Button>
