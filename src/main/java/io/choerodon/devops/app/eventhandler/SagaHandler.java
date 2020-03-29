@@ -3,10 +3,16 @@ package io.choerodon.devops.app.eventhandler;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -49,6 +55,8 @@ public class SagaHandler {
     private GitlabUserService gitlabUserService;
     @Autowired
     private OrgAppMarketService orgAppMarketService;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
 
 
     private void loggerInfo(Object o) {
@@ -71,6 +79,14 @@ public class SagaHandler {
         BeanUtils.copyProperties(projectPayload, gitlabGroupPayload);
         loggerInfo(gitlabGroupPayload);
         gitlabGroupService.createGroups(gitlabGroupPayload);
+        //为新项目的三个组添加组织下管理员角色
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectPayload.getProjectId());
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryAllOrgRoot().stream().filter(iamUserDTO ->
+                organizationDTO.getId().equals(iamUserDTO.getOrganizationId())).collect(Collectors.toList());
+        iamUserDTOS.stream().forEach(iamUserDTO -> {
+            gitlabGroupMemberService.assignGitLabGroupMemeberForOwner(projectDTO, iamUserDTO.getId());
+        });
         return msg;
     }
 
@@ -250,7 +266,7 @@ public class SagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String handleDeleteAdminEvent(String payload) {
-        DeleteAdminVO deleteAdminVO= JSONObject.parseObject(payload, DeleteAdminVO.class);
+        DeleteAdminVO deleteAdminVO = JSONObject.parseObject(payload, DeleteAdminVO.class);
         gitlabUserService.deleteAdmin(deleteAdminVO == null ? null : deleteAdminVO.getAdminUserId());
         return payload;
     }
