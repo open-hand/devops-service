@@ -523,7 +523,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             clusterMsgVO.setCheckEnv(true);
         }
         if (!devopsEnvironmentDTOS.isEmpty()) {
-            throw new CommonException("error.cluster.delete");
+            clusterMsgVO.setCheckEnv(true);
         }
         //集群是否存在PV
         List<DevopsPvDTO> clusterDTOList = devopsPvService.queryByClusterId(clusterId);
