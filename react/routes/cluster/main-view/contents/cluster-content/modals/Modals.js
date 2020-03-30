@@ -81,6 +81,7 @@ const ClusterModals = observer(() => {
   }
   function resreshTree() {
     treeDs.query();
+    modalStore.checkCreate(projectId);
   }
 
   function refreshPermission() {
