@@ -120,14 +120,14 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     @Transactional
     public String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
+        // 判断组织下是否还能创建集群
+        checkEnableCreateClusterOrThrowE(projectId);
         ProjectDTO iamProject = null;
         DevopsClusterDTO devopsClusterDTO = null;
         InputStream inputStream = null;
         Map<String, String> params = new HashMap<>();
         try {
             iamProject = baseServiceClientOperator.queryIamProjectById(projectId);
-            // 判断组织下是否还能创建集群
-            checkEnableCreateClusterOrThrowE(projectId);
             // 插入记录
             devopsClusterDTO = ConvertUtils.convertObject(devopsClusterReqVO, DevopsClusterDTO.class);
             devopsClusterDTO.setToken(GenerateUUID.generateUUID());
