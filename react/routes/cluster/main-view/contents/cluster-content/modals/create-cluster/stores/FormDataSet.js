@@ -78,12 +78,17 @@ export default ({ projectId, formatMessage, intlPrefix, modal, isEdit, afterOk, 
         method: 'post',
         data: JSON.stringify(data),
         transformResponse: ((res) => {
-          if (handlePromptError(res)) {
-            mainStore.setResponseData(res);
-            afterOk();
-            modal.close();
+          try {
+            const result = JSON.parse(res);
+            return result;
+          } catch (e) {
+            if (handlePromptError(res)) {
+              mainStore.setResponseData(res);
+              // afterOk();
+              // modal.close();
+            }
+            return res;
           }
-          return true;
         }),
       }),
       update: ({ data: [data] }) => ({

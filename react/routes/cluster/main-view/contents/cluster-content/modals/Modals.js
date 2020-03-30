@@ -62,7 +62,6 @@ const ClusterModals = observer(() => {
   function refresh() {
     resreshTree();
     ClusterDetailDs.query();
-    modalStore.checkCreate(projectId);
     switch (getTabKey) {
       case NODE_TAB:
         NodeListDs.query();
@@ -81,7 +80,7 @@ const ClusterModals = observer(() => {
   }
   function resreshTree() {
     treeDs.query();
-    modalStore.checkCreate(projectId);
+    mainStore.checkCreate(projectId);
   }
 
   function refreshPermission() {
@@ -125,7 +124,7 @@ const ClusterModals = observer(() => {
   }
 
   function getButtons() {
-    const { getCanCreate } = modalStore;
+    const { getCanCreate } = mainStore;
     return [{
       name: formatMessage({ id: `${intlPrefix}.modal.create` }),
       permissions: ['devops-service.devops-cluster.create'],

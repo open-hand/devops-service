@@ -107,6 +107,7 @@ function ClusterItem({
       const res = await mainStore.deleteCluster({ projectId, clusterId: record.get('id') });
       if (handlePromptError(res, false)) {
         freshMenu();
+        mainStore.checkCreate(projectId);
       } else {
         return false;
       }

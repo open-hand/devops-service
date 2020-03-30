@@ -17,9 +17,6 @@ export const StoreProvider = (props) => {
   const NonPermissionDs = useMemo(() => new DataSet(NonPermissionDataSet()), []);
 
   useEffect(() => {
-    modalStore.checkCreate(projectId);
-  }, [projectId]);
-  useEffect(() => {
     NonPermissionDs.transport.read.url = `/devops/v1/projects/${projectId}/clusters/${clusterId}/permission/list_non_related`;
   }, [projectId, clusterId]);
 
