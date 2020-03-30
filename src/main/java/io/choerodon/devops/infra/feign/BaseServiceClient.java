@@ -20,6 +20,7 @@ import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Created by younger on 2018/3/29.
@@ -232,4 +233,11 @@ public interface BaseServiceClient {
 
     @GetMapping("/v1/projects/{project_id}/owner/list")
     ResponseEntity<List<IamUserDTO>> listProjectOwnerByProjectId(@PathVariable("project_id") Long projectId);
+
+    @GetMapping("/v1/organizations/{organization_id}/users/search")
+    ResponseEntity<PageInfo<IamUserDTO>> pagingQueryUsersWithRolesOnOrganizationLevel(
+            @PathVariable("organization_id") Long organizationId,
+            @RequestParam("size") Integer size,
+            @RequestParam("roleName") String roleName);
+
 }

@@ -215,4 +215,8 @@ public class BaseServiceClientFallback implements BaseServiceClient {
         throw new CommonException("error.query.user.by.login.name", loginName);
     }
 
+    @Override
+    public ResponseEntity<PageInfo<IamUserDTO>> pagingQueryUsersWithRolesOnOrganizationLevel(Long organizationId, Integer size, String roleName) {
+        throw new CommonException("error.query.user.by.name");
+    }
 }

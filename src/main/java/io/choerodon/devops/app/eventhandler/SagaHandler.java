@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -31,6 +32,7 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.springframework.util.CollectionUtils;
 
 
 /**
@@ -44,6 +46,7 @@ public class SagaHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SagaHandler.class);
     private final Gson gson = new Gson();
+    private static final String ROLE_NAME = "组织管理员";
 
     @Autowired
     private GitlabGroupService gitlabGroupService;
@@ -81,12 +84,12 @@ public class SagaHandler {
         gitlabGroupService.createGroups(gitlabGroupPayload);
         //为新项目的三个组添加组织下管理员角色
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectPayload.getProjectId());
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryAllOrgRoot().stream().filter(iamUserDTO ->
-                organizationDTO.getId().equals(iamUserDTO.getOrganizationId())).collect(Collectors.toList());
-        iamUserDTOS.stream().forEach(iamUserDTO -> {
-            gitlabGroupMemberService.assignGitLabGroupMemeberForOwner(projectDTO, iamUserDTO.getId());
-        });
+        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.pagingQueryUsersWithRolesOnOrganizationLevel(projectDTO.getOrganizationId(), ROLE_NAME).getList();
+        if (!CollectionUtils.isEmpty(iamUserDTOS)) {
+            iamUserDTOS.stream().forEach(iamUserDTO -> {
+                gitlabGroupMemberService.assignGitLabGroupMemeberForOwner(projectDTO, iamUserDTO.getId());
+            });
+        }
         return msg;
     }
 

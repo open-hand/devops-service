@@ -477,4 +477,10 @@ public class BaseServiceClientOperator {
         ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.listProjectOwnerByProjectId(projectId);
         return responseEntity == null ? Collections.emptyList() : responseEntity.getBody();
     }
+
+    public PageInfo<IamUserDTO> pagingQueryUsersWithRolesOnOrganizationLevel(Long organizationId, String roleName) {
+        ResponseEntity<PageInfo<IamUserDTO>> pageInfoResponseEntity = baseServiceClient.pagingQueryUsersWithRolesOnOrganizationLevel(organizationId, 0, roleName);
+        PageInfo<IamUserDTO> body = pageInfoResponseEntity.getBody();
+        return body;
+    }
 }
