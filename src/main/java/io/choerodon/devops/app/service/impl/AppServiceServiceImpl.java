@@ -258,7 +258,7 @@ public class AppServiceServiceImpl implements AppServiceService {
      * @param projectId
      */
     private void checkEnableCreateAppSvcOrThrowE(Long projectId) {
-        if (checkEnableCreateAppSvc(projectId)) {
+        if (Boolean.FALSE.equals(checkEnableCreateAppSvc(projectId))) {
             throw new CommonException(ERROR_PROJECT_APP_SVC_NUM_MAX);
         }
     }
