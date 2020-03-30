@@ -2643,7 +2643,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public List<AppServiceTemplateVO> listServiceTemplates() {
         List<AppServiceTemplateVO> serviceTemplateVOS = new ArrayList<>();
-        AppServiceTemplate.templatePath.forEach((k, v) -> {
+        AppServiceTemplate.getTemplatePath().forEach((k, v) -> {
             AppServiceTemplateVO appServiceTemplateVO = new AppServiceTemplateVO(k, v);
             serviceTemplateVOS.add(appServiceTemplateVO);
         });

@@ -17,7 +17,6 @@ import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.AppServiceRepVO;
-import io.choerodon.devops.api.vo.AppServiceVO;
 import io.choerodon.devops.api.vo.ClusterOverViewVO;
 import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.app.service.AppServiceService;
