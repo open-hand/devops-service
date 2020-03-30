@@ -1242,7 +1242,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 // 发送资源创建失败通知
                 sendNotificationService.sendWhenInstanceCreationFailure(appServiceInstanceDTO, appServiceInstanceDTO.getCreatedBy(), appServiceInstanceDTO.getCommandId());
             }
-            if (InstanceStatus.RUNNING.equals(appServiceInstanceDTO.getStatus())) {
+            if (InstanceStatus.RUNNING.getStatus().equals(appServiceInstanceDTO.getStatus())) {
                 // 发送成功通知
                 sendNotificationService.sendWhenInstanceSuccessOrDelete(appServiceInstanceDTO, SendSettingEnum.CREATE_RESOURCE.value());
             }
