@@ -925,7 +925,6 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         return devopsEnvResourceDTO == null ? null : devopsEnvResourceDTO.getInstanceId();
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public boolean checkTimeout(Long recordId) {
         DevopsPolarisRecordDTO devopsPolarisRecordDTO = devopsPolarisRecordMapper.selectByPrimaryKey(recordId);
