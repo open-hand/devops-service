@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -234,10 +235,9 @@ public interface BaseServiceClient {
     @GetMapping("/v1/projects/{project_id}/owner/list")
     ResponseEntity<List<IamUserDTO>> listProjectOwnerByProjectId(@PathVariable("project_id") Long projectId);
 
-    @GetMapping("/v1/organizations/{organization_id}/users/search")
-    ResponseEntity<PageInfo<IamUserDTO>> pagingQueryUsersWithRolesOnOrganizationLevel(
+    @GetMapping("/v1/organizations/{organization_id}/org_administrator")
+    ResponseEntity<PageInfo<OrgAdministratorVO>> listOrgAdministrator(
             @PathVariable("organization_id") Long organizationId,
-            @RequestParam("size") Integer size,
-            @RequestParam("roleName") String roleName);
+            @RequestParam("size") Integer size);
 
 }

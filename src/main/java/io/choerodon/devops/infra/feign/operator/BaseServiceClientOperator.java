@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -478,9 +479,9 @@ public class BaseServiceClientOperator {
         return responseEntity == null ? Collections.emptyList() : responseEntity.getBody();
     }
 
-    public PageInfo<IamUserDTO> pagingQueryUsersWithRolesOnOrganizationLevel(Long organizationId, String roleName) {
-        ResponseEntity<PageInfo<IamUserDTO>> pageInfoResponseEntity = baseServiceClient.pagingQueryUsersWithRolesOnOrganizationLevel(organizationId, 0, roleName);
-        PageInfo<IamUserDTO> body = pageInfoResponseEntity.getBody();
+    public PageInfo<OrgAdministratorVO> listOrgAdministrator(Long organizationId) {
+        ResponseEntity<PageInfo<OrgAdministratorVO>> pageInfoResponseEntity = baseServiceClient.listOrgAdministrator(organizationId, 0);
+        PageInfo<OrgAdministratorVO> body = pageInfoResponseEntity.getBody();
         return body;
     }
 }

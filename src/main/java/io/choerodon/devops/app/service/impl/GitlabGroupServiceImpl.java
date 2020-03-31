@@ -6,6 +6,7 @@ import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
 import java.util.List;
 
 import feign.FeignException;
+import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
@@ -36,7 +37,6 @@ import org.springframework.util.CollectionUtils;
 @Service
 public class GitlabGroupServiceImpl implements GitlabGroupService {
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabGroupServiceImpl.class);
-    private static final String ROLE_NAME = "组织管理员";
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
@@ -96,10 +96,10 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
 
         List<Long> ownerIds = baseServiceClientOperator.getAllOwnerIds(projectDTO.getId());
         //创建完group后分配组织管理员权限
-        List<IamUserDTO> list = baseServiceClientOperator.pagingQueryUsersWithRolesOnOrganizationLevel(projectDTO.getOrganizationId(), ROLE_NAME).getList();
+        List<OrgAdministratorVO> list = baseServiceClientOperator.listOrgAdministrator(projectDTO.getOrganizationId()).getList();
         if (!CollectionUtils.isEmpty(list)) {
-            list.stream().forEach(iamUserDTO -> {
-                gitlabGroupMemberService.assignGitLabGroupMemeberForOwner(projectDTO, iamUserDTO.getId());
+            list.stream().forEach(orgAdministratorVO -> {
+                gitlabGroupMemberService.assignGitLabGroupMemeberForOwner(projectDTO, orgAdministratorVO.getId());
             });
         }
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());

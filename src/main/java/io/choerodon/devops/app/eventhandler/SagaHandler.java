@@ -10,6 +10,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -46,7 +47,7 @@ public class SagaHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SagaHandler.class);
     private final Gson gson = new Gson();
-    private static final String ROLE_NAME = "组织管理员";
+
 
     @Autowired
     private GitlabGroupService gitlabGroupService;
@@ -84,10 +85,10 @@ public class SagaHandler {
         gitlabGroupService.createGroups(gitlabGroupPayload);
         //为新项目的三个组添加组织下管理员角色
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectPayload.getProjectId());
-        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.pagingQueryUsersWithRolesOnOrganizationLevel(projectDTO.getOrganizationId(), ROLE_NAME).getList();
-        if (!CollectionUtils.isEmpty(iamUserDTOS)) {
-            iamUserDTOS.stream().forEach(iamUserDTO -> {
-                gitlabGroupMemberService.assignGitLabGroupMemeberForOwner(projectDTO, iamUserDTO.getId());
+        List<OrgAdministratorVO> orgAdministratorVOS = baseServiceClientOperator.listOrgAdministrator(projectDTO.getOrganizationId()).getList();
+        if (!CollectionUtils.isEmpty(orgAdministratorVOS)) {
+            orgAdministratorVOS.stream().forEach(orgAdministratorVO -> {
+                gitlabGroupMemberService.assignGitLabGroupMemeberForOwner(projectDTO, orgAdministratorVO.getId());
             });
         }
         return msg;
