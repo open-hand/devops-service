@@ -1,4 +1,30 @@
-.pipelineManage_tree {
-  flex-basis: 20%;
-  border-right: 1px solid rgba(216, 216, 216, 1);
+@import '~choerodon-ui/lib/style/themes/default';
+
+.c7ncd-pipelineManage {
+
+  &-sidebar {
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    border-right: 1px solid rgba(0, 0, 0, .1);
+    padding-top: .15rem;
+
+    &-search {
+      width: 100%;
+      display: block;
+      padding: 0 .1rem;
+
+      .@{c7n-pro-prefix}-input-prefix {
+        left: 0.08rem;
+
+        .icon {
+          font-size: .2rem;
+        }
+      }
+
+      .@{c7n-pro-prefix}-input:not(textarea):not(:first-child) {
+        padding-left: .32rem;
+      }
+    }
+  }
 }

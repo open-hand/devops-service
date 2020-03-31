@@ -1,6 +1,7 @@
 import React, { createContext, useContext } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
+import useStore from './useStore';
 
 const Store = createContext();
 
@@ -13,12 +14,16 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     children,
   } = props;
 
+  const mainStore = useStore();
+
   const value = {
     ...props,
+    prefixCls: 'c7ncd-pipelineManage',
+    mainStore,
   };
 
   return (
-    <Store.Provider>
+    <Store.Provider value={value}>
       {children}
     </Store.Provider>
   );
