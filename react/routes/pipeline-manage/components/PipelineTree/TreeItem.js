@@ -8,21 +8,24 @@ import { usePipelineManageStore } from '../../stores';
 import TimePopover from '../../../../components/timePopover';
 import eventStopProp from '../../../../utils/eventStopProp';
 import PipelineType from '../pipeline-type';
+import ExecuteContent from './execute-content';
 
 const executeKey = Modal.key();
+const stopKey = Modal.key();
 
 const TreeItem = observer(({ record, search }) => {
   const {
     intlPrefix,
     prefixCls,
     intl: { formatMessage },
+    treeDs,
   } = usePipelineManageStore();
 
   const iconType = useMemo(() => ({
     failed: 'cancel',
     success: 'check_circle',
     running: 'timelapse',
-    canceled: 'cancel_b',
+    canceled: 'cancle_b',
     deleted: 'cancel',
 
   }), []);
@@ -36,16 +39,31 @@ const TreeItem = observer(({ record, search }) => {
     Modal.open({
       key: executeKey,
       title: formatMessage({ id: `${intlPrefix}.execute` }),
-      children: <span>选择分支下拉框</span>,
+      children: <ExecuteContent />,
       okText: formatMessage({ id: 'execute' }),
       movable: false,
     });
   }
   function handleChangeActive() {
-
+    if (record.get('active')) {
+      Modal.open({
+        key: stopKey,
+        title: formatMessage({ id: `${intlPrefix}.stop.title` }),
+        children: formatMessage({ id: `${intlPrefix}.stop.des` }),
+        okText: formatMessage({ id: 'stop' }),
+        movable: false,
+      });
+    }
   }
   function handleDelete() {
-
+    const modalProps = {
+      title: formatMessage({ id: `${intlPrefix}.delete.title` }),
+      children: formatMessage({ id: `${intlPrefix}.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    treeDs.delete(record, modalProps);
   }
 
   function handleCancelExecute() {
