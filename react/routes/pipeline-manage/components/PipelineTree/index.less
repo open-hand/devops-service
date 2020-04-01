@@ -1,5 +1,11 @@
 @import '~choerodon-ui/lib/style/themes/default';
 
+@success: #00bfa5;
+@running: #4d90fe;
+@pending: #ffb100;
+@failed: #f77a70;
+@canceled: #d8d8d8;
+
 .pipelineManage_tree {
   flex-basis: 20%;
   border-right: 1px solid rgba(216, 216, 216, 1);
@@ -38,8 +44,12 @@
       .@{c7n-prefix}-tree-treenode {
         width: 100%;
         padding: 0;
-        border-bottom: 1px solid rgba(216, 220, 235, 1);
-        // border-image: linear-gradient(to right, rgba(216, 220, 235, 0), rgba(216, 220, 235)) 30 30;
+        border-top: 1px solid rgba(216, 220, 235, 1);
+        border-image: linear-gradient(to right, rgba(216, 220, 235, 0), rgba(216, 220, 235)) 30 30;
+
+        &:last-child {
+          border-bottom: 1px solid rgba(216, 220, 235, 1);
+        }
       }
 
       .@{c7n-prefix}-tree-switcher {
@@ -49,14 +59,31 @@
       .@{c7n-prefix}-tree-node-content-wrapper {
         width: 100%;
         padding: .1rem .04rem;
+
+        &:hover {
+          .c7ncd-pipelineManage-sidebar-header-node {
+            background: rgba(0, 0, 0, 0.04);
+          }
+        }
       }
 
       .@{c7n-prefix}-tree-treenode-selected {
         background: #f5f6fa;
-        border-left: 4px solid #6887e8;
+
+        &:before {
+          background: #6887e8;
+          color: #6887e8;
+          width: 4px;
+          height: max-content;
+          content: '';
+        }
 
         .@{c7n-prefix}-tree-switcher {
           margin-left: -4px;
+        }
+
+        .c7ncd-pipelineManage-sidebar-header-node {
+          background: #f5f6fa;
         }
       }
 
@@ -77,6 +104,15 @@
       display: flex;
       align-items: center;
       line-height: .18rem;
+
+      &-node {
+        display: flex;
+        align-items: center;
+        line-height: .18rem;
+        margin: -.11rem -.04rem -.1rem;
+        padding: .1rem .04rem;
+        background: #fff;
+      }
 
       &:first-child {
         margin-bottom: .1rem;
@@ -104,9 +140,10 @@
         font-weight: 500;
         text-align: center;
         transform: scale(0.8);
+        margin-left: -.05rem;
 
         &-true {
-          background: #00bfa5;
+          background: @success;
         }
         &-false {
           background: rgba(0, 0, 0, 0.2);
@@ -120,27 +157,67 @@
       }
 
       &-icon {
-        color: #d8d8d8;
+        color: @canceled;
         margin-right: .13rem;
 
         &-success {
-          color: #00bfa5;
+          color: @success;
         }
         &-running {
-          color: #4d90fe;
+          color: @running;
         }
         &-pending {
-          color: #ffb100;
+          color: @pending;
         }
         &-failed {
-          color: #f77a70;
+          color: @failed;
         }
       }
 
       &-number {
         font-size: .12rem;
         color: #3a345f;
-        margin-right: auto;
+      }
+
+      &-stage {
+        margin: 0 auto 0 .08rem;
+
+        &-item {
+          width: .08rem;
+          height: .08rem;
+          display: inline-block;
+          border-radius: 50%;
+          background: @canceled;
+
+          &-success {
+            background: @success;
+          }
+
+          &-failed {
+            background: @failed;
+          }
+
+          &-running {
+            background: @running;
+          }
+
+          &-pending {
+            background: @pending;
+          }
+        }
+
+        &-line {
+          width: .06rem;
+          height: 1px;
+          background-color: #d3d3d3;
+          display: inline-block;
+          vertical-align: middle;
+          margin: .02rem;
+
+          &:last-child {
+            display: none;
+          }
+        }
       }
     }
   }

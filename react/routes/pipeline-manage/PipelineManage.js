@@ -25,6 +25,7 @@ const PipelineManage = observer((props) => {
   };
   const {
     intl: { formatMessage },
+    intlPrefix,
     prefixCls,
     mainStore,
   } = usePipelineManageStore();
@@ -33,12 +34,23 @@ const PipelineManage = observer((props) => {
   const { getSelectedMenu } = mainStore;
 
   function getButtons() {
-    if (!getSelectedMenu.parentId) {
+    const { parentId, status } = getSelectedMenu;
+    if (!parentId) {
       return <Button icon="playlist_add">{formatMessage({ id: 'save' })}</Button>;
     } else {
+      let btn;
+      switch (status) {
+        case 'running':
+        case 'pending':
+          btn = <Button icon="power_settings_new">{formatMessage({ id: `${intlPrefix}.execute.cancel` })}</Button>;
+          break;
+        default:
+          btn = <Button icon="power_settings_new">{formatMessage({ id: `${intlPrefix}.execute.retry` })}</Button>;
+          break;
+      }
       return (<Fragment>
         <Button icon="find_in_page">流水线记录详情</Button>
-        <Button icon="power_settings_new">强制失败</Button>
+        {btn}
       </Fragment>);
     }
   }

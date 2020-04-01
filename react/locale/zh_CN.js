@@ -766,6 +766,12 @@ const codeManagement = {
   'code-management.tag.empty.des': '暂无任何标记，您可在此页面基于某一分支创建标记',
 };
 
+const pipelineManage = {
+  'c7ncd.pipelineManage.execute': '全新执行',
+  'c7ncd.pipelineManage.execute.cancel': '取消执行',
+  'c7ncd.pipelineManage.execute.retry': '重新执行',
+};
+
 const emptyPage = {
   'empty.title.app': '暂无应用服务',
   'empty.title.env': '暂无环境',
@@ -2729,6 +2735,7 @@ const zhCN = {
   ...codeManagement,
   ...emptyPage,
   ...pvManager,
+  ...pipelineManage,
 };
 
 export default zhCN;

@@ -48,19 +48,44 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
       type: 'auto',
     },
     {
+      id: 4,
+      name: 'workflow4',
+      appServiceName: '平台总前端',
+      updateDate: '2020-04-01 15:00:42',
+      status: 'canceled',
+      active: true,
+      type: 'manual',
+    },
+    {
       id: 109727,
       parentId: 1,
       updateDate: '2020-03-10 09:13:42',
       status: 'failed',
       stages: [
         { status: 'success' },
+        { status: 'failed' },
+        { status: 'pending' },
+        { status: 'running' },
+        { status: 'canceled' },
       ],
     },
     {
       id: 109725,
       parentId: 1,
       updateDate: '2020-03-30 09:13:42',
-      status: 'failed',
+      status: 'success',
+    },
+    {
+      id: 109726,
+      parentId: 3,
+      updateDate: '2020-03-30 09:13:42',
+      status: 'pending',
+    },
+    {
+      id: 109724,
+      parentId: 3,
+      updateDate: '2020-03-30 09:13:42',
+      status: 'running',
     },
   ], []);
 
@@ -71,6 +96,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
   const value = {
     ...props,
     prefixCls: 'c7ncd-pipelineManage',
+    intlPrefix: 'c7ncd.pipelineManage',
     mainStore,
     treeDs,
   };
