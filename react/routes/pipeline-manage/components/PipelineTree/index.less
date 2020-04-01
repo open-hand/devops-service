@@ -76,6 +76,7 @@
     &-header {
       display: flex;
       align-items: center;
+      line-height: .18rem;
 
       &:first-child {
         margin-bottom: .1rem;
@@ -84,33 +85,9 @@
         margin-bottom: 0;
       }
 
-      &-type {
-        &-manual {
-          width: .16rem;
-          height: .16rem;
-          line-height: .13rem;
-          border-radius: 50%;
-          text-align: center;
-          border: 1px solid #ffb100;
-          color: #ffb100;
-          margin-right: .04rem;
-        }
-
-        &-auto {
-          width: .16rem;
-          height: .16rem;
-          line-height: .13rem;
-          border-radius: 50%;
-          text-align: center;
-          border: 1px solid #6887e8;
-          color: #6887e8;
-          margin-right: .04rem;
-        }
-      }
-
       &-name {
         font-weight: 500;
-        margin-right: auto;
+        margin: 0 auto 0 .04rem;
       }
 
       &-time {
@@ -143,22 +120,20 @@
       }
 
       &-icon {
+        color: #d8d8d8;
+        margin-right: .13rem;
 
         &-success {
           color: #00bfa5;
-          margin-right: .13rem;
         }
-        &-executing {
+        &-running {
           color: #4d90fe;
-          margin-right: .13rem;
+        }
+        &-pending {
+          color: #ffb100;
         }
         &-failed {
           color: #f77a70;
-          margin-right: .13rem;
-        }
-        &-deleted {
-          color: rgba(0, 0, 0, 0.2);
-          margin-right: .13rem;
         }
       }
 

@@ -2,10 +2,11 @@ import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Action } from '@choerodon/boot';
 import { observer } from 'mobx-react-lite';
-import { Icon } from 'choerodon-ui/pro';
+import { Icon, Tooltip } from 'choerodon-ui/pro';
 import { usePipelineManageStore } from '../../stores';
 import TimePopover from '../../../../components/timePopover';
 import eventStopProp from '../../../../utils/eventStopProp';
+import PipelineType from '../pipeline-type';
 
 const TreeItem = observer(({ record, search }) => {
   const {
@@ -17,7 +18,7 @@ const TreeItem = observer(({ record, search }) => {
   const iconType = useMemo(() => ({
     failed: 'cancel',
     success: 'check_circle',
-    executing: 'timelapse',
+    running: 'timelapse',
     deleted: 'cancel',
 
   }), []);
@@ -75,7 +76,7 @@ const TreeItem = observer(({ record, search }) => {
       return (
         <Fragment>
           <div className={`${prefixCls}-sidebar-header`}>
-            <span className={`${prefixCls}-sidebar-header-type-${type}`}>{type.slice(0, 1).toUpperCase()}</span>
+            <PipelineType name={name} type={type} />
             <span className={`${prefixCls}-sidebar-header-name`}>{name}</span>
             <TimePopover content={updateDate} style={timePopoverStyle} />
             <Action data={actionData} onClick={eventStopProp} />
@@ -87,7 +88,9 @@ const TreeItem = observer(({ record, search }) => {
             <span className={`${prefixCls}-sidebar-header-service`}>
               {appServiceName}
             </span>
-            <Icon type={iconType[status]} className={`${prefixCls}-sidebar-header-icon-${status}`} />
+            <Tooltip title={formatMessage({ id: status })} placement="top">
+              <Icon type={iconType[status]} className={`${prefixCls}-sidebar-header-icon ${prefixCls}-sidebar-header-icon-${status}`} />
+            </Tooltip>
           </div>
         </Fragment>
       );

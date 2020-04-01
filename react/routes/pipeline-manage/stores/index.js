@@ -39,10 +39,22 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
       type: 'auto',
     },
     {
+      id: 3,
+      name: 'workflow3',
+      appServiceName: '平台总前端',
+      updateDate: '2020-04-01 15:00:42',
+      status: 'running',
+      active: true,
+      type: 'auto',
+    },
+    {
       id: 109727,
       parentId: 1,
       updateDate: '2020-03-10 09:13:42',
       status: 'failed',
+      stages: [
+        { status: 'success' },
+      ],
     },
     {
       id: 109725,

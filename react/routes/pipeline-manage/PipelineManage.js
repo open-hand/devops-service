@@ -24,6 +24,7 @@ const PipelineManage = observer((props) => {
     });
   };
   const {
+    intl: { formatMessage },
     prefixCls,
     mainStore,
   } = usePipelineManageStore();
@@ -33,7 +34,7 @@ const PipelineManage = observer((props) => {
 
   function getButtons() {
     if (!getSelectedMenu.parentId) {
-      return <Button icon="playlist_add">保存</Button>;
+      return <Button icon="playlist_add">{formatMessage({ id: 'save' })}</Button>;
     } else {
       return (<Fragment>
         <Button icon="find_in_page">流水线记录详情</Button>
@@ -47,7 +48,7 @@ const PipelineManage = observer((props) => {
       <Header title="流水线">
         <Button onClick={handleCreatePipeline} icon="playlist_add">创建流水线</Button>
         {getButtons()}
-        <Button icon="refresh">刷新</Button>
+        <Button icon="refresh">{formatMessage({ id: 'refresh' })}</Button>
       </Header>
       <Breadcrumb />
       <Content className={`${prefixCls}-content`}>
