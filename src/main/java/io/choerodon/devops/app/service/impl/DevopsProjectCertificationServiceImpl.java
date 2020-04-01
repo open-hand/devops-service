@@ -298,8 +298,6 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         } else {
             throw new CommonException("error.cert.related");
         }
-        //删除证书资源发送webhook
-        sendNotificationService.sendWhenCertSuccessOrDelete(certificationDTO,SendSettingEnum.DELETE_RESOURCE.value());
     }
 
     @Override

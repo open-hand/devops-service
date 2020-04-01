@@ -750,7 +750,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Override
     public void sendWhenCertSuccessOrDelete(CertificationDTO certificationDTO, String code) {
         doWithTryCatchAndLog(() -> {
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(certificationDTO.getProjectId());
+                    DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(certificationDTO.getEnvId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(environmentDTO.getProjectId());
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(certificationDTO.getEnvId());
                     JSONObject JSONObject = getJSONObject(certificationDTO.getId(),
                             certificationDTO.getName(),
