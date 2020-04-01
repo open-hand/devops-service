@@ -337,6 +337,7 @@ const ListView = withRouter(observer((props) => {
         <Tooltip title={disabledMessage} placement="bottom">
           <Button
             icon="archive"
+            disabled={disabled}
             onClick={openImport}
           >
             <FormattedMessage id={`${intlPrefix}.import`} />

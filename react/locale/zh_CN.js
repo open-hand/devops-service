@@ -13,6 +13,7 @@ const commonField = {
   // 操作
   active: '启用',
   stop: '停用',
+  execute: '执行',
   return: '返回',
   submit: '确认',
   create: '创建',
