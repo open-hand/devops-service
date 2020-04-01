@@ -16,7 +16,7 @@ const PipelineCreate = observer(() => {
       key: Modal.key(),
       title: '添加任务',
       style: {
-        width: '3.8rem',
+        width: '740px',
       },
       children: <AddTask />,
       drawer: true,
