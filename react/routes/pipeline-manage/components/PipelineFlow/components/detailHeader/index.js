@@ -11,33 +11,32 @@ const tagObj = {
   },
 };
 
-export default observer(() => {
+const renderTag = (props) => {
+  // const {} = props;
+  const {
+    load: {
+      borderColor, backgroundColor, color, text,
+    },
+  } = tagObj;
+  return (
+    <span
+      className="c7ncd-pipelineManage-optsDetail-header-tag"
+      style={{ borderColor, backgroundColor, color }}
+    >
+      {text}
+    </span>
+  );
+};
+
+export default observer(({ id, name }) => {
   useEffect(() => {
 
   }, []);
 
-  const renderTag = (props) => {
-    // const {} = props;
-    const {
-      load: {
-        borderColor, backgroundColor, color, text,
-      },
-    } = tagObj;
-    return (
-      <span
-        className="c7ncd-pipelineManage-optsDetail-header-tag"
-        style={{ borderColor, backgroundColor, color }}
-      >
-        {text}
-      </span>
-    );
-  };
-
   return (
     <div className="c7ncd-pipelineManage-optsDetail-header">
-      <span>#109725</span>
+      <span>#{id}</span>
       <span>(workFlow)</span>
-      {/* <Tag color="geekblue">执行中</Tag> */}
       {renderTag()}
     </div>
   );
