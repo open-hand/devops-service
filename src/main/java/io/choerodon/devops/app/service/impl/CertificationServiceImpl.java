@@ -74,6 +74,8 @@ public class CertificationServiceImpl implements CertificationService {
     private DevopsCertificationFileMapper devopsCertificationFileMapper;
     @Autowired
     private DevopsIngressMapper devopsIngressMapper;
+    @Autowired
+    private SendNotificationService sendNotificationService;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -335,6 +337,8 @@ public class CertificationServiceImpl implements CertificationService {
                             devopsEnvironmentDTO.getType(),
                             devopsEnvironmentDTO.getClusterCode()));
         }
+        //删除证书资源发送webhook
+        sendNotificationService.sendWhenCertSuccessOrDelete(certificationDTO, SendSettingEnum.DELETE_RESOURCE.value());
     }
 
     @Override
