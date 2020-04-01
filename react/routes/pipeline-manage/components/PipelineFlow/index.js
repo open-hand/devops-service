@@ -1,9 +1,10 @@
 import React from 'react';
-
+import { StoreProvider } from './stores';
+import FlowContent from './FlowContent';
 import './index.less';
 
-export default () => (
-  <div className="pipelineManage_flow">
-    pipeline_flow
-  </div>
+export default (props) => (
+  <StoreProvider {...props}>
+    <FlowContent />
+  </StoreProvider>
 );
