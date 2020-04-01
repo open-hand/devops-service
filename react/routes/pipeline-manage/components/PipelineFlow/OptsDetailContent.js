@@ -8,7 +8,6 @@ export default observer((props) => {
   useEffect(() => {
 
   }, []);
-  console.log(props);
   return (
     <div className="c7n-piplineManage">
       <DetailHeader id={id} name={name} />

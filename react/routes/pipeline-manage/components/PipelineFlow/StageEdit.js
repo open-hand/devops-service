@@ -5,7 +5,6 @@ import EditHeader from './components/eidtHeader';
 
 export default observer((props) => {
   const { id, name, appServiceName, updateDate, status, active, type } = props;
-  console.log(props);
   return (
     <div className="c7n-piplineManage">
       <EditHeader type={type} name={name} iconSize={18} />
