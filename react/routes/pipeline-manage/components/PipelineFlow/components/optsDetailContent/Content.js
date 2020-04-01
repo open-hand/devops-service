@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import DetailHeader from './components/detailHeader';
-import DetailColumn from './components/detailColumn';
+import DetailHeader from '../detailHeader';
+import DetailColumn from '../detailColumn';
 
 export default observer(() => {
   useEffect(() => {

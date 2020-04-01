@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import OptsDetailContent from './OptsDetailContent';
+import OptsDetailContent from './components/optsDetailContent';
+import PiplineEdit from './components/piplineStageEdit';
 
 export default observer(() => {
   useEffect(() => {
@@ -9,7 +10,7 @@ export default observer(() => {
 
   return (
     <div className="c7ncd-pipelineManage_flow">
-      <OptsDetailContent />
+      <PiplineEdit />
     </div>
   );
 });

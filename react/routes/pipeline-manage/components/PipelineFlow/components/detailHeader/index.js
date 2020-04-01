@@ -1,17 +1,44 @@
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Tag } from 'choerodon-ui';
 import './index.less';
+
+const tagObj = {
+  load: {
+    borderColor: 'rgba(77,144,254,0.65)',
+    backgroundColor: 'rgba(77,144,254,0.04)',
+    color: 'rgba(77,144,254,1)',
+    text: '执行中',
+  },
+};
 
 export default observer(() => {
   useEffect(() => {
 
   }, []);
+
+  const renderTag = (props) => {
+    // const {} = props;
+    const {
+      load: {
+        borderColor, backgroundColor, color, text,
+      },
+    } = tagObj;
+    return (
+      <span
+        className="c7ncd-pipelineManage-optsDetail-header-tag"
+        style={{ borderColor, backgroundColor, color }}
+      >
+        {text}
+      </span>
+    );
+  };
+
   return (
     <div className="c7ncd-pipelineManage-optsDetail-header">
       <span>#109725</span>
       <span>(workFlow)</span>
-      <Tag color="geekblue">执行中</Tag>
+      {/* <Tag color="geekblue">执行中</Tag> */}
+      {renderTag()}
     </div>
   );
 });
