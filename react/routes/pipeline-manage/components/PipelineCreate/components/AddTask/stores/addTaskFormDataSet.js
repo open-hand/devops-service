@@ -5,6 +5,7 @@ export default () => ({
     type: 'string',
     label: '任务类型',
     require: true,
+    defaultValue: 'gj',
   }, {
     name: 'rwmc',
     type: 'string',
@@ -23,5 +24,48 @@ export default () => ({
     name: 'gjmb',
     type: 'string',
     label: '构建模板',
+  }, {
+    name: 'bzmc',
+    type: 'string',
+    label: '步骤名称',
+    require: true,
+  }, {
+    name: 'yhm',
+    type: 'string',
+    label: '用户名',
+    require: true,
+  }, {
+    name: 'mm',
+    type: 'string',
+    label: '密码',
+  }, {
+    name: 'gjblj',
+    type: 'string',
+    label: '构建包路径',
+    require: true,
+  }, {
+    name: 'sonarQube',
+    type: 'string',
+    label: 'SonarQube',
+    defaultValue: 'M',
+  }, {
+    name: 'sqyhm',
+    type: 'string',
+    label: 'SonarQube用户名',
+    require: true,
+  }, {
+    name: 'sqmm',
+    type: 'string',
+    label: '密码',
+  }, {
+    name: 'sqdz',
+    type: 'string',
+    label: 'SonarQube地址',
+    require: true,
+  }, {
+    name: 'token',
+    type: 'string',
+    label: 'Token',
+    require: true,
   }],
 });

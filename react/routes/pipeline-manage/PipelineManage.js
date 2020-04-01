@@ -16,7 +16,7 @@ const PipelineManage = observer((props) => {
       key: Modal.key(),
       title: '创建流水线',
       style: {
-        width: '7.4rem',
+        width: 'calc(100vw - 3.52rem)',
       },
       drawer: true,
       children: <PipelineCreate />,
