@@ -1,8 +1,8 @@
 package script.db
 
-databaseChangeLog(logicalFilePath: 'dba/devops_ci_content_record.groovy') {
+databaseChangeLog(logicalFilePath: 'dba/devops_ci_content.groovy') {
     changeSet(author: 'wanghao', id: '2020-04-02-create-table') {
-        createTable(tableName: "devops_ci_content_record", remarks: 'devops_ci_content_record') {
+        createTable(tableName: "devops_ci_content", remarks: 'devops_ci_content') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
