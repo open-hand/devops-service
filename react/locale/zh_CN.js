@@ -2561,7 +2561,7 @@ const zhCN = {
   'pipeline.deploy.mode': '选择部署模式',
   'pipeline.task.config.title': '配置信息',
   'pipeline.task.config.title.tip':
-    '根据您所选的应用与环境，下方会匹配出对应的部署配置，选择后，会出现对应的配置信息；若当前流水线内无部署配置，则需要去部属配置界面创建后才可选择。',
+    '根据您所选的应用与环境，下方会匹配出对应的部署配置，选择后，会出现对应的配置信息；若当前流水线内无部署配置，则需要去部署配置界面创建后才可选择。',
   'pipeline.task.config': '部署配置',
   'pipeline.task.add': '添加任务',
   'pipeline.task.delete': '删除阶段任务',
