@@ -28,6 +28,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
       status: 'success',
       active: true,
       type: 'auto',
+      hasMore: true,
     },
     {
       id: 2,

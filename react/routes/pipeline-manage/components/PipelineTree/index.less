@@ -46,6 +46,7 @@
         padding: 0;
         border-top: 1px solid rgba(216, 220, 235, 1);
         border-image: linear-gradient(to right, rgba(216, 220, 235, 0), rgba(216, 220, 235)) 30 30;
+        align-items: stretch;
 
         &:last-child {
           border-bottom: 1px solid rgba(216, 220, 235, 1);
@@ -62,7 +63,7 @@
 
         &:hover {
           .c7ncd-pipelineManage-sidebar-header-node {
-            background: rgba(0, 0, 0, 0.04);
+            background: transparent;
           }
         }
       }
@@ -74,7 +75,7 @@
           background: #6887e8;
           color: #6887e8;
           width: 4px;
-          height: max-content;
+          height: auto;
           content: '';
         }
 
@@ -83,7 +84,7 @@
         }
 
         .c7ncd-pipelineManage-sidebar-header-node {
-          background: #f5f6fa;
+          background: #f5f6fa !important;
         }
       }
 
@@ -110,8 +111,19 @@
         align-items: center;
         line-height: .18rem;
         margin: -.11rem -.04rem -.1rem;
-        padding: .1rem .04rem;
+        padding: .05rem .04rem;
         background: #fff;
+
+        &-more {
+          background: #fff !important;
+          cursor: default;
+
+          &-text {
+            color: #5266d4;
+            cursor: pointer;
+            font-weight: 500;
+          }
+        }
       }
 
       &:first-child {

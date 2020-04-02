@@ -74,8 +74,40 @@ const TreeItem = observer(({ record, search }) => {
 
   }
 
+  function loadMoreRecord(deleteRecord) {
+    const treeRecord = treeDs.create({
+      id: 109729,
+      parentId: deleteRecord.get('parentId'),
+      parentName: 'workflow1',
+      updateDate: '2020-03-10 09:13:42',
+      status: 'failed',
+      stages: [
+        { status: 'success' },
+        { status: 'failed' },
+        { status: 'pending' },
+        { status: 'running' },
+        { status: 'canceled' },
+      ],
+    });
+    treeDs.remove(deleteRecord);
+    treeDs.push(treeRecord);
+  }
+
   function getItem() {
     const { name, appServiceName, updateDate, status, active, type, id, parentId, stages } = record.toData();
+    if (id === 'more') {
+      return (
+        <div
+          className={`${prefixCls}-sidebar-header-node ${prefixCls}-sidebar-header-node-more`}
+          onClick={eventStopProp}
+        >
+          <span
+            className={`${prefixCls}-sidebar-header-node-more-text`}
+            onClick={() => loadMoreRecord(record)}
+          >加载更多</span>
+        </div>
+      );
+    }
     if (parentId) {
       const actionData = [];
       switch (status) {

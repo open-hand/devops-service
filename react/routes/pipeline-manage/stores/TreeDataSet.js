@@ -5,6 +5,18 @@ function handleSelect(record, store) {
   }
 }
 
+function handleMoreRecord(ds) {
+  ds.forEach((record) => {
+    if (record.get('hasMore')) {
+      const newRecord = ds.create({
+        id: 'more',
+        parentId: record.get('id'),
+      });
+      ds.push(newRecord);
+    }
+  });
+}
+
 export default ({ mainStore }) => ({
   autoCreate: false,
   selection: 'single',
@@ -24,6 +36,7 @@ export default ({ mainStore }) => ({
       const record = dataSet.records[0];
       record.isSelected = true;
       handleSelect(record, mainStore);
+      handleMoreRecord(dataSet);
     },
   },
 });
