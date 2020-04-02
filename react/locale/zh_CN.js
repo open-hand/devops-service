@@ -776,6 +776,14 @@ const pipelineManage = {
   'c7ncd.pipelineManage.delete.des': '确定删除该条流水线吗？',
   'c7ncd.pipelineManage.stop.title': '停用流水线',
   'c7ncd.pipelineManage.stop.des': '确定停用该条流水线吗？',
+  'c7ncd.pipelineManage.record.detail': '流水线记录详情',
+  'c7ncd.pipelineManage.record.detail.title': '流水线记录"#{id}"的详情',
+  'c7ncd.pipelineManage.name': '流水线名称',
+  'c7ncd.pipelineManage.appService': '关联应用服务',
+  'c7ncd.pipelineManage.result': '执行结果',
+  'c7ncd.pipelineManage.trigger.user': '触发人员',
+  'c7ncd.pipelineManage.execute.date': '执行时间',
+  'c7ncd.pipelineManage.time': '流程耗时',
 };
 
 const emptyPage = {

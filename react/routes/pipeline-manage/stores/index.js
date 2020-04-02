@@ -59,6 +59,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     {
       id: 109727,
       parentId: 1,
+      parentName: 'workflow1',
       updateDate: '2020-03-10 09:13:42',
       status: 'failed',
       stages: [
@@ -72,18 +73,21 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     {
       id: 109725,
       parentId: 1,
+      parentName: 'workflow1',
       updateDate: '2020-03-30 09:13:42',
       status: 'success',
     },
     {
       id: 109726,
       parentId: 3,
+      parentName: 'workflow3',
       updateDate: '2020-03-30 09:13:42',
       status: 'pending',
     },
     {
       id: 109724,
       parentId: 3,
+      parentName: 'workflow3',
       updateDate: '2020-03-30 09:13:42',
       status: 'running',
     },
