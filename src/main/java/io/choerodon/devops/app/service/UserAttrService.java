@@ -24,6 +24,14 @@ public interface UserAttrService {
     List<UserAttrVO> listByUserIds(Set<Long> userIds);
 
     /**
+     * 根据多个gitlabUserId查询用户信息
+     *
+     * @param gitlabUserIds gitlab用户id
+     * @return 没查出的也给出对应的纪录
+     */
+    List<UserAttrVO> listUsersByGitlabUserIds(Set<Long> gitlabUserIds);
+
+    /**
      * 如果传入的参数是null，抛出异常
      *
      * @param userAttrDTO 用户信息

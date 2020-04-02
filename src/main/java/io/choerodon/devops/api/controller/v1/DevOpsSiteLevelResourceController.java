@@ -72,4 +72,15 @@ public class DevOpsSiteLevelResourceController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.service.ids"));
     }
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "根据一组Gitlab用户id查询用户信息")
+    @PostMapping(value = "/users/list_by_gitlab_user_ids")
+    public ResponseEntity<List<UserAttrVO>> listUsersByGitlabUserIds(
+            @ApiParam(value = "Gitlab用户id", required = true)
+            @RequestBody Set<Long> gitlabUserIds) {
+        return Optional.ofNullable(userAttrService.listUsersByGitlabUserIds(gitlabUserIds))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.user.get"));
+    }
 }
