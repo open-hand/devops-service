@@ -2,23 +2,30 @@ import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Action } from '@choerodon/boot';
 import { observer } from 'mobx-react-lite';
-import { Icon, Tooltip } from 'choerodon-ui/pro';
+import { Icon, Modal, Tooltip } from 'choerodon-ui/pro';
+import map from 'lodash/map';
 import { usePipelineManageStore } from '../../stores';
 import TimePopover from '../../../../components/timePopover';
 import eventStopProp from '../../../../utils/eventStopProp';
 import PipelineType from '../pipeline-type';
+import ExecuteContent from './execute-content';
+
+const executeKey = Modal.key();
+const stopKey = Modal.key();
 
 const TreeItem = observer(({ record, search }) => {
   const {
     intlPrefix,
     prefixCls,
     intl: { formatMessage },
+    treeDs,
   } = usePipelineManageStore();
 
   const iconType = useMemo(() => ({
     failed: 'cancel',
     success: 'check_circle',
     running: 'timelapse',
+    canceled: 'cancle_b',
     deleted: 'cancel',
 
   }), []);
@@ -29,28 +36,75 @@ const TreeItem = observer(({ record, search }) => {
   }), []);
 
   function handleExecute() {
-
+    Modal.open({
+      key: executeKey,
+      title: formatMessage({ id: `${intlPrefix}.execute` }),
+      children: <ExecuteContent />,
+      okText: formatMessage({ id: 'execute' }),
+      movable: false,
+    });
   }
   function handleChangeActive() {
-
+    if (record.get('active')) {
+      Modal.open({
+        key: stopKey,
+        title: formatMessage({ id: `${intlPrefix}.stop.title` }),
+        children: formatMessage({ id: `${intlPrefix}.stop.des` }),
+        okText: formatMessage({ id: 'stop' }),
+        movable: false,
+      });
+    }
   }
   function handleDelete() {
+    const modalProps = {
+      title: formatMessage({ id: `${intlPrefix}.delete.title` }),
+      children: formatMessage({ id: `${intlPrefix}.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    treeDs.delete(record, modalProps);
+  }
+
+  function handleCancelExecute() {
+
+  }
+  function handleRecordExecute() {
 
   }
 
   function getItem() {
-    const { name, appServiceName, updateDate, status, active, type, id, parentId } = record.toData();
+    const { name, appServiceName, updateDate, status, active, type, id, parentId, stages } = record.toData();
     if (parentId) {
-      const actionData = [
-        {
-          // service: '',
-          text: formatMessage({ id: 'execute' }),
-          action: handleExecute,
-        },
-      ];
+      const actionData = [];
+      switch (status) {
+        case 'pending':
+        case 'running':
+          actionData.push({
+            // service: '',
+            text: formatMessage({ id: `${intlPrefix}.execute.cancel` }),
+            action: handleCancelExecute,
+          });
+          break;
+        default:
+          actionData.push({
+            // service: '',
+            text: formatMessage({ id: `${intlPrefix}.execute.retry` }),
+            action: handleRecordExecute,
+          });
+          break;
+      }
       return (
-        <div className={`${prefixCls}-sidebar-header`}>
+        <div className={`${prefixCls}-sidebar-header-node`}>
           <span className={`${prefixCls}-sidebar-header-number`}>#{id}</span>
+          <div className={`${prefixCls}-sidebar-header-stage`}>
+            {map(stages, ({ status: stageStatus }) => (
+              <Fragment>
+                <span className={`${prefixCls}-sidebar-header-stage-item ${prefixCls}-sidebar-header-stage-item-${stageStatus}`} />
+                <span className={`${prefixCls}-sidebar-header-stage-line`} />
+              </Fragment>
+            ))}
+          </div>
           <TimePopover content={updateDate} style={timePopoverStyle} />
           <Action data={actionData} onClick={eventStopProp} />
         </div>
@@ -59,7 +113,7 @@ const TreeItem = observer(({ record, search }) => {
       const actionData = [
         {
           // service: '',
-          text: formatMessage({ id: 'execute' }),
+          text: formatMessage({ id: `${intlPrefix}.execute` }),
           action: handleExecute,
         },
         {

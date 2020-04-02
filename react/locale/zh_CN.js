@@ -69,6 +69,7 @@ const commonField = {
   member: '项目成员',
   all: '全部',
   not_installed: '未安装',
+  branch: '分支',
 
   // 状态描述
   null: '无',
@@ -82,6 +83,7 @@ const commonField = {
   stopped: '已停止',
   failed: '失败',
   deleted: '已删除',
+  canceled: '已取消',
   creating: '创建中',
   pendingcheck: '待审核',
   executing: '执行中',
@@ -764,6 +766,16 @@ const codeManagement = {
   'code-management.code-quality': '代码质量',
   'code-management.tag.empty': '暂无标记',
   'code-management.tag.empty.des': '暂无任何标记，您可在此页面基于某一分支创建标记',
+};
+
+const pipelineManage = {
+  'c7ncd.pipelineManage.execute': '全新执行',
+  'c7ncd.pipelineManage.execute.cancel': '取消执行',
+  'c7ncd.pipelineManage.execute.retry': '重新执行',
+  'c7ncd.pipelineManage.delete.title': '删除流水线',
+  'c7ncd.pipelineManage.delete.des': '确定删除该条流水线吗？',
+  'c7ncd.pipelineManage.stop.title': '停用流水线',
+  'c7ncd.pipelineManage.stop.des': '确定停用该条流水线吗？',
 };
 
 const emptyPage = {
@@ -2729,6 +2741,7 @@ const zhCN = {
   ...codeManagement,
   ...emptyPage,
   ...pvManager,
+  ...pipelineManage,
 };
 
 export default zhCN;
