@@ -63,8 +63,11 @@ const PipelineManage = observer((props) => {
         case 'pending':
           btn = <Button icon="power_settings_new">{formatMessage({ id: `${intlPrefix}.execute.cancel` })}</Button>;
           break;
-        default:
+        case 'canceled':
+        case 'failed':
           btn = <Button icon="power_settings_new">{formatMessage({ id: `${intlPrefix}.execute.retry` })}</Button>;
+          break;
+        default:
           break;
       }
       return (<Fragment>

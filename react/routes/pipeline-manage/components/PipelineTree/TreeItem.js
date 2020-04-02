@@ -109,22 +109,25 @@ const TreeItem = observer(({ record, search }) => {
       );
     }
     if (parentId) {
-      const actionData = [];
+      let actionData;
       switch (status) {
         case 'pending':
         case 'running':
-          actionData.push({
+          actionData = [{
             // service: '',
             text: formatMessage({ id: `${intlPrefix}.execute.cancel` }),
             action: handleCancelExecute,
-          });
+          }];
           break;
-        default:
-          actionData.push({
+        case 'failed':
+        case 'canceled':
+          actionData = [{
             // service: '',
             text: formatMessage({ id: `${intlPrefix}.execute.retry` }),
             action: handleRecordExecute,
-          });
+          }];
+          break;
+        default:
           break;
       }
       return (
@@ -141,7 +144,7 @@ const TreeItem = observer(({ record, search }) => {
             ))}
           </div>
           <TimePopover content={updateDate} style={timePopoverStyle} />
-          <Action data={actionData} onClick={eventStopProp} />
+          {actionData ? <Action data={actionData} onClick={eventStopProp} /> : <span style={{ width: 24 }} />}
         </div>
       );
     } else {

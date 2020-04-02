@@ -771,7 +771,7 @@ const codeManagement = {
 const pipelineManage = {
   'c7ncd.pipelineManage.execute': '全新执行',
   'c7ncd.pipelineManage.execute.cancel': '取消执行',
-  'c7ncd.pipelineManage.execute.retry': '重新执行',
+  'c7ncd.pipelineManage.execute.retry': '重试',
   'c7ncd.pipelineManage.delete.title': '删除流水线',
   'c7ncd.pipelineManage.delete.des': '确定删除该条流水线吗？',
   'c7ncd.pipelineManage.stop.title': '停用流水线',
