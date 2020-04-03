@@ -1,8 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsCiPipelineVO;
-import io.choerodon.devops.api.vo.DevopsCiStageVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsCiContentService;
 import io.choerodon.devops.app.service.DevopsCiJobService;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
@@ -14,16 +13,16 @@ import io.choerodon.devops.infra.dto.DevopsCiStageDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
 import io.choerodon.devops.infra.dto.gitlab.ci.OnlyExceptPolicy;
+import io.choerodon.devops.infra.enums.CiJobTypeEnum;
+import io.choerodon.devops.infra.enums.DefaultTriggerRefTypeEnum;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitlabCiUtil;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -46,6 +45,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService{
     private DevopsCiJobService devopsCiJobService;
 
     private DevopsCiContentService devopsCiContentService;
+
+    private static ObjectMapper objectMapper = new ObjectMapper();
 
     public DevopsCiPipelineServiceImpl(DevopsCiPipelineMapper devopsCiPipelineMapper, DevopsCiStageService devopsCiStageService, DevopsCiJobService devopsCiJobService, DevopsCiContentService devopsCiContentService) {
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
@@ -105,19 +106,36 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService{
             stageVO.getJobList().forEach(jobV0 -> {
                 CiJob ciJob = new CiJob();
                 ciJob.setStage(stageVO.getName());
-
-
-
                 ciJob.setOnly(buildOnlyExceptPolicyObject(jobV0.getTriggerRefs()));
+                ciJob.setScript(calculateScript(jobV0));
             });
         });
         return null;
     }
 
+    private List<String> calculateScript(DevopsCiJobVO jobV0) {
+        List<String> script = new ArrayList<>();
+        JobScriptVO jobScriptVO = objectMapper.convertValue(jobV0.getMetadata(), JobScriptVO.class);
+        if (CiJobTypeEnum.build.value().equals(jobV0.getType())) {
+            List<MavenbuildTemplateVO> mavenbuildTemplateVOList = jobScriptVO.getMavenbuildTemplateVOList();
+            mavenbuildTemplateVOList.forEach(mavenbuildTemplateVO -> {
+                script.add(mavenbuildTemplateVO.getScript());
+            });
+        }
+        return null;
+    }
+
     private OnlyExceptPolicy buildOnlyExceptPolicyObject(String triggerRefs) {
         OnlyExceptPolicy onlyExceptPolicy = new OnlyExceptPolicy();
-        onlyExceptPolicy.setRefs(Arrays.asList(triggerRefs.split(",")));
-        return null;
+        List<String> refs = new ArrayList<>();
+        for (String ref : triggerRefs.split(",")) {
+            if (!DefaultTriggerRefTypeEnum.contains(ref)) {
+                ref = "/^.*" + ref + ".*$/";
+            }
+            refs.add(ref);
+        }
+        onlyExceptPolicy.setRefs(refs);
+        return onlyExceptPolicy;
     }
 
     @Override
