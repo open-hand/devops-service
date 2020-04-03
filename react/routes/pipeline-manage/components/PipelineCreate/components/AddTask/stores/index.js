@@ -3,6 +3,7 @@ import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import addTaskFormDataSet from './addTaskFormDataSet';
+import addTaskStepFormDataSet from './addTaskStepFormDataSet';
 
 const Store = createContext();
 
@@ -16,10 +17,12 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
   } = props;
 
   const AddTaskFormDataSet = useMemo(() => new DataSet(addTaskFormDataSet()), []);
+  const AddTaskStepFormDataSet = useMemo(() => new DataSet(addTaskStepFormDataSet()), []);
 
   const value = {
     ...props,
     AddTaskFormDataSet,
+    AddTaskStepFormDataSet,
   };
 
   return (

@@ -5,6 +5,7 @@ export default () => ({
     type: 'string',
     label: '流水线名称',
     require: true,
+    maxLength: 30,
   }, {
     name: 'glyyfw',
     type: 'string',
@@ -14,5 +15,6 @@ export default () => ({
     name: 'cfss',
     type: 'string',
     label: '触发方式',
+    defaultValue: 'M',
   }],
 });

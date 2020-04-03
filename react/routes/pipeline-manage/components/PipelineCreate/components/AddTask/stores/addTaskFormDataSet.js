@@ -11,14 +11,17 @@ export default () => ({
     type: 'string',
     label: '任务名称',
     require: true,
+    maxLength: 15,
   }, {
     name: 'glyyfw',
     type: 'string',
     label: '关联应用服务',
     require: true,
+    disabled: true,
   }, {
     name: 'cffzlx',
     type: 'string',
+    multiple: true,
     label: '触发分支类型',
   }, {
     name: 'gjmb',
