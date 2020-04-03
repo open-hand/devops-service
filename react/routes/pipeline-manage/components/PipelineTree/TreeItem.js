@@ -166,7 +166,7 @@ const TreeItem = observer(({ record, search }) => {
         },
       ];
       return (
-        <Fragment>
+        <div className={`${prefixCls}-sidebar-header-parent`}>
           <div className={`${prefixCls}-sidebar-header`}>
             <PipelineType name={name} type={type} />
             <span className={`${prefixCls}-sidebar-header-name`}>
@@ -186,7 +186,7 @@ const TreeItem = observer(({ record, search }) => {
               <Icon type={iconType[status]} className={`${prefixCls}-sidebar-header-icon ${prefixCls}-sidebar-header-icon-${status}`} />
             </Tooltip>
           </div>
-        </Fragment>
+        </div>
       );
     }
   }

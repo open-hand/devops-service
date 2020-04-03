@@ -44,12 +44,13 @@
       .@{c7n-prefix}-tree-treenode {
         width: 100%;
         padding: 0;
-        border-top: 1px solid rgba(216, 220, 235, 1);
-        border-image: linear-gradient(to right, rgba(216, 220, 235, 0), rgba(216, 220, 235)) 30 30;
-        align-items: stretch;
 
-        &:last-child {
-          border-bottom: 1px solid rgba(216, 220, 235, 1);
+        &:last-child,
+        .@{c7n-prefix}-tree-node-content-wrapper-open {
+
+          .c7ncd-pipelineManage-sidebar-header-parent {
+            border-bottom: 1px solid rgba(216, 220, 235, 1);
+          }
         }
       }
 
@@ -59,25 +60,12 @@
 
       .@{c7n-prefix}-tree-node-content-wrapper {
         width: 100%;
-        padding: .1rem .04rem;
-
-        &:hover {
-          .c7ncd-pipelineManage-sidebar-header-node {
-            background: transparent;
-          }
-        }
+        padding: 0;
       }
 
       .@{c7n-prefix}-tree-treenode-selected {
         background: #f5f6fa;
-
-        &:before {
-          background: #6887e8;
-          color: #6887e8;
-          width: 4px;
-          height: auto;
-          content: '';
-        }
+        border-left: 4px solid #6887e8;
 
         .@{c7n-prefix}-tree-switcher {
           margin-left: -4px;
@@ -106,13 +94,17 @@
       align-items: center;
       line-height: .18rem;
 
+      &-parent {
+        padding: .1rem .04rem;
+        border-top: 1px solid rgba(216, 220, 235, 1);
+        border-image: linear-gradient(to right, rgba(216, 220, 235, 0), rgba(216, 220, 235)) 30 30;
+      }
+
       &-node {
         display: flex;
         align-items: center;
         line-height: .18rem;
-        margin: -.11rem -.04rem -.1rem;
         padding: .05rem .04rem;
-        background: #fff;
 
         &-more {
           background: #fff !important;

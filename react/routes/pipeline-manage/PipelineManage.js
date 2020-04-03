@@ -65,7 +65,7 @@ const PipelineManage = observer((props) => {
           break;
         case 'canceled':
         case 'failed':
-          btn = <Button icon="power_settings_new">{formatMessage({ id: `${intlPrefix}.execute.retry` })}</Button>;
+          btn = <Button icon="refresh">{formatMessage({ id: `${intlPrefix}.execute.retry` })}</Button>;
           break;
         default:
           break;
