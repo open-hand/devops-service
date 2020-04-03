@@ -6,8 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 指定为序列化为Yaml的字段名
- * 参考 {@link com.fasterxml.jackson.annotation.JsonProperty}
+ * 指定序列化为Yaml的字段名
+ * 参考 {@link com.fasterxml.jackson.annotation.JsonProperty} 的作用
  *
  * @author zmf
  * @since 20-4-2
