@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import io.choerodon.mybatis.entity.BaseDTO;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.GeneratedValue;
@@ -13,7 +14,7 @@ import javax.persistence.Table;
  * @Date 2020/4/2 17:00
  */
 @Table(name= "devops_ci_content")
-public class DevopsCiContentDTO {
+public class DevopsCiContentDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

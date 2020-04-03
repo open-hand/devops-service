@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @Date 2020/4/3 9:30
  */
 @RestController
-@RequestMapping("/v1/projects/{project_id}/contents")
+@RequestMapping("/v1/projects/{project_id}/ci_contents")
 public class DevopsCiContentController {
     private DevopsCiContentService devopsCiContentService;
 
