@@ -11,16 +11,25 @@ import java.util.List;
  * @since 20-4-2
  */
 public class OnlyExceptPolicy {
-    private List<String> ref;
+    private List<String> refs;
     private List<String> variables;
     private List<String> changes;
 
-    public List<String> getRef() {
-        return ref;
+    public OnlyExceptPolicy() {
     }
 
-    public void setRef(List<String> ref) {
-        this.ref = ref;
+    public OnlyExceptPolicy(List<String> refs, List<String> variables, List<String> changes) {
+        this.refs = refs;
+        this.variables = variables;
+        this.changes = changes;
+    }
+
+    public List<String> getRefs() {
+        return refs;
+    }
+
+    public void setRefs(List<String> refs) {
+        this.refs = refs;
     }
 
     public List<String> getVariables() {

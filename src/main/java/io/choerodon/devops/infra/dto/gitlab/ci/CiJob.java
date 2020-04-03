@@ -8,7 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @author zmf
  * @since 20-4-2
  */
-public class Job {
+public class CiJob {
     @ApiModelProperty("所属stage")
     private String stage;
     @ApiModelProperty("包含的脚本")
