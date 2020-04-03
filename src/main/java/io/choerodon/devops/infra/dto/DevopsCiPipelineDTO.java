@@ -19,6 +19,8 @@ public class DevopsCiPipelineDTO {
     private Long id;
     @ApiModelProperty("流水线名称")
     private String name;
+    @ApiModelProperty("项目id")
+    private Long projectId;
     @ApiModelProperty("流水线关联应用服务id")
     private Long appServiceId;
     @ApiModelProperty("流水线触发方式")
@@ -54,5 +56,13 @@ public class DevopsCiPipelineDTO {
 
     public void setTriggerType(String triggerType) {
         this.triggerType = triggerType;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

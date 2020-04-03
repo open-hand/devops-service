@@ -7,6 +7,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline.groovy') {
                 constraints(primaryKey: true)
             }
             column(name: 'name', type: 'VARCHAR(255)', remarks: '流水线名称')
+            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id')
             column(name: 'app_service_id', type: 'BIGINT UNSIGNED', remarks: '应用服务id')
             column(name: 'trigger_type', type: 'VARCHAR(255)', remarks: '触发方式:auto, 自动触发，manual')
 
