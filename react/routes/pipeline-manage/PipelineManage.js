@@ -6,9 +6,15 @@ import PipelineTree from './components/PipelineTree';
 import PipelineFlow from './components/PipelineFlow';
 import DragBar from '../../components/drag-bar';
 import PipelineCreate from './components/PipelineCreate';
+import RecordDetail from './components/record-detail';
 import { usePipelineManageStore } from './stores';
 
 import './index.less';
+
+const recordDetailKey = Modal.key();
+const modalStyle = {
+  width: 380,
+};
 
 const PipelineManage = observer((props) => {
   const handleCreatePipeline = () => {
@@ -33,6 +39,19 @@ const PipelineManage = observer((props) => {
 
   const { getSelectedMenu } = mainStore;
 
+  function openRecordDetail() {
+    const { id } = getSelectedMenu;
+    Modal.open({
+      key: recordDetailKey,
+      style: modalStyle,
+      title: formatMessage({ id: `${intlPrefix}.record.detail.title` }, { id }),
+      children: <RecordDetail recordId={id} intlPrefix={intlPrefix} />,
+      drawer: true,
+      okCancel: false,
+      okText: formatMessage({ id: 'close' }),
+    });
+  }
+
   function getButtons() {
     const { parentId, status } = getSelectedMenu;
     if (!parentId) {
@@ -44,12 +63,20 @@ const PipelineManage = observer((props) => {
         case 'pending':
           btn = <Button icon="power_settings_new">{formatMessage({ id: `${intlPrefix}.execute.cancel` })}</Button>;
           break;
-        default:
+        case 'canceled':
+        case 'failed':
           btn = <Button icon="power_settings_new">{formatMessage({ id: `${intlPrefix}.execute.retry` })}</Button>;
+          break;
+        default:
           break;
       }
       return (<Fragment>
-        <Button icon="find_in_page">流水线记录详情</Button>
+        <Button
+          icon="find_in_page"
+          onClick={openRecordDetail}
+        >
+          {formatMessage({ id: `${intlPrefix}.record.detail` })}
+        </Button>
         {btn}
       </Fragment>);
     }

@@ -9,6 +9,7 @@ import TimePopover from '../../../../components/timePopover';
 import eventStopProp from '../../../../utils/eventStopProp';
 import PipelineType from '../pipeline-type';
 import ExecuteContent from './execute-content';
+import TreeItemName from '../../../../components/treeitem-name';
 
 const executeKey = Modal.key();
 const stopKey = Modal.key();
@@ -73,30 +74,67 @@ const TreeItem = observer(({ record, search }) => {
 
   }
 
+  function loadMoreRecord(deleteRecord) {
+    const treeRecord = treeDs.create({
+      id: 109729,
+      parentId: deleteRecord.get('parentId'),
+      parentName: 'workflow1',
+      updateDate: '2020-03-10 09:13:42',
+      status: 'failed',
+      stages: [
+        { status: 'success' },
+        { status: 'failed' },
+        { status: 'pending' },
+        { status: 'running' },
+        { status: 'canceled' },
+      ],
+    });
+    treeDs.remove(deleteRecord);
+    treeDs.push(treeRecord);
+  }
+
   function getItem() {
     const { name, appServiceName, updateDate, status, active, type, id, parentId, stages } = record.toData();
+    if (id === 'more') {
+      return (
+        <div
+          className={`${prefixCls}-sidebar-header-node ${prefixCls}-sidebar-header-node-more`}
+          onClick={eventStopProp}
+        >
+          <span
+            className={`${prefixCls}-sidebar-header-node-more-text`}
+            onClick={() => loadMoreRecord(record)}
+          >加载更多</span>
+        </div>
+      );
+    }
     if (parentId) {
-      const actionData = [];
+      let actionData;
       switch (status) {
         case 'pending':
         case 'running':
-          actionData.push({
+          actionData = [{
             // service: '',
             text: formatMessage({ id: `${intlPrefix}.execute.cancel` }),
             action: handleCancelExecute,
-          });
+          }];
           break;
-        default:
-          actionData.push({
+        case 'failed':
+        case 'canceled':
+          actionData = [{
             // service: '',
             text: formatMessage({ id: `${intlPrefix}.execute.retry` }),
             action: handleRecordExecute,
-          });
+          }];
+          break;
+        default:
           break;
       }
       return (
         <div className={`${prefixCls}-sidebar-header-node`}>
-          <span className={`${prefixCls}-sidebar-header-number`}>#{id}</span>
+          <span className={`${prefixCls}-sidebar-header-number`}>
+            <TreeItemName name={`#${id}`} search={search} headSpace={false} />
+          </span>
           <div className={`${prefixCls}-sidebar-header-stage`}>
             {map(stages, ({ status: stageStatus }) => (
               <Fragment>
@@ -106,7 +144,7 @@ const TreeItem = observer(({ record, search }) => {
             ))}
           </div>
           <TimePopover content={updateDate} style={timePopoverStyle} />
-          <Action data={actionData} onClick={eventStopProp} />
+          {actionData ? <Action data={actionData} onClick={eventStopProp} /> : <span style={{ width: 24 }} />}
         </div>
       );
     } else {
@@ -131,7 +169,9 @@ const TreeItem = observer(({ record, search }) => {
         <Fragment>
           <div className={`${prefixCls}-sidebar-header`}>
             <PipelineType name={name} type={type} />
-            <span className={`${prefixCls}-sidebar-header-name`}>{name}</span>
+            <span className={`${prefixCls}-sidebar-header-name`}>
+              <TreeItemName name={name} search={search} headSpace={false} />
+            </span>
             <TimePopover content={updateDate} style={timePopoverStyle} />
             <Action data={actionData} onClick={eventStopProp} />
           </div>
@@ -140,7 +180,7 @@ const TreeItem = observer(({ record, search }) => {
               {formatMessage({ id: active ? 'active' : 'stop' })}
             </span>
             <span className={`${prefixCls}-sidebar-header-service`}>
-              {appServiceName}
+              <TreeItemName name={appServiceName} search={search} headSpace={false} />
             </span>
             <Tooltip title={formatMessage({ id: status })} placement="top">
               <Icon type={iconType[status]} className={`${prefixCls}-sidebar-header-icon ${prefixCls}-sidebar-header-icon-${status}`} />
