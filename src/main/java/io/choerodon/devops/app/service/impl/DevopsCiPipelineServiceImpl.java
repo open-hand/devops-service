@@ -11,8 +11,8 @@ import io.choerodon.devops.infra.dto.DevopsCiContentDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStageDTO;
+import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
-import io.choerodon.devops.infra.dto.gitlab.ci.Job;
 import io.choerodon.devops.infra.dto.gitlab.ci.OnlyExceptPolicy;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -20,6 +20,7 @@ import io.choerodon.devops.infra.util.GitlabCiUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -102,8 +103,20 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService{
         gitlabCi.setStages(stages);
         devopsCiPipelineVO.getStageList().forEach(stageVO -> {
             stageVO.getJobList().forEach(jobV0 -> {
+                CiJob ciJob = new CiJob();
+                ciJob.setStage(stageVO.getName());
+
+
+
+                ciJob.setOnly(buildOnlyExceptPolicyObject(jobV0.getTriggerRefs()));
             });
         });
+        return null;
+    }
+
+    private OnlyExceptPolicy buildOnlyExceptPolicyObject(String triggerRefs) {
+        OnlyExceptPolicy onlyExceptPolicy = new OnlyExceptPolicy();
+        onlyExceptPolicy.setRefs(Arrays.asList(triggerRefs.split(",")));
         return null;
     }
 
