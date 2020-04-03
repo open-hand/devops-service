@@ -16,8 +16,6 @@ import io.choerodon.devops.app.service.DevopsCheckLogService;
 @RestController
 @RequestMapping(value = "/v1/upgrade")
 public class DevopsCheckController {
-
-
     @Autowired
     private DevopsCheckLogService devopsCheckLogService;
 

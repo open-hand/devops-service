@@ -19,6 +19,7 @@ import org.springframework.util.StringUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ExceptionResponse;
 import io.choerodon.core.exception.FeignException;
+import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
@@ -495,11 +496,18 @@ public class BaseServiceClientOperator {
 
     /**
      * 判断组织是否是新组织
+     *
      * @param organizationId
      * @return
      */
     public Boolean checkOrganizationIsNew(Long organizationId) {
         ResponseEntity<Boolean> responseEntity = baseServiceClient.checkOrganizationIsNew(organizationId);
         return responseEntity.getBody();
+    }
+
+    public PageInfo<OrgAdministratorVO> listOrgAdministrator(Long organizationId) {
+        ResponseEntity<PageInfo<OrgAdministratorVO>> pageInfoResponseEntity = baseServiceClient.listOrgAdministrator(organizationId, 0);
+        PageInfo<OrgAdministratorVO> body = pageInfoResponseEntity.getBody();
+        return body;
     }
 }

@@ -4,6 +4,8 @@ package io.choerodon.devops.api.ws.log;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -20,6 +22,7 @@ import io.choerodon.websocket.send.SendBinaryMessagePayload;
  */
 @Component
 public class LogMessageHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(LogMessageHandler.class);
     public static final String AGENT_LOG = "AgentLog";
 
     @Autowired
@@ -38,8 +41,14 @@ public class LogMessageHandler {
         buffer.get(bytesArray, 0, bytesArray.length);
 
         if (webSocketSession.getUri().getPath().equals("/devops/log")) {
+            if (bytesArray.length % 1024 != 0) {
+                LOGGER.info("Received message from devops. The path is {} and the byte array length is {}", webSocketSession.getUri().getPath(), bytesArray.length);
+            }
             registerKey = "from_agent:" + registerKey;
         } else {
+            if (bytesArray.length % 1024 != 0) {
+                LOGGER.info("Received message from agent. The path is {} and the byte array length is {}", webSocketSession.getUri().getPath(), bytesArray.length);
+            }
             registerKey = "from_devops:" + registerKey;
         }
 

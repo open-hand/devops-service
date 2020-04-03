@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -225,4 +226,8 @@ public class BaseServiceClientFallback implements BaseServiceClient {
         throw new CommonException("error.query.user.by.login.name", loginName);
     }
 
+    @Override
+    public ResponseEntity<PageInfo<OrgAdministratorVO>> listOrgAdministrator(Long organizationId, Integer size) {
+        throw new CommonException("error.query.org.by.id");
+    }
 }

@@ -117,7 +117,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     private void deleteGitLabPermissions(List<ProjectDTO> projectDTOS, GitlabGroupMemberVO gitlabGroupMemberVO) {
         projectDTOS.stream().forEach(projectDTO -> {
-            LOGGER.info("start ddelete project id is {} for gitlab org owner",projectDTO.getId());
+            LOGGER.info("start ddelete project id is {} for gitlab org owner", projectDTO.getId());
             deleteProcess(gitlabGroupMemberVO);
         });
 
@@ -601,9 +601,9 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             MemberDTO memberDTO = new MemberDTO((TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()))
                     , AccessLevel.OWNER.toValue(), "");
             //分配gitlab应用服务owner  注意跳过没有的项目
-            MemberDTO appMemberDTO = gitlabServiceClientOperator.queryGroupMember(
-                    TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (!Objects.isNull(devopsProjectDTO.getDevopsAppGroupId())) {
+                MemberDTO appMemberDTO = gitlabServiceClientOperator.queryGroupMember(
+                        TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
                 assignGitLabGroupOwner(devopsProjectDTO.getDevopsAppGroupId(), appMemberDTO, memberDTO);
             }
             if (!Objects.isNull(devopsProjectDTO.getDevopsEnvGroupId())) {

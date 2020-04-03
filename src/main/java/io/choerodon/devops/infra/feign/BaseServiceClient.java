@@ -6,12 +6,12 @@ import java.util.Set;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.core.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
@@ -243,7 +243,6 @@ public interface BaseServiceClient {
     @GetMapping("/v1/projects/{project_id}/owner/list")
     ResponseEntity<List<IamUserDTO>> listProjectOwnerByProjectId(@PathVariable("project_id") Long projectId);
 
-
     /**
      * 判断组织是否是新组织
      * @param organizationId
@@ -251,4 +250,10 @@ public interface BaseServiceClient {
      */
     @GetMapping("/v1/organizations/{organization_id}/check_is_new")
     ResponseEntity<Boolean> checkOrganizationIsNew(@PathVariable(name = "organization_id") Long organizationId);
+
+
+    @GetMapping("/v1/organizations/{organization_id}/org_administrator")
+    ResponseEntity<PageInfo<OrgAdministratorVO>> listOrgAdministrator(
+            @PathVariable("organization_id") Long organizationId,
+            @RequestParam("size") Integer size);
 }

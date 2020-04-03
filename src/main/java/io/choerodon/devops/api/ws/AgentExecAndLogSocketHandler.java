@@ -3,6 +3,8 @@ package io.choerodon.devops.api.ws;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -21,6 +23,8 @@ import io.choerodon.websocket.helper.WebSocketHelper;
  */
 @Component
 public class AgentExecAndLogSocketHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgentExecAndLogSocketHandler.class);
+
     @Lazy
     @Autowired
     private WebSocketHelper webSocketHelper;
@@ -45,6 +49,8 @@ public class AgentExecAndLogSocketHandler {
         Map<String, Object> attribute = WebSocketTool.getAttribute(webSocketSession);
 
         String registerKey = "from_agent:" + TypeUtil.objToString(attribute.get("key"));
+        String path = webSocketSession.getUri() == null ? null : webSocketSession.getUri().getPath();
+        LOGGER.info("Connection established from agent. The registerKey is {} and the path is {}", registerKey, path);
 
         //将websocketSession和关联的key做关联
         webSocketHelper.subscribe(registerKey, webSocketSession);
