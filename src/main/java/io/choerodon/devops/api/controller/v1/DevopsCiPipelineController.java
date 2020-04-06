@@ -1,21 +1,17 @@
 package io.choerodon.devops.api.controller.v1;
 
+import javax.validation.Valid;
+
 import io.choerodon.core.annotation.Permission;
 import io.choerodon.core.enums.ResourceType;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.DevopsCiPipelineVO;
-import io.choerodon.devops.api.vo.DevopsClusterReqVO;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineDTO;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-import java.util.Optional;
 
 /**
  * 〈功能简述〉
@@ -34,7 +30,7 @@ public class DevopsCiPipelineController {
         this.devopsCiPipelineService = devopsCiPipelineService;
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建ci流水线")
     @PostMapping
     public ResponseEntity<DevopsCiPipelineDTO> create(
@@ -43,7 +39,7 @@ public class DevopsCiPipelineController {
             @RequestBody @Valid DevopsCiPipelineVO devopsCiPipelineVO) {
         return ResponseEntity.ok(devopsCiPipelineService.create(projectId, devopsCiPipelineVO));
     }
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下更新ci流水线")
     @PostMapping("/{ci_pipeline_id}")
     public ResponseEntity<DevopsCiPipelineDTO> update(

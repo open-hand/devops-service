@@ -101,6 +101,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String NORMAL = "normal";
     private static final String APP_SERVICE = "appService";
     private static final String ERROR_USER_NOT_GITLAB_OWNER = "error.user.not.gitlab.owner";
+    private static final String ERROR_GITLAB_USER_SYNC_FAILED = "error.gitlab.user.sync.failed";
     private static final String METRICS = "metrics";
     private static final String SONAR_NAME = "sonar_default";
     private static final String APPLICATION = "application";
@@ -2710,6 +2711,30 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public Boolean checkEnableCreateAppSvc(Long projectId) {
         return checkEnableCreateAppSvcWithSize(projectId, 1);
+    }
+
+    @Override
+    public boolean checkUserIsHasAppPermission(Long appSvcId, Long userId) {
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appSvcId);
+
+        // 查询用户是否在该gitlab project下
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
+        if (userAttrDTO == null) {
+            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+        }
+        // 判断用户是否同步成功
+        userAttrService.checkUserSync(userAttrDTO, TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        // 判断用户是否有应用服务权限
+        if (permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(appServiceDTO.getProjectId())
+                || permissionHelper.isOrganzationRoot(userId, baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId()).getOrganizationId())
+                || appServiceDTO.getIsSkipCheckPermission()) {
+            return true;
+        } else {
+            AppServiceUserRelDTO appServiceUserRelDTO = new AppServiceUserRelDTO();
+            appServiceUserRelDTO.setAppServiceId(appSvcId);
+            appServiceUserRelDTO.setIamUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            return appServiceUserRelMapper.selectCount(appServiceUserRelDTO) > 0;
+        }
     }
 
     /**
