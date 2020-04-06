@@ -1,6 +1,9 @@
 import React, { createContext, useContext } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
+import useStore from '../../../../../stores/useStore';
+import useStepStore from './useStore';
+
 
 const Store = createContext();
 
@@ -13,9 +16,11 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     children,
   } = props;
 
+  const stepStore = useStepStore();
+
   const value = {
     ...props,
-
+    stepStore,
   };
 
   return (

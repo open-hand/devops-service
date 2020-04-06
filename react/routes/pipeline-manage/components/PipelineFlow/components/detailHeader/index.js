@@ -12,7 +12,7 @@ export default observer(({ id, name }) => {
     <div className="c7ncd-pipelineManage-optsDetail-header">
       <span>#{id}</span>
       <span>(workFlow)</span>
-      <StatusTag status="load" size={12} />
+      <StatusTag status="success" size={12} />
     </div>
   );
 });

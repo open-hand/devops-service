@@ -1,7 +1,9 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
+import { DataSet } from 'choerodon-ui/pro';
 import { usePipelineManageStore } from '../../../stores';
+import AddStepFormDataSet from './AddStepDataset';
 
 const Store = createContext();
 
@@ -20,9 +22,12 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     },
   } = usePipelineManageStore();
 
+  const addStepDs = useMemo(() => new DataSet(AddStepFormDataSet()), []);
+
   const value = {
     ...props,
     getSelectedMenu,
+    addStepDs,
     // : {
     //   parentId, Id, type, status, name,
     // },
