@@ -3,6 +3,7 @@ import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import pipelineCreateFormDataSet from './pipelineCreateFormDataSet';
+import appServiceOptionsDs from './appServiceOptionsDs';
 
 const Store = createContext();
 
@@ -13,13 +14,20 @@ export function usePipelineCreateStore() {
 export const StoreProvider = injectIntl(inject('AppState')((props) => {
   const {
     children,
+    AppState: {
+      menuType: {
+        projectId,
+      },
+    },
   } = props;
 
-  const PipelineCreateFormDataSet = useMemo(() => new DataSet(pipelineCreateFormDataSet()), []);
+  const AppServiceOptionsDs = useMemo(() => new DataSet(appServiceOptionsDs(projectId)), []);
+  const PipelineCreateFormDataSet = useMemo(() => new DataSet(pipelineCreateFormDataSet(AppServiceOptionsDs)), []);
 
   const value = {
     ...props,
     PipelineCreateFormDataSet,
+    AppServiceOptionsDs,
   };
 
   return (

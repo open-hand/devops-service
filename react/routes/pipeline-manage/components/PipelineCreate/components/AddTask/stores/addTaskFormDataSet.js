@@ -1,25 +1,29 @@
-export default () => ({
+export default (PipelineCreateFormDataSet, AppServiceOptionsDs) => ({
   autoCreate: true,
   fields: [{
-    name: 'rwlx',
+    name: 'type',
     type: 'string',
     label: '任务类型',
-    require: true,
-    defaultValue: 'gj',
+    required: true,
+    defaultValue: 'build',
   }, {
-    name: 'rwmc',
+    name: 'name',
     type: 'string',
     label: '任务名称',
-    require: true,
+    required: true,
     maxLength: 15,
   }, {
     name: 'glyyfw',
-    type: 'string',
+    type: 'number',
     label: '关联应用服务',
-    require: true,
+    required: true,
     disabled: true,
+    textField: 'name',
+    valueField: 'id',
+    defaultValue: PipelineCreateFormDataSet.current.get('appServiceId'),
+    options: AppServiceOptionsDs,
   }, {
-    name: 'cffzlx',
+    name: 'triggerRefs',
     type: 'string',
     multiple: true,
     label: '触发分支类型',
@@ -31,44 +35,52 @@ export default () => ({
     name: 'bzmc',
     type: 'string',
     label: '步骤名称',
-    require: true,
-  }, {
-    name: 'yhm',
-    type: 'string',
-    label: '用户名',
-    require: true,
-  }, {
+  },
+  //   {
+  //   name: 'yhm',
+  //   type: 'string',
+  //   label: '用户名',
+  //   required: true,
+  // }
+  {
     name: 'mm',
     type: 'string',
     label: '密码',
-  }, {
-    name: 'gjblj',
-    type: 'string',
-    label: '构建包路径',
-    require: true,
-  }, {
-    name: 'sonarQube',
+  },
+  //   {
+  //   name: 'gjblj',
+  //   type: 'string',
+  //   label: '构建包路径',
+  //   required: true,
+  // },
+  {
+    name: 'authType',
     type: 'string',
     label: 'SonarQube',
-    defaultValue: 'M',
+    defaultValue: 'username',
   }, {
-    name: 'sqyhm',
+    name: 'username',
     type: 'string',
     label: 'SonarQube用户名',
-    require: true,
+    dynamicProps: ({ record, name }) => ({
+      required: record.get('type') === 'sonar' && record.get('authType') === 'username',
+    }),
   }, {
-    name: 'sqmm',
+    name: 'password',
     type: 'string',
     label: '密码',
   }, {
-    name: 'sqdz',
+    name: 'sonarUrl',
     type: 'string',
     label: 'SonarQube地址',
-    require: true,
+    dynamicProps: ({ record, name }) => ({
+      required: record.get('type') === 'sonar',
+    }),
   }, {
     name: 'token',
     type: 'string',
     label: 'Token',
-    require: true,
-  }],
+    dynamicProps: ({ record, name }) => ({
+      required: record.get('type') === 'sonar' && record.get('authType') === 'token',
+    }) }],
 });

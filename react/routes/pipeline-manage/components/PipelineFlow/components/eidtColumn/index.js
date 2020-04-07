@@ -6,6 +6,7 @@ import { Modal, Form, TextField } from 'choerodon-ui/pro';
 import './index.less';
 import { usePipelineStageEditStore } from '../stageEditBlock/stores';
 import AddTask from '../../../PipelineCreate/components/AddTask';
+import { usePipelineCreateStore } from '../../../PipelineCreate/stores';
 
 const key1 = Modal.key();
 
@@ -38,6 +39,15 @@ export default observer(({ stepTasks, stepName, id, columnIndex }) => {
       addNewStep, removeStep, eidtStep,
     },
   } = usePipelineStageEditStore();
+
+  let PipelineCreateFormDataSet;
+  let AppServiceOptionsDs;
+  try {
+    PipelineCreateFormDataSet = usePipelineCreateStore().PipelineCreateFormDataSet;
+    AppServiceOptionsDs = usePipelineCreateStore().AppServiceOptionsDs;
+  } catch (e) {
+    window.console.log(e);
+  }
 
   useEffect(() => {
   }, []);
@@ -105,22 +115,19 @@ export default observer(({ stepTasks, stepName, id, columnIndex }) => {
   }
 
   function hanleStepCreateOk(data) {
-    console.log(data);
+    window.console.log(data);
   }
 
   function openNewTaskModal() {
     Modal.open({
       key: Modal.key(),
       title: '添加任务',
-      children: <AddTask handleOk={hanleStepCreateOk} />,
+      children: <AddTask PipelineCreateFormDataSet={PipelineCreateFormDataSet} AppServiceOptionsDs={AppServiceOptionsDs} handleOk={hanleStepCreateOk} />,
       style: {
         width: '740px',
       },
       drawer: true,
       okText: '添加',
-      onOk() {
-        console.log('heloo');
-      },
     });
   }
 

@@ -27,11 +27,11 @@ const PipelineCreate = observer(() => {
 
   return (
     <Form columns={3} dataSet={PipelineCreateFormDataSet}>
-      <TextField name="lsxmc" />
+      <TextField name="name" />
       {/* 应用服务只能选择目前没有关联流水线的应用服务 */}
-      <Select name="glyyfw" />
-      <SelectBox name="cfss">
-        <Option value="M">自动触发</Option>
+      <Select name="appServiceId" />
+      <SelectBox name="triggerType">
+        <Option value="auto">自动触发</Option>
         <Option disabled value="F">手动触发</Option>
       </SelectBox>
       <StageEditBlock />

@@ -15,26 +15,55 @@ const AddTask = observer(() => {
     AddTaskStepFormDataSet,
     modal,
     handleOk,
+    useStore,
+    AppState: {
+      currentMenuType: {
+        id,
+      },
+    },
   } = useAddTaskStore();
 
   const [steps, setSteps] = useState([]);
   const [testConnect, setTestConnect] = useState('');
 
-  const handleAdd = () => {
-    const data = 'fuck you';
-    handleOk(data);
-    window.console.log(testConnect);
+  const handleAdd = async () => {
+    const result = await AddTaskFormDataSet.validate();
+    if (result) {
+      let data = AddTaskFormDataSet.toData()[0];
+      data = {
+        ...data,
+        metadata: data.type === 'build' ? JSON.stringify({
+          mavenbuildTemplateVOList: steps.map((s, sIndex) => {
+            s.sequence = sIndex;
+            s.script = s.yaml;
+            return s;
+          }),
+        }) : JSON.stringify({
+          ...data,
+        }),
+      };
+      handleOk(data);
+      return true;
+    } else {
+      return false;
+    }
   };
 
   useEffect(() => {
-    if (AddTaskFormDataSet.current.get('rwlx') === 'dmjc') {
+    if (AddTaskFormDataSet.current.get('type') === 'sonar') {
       modal.update({
         okProps: {
           disabled: !testConnect,
         },
       });
+    } else {
+      modal.update({
+        okProps: {
+          disabled: false,
+        },
+      });
     }
-  }, [testConnect, AddTaskFormDataSet.current.get('rwlx')]);
+  }, [testConnect, AddTaskFormDataSet.current.get('type')]);
 
   modal.handleOk(handleAdd);
 
@@ -89,20 +118,23 @@ const AddTask = observer(() => {
               name: 'Maven构建',
               value: 'Maven',
               checked: true,
-              children: (
-                <div
-                  style={{
-                    marginTop: 20,
-                  }}
-                >
-                  <YamlEditor
-                    readOnly={false}
-                    colSpan={2}
-                    newLine
-                    modeChange={false}
-                  />
-                </div>
-              ),
+              yaml: '',
+              // children: (
+              //   <div
+              //     style={{
+              //       marginTop: 20,
+              //     }}
+              //   >
+              //     <YamlEditor
+              //       readOnly={false}
+              //       colSpan={2}
+              //       newLine
+              //       value={steps[0].yaml}
+              //       modeChange={false}
+              //       onValueChange={(valueYaml) => handleChangeValue(valueYaml, index)}
+              //     />
+              //   </div>
+              // ),
             });
             setSteps(newSteps.map((s, sIndex) => {
               if (sIndex === index) {
@@ -175,6 +207,22 @@ const AddTask = observer(() => {
     </div>
   );
 
+  const handleChangeValue = (value, index) => {
+    setSteps(steps.map((s, sIndex) => {
+      if (s.checked) {
+        s.yaml = value;
+      }
+      return s;
+    }));
+  };
+
+  const handleTestConnect = () => {
+    const data = AddTaskFormDataSet.current.toData();
+    useStore.axiosConnectTest(data, id).then((res) => {
+      setTestConnect(res);
+    });
+  };
+
   const handleChangeBuildTemple = (value) => {
     if (value === 'Maven') {
       AddTaskFormDataSet.current.set('bzmc', 'Maven构建');
@@ -182,20 +230,7 @@ const AddTask = observer(() => {
         name: 'Maven构建',
         value: 'Maven',
         checked: true,
-        children: (
-          <div
-            style={{
-              marginTop: 20,
-            }}
-          >
-            <YamlEditor
-              readOnly={false}
-              colSpan={2}
-              newLine
-              modeChange={false}
-            />
-          </div>
-        ),
+        yaml: '',
       },
       // , {
       //   name: '上传软件包至发布库',
@@ -215,7 +250,7 @@ const AddTask = observer(() => {
   };
 
   const getMissionOther = () => {
-    if (AddTaskFormDataSet.current.get('rwlx') === 'gj') {
+    if (AddTaskFormDataSet.current.get('type') === 'build') {
       return [
         <div colSpan={2} className="AddTask_configStep">
           <p>配置步骤</p>
@@ -234,36 +269,52 @@ const AddTask = observer(() => {
                 return s;
               }));
             }}
-            style={{ width: 339, marginTop: 30 }}
+            style={{
+              width: 339,
+              marginTop: 30,
+              marginBottom: 20,
+              display: steps.length === 0 ? 'none' : 'block',
+            }}
             newLine
             name="bzmc"
           />
-          {
-            steps.find(s => s.checked) && steps.find(s => s.checked).children
-          }
+          <div
+            style={{
+              visibility: steps.length === 0 ? 'hidden' : 'visible',
+            }}
+          >
+            <YamlEditor
+              readOnly={false}
+              colSpan={2}
+              newLine
+              value={steps.length > 0 ? steps.find(s => s.checked).yaml : ''}
+              onValueChange={(valueYaml) => handleChangeValue(valueYaml)}
+              modeChange={false}
+            />
+          </div>
         </div>,
       ];
     } else {
       let extra;
-      if (AddTaskFormDataSet.current.get('sonarQube') === 'M') {
+      if (AddTaskFormDataSet.current.get('authType') === 'username') {
         extra = [
-          <TextField newLine name="sqyhm" />,
-          <TextField name="sqmm" />,
-          <TextField name="sqdz" />,
+          <TextField newLine name="username" />,
+          <TextField name="password" />,
+          <TextField name="sonarUrl" />,
         ];
       } else {
         extra = [
           <TextField newLine name="token" />,
-          <TextField name="sqdz" />,
+          <TextField name="sonarUrl" />,
         ];
       }
       return [
-        <SelectBox name="sonarQube">
-          <Option value="M">用户名与密码</Option>
-          <Option value="F">Token</Option>
+        <SelectBox name="authType">
+          <Option value="username">用户名与密码</Option>
+          <Option value="token">Token</Option>
         </SelectBox>,
         ...extra,
-        <Button onClick={() => setTestConnect(!testConnect)} funcType="raised" style={{ width: 76, color: '#3F51B5' }} newLine>测试连接</Button>,
+        <Button onClick={handleTestConnect} funcType="raised" style={{ width: 76, color: '#3F51B5' }} newLine>测试连接</Button>,
         <div className="addTask_testConnect" newLine>
           测试连接：{handleShowTestConnectResult()}
         </div>,
@@ -274,13 +325,13 @@ const AddTask = observer(() => {
   return (
     <React.Fragment>
       <Form dataSet={AddTaskFormDataSet} columns={2}>
-        <Select name="rwlx">
-          <Option value="gj">构建</Option>
-          <Option value="dmjc">代码检查</Option>
+        <Select name="type">
+          <Option value="build">构建</Option>
+          <Option value="sonar">代码检查</Option>
         </Select>
-        <TextField name="rwmc" />
+        <TextField name="name" />
         <Select name="glyyfw" />
-        <Select combo searchable name="cffzlx">
+        <Select combo searchable name="triggerRefs">
           <Option value="master">master</Option>
           <Option value="feature">feature</Option>
           <Option value="bugfix">bugfix</Option>

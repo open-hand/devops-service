@@ -1,20 +1,23 @@
-export default () => ({
+export default (AppServiceOptionsDs) => ({
   autoCreate: true,
   fields: [{
-    name: 'lsxmc',
+    name: 'name',
     type: 'string',
     label: '流水线名称',
-    require: true,
+    required: true,
     maxLength: 30,
   }, {
-    name: 'glyyfw',
-    type: 'string',
+    name: 'appServiceId',
+    type: 'number',
     label: '关联应用服务',
-    require: true,
+    required: true,
+    textField: 'name',
+    valueField: 'id',
+    options: AppServiceOptionsDs,
   }, {
-    name: 'cfss',
+    name: 'triggerType',
     type: 'string',
     label: '触发方式',
-    defaultValue: 'M',
+    defaultValue: 'auto',
   }],
 });
