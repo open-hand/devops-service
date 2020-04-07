@@ -5,6 +5,7 @@ import io.choerodon.devops.app.service.DevopsCiJobService;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiJobMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 〈功能简述〉
@@ -25,6 +26,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     }
 
     @Override
+    @Transactional
     public DevopsCiJobDTO create(DevopsCiJobDTO devopsCiJobDTO) {
         if (devopsCiJobMapper.insertSelective(devopsCiJobDTO) != 1) {
             throw new CommonException(CREATE_JOB_FAILED);
@@ -33,6 +35,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     }
 
     @Override
+    @Transactional
     public void deleteByStageId(Long stageId) {
         if (stageId == null) {
             throw new CommonException(ERROR_STAGE_ID_IS_NULL);

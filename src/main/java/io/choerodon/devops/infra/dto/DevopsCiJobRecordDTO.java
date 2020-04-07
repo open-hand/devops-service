@@ -29,7 +29,7 @@ public class DevopsCiJobRecordDTO extends BaseDTO {
     @ApiModelProperty("阶段名称")
     private String stage;
     @ApiModelProperty("触发用户")
-    private Long trigger_user_id;
+    private Long triggerUserId;
     @ApiModelProperty("名称")
     private String name;
     @ApiModelProperty("job状态")
@@ -73,12 +73,12 @@ public class DevopsCiJobRecordDTO extends BaseDTO {
         this.stage = stage;
     }
 
-    public Long getTrigger_user_id() {
-        return trigger_user_id;
+    public Long getTriggerUserId() {
+        return triggerUserId;
     }
 
-    public void setTrigger_user_id(Long trigger_user_id) {
-        this.trigger_user_id = trigger_user_id;
+    public void setTriggerUserId(Long triggerUserId) {
+        this.triggerUserId = triggerUserId;
     }
 
     public String getName() {

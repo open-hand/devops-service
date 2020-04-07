@@ -526,5 +526,5 @@ public interface AppServiceService {
      * @param userId
      * @return
      */
-    boolean checkUserIsHasAppPermission(Long appSvcId, Long userId);
+    boolean checkAppSerivcePermissionForUser(Long appSvcId, Long userId);
 }

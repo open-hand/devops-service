@@ -36,7 +36,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private static final String CREATE_PIPELINE_FAILED = "create.pipeline.failed";
     private static final String UPDATE_PIPELINE_FAILED = "update.pipeline.failed";
     private static final String ERROR_USER_HAVE_NO_APP_PERMISSION = "error.user.have.no.app.permission";
-    @Value("${choerodon.gateway.url}")
+    @Value("${services.gateway.url}")
     private String gatewayUrl;
 
     private DevopsCiPipelineMapper devopsCiPipelineMapper;
@@ -96,7 +96,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     private void checkUserPermission(Long appServiceId, Long iamUserId) {
-        if (!appServiceService.checkUserIsHasAppPermission(appServiceId, iamUserId)) {
+        if (!appServiceService.checkAppSerivcePermissionForUser(appServiceId, iamUserId)) {
             throw new CommonException(ERROR_USER_HAVE_NO_APP_PERMISSION);
         }
 

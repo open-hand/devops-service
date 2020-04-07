@@ -2714,7 +2714,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public boolean checkUserIsHasAppPermission(Long appSvcId, Long userId) {
+    public boolean checkAppSerivcePermissionForUser(Long appSvcId, Long userId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appSvcId);
 
         // 查询用户是否在该gitlab project下

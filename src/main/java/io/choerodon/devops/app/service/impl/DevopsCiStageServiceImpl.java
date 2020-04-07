@@ -1,16 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiStageVO;
-import io.choerodon.devops.app.service.DevopsCiJobService;
 import io.choerodon.devops.app.service.DevopsCiStageService;
 import io.choerodon.devops.infra.dto.DevopsCiStageDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiStageMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 /**
  * 〈功能简述〉
@@ -33,6 +32,7 @@ public class DevopsCiStageServiceImpl implements DevopsCiStageService {
     }
 
     @Override
+    @Transactional
     public DevopsCiStageDTO create(DevopsCiStageDTO devopsCiStageDTO) {
         if (devopsCiStageMapper.insertSelective(devopsCiStageDTO) != 1) {
             throw new CommonException(CREATE_STAGE_FAILED);
@@ -51,6 +51,7 @@ public class DevopsCiStageServiceImpl implements DevopsCiStageService {
     }
 
     @Override
+    @Transactional
     public void deleteById(Long id) {
         if (devopsCiStageMapper.deleteByPrimaryKey(id) != 1) {
             throw new CommonException(DELETE_STAGE_FAILED);
@@ -58,6 +59,7 @@ public class DevopsCiStageServiceImpl implements DevopsCiStageService {
     }
 
     @Override
+    @Transactional
     public void update(DevopsCiStageVO devopsCiStageVO) {
         DevopsCiStageDTO devopsCiStageDTO = ConvertUtils.convertObject(devopsCiStageVO, DevopsCiStageDTO.class);
         if (devopsCiStageMapper.updateByPrimaryKeySelective(devopsCiStageDTO) != 1) {
