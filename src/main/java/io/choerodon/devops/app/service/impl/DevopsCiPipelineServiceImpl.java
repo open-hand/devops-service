@@ -88,7 +88,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         });
 
         // TODO 保存ci配置文件
-        // saveCiContent(devopsCiPipelineDTO.getId(), devopsCiPipelineVO);
+//         saveCiContent(devopsCiPipelineDTO.getId(), devopsCiPipelineVO);
 
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(devopsCiPipelineDTO.getAppServiceId());
         String ciFileIncludeUrl = gatewayUrl + "/devops/v1/projects/" + projectId + "/ci_contents/pipelines/" + devopsCiPipelineDTO.getId();
@@ -275,6 +275,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      * @return 生成的脚本列表
      */
     private List<String> buildScript(DevopsCiJobVO jobVO) {
+        // TODO
         if (CiJobTypeEnum.SONAR.value().equals(jobVO.getType())) {
             // sonar配置转化为gitlab-ci配置
             List<String> scripts = new ArrayList<>();
@@ -305,8 +306,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 parms.put("-Dsonar.projectKey", "${GROUP_NAME}:${PROJECT_NAME}");
             }
             scripts.add(GitlabCiUtil.mapToString(parms));
+
             return scripts;
-        } else if (CiJobTypeEnum.BUILD.value().equals(jobVO.getType())) {
+        }
+        if (CiJobTypeEnum.BUILD.value().equals(jobVO.getType())) {
             // maven配置转换为gitlab-ci配置
             MavenBuildVO mavenBuildVO = JSONObject.parseObject(jobVO.getMetadata(), MavenBuildVO.class);
             if (mavenBuildVO == null || CollectionUtils.isEmpty(mavenBuildVO.getMavenbuildTemplateVOList())) {

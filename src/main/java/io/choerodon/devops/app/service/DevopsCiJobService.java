@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 
 /**
@@ -14,6 +15,7 @@ import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 public interface DevopsCiJobService {
     /**
      * 创建ci流水线job
+     *
      * @param devopsCiJobDTO
      * @return
      */
@@ -21,14 +23,25 @@ public interface DevopsCiJobService {
 
     /**
      * 删除stage下的job
+     *
      * @param stageId
      */
     void deleteByStageId(Long stageId);
 
     /**
      * 查询pipeline下的jobs
+     *
      * @param ciPipelineId
      * @return
      */
     List<DevopsCiJobDTO> listByPipelineId(Long ciPipelineId);
+
+    /**
+     * sonar的连接测试
+     *
+     * @param projectId
+     * @param sonarQubeConfigVO
+     * @return
+     */
+    Boolean sonarConnect(Long projectId, SonarQubeConfigVO sonarQubeConfigVO);
 }
