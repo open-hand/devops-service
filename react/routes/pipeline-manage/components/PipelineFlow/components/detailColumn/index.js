@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Fragment } from 'react';
 
 import { observer } from 'mobx-react-lite';
 import { Button, Icon } from 'choerodon-ui';
 import { Modal } from 'choerodon-ui/pro';
 import StatusDot from '../statusDot';
-
+import CodeQuality from '../codeQuality';
 
 import './index.less';
 
@@ -73,9 +73,14 @@ export default observer((props) => {
       style: {
         width: 'calc(100vw - 3.52rem)',
       },
-      disableOk: true,
-      children: 'hello',
+      children: <CodeQuality />,
       drawer: true,
+      okText: '关闭',
+      footer: (okbtn) => (
+        <Fragment>
+          {okbtn}
+        </Fragment>
+      ),
     });
   }
 

@@ -6,7 +6,6 @@ import DetailColumn from './components/detailColumn';
 export default observer((props) => {
   const { id, parentId, updateDate, status, stages, parentName } = props;
   useEffect(() => {
-    console.log(props);
   }, []);
   return (
     <div className="c7n-piplineManage">

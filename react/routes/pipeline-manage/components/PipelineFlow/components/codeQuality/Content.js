@@ -6,10 +6,10 @@ import _ from 'lodash';
 import { Icon } from 'choerodon-ui/pro';
 import { Page } from '@choerodon/boot';
 
-import EmptyPage from '../../../../../components/empty-page';
-import Loading from '../../../../../components/loading';
-import Percentage from '../../../../../components/percentage/Percentage';
-import Rating from '../../../../../components/rating/Rating';
+import EmptyPage from '../../../../../../components/empty-page';
+import Loading from '../../../../../../components/loading';
+import Percentage from '../../../../../../components/percentage/Percentage';
+import Rating from '../../../../../../components/rating/Rating';
 
 import { QUALITY_LIST, OBJECT_TYPE } from './components/Constants';
 
@@ -19,9 +19,8 @@ import { useCodeQualityStore } from './stores';
 import './index.less';
 
 export default withRouter(observer((props) => {
-  const codeQualityStore = useCodeQualityStore();
-  const { formatMessage, codeQuality } = codeQualityStore;
-
+  const { formatMessage, codeQuality } = useCodeQualityStore();
+  
   const { location: {
     search,
   } } = props;
@@ -99,10 +98,10 @@ export default withRouter(observer((props) => {
     );
   }
   return (
-    <Page
-      className="c7n-region c7n-codeQuality-wrapper page-container"
+    <div
+      className="c7n-region c7n-codeQuality-wrapper"
     >
       { codeQuality.loading ? <Loading display /> : getDetail()}
-    </Page>
+    </div>
   );
 }));
