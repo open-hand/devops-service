@@ -25,4 +25,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
         addUniqueConstraint(tableName: 'devops_ci_job_record',
                 constraintName: 'uk_gitlab_job_id', columnNames: 'gitlab_job_id')
     }
+    changeSet(author: 'wanghao', id: '2020-04-07-rename-column') {
+        renameColumn(tableName: 'devops_ci_job_record', columnDataType: 'BIGINT UNSIGNED',
+                oldColumnName: 'gitlab_pipeline_id', newColumnName: 'ci_pipeline_record_id')
+    }
 }
