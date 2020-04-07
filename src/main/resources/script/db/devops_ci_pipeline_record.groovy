@@ -11,7 +11,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_record.groovy') {
             column(name: 'commit_sha', type: 'VARCHAR(255)', remarks: 'commit_sha')
             column(name: 'gitlab_trigger_ref', type: 'VARCHAR(255)', remarks: '触发分支')
             column(name: 'status', type: 'VARCHAR(255)', remarks: '流水线状态')
-            column(name: 'triggerUserId', type: 'BIGINT UNSIGNED', remarks: '触发用户id')
+            column(name: 'trigger_user_id', type: 'BIGINT UNSIGNED', remarks: '触发用户id')
             column(name: "created_date", type: "DATETIME", remarks: 'gitlab流水线创建时间')
             column(name: "finished_date", type: "DATETIME", remarks: 'gitlab流水线结束时间')
             column(name: "duration_seconds", type: "BIGINT UNSIGNED", remarks: '流水线执行时长')

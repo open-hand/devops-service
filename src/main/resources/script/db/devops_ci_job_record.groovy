@@ -11,7 +11,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
             column(name: 'name', type: 'VARCHAR(255)', remarks: '任务名称')
             column(name: 'stage', type: 'VARCHAR(255)', remarks: '所属阶段名称')
             column(name: 'status', type: 'VARCHAR(255)', remarks: 'job状态')
-            column(name: 'triggerUserId', type: 'BIGINT UNSIGNED', remarks: '触发用户id')
+            column(name: 'trigger_user_id', type: 'BIGINT UNSIGNED', remarks: '触发用户id')
             column(name: "started_date", type: "DATETIME", remarks: 'job开始执行时间')
             column(name: "finished_date", type: "DATETIME", remarks: 'job结束时间')
             column(name: "duration_seconds", type: "BIGINT UNSIGNED", remarks: 'job执行时长')
