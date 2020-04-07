@@ -34,7 +34,7 @@ public class DevopsCiPipelineRecordDTO extends BaseDTO {
     private Long triggerUserId;
     @ApiModelProperty("创建时间")
     private Date createdDate;
-    @ApiModelProperty("gitlab流水线记录id")
+    @ApiModelProperty("结束时间")
     private Date finishedDate;
     @ApiModelProperty("执行耗时")
     private Long durationSeconds;
