@@ -3,7 +3,7 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiContentMapper">
 
     <select id="queryLatestContent" resultType="java.lang.String">
-        select *
+        select dcc.ci_content_file
         from devops_ci_content dcc
         where dcc.ci_pipeline_id = #{pipelineId}
         order by dcc.id desc
