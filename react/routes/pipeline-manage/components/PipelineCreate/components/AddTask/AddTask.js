@@ -14,12 +14,15 @@ const AddTask = observer(() => {
     AddTaskFormDataSet,
     AddTaskStepFormDataSet,
     modal,
+    handleOk,
   } = useAddTaskStore();
 
   const [steps, setSteps] = useState([]);
   const [testConnect, setTestConnect] = useState('');
 
   const handleAdd = () => {
+    const data = 'fuck you';
+    handleOk(data);
     window.console.log(testConnect);
   };
 
