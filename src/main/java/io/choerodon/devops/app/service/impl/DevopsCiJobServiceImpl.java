@@ -38,15 +38,9 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private static final String SONAR = "sonar";
 
     private DevopsCiJobMapper devopsCiJobMapper;
-    private AppServiceService appServiceService;
-    private BaseServiceClientOperator baseServiceClientOperator;
 
-    public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper,
-                                  AppServiceService appServiceService,
-                                  BaseServiceClientOperator baseServiceClientOperator) {
+    public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper) {
         this.devopsCiJobMapper = devopsCiJobMapper;
-        this.appServiceService = appServiceService;
-        this.baseServiceClientOperator = baseServiceClientOperator;
     }
 
     @Override
