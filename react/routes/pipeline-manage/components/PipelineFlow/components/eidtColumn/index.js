@@ -31,7 +31,7 @@ const EditItem = ({ taskName, stepName, id }) => (
   </div>
 );
 
-export default observer(({ stepTasks, stepName, id, columnIndex }) => {
+export default observer(({ jobList, sequence, name, columnIndex }) => {
   const {
     addStepDs,
     stepStore: {
@@ -64,25 +64,26 @@ export default observer(({ stepTasks, stepName, id, columnIndex }) => {
 
   async function editStage() {
     if (addStepDs.current && addStepDs.current.get('step')) {
-      eidtStep(id, addStepDs.current.get('step'));
+      eidtStep(sequence, addStepDs.current.get('step'));
     } else {
       return false;
     }
     addStepDs.reset();
   }
 
-  const renderStepTasks = () => stepTasks && stepTasks.slice().map(item => <EditItem
-    key={item.id}
-    stepName={stepName}
+  const renderStepTasks = () => jobList && jobList.slice().map(item => <EditItem
+    key={item.sequence}
+    stepName={name}
     {...item}
   />);
 
   function openAddStageModal(optType) {
     const title = optType === 'create' ? '创建新阶段' : '修改阶段信息';
     if (optType === 'edit') {
-      addStepDs.current.set('step', stepName);
+      addStepDs.current.set('step', name);
     }
     const optsFun = optType === 'create' ? createNewStage : editStage;
+    // const optsFun = createNewStage;
     Modal.open({
       key: key1,
       title,
@@ -101,11 +102,11 @@ export default observer(({ stepTasks, stepName, id, columnIndex }) => {
   }
 
   function deleteStep() {
-    removeStep(id);
+    removeStep(sequence);
   }
 
   function hanleStepCreateOk(data) {
-    console.log(data);
+    // console.log(data);
   }
 
   function openNewTaskModal() {
@@ -119,7 +120,7 @@ export default observer(({ stepTasks, stepName, id, columnIndex }) => {
       drawer: true,
       okText: '添加',
       onOk() {
-        console.log('heloo');
+        // console.log('heloo');
       },
     });
   }
@@ -127,7 +128,7 @@ export default observer(({ stepTasks, stepName, id, columnIndex }) => {
   return (
     <div className="c7n-piplineManage-edit-column">
       <div className="c7n-piplineManage-edit-column-header">
-        <span>{stepName}</span>
+        <span>{name}</span>
         <div
           className="c7n-piplineManage-edit-column-header-btnGroup"
         >

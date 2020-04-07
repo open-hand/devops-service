@@ -40,7 +40,7 @@ const tagObj = {
     color: 'rgba(216,216,216,1)',
     text: '已取消',
   },
-  unexcuted: {
+  created: {
     borderColor: 'rgba(216,216,216,.65)',
     backgroundColor: 'rgba(216,216,216,.04)',
     color: 'rgba(216,216,216,1)',

@@ -3,47 +3,39 @@ import { observer } from 'mobx-react-lite';
 import EditColumn from '../eidtColumn';
 import { usePipelineStageEditStore } from './stores';
 
+
 const data = [
   {
-    stepName: '构建',
-    id: 1213,
-    stepTasks: [
-      {
-        taskName: '构建maven',
-        id: 1213131,
-      },
-      {
-        taskName: '构建maven',
-        id: 12131,
-      },
-    ],
+    name: '构建',
+    sequence: 1,
+    jobList: [],
   },
   {
-    stepName: '代码检查',
-    id: 344,
-    stepTasks: [
-      {
-        taskName: 'maven',
-        id: 3431,
-      },
-      {
-        taskName: 'maven',
-        id: 8921,
-      },
-    ],
+    name: '代码检查',
+    sequence: 2,
+    jobList: [],
+  },
+];
+
+const defaultData = [
+  {
+    name: '阶段一',
+    sequence: 1,
+    jobList: [],
   },
 ];
 
 export default observer(() => {
   const {
+    pipelineId,
     stepStore: {
       setStepData, getStepData,
     },
   } = usePipelineStageEditStore();
 
   useEffect(() => {
-    setStepData(data);
-  }, []);
+    setStepData(pipelineId ? data : defaultData);
+  }, [pipelineId]);
 
   function renderColumn() {
     if (getStepData.length > 0) {

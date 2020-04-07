@@ -8,13 +8,29 @@ const statusObj = {
     icon: 'check_circle',
     text: '成功',
   },
-  load: {
-    icon: 'timelapse',
-    text: '执行中',
-  },
   failed: {
     icon: 'cancel',
     text: '失败',
+  },
+  running: {
+    icon: 'timelapse',
+    text: '运行中',
+  },
+  canceled: {
+    icon: 'cancle_b',
+    text: '取消',
+  },
+  created: {
+    icon: 'adjust',
+    text: '未执行',
+  },
+  pending: {
+    icon: 'timelapse',
+    text: '准备中',
+  },
+  skipped: {
+    icon: 'skipped_a',
+    text: '已跳过',
   },
 };
 

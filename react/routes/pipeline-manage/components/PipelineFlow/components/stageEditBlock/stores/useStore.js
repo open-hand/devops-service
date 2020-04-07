@@ -1,5 +1,6 @@
 import { useLocalStore } from 'mobx-react-lite';
 
+
 export default function useStore() {
   return useLocalStore(() => ({
     dataSource: [],
@@ -11,25 +12,38 @@ export default function useStore() {
     },
     addNewStep(index, name) {
       const stepObj = {
-        stepName: name,
-        id: Math.ceil(Math.random() * 1000),
-        stepStaks: [],
+        name,
+        sequence: this.dataSource.length + 1,
+        jobList: [],
       };
       this.dataSource.splice(index + 1, 0, stepObj);
     },
-    removeStep(id) {
+    removeStep(sequence) {
       this.dataSource.forEach((item, index) => {
-        if (item.id === id) {
+        if (item.sequence === sequence) {
           this.dataSource.splice(index, 1);
           return true;
         }
       });
     },
-    eidtStep(id, newName) {
+    eidtStep(sequence, newName) {
       this.dataSource.forEach((item, index) => {
-        if (item.id === id) {
-          this.dataSource[index].stepName = newName;
+        if (item.sequence === sequence) {
+          this.dataSource[index].name = newName;
           return true;
+        }
+      });
+    },
+    newJob(sequence) {
+      const obj = {
+        triggerRefs: 'master',
+        metadata: '',
+        name: 'maven_build',
+        type: 'build',
+      };
+      this.dataSource.forEach((item, index) => {
+        if (item.sequence === sequence) {
+          this.dataSource.jobList.push(obj);
         }
       });
     },

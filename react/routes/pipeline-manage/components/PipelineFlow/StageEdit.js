@@ -8,7 +8,7 @@ export default observer((props) => {
   return (
     <div className="c7n-piplineManage">
       <EditHeader type={type} name={name} iconSize={18} />
-      <StageEditBlock />
+      <StageEditBlock pipelineId={id} />
     </div>
   );
 });

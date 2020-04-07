@@ -1,18 +1,20 @@
 import React, { useEffect } from 'react';
-import { observer } from 'mobx-react-lite';
 import './index.less';
+import PropTypes from 'prop-types';
 import StatusTag from '../StatusTag';
 
-export default observer(({ id, name }) => {
-  useEffect(() => {
+const detailHeader = ({ id, parentName, status }) => (
+  <div className="c7ncd-pipelineManage-optsDetail-header">
+    <span>#{id}</span>
+    <span>({parentName})</span>
+    <StatusTag status={status} size={12} />
+  </div>
+);
 
-  }, []);
+detailHeader.propTypes = {
+  id: PropTypes.number.isRequired,
+  parentName: PropTypes.string.isRequired,
+  status: PropTypes.string.isRequired,
+};
 
-  return (
-    <div className="c7ncd-pipelineManage-optsDetail-header">
-      <span>#{id}</span>
-      <span>(workFlow)</span>
-      <StatusTag status="success" size={12} />
-    </div>
-  );
-});
+export default detailHeader;

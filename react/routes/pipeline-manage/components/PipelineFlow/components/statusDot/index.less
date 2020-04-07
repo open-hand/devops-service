@@ -1,14 +1,31 @@
+@import '~choerodon-ui/lib/style/themes/default';
+
+@success: #00bfa5;
+@running: #4d90fe;
+@pending: #ffb100;
+@failed: #f77a70;
+@canceled: #d8d8d8;
+
 .c7n-piplineManage-detail-column {
   i {
     display: inline-block;
     &.icon-check_circle {
-      color: rgba(0, 191, 165, 1);
+      color: @success;
     }
     &.icon-timelapse {
-      color: rgba(77, 144, 254, 1);
+      color: @running;
     }
     &.icon-cancel {
-      color: #f77a70;
+      color: @failed;
+    }
+    &.icon-cancle_b {
+      color: @canceled;
+    }
+    &.icon-skipped_a{
+      color: @canceled;
+    }
+    &.icon-adjust {
+      color: @canceled;
     }
   }
 }
