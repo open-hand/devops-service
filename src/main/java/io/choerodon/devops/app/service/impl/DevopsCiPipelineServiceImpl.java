@@ -88,7 +88,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         });
 
         // TODO 保存ci配置文件
-//         saveCiContent(devopsCiPipelineDTO.getId(), devopsCiPipelineVO);
+        saveCiContent(devopsCiPipelineDTO.getId(), devopsCiPipelineVO);
 
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(devopsCiPipelineDTO.getAppServiceId());
         String ciFileIncludeUrl = gatewayUrl + "/devops/v1/projects/" + projectId + "/ci_contents/pipelines/" + devopsCiPipelineDTO.getId();
@@ -246,7 +246,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private GitlabCi buildGitLabCiObject(DevopsCiPipelineVO devopsCiPipelineVO) {
         // 对阶段排序
         List<String> stages = devopsCiPipelineVO.getStageList().stream()
-                .sorted(Comparator.comparing(DevopsCiStageVO::getId))
+                .sorted(Comparator.comparing(DevopsCiStageVO::getSequence))
                 .map(DevopsCiStageVO::getName)
                 .collect(Collectors.toList());
 
@@ -282,6 +282,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             List<String> scripts = new ArrayList<>();
             JSONObject jsonObject = JSON.parseObject(jobVO.getMetadata());
             SonarQubeConfigVO sonarQubeConfigVO = jsonObject.toJavaObject(SonarQubeConfigVO.class);
+            if (Objects.isNull(sonarQubeConfigVO.getSonarUrl())) {
+                throw new CommonException("error.sonar.url.is.null");
+            }
             Map<String, String> parms = new LinkedHashMap<>();
             if (SonarAuthType.USERNAME_PWD.value().equals(sonarQubeConfigVO.getAuthType())) {
                 parms.put("mvn --batch-mode verify sonar:", "sonar");
@@ -307,7 +310,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 parms.put("-Dsonar.projectKey", "${GROUP_NAME}:${PROJECT_NAME}");
             }
             scripts.add(GitlabCiUtil.mapToString(parms));
-
             return scripts;
         }
         if (CiJobTypeEnum.BUILD.value().equals(jobVO.getType())) {
