@@ -8,8 +8,8 @@ package io.choerodon.devops.infra.enums;
  * @Date 2020/4/3 16:57
  */
 public enum CiJobTypeEnum {
-    build("build"),
-    snoar("snoar");
+    BUILD("build"),
+    SONAR("sonar");
 
     private String value;
 

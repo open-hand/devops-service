@@ -14,6 +14,9 @@ import org.yaml.snakeyaml.representer.Representer;
 
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
 
+import java.util.Map;
+import java.util.Set;
+
 /**
  * @author zmf
  * @since 20-4-2
@@ -157,5 +160,20 @@ public class GitlabCiUtil {
             }
         }
         return result;
+    }
+
+    public static String mapToString(Map<String, String> parms) {
+        Set<String> keySet = parms.keySet();
+        String[] keyArray = keySet.toArray(new String[keySet.size()]);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < keyArray.length; i++) {
+            if (parms.get(keyArray[i]).trim().length() > 0) {
+                sb.append(keyArray[i]).append("=").append(parms.get(keyArray[i]).trim());
+            }
+            if (i != keyArray.length - 1) {
+                sb.append("\n");
+            }
+        }
+        return sb.toString();
     }
 }
