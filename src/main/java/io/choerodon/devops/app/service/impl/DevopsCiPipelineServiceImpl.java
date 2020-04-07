@@ -88,7 +88,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         });
 
         // TODO 保存ci配置文件
-        saveCiContent(devopsCiPipelineDTO.getId(), devopsCiPipelineVO);
+        // saveCiContent(devopsCiPipelineDTO.getId(), devopsCiPipelineVO);
 
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(devopsCiPipelineDTO.getAppServiceId());
         String ciFileIncludeUrl = gatewayUrl + "/devops/v1/projects/" + projectId + "/ci_contents/pipelines/" + devopsCiPipelineDTO.getId();
