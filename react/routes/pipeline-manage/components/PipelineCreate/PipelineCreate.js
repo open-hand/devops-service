@@ -3,6 +3,7 @@ import { Form, TextField, Select, SelectBox, Modal, Button } from 'choerodon-ui/
 import { observer } from 'mobx-react-lite';
 import { usePipelineCreateStore } from './stores';
 import AddTask from './components/AddTask';
+import StageEditBlock from '../PipelineFlow/components/stageEditBlock';
 
 const { Option } = Select;
 
@@ -33,7 +34,8 @@ const PipelineCreate = observer(() => {
         <Option value="M">自动触发</Option>
         <Option disabled value="F">手动触发</Option>
       </SelectBox>
-      <Button onClick={handleAddMission}>添加任务</Button>
+      <StageEditBlock addTask={AddTask} />
+      {/* <Button onClick={handleAddMission}>添加任务</Button> */}
     </Form>
   );
 });
