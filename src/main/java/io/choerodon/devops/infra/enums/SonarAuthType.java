@@ -12,4 +12,7 @@ public enum SonarAuthType {
     SonarAuthType(String value) {
         this.value = value;
     }
+    public String value() {
+        return value;
+    }
 }

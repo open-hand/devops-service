@@ -196,7 +196,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(ciPipelineId);
         List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(ciPipelineId);
         // dto转vo
-        DevopsCiPipelineVO devopsCiPipelineVO = ConvertUtils.convertObject(devopsCiJobDTOS, DevopsCiPipelineVO.class);
+        DevopsCiPipelineVO devopsCiPipelineVO = ConvertUtils.convertObject(devopsCiPipelineDTO, DevopsCiPipelineVO.class);
         List<DevopsCiStageVO> devopsCiStageVOS = ConvertUtils.convertList(devopsCiStageDTOList, DevopsCiStageVO.class);
         List<DevopsCiJobVO> devopsCiJobVOS = ConvertUtils.convertList(devopsCiJobDTOS, DevopsCiJobVO.class);
 
@@ -282,12 +282,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private List<String> buildScript(DevopsCiJobVO jobVO) {
         // TODO
         List<String> scripts = new ArrayList<>();
-        if (CiJobTypeEnum.SONAR.equals(jobVO.getType())) {
+        if (CiJobTypeEnum.SONAR.value().equals(jobVO.getType())) {
             // sonar配置转化为gitlab-ci配置
             JSONObject jsonObject = JSON.parseObject(jobVO.getMetadata());
             SonarQubeConfigVO sonarQubeConfigVO = jsonObject.toJavaObject(SonarQubeConfigVO.class);
             Map<String, String> parms = new LinkedHashMap<>();
-            if (SonarAuthType.USERNAME_PWD.equals(sonarQubeConfigVO.getAuthType())) {
+            if (SonarAuthType.USERNAME_PWD.value().equals(sonarQubeConfigVO.getAuthType())) {
                 parms.put("mvn --batch-mode verify sonar:", "sonar");
                 parms.put("-Dsonar.host.url", sonarQubeConfigVO.getSonarUrl());
                 parms.put("-Dsonar.login", sonarQubeConfigVO.getUsername());
@@ -299,7 +299,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 parms.put("-Dsonar.analysis.commitId", "$CI_COMMIT_SHA");
                 parms.put("-Dsonar.projectKey", "${GROUP_NAME}:${PROJECT_NAME}");
             }
-            if (SonarAuthType.TOKEN.equals(sonarQubeConfigVO.getAuthType())) {
+            if (SonarAuthType.TOKEN.value().equals(sonarQubeConfigVO.getAuthType())) {
                 parms.put("mvn --batch-mode verify sonar:", "sonar");
                 parms.put("-Dsonar.host.url", sonarQubeConfigVO.getSonarUrl());
                 parms.put("-Dsonar.login", sonarQubeConfigVO.getToken());
@@ -312,12 +312,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
             scripts.add(GitlabCiUtil.mapToString(parms));
         }
-        if (CiJobTypeEnum.BUILD.equals(jobVO.getType())) {
+        if (CiJobTypeEnum.BUILD.value().equals(jobVO.getType())) {
             // maven配置转换为gitlab-ci配置
             MavenbuildTemplateVO mavenbuildTemplateVO = JSONObject.parseObject(jobVO.getMetadata(), MavenbuildTemplateVO.class);
             return GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(mavenbuildTemplateVO.getScript()), true, true);
         }
-        return null;
+        return scripts;
     }
 
     private OnlyExceptPolicy buildOnlyExceptPolicyObject(String triggerRefs) {
