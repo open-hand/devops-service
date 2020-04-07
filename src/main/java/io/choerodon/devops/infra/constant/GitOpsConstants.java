@@ -97,4 +97,14 @@ public class GitOpsConstants {
      * 用于注释shell的字符
      */
     public static final String COMMENT_STRING = "#";
+
+    /**
+     * 猪齿鱼框架的应用服务跑CI前要执行的脚本
+     */
+    public static final String CHOERODON_BEFORE_SCRIPT = "http_status_code=`curl -o .auto_devops.sh -s -m 10 --connect-timeout 10 -w %{http_code} \"${CHOERODON_URL}/devops/ci?token=${Token}&type=microservice\"`\n" +
+            "if [ \"$http_status_code\" != \"200\" ]; then\n" +
+            "  cat ./.auto_devops.sh\n" +
+            "  exit 1\n" +
+            "fi\n" +
+            "source ./.auto_devops.sh\n";
 }
