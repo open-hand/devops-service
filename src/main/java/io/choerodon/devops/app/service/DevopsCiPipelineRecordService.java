@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.api.vo.PipelineWebHookVO;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -8,4 +10,7 @@ package io.choerodon.devops.app.service;
  * @Date 2020/4/3 9:26
  */
 public interface DevopsCiPipelineRecordService {
+    void create(PipelineWebHookVO pipelineWebHookVO, String token);
+
+    void handleCreate(PipelineWebHookVO pipelineWebHookVO);
 }

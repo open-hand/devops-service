@@ -26,7 +26,7 @@ public class DevopsCiContentController {
     }
     @Permission(permissionPublic = true)
     @ApiOperation(value = "查询项目下流水线最新的gitlab-ci配置文件")
-    @GetMapping("/pipelines/{pipeline_id}")
+    @GetMapping("/pipelines/{pipeline_id}/content.yaml")
     public ResponseEntity<String> queryLatestContent(
             @PathVariable(value = "project_id") Long projectId,
             @PathVariable(value = "pipeline_id") Long pipelineId) {

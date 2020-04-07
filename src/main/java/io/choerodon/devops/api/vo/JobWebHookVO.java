@@ -1,12 +1,18 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.Date;
+
 public class JobWebHookVO {
 
     private String sha;
     private String ref;
+    private Long buildId;
     private String buildName;
     private String buildStage;
     private String buildStatus;
+    private Date buildStartedAt;
+    private Date buildFinishedAt;
+    private Long buildDuration;
 
     private JobCommitVO commit;
 
@@ -56,6 +62,38 @@ public class JobWebHookVO {
 
     public void setCommit(JobCommitVO commit) {
         this.commit = commit;
+    }
+
+    public Long getBuildId() {
+        return buildId;
+    }
+
+    public void setBuildId(Long buildId) {
+        this.buildId = buildId;
+    }
+
+    public Date getBuildStartedAt() {
+        return buildStartedAt;
+    }
+
+    public void setBuildStartedAt(Date buildStartedAt) {
+        this.buildStartedAt = buildStartedAt;
+    }
+
+    public Date getBuildFinishedAt() {
+        return buildFinishedAt;
+    }
+
+    public void setBuildFinishedAt(Date buildFinishedAt) {
+        this.buildFinishedAt = buildFinishedAt;
+    }
+
+    public Long getBuildDuration() {
+        return buildDuration;
+    }
+
+    public void setBuildDuration(Long buildDuration) {
+        this.buildDuration = buildDuration;
     }
 
     @Override

@@ -91,6 +91,8 @@ public class DevopsSagaHandler {
     private SendNotificationService sendNotificationService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
 
 
     /**
@@ -275,6 +277,26 @@ public class DevopsSagaHandler {
             LOGGER.info(e.getMessage());
         }
         devopsGitlabPipelineService.handleCreate(pipelineWebHookVO);
+        return data;
+    }
+
+    /**
+     * gitlab ci pipeline事件
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_GITLAB_CI_PIPELINE,
+            description = "gitlab pipeline事件",
+            sagaCode = DEVOPS_GITLAB_CI_PIPELINE,
+            maxRetryCount = 3,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            seq = 1)
+    public String gitlabCiPipeline(String data) {
+        PipelineWebHookVO pipelineWebHookVO = null;
+        try {
+            pipelineWebHookVO = objectMapper.readValue(data, PipelineWebHookVO.class);
+        } catch (IOException e) {
+            LOGGER.info(e.getMessage());
+        }
+        devopsCiPipelineRecordService.handleCreate(pipelineWebHookVO);
         return data;
     }
 

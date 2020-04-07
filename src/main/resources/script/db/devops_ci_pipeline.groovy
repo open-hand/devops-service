@@ -20,4 +20,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline.groovy') {
         addUniqueConstraint(tableName: 'devops_ci_pipeline',
                 constraintName: 'uk_app_service_id', columnNames: 'app_service_id')
     }
+    changeSet(author: 'wanghao', id: '2020-04-07-add-column') {
+        addColumn(tableName: 'devops_ci_pipeline') {
+            column(name: "is_enabled", type: "TINYINT UNSIGNED", defaultValue: "1", remarks: '是否启用')
+        }
+    }
 }
