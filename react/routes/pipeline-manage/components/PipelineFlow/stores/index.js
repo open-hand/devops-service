@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
-import { DataSet } from 'choerodon-ui/pro';
 import { usePipelineManageStore } from '../../../stores';
 
 const Store = createContext();
