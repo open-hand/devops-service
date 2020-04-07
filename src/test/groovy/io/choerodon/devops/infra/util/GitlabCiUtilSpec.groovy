@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.util.StringUtils
 import spock.lang.Specification
 
+import io.choerodon.devops.infra.constant.GitOpsConstants
 import io.choerodon.devops.infra.dto.gitlab.ci.CiJob
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi
 import io.choerodon.devops.infra.dto.gitlab.ci.OnlyExceptPolicy
@@ -77,5 +78,33 @@ class GitlabCiUtilSpec extends Specification {
         then: "校验结果"
         !StringUtils.isEmpty(yaml)
         noExceptionThrown()
+    }
+
+    def "CommentLines"() {
+        given: "准备数据"
+        def str = 'ls -a \r\n cd ..  \r pwd \n du -h .'
+        def expectResult = '#ls -a ' + GitOpsConstants.NEW_LINE + '# cd ..  ' + GitOpsConstants.NEW_LINE + '# pwd ' + GitOpsConstants.NEW_LINE + '# du -h .' + GitOpsConstants.NEW_LINE
+
+        when: "调用方法"
+        def result = GitlabCiUtil.commentLines(str)
+        println(result)
+
+        then: "结果"
+        noExceptionThrown()
+        result == expectResult
+    }
+
+    def "DeleteCommentedLines"() {
+        given: "准备数据"
+        def str = '#ls -a \r\ncd ..  \r pwd \n #du -h .'
+        def expectResult = 'cd ..  ' + GitOpsConstants.NEW_LINE + ' pwd ' + GitOpsConstants.NEW_LINE
+
+        when: "调用方法"
+        def result = GitlabCiUtil.deleteCommentedLines(str)
+        println(result)
+
+        then: "结果"
+        noExceptionThrown()
+        result == expectResult
     }
 }

@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.util;
 
+import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
+
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
@@ -37,5 +39,37 @@ public class GitlabCiUtil {
      */
     public static String gitlabCi2yaml(GitlabCi gitlabCi) {
         return getYamlObject().dump(gitlabCi);
+    }
+
+    /**
+     * 将shell脚本（或者yaml文件）的每一行都以 # 号注释掉
+     *
+     * @param fileContent shell脚本（或者yaml文件）
+     * @return 注释后的shell脚本（或者yaml文件）
+     */
+    public static String commentLines(String fileContent) {
+        String[] lines = fileContent.split(NEWLINE_REGEX);
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String line : lines) {
+            stringBuilder.append(COMMENT_STRING).append(line).append(NEW_LINE);
+        }
+        return stringBuilder.toString();
+    }
+
+    /**
+     * 将shell脚本（或者yaml文件）中的注释的行删除
+     *
+     * @param shellContent shell脚本（或者yaml文件）
+     * @return 将注释删除后的shell脚本（或者yaml文件）
+     */
+    public static String deleteCommentedLines(String shellContent) {
+        String[] lines = shellContent.split(NEWLINE_REGEX);
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String line : lines) {
+            if (line != null && !line.trim().startsWith(COMMENT_STRING)) {
+                stringBuilder.append(line).append(NEW_LINE);
+            }
+        }
+        return stringBuilder.toString();
     }
 }
