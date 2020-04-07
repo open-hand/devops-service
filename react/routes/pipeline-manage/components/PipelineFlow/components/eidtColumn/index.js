@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 import { Button } from 'choerodon-ui';
 import { Choerodon } from '@choerodon/boot';
 import { Modal, Form, TextField } from 'choerodon-ui/pro';
-import { usePipelineFlowStore } from '../../stores';
 import './index.less';
 import { usePipelineStageEditStore } from '../stageEditBlock/stores';
 
@@ -32,11 +31,9 @@ const EditItem = ({ taskName, stepName, id }) => (
 );
 
 export default observer(({ stepTasks, stepName, id, columnIndex }) => {
-  const {
-    addStepDs,
-  } = usePipelineFlowStore();
 
   const {
+    addStepDs,
     stepStore: {
       addNewStep, removeStep, eidtStep,
     },
