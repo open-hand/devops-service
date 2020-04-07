@@ -82,7 +82,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                 DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                 devopsCiJobDTO.setCiPipelineId(devopsCiPipelineDTO.getId());
-                devopsCiJobDTO.setStageId(savedDevopsCiStageDTO.getId());
+                devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
                 devopsCiJobService.create(devopsCiJobDTO);
             });
         });
@@ -174,7 +174,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 // 保存job信息
                 devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                     DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
-                    devopsCiJobDTO.setStageId(savedDevopsCiStageDTO.getId());
+                    devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
                     devopsCiJobService.create(devopsCiJobDTO);
                 });
             }
@@ -196,7 +196,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         List<DevopsCiJobVO> devopsCiJobVOS = ConvertUtils.convertList(devopsCiJobDTOS, DevopsCiJobVO.class);
 
         // 封装对象
-        Map<Long, List<DevopsCiJobVO>> jobMap = devopsCiJobVOS.stream().collect(Collectors.groupingBy(DevopsCiJobVO::getStageId));
+        Map<Long, List<DevopsCiJobVO>> jobMap = devopsCiJobVOS.stream().collect(Collectors.groupingBy(DevopsCiJobVO::getCiStageId));
         devopsCiStageVOS.forEach(devopsCiStageVO -> {
             List<DevopsCiJobVO> ciJobVOS = jobMap.get(devopsCiStageVO.getId());
             devopsCiStageVO.setJobList(ciJobVOS);

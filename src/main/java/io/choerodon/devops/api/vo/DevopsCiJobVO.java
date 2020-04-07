@@ -23,7 +23,7 @@ public class DevopsCiJobVO {
     @NotEmpty(message = "error.job.name.cannot.be.null")
     private String name;
     @ApiModelProperty("阶段id")
-    private Long stageId;
+    private Long ciStageId;
     @ApiModelProperty("流水线id")
     private Long ciPipelineId;
     @ApiModelProperty("任务类型")
@@ -54,12 +54,12 @@ public class DevopsCiJobVO {
         this.name = name;
     }
 
-    public Long getStageId() {
-        return stageId;
+    public Long getCiStageId() {
+        return ciStageId;
     }
 
-    public void setStageId(Long stageId) {
-        this.stageId = stageId;
+    public void setCiStageId(Long ciStageId) {
+        this.ciStageId = ciStageId;
     }
 
     public Long getCiPipelineId() {

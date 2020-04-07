@@ -44,7 +44,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
             throw new CommonException(ERROR_STAGE_ID_IS_NULL);
         }
         DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
-        devopsCiJobDTO.setStageId(stageId);
+        devopsCiJobDTO.setCiStageId(stageId);
         devopsCiJobMapper.delete(devopsCiJobDTO);
     }
 
