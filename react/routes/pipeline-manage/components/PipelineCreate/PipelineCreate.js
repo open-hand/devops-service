@@ -12,18 +12,18 @@ const PipelineCreate = observer(() => {
     PipelineCreateFormDataSet,
   } = usePipelineCreateStore();
 
-  const handleAddMission = () => {
-    Modal.open({
-      key: Modal.key(),
-      title: '添加任务',
-      style: {
-        width: '740px',
-      },
-      children: <AddTask />,
-      drawer: true,
-      okText: '添加',
-    });
-  };
+  // const handleAddMission = () => {
+  //   Modal.open({
+  //     key: Modal.key(),
+  //     title: '添加任务',
+  //     style: {
+  //       width: '740px',
+  //     },
+  //     children: <AddTask />,
+  //     drawer: true,
+  //     okText: '添加',
+  //   });
+  // };
 
   return (
     <Form columns={3} dataSet={PipelineCreateFormDataSet}>
@@ -34,8 +34,7 @@ const PipelineCreate = observer(() => {
         <Option value="M">自动触发</Option>
         <Option disabled value="F">手动触发</Option>
       </SelectBox>
-      <StageEditBlock addTask={AddTask} />
-      {/* <Button onClick={handleAddMission}>添加任务</Button> */}
+      <StageEditBlock />
     </Form>
   );
 });
