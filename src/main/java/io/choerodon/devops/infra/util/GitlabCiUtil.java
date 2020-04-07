@@ -2,6 +2,9 @@ package io.choerodon.devops.infra.util;
 
 import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
@@ -48,7 +51,7 @@ public class GitlabCiUtil {
      * @return 注释后的shell脚本（或者yaml文件）
      */
     public static String commentLines(String fileContent) {
-        String[] lines = fileContent.split(NEWLINE_REGEX);
+        String[] lines = splitLinesToArray(fileContent);
         StringBuilder stringBuilder = new StringBuilder();
         for (String line : lines) {
             stringBuilder.append(COMMENT_STRING).append(line).append(NEW_LINE);
@@ -59,11 +62,11 @@ public class GitlabCiUtil {
     /**
      * 将shell脚本（或者yaml文件）中的注释的行删除
      *
-     * @param shellContent shell脚本（或者yaml文件）
+     * @param fileContent shell脚本（或者yaml文件）
      * @return 将注释删除后的shell脚本（或者yaml文件）
      */
-    public static String deleteCommentedLines(String shellContent) {
-        String[] lines = shellContent.split(NEWLINE_REGEX);
+    public static String deleteCommentedLines(String fileContent) {
+        String[] lines = splitLinesToArray(fileContent);
         StringBuilder stringBuilder = new StringBuilder();
         for (String line : lines) {
             if (line != null && !line.trim().startsWith(COMMENT_STRING)) {
@@ -71,5 +74,25 @@ public class GitlabCiUtil {
             }
         }
         return stringBuilder.toString();
+    }
+
+    /**
+     * 将字符串按行分割为字符串数组
+     *
+     * @param string 字符串
+     * @return 数组
+     */
+    public static String[] splitLinesToArray(String string) {
+        return string.split(NEWLINE_REGEX);
+    }
+
+    /**
+     * 将字符串按行分割为字符串列表
+     *
+     * @param string 字符串
+     * @return 列表
+     */
+    public static List<String> splitLinesToList(String string) {
+        return Arrays.asList(splitLinesToArray(string));
     }
 }
