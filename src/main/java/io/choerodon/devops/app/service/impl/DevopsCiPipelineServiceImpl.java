@@ -4,6 +4,7 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -273,7 +274,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      */
     private List<String> buildScript(DevopsCiJobVO jobV0) {
         // TODO
-        return null;
+        List<String> scripts = new ArrayList<>();
+        if (CiJobTypeEnum.snoar.equals(jobV0.getType())) {
+            // sonar配置转化为gitlab-ci配置
+
+        }
+        if (CiJobTypeEnum.build.equals(jobV0.getType())) {
+            // maven配置转换为gitlab-ci配置
+        }
+        return scripts;
     }
 
     private OnlyExceptPolicy buildOnlyExceptPolicyObject(String triggerRefs) {
