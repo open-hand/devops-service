@@ -75,7 +75,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(applicationDTO.getId());
 
         DevopsCiPipelineRecordDTO record = new DevopsCiPipelineRecordDTO();
-        record.setCiPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
+        record.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectOne(record);
         Long iamUserId = getIamUserIdByGitlabUserName(pipelineWebHookVO.getUser().getUsername());
 
