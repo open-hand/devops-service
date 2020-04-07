@@ -5,6 +5,7 @@ import { Choerodon } from '@choerodon/boot';
 import { Modal, Form, TextField } from 'choerodon-ui/pro';
 import './index.less';
 import { usePipelineStageEditStore } from '../stageEditBlock/stores';
+import AddTask from '../../../PipelineCreate/components/AddTask';
 
 const key1 = Modal.key();
 
@@ -31,7 +32,6 @@ const EditItem = ({ taskName, stepName, id }) => (
 );
 
 export default observer(({ stepTasks, stepName, id, columnIndex }) => {
-
   const {
     addStepDs,
     stepStore: {
@@ -104,6 +104,26 @@ export default observer(({ stepTasks, stepName, id, columnIndex }) => {
     removeStep(id);
   }
 
+  function hanleStepCreateOk(data) {
+    console.log(data);
+  }
+
+  function openNewTaskModal() {
+    Modal.open({
+      key: Modal.key(),
+      title: '添加任务',
+      children: <AddTask handleOk={hanleStepCreateOk} />,
+      style: {
+        width: '740px',
+      },
+      drawer: true,
+      okText: '添加',
+      onOk() {
+        console.log('heloo');
+      },
+    });
+  }
+
   return (
     <div className="c7n-piplineManage-edit-column">
       <div className="c7n-piplineManage-edit-column-header">
@@ -136,6 +156,7 @@ export default observer(({ stepTasks, stepName, id, columnIndex }) => {
         funcType="flat"
         icon="add"
         type="primary"
+        onClick={openNewTaskModal}
         style={{ marginTop: '10px' }}
       >添加任务</Button>
       <Button

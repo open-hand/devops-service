@@ -31,6 +31,9 @@ statusDot.propTypes = {
   status: PropTypes.string.isRequired,
   size: PropTypes.number,
 };
+statusDot.defaultProps = {
+  size: 12,
+};
 
 
 export default statusDot;
