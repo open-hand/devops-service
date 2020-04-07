@@ -6,11 +6,6 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
@@ -29,6 +24,7 @@ import io.choerodon.devops.infra.util.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 /**
  * 〈功能简述〉
@@ -169,6 +165,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 // 保存job信息
                 devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                     DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
+                    devopsCiJobDTO.setCiStageId(devopsCiStageVO.getId());
+                    devopsCiJobDTO.setCiPipelineId(ciPipelineId);
                     devopsCiJobService.create(devopsCiJobDTO);
                 });
             } else {
@@ -179,12 +177,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                     DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                     devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
+                    devopsCiJobDTO.setCiPipelineId(ciPipelineId);
                     devopsCiJobService.create(devopsCiJobDTO);
                 });
             }
         });
-        // TODO 更新ci配置
-
+        saveCiContent(ciPipelineId, devopsCiPipelineVO);
         return devopsCiPipelineMapper.selectByPrimaryKey(ciPipelineId);
     }
 
