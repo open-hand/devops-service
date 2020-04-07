@@ -50,4 +50,14 @@ public class DevopsCiPipelineController {
             @RequestBody @Valid DevopsCiPipelineVO devopsCiPipelineVO) {
         return ResponseEntity.ok(devopsCiPipelineService.update(projectId, ciPipelineId, devopsCiPipelineVO));
     }
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "查询ci流水线配置")
+    @PostMapping("/{ci_pipeline_id}")
+    public ResponseEntity<DevopsCiPipelineVO> query(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "流水线Id", required = true)
+            @PathVariable(value = "ci_pipeline_id") Long ciPipelineId) {
+        return ResponseEntity.ok(devopsCiPipelineService.query(projectId, ciPipelineId));
+    }
 }

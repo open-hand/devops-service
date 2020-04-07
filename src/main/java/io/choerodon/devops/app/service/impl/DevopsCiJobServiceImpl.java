@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCiJobService;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
@@ -19,6 +21,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private static final String CREATE_JOB_FAILED = "create.job.failed";
     private static final String DELETE_JOB_FAILED = "delete.job.failed";
     private static final String ERROR_STAGE_ID_IS_NULL = "error.stage.id.is.null";
+    private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
     private DevopsCiJobMapper devopsCiJobMapper;
 
     public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper) {
@@ -43,5 +46,16 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
         devopsCiJobDTO.setStageId(stageId);
         devopsCiJobMapper.delete(devopsCiJobDTO);
+    }
+
+    @Override
+    @Transactional
+    public List<DevopsCiJobDTO> listByPipelineId(Long ciPipelineId) {
+        if (ciPipelineId == null) {
+            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+        }
+        DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
+        devopsCiJobDTO.setCiPipelineId(ciPipelineId);
+        return devopsCiJobMapper.select(devopsCiJobDTO);
     }
 }
