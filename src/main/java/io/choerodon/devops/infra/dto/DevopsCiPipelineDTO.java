@@ -3,10 +3,7 @@ package io.choerodon.devops.infra.dto;
 import io.choerodon.mybatis.entity.BaseDTO;
 import io.swagger.annotations.ApiModelProperty;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  *
@@ -26,6 +23,9 @@ public class DevopsCiPipelineDTO extends BaseDTO {
     private Long appServiceId;
     @ApiModelProperty("流水线触发方式")
     private String triggerType;
+    @ApiModelProperty("是否启用")
+    @Column(name = "is_enabled")
+    private Boolean enabled;
 
     public Long getId() {
         return id;
@@ -65,5 +65,13 @@ public class DevopsCiPipelineDTO extends BaseDTO {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 }

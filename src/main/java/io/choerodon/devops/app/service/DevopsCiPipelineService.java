@@ -29,4 +29,11 @@ public interface DevopsCiPipelineService {
     DevopsCiPipelineDTO update(Long projectId, Long ciPipelineId, DevopsCiPipelineVO devopsCiPipelineVO);
 
     DevopsCiPipelineVO query(Long projectId, Long ciPipelineId);
+
+    /**
+     * 根据应用服务id查询流水线
+     * @param id
+     * @return
+     */
+    DevopsCiPipelineDTO queryByAppSvcId(Long id);
 }

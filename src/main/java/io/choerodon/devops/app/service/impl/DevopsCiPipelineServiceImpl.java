@@ -26,6 +26,9 @@ import io.choerodon.devops.infra.enums.SonarAuthType;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.util.*;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 〈功能简述〉
@@ -40,6 +43,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private static final String CREATE_PIPELINE_FAILED = "create.pipeline.failed";
     private static final String UPDATE_PIPELINE_FAILED = "update.pipeline.failed";
     private static final String ERROR_USER_HAVE_NO_APP_PERMISSION = "error.user.have.no.app.permission";
+    private static final String ERROR_APP_SVC_ID_IS_NULL = "error.app.svc.id.is.null";
     @Value("${services.gateway.url}")
     private String gatewayUrl;
 
@@ -91,7 +95,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         saveCiContent(devopsCiPipelineDTO.getId(), devopsCiPipelineVO);
 
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(devopsCiPipelineDTO.getAppServiceId());
-        String ciFileIncludeUrl = gatewayUrl + "/devops/v1/projects/" + projectId + "/ci_contents/pipelines/" + devopsCiPipelineDTO.getId();
+        String ciFileIncludeUrl = gatewayUrl + "/devops/v1/projects/" + projectId + "/ci_contents/pipelines/" + devopsCiPipelineDTO.getId() + "/content.yaml";
         initGitlabCiFile(appServiceDTO.getGitlabProjectId(), ciFileIncludeUrl, iamUserId);
         return devopsCiPipelineMapper.selectByPrimaryKey(devopsCiPipelineDTO.getId());
     }
@@ -204,6 +208,16 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCiPipelineVO.setStageList(devopsCiStageVOS);
 
         return devopsCiPipelineVO;
+    }
+
+    @Override
+    public DevopsCiPipelineDTO queryByAppSvcId(Long id) {
+        if (id == null) {
+           throw new CommonException(ERROR_APP_SVC_ID_IS_NULL);
+        }
+        DevopsCiPipelineDTO devopsCiPipelineDTO = new DevopsCiPipelineDTO();
+        devopsCiPipelineDTO.setAppServiceId(id);
+        return devopsCiPipelineMapper.selectOne(devopsCiPipelineDTO);
     }
 
     /**
