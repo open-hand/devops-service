@@ -169,6 +169,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 // 保存job信息
                 devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                     DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
+                    devopsCiJobDTO.setCiStageId(devopsCiStageVO.getId());
+                    devopsCiJobDTO.setCiPipelineId(ciPipelineId);
                     devopsCiJobService.create(devopsCiJobDTO);
                 });
             } else {
@@ -179,12 +181,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                     DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                     devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
+                    devopsCiJobDTO.setCiPipelineId(ciPipelineId);
                     devopsCiJobService.create(devopsCiJobDTO);
                 });
             }
         });
-        // TODO 更新ci配置
-
+        saveCiContent(ciPipelineId, devopsCiPipelineVO);
         return devopsCiPipelineMapper.selectByPrimaryKey(ciPipelineId);
     }
 
