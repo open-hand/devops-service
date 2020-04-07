@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -144,5 +146,15 @@ public class TypeUtil {
 
     public static <T> List<T> getListWithType(Map<Class, List> map, Class<T> key) {
         return (List<T>) map.get(key);
+    }
+
+    /**
+     * 将Long转为long，null值转为0
+     *
+     * @param value 对象
+     * @return long值
+     */
+    public static long wrappedLongToPrimitive(@Nullable Long value) {
+        return value == null ? 0 : value;
     }
 }

@@ -4,21 +4,15 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import io.choerodon.devops.api.vo.SonarQubeConfigVO;
-import io.choerodon.devops.infra.enums.CiJobTypeEnum;
-import io.choerodon.devops.infra.enums.SonarAuthType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsCiJobVO;
-import io.choerodon.devops.api.vo.DevopsCiPipelineVO;
-import io.choerodon.devops.api.vo.DevopsCiStageVO;
-import io.choerodon.devops.api.vo.MavenbuildTemplateVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
@@ -28,6 +22,7 @@ import io.choerodon.devops.infra.dto.gitlab.ci.Include;
 import io.choerodon.devops.infra.dto.gitlab.ci.OnlyExceptPolicy;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.DefaultTriggerRefTypeEnum;
+import io.choerodon.devops.infra.enums.SonarAuthType;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.util.*;
@@ -280,10 +275,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      * @return 生成的脚本列表
      */
     private List<String> buildScript(DevopsCiJobVO jobVO) {
-        // TODO
-        List<String> scripts = new ArrayList<>();
         if (CiJobTypeEnum.SONAR.value().equals(jobVO.getType())) {
             // sonar配置转化为gitlab-ci配置
+            List<String> scripts = new ArrayList<>();
             JSONObject jsonObject = JSON.parseObject(jobVO.getMetadata());
             SonarQubeConfigVO sonarQubeConfigVO = jsonObject.toJavaObject(SonarQubeConfigVO.class);
             Map<String, String> parms = new LinkedHashMap<>();
@@ -311,13 +305,23 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 parms.put("-Dsonar.projectKey", "${GROUP_NAME}:${PROJECT_NAME}");
             }
             scripts.add(GitlabCiUtil.mapToString(parms));
-        }
-        if (CiJobTypeEnum.BUILD.value().equals(jobVO.getType())) {
+            return scripts;
+        } else if (CiJobTypeEnum.BUILD.value().equals(jobVO.getType())) {
             // maven配置转换为gitlab-ci配置
-            MavenbuildTemplateVO mavenbuildTemplateVO = JSONObject.parseObject(jobVO.getMetadata(), MavenbuildTemplateVO.class);
-            return GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(mavenbuildTemplateVO.getScript()), true, true);
+            MavenBuildVO mavenBuildVO = JSONObject.parseObject(jobVO.getMetadata(), MavenBuildVO.class);
+            if (mavenBuildVO == null || CollectionUtils.isEmpty(mavenBuildVO.getMavenbuildTemplateVOList())) {
+                return Collections.emptyList();
+            }
+            List<String> result = new ArrayList<>();
+            // 将每一个step都转为一个List<String>并将所有的list合并为一个
+            mavenBuildVO.getMavenbuildTemplateVOList()
+                    .stream()
+                    .sorted(Comparator.comparingLong(t -> TypeUtil.wrappedLongToPrimitive(t.getSequence())))
+                    .map(t -> GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(t.getScript()), true, true))
+                    .forEach(result::addAll);
+            return result;
         }
-        return scripts;
+        return Collections.emptyList();
     }
 
     private OnlyExceptPolicy buildOnlyExceptPolicyObject(String triggerRefs) {
