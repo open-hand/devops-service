@@ -2,8 +2,10 @@ package io.choerodon.devops.infra.util;
 
 import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -51,7 +53,7 @@ public class GitlabCiUtil {
      * @return 注释后的shell脚本（或者yaml文件）
      */
     public static String commentLines(String fileContent) {
-        String[] lines = splitLinesToArray(fileContent);
+        String[] lines = simpleSplitLinesToArray(fileContent);
         StringBuilder stringBuilder = new StringBuilder();
         for (String line : lines) {
             stringBuilder.append(COMMENT_STRING).append(line).append(NEW_LINE);
@@ -66,14 +68,34 @@ public class GitlabCiUtil {
      * @return 将注释删除后的shell脚本（或者yaml文件）
      */
     public static String deleteCommentedLines(String fileContent) {
-        String[] lines = splitLinesToArray(fileContent);
+        String[] lines = simpleSplitLinesToArray(fileContent);
         StringBuilder stringBuilder = new StringBuilder();
         for (String line : lines) {
-            if (line != null && !line.trim().startsWith(COMMENT_STRING)) {
+            if (isUnCommented(line)) {
                 stringBuilder.append(line).append(NEW_LINE);
             }
         }
         return stringBuilder.toString();
+    }
+
+    /**
+     * 这一行是否未被注释
+     *
+     * @param line 行
+     * @return true表示未被注释，反之，被注释了
+     */
+    private static boolean isUnCommented(String line) {
+        return line != null && !line.trim().startsWith(COMMENT_STRING);
+    }
+
+    /**
+     * 删除注释的String项
+     *
+     * @param lineList 行的列表
+     * @return 未注释的列表项组成的列表
+     */
+    public static List<String> deleteCommentedLines(List<String> lineList) {
+        return lineList.stream().filter(GitlabCiUtil::isUnCommented).collect(Collectors.toList());
     }
 
     /**
@@ -82,7 +104,7 @@ public class GitlabCiUtil {
      * @param string 字符串
      * @return 数组
      */
-    public static String[] splitLinesToArray(String string) {
+    private static String[] simpleSplitLinesToArray(String string) {
         return string.split(NEWLINE_REGEX);
     }
 
@@ -92,7 +114,42 @@ public class GitlabCiUtil {
      * @param string 字符串
      * @return 列表
      */
-    public static List<String> splitLinesToList(String string) {
-        return Arrays.asList(splitLinesToArray(string));
+    public static List<String> simpleSplitLinesToList(String string) {
+        return Arrays.asList(simpleSplitLinesToArray(string));
+    }
+
+    /**
+     * 将shell按行分割 (支持 \ 符号进行多行连接)
+     *
+     * @param shellContent shell脚本内容
+     * @return 分割后的shell脚本内容
+     */
+    public static List<String> splitLinesForShell(String shellContent) {
+        String[] lines = simpleSplitLinesToArray(shellContent);
+        List<String> result = new ArrayList<>();
+        StringBuilder multiLineShellCommand = new StringBuilder();
+        // 这里之所以比 simpleSplitLinesToList 复杂是因为对多行命令的支持
+        for (int i = 0; i < lines.length; i++) {
+            if (i > 0) {
+                String line = lines[i];
+                String trimmedLine = line.trim();
+                // 以 \ 结尾且不以 \\ 结尾
+                if (trimmedLine.endsWith("\\") && !trimmedLine.endsWith("\\\\")) {
+                    multiLineShellCommand.append(line).append(NEW_LINE);
+                } else {
+                    if (multiLineShellCommand.length() > 0) {
+                        multiLineShellCommand.append(line);
+                        result.add(multiLineShellCommand.toString());
+                        // 清空
+                        multiLineShellCommand.delete(0, multiLineShellCommand.length());
+                    } else {
+                        result.add(line);
+                    }
+                }
+            } else {
+                result.add(lines[i]);
+            }
+        }
+        return result;
     }
 }
