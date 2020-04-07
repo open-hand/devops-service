@@ -133,7 +133,7 @@ public class ClusterConnectionHandler {
 //    public List<Long> getConnectedClusterList() {
 //        Map<String, ClusterSessionVO> clusterSessions = (Map<String, ClusterSessionVO>) (Map) redisTemplate.opsForHash().entries(CLUSTER_SESSION);
 //        return clusterSessions.entrySet().stream()
-//                .map(t -> t.getValue().getClusterId())
+//                .map(t -> t.value().getClusterId())
 //                .collect(Collectors.toCollection(ArrayList::new));
 //    }
 

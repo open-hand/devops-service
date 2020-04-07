@@ -1039,4 +1039,11 @@ public class GitlabServiceClientOperator {
             throw new CommonException("error.manipulate.gitlab.files");
         }
     }
+    public RepositoryFileDTO getWholeFile(Integer projectId, String branch, String filePath) {
+        try {
+            return gitlabServiceClient.getFile(projectId, branch, filePath).getBody();
+        } catch (FeignException e) {
+            return null;
+        }
+    }
 }

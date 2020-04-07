@@ -77,4 +77,8 @@ public class GitOpsConstants {
     public static final String MASTER_REF = "refs/heads/master";
 
     public static final String BATCH_DEPLOYMENT_COMMIT_MESSAGE = "[ADD] batch deployment";
+
+    public static final String GITLAB_CI_FILE_NAME = ".gitlab-ci.yml";
+
+    public static final String CI_FILE_COMMIT_MESSAGE = "[UPD] update .gitlab-ci.yml";
 }

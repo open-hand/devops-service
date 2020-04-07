@@ -519,4 +519,12 @@ public interface AppServiceService {
      * @param projectId
      */
     Boolean checkEnableCreateAppSvc(Long projectId);
+
+    /**
+     * 校验用户是否拥有应用服务权限
+     * @param appSvcId
+     * @param userId
+     * @return
+     */
+    boolean checkAppSerivcePermissionForUser(Long appSvcId, Long userId);
 }

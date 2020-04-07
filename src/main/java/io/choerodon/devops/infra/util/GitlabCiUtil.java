@@ -36,7 +36,6 @@ public class GitlabCiUtil {
      * @return yaml格式字符串
      */
     public static String gitlabCi2yaml(GitlabCi gitlabCi) {
-//        return getYamlObject().dump(gitlabCi).replaceAll(GITLAB_CI_YAML_TAG, "---");
         return getYamlObject().dump(gitlabCi);
     }
 }
