@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Form, Select, TextField, Modal, SelectBox, Button } from 'choerodon-ui/pro';
 import { Icon } from 'choerodon-ui';
@@ -22,6 +22,16 @@ const AddTask = observer(() => {
   const handleAdd = () => {
     window.console.log(testConnect);
   };
+
+  useEffect(() => {
+    if (AddTaskFormDataSet.current.get('rwlx') === 'dmjc') {
+      modal.update({
+        okProps: {
+          disabled: !testConnect,
+        },
+      });
+    }
+  }, [testConnect, AddTaskFormDataSet.current.get('rwlx')]);
 
   modal.handleOk(handleAdd);
 
