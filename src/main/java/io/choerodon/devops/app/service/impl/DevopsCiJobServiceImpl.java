@@ -49,7 +49,6 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     }
 
     @Override
-    @Transactional
     public List<DevopsCiJobDTO> listByPipelineId(Long ciPipelineId) {
         if (ciPipelineId == null) {
             throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);

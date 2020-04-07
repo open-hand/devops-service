@@ -41,7 +41,7 @@ public class DevopsCiPipelineController {
     }
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下更新ci流水线")
-    @PostMapping("/{ci_pipeline_id}")
+    @PutMapping("/{ci_pipeline_id}")
     public ResponseEntity<DevopsCiPipelineDTO> update(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
