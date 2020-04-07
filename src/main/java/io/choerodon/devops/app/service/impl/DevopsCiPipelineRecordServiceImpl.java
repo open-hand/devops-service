@@ -93,7 +93,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             devopsCiPipelineRecordMapper.insertSelective(devopsCiPipelineRecordDTO);
             // 保存job执行记录
             Long pipelineRecordId = devopsCiPipelineRecordDTO.getId();
-            pipelineWebHookVO.getJobList().forEach(ciJobWebHookVO -> {
+            pipelineWebHookVO.getBuilds().forEach(ciJobWebHookVO -> {
                 DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(ciJobWebHookVO.getId());
                 if (devopsCiJobRecordDTO == null) {
                     devopsCiJobRecordDTO = new DevopsCiJobRecordDTO();
@@ -127,7 +127,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             devopsCiPipelineRecordMapper.updateByPrimaryKeySelective(devopsCiPipelineRecordDTO);
             // 更新job状态
             // 保存job执行记录
-            pipelineWebHookVO.getJobList().forEach(ciJobWebHookVO -> {
+            pipelineWebHookVO.getBuilds().forEach(ciJobWebHookVO -> {
                 DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(ciJobWebHookVO.getId());
                 if (devopsCiJobRecordDTO != null) {
                     devopsCiJobRecordDTO.setStartedDate(ciJobWebHookVO.getStartedAt());
