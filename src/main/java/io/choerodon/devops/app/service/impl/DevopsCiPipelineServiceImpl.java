@@ -5,6 +5,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import io.choerodon.devops.api.vo.SonarQubeConfigVO;
+import io.choerodon.devops.infra.enums.CiJobTypeEnum;
+import io.choerodon.devops.infra.enums.SonarAuthType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -275,11 +280,39 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      * @return 生成的脚本列表
      */
     private List<String> buildScript(DevopsCiJobVO jobVO) {
-        if (CiJobTypeEnum.snoar.value().equals(jobVO.getType())) {
+        // TODO
+        List<String> scripts = new ArrayList<>();
+        if (CiJobTypeEnum.SONAR.equals(jobVO.getType())) {
             // sonar配置转化为gitlab-ci配置
-            // TODO
-
-        } else if (CiJobTypeEnum.build.value().equals(jobVO.getType())) {
+            JSONObject jsonObject = JSON.parseObject(jobVO.getMetadata());
+            SonarQubeConfigVO sonarQubeConfigVO = jsonObject.toJavaObject(SonarQubeConfigVO.class);
+            Map<String, String> parms = new LinkedHashMap<>();
+            if (SonarAuthType.USERNAME_PWD.equals(sonarQubeConfigVO.getAuthType())) {
+                parms.put("mvn --batch-mode verify sonar:", "sonar");
+                parms.put("-Dsonar.host.url", sonarQubeConfigVO.getSonarUrl());
+                parms.put("-Dsonar.login", sonarQubeConfigVO.getUsername());
+                parms.put("-Dsonar.password", sonarQubeConfigVO.getPassword());
+                parms.put("-Dsonar.gitlab.project_id", "$CI_PROJECT_PATH");
+                parms.put("-Dsonar.gitlab.commit_sha", "$CI_COMMIT_REF_NAME");
+                parms.put("-Dsonar.gitlab.ref_name", "$CI_COMMIT_REF_NAME");
+                parms.put("-Dsonar.analysis.serviceGroup", "$GROUP_NAME");
+                parms.put("-Dsonar.analysis.commitId", "$CI_COMMIT_SHA");
+                parms.put("-Dsonar.projectKey", "${GROUP_NAME}:${PROJECT_NAME}");
+            }
+            if (SonarAuthType.TOKEN.equals(sonarQubeConfigVO.getAuthType())) {
+                parms.put("mvn --batch-mode verify sonar:", "sonar");
+                parms.put("-Dsonar.host.url", sonarQubeConfigVO.getSonarUrl());
+                parms.put("-Dsonar.login", sonarQubeConfigVO.getToken());
+                parms.put("-Dsonar.gitlab.project_id", "$CI_PROJECT_PATH");
+                parms.put("-Dsonar.gitlab.commit_sha", "$CI_COMMIT_REF_NAME");
+                parms.put("-Dsonar.gitlab.ref_name", "$CI_COMMIT_REF_NAME");
+                parms.put("-Dsonar.analysis.serviceGroup", "$GROUP_NAME");
+                parms.put("-Dsonar.analysis.commitId", "$CI_COMMIT_SHA");
+                parms.put("-Dsonar.projectKey", "${GROUP_NAME}:${PROJECT_NAME}");
+            }
+            scripts.add(GitlabCiUtil.mapToString(parms));
+        }
+        if (CiJobTypeEnum.BUILD.equals(jobVO.getType())) {
             // maven配置转换为gitlab-ci配置
             MavenbuildTemplateVO mavenbuildTemplateVO = JSONObject.parseObject(jobVO.getMetadata(), MavenbuildTemplateVO.class);
             return GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(mavenbuildTemplateVO.getScript()), true, true);

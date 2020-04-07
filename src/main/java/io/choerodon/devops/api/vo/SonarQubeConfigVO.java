@@ -12,6 +12,15 @@ public class SonarQubeConfigVO {
     private String username;
     private String password;
     private String authType;
+    private String token;
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 
     public String getSonarUrl() {
         return sonarUrl;
