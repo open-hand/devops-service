@@ -1,7 +1,7 @@
 import React, { useEffect, Fragment } from 'react';
 
 import { observer } from 'mobx-react-lite';
-import { Button, Icon } from 'choerodon-ui';
+import { Button, Icon, Tooltip } from 'choerodon-ui';
 import { Modal } from 'choerodon-ui/pro';
 import StatusDot from '../statusDot';
 import CodeQuality from '../codeQuality';
@@ -13,7 +13,7 @@ function handleDropDown(e) {
   // console.log(target);
 }
 
-const DetailItem = ({ piplineName, itemStatus, qualityOpen }) => (
+const DetailItem = ({ piplineName, itemStatus, qualityOpen, descriptionOpen }) => (
   <div className="c7n-piplineManage-detail-column-item">
     <header>
       <StatusDot size={13} status={itemStatus} />
@@ -47,9 +47,32 @@ const DetailItem = ({ piplineName, itemStatus, qualityOpen }) => (
     </main>
 
     <footer>
-      <Icon type="description" />
-      <Icon type="refresh" />
-      <Icon type="policy-o" onClick={qualityOpen} />
+      <Tooltip title="查看日志">
+        <Button
+          funcType="flat"
+          shape="circle"
+          size="small"
+          icon="description-o"
+          onClick={descriptionOpen}
+        />
+      </Tooltip>
+      <Tooltip title="重试">
+        <Button
+          funcType="flat"
+          shape="circle"
+          size="small"
+          icon="refresh"
+        />
+      </Tooltip>
+      <Tooltip title="查看代码质量报告">
+        <Button
+          funcType="flat"
+          shape="circle"
+          size="small"
+          onClick={qualityOpen}
+          icon="policy-o"
+        />
+      </Tooltip>
       <span>
         <span>任务耗时：</span>
         <span>10分钟</span>
@@ -84,6 +107,24 @@ export default observer((props) => {
     });
   }
 
+  function openDescModal() {
+    Modal.open({
+      title: '查看日志',
+      key: Modal.key(),
+      style: {
+        width: 'calc(100vw - 3.52rem)',
+      },
+      children: 'hello',
+      drawer: true,
+      okText: '关闭',
+      footer: (okbtn) => (
+        <Fragment>
+          {okbtn}
+        </Fragment>
+      ),
+    });
+  }
+
   return (
     <div className="c7n-piplineManage-detail-column">
       <div className="c7n-piplineManage-detail-column-header">
@@ -93,11 +134,23 @@ export default observer((props) => {
       </div>
       <div className="c7n-piplineManage-detail-column-lists">
         <h6>任务列表</h6>
-        <DetailItem piplineName={piplineName} itemStatus="pending" qualityOpen={openCodequalityModal} />
-        <DetailItem piplineName={piplineName} itemStatus="success" qualityOpen={openCodequalityModal} />
+        <DetailItem
+          piplineName={piplineName}
+          itemStatus="pending"
+          qualityOpen={openCodequalityModal}
+          descriptionOpen={openDescModal}
+        />
+        <DetailItem
+          piplineName={piplineName}
+          itemStatus="success"
+          qualityOpen={openCodequalityModal}
+          descriptionOpen={openDescModal}
+        />
       </div>
       <div className="c7n-piplineManage-detail-column-type">
-        <span>A</span>
+        <Tooltip title="自动流转">
+          <span>A</span>
+        </Tooltip>
         <span />
       </div>
     </div>
