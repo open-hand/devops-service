@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
@@ -89,13 +90,18 @@ public class GitlabCiUtil {
     }
 
     /**
-     * 删除注释的String项
+     * 过滤行，过滤注释和空的
      *
-     * @param lineList 行的列表
-     * @return 未注释的列表项组成的列表
+     * @param lineList        行列表
+     * @param filterCommented 是否过滤注释的
+     * @param filterEmpty     是否过滤空的
+     * @return 过滤后的列表
      */
-    public static List<String> deleteCommentedLines(List<String> lineList) {
-        return lineList.stream().filter(GitlabCiUtil::isUnCommented).collect(Collectors.toList());
+    public static List<String> filterLines(List<String> lineList, boolean filterCommented, boolean filterEmpty) {
+        return lineList.stream()
+                .filter(l -> !filterCommented || GitlabCiUtil.isUnCommented(l))
+                .filter(l -> !filterEmpty || (l != null && !StringUtils.isEmpty(l.trim())))
+                .collect(Collectors.toList());
     }
 
     /**

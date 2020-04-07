@@ -137,10 +137,10 @@ class GitlabCiUtilSpec extends Specification {
 
     def "DeleteCommentedLineList"() {
         given: "准备数据"
-        def list = ["#aa", "#bb", " #cc", "dd", " ee"]
+        def list = ["#aa", "#bb", " #cc", "dd", " ee", null, " ", "       "]
 
         when: "调用方法"
-        def result = GitlabCiUtil.deleteCommentedLines(list)
+        def result = GitlabCiUtil.filterLines(list, true, true)
         println(Arrays.toString(result.toArray()))
 
         then: "结果"
