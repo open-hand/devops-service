@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Fragment } from 'react';
 
 import { observer } from 'mobx-react-lite';
 import { Button, Icon } from 'choerodon-ui';
+import { Modal } from 'choerodon-ui/pro';
 import StatusDot from '../statusDot';
-
+import CodeQuality from '../codeQuality';
 
 import './index.less';
 
@@ -12,7 +13,7 @@ function handleDropDown(e) {
   // console.log(target);
 }
 
-const DetailItem = ({ piplineName, itemStatus }) => (
+const DetailItem = ({ piplineName, itemStatus, qualityOpen }) => (
   <div className="c7n-piplineManage-detail-column-item">
     <header>
       <StatusDot size={13} status={itemStatus} />
@@ -47,7 +48,8 @@ const DetailItem = ({ piplineName, itemStatus }) => (
 
     <footer>
       <Icon type="description" />
-      <Icon type="play_circle_outline" />
+      <Icon type="refresh" />
+      <Icon type="policy-o" onClick={qualityOpen} />
       <span>
         <span>任务耗时：</span>
         <span>10分钟</span>
@@ -63,6 +65,25 @@ export default observer((props) => {
   useEffect(() => {
 
   }, []);
+
+  function openCodequalityModal() {
+    Modal.open({
+      title: '代码质量',
+      key: Modal.key(),
+      style: {
+        width: 'calc(100vw - 3.52rem)',
+      },
+      children: <CodeQuality />,
+      drawer: true,
+      okText: '关闭',
+      footer: (okbtn) => (
+        <Fragment>
+          {okbtn}
+        </Fragment>
+      ),
+    });
+  }
+
   return (
     <div className="c7n-piplineManage-detail-column">
       <div className="c7n-piplineManage-detail-column-header">
@@ -72,8 +93,8 @@ export default observer((props) => {
       </div>
       <div className="c7n-piplineManage-detail-column-lists">
         <h6>任务列表</h6>
-        <DetailItem piplineName={piplineName} itemStatus="success" />
-        <DetailItem piplineName={piplineName} itemStatus="success" />
+        <DetailItem piplineName={piplineName} itemStatus="pending" qualityOpen={openCodequalityModal} />
+        <DetailItem piplineName={piplineName} itemStatus="success" qualityOpen={openCodequalityModal} />
       </div>
       <div className="c7n-piplineManage-detail-column-type">
         <span>A</span>

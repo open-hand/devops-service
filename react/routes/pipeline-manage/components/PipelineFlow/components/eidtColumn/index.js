@@ -8,8 +8,6 @@ import { usePipelineStageEditStore } from '../stageEditBlock/stores';
 import AddTask from '../../../PipelineCreate/components/AddTask';
 import { usePipelineCreateStore } from '../../../PipelineCreate/stores';
 
-const key1 = Modal.key();
-
 const EditItem = ({ taskName, stepName, id }) => (
   <div className="c7n-piplineManage-edit-column-item">
     <div className="c7n-piplineManage-edit-column-item-header">
@@ -32,7 +30,7 @@ const EditItem = ({ taskName, stepName, id }) => (
   </div>
 );
 
-export default observer(({ stepTasks, stepName, id, columnIndex }) => {
+export default observer(({ jobList, sequence, name, columnIndex }) => {
   const {
     addStepDs,
     stepStore: {
@@ -74,27 +72,34 @@ export default observer(({ stepTasks, stepName, id, columnIndex }) => {
 
   async function editStage() {
     if (addStepDs.current && addStepDs.current.get('step')) {
-      eidtStep(id, addStepDs.current.get('step'));
+      eidtStep(sequence, addStepDs.current.get('step'));
     } else {
       return false;
     }
     addStepDs.reset();
   }
 
-  const renderStepTasks = () => stepTasks && stepTasks.slice().map(item => <EditItem
-    key={item.id}
-    stepName={stepName}
-    {...item}
-  />);
+  const renderStepTasks = () => (
+    jobList.length > 0 ? <div className="c7n-piplineManage-edit-column-lists">
+      {
+        jobList.slice().map(item => <EditItem
+          key={item.sequence}
+          stepName={name}
+          {...item}
+        />)
+      }
+    </div> : null
+  );
 
   function openAddStageModal(optType) {
     const title = optType === 'create' ? '创建新阶段' : '修改阶段信息';
     if (optType === 'edit') {
-      addStepDs.current.set('step', stepName);
+      addStepDs.current.set('step', name);
     }
     const optsFun = optType === 'create' ? createNewStage : editStage;
+    // const optsFun = createNewStage;
     Modal.open({
-      key: key1,
+      key: Modal.key(),
       title,
       drawer: true,
       style: {
@@ -111,11 +116,16 @@ export default observer(({ stepTasks, stepName, id, columnIndex }) => {
   }
 
   function deleteStep() {
-    removeStep(id);
+    Modal.open({
+      title: `删除${name}阶段`,
+      children: '确认删除此阶段吗？',
+      key: Modal.key(),
+      onOk: () => removeStep(sequence),
+    });
   }
 
   function hanleStepCreateOk(data) {
-    window.console.log(data);
+    // console.log(data);
   }
 
   function openNewTaskModal() {
@@ -128,13 +138,16 @@ export default observer(({ stepTasks, stepName, id, columnIndex }) => {
       },
       drawer: true,
       okText: '添加',
+      onOk() {
+        // console.log('heloo');
+      },
     });
   }
 
   return (
     <div className="c7n-piplineManage-edit-column">
       <div className="c7n-piplineManage-edit-column-header">
-        <span>{stepName}</span>
+        <span>{name}</span>
         <div
           className="c7n-piplineManage-edit-column-header-btnGroup"
         >
@@ -146,19 +159,17 @@ export default observer(({ stepTasks, stepName, id, columnIndex }) => {
             onClick={openAddStageModal.bind(this, 'edit')}
             className="c7n-piplineManage-edit-column-header-btnGroup-btn"
           />
-          <Button
+          {columnIndex !== 0 && <Button
             funcType="raised"
             shape="circle"
             size="small"
             onClick={deleteStep}
             icon="delete_forever"
-            className="c7n-piplineManage-edit-column-header-btnGroup-btn"
-          />
+            className="c7n-piplineManage-edit-column-header-btnGroup-btn c7n-piplineManage-edit-column-header-btnGroup-btn-delete"
+          />}
         </div>
       </div>
-      <div className="c7n-piplineManage-edit-column-lists">
-        {renderStepTasks()}
-      </div>
+      {renderStepTasks()}
       <Button
         funcType="flat"
         icon="add"
