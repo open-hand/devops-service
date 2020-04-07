@@ -168,7 +168,7 @@ public class GitlabCiUtil {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < keyArray.length; i++) {
             if (parms.get(keyArray[i]).trim().length() > 0) {
-                sb.append(keyArray[i]).append("=").append(parms.get(keyArray[i]).trim());
+                sb.append(keyArray[i]).append(parms.get(keyArray[i]).trim());
             }
             if (i != keyArray.length - 1) {
                 sb.append("\n");

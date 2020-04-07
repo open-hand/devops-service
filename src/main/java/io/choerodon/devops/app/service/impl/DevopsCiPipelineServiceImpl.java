@@ -288,26 +288,26 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             Map<String, String> parms = new LinkedHashMap<>();
             if (SonarAuthType.USERNAME_PWD.value().equals(sonarQubeConfigVO.getAuthType())) {
                 parms.put("mvn --batch-mode verify sonar:", "sonar");
-                parms.put("-Dsonar.host.url", sonarQubeConfigVO.getSonarUrl());
-                parms.put("-Dsonar.login", sonarQubeConfigVO.getUsername());
-                parms.put("-Dsonar.password", sonarQubeConfigVO.getPassword());
-                parms.put("-Dsonar.gitlab.project_id", "$CI_PROJECT_PATH");
-                parms.put("-Dsonar.gitlab.commit_sha", "$CI_COMMIT_REF_NAME");
-                parms.put("-Dsonar.gitlab.ref_name", "$CI_COMMIT_REF_NAME");
-                parms.put("-Dsonar.analysis.serviceGroup", "$GROUP_NAME");
-                parms.put("-Dsonar.analysis.commitId", "$CI_COMMIT_SHA");
-                parms.put("-Dsonar.projectKey", "${GROUP_NAME}:${PROJECT_NAME}");
+                parms.put("-Dsonar.host.url=", sonarQubeConfigVO.getSonarUrl());
+                parms.put("-Dsonar.login=", sonarQubeConfigVO.getUsername());
+                parms.put("-Dsonar.password=", sonarQubeConfigVO.getPassword());
+                parms.put("-Dsonar.gitlab.project_id=", "$CI_PROJECT_PATH");
+                parms.put("-Dsonar.gitlab.commit_sha=", "$CI_COMMIT_REF_NAME");
+                parms.put("-Dsonar.gitlab.ref_name=", "$CI_COMMIT_REF_NAME");
+                parms.put("-Dsonar.analysis.serviceGroup=", "$GROUP_NAME");
+                parms.put("-Dsonar.analysis.commitId=", "$CI_COMMIT_SHA");
+                parms.put("-Dsonar.projectKey=", "${GROUP_NAME}:${PROJECT_NAME}");
             }
             if (SonarAuthType.TOKEN.value().equals(sonarQubeConfigVO.getAuthType())) {
                 parms.put("mvn --batch-mode verify sonar:", "sonar");
-                parms.put("-Dsonar.host.url", sonarQubeConfigVO.getSonarUrl());
-                parms.put("-Dsonar.login", sonarQubeConfigVO.getToken());
-                parms.put("-Dsonar.gitlab.project_id", "$CI_PROJECT_PATH");
-                parms.put("-Dsonar.gitlab.commit_sha", "$CI_COMMIT_REF_NAME");
-                parms.put("-Dsonar.gitlab.ref_name", "$CI_COMMIT_REF_NAME");
-                parms.put("-Dsonar.analysis.serviceGroup", "$GROUP_NAME");
-                parms.put("-Dsonar.analysis.commitId", "$CI_COMMIT_SHA");
-                parms.put("-Dsonar.projectKey", "${GROUP_NAME}:${PROJECT_NAME}");
+                parms.put("-Dsonar.host.url=", sonarQubeConfigVO.getSonarUrl());
+                parms.put("-Dsonar.login=", sonarQubeConfigVO.getToken());
+                parms.put("-Dsonar.gitlab.project_id=", "$CI_PROJECT_PATH");
+                parms.put("-Dsonar.gitlab.commit_sha=", "$CI_COMMIT_REF_NAME");
+                parms.put("-Dsonar.gitlab.ref_name=", "$CI_COMMIT_REF_NAME");
+                parms.put("-Dsonar.analysis.serviceGroup=", "$GROUP_NAME");
+                parms.put("-Dsonar.analysis.commitId=", "$CI_COMMIT_SHA");
+                parms.put("-Dsonar.projectKey=", "${GROUP_NAME}:${PROJECT_NAME}");
             }
             scripts.add(GitlabCiUtil.mapToString(parms));
             return scripts;
