@@ -83,4 +83,18 @@ public class GitOpsConstants {
     public static final String CI_FILE_COMMIT_MESSAGE = "[UPD] update .gitlab-ci.yml";
 
     public static final String CI_IMAGE = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.9.1";
+
+    /**
+     * 换行符
+     */
+    public static final String NEW_LINE = System.getProperty("line.separator", "\n");
+
+    /**
+     * 匹配换行符的字符串
+     */
+    public static final String NEWLINE_REGEX = "\r\n|\n|\r";
+    /**
+     * 用于注释shell的字符
+     */
+    public static final String COMMENT_STRING = "#";
 }
