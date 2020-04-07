@@ -264,6 +264,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     gitlabCi.addJob(jobV0.getName(), ciJob);
                 })
         );
+        gitlabCi.setBeforeScript(ArrayUtil.singleAsList(GitOpsConstants.CHOERODON_BEFORE_SCRIPT));
         return gitlabCi;
     }
     // todo 待处理
