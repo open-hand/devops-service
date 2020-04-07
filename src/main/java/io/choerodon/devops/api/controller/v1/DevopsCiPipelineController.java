@@ -52,7 +52,7 @@ public class DevopsCiPipelineController {
     }
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询ci流水线配置")
-    @PostMapping("/{ci_pipeline_id}")
+    @GetMapping("/{ci_pipeline_id}")
     public ResponseEntity<DevopsCiPipelineVO> query(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
