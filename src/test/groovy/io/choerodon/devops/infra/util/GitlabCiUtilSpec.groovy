@@ -107,4 +107,44 @@ class GitlabCiUtilSpec extends Specification {
         noExceptionThrown()
         result == expectResult
     }
+
+
+    def "SimpleSplitLinesToList"() {
+        given: "准备数据"
+        def str = '#ls -a \r\ncd ..  \r pwd \n #du -h .'
+
+        when: "调用方法"
+        def result = GitlabCiUtil.simpleSplitLinesToList(str)
+
+        then: "结果"
+        noExceptionThrown()
+        result.size() == 4
+    }
+
+
+    def "SplitLinesForShell"() {
+        given: "准备数据"
+        def str = '#ls -a \r\ncd ..  \r pwd \n #du -h . \n echo a \\ \n b \\ \n c \n echo a \\\\ \n echo b'
+
+        when: "调用方法"
+        def result = GitlabCiUtil.splitLinesForShell(str)
+        println(Arrays.toString(result.toArray()))
+
+        then: "结果"
+        noExceptionThrown()
+        result.size() == 7
+    }
+
+    def "DeleteCommentedLineList"() {
+        given: "准备数据"
+        def list = ["#aa", "#bb", " #cc", "dd", " ee"]
+
+        when: "调用方法"
+        def result = GitlabCiUtil.deleteCommentedLines(list)
+        println(Arrays.toString(result.toArray()))
+
+        then: "结果"
+        noExceptionThrown()
+        result.size() == 2
+    }
 }

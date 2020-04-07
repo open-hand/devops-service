@@ -4,7 +4,7 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import io.choerodon.devops.infra.enums.CiJobTypeEnum;
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +13,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.DevopsCiPipelineVO;
 import io.choerodon.devops.api.vo.DevopsCiStageVO;
+import io.choerodon.devops.api.vo.MavenbuildTemplateVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
@@ -20,6 +21,7 @@ import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
 import io.choerodon.devops.infra.dto.gitlab.ci.Include;
 import io.choerodon.devops.infra.dto.gitlab.ci.OnlyExceptPolicy;
+import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.DefaultTriggerRefTypeEnum;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
@@ -269,20 +271,20 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     /**
      * 把配置转换为gitlab-ci配置（maven,sonarqube）
      *
-     * @param jobV0 生成脚本
+     * @param jobVO 生成脚本
      * @return 生成的脚本列表
      */
-    private List<String> buildScript(DevopsCiJobVO jobV0) {
-        // TODO
-        List<String> scripts = new ArrayList<>();
-        if (CiJobTypeEnum.snoar.equals(jobV0.getType())) {
+    private List<String> buildScript(DevopsCiJobVO jobVO) {
+        if (CiJobTypeEnum.snoar.value().equals(jobVO.getType())) {
             // sonar配置转化为gitlab-ci配置
+            // TODO
 
-        }
-        if (CiJobTypeEnum.build.equals(jobV0.getType())) {
+        } else if (CiJobTypeEnum.build.value().equals(jobVO.getType())) {
             // maven配置转换为gitlab-ci配置
+            MavenbuildTemplateVO mavenbuildTemplateVO = JSONObject.parseObject(jobVO.getMetadata(), MavenbuildTemplateVO.class);
+            return GitlabCiUtil.deleteCommentedLines(GitlabCiUtil.splitLinesForShell(mavenbuildTemplateVO.getScript()));
         }
-        return scripts;
+        return null;
     }
 
     private OnlyExceptPolicy buildOnlyExceptPolicyObject(String triggerRefs) {
