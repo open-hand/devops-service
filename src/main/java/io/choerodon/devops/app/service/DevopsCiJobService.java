@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 
 /**
@@ -17,5 +19,16 @@ public interface DevopsCiJobService {
      */
     DevopsCiJobDTO create(DevopsCiJobDTO devopsCiJobDTO);
 
+    /**
+     * 删除stage下的job
+     * @param stageId
+     */
     void deleteByStageId(Long stageId);
+
+    /**
+     * 查询pipeline下的jobs
+     * @param ciPipelineId
+     * @return
+     */
+    List<DevopsCiJobDTO> listByPipelineId(Long ciPipelineId);
 }

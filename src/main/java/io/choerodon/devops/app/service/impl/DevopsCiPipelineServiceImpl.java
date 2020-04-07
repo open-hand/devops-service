@@ -95,45 +95,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return devopsCiPipelineMapper.selectByPrimaryKey(devopsCiPipelineDTO.getId());
     }
 
-    private void checkUserPermission(Long appServiceId, Long iamUserId) {
-        if (!appServiceService.checkAppSerivcePermissionForUser(appServiceId, iamUserId)) {
-            throw new CommonException(ERROR_USER_HAVE_NO_APP_PERMISSION);
-        }
-
-    }
-
-    /**
-     * 第一次创建CI流水线时初始化仓库下的.gitlab-ci.yml文件
-     *
-     * @param gitlabProjectId  gitlab项目id
-     * @param ciFileIncludeUrl include中的链接
-     * @param iamUserId      iam用户id
-     */
-    private void initGitlabCiFile(Integer gitlabProjectId, String ciFileIncludeUrl, Long iamUserId) {
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(iamUserId);
-        RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(gitlabProjectId, GitOpsConstants.MASTER, GitOpsConstants.GITLAB_CI_FILE_NAME);
-
-        if (repositoryFile == null) {
-            // 说明项目下还没有CI文件
-            gitlabServiceClientOperator.createFile(
-                    gitlabProjectId,
-                    GitOpsConstants.GITLAB_CI_FILE_NAME,
-                    buildIncludeYaml(ciFileIncludeUrl),
-                    GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
-                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        } else {
-            // TODO 更新要不要将原先的配置文件注释并放在原本文件中
-//            String originFileContent = new String(Base64.getDecoder().decode(repositoryFile.getContent().getBytes()), Charset.forName("UTF-8"));
-            // 将原本内容覆盖
-            gitlabServiceClientOperator.updateFile(
-                    gitlabProjectId,
-                    GitOpsConstants.GITLAB_CI_FILE_NAME,
-                    buildIncludeYaml(ciFileIncludeUrl),
-                    GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
-                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        }
-    }
-
     @Override
     @Transactional
     public DevopsCiPipelineDTO update(Long projectId, Long ciPipelineId, DevopsCiPipelineVO devopsCiPipelineVO) {
@@ -187,6 +148,72 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return devopsCiPipelineMapper.selectByPrimaryKey(ciPipelineId);
     }
 
+    @Override
+    public DevopsCiPipelineVO query(Long projectId, Long ciPipelineId) {
+        // 根据pipeline_id查询数据
+        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineMapper.selectByPrimaryKey(ciPipelineId);
+        List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(ciPipelineId);
+        List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(ciPipelineId);
+        // dto转vo
+        DevopsCiPipelineVO devopsCiPipelineVO = ConvertUtils.convertObject(devopsCiJobDTOS, DevopsCiPipelineVO.class);
+        List<DevopsCiStageVO> devopsCiStageVOS = ConvertUtils.convertList(devopsCiStageDTOList, DevopsCiStageVO.class);
+        List<DevopsCiJobVO> devopsCiJobVOS = ConvertUtils.convertList(devopsCiJobDTOS, DevopsCiJobVO.class);
+
+        // 封装对象
+        Map<Long, List<DevopsCiJobVO>> jobMap = devopsCiJobVOS.stream().collect(Collectors.groupingBy(v -> v.getStageId()));
+        devopsCiStageVOS.forEach(devopsCiStageVO -> {
+            List<DevopsCiJobVO> ciJobVOS = jobMap.get(devopsCiStageVO.getId());
+            devopsCiStageVO.setJobList(ciJobVOS);
+        });
+        devopsCiPipelineVO.setStageList(devopsCiStageVOS);
+
+        return devopsCiPipelineVO;
+    }
+
+    /**
+     * 校验用户是否拥有应用服务权限
+     * @param appServiceId
+     * @param iamUserId
+     */
+    private void checkUserPermission(Long appServiceId, Long iamUserId) {
+        if (!appServiceService.checkAppSerivcePermissionForUser(appServiceId, iamUserId)) {
+            throw new CommonException(ERROR_USER_HAVE_NO_APP_PERMISSION);
+        }
+
+    }
+
+    /**
+     * 第一次创建CI流水线时初始化仓库下的.gitlab-ci.yml文件
+     *
+     * @param gitlabProjectId  gitlab项目id
+     * @param ciFileIncludeUrl include中的链接
+     * @param iamUserId      iam用户id
+     */
+    private void initGitlabCiFile(Integer gitlabProjectId, String ciFileIncludeUrl, Long iamUserId) {
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(iamUserId);
+        RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(gitlabProjectId, GitOpsConstants.MASTER, GitOpsConstants.GITLAB_CI_FILE_NAME);
+
+        if (repositoryFile == null) {
+            // 说明项目下还没有CI文件
+            gitlabServiceClientOperator.createFile(
+                    gitlabProjectId,
+                    GitOpsConstants.GITLAB_CI_FILE_NAME,
+                    buildIncludeYaml(ciFileIncludeUrl),
+                    GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
+                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        } else {
+            // TODO 更新要不要将原先的配置文件注释并放在原本文件中
+//            String originFileContent = new String(Base64.getDecoder().decode(repositoryFile.getContent().getBytes()), Charset.forName("UTF-8"));
+            // 将原本内容覆盖
+            gitlabServiceClientOperator.updateFile(
+                    gitlabProjectId,
+                    GitOpsConstants.GITLAB_CI_FILE_NAME,
+                    buildIncludeYaml(ciFileIncludeUrl),
+                    GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
+                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        }
+    }
+
     private static String buildIncludeYaml(String ciFileIncludeUrl) {
         GitlabCi gitlabCi = new GitlabCi();
         Include include = new Include();
@@ -205,7 +232,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCiContentService.create(devopsCiContentDTO);
     }
 
+    /**
+     * 构建gitlab-ci对象，用于转换为gitlab-ci.yaml
+     * @param devopsCiPipelineVO
+     * @return
+     */
     private GitlabCi buildGitLabCiObject(DevopsCiPipelineVO devopsCiPipelineVO) {
+        // 对阶段排序
         List<String> stages = devopsCiPipelineVO.getStageList().stream()
                 .sorted(Comparator.comparing(DevopsCiStageVO::getId))
                 .map(DevopsCiStageVO::getName)
@@ -213,7 +246,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         GitlabCi gitlabCi = new GitlabCi();
         // 先使用默认的image,后面可以考虑让用户自己指定
-        gitlabCi.setImage("registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.9.1");
+        gitlabCi.setImage(GitOpsConstants.CI_IMAGE);
         gitlabCi.setStages(stages);
         devopsCiPipelineVO.getStageList().forEach(stageVO ->
             stageVO.getJobList().forEach(jobV0 -> {

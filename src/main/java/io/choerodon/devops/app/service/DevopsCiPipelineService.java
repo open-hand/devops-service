@@ -27,4 +27,6 @@ public interface DevopsCiPipelineService {
      * @return
      */
     DevopsCiPipelineDTO update(Long projectId, Long ciPipelineId, DevopsCiPipelineVO devopsCiPipelineVO);
+
+    DevopsCiPipelineVO query(Long projectId, Long ciPipelineId);
 }

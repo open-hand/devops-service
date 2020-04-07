@@ -17,5 +17,9 @@ public interface DevopsCiContentService {
      */
     String queryLatestContent(Long pipelineId);
 
+    /**
+     * 保存流水线配置
+     * @param devopsCiContentDTO
+     */
     void create(DevopsCiContentDTO devopsCiContentDTO);
 }
