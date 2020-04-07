@@ -282,7 +282,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         } else if (CiJobTypeEnum.build.value().equals(jobVO.getType())) {
             // maven配置转换为gitlab-ci配置
             MavenbuildTemplateVO mavenbuildTemplateVO = JSONObject.parseObject(jobVO.getMetadata(), MavenbuildTemplateVO.class);
-            return GitlabCiUtil.deleteCommentedLines(GitlabCiUtil.splitLinesForShell(mavenbuildTemplateVO.getScript()));
+            return GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(mavenbuildTemplateVO.getScript()), true, true);
         }
         return null;
     }
