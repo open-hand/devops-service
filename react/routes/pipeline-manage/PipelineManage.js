@@ -50,8 +50,11 @@ const PipelineManage = observer((props) => {
 
   const { getSelectedMenu } = mainStore;
 
-  function handleRefresh() {
-    treeDs.query();
+  async function handleRefresh() {
+    await treeDs.query();
+    const { id } = getMainData;
+    const { projectId } = getSelectedMenu;
+    loadData(projectId, id);
   }
 
   async function handleSaveEdit() {
