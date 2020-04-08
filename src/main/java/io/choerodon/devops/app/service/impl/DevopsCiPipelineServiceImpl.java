@@ -6,6 +6,11 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
@@ -20,10 +25,6 @@ import io.choerodon.devops.infra.enums.SonarAuthType;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.util.*;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 /**
  * 〈功能简述〉
@@ -212,7 +213,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     public DevopsCiPipelineDTO queryByAppSvcId(Long id) {
         if (id == null) {
-           throw new CommonException(ERROR_APP_SVC_ID_IS_NULL);
+            throw new CommonException(ERROR_APP_SVC_ID_IS_NULL);
         }
         DevopsCiPipelineDTO devopsCiPipelineDTO = new DevopsCiPipelineDTO();
         devopsCiPipelineDTO.setAppServiceId(id);
@@ -304,31 +305,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             if (Objects.isNull(sonarQubeConfigVO.getSonarUrl())) {
                 throw new CommonException("error.sonar.url.is.null");
             }
-            Map<String, String> parms = new LinkedHashMap<>();
             if (SonarAuthType.USERNAME_PWD.value().equals(sonarQubeConfigVO.getAuthType())) {
-                parms.put("mvn --batch-mode verify sonar:", "sonar");
-                parms.put("-Dsonar.host.url=", sonarQubeConfigVO.getSonarUrl());
-                parms.put("-Dsonar.login=", sonarQubeConfigVO.getUsername());
-                parms.put("-Dsonar.password=", sonarQubeConfigVO.getPassword());
-                parms.put("-Dsonar.gitlab.project_id=", "$CI_PROJECT_PATH");
-                parms.put("-Dsonar.gitlab.commit_sha=", "$CI_COMMIT_REF_NAME");
-                parms.put("-Dsonar.gitlab.ref_name=", "$CI_COMMIT_REF_NAME");
-                parms.put("-Dsonar.analysis.serviceGroup=", "$GROUP_NAME");
-                parms.put("-Dsonar.analysis.commitId=", "$CI_COMMIT_SHA");
-                parms.put("-Dsonar.projectKey=", "${GROUP_NAME}:${PROJECT_NAME}");
+                scripts.add(GitlabCiUtil.renderSonarCommand(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getUsername(), sonarQubeConfigVO.getPassword()));
+            } else if (SonarAuthType.TOKEN.value().equals(sonarQubeConfigVO.getAuthType())) {
+                scripts.add(GitlabCiUtil.renderSonarCommand(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getToken()));
             }
-            if (SonarAuthType.TOKEN.value().equals(sonarQubeConfigVO.getAuthType())) {
-                parms.put("mvn --batch-mode verify sonar:", "sonar");
-                parms.put("-Dsonar.host.url=", sonarQubeConfigVO.getSonarUrl());
-                parms.put("-Dsonar.login=", sonarQubeConfigVO.getToken());
-                parms.put("-Dsonar.gitlab.project_id=", "$CI_PROJECT_PATH");
-                parms.put("-Dsonar.gitlab.commit_sha=", "$CI_COMMIT_REF_NAME");
-                parms.put("-Dsonar.gitlab.ref_name=", "$CI_COMMIT_REF_NAME");
-                parms.put("-Dsonar.analysis.serviceGroup=", "$GROUP_NAME");
-                parms.put("-Dsonar.analysis.commitId=", "$CI_COMMIT_SHA");
-                parms.put("-Dsonar.projectKey=", "${GROUP_NAME}:${PROJECT_NAME}");
-            }
-            scripts.add(GitlabCiUtil.mapToString(parms));
             return scripts;
         }
         if (CiJobTypeEnum.BUILD.value().equals(jobVO.getType())) {

@@ -107,4 +107,29 @@ public class GitOpsConstants {
             "  exit 1\n" +
             "fi\n" +
             "source ./.auto_devops.sh\n";
+
+    /**
+     * 使用Token认证的sonar命令
+     */
+    public static final String SONAR_TOKEN_TEMPLATE = "mvn --batch-mode verify sonar:sonar -Dsonar.host.url={{SonarUrl}} -Dsonar.login={{Token}} -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}";
+
+    /**
+     * 使用用户名密码认证的sonar命令
+     */
+    public static final String SONAR_USER_PASSWORD_TEMPLATE = "mvn --batch-mode verify sonar:sonar -Dsonar.host.url={{SonarUrl}} -Dsonar.login={{Token}} -Dsonar.password={{SonarPassword}} -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}";
+
+    /**
+     * 定位sonar url变量替换位置的锚点
+     */
+    public static final String SONAR_URL_ANCHOR = "{{SonarUrl}}";
+
+    /**
+     * 定位sonar的token或者用户名的变量替换位置的锚点
+     */
+    public static final String SONAR_TOKEN_ANCHOR = "{{Token}}";
+
+    /**
+     * 定位sonar的密码的变量替换位置的锚点
+     */
+    public static final String SONAR_PASSWORD_ANCHOR = "{{SonarPassword}}";
 }
