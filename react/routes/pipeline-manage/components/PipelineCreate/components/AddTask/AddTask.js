@@ -21,10 +21,21 @@ const AddTask = observer(() => {
         id,
       },
     },
+    jobDetail,
   } = useAddTaskStore();
 
   const [steps, setSteps] = useState([]);
   const [testConnect, setTestConnect] = useState('');
+
+  useEffect(() => {
+    if (jobDetail) {
+      AddTaskFormDataSet.loadData([{
+        ...jobDetail,
+        triggerRefs: jobDetail.triggerRefs.split(','),
+      }]);
+      setSteps(JSON.parse(jobDetail.metadata.replace(/'/g, '"')).mavenbuildTemplateVOList);
+    }
+  }, []);
 
   const handleAdd = async () => {
     const result = await AddTaskFormDataSet.validate();
