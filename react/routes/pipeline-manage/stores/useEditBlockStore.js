@@ -1,8 +1,16 @@
 import { useLocalStore } from 'mobx-react-lite';
-
+import { axios } from '@choerodon/boot';
 
 export default function useStore() {
   return useLocalStore(() => ({
+    // mainStore: {},
+    // async loadDetail(projectId, pipelineId) {
+    //   try {
+    //     await axios.get(`/devops/v1/projects/${projectId}/ci_pipelines/${pipelineId}`);
+    //   } catch (error) {
+
+    //   }
+    // },
     dataSource: [],
     dataSource2: [],
 
@@ -72,6 +80,21 @@ export default function useStore() {
         this.dataSource.forEach((item, index) => {
           if (item.sequence === sequence) {
             this.dataSource[index].jobList.push(data);
+          }
+        });
+      }
+    },
+    editJob(sequence, key, data, edit) {
+      if (edit) {
+        this.dataSource2.forEach((item, index) => {
+          if (item.sequence === sequence) {
+            this.dataSource2[index].jobList[key] === data;
+          }
+        });
+      } else {
+        this.dataSource.forEach((item, index) => {
+          if (item.sequence === sequence) {
+            this.dataSource2[index].jobList[key] === data;
           }
         });
       }

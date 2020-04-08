@@ -8,29 +8,64 @@ import { usePipelineStageEditStore } from '../stageEditBlock/stores';
 import AddTask from '../../../PipelineCreate/components/AddTask';
 import { usePipelineCreateStore } from '../../../PipelineCreate/stores';
 
-const EditItem = ({ taskName, stepName, type, bzmc }) => (
-  <div className="c7n-piplineManage-edit-column-item">
-    <div className="c7n-piplineManage-edit-column-item-header">
-      【{bzmc}】{taskName}
-    </div>
-    <div className="c7n-piplineManage-edit-column-item-btnGroup">
-      <Button
-        className="c7n-piplineManage-edit-column-item-btnGroup-btn"
-        shape="circle"
-        size="small"
-        icon="mode_edit"
-      />
-      <Button
-        className="c7n-piplineManage-edit-column-item-btnGroup-btn"
-        shape="circle"
-        size="small"
-        icon="delete_forever"
-      />
-    </div>
-  </div>
-);
+const EditItem = (props) => {
+  const { taskName, stepName, type, bzmc, index, sequence, edit, jobDetail } = props;
 
-export default observer(({ jobList, sequence, name, columnIndex, edit, appServiceId }) => {
+  const {
+    editBlockStore, stepStore,
+  } = usePipelineStageEditStore();
+
+  const {
+    editJob,
+  } = editBlockStore || stepStore;
+
+  function handleEditOk(data) {
+    editJob(sequence, index, data, edit);
+  }
+
+  function openEditJobModal() {
+    Modal.open({
+      key: Modal.key(),
+      title: `编辑${taskName}任务`,
+      children: <AddTask
+        jobDetail={jobDetail}
+        handleEditOk={handleEditOk}
+      />,
+      style: {
+        width: '740px',
+      },
+      drawer: true,
+      okText: '添加',
+    });
+  }
+
+  return (
+    <div className="c7n-piplineManage-edit-column-item">
+      <div className="c7n-piplineManage-edit-column-item-header">
+        【{bzmc}】{taskName}
+      </div>
+      <div className="c7n-piplineManage-edit-column-item-btnGroup">
+        <Button
+          className="c7n-piplineManage-edit-column-item-btnGroup-btn"
+          shape="circle"
+          size="small"
+          icon="mode_edit"
+          onClick={openEditJobModal}
+        />
+        <Button
+          className="c7n-piplineManage-edit-column-item-btnGroup-btn"
+          shape="circle"
+          size="small"
+          icon="delete_forever"
+        />
+      </div>
+    </div>
+  );
+};
+
+export default observer((props) => {
+  const { jobList, sequence, name, columnIndex, edit, appServiceId } = props;
+
   const {
     addStepDs,
     editBlockStore, stepStore,
@@ -58,21 +93,10 @@ export default observer(({ jobList, sequence, name, columnIndex, edit, appServic
 
   async function createNewStage() {
     if (addStepDs.current && addStepDs.current.get('step')) {
-      // console.log(addStepDs.current.get('step'));
       addNewStep(columnIndex, addStepDs.current.get('step'), edit);
     } else {
       return false;
     }
-    // try {
-    //   if (await addStepDs.submit() !== false) {
-    //     // refresh();
-    //   } else {
-    //     return false;
-    //   }
-    // } catch (e) {
-    //   Choerodon.handleResponseError(e);
-    //   return false;
-    // }
     addStepDs.reset();
   }
 
@@ -88,10 +112,13 @@ export default observer(({ jobList, sequence, name, columnIndex, edit, appServic
   const renderStepTasks = () => (
     jobList.length > 0 ? <div className="c7n-piplineManage-edit-column-lists">
       {
-        jobList.slice().map(item => <EditItem
-          key={item.glyyfw}
+        jobList.slice().map((item, index) => <EditItem
           taskName={name}
-          {...item}
+          index={index}
+          sequence={sequence}
+          key={Math.random()}
+          edit={edit}
+          jobDetail={item}
         />)
       }
     </div> : null
@@ -103,7 +130,6 @@ export default observer(({ jobList, sequence, name, columnIndex, edit, appServic
       addStepDs.current.set('step', name);
     }
     const optsFun = optType === 'create' ? createNewStage : editStage;
-    // const optsFun = createNewStage;
     Modal.open({
       key: Modal.key(),
       title,
@@ -138,15 +164,17 @@ export default observer(({ jobList, sequence, name, columnIndex, edit, appServic
     Modal.open({
       key: Modal.key(),
       title: '添加任务',
-      children: <AddTask PipelineCreateFormDataSet={PipelineCreateFormDataSet} AppServiceOptionsDs={AppServiceOptionsDs} handleOk={hanleStepCreateOk} appServiceId={appServiceId} />,
+      children: <AddTask
+        PipelineCreateFormDataSet={PipelineCreateFormDataSet}
+        AppServiceOptionsDs={AppServiceOptionsDs}
+        handleOk={hanleStepCreateOk}
+        appServiceId={appServiceId}
+      />,
       style: {
         width: '740px',
       },
       drawer: true,
       okText: '添加',
-      onOk() {
-        // console.log('heloo');
-      },
     });
   }
 
