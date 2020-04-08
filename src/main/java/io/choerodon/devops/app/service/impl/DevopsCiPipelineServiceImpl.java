@@ -211,6 +211,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             List<DevopsCiJobVO> ciJobVOS = jobMap.get(devopsCiStageVO.getId());
             devopsCiStageVO.setJobList(ciJobVOS);
         });
+        // stage排序
+        devopsCiStageVOS = devopsCiStageVOS.stream().sorted(Comparator.comparing(DevopsCiStageVO::getSequence)).collect(Collectors.toList());
         devopsCiPipelineVO.setStageList(devopsCiStageVOS);
 
         return devopsCiPipelineVO;

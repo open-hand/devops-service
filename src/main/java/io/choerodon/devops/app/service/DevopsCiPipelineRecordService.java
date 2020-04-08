@@ -18,4 +18,6 @@ public interface DevopsCiPipelineRecordService {
     void handleCreate(PipelineWebHookVO pipelineWebHookVO);
 
     PageInfo<DevopsCiPipelineRecordVO> pagingPipelineRecord(Long projectId, Long ciPipelineId, Pageable pageable);
+
+    DevopsCiPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId);
 }

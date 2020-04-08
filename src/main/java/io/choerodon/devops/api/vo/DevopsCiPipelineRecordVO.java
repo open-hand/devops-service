@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -29,6 +30,8 @@ public class DevopsCiPipelineRecordVO {
     @ApiModelProperty("执行耗时")
     private Long durationSeconds;
     private List<DevopsCiStageRecordVO>  stageRecordVOList;
+
+    private IamUserDTO userDTO;
 
     public Long getId() {
         return id;
@@ -100,5 +103,13 @@ public class DevopsCiPipelineRecordVO {
 
     public void setStageRecordVOList(List<DevopsCiStageRecordVO> stageRecordVOList) {
         this.stageRecordVOList = stageRecordVOList;
+    }
+
+    public IamUserDTO getUserDTO() {
+        return userDTO;
+    }
+
+    public void setUserDTO(IamUserDTO userDTO) {
+        this.userDTO = userDTO;
     }
 }

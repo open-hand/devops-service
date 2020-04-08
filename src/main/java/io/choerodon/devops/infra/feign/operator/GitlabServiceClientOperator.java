@@ -1039,6 +1039,7 @@ public class GitlabServiceClientOperator {
             throw new CommonException("error.manipulate.gitlab.files");
         }
     }
+
     public RepositoryFileDTO getWholeFile(Integer projectId, String branch, String filePath) {
         try {
             return gitlabServiceClient.getFile(projectId, branch, filePath).getBody();
@@ -1058,5 +1059,9 @@ public class GitlabServiceClientOperator {
 
     public String queryTrace(int projectId, int jobId, int gitlabUserid) {
         return gitlabServiceClient.queryTrace(projectId, jobId, gitlabUserid).getBody();
+    }
+
+    public JobDTO retryJob(int gitlabProjectId, int jobId, int gitlabUserId) {
+        return gitlabServiceClient.retryJob(gitlabProjectId, jobId, gitlabUserId).getBody();
     }
 }

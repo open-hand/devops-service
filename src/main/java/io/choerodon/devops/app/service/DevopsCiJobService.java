@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
+import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 
 /**
  * 〈功能简述〉
@@ -46,4 +47,6 @@ public interface DevopsCiJobService {
     Boolean sonarConnect(Long projectId, SonarQubeConfigVO sonarQubeConfigVO);
 
     String queryTrace(Long projectId, Long jobId);
+
+    JobDTO retryJob(Long gitlabProjectId, Long jobId);
 }

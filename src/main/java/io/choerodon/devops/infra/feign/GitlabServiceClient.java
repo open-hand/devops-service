@@ -541,4 +541,11 @@ public interface GitlabServiceClient {
             @PathVariable Integer projectId,
             @PathVariable Integer jobId,
             @RequestParam(value = "userId") Integer userId);
+
+    @ApiOperation(value = "重试job")
+    @PutMapping(value = "/v1/projects/{projectId}/jobs/{jobId}/retry")
+    ResponseEntity<JobDTO> retryJob(
+            @PathVariable Integer projectId,
+            @PathVariable Integer jobId,
+            @RequestParam(value = "userId") Integer userId);
 }
