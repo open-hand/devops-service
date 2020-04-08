@@ -31,6 +31,7 @@ export default observer(() => {
     editBlockStore,
     stepStore,
     edit,
+    appServiceId,
   } = usePipelineStageEditStore();
 
   const { setStepData, getStepData, getStepData2 } = editBlockStore || stepStore;
@@ -43,7 +44,13 @@ export default observer(() => {
   function renderColumn() {
     const dataSource = edit ? getStepData2 : getStepData;
     if (dataSource.length > 0) {
-      return dataSource.map((item, index) => <EditColumn columnIndex={index} key={item.id} {...item} edit={edit} />);
+      return dataSource.map((item, index) => <EditColumn
+        columnIndex={index}
+        key={item.id}
+        {...item}
+        edit={edit}
+        appServiceId={appServiceId}
+      />);
     }
   }
 

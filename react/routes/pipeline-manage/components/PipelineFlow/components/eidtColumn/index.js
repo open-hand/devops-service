@@ -30,7 +30,7 @@ const EditItem = ({ taskName, stepName, type, bzmc }) => (
   </div>
 );
 
-export default observer(({ jobList, sequence, name, columnIndex, edit }) => {
+export default observer(({ jobList, sequence, name, columnIndex, edit, appServiceId }) => {
   const {
     addStepDs,
     editBlockStore, stepStore,
@@ -138,7 +138,7 @@ export default observer(({ jobList, sequence, name, columnIndex, edit }) => {
     Modal.open({
       key: Modal.key(),
       title: '添加任务',
-      children: <AddTask PipelineCreateFormDataSet={PipelineCreateFormDataSet} AppServiceOptionsDs={AppServiceOptionsDs} handleOk={hanleStepCreateOk} />,
+      children: <AddTask PipelineCreateFormDataSet={PipelineCreateFormDataSet} AppServiceOptionsDs={AppServiceOptionsDs} handleOk={hanleStepCreateOk} appServiceId={appServiceId} />,
       style: {
         width: '740px',
       },
