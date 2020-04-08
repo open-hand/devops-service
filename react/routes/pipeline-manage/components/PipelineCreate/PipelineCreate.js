@@ -3,6 +3,7 @@ import { Form, TextField, Select, SelectBox, Modal, Button } from 'choerodon-ui/
 import { observer } from 'mobx-react-lite';
 import { usePipelineCreateStore } from './stores';
 import AddTask from './components/AddTask';
+import { usePipelineManageStore } from '../../stores';
 import StageEditBlock from '../PipelineFlow/components/stageEditBlock';
 
 const { Option } = Select;
@@ -10,7 +11,13 @@ const { Option } = Select;
 const PipelineCreate = observer(() => {
   const {
     PipelineCreateFormDataSet,
+    modal,
+    editBlockStore,
   } = usePipelineCreateStore();
+
+  const handleCreate = () => false;
+
+  modal.handleOk(handleCreate);
 
   // const handleAddMission = () => {
   //   Modal.open({

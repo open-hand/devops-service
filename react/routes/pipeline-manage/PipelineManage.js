@@ -17,6 +17,14 @@ const modalStyle = {
 };
 
 const PipelineManage = observer((props) => {
+  const {
+    intl: { formatMessage },
+    intlPrefix,
+    prefixCls,
+    mainStore,
+    editBlockStore,
+  } = usePipelineManageStore();
+
   const handleCreatePipeline = () => {
     Modal.open({
       key: Modal.key(),
@@ -25,16 +33,11 @@ const PipelineManage = observer((props) => {
         width: 'calc(100vw - 3.52rem)',
       },
       drawer: true,
-      children: <PipelineCreate />,
+      children: <PipelineCreate editBlockStore={editBlockStore} />,
       okText: '创建',
     });
   };
-  const {
-    intl: { formatMessage },
-    intlPrefix,
-    prefixCls,
-    mainStore,
-  } = usePipelineManageStore();
+
   const rootRef = useRef(null);
 
   const { getSelectedMenu } = mainStore;

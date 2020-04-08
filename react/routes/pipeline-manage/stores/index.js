@@ -3,6 +3,7 @@ import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import useStore from './useStore';
+import useEditBlockStore from './useEditBlockStore';
 import TreeDataSet from './TreeDataSet';
 
 const Store = createContext();
@@ -17,6 +18,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
   } = props;
 
   const mainStore = useStore();
+  const editBlockStore = useEditBlockStore();
   const treeDs = useMemo(() => new DataSet(TreeDataSet({ mainStore })), []);
 
   const data = useMemo(() => [
@@ -104,6 +106,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     intlPrefix: 'c7ncd.pipelineManage',
     mainStore,
     treeDs,
+    editBlockStore,
   };
 
   return (
