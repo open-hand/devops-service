@@ -28,10 +28,10 @@ const defaultData = [
 export default observer(() => {
   const {
     pipelineId,
-    stepStore: {
-      setStepData, getStepData,
-    },
+    editBlockStore, stepStore,
   } = usePipelineStageEditStore();
+
+  const { setStepData, getStepData } = editBlockStore || stepStore;
 
   useEffect(() => {
     setStepData(pipelineId ? data : defaultData);

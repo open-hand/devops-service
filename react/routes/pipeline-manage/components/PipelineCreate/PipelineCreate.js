@@ -15,7 +15,10 @@ const PipelineCreate = observer(() => {
     editBlockStore,
   } = usePipelineCreateStore();
 
-  const handleCreate = () => false;
+  const handleCreate = () => {
+    console.log(editBlockStore.getStepData);
+    return false;
+  };
 
   modal.handleOk(handleCreate);
 

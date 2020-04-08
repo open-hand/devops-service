@@ -33,10 +33,10 @@ const EditItem = ({ taskName, stepName, type, bzmc }) => (
 export default observer(({ jobList, sequence, name, columnIndex }) => {
   const {
     addStepDs,
-    stepStore: {
-      addNewStep, removeStep, eidtStep, newJob,
-    },
+    editBlockStore, stepStore,
   } = usePipelineStageEditStore();
+  const { addNewStep, removeStep, eidtStep, newJob } = editBlockStore || stepStore;
+
 
   let PipelineCreateFormDataSet;
   let AppServiceOptionsDs;
