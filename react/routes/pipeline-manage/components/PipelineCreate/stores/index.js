@@ -4,6 +4,7 @@ import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import pipelineCreateFormDataSet from './pipelineCreateFormDataSet';
 import appServiceOptionsDs from './appServiceOptionsDs';
+import useStore from './useStore';
 
 const Store = createContext();
 
@@ -21,6 +22,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     },
   } = props;
 
+  const createUseStore = useStore();
   const AppServiceOptionsDs = useMemo(() => new DataSet(appServiceOptionsDs(projectId)), []);
   const PipelineCreateFormDataSet = useMemo(() => new DataSet(pipelineCreateFormDataSet(AppServiceOptionsDs)), []);
 
@@ -28,6 +30,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     ...props,
     PipelineCreateFormDataSet,
     AppServiceOptionsDs,
+    createUseStore,
   };
 
   return (
