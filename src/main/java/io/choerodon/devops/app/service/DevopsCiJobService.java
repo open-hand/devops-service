@@ -44,4 +44,6 @@ public interface DevopsCiJobService {
      * @return
      */
     Boolean sonarConnect(Long projectId, SonarQubeConfigVO sonarQubeConfigVO);
+
+    String queryTrace(Long projectId, Long jobId);
 }

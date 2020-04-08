@@ -1046,4 +1046,17 @@ public class GitlabServiceClientOperator {
             return null;
         }
     }
+
+    public Boolean createPipeline(int projectId, int gitlabUserid, String ref) {
+        try {
+            gitlabServiceClient.createPipeline(projectId, gitlabUserid, ref);
+        } catch (FeignException e) {
+            return false;
+        }
+        return true;
+    }
+
+    public String queryTrace(int projectId, int jobId, int gitlabUserid) {
+        return gitlabServiceClient.queryTrace(projectId, jobId, gitlabUserid).getBody();
+    }
 }

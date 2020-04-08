@@ -33,4 +33,13 @@ public class DevopsCiJobController {
             @RequestBody SonarQubeConfigVO sonarQubeConfigVO) {
         return ResponseEntity.ok(devopsCiJobService.sonarConnect(projectId, sonarQubeConfigVO));
     }
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "查询job日志")
+    @GetMapping("/gitlab_projects/{gitlab_project_id}/gitlab_jobs/{job_id}/trace")
+    public ResponseEntity<String> queryTrace(
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "gitlab_project_id") Long gitlabProjectId,
+            @PathVariable(value = "job_id") Long jobId) {
+        return ResponseEntity.ok(devopsCiJobService.queryTrace(gitlabProjectId, jobId));
+    }
 }

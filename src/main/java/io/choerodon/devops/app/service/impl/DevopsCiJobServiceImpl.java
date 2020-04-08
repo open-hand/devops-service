@@ -5,19 +5,17 @@ import java.util.List;
 import java.util.Objects;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.SonarContentsVO;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
-import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsCiJobService;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.enums.SonarAuthType;
 import io.choerodon.devops.infra.feign.SonarClient;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.DevopsCiJobMapper;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,9 +36,15 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private static final String SONAR = "sonar";
 
     private DevopsCiJobMapper devopsCiJobMapper;
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
+    private UserAttrService userAttrService;
 
-    public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper) {
+    public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper,
+                                  GitlabServiceClientOperator gitlabServiceClientOperator,
+                                  UserAttrService userAttrService) {
         this.devopsCiJobMapper = devopsCiJobMapper;
+        this.gitlabServiceClientOperator = gitlabServiceClientOperator;
+        this.userAttrService = userAttrService;
     }
 
     @Override
@@ -107,5 +111,11 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
             return true;
         }
         return true;
+    }
+
+    @Override
+    public String queryTrace(Long projectId, Long jobId) {
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId().longValue());
+        return gitlabServiceClientOperator.queryTrace(projectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue());
     }
 }

@@ -30,6 +30,8 @@ public class DevopsCiPipelineVO {
     private Long appServiceId;
     @ApiModelProperty("流水线关联应用服务名称/nullable")
     private String appServiceName;
+    @ApiModelProperty("gitlab项目id/nullable")
+    private Long gitlabProjectId;
     @ApiModelProperty("是否启用/nullable")
     private Boolean enabled;
     @ApiModelProperty("流水线触发方式")
@@ -151,5 +153,13 @@ public class DevopsCiPipelineVO {
 
     public void setHasMoreRecords(Boolean hasMoreRecords) {
         this.hasMoreRecords = hasMoreRecords;
+    }
+
+    public Long getGitlabProjectId() {
+        return gitlabProjectId;
+    }
+
+    public void setGitlabProjectId(Long gitlabProjectId) {
+        this.gitlabProjectId = gitlabProjectId;
     }
 }
