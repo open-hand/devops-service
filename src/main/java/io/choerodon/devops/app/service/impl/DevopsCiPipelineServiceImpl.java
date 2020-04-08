@@ -40,6 +40,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private static final String UPDATE_PIPELINE_FAILED = "update.pipeline.failed";
     private static final String ERROR_USER_HAVE_NO_APP_PERMISSION = "error.user.have.no.app.permission";
     private static final String ERROR_APP_SVC_ID_IS_NULL = "error.app.svc.id.is.null";
+    private static final String ERROR_PROJECT_ID_IS_NULL = "error.project.id.is.null";
     @Value("${services.gateway.url}")
     private String gatewayUrl;
 
@@ -165,6 +166,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 // 保存job信息
                 devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                     DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
+                    devopsCiJobDTO.setId(null);
                     devopsCiJobDTO.setCiStageId(devopsCiStageVO.getId());
                     devopsCiJobDTO.setCiPipelineId(ciPipelineId);
                     devopsCiJobService.create(devopsCiJobDTO);
@@ -216,6 +218,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         DevopsCiPipelineDTO devopsCiPipelineDTO = new DevopsCiPipelineDTO();
         devopsCiPipelineDTO.setAppServiceId(id);
         return devopsCiPipelineMapper.selectOne(devopsCiPipelineDTO);
+    }
+
+    @Override
+    public List<DevopsCiPipelineVO> listByProjectIdAndAppName(Long projectId, String name) {
+        if (projectId == null) {
+            throw new CommonException(ERROR_PROJECT_ID_IS_NULL);
+        }
+        return devopsCiPipelineMapper.queryByProjectIdAndName(projectId, name);
     }
 
     /**

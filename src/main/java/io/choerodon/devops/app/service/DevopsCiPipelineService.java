@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.api.vo.DevopsCiPipelineVO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineDTO;
 
@@ -36,4 +38,6 @@ public interface DevopsCiPipelineService {
      * @return
      */
     DevopsCiPipelineDTO queryByAppSvcId(Long id);
+
+    List<DevopsCiPipelineVO> listByProjectIdAndAppName(Long projectId, String name);
 }

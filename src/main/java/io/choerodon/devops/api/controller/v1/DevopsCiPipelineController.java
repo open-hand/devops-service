@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
 import javax.validation.Valid;
 
 import io.choerodon.core.annotation.Permission;
@@ -39,6 +40,7 @@ public class DevopsCiPipelineController {
             @RequestBody @Valid DevopsCiPipelineVO devopsCiPipelineVO) {
         return ResponseEntity.ok(devopsCiPipelineService.create(projectId, devopsCiPipelineVO));
     }
+
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下更新ci流水线")
     @PutMapping("/{ci_pipeline_id}")
@@ -50,6 +52,7 @@ public class DevopsCiPipelineController {
             @RequestBody @Valid DevopsCiPipelineVO devopsCiPipelineVO) {
         return ResponseEntity.ok(devopsCiPipelineService.update(projectId, ciPipelineId, devopsCiPipelineVO));
     }
+
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询ci流水线配置")
     @GetMapping("/{ci_pipeline_id}")
@@ -59,5 +62,15 @@ public class DevopsCiPipelineController {
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "ci_pipeline_id") Long ciPipelineId) {
         return ResponseEntity.ok(devopsCiPipelineService.query(projectId, ciPipelineId));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "查询项目下流水线")
+    @GetMapping
+    public ResponseEntity<List<DevopsCiPipelineVO>> listByProjectIdAndAppName(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam(value = "name", required = false) String name) {
+        return ResponseEntity.ok(devopsCiPipelineService.listByProjectIdAndAppName(projectId, name));
     }
 }
