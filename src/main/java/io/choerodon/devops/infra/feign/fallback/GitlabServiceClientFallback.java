@@ -418,6 +418,16 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity createPipeline(Integer projectId, Integer userId, String ref) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<String> queryTrace(Integer projectId, Integer jobId, Integer userId) {
+        return null;
+    }
+
+    @Override
     public ResponseEntity<GitLabUserDTO> queryAdminUser() {
         throw new CommonException("error.gitlab.admin.id.query");
     }

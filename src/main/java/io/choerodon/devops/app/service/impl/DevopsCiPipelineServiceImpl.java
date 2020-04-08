@@ -178,6 +178,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 });
             } else {
                 // 新增
+                devopsCiStageVO.setCiPipelineId(ciPipelineId);
                 DevopsCiStageDTO devopsCiStageDTO = ConvertUtils.convertObject(devopsCiStageVO, DevopsCiStageDTO.class);
                 DevopsCiStageDTO savedDevopsCiStageDTO = devopsCiStageService.create(devopsCiStageDTO);
                 // 保存job信息
