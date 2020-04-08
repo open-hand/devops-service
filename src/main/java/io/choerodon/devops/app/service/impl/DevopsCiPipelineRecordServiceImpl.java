@@ -15,6 +15,7 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.CiJobWebHookVO;
 import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
 import io.choerodon.devops.api.vo.DevopsCiStageRecordVO;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
@@ -51,7 +52,15 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    public DevopsCiPipelineRecordServiceImpl(DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper, DevopsCiJobRecordService devopsCiJobRecordService, DevopsCiStageService devopsCiStageService, DevopsCiJobService devopsCiJobService, DevopsCiJobRecordMapper devopsCiJobRecordMapper, DevopsCiPipelineService devopsCiPipelineService, AppServiceService applicationService, TransactionalProducer transactionalProducer, UserAttrService userAttrService) {
+    public DevopsCiPipelineRecordServiceImpl(DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
+                                             DevopsCiJobRecordService devopsCiJobRecordService,
+                                             DevopsCiStageService devopsCiStageService,
+                                             DevopsCiJobService devopsCiJobService,
+                                             DevopsCiJobRecordMapper devopsCiJobRecordMapper,
+                                             DevopsCiPipelineService devopsCiPipelineService,
+                                             AppServiceService applicationService,
+                                             TransactionalProducer transactionalProducer,
+                                             UserAttrService userAttrService) {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
         this.devopsCiStageService = devopsCiStageService;
@@ -76,17 +85,21 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Map<Long, DevopsCiStageDTO> stageMap = devopsCiStageDTOList.stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
         Map<String, DevopsCiJobDTO> jobMap = devopsCiJobDTOS.stream().collect(Collectors.toMap(v -> v.getName(), v -> v));
         // 检验是否是手动修改gitlab-ci.yaml文件生成的流水线记录
-        pipelineWebHookVO.getBuilds().forEach(job -> {
+        boolean checkAvailable = true;
+        for(CiJobWebHookVO job : pipelineWebHookVO.getBuilds()) {
             DevopsCiJobDTO devopsCiJobDTO = jobMap.get(job.getName());
             if (devopsCiJobDTO == null) {
-                return;
+                checkAvailable = false;
             } else {
                 DevopsCiStageDTO devopsCiStageDTO = stageMap.get(devopsCiJobDTO.getCiStageId());
                 if (devopsCiStageDTO == null || !devopsCiStageDTO.getName().equals(job.getStage())) {
-                    return;
+                    checkAvailable = false;
                 }
             }
-        });
+        }
+        if (!checkAvailable) {
+            return;
+        }
         pipelineWebHookVO.setToken(token);
         try {
             String input = objectMapper.writeValueAsString(pipelineWebHookVO);
@@ -198,28 +211,30 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             devopsCiStageRecordVOS.forEach(stageRecord -> {
                 List<DevopsCiJobRecordDTO> ciJobRecordDTOS = jobRecordMap.get(stageRecord.getName());
                 if (!CollectionUtils.isEmpty(ciJobRecordDTOS)) {
-                    if (ciJobRecordDTOS.stream().anyMatch(v -> JobStatusEnum.CREATED.value().equals(v.getStatus()))) {
+                    Map<String, List<DevopsCiJobRecordDTO>> statsuMap = ciJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStatus));
+
+                    if (CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.CREATED.value()))) {
                         stageRecord.setStatus(JobStatusEnum.CREATED.value());
-                    } else if (ciJobRecordDTOS.stream().anyMatch(v -> JobStatusEnum.PENDING.value().equals(v.getStatus()))) {
+                    } else if (CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.PENDING.value()))) {
                         stageRecord.setStatus(JobStatusEnum.PENDING.value());
-                    } else if (ciJobRecordDTOS.stream().anyMatch(v -> JobStatusEnum.RUNNING.value().equals(v.getStatus()))) {
+                    } else if (CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.RUNNING.value()))) {
                         stageRecord.setStatus(JobStatusEnum.RUNNING.value());
-                    } else if (ciJobRecordDTOS.stream().anyMatch(v -> JobStatusEnum.FAILED.value().equals(v.getStatus()))) {
+                    } else if (CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.FAILED.value()))) {
                         stageRecord.setStatus(JobStatusEnum.FAILED.value());
-                    } else if (ciJobRecordDTOS.stream().anyMatch(v -> JobStatusEnum.SUCCESS.value().equals(v.getStatus()))) {
+                    } else if (CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.SUCCESS.value()))) {
                         stageRecord.setStatus(JobStatusEnum.SUCCESS.value());
-                    } else if (ciJobRecordDTOS.stream().anyMatch(v -> JobStatusEnum.CANCELED.value().equals(v.getStatus()))) {
+                    } else if (CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.CANCELED.value()))) {
                         stageRecord.setStatus(JobStatusEnum.CANCELED.value());
-                    } else if (ciJobRecordDTOS.stream().anyMatch(v -> JobStatusEnum.SKIPPED.value().equals(v.getStatus()))) {
+                    } else if (CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.SKIPPED.value()))) {
                         stageRecord.setStatus(JobStatusEnum.SKIPPED.value());
-                    } else if (ciJobRecordDTOS.stream().anyMatch(v -> JobStatusEnum.MANUAL.value().equals(v.getStatus()))) {
+                    } else if (CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.MANUAL.value()))) {
                         stageRecord.setStatus(JobStatusEnum.MANUAL.value());
                     }
                 }
 
             });
             // stage排序
-            devopsCiStageRecordVOS = devopsCiStageRecordVOS.stream().sorted(Comparator.comparing(v -> v.getSequence())).filter(v -> v.getStatus() != null).collect(Collectors.toList());
+            devopsCiStageRecordVOS = devopsCiStageRecordVOS.stream().sorted(Comparator.comparing(DevopsCiStageRecordVO::getSequence)).filter(v -> v.getStatus() != null).collect(Collectors.toList());
             pipelineRecord.setStageRecordVOList(devopsCiStageRecordVOS);
         });
         return pipelineRecordInfo;
