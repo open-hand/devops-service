@@ -33,5 +33,13 @@ export default function useStore() {
     get getSearchValue() {
       return this.searchValue;
     },
+
+    pageList: {},
+    get getPageList() {
+      return this.pageList;
+    },
+    setPageList(data) {
+      this.pageList = data;
+    },
   }));
 }

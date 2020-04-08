@@ -73,12 +73,21 @@ export default ({ projectId, mainStore }) => ({
       record.isSelected = true;
     },
     load: ({ dataSet }) => {
+      mainStore.setPageList({});
       const record = dataSet.records[0];
-      if (record) {
+      const { key } = mainStore.getSelectedMenu;
+      if (key) {
+        const selectedRecord = dataSet.find((treeRecord) => key === treeRecord.get('key'));
+        if (selectedRecord) {
+          selectedRecord.isSelected = true;
+        } else {
+          record.isSelected = true;
+          handleSelect(record, mainStore);
+        }
+      } else {
         record.isSelected = true;
         handleSelect(record, mainStore);
       }
-      formatData({ dataSet, mainStore });
     },
   },
 });

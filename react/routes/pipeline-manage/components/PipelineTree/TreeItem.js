@@ -1,15 +1,17 @@
-import React, { Fragment, useMemo } from 'react';
+import React, { Fragment, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Action } from '@choerodon/boot';
+import { Action, Choerodon } from '@choerodon/boot';
 import { observer } from 'mobx-react-lite';
-import { Icon, Modal, Tooltip } from 'choerodon-ui/pro';
+import { Icon, Modal, Spin, Tooltip } from 'choerodon-ui/pro';
 import map from 'lodash/map';
+import forEach from 'lodash/forEach';
 import { usePipelineManageStore } from '../../stores';
 import TimePopover from '../../../../components/timePopover';
 import eventStopProp from '../../../../utils/eventStopProp';
 import PipelineType from '../pipeline-type';
 import ExecuteContent from './execute-content';
 import TreeItemName from '../../../../components/treeitem-name';
+import { usePipelineTreeStore } from './stores';
 
 const executeKey = Modal.key();
 const stopKey = Modal.key();
@@ -18,9 +20,14 @@ const TreeItem = observer(({ record, search }) => {
   const {
     intlPrefix,
     prefixCls,
+    AppState: { currentMenuType: { projectId } },
     intl: { formatMessage },
     treeDs,
+    mainStore,
   } = usePipelineManageStore();
+  const {
+    treeStore,
+  } = usePipelineTreeStore();
 
   const iconType = useMemo(() => ({
     failed: 'cancel',
@@ -74,28 +81,38 @@ const TreeItem = observer(({ record, search }) => {
 
   }
 
-  function loadMoreRecord(deleteRecord) {
-    const treeRecord = treeDs.create({
-      id: 109729,
-      parentId: deleteRecord.get('parentId'),
-      parentName: 'workflow1',
-      updateDate: '2020-03-10 09:13:42',
-      status: 'failed',
-      stages: [
-        { status: 'success' },
-        { status: 'failed' },
-        { status: 'pending' },
-        { status: 'running' },
-        { status: 'canceled' },
-      ],
-    });
-    treeDs.remove(deleteRecord);
-    treeDs.push(treeRecord);
+  async function loadMoreRecord(deleteRecord) {
+    const parentId = record.get('parentId');
+    deleteRecord.setState('isLoading', true);
+    try {
+      const { getPageList, setPageList } = mainStore;
+      const page = getPageList[parentId] || 2;
+      const recordData = await treeStore.loadRecords(projectId, parentId, page);
+      if (recordData) {
+        deleteRecord.setState('isLoading', false);
+        treeDs.remove(deleteRecord);
+        forEach(recordData.list, (item) => {
+          item.key = `${parentId}-${item.id}`;
+          item.parentId = parentId;
+          const treeRecord = treeDs.create(item);
+          treeDs.push(treeRecord);
+        });
+        if (recordData.hasNextPage) {
+          treeDs.push(deleteRecord);
+        }
+        setPageList({ ...getPageList, [parentId]: page + 1 });
+      }
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+    }
   }
 
   function getItem() {
-    const { name, appServiceName, latestExecuteDate, createdDate, status = 'success', enabled = false, triggerType, id, parentId, stageRecordVOList } = record.toData();
-    if (id === 'more') {
+    const { key, name, appServiceName, latestExecuteDate, createdDate, status = 'success', enabled = false, triggerType, id, parentId, stageRecordVOList } = record.toData();
+    if (key === 'more') {
+      if (record.getState('isLoading')) {
+        return <Spin />;
+      }
       return (
         <div
           className={`${prefixCls}-sidebar-header-node ${prefixCls}-sidebar-header-node-more`}
@@ -104,7 +121,9 @@ const TreeItem = observer(({ record, search }) => {
           <span
             className={`${prefixCls}-sidebar-header-node-more-text`}
             onClick={() => loadMoreRecord(record)}
-          >加载更多</span>
+          >
+            {formatMessage({ id: `${intlPrefix}.more` })}
+          </span>
         </div>
       );
     }

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useMemo, useEffect } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
+import useStore from './useStore';
 
 const Store = createContext();
 
@@ -16,8 +17,11 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     children,
   } = props;
 
+  const treeStore = useStore();
+
   const value = {
     ...props,
+    treeStore,
   };
 
   return (

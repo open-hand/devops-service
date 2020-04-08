@@ -786,6 +786,7 @@ const pipelineManage = {
   'c7ncd.pipelineManage.execute.date': '执行时间',
   'c7ncd.pipelineManage.time': '流程耗时',
   'c7ncd.pipelineManage.create': '创建流水线',
+  'c7ncd.pipelineManage.more': '加载更多',
 };
 
 const emptyPage = {
