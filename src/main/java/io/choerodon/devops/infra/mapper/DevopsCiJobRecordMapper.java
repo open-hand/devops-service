@@ -11,4 +11,5 @@ import io.choerodon.mybatis.common.Mapper;
  * @Date 2020/4/3 9:22
  */
 public interface DevopsCiJobRecordMapper extends Mapper<DevopsCiJobRecordDTO> {
+
 }

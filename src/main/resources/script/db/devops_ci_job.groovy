@@ -22,4 +22,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
         addUniqueConstraint(tableName: 'devops_ci_job',
                 constraintName: 'uk_pipeline_id_job_name', columnNames: 'ci_pipeline_id,name')
     }
+    changeSet(author: 'wanghao', id: '2020-04-08-change-column') {
+        modifyDataType(tableName: 'devops_ci_job', columnName: 'metadata', newDataType: 'TEXT')
+    }
 }
