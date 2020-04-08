@@ -1,4 +1,4 @@
-export default (PipelineCreateFormDataSet, AppServiceOptionsDs) => ({
+export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId) => ({
   autoCreate: true,
   fields: [{
     name: 'type',
@@ -20,7 +20,7 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs) => ({
     disabled: true,
     textField: 'name',
     valueField: 'id',
-    defaultValue: PipelineCreateFormDataSet.current.get('appServiceId'),
+    defaultValue: appServiceId || PipelineCreateFormDataSet.current.get('appServiceId'),
     options: AppServiceOptionsDs,
   }, {
     name: 'triggerRefs',
