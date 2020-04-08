@@ -3,14 +3,41 @@ import { axios } from '@choerodon/boot';
 
 export default function useStore() {
   return useLocalStore(() => ({
-    // mainStore: {},
-    // async loadDetail(projectId, pipelineId) {
-    //   try {
-    //     await axios.get(`/devops/v1/projects/${projectId}/ci_pipelines/${pipelineId}`);
-    //   } catch (error) {
+    mainStore: [],
+    get getMainData() {
+      this.setMainSource();
+      return this.mainStore;
+    },
+    setMainSource() {
+      this.mainStore.stageList = this.dataSource;
+    },
 
-    //   }
-    // },
+    setMainData(value) {
+      this.mainStore = value;
+    },
+
+    loading: false,
+    setLoading(value) {
+      this.loading = value;
+    },
+    get getLoading() {
+      return this.loading;
+    },
+
+    loadData(projectId, pipelineId) {
+      this.setLoading(true);
+      this.loadDetail(projectId, pipelineId).then((res) => {
+        if (res) {
+          this.setStepData(res.stageList, false);
+          this.setMainData(res);
+          this.setLoading(false);
+        }
+      });
+    },
+
+    loadDetail(projectId, pipelineId) {
+      return axios.get(`/devops/v1/projects/${projectId}/ci_pipelines/${pipelineId}`);
+    },
     dataSource: [],
     dataSource2: [],
 
@@ -27,14 +54,27 @@ export default function useStore() {
     get getStepData2() {
       return this.dataSource2.slice();
     },
+
     addNewStep(index, name, edit) {
       const stepObj = {
         name,
-        sequence: edit ? this.dataSource2.length + 1 : this.dataSource2.length,
         jobList: [],
       };
-      edit ? this.dataSource2.splice(index + 1, 0, stepObj) : this.dataSource.splice(index + 1, 0, stepObj);
+      if (edit) {
+        this.dataSource2.splice(index + 1, 0, stepObj);
+        this.dataSource2 = this.dataSource2.map((item, i) => {
+          item.sequence = i;
+          return item;
+        });
+      } else {
+        this.dataSource.splice(index + 1, 0, stepObj);
+        this.dataSource = this.dataSource.map((item, i) => {
+          item.sequence = i;
+          return item;
+        });
+      }
     },
+
     removeStep(sequence, edit) {
       if (edit) {
         this.dataSource2.forEach((item, index) => {
@@ -43,12 +83,20 @@ export default function useStore() {
             return true;
           }
         });
+        this.dataSource2 = this.dataSource2.map((item, i) => {
+          item.sequence = i;
+          return item;
+        });
       } else {
         this.dataSource.forEach((item, index) => {
           if (item.sequence === sequence) {
             this.dataSource.splice(index, 1);
             return true;
           }
+        });
+        this.dataSource = this.dataSource.map((item, i) => {
+          item.sequence = i;
+          return item;
         });
       }
     },
@@ -73,13 +121,21 @@ export default function useStore() {
       if (edit) {
         this.dataSource2.forEach((item, index) => {
           if (item.sequence === sequence) {
-            this.dataSource2[index].jobList.push(data);
+            if (this.dataSource2[index].jobList) {
+              this.dataSource2[index].jobList.push(data);
+            } else {
+              this.dataSource2[index].jobList = [data];
+            }
           }
         });
       } else {
         this.dataSource.forEach((item, index) => {
           if (item.sequence === sequence) {
-            this.dataSource[index].jobList.push(data);
+            if (this.dataSource[index].jobList) {
+              this.dataSource[index].jobList.push(data);
+            } else {
+              this.dataSource[index].jobList = [data];
+            }
           }
         });
       }
@@ -95,6 +151,21 @@ export default function useStore() {
         this.dataSource.forEach((item, index) => {
           if (item.sequence === sequence) {
             this.dataSource2[index].jobList[key] = data;
+          }
+        });
+      }
+    },
+    removeStepTask(sequence, key, edit) {
+      if (edit) {
+        this.dataSource2.forEach((item, index) => {
+          if (item.sequence === sequence) {
+            this.dataSource2[index].jobList.splice(index, 1);
+          }
+        });
+      } else {
+        this.dataSource.forEach((item, index) => {
+          if (item.sequence === sequence) {
+            this.dataSource[index].jobList.splice(index, 1);
           }
         });
       }

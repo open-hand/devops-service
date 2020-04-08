@@ -32,7 +32,7 @@ const EditItem = (props) => {
   } = usePipelineStageEditStore();
 
   const {
-    editJob,
+    editJob, removeStepTask,
   } = editBlockStore || stepStore;
 
   function handleEditOk(data) {
@@ -58,6 +58,16 @@ const EditItem = (props) => {
     });
   }
 
+  function openDeleteJobModal() {
+    Modal.open({
+      key: Modal.key(),
+      title: `删除${taskName}任务`,
+      children: '确认删除此任务吗？',
+      okText: '确认',
+      onOk: () => removeStepTask(sequence, index, edit),
+    });
+  }
+
   return (
     <div className="c7n-piplineManage-edit-column-item">
       <div className="c7n-piplineManage-edit-column-item-header">
@@ -76,6 +86,7 @@ const EditItem = (props) => {
           shape="circle"
           size="small"
           icon="delete_forever"
+          onClick={openDeleteJobModal}
         />
       </div>
     </div>
@@ -95,8 +106,11 @@ export default observer((props) => {
     removeStep,
     eidtStep,
     newJob,
+    getStepData,
+    getStepData2,
   } = editBlockStore || stepStore;
 
+  const stageLength = edit ? getStepData2.length : getStepData.length;
 
   let PipelineCreateFormDataSet;
   let AppServiceOptionsDs;
@@ -110,7 +124,7 @@ export default observer((props) => {
   useEffect(() => {
   }, []);
 
-  async function createNewStage() {
+  function createNewStage() {
     if (addStepDs.current && addStepDs.current.get('step')) {
       addNewStep(columnIndex, addStepDs.current.get('step'), edit);
     } else {
@@ -129,7 +143,7 @@ export default observer((props) => {
   }
 
   const renderStepTasks = () => (
-    jobList.length > 0 ? <div className="c7n-piplineManage-edit-column-lists">
+    jobList && jobList.length > 0 ? <div className="c7n-piplineManage-edit-column-lists">
       {
         jobList.slice().map((item, index) => <EditItem
           index={index}
@@ -214,7 +228,7 @@ export default observer((props) => {
             onClick={openAddStageModal.bind(this, 'edit')}
             className="c7n-piplineManage-edit-column-header-btnGroup-btn"
           />
-          {columnIndex !== 0 && <Button
+          {stageLength > 1 && <Button
             funcType="raised"
             shape="circle"
             size="small"

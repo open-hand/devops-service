@@ -1,21 +1,8 @@
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
+import { Spin } from 'choerodon-ui';
 import EditColumn from '../eidtColumn';
 import { usePipelineStageEditStore } from './stores';
-
-
-const data = [
-  {
-    name: '构建',
-    sequence: 1,
-    jobList: [],
-  },
-  {
-    name: '代码检查',
-    sequence: 2,
-    jobList: [],
-  },
-];
 
 const defaultData = [
   {
@@ -27,6 +14,7 @@ const defaultData = [
 
 export default observer(() => {
   const {
+    projectId,
     pipelineId,
     editBlockStore,
     stepStore,
@@ -34,29 +22,36 @@ export default observer(() => {
     appServiceId,
   } = usePipelineStageEditStore();
 
-  const { setStepData, getStepData, getStepData2 } = editBlockStore || stepStore;
+  const {
+    setStepData,
+    getStepData,
+    getStepData2,
+    loadData,
+    getLoading,
+  } = editBlockStore || stepStore;
+
 
   useEffect(() => {
-    const value = pipelineId ? data : defaultData;
-    setStepData(value, edit);
-  }, [pipelineId]);
+    pipelineId ? loadData(projectId, pipelineId) : setStepData(defaultData, edit);
+  }, [pipelineId, projectId]);
 
   function renderColumn() {
     const dataSource = edit ? getStepData2 : getStepData;
-    if (dataSource.length > 0) {
+    if (dataSource && dataSource.length > 0) {
       return dataSource.map((item, index) => <EditColumn
         columnIndex={index}
         key={item.id}
         {...item}
         edit={edit}
+        pipelineId={pipelineId}
         appServiceId={appServiceId}
       />);
     }
   }
 
   return (
-    <div className="c7n-piplineManage-edit">
+    !getLoading ? <div className="c7n-piplineManage-edit">
       {renderColumn()}
-    </div>
+    </div> : <Spin />
   );
 });

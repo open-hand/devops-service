@@ -2,6 +2,8 @@ import React, { Fragment, useRef, useMemo, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Page, Header, Breadcrumb, Content } from '@choerodon/boot';
 import { Button, Modal } from 'choerodon-ui/pro';
+import { axios, Choerodon } from '@choerodon/boot';
+import { handlePromptError } from '../../utils';
 import PipelineTree from './components/PipelineTree';
 import PipelineFlow from './components/PipelineFlow';
 import DragBar from '../../components/drag-bar';
@@ -24,8 +26,12 @@ const PipelineManage = observer((props) => {
     prefixCls,
     mainStore,
     editBlockStore,
+    editBlockStore: {
+      getMainData, loadData,
+    },
     treeDs,
   } = usePipelineManageStore();
+
 
   const handleCreatePipeline = () => {
     Modal.open({
@@ -48,6 +54,22 @@ const PipelineManage = observer((props) => {
     treeDs.query();
   }
 
+  async function handleSaveEdit() {
+    const { id } = getMainData;
+    const { projectId } = getSelectedMenu;
+    try {
+      const res = await axios.put(`/devops/v1/projects/${projectId}/ci_pipelines/${id}`, getMainData);
+      if (handlePromptError(res)) {
+        loadData(projectId, id);
+        return res;
+      }
+      return false;
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+      return false;
+    }
+  }
+
   function openRecordDetail() {
     const { id } = getSelectedMenu;
     Modal.open({
@@ -64,7 +86,7 @@ const PipelineManage = observer((props) => {
   function getButtons() {
     const { parentId, status } = getSelectedMenu;
     if (!parentId) {
-      return <Button icon="playlist_add">{formatMessage({ id: 'save' })}</Button>;
+      return <Button icon="playlist_add" onClick={handleSaveEdit}>{formatMessage({ id: 'save' })}</Button>;
     } else {
       let btn;
       switch (status) {
