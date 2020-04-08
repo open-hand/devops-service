@@ -5,6 +5,7 @@ import { DataSet } from 'choerodon-ui/pro';
 import useStore from '../../../../../stores/useStore';
 import useStepStore from './useStore';
 import AddStepFormDataSet from './AddStepDataset';
+import useEditBlockStore from '../../../../../stores/useEditBlockStore';
 
 const Store = createContext();
 
@@ -17,8 +18,8 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     children,
     pipelineId,
   } = props;
-  
-  const stepStore = useStepStore();
+
+  const stepStore = useEditBlockStore();
   const addStepDs = useMemo(() => new DataSet(AddStepFormDataSet()), []);
 
   const value = {

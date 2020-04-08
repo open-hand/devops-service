@@ -5,13 +5,14 @@ import { Button, Icon, Tooltip } from 'choerodon-ui';
 import { Modal } from 'choerodon-ui/pro';
 import StatusDot from '../statusDot';
 import CodeQuality from '../codeQuality';
-
+import CodeLog from '../codeLog';
 import './index.less';
 
 function handleDropDown(e) {
   // const target = e.currentTarget;
   // console.log(target);
 }
+
 
 const DetailItem = ({ piplineName, itemStatus, qualityOpen, descriptionOpen }) => (
   <div className="c7n-piplineManage-detail-column-item">
@@ -114,7 +115,7 @@ export default observer((props) => {
       style: {
         width: 'calc(100vw - 3.52rem)',
       },
-      children: 'hello',
+      children: <CodeLog />,
       drawer: true,
       okText: '关闭',
       footer: (okbtn) => (
