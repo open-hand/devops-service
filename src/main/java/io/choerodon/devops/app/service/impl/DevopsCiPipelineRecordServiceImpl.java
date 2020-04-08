@@ -209,21 +209,21 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 if (!CollectionUtils.isEmpty(ciJobRecordDTOS)) {
                     Map<String, List<DevopsCiJobRecordDTO>> statsuMap = ciJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStatus));
 
-                    if (CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.CREATED.value()))) {
+                    if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.CREATED.value()))) {
                         stageRecord.setStatus(JobStatusEnum.CREATED.value());
-                    } else if (CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.PENDING.value()))) {
+                    } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.PENDING.value()))) {
                         stageRecord.setStatus(JobStatusEnum.PENDING.value());
-                    } else if (CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.RUNNING.value()))) {
+                    } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.RUNNING.value()))) {
                         stageRecord.setStatus(JobStatusEnum.RUNNING.value());
-                    } else if (CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.FAILED.value()))) {
+                    } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.FAILED.value()))) {
                         stageRecord.setStatus(JobStatusEnum.FAILED.value());
-                    } else if (CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.SUCCESS.value()))) {
+                    } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.SUCCESS.value()))) {
                         stageRecord.setStatus(JobStatusEnum.SUCCESS.value());
-                    } else if (CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.CANCELED.value()))) {
+                    } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.CANCELED.value()))) {
                         stageRecord.setStatus(JobStatusEnum.CANCELED.value());
-                    } else if (CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.SKIPPED.value()))) {
+                    } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.SKIPPED.value()))) {
                         stageRecord.setStatus(JobStatusEnum.SKIPPED.value());
-                    } else if (CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.MANUAL.value()))) {
+                    } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.MANUAL.value()))) {
                         stageRecord.setStatus(JobStatusEnum.MANUAL.value());
                     }
                 }
