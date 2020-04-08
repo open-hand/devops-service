@@ -22,9 +22,10 @@ const EditItem = (props) => {
     jobDetail,
     PipelineCreateFormDataSet,
     AppServiceOptionsDs,
+    appServiceId,
   } = props;
 
-  const { type, name, appServiceId } = jobDetail;
+  const { type, name } = jobDetail;
 
   const {
     editBlockStore, stepStore,
@@ -135,8 +136,9 @@ export default observer((props) => {
           sequence={sequence}
           key={Math.random()}
           edit={edit}
-          AppServiceOptionsDs={AppServiceOptionsDs}
-          PipelineCreateFormDataSet={PipelineCreateFormDataSet}
+          appServiceId={!edit && appServiceId}
+          AppServiceOptionsDs={edit && AppServiceOptionsDs}
+          PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
           jobDetail={item}
         />)
       }
