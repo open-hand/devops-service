@@ -13,7 +13,6 @@ import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
-import io.choerodon.devops.infra.dto.gitlab.ci.Include;
 import io.choerodon.devops.infra.dto.gitlab.ci.OnlyExceptPolicy;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.DefaultTriggerRefTypeEnum;
