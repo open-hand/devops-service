@@ -13,10 +13,25 @@ const PipelineCreate = observer(() => {
     PipelineCreateFormDataSet,
     modal,
     editBlockStore,
+    createUseStore,
+    AppState: {
+      currentMenuType: {
+        id,
+      },
+    },
   } = usePipelineCreateStore();
 
-  const handleCreate = () => {
-    console.log(editBlockStore.getStepData2);
+  const handleCreate = async () => {
+    const result = await PipelineCreateFormDataSet.validate();
+    if (result) {
+      const data = {
+        ...PipelineCreateFormDataSet.toData()[0],
+        stageList: editBlockStore.getStepData2,
+      };
+      createUseStore.axiosCreatePipeline(data, id).then((res) => {
+        window.console.log(res);
+      });
+    }
     return false;
   };
 
