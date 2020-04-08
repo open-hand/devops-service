@@ -85,20 +85,16 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Map<Long, DevopsCiStageDTO> stageMap = devopsCiStageDTOList.stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
         Map<String, DevopsCiJobDTO> jobMap = devopsCiJobDTOS.stream().collect(Collectors.toMap(v -> v.getName(), v -> v));
         // 检验是否是手动修改gitlab-ci.yaml文件生成的流水线记录
-        boolean checkAvailable = true;
         for(CiJobWebHookVO job : pipelineWebHookVO.getBuilds()) {
             DevopsCiJobDTO devopsCiJobDTO = jobMap.get(job.getName());
             if (devopsCiJobDTO == null) {
-                checkAvailable = false;
+                return;
             } else {
                 DevopsCiStageDTO devopsCiStageDTO = stageMap.get(devopsCiJobDTO.getCiStageId());
                 if (devopsCiStageDTO == null || !devopsCiStageDTO.getName().equals(job.getStage())) {
-                    checkAvailable = false;
+                    return;
                 }
             }
-        }
-        if (!checkAvailable) {
-            return;
         }
         pipelineWebHookVO.setToken(token);
         try {
