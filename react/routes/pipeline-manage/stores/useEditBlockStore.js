@@ -34,16 +34,10 @@ export default function useStore() {
         }
       });
     },
-    newJob(sequence) {
-      const obj = {
-        triggerRefs: 'master',
-        metadata: '',
-        name: 'maven_build',
-        type: 'build',
-      };
+    newJob(sequence, data) {
       this.dataSource.forEach((item, index) => {
         if (item.sequence === sequence) {
-          this.dataSource.jobList.push(obj);
+          this.dataSource[index].jobList.push(data);
         }
       });
     },

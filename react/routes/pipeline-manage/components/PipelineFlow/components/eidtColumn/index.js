@@ -8,10 +8,10 @@ import { usePipelineStageEditStore } from '../stageEditBlock/stores';
 import AddTask from '../../../PipelineCreate/components/AddTask';
 import { usePipelineCreateStore } from '../../../PipelineCreate/stores';
 
-const EditItem = ({ taskName, stepName, id }) => (
+const EditItem = ({ taskName, stepName, type, bzmc }) => (
   <div className="c7n-piplineManage-edit-column-item">
     <div className="c7n-piplineManage-edit-column-item-header">
-      【{stepName}】{taskName}
+      【{bzmc}】{taskName}
     </div>
     <div className="c7n-piplineManage-edit-column-item-btnGroup">
       <Button
@@ -34,7 +34,7 @@ export default observer(({ jobList, sequence, name, columnIndex }) => {
   const {
     addStepDs,
     stepStore: {
-      addNewStep, removeStep, eidtStep,
+      addNewStep, removeStep, eidtStep, newJob,
     },
   } = usePipelineStageEditStore();
 
@@ -83,8 +83,8 @@ export default observer(({ jobList, sequence, name, columnIndex }) => {
     jobList.length > 0 ? <div className="c7n-piplineManage-edit-column-lists">
       {
         jobList.slice().map(item => <EditItem
-          key={item.sequence}
-          stepName={name}
+          key={item.glyyfw}
+          taskName={name}
           {...item}
         />)
       }
@@ -125,7 +125,7 @@ export default observer(({ jobList, sequence, name, columnIndex }) => {
   }
 
   function hanleStepCreateOk(data) {
-    // console.log(data);
+    newJob(sequence, data);
   }
 
   function openNewTaskModal() {
