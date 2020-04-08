@@ -6,11 +6,7 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
+import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
@@ -25,6 +21,13 @@ import io.choerodon.devops.infra.enums.SonarAuthType;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.util.*;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 /**
  * 〈功能简述〉
@@ -45,6 +48,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private String gatewayUrl;
 
     private DevopsCiPipelineMapper devopsCiPipelineMapper;
+    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     private DevopsCiStageService devopsCiStageService;
     private DevopsCiJobService devopsCiJobService;
     private DevopsCiContentService devopsCiContentService;
@@ -52,8 +56,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private UserAttrService userAttrService;
     private AppServiceService appServiceService;
 
-    public DevopsCiPipelineServiceImpl(DevopsCiPipelineMapper devopsCiPipelineMapper, DevopsCiStageService devopsCiStageService, DevopsCiJobService devopsCiJobService, DevopsCiContentService devopsCiContentService, GitlabServiceClientOperator gitlabServiceClientOperator, UserAttrService userAttrService, PermissionHelper permissionHelper, AppServiceService appServiceService) {
+    public DevopsCiPipelineServiceImpl(DevopsCiPipelineMapper devopsCiPipelineMapper, @Lazy DevopsCiPipelineRecordService devopsCiPipelineRecordService, DevopsCiStageService devopsCiStageService, DevopsCiJobService devopsCiJobService, DevopsCiContentService devopsCiContentService, GitlabServiceClientOperator gitlabServiceClientOperator, UserAttrService userAttrService, AppServiceService appServiceService) {
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
+        this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
         this.devopsCiStageService = devopsCiStageService;
         this.devopsCiJobService = devopsCiJobService;
         this.devopsCiContentService = devopsCiContentService;
@@ -225,7 +230,20 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (projectId == null) {
             throw new CommonException(ERROR_PROJECT_ID_IS_NULL);
         }
-        return devopsCiPipelineMapper.queryByProjectIdAndName(projectId, name);
+        List<DevopsCiPipelineVO> devopsCiPipelineVOS = devopsCiPipelineMapper.queryByProjectIdAndName(projectId, name);
+        PageRequest pageable = PageRequest.of(1, 5, Sort.by(Sort.Direction.DESC, "id"));
+
+        devopsCiPipelineVOS.forEach(devopsCiPipelineVO -> {
+            PageInfo<DevopsCiPipelineRecordVO> pipelineRecordVOPageInfo = devopsCiPipelineRecordService.pagingPipelineRecord(projectId, devopsCiPipelineVO.getId(), pageable);
+            if (pipelineRecordVOPageInfo.getSize() > 0) {
+                devopsCiPipelineVO.setLatestExecuteDate(pipelineRecordVOPageInfo.getList().get(0).getCreatedDate());
+                devopsCiPipelineVO.setLatestExecuteStatus(pipelineRecordVOPageInfo.getList().get(0).getStatus());
+            }
+            devopsCiPipelineVO.setPipelineRecordVOList(pipelineRecordVOPageInfo.getList());
+            devopsCiPipelineVO.setHasMoreRecords(pipelineRecordVOPageInfo.isHasNextPage());
+        });
+
+        return devopsCiPipelineVOS;
     }
 
     /**

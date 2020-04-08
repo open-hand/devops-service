@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.Date;
 import java.util.List;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -27,15 +28,24 @@ public class DevopsCiPipelineVO {
     @ApiModelProperty("流水线关联应用服务id")
     @NotNull(message = "error.pipeline.appSvc.id.cannot.be.null")
     private Long appServiceId;
-
+    @ApiModelProperty("流水线关联应用服务名称/nullable")
     private String appServiceName;
-
+    @ApiModelProperty("是否启用/nullable")
+    private Boolean enabled;
     @ApiModelProperty("流水线触发方式")
     @NotEmpty(message = "error.pipeline.triggerType.cannot.be.null")
     private String triggerType;
+    @ApiModelProperty("最近执行时间/nullable")
+    private Date latestExecuteDate;
+    @ApiModelProperty("最近执行记录状态/nullable")
+    private String latestExecuteStatus;
     @ApiModelProperty("阶段信息")
     @Valid
     private List<DevopsCiStageVO> stageList;
+
+    private Boolean hasMoreRecords;
+
+    private List<DevopsCiPipelineRecordVO> pipelineRecordVOList;
 
     private Long objectVersionNumber;
 
@@ -101,5 +111,45 @@ public class DevopsCiPipelineVO {
 
     public void setAppServiceName(String appServiceName) {
         this.appServiceName = appServiceName;
+    }
+
+    public List<DevopsCiPipelineRecordVO> getPipelineRecordVOList() {
+        return pipelineRecordVOList;
+    }
+
+    public void setPipelineRecordVOList(List<DevopsCiPipelineRecordVO> pipelineRecordVOList) {
+        this.pipelineRecordVOList = pipelineRecordVOList;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public Date getLatestExecuteDate() {
+        return latestExecuteDate;
+    }
+
+    public void setLatestExecuteDate(Date latestExecuteDate) {
+        this.latestExecuteDate = latestExecuteDate;
+    }
+
+    public String getLatestExecuteStatus() {
+        return latestExecuteStatus;
+    }
+
+    public void setLatestExecuteStatus(String latestExecuteStatus) {
+        this.latestExecuteStatus = latestExecuteStatus;
+    }
+
+    public Boolean getHasMoreRecords() {
+        return hasMoreRecords;
+    }
+
+    public void setHasMoreRecords(Boolean hasMoreRecords) {
+        this.hasMoreRecords = hasMoreRecords;
     }
 }

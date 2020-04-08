@@ -5,7 +5,8 @@
 
     <select id="queryByProjectIdAndName" resultType="io.choerodon.devops.api.vo.DevopsCiPipelineVO">
         SELECT
-        dcp.*, das.`name` AS app_service_name
+        dcp.id,dcp.`name`,dcp.is_enabled AS enabled, dcp.app_service_id,dcp.trigger_type,dcp.project_id,
+        das.`name` AS app_service_name
         FROM devops_ci_pipeline dcp
         INNER JOIN devops_app_service das ON dcp.app_service_id = das.id
         <where>
