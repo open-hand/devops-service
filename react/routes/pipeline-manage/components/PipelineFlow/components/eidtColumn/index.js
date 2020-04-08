@@ -8,8 +8,15 @@ import { usePipelineStageEditStore } from '../stageEditBlock/stores';
 import AddTask from '../../../PipelineCreate/components/AddTask';
 import { usePipelineCreateStore } from '../../../PipelineCreate/stores';
 
+const jobTask = {
+  build: '构建',
+  sonnar: '代码优化',
+};
+
 const EditItem = (props) => {
-  const { taskName, stepName, type, bzmc, index, sequence, edit, jobDetail } = props;
+  const { taskName, index, sequence, edit, jobDetail } = props;
+
+  const { type, name } = jobDetail;
 
   const {
     editBlockStore, stepStore,
@@ -29,7 +36,7 @@ const EditItem = (props) => {
       title: `编辑${taskName}任务`,
       children: <AddTask
         jobDetail={jobDetail}
-        handleEditOk={handleEditOk}
+        handleOk={handleEditOk}
       />,
       style: {
         width: '740px',
@@ -42,7 +49,7 @@ const EditItem = (props) => {
   return (
     <div className="c7n-piplineManage-edit-column-item">
       <div className="c7n-piplineManage-edit-column-item-header">
-        【{bzmc}】{taskName}
+        【{jobTask[type]}】{name}
       </div>
       <div className="c7n-piplineManage-edit-column-item-btnGroup">
         <Button
@@ -113,7 +120,6 @@ export default observer((props) => {
     jobList.length > 0 ? <div className="c7n-piplineManage-edit-column-lists">
       {
         jobList.slice().map((item, index) => <EditItem
-          taskName={name}
           index={index}
           sequence={sequence}
           key={Math.random()}
@@ -165,10 +171,10 @@ export default observer((props) => {
       key: Modal.key(),
       title: '添加任务',
       children: <AddTask
-        PipelineCreateFormDataSet={PipelineCreateFormDataSet}
-        AppServiceOptionsDs={AppServiceOptionsDs}
+        PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
+        AppServiceOptionsDs={edit && AppServiceOptionsDs}
         handleOk={hanleStepCreateOk}
-        appServiceId={appServiceId}
+        appServiceId={!edit && appServiceId}
       />,
       style: {
         width: '740px',
