@@ -88,13 +88,13 @@ export default function useStore() {
       if (edit) {
         this.dataSource2.forEach((item, index) => {
           if (item.sequence === sequence) {
-            this.dataSource2[index].jobList[key] === data;
+            this.dataSource2[index].jobList[key] = data;
           }
         });
       } else {
         this.dataSource.forEach((item, index) => {
           if (item.sequence === sequence) {
-            this.dataSource2[index].jobList[key] === data;
+            this.dataSource2[index].jobList[key] = data;
           }
         });
       }
