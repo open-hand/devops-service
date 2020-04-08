@@ -10,6 +10,7 @@ import io.choerodon.devops.app.service.DevopsCiJobService;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.enums.SonarAuthType;
 import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -117,5 +118,11 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     public String queryTrace(Long projectId, Long jobId) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId().longValue());
         return gitlabServiceClientOperator.queryTrace(projectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+    }
+
+    @Override
+    public JobDTO retryJob(Long gitlabProjectId, Long jobId) {
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId().longValue());
+        return gitlabServiceClientOperator.retryJob(gitlabProjectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue());
     }
 }

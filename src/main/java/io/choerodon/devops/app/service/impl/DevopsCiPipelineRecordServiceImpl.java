@@ -15,13 +15,12 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.CiJobWebHookVO;
-import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
-import io.choerodon.devops.api.vo.DevopsCiStageRecordVO;
-import io.choerodon.devops.api.vo.PipelineWebHookVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.JobStatusEnum;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -49,6 +48,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private AppServiceService applicationService;
     private TransactionalProducer transactionalProducer;
     private UserAttrService userAttrService;
+    private BaseServiceClientOperator baseServiceClientOperator;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -60,7 +60,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                              DevopsCiPipelineService devopsCiPipelineService,
                                              AppServiceService applicationService,
                                              TransactionalProducer transactionalProducer,
-                                             UserAttrService userAttrService) {
+                                             UserAttrService userAttrService,
+                                             BaseServiceClientOperator baseServiceClientOperator) {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
         this.devopsCiStageService = devopsCiStageService;
@@ -70,6 +71,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         this.applicationService = applicationService;
         this.transactionalProducer = transactionalProducer;
         this.userAttrService = userAttrService;
+        this.baseServiceClientOperator = baseServiceClientOperator;
     }
 
     @Override
@@ -208,24 +210,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 List<DevopsCiJobRecordDTO> ciJobRecordDTOS = jobRecordMap.get(stageRecord.getName());
                 if (!CollectionUtils.isEmpty(ciJobRecordDTOS)) {
                     Map<String, List<DevopsCiJobRecordDTO>> statsuMap = ciJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStatus));
-
-                    if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.CREATED.value()))) {
-                        stageRecord.setStatus(JobStatusEnum.CREATED.value());
-                    } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.PENDING.value()))) {
-                        stageRecord.setStatus(JobStatusEnum.PENDING.value());
-                    } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.RUNNING.value()))) {
-                        stageRecord.setStatus(JobStatusEnum.RUNNING.value());
-                    } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.FAILED.value()))) {
-                        stageRecord.setStatus(JobStatusEnum.FAILED.value());
-                    } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.SUCCESS.value()))) {
-                        stageRecord.setStatus(JobStatusEnum.SUCCESS.value());
-                    } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.CANCELED.value()))) {
-                        stageRecord.setStatus(JobStatusEnum.CANCELED.value());
-                    } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.SKIPPED.value()))) {
-                        stageRecord.setStatus(JobStatusEnum.SKIPPED.value());
-                    } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.MANUAL.value()))) {
-                        stageRecord.setStatus(JobStatusEnum.MANUAL.value());
-                    }
+                    calculateStageStatus(stageRecord, statsuMap);
                 }
 
             });
@@ -234,6 +219,60 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             pipelineRecord.setStageRecordVOList(devopsCiStageRecordVOS);
         });
         return pipelineRecordInfo;
+    }
+
+    @Override
+    public DevopsCiPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId) {
+        DevopsCiPipelineRecordDTO pipelineRecordDTO = new DevopsCiPipelineRecordDTO();
+        pipelineRecordDTO.setGitlabPipelineId(gitlabPipelineId);
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectOne(pipelineRecordDTO);
+        DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = ConvertUtils.convertObject(devopsCiPipelineRecordDTO, DevopsCiPipelineRecordVO.class);
+        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsCiPipelineRecordDTO.getTriggerUserId());
+        devopsCiPipelineRecordVO.setUserDTO(iamUserDTO);
+
+        // 查询流水线记录下的job记录
+        DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
+        recordDTO.setCiPipelineRecordId(devopsCiPipelineRecordDTO.getId());
+        List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOS = devopsCiJobRecordMapper.select(recordDTO);
+        Map<String, List<DevopsCiJobRecordDTO>> jobRecordMap = devopsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStage));
+        // 查询阶段信息
+        List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
+        List<DevopsCiStageRecordVO> devopsCiStageRecordVOS = ConvertUtils.convertList(devopsCiStageDTOList, DevopsCiStageRecordVO.class);
+
+        // 计算stage状态
+        devopsCiStageRecordVOS.forEach(stageRecord -> {
+            List<DevopsCiJobRecordDTO> ciJobRecordDTOS = jobRecordMap.get(stageRecord.getName());
+            if (!CollectionUtils.isEmpty(ciJobRecordDTOS)) {
+                Map<String, List<DevopsCiJobRecordDTO>> statsuMap = ciJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStatus));
+                calculateStageStatus(stageRecord, statsuMap);
+                List<DevopsCiJobRecordVO> devopsCiJobRecordVOS = ConvertUtils.convertList(ciJobRecordDTOS, DevopsCiJobRecordVO.class);
+                stageRecord.setJobRecordVOList(devopsCiJobRecordVOS);
+            }
+        });
+        // stage排序
+        devopsCiStageRecordVOS = devopsCiStageRecordVOS.stream().sorted(Comparator.comparing(DevopsCiStageRecordVO::getSequence)).filter(v -> v.getStatus() != null).collect(Collectors.toList());
+        devopsCiPipelineRecordVO.setStageRecordVOList(devopsCiStageRecordVOS);
+        return devopsCiPipelineRecordVO;
+    }
+
+    private void calculateStageStatus(DevopsCiStageRecordVO stageRecord, Map<String, List<DevopsCiJobRecordDTO>> statsuMap) {
+        if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.CREATED.value()))) {
+            stageRecord.setStatus(JobStatusEnum.CREATED.value());
+        } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.PENDING.value()))) {
+            stageRecord.setStatus(JobStatusEnum.PENDING.value());
+        } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.RUNNING.value()))) {
+            stageRecord.setStatus(JobStatusEnum.RUNNING.value());
+        } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.FAILED.value()))) {
+            stageRecord.setStatus(JobStatusEnum.FAILED.value());
+        } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.SUCCESS.value()))) {
+            stageRecord.setStatus(JobStatusEnum.SUCCESS.value());
+        } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.CANCELED.value()))) {
+            stageRecord.setStatus(JobStatusEnum.CANCELED.value());
+        } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.SKIPPED.value()))) {
+            stageRecord.setStatus(JobStatusEnum.SKIPPED.value());
+        } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.MANUAL.value()))) {
+            stageRecord.setStatus(JobStatusEnum.MANUAL.value());
+        }
     }
 
     private Long getIamUserIdByGitlabUserName(String username) {
