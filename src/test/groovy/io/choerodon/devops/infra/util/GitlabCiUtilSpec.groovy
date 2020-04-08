@@ -148,4 +148,23 @@ class GitlabCiUtilSpec extends Specification {
         noExceptionThrown()
         result.size() == 2
     }
+
+    def "RenderSonarCommand"() {
+        given: "准备数据"
+        def sonarUrl = "http://example.sonar"
+        def expect = 'mvn --batch-mode verify sonar:sonar -Dsonar.host.url=http://example.sonar -Dsonar.login=toeknasdf1 -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}'
+
+        when: "调用方法"
+        def result = GitlabCiUtil.renderSonarCommand(sonarUrl, "toeknasdf1")
+
+        then: "校验结果"
+        expect == result
+
+        when: "测试用户名密码的形式"
+        expect = 'mvn --batch-mode verify sonar:sonar -Dsonar.host.url=http://example.sonar -Dsonar.login=username -Dsonar.password=password -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}'
+        result = GitlabCiUtil.renderSonarCommand(sonarUrl, "username", "password")
+
+        then: "校验结果"
+        result == expect
+    }
 }

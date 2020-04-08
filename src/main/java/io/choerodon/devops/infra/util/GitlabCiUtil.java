@@ -14,9 +14,6 @@ import org.yaml.snakeyaml.representer.Representer;
 
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
 
-import java.util.Map;
-import java.util.Set;
-
 /**
  * @author zmf
  * @since 20-4-2
@@ -162,18 +159,29 @@ public class GitlabCiUtil {
         return result;
     }
 
-    public static String mapToString(Map<String, String> parms) {
-        Set<String> keySet = parms.keySet();
-        String[] keyArray = keySet.toArray(new String[keySet.size()]);
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < keyArray.length; i++) {
-            if (parms.get(keyArray[i]).trim().length() > 0) {
-                sb.append(keyArray[i]).append(parms.get(keyArray[i]).trim());
-            }
-            if (i != keyArray.length - 1) {
-                sb.append("\n");
-            }
-        }
-        return sb.toString();
+    /**
+     * 获取用于CI的sonar的命令
+     *
+     * @param sonarUrl sonar服务地址
+     * @param token    认证的token
+     * @return sonar命令
+     */
+    public static String renderSonarCommand(String sonarUrl, String token) {
+        return SONAR_TOKEN_TEMPLATE.replace(SONAR_URL_ANCHOR, sonarUrl).replace(SONAR_TOKEN_ANCHOR, token);
+    }
+
+    /**
+     * 获取用于CI的sonar的命令
+     *
+     * @param sonarUrl      sonar服务地址
+     * @param sonarUsername sonar用户名
+     * @param sonarPassword sonar用户密码
+     * @return sonar命令
+     */
+    public static String renderSonarCommand(String sonarUrl, String sonarUsername, String sonarPassword) {
+        return SONAR_USER_PASSWORD_TEMPLATE
+                .replace(SONAR_URL_ANCHOR, sonarUrl)
+                .replace(SONAR_TOKEN_ANCHOR, sonarUsername)
+                .replace(SONAR_PASSWORD_ANCHOR, sonarPassword);
     }
 }
