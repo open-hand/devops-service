@@ -39,5 +39,5 @@ public interface DevopsCiPipelineService {
      */
     DevopsCiPipelineDTO queryByAppSvcId(Long id);
 
-    List<DevopsCiPipelineVO> list(Long projectId);
+    List<DevopsCiPipelineVO> listByProjectIdAndAppName(Long projectId, String name);
 }

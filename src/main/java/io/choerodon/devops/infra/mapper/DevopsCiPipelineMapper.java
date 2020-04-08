@@ -16,5 +16,6 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface DevopsCiPipelineMapper extends Mapper<DevopsCiPipelineDTO> {
 
-    List<DevopsCiPipelineVO> queryByProjectId(@Param("projectId") Long projectId);
+    List<DevopsCiPipelineVO> queryByProjectIdAndName(@Param("projectId") Long projectId,
+                                                     @Param("name") String name);
 }

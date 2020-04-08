@@ -67,9 +67,10 @@ public class DevopsCiPipelineController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目下流水线")
     @GetMapping
-    public ResponseEntity<List<DevopsCiPipelineVO>> list(
+    public ResponseEntity<List<DevopsCiPipelineVO>> listByProjectIdAndAppName(
             @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId) {
-        return ResponseEntity.ok(devopsCiPipelineService.list(projectId));
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam(value = "name", required = false) String name) {
+        return ResponseEntity.ok(devopsCiPipelineService.listByProjectIdAndAppName(projectId, name));
     }
 }

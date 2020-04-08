@@ -3,11 +3,16 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper">
 
 
-    <select id="queryByProjectId" resultType="io.choerodon.devops.api.vo.DevopsCiPipelineVO">
+    <select id="queryByProjectIdAndName" resultType="io.choerodon.devops.api.vo.DevopsCiPipelineVO">
         SELECT
         dcp.*, das.`name` AS app_service_name
         FROM devops_ci_pipeline dcp
         INNER JOIN devops_app_service das ON dcp.app_service_id = das.id
-        WHERE dcp.project_id = #{projectId}
+        <where>
+            dcp.project_id = #{projectId}
+            <if test="name">
+                and das.name like CONCAT(CONCAT('%', #{name}),'%')
+            </if>
+        </where>
     </select>
 </mapper>

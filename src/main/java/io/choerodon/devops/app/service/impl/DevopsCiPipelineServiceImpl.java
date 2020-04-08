@@ -166,6 +166,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 // 保存job信息
                 devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                     DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
+                    devopsCiJobDTO.setId(null);
                     devopsCiJobDTO.setCiStageId(devopsCiStageVO.getId());
                     devopsCiJobDTO.setCiPipelineId(ciPipelineId);
                     devopsCiJobService.create(devopsCiJobDTO);
@@ -220,11 +221,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     @Override
-    public List<DevopsCiPipelineVO> list(Long projectId) {
+    public List<DevopsCiPipelineVO> listByProjectIdAndAppName(Long projectId, String name) {
         if (projectId == null) {
             throw new CommonException(ERROR_PROJECT_ID_IS_NULL);
         }
-        return devopsCiPipelineMapper.queryByProjectId(projectId);
+        return devopsCiPipelineMapper.queryByProjectIdAndName(projectId, name);
     }
 
     /**
