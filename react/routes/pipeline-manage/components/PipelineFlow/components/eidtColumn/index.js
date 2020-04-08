@@ -14,9 +14,17 @@ const jobTask = {
 };
 
 const EditItem = (props) => {
-  const { taskName, index, sequence, edit, jobDetail } = props;
+  const {
+    taskName,
+    index,
+    sequence,
+    edit,
+    jobDetail,
+    PipelineCreateFormDataSet,
+    AppServiceOptionsDs,
+  } = props;
 
-  const { type, name } = jobDetail;
+  const { type, name, appServiceId } = jobDetail;
 
   const {
     editBlockStore, stepStore,
@@ -36,7 +44,10 @@ const EditItem = (props) => {
       title: `编辑${taskName}任务`,
       children: <AddTask
         jobDetail={jobDetail}
+        appServiceId={!edit && appServiceId}
         handleOk={handleEditOk}
+        PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
+        AppServiceOptionsDs={edit && AppServiceOptionsDs}
       />,
       style: {
         width: '740px',
@@ -124,6 +135,8 @@ export default observer((props) => {
           sequence={sequence}
           key={Math.random()}
           edit={edit}
+          AppServiceOptionsDs={AppServiceOptionsDs}
+          PipelineCreateFormDataSet={PipelineCreateFormDataSet}
           jobDetail={item}
         />)
       }
