@@ -18,8 +18,8 @@ import io.choerodon.devops.infra.annotation.YamlUnwrapped;
  * @since 20-4-2
  */
 public class GitlabCi {
-    @ApiModelProperty("Using the include keyword, you can allow the inclusion of external YAML files")
-    private List<Include> include;
+    @ApiModelProperty("Url to include external yaml from")
+    private String include;
 
     @ApiModelProperty("The image for jobs")
     private String image;
@@ -39,11 +39,11 @@ public class GitlabCi {
     private List<String> beforeScript;
 
 
-    public List<Include> getInclude() {
+    public String getInclude() {
         return include;
     }
 
-    public void setInclude(List<Include> include) {
+    public void setInclude(String include) {
         this.include = include;
     }
 

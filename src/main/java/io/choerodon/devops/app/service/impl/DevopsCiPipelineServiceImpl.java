@@ -243,9 +243,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     private static String buildIncludeYaml(String ciFileIncludeUrl) {
         GitlabCi gitlabCi = new GitlabCi();
-        Include include = new Include();
-        include.setRemote(Objects.requireNonNull(ciFileIncludeUrl));
-        gitlabCi.setInclude(ArrayUtil.singleAsList(include));
+        gitlabCi.setInclude(ciFileIncludeUrl);
         return GitlabCiUtil.gitlabCi2yaml(gitlabCi);
     }
 

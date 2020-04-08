@@ -18,7 +18,7 @@ import io.choerodon.devops.infra.dto.gitlab.ci.OnlyExceptPolicy
 class GitlabCiUtilSpec extends Specification {
     def "GitlabCi2yaml"() {
         given: "准备测试数据"
-        String json = "{\"include\":[{\"local\":\"/url.yaml\"},{\"remote\":\"https://sdf.com/ci.yaml\"}],\"image\":\"registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.9.1\",\"stages\":[\"build\",\"release\"],\"build backend\":{\"stage\":\"build\",\"only\":{\"refs\":[\"master\"]},\"script\":[\"ls -al\",\"rm -rf ./*\"],\"except\":{\"refs\":[\"master\"]},\"cache\":{\"key\":{\"files\":[\"app.jar\"]},\"paths\":[\"./name.jar\",\"./app.jar\"],\"untracked\":true}},\"release backend\":{\"stage\":\"build\",\"only\":{\"refs\":[\"master\"]},\"script\":[\"ls -al\",\"rm -rf ./*\"],\"except\":{\"refs\":[\"master\"]},\"cache\":{\"key\":{\"files\":[\"app.jar\"]},\"paths\":[\"./name.jar\",\"./app.jar\"],\"untracked\":true}}}"
+        String json = "{\"include\":\"https://sdf.com/ci.yaml\",\"image\":\"registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.9.1\",\"stages\":[\"build\",\"release\"],\"build backend\":{\"stage\":\"build\",\"only\":{\"refs\":[\"master\"]},\"script\":[\"ls -al\",\"rm -rf ./*\"],\"except\":{\"refs\":[\"master\"]},\"cache\":{\"key\":{\"files\":[\"app.jar\"]},\"paths\":[\"./name.jar\",\"./app.jar\"],\"untracked\":true}},\"release backend\":{\"stage\":\"build\",\"only\":{\"refs\":[\"master\"]},\"script\":[\"ls -al\",\"rm -rf ./*\"],\"except\":{\"refs\":[\"master\"]},\"cache\":{\"key\":{\"files\":[\"app.jar\"]},\"paths\":[\"./name.jar\",\"./app.jar\"],\"untracked\":true}}}"
         GitlabCi gitlabCi = new ObjectMapper().readValue(json, GitlabCi)
         gitlabCi.setBeforeScript(["http_status_code=`curl -o .auto_devops.sh -s -m 10 --connect-timeout 10 -w %{http_code} \"\${CHOERODON_URL}/devops/ci?token=\${Token}&type=microservice\"`\n" +
                                           "if [ \"\$http_status_code\" != \"200\" ]; then\n" +
@@ -69,6 +69,7 @@ class GitlabCiUtilSpec extends Specification {
         jobs.put("docker-build", build)
         jobs.put("test zmf", test)
         gitlabCi.setJobs(jobs)
+        gitlabCi.setInclude("https://sdf.com/ci.yaml")
 
 
         when: "调用转为yaml的方法"
