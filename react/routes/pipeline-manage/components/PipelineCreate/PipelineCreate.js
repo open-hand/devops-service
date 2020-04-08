@@ -1,5 +1,6 @@
 import React from 'react';
 import { Form, TextField, Select, SelectBox, Modal, Button } from 'choerodon-ui/pro';
+import { message } from 'choerodon-ui';
 import { observer } from 'mobx-react-lite';
 import { usePipelineCreateStore } from './stores';
 import AddTask from './components/AddTask';
@@ -19,6 +20,7 @@ const PipelineCreate = observer(() => {
         id,
       },
     },
+    refreshTree,
   } = usePipelineCreateStore();
 
   const handleCreate = async () => {
@@ -28,11 +30,18 @@ const PipelineCreate = observer(() => {
         ...PipelineCreateFormDataSet.toData()[0],
         stageList: editBlockStore.getStepData2,
       };
-      createUseStore.axiosCreatePipeline(data, id).then((res) => {
-        window.console.log(res);
+      return createUseStore.axiosCreatePipeline(data, id).then((res) => {
+        if (res.failed) {
+          message.error(res.message);
+          return false;
+        } else {
+          refreshTree();
+          return true;
+        }
       });
+    } else {
+      return false;
     }
-    return false;
   };
 
   modal.handleOk(handleCreate);

@@ -35,7 +35,7 @@ const PipelineManage = observer((props) => {
         width: 'calc(100vw - 3.52rem)',
       },
       drawer: true,
-      children: <PipelineCreate editBlockStore={editBlockStore} />,
+      children: <PipelineCreate refreshTree={handleRefresh} editBlockStore={editBlockStore} />,
       okText: '创建',
     });
   };
