@@ -27,6 +27,9 @@ public class DevopsCiPipelineVO {
     @ApiModelProperty("流水线关联应用服务id")
     @NotNull(message = "error.pipeline.appSvc.id.cannot.be.null")
     private Long appServiceId;
+
+    private String appServiceName;
+
     @ApiModelProperty("流水线触发方式")
     @NotEmpty(message = "error.pipeline.triggerType.cannot.be.null")
     private String triggerType;
@@ -90,5 +93,13 @@ public class DevopsCiPipelineVO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public String getAppServiceName() {
+        return appServiceName;
+    }
+
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 }

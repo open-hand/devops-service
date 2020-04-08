@@ -40,6 +40,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private static final String UPDATE_PIPELINE_FAILED = "update.pipeline.failed";
     private static final String ERROR_USER_HAVE_NO_APP_PERMISSION = "error.user.have.no.app.permission";
     private static final String ERROR_APP_SVC_ID_IS_NULL = "error.app.svc.id.is.null";
+    private static final String ERROR_PROJECT_ID_IS_NULL = "error.project.id.is.null";
     @Value("${services.gateway.url}")
     private String gatewayUrl;
 
@@ -216,6 +217,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         DevopsCiPipelineDTO devopsCiPipelineDTO = new DevopsCiPipelineDTO();
         devopsCiPipelineDTO.setAppServiceId(id);
         return devopsCiPipelineMapper.selectOne(devopsCiPipelineDTO);
+    }
+
+    @Override
+    public List<DevopsCiPipelineVO> list(Long projectId) {
+        if (projectId == null) {
+            throw new CommonException(ERROR_PROJECT_ID_IS_NULL);
+        }
+        return devopsCiPipelineMapper.queryByProjectId(projectId);
     }
 
     /**

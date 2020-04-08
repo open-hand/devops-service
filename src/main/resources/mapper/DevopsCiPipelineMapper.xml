@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper">
+
+
+    <select id="queryByProjectId" resultType="io.choerodon.devops.api.vo.DevopsCiPipelineVO">
+        SELECT
+        dcp.*, das.`name` AS app_service_name
+        FROM devops_ci_pipeline dcp
+        INNER JOIN devops_app_service das ON dcp.app_service_id = das.id
+        WHERE dcp.project_id = #{projectId}
+    </select>
+</mapper>
