@@ -8,10 +8,10 @@ export default observer(() => {
   const {
     getSelectedMenu: { parentId },
     getSelectedMenu,
+    stepStore,
   } = usePipelineFlowStore();
-
   const renderPipeline = () => (
-    parentId ? <OptsDetailContent {...getSelectedMenu} /> : <PiplineEdit {...getSelectedMenu} />
+    parentId ? <OptsDetailContent {...getSelectedMenu} /> : <PiplineEdit {...getSelectedMenu} stepStore={stepStore} />
   );
 
   return (

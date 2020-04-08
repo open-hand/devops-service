@@ -30,12 +30,18 @@ const EditItem = ({ taskName, stepName, type, bzmc }) => (
   </div>
 );
 
-export default observer(({ jobList, sequence, name, columnIndex }) => {
+export default observer(({ jobList, sequence, name, columnIndex, edit }) => {
   const {
     addStepDs,
     editBlockStore, stepStore,
   } = usePipelineStageEditStore();
-  const { addNewStep, removeStep, eidtStep, newJob } = editBlockStore || stepStore;
+
+  const {
+    addNewStep,
+    removeStep,
+    eidtStep,
+    newJob,
+  } = editBlockStore || stepStore;
 
 
   let PipelineCreateFormDataSet;
@@ -53,7 +59,7 @@ export default observer(({ jobList, sequence, name, columnIndex }) => {
   async function createNewStage() {
     if (addStepDs.current && addStepDs.current.get('step')) {
       // console.log(addStepDs.current.get('step'));
-      addNewStep(columnIndex, addStepDs.current.get('step'));
+      addNewStep(columnIndex, addStepDs.current.get('step'), edit);
     } else {
       return false;
     }
@@ -72,7 +78,7 @@ export default observer(({ jobList, sequence, name, columnIndex }) => {
 
   async function editStage() {
     if (addStepDs.current && addStepDs.current.get('step')) {
-      eidtStep(sequence, addStepDs.current.get('step'));
+      eidtStep(sequence, addStepDs.current.get('step'), edit);
     } else {
       return false;
     }
@@ -120,12 +126,12 @@ export default observer(({ jobList, sequence, name, columnIndex }) => {
       title: `删除${name}阶段`,
       children: '确认删除此阶段吗？',
       key: Modal.key(),
-      onOk: () => removeStep(sequence),
+      onOk: () => removeStep(sequence, edit),
     });
   }
 
   function hanleStepCreateOk(data) {
-    newJob(sequence, data);
+    newJob(sequence, data, edit);
   }
 
   function openNewTaskModal() {

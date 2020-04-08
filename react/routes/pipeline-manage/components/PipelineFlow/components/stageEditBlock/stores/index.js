@@ -17,9 +17,8 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
   const {
     children,
     pipelineId,
+    stepStore,
   } = props;
-
-  const stepStore = useEditBlockStore();
   const addStepDs = useMemo(() => new DataSet(AddStepFormDataSet()), []);
 
   const value = {

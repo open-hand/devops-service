@@ -28,18 +28,22 @@ const defaultData = [
 export default observer(() => {
   const {
     pipelineId,
-    editBlockStore, stepStore,
+    editBlockStore,
+    stepStore,
+    edit,
   } = usePipelineStageEditStore();
 
-  const { setStepData, getStepData } = editBlockStore || stepStore;
+  const { setStepData, getStepData, getStepData2 } = editBlockStore || stepStore;
 
   useEffect(() => {
-    setStepData(pipelineId ? data : defaultData);
+    const value = pipelineId ? data : defaultData;
+    setStepData(value, edit);
   }, [pipelineId]);
 
   function renderColumn() {
-    if (getStepData.length > 0) {
-      return getStepData.map((item, index) => <EditColumn columnIndex={index} key={item.id} {...item} />);
+    const dataSource = edit ? getStepData2 : getStepData;
+    if (dataSource.length > 0) {
+      return dataSource.map((item, index) => <EditColumn columnIndex={index} key={item.id} {...item} edit={edit} />);
     }
   }
 
