@@ -70,6 +70,7 @@ const commonField = {
   all: '全部',
   not_installed: '未安装',
   branch: '分支',
+  tag: '标记',
 
   // 状态描述
   null: '无',

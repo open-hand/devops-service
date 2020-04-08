@@ -94,7 +94,7 @@ const TreeItem = observer(({ record, search }) => {
   }
 
   function getItem() {
-    const { name, appServiceName, updateDate, status = 'success', active = false, triggerType, id, parentId, stages } = record.toData();
+    const { name, appServiceName, latestExecuteDate, createdDate, status = 'success', enabled = false, triggerType, id, parentId, stageRecordVOList } = record.toData();
     if (id === 'more') {
       return (
         <div
@@ -136,14 +136,14 @@ const TreeItem = observer(({ record, search }) => {
             <TreeItemName name={`#${id}`} search={search} headSpace={false} />
           </span>
           <div className={`${prefixCls}-sidebar-header-stage`}>
-            {map(stages, ({ status: stageStatus }) => (
+            {map(stageRecordVOList, ({ status: stageStatus }) => (
               <Fragment>
                 <span className={`${prefixCls}-sidebar-header-stage-item ${prefixCls}-sidebar-header-stage-item-${stageStatus}`} />
                 <span className={`${prefixCls}-sidebar-header-stage-line`} />
               </Fragment>
             ))}
           </div>
-          <TimePopover content={updateDate} style={timePopoverStyle} />
+          <TimePopover content={createdDate} style={timePopoverStyle} />
           {actionData ? <Action data={actionData} onClick={eventStopProp} /> : <span style={{ width: 24 }} />}
         </div>
       );
@@ -156,7 +156,7 @@ const TreeItem = observer(({ record, search }) => {
         },
         {
           // service: '',
-          text: formatMessage({ id: active ? 'stop' : 'active' }),
+          text: formatMessage({ id: enabled ? 'stop' : 'active' }),
           action: handleChangeActive,
         },
         {
@@ -172,12 +172,12 @@ const TreeItem = observer(({ record, search }) => {
             <span className={`${prefixCls}-sidebar-header-name`}>
               <TreeItemName name={name} search={search} headSpace={false} />
             </span>
-            <TimePopover content={updateDate} style={timePopoverStyle} />
+            <TimePopover content={latestExecuteDate} style={timePopoverStyle} />
             <Action data={actionData} onClick={eventStopProp} />
           </div>
           <div className={`${prefixCls}-sidebar-header`}>
-            <span className={`${prefixCls}-sidebar-header-active ${prefixCls}-sidebar-header-active-${active}`}>
-              {formatMessage({ id: active ? 'active' : 'stop' })}
+            <span className={`${prefixCls}-sidebar-header-active ${prefixCls}-sidebar-header-active-${enabled}`}>
+              {formatMessage({ id: enabled ? 'active' : 'stop' })}
             </span>
             <span className={`${prefixCls}-sidebar-header-service`}>
               <TreeItemName name={appServiceName} search={search} headSpace={false} />
