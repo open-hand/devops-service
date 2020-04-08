@@ -94,7 +94,7 @@ const TreeItem = observer(({ record, search }) => {
   }
 
   function getItem() {
-    const { name, appServiceName, updateDate, status, active, type, id, parentId, stages } = record.toData();
+    const { name, appServiceName, updateDate, status = 'success', active = false, triggerType, id, parentId, stages } = record.toData();
     if (id === 'more') {
       return (
         <div
@@ -168,7 +168,7 @@ const TreeItem = observer(({ record, search }) => {
       return (
         <div className={`${prefixCls}-sidebar-header-parent`}>
           <div className={`${prefixCls}-sidebar-header`}>
-            <PipelineType name={name} type={type} />
+            <PipelineType name={name} type={triggerType} />
             <span className={`${prefixCls}-sidebar-header-name`}>
               <TreeItemName name={name} search={search} headSpace={false} />
             </span>

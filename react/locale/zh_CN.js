@@ -784,15 +784,18 @@ const pipelineManage = {
   'c7ncd.pipelineManage.trigger.user': '触发人员',
   'c7ncd.pipelineManage.execute.date': '执行时间',
   'c7ncd.pipelineManage.time': '流程耗时',
+  'c7ncd.pipelineManage.create': '创建流水线',
 };
 
 const emptyPage = {
   'empty.title.app': '暂无应用服务',
   'empty.title.env': '暂无环境',
+  'empty.title.pipeline': '暂无CI流水线',
   'empty.title.instance': '暂无实例',
   'empty.title.prohibited': '暂无权限',
   'empty.tips.app.owner': '当前项目下无应用服务，请创建',
   'empty.tips.env.owner': '当前项目下无可用环境，请创建',
+  'empty.tips.pipeline.owner': '当前项目下无CI流水线，请创建',
   'empty.tips.app.member':
     '您当前暂无此项目下任何应用服务的权限，若需查看某个应用服务的相关内容，请联系项目所有者添加权限',
   'empty.tips.env.member':

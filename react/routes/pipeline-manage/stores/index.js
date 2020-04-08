@@ -14,12 +14,13 @@ export function usePipelineManageStore() {
 
 export const StoreProvider = injectIntl(inject('AppState')((props) => {
   const {
+    AppState: { currentMenuType: { projectId } },
     children,
   } = props;
 
   const mainStore = useStore();
   const editBlockStore = useEditBlockStore();
-  const treeDs = useMemo(() => new DataSet(TreeDataSet({ mainStore })), []);
+  const treeDs = useMemo(() => new DataSet(TreeDataSet({ projectId, mainStore })), [projectId]);
 
   const data = useMemo(() => [
     {
@@ -96,9 +97,9 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     },
   ], []);
 
-  useEffect(() => {
-    treeDs.loadData(data);
-  }, []);
+  // useEffect(() => {
+  //   treeDs.loadData(data);
+  // }, []);
 
   const value = {
     ...props,

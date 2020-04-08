@@ -17,13 +17,20 @@ function handleMoreRecord(ds) {
   });
 }
 
-export default ({ mainStore }) => ({
+export default ({ projectId, mainStore }) => ({
   autoCreate: false,
+  autoQuery: true,
   selection: 'single',
   primaryKey: 'id',
   idField: 'id',
   parentField: 'parentId',
   expandField: 'expand',
+  transport: {
+    read: {
+      url: `devops/v1/projects/${projectId}/ci_pipelines`,
+      method: 'get',
+    },
+  },
   events: {
     select: ({ record }) => {
       handleSelect(record, mainStore);
@@ -34,9 +41,11 @@ export default ({ mainStore }) => ({
     },
     load: ({ dataSet }) => {
       const record = dataSet.records[0];
-      record.isSelected = true;
-      handleSelect(record, mainStore);
-      handleMoreRecord(dataSet);
+      if (record) {
+        record.isSelected = true;
+        handleSelect(record, mainStore);
+        handleMoreRecord(dataSet);
+      }
     },
   },
 });

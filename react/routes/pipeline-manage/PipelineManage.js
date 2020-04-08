@@ -1,4 +1,4 @@
-import React, { Fragment, useRef, useMemo } from 'react';
+import React, { Fragment, useRef, useMemo, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Page, Header, Breadcrumb, Content } from '@choerodon/boot';
 import { Button, Modal } from 'choerodon-ui/pro';
@@ -7,6 +7,7 @@ import PipelineFlow from './components/PipelineFlow';
 import DragBar from '../../components/drag-bar';
 import PipelineCreate from './components/PipelineCreate';
 import RecordDetail from './components/record-detail';
+import EmptyPage from '../../components/empty-page';
 import { usePipelineManageStore } from './stores';
 
 import './index.less';
@@ -23,6 +24,7 @@ const PipelineManage = observer((props) => {
     prefixCls,
     mainStore,
     editBlockStore,
+    treeDs,
   } = usePipelineManageStore();
 
   const handleCreatePipeline = () => {
@@ -41,6 +43,10 @@ const PipelineManage = observer((props) => {
   const rootRef = useRef(null);
 
   const { getSelectedMenu } = mainStore;
+
+  function handleRefresh() {
+    treeDs.query();
+  }
 
   function openRecordDetail() {
     const { id } = getSelectedMenu;
@@ -88,25 +94,47 @@ const PipelineManage = observer((props) => {
   return (
     <Page className="pipelineManage_page">
       <Header title="流水线">
-        <Button onClick={handleCreatePipeline} icon="playlist_add">创建流水线</Button>
-        {getButtons()}
-        <Button icon="refresh">{formatMessage({ id: 'refresh' })}</Button>
+        <Button
+          onClick={handleCreatePipeline}
+          icon="playlist_add"
+        >
+          {formatMessage({ id: `${intlPrefix}.create` })}
+        </Button>
+        {!treeDs.length && treeDs.status === 'ready' ? null : getButtons()}
+        <Button
+          onClick={handleRefresh}
+          icon="refresh"
+        >
+          {formatMessage({ id: 'refresh' })}
+        </Button>
       </Header>
       <Breadcrumb />
       <Content className={`${prefixCls}-content`}>
-        <div
-          ref={rootRef}
-          className={`${prefixCls}-wrap`}
-        >
-          <DragBar
-            parentRef={rootRef}
-            store={mainStore}
-          />
-          <PipelineTree />
-          <div className={`${prefixCls}-main ${prefixCls}-animate`}>
-            <PipelineFlow stepStore={editBlockStore} />
+        {!treeDs.length && treeDs.status === 'ready' ? <div className={`${prefixCls}-wrap`}>
+          <Suspense fallback={<span />}>
+            <EmptyPage
+              title={formatMessage({ id: 'empty.title.pipeline' })}
+              describe={formatMessage({ id: 'empty.tips.pipeline.owner' })}
+              btnText={formatMessage({ id: `${intlPrefix}.create` })}
+              onClick={handleCreatePipeline}
+              access
+            />
+          </Suspense>
+        </div> : (
+          <div
+            ref={rootRef}
+            className={`${prefixCls}-wrap`}
+          >
+            <DragBar
+              parentRef={rootRef}
+              store={mainStore}
+            />
+            <PipelineTree />
+            <div className={`${prefixCls}-main ${prefixCls}-animate`}>
+              <PipelineFlow stepStore={editBlockStore} />
+            </div>
           </div>
-        </div>
+        )}
       </Content>
     </Page>
   );
