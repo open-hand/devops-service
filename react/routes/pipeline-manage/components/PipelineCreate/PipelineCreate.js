@@ -41,7 +41,7 @@ const PipelineCreate = observer(() => {
         <Option value="auto">自动触发</Option>
         <Option disabled value="F">手动触发</Option>
       </SelectBox>
-      <StageEditBlock />
+      <StageEditBlock editBlockStore={editBlockStore} />
     </Form>
   );
 });
