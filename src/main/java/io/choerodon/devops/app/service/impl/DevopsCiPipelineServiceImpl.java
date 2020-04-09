@@ -7,14 +7,6 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
@@ -29,6 +21,13 @@ import io.choerodon.devops.infra.enums.SonarAuthType;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.util.*;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 /**
  * 〈功能简述〉
@@ -42,6 +41,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     private static final String CREATE_PIPELINE_FAILED = "create.pipeline.failed";
     private static final String UPDATE_PIPELINE_FAILED = "update.pipeline.failed";
+    private static final String DISABLE_PIPELINE_FAILED = "disable.pipeline.failed";
+    private static final String DELETE_PIPELINE_FAILED = "delete.pipeline.failed";
     private static final String ERROR_USER_HAVE_NO_APP_PERMISSION = "error.user.have.no.app.permission";
     private static final String ERROR_APP_SVC_ID_IS_NULL = "error.app.svc.id.is.null";
     private static final String ERROR_PROJECT_ID_IS_NULL = "error.project.id.is.null";
@@ -56,9 +57,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     private UserAttrService userAttrService;
     private AppServiceService appServiceService;
+    private DevopsCiJobRecordService devopsCiJobRecordService;
 
     public DevopsCiPipelineServiceImpl(
-            DevopsCiPipelineMapper devopsCiPipelineMapper,
+            @Lazy DevopsCiPipelineMapper devopsCiPipelineMapper,
             // 这里的懒加载是为了避免循环依赖
             @Lazy DevopsCiPipelineRecordService devopsCiPipelineRecordService,
             DevopsCiStageService devopsCiStageService,
@@ -66,7 +68,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCiContentService devopsCiContentService,
             GitlabServiceClientOperator gitlabServiceClientOperator,
             UserAttrService userAttrService,
-            AppServiceService appServiceService) {
+            AppServiceService appServiceService,
+            DevopsCiJobRecordService devopsCiJobRecordService) {
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
         this.devopsCiStageService = devopsCiStageService;
@@ -75,6 +78,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
         this.userAttrService = userAttrService;
         this.appServiceService = appServiceService;
+        his.devopsCiJobRecordService = devopsCiJobRecordService;
+
     }
 
     @Override
@@ -270,6 +275,42 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     public DevopsCiPipelineVO queryById(Long ciPipelineId) {
         return devopsCiPipelineMapper.queryById(ciPipelineId);
+    }
+
+    @Override
+    @Transactional
+    public DevopsCiPipelineDTO disablePipeline(Long projectId, Long ciPipelineId) {
+        if (devopsCiPipelineMapper.disablePipeline(ciPipelineId) != 1) {
+            throw new CommonException(DISABLE_PIPELINE_FAILED);
+        }
+        return devopsCiPipelineMapper.selectByPrimaryKey(ciPipelineId);
+    }
+
+    @Override
+    @Transactional
+    public void deletePipeline(Long projectId, Long ciPipelineId) {
+        // 删除流水线
+        if (devopsCiPipelineMapper.deleteByPrimaryKey(ciPipelineId) != 1) {
+            throw new CommonException(DELETE_PIPELINE_FAILED);
+        }
+        // 删除stage
+        devopsCiStageService.deleteByPipelineId(ciPipelineId);
+
+        // 删除job
+        devopsCiJobService.deleteByPipelineId(ciPipelineId);
+
+        // 删除job记录
+        devopsCiJobRecordService.deleteByPipelineId(ciPipelineId);
+
+        // 删除pipeline记录
+        devopsCiPipelineRecordService.deleteByPipelineId(ciPipelineId);
+
+        // 删除content file
+        devopsCiContentService.deleteByPipelineId(ciPipelineId);
+
+        // TODO
+        // 删除.gitlab-ci.yaml文件
+
     }
 
     /**

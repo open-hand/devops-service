@@ -125,4 +125,15 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId().longValue());
         return gitlabServiceClientOperator.retryJob(gitlabProjectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue());
     }
+
+    @Override
+    @Transactional
+    public void deleteByPipelineId(Long ciPipelineId) {
+        if (ciPipelineId == null) {
+            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+        }
+        DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
+        devopsCiJobDTO.setCiPipelineId(ciPipelineId);
+        devopsCiJobMapper.delete(devopsCiJobDTO);
+    }
 }

@@ -45,4 +45,9 @@ public interface DevopsCiPipelineService {
     List<DevopsCiPipelineVO> listByProjectIdAndAppName(Long projectId, String name);
 
     DevopsCiPipelineVO queryById(Long ciPipelineId);
+
+
+    DevopsCiPipelineDTO disablePipeline(Long projectId, Long ciPipelineId);
+
+    void deletePipeline(Long projectId, Long ciPipelineId);
 }

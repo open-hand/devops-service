@@ -21,6 +21,8 @@ public class DevopsCiJobRecordVO {
     private String stage;
     @ApiModelProperty("触发用户")
     private Long triggerUserId;
+    @ApiModelProperty("任务类型")
+    private String type;
     @ApiModelProperty("名称")
     private String name;
     @ApiModelProperty("job状态")
@@ -110,5 +112,13 @@ public class DevopsCiJobRecordVO {
 
     public void setDurationSeconds(Long durationSeconds) {
         this.durationSeconds = durationSeconds;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

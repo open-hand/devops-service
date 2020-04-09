@@ -20,4 +20,6 @@ public interface DevopsCiPipelineMapper extends Mapper<DevopsCiPipelineDTO> {
                                                      @Param("name") String name);
 
     DevopsCiPipelineVO queryById(@Param("ciPipelineId") Long ciPipelineId);
+
+    int disablePipeline(@Param("ciPipelineId") Long ciPipelineId);
 }

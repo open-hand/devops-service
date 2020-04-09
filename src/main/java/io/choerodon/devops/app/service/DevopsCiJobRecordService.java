@@ -19,4 +19,6 @@ public interface DevopsCiJobRecordService {
     DevopsCiJobRecordDTO queryByGitlabJobId(Long gitlabJobId);
 
     void update(JobWebHookVO jobWebHookVO);
+
+    void deleteByPipelineId(Long ciPipelineId);
 }

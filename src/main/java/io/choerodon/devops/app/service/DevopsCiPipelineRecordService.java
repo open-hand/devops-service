@@ -1,8 +1,11 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import com.github.pagehelper.PageInfo;
 import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
+import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
 import org.springframework.data.domain.Pageable;
 
 /**
@@ -20,4 +23,8 @@ public interface DevopsCiPipelineRecordService {
     PageInfo<DevopsCiPipelineRecordVO> pagingPipelineRecord(Long projectId, Long ciPipelineId, Pageable pageable);
 
     DevopsCiPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId);
+
+    void deleteByPipelineId(Long ciPipelineId);
+
+    List<DevopsCiPipelineRecordDTO> queryByPipelineId(Long ciPipelineId);
 }

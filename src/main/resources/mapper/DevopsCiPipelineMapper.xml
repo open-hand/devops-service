@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper">
+    <update id="disablePipeline">
+         update devops_ci_pipeline set is_enabled = false
+        where id = #{ciPipelineId}
+    </update>
 
 
     <select id="queryByProjectIdAndName" resultType="io.choerodon.devops.api.vo.DevopsCiPipelineVO">
