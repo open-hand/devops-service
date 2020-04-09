@@ -1,4 +1,4 @@
-export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId) => ({
+export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, projectId) => ({
   autoCreate: true,
   fields: [{
     name: 'type',
@@ -14,14 +14,25 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId) =>
     maxLength: 15,
   }, {
     name: 'glyyfw',
-    type: 'number',
+    type: 'string',
     label: '关联应用服务',
     required: true,
     disabled: true,
-    textField: 'name',
-    valueField: 'id',
-    defaultValue: appServiceId || PipelineCreateFormDataSet.current.get('appServiceId'),
-    options: AppServiceOptionsDs,
+    // textField: 'appServiceName',
+    // valueField: 'appServiceId',
+    // defaultValue: appServiceId || PipelineCreateFormDataSet.current.get('appServiceId'),
+    // options: AppServiceOptionsDs,
+    // lookupAxiosConfig: (data) => ({
+    //   method: 'post',
+    //   url: `/devops/v1/projects/${projectId}/app_service/list_app_services_without_ci`,
+    //   data: {
+    //     param: [],
+    //     searchParam: {
+    //       code: data.params.appServiceName || '',
+    //     },
+    //   },
+    //
+    // }),
   }, {
     name: 'triggerRefs',
     type: 'string',

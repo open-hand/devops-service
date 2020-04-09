@@ -30,12 +30,13 @@ const AddTask = observer(() => {
   const [testConnect, setTestConnect] = useState('');
 
   useEffect(() => {
+    AddTaskFormDataSet.current.set('glyyfw', appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')));
     if (jobDetail) {
-      AddTaskFormDataSet.loadData([{
+      const data = {
         ...jobDetail,
         triggerRefs: jobDetail.triggerRefs.split(','),
-        glyyfw: appServiceId || PipelineCreateFormDataSet.current.get('appServiceId'),
-      }]);
+      };
+      AddTaskFormDataSet.loadData([data]);
       setSteps(JSON.parse(jobDetail.metadata.replace(/'/g, '"')).mavenbuildTemplateVOList);
     }
   }, []);
@@ -378,7 +379,7 @@ mvn package -Dmaven.test.skip=true -U -e -X -B`,
           <Option value="sonar">代码检查</Option>
         </Select>
         <TextField name="name" />
-        <Select name="glyyfw" />
+        <TextField name="glyyfw" />
         <Select combo searchable name="triggerRefs">
           <Option value="master">master</Option>
           <Option value="feature">feature</Option>
