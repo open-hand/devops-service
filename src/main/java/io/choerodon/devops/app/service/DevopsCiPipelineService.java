@@ -40,4 +40,6 @@ public interface DevopsCiPipelineService {
     DevopsCiPipelineDTO queryByAppSvcId(Long id);
 
     List<DevopsCiPipelineVO> listByProjectIdAndAppName(Long projectId, String name);
+
+    DevopsCiPipelineVO queryById(Long ciPipelineId);
 }

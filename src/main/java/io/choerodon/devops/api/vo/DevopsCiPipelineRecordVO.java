@@ -30,6 +30,7 @@ public class DevopsCiPipelineRecordVO {
     @ApiModelProperty("执行耗时")
     private Long durationSeconds;
     private List<DevopsCiStageRecordVO>  stageRecordVOList;
+    private DevopsCiPipelineVO devopsCiPipelineVO;
 
     private IamUserDTO userDTO;
 
@@ -111,5 +112,13 @@ public class DevopsCiPipelineRecordVO {
 
     public void setUserDTO(IamUserDTO userDTO) {
         this.userDTO = userDTO;
+    }
+
+    public DevopsCiPipelineVO getDevopsCiPipelineVO() {
+        return devopsCiPipelineVO;
+    }
+
+    public void setDevopsCiPipelineVO(DevopsCiPipelineVO devopsCiPipelineVO) {
+        this.devopsCiPipelineVO = devopsCiPipelineVO;
     }
 }

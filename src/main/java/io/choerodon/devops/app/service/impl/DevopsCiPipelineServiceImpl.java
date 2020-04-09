@@ -256,6 +256,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return devopsCiPipelineVOS;
     }
 
+    @Override
+    public DevopsCiPipelineVO queryById(Long ciPipelineId) {
+        return devopsCiPipelineMapper.queryById(ciPipelineId);
+    }
+
     /**
      * 校验用户是否拥有应用服务权限
      *

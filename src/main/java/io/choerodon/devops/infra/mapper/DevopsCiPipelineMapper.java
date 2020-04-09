@@ -18,4 +18,6 @@ public interface DevopsCiPipelineMapper extends Mapper<DevopsCiPipelineDTO> {
 
     List<DevopsCiPipelineVO> queryByProjectIdAndName(@Param("projectId") Long projectId,
                                                      @Param("name") String name);
+
+    DevopsCiPipelineVO queryById(@Param("ciPipelineId") Long ciPipelineId);
 }
