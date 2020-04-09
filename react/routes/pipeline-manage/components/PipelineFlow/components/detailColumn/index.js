@@ -75,7 +75,7 @@ const DetailItem = (props) => {
   function renderMain() {
     return (
       <main style={{ display: expand ? 'block' : 'none' }}>
-        {jobType[type].children.map(item => <div>
+        {type && jobType[type].children.map(item => <div>
           <span>{item.name}</span>
           <span>-</span>
         </div>)}
@@ -139,7 +139,7 @@ const DetailItem = (props) => {
         <StatusDot size={13} status={itemStatus} />
         <div className="c7n-piplineManage-detail-column-item-sub">
           <Tooltip title={name}>
-            <span>【{jobType[type].name}】{name}</span>
+            <span>{type && `【${jobType[type].name}】`}{name}</span>
           </Tooltip>
           {
             startedDate && finishedDate && <Tooltip title={`${startedDate}-${finishedDate}`}>

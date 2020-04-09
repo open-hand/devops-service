@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactCodeMirror from 'react-codemirror';
 import './index.less';
+import { Spin } from 'choerodon-ui';
 import { observer } from 'mobx-react-lite';
 import { axios } from '@choerodon/boot';
 
@@ -28,11 +29,14 @@ export default observer((props) => {
     loadData();
   }, []);
 
-  return (<div className="c7n-pipelineManage-codeLog">
-    {value && <ReactCodeMirror
-      value={value}
-      className="c7n-log-editor"
-      options={LOG_OPTIONS}
-    />}
-  </div>);
+  return (
+    <div className="c7n-pipelineManage-codeLog">
+      {value ? <ReactCodeMirror
+        visible={value}
+        value={value}
+        className="c7n-log-editor"
+        options={LOG_OPTIONS}
+      /> : <Spin />}
+    </div>
+  );
 });
