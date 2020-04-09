@@ -515,7 +515,7 @@ public interface GitlabServiceClient {
     /**
      * Create a new pipeline
      *
-     * @param projectId  项目id
+     * @param projectId 项目id
      * @param ref       分支
      * @return Pipeline
      */
@@ -523,7 +523,7 @@ public interface GitlabServiceClient {
     @PostMapping("/v1/projects/{projectId}/pipelines")
     ResponseEntity createPipeline(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Integer projectId,
+            @PathVariable(value = "projectId") Integer projectId,
             @ApiParam(value = "userId")
             @RequestParam(value = "userId") Integer userId,
             @ApiParam(value = "分支")
@@ -531,21 +531,17 @@ public interface GitlabServiceClient {
 
     /**
      * 查询job执行日志
-     * @param projectId
-     * @param jobId
-     * @param userId
-     * @return
      */
     @GetMapping(value = "/v1/projects/{projectId}/jobs/{jobId}/trace")
     ResponseEntity<String> queryTrace(
-            @PathVariable Integer projectId,
-            @PathVariable Integer jobId,
+            @PathVariable(value = "projectId") Integer projectId,
+            @PathVariable(value = "jobId") Integer jobId,
             @RequestParam(value = "userId") Integer userId);
 
     @ApiOperation(value = "重试job")
     @PutMapping(value = "/v1/projects/{projectId}/jobs/{jobId}/retry")
     ResponseEntity<JobDTO> retryJob(
-            @PathVariable Integer projectId,
-            @PathVariable Integer jobId,
+            @PathVariable(value = "projectId") Integer projectId,
+            @PathVariable(value = "jobId") Integer jobId,
             @RequestParam(value = "userId") Integer userId);
 }
