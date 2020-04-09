@@ -14,6 +14,8 @@ export default observer(() => {
     appServiceId,
     selectDs,
     store,
+    modal,
+    refresh,
   } = useExecuteContentStore();
 
   const [branchPage, setBranchPage] = useState(1);
@@ -29,6 +31,18 @@ export default observer(() => {
     getHasMoreBranch,
     getHasMoreTag,
   } = store;
+
+  modal.handleOk(async () => {
+    try {
+      if (await selectDs.submit() !== false) {
+        refresh();
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  });
 
   async function loadMore(type, e) {
     e.stopPropagation();

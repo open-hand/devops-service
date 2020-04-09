@@ -17,10 +17,11 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     intl: { formatMessage },
     children,
     appServiceId,
+    gitlabProjectId,
   } = props;
 
   const store = useStore();
-  const selectDs = useMemo(() => new DataSet(SelectDataSet({ projectId, formatMessage })), [projectId]);
+  const selectDs = useMemo(() => new DataSet(SelectDataSet({ projectId, formatMessage, gitlabProjectId })), [projectId, gitlabProjectId]);
 
   useEffect(() => {
     store.loadBranchData({ projectId, appServiceId, page: 1 });

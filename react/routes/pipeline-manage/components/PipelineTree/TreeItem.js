@@ -35,6 +35,7 @@ const TreeItem = observer(({ record, search }) => {
     running: 'timelapse',
     canceled: 'cancle_b',
     deleted: 'cancel',
+    pending: 'pause_circle_filled',
 
   }), []);
   const timePopoverStyle = useMemo(() => ({
@@ -51,7 +52,11 @@ const TreeItem = observer(({ record, search }) => {
     Modal.open({
       key: executeKey,
       title: formatMessage({ id: `${intlPrefix}.execute` }),
-      children: <ExecuteContent appServiceId={record.get('appServiceId')} />,
+      children: <ExecuteContent
+        appServiceId={record.get('appServiceId')}
+        gitlabProjectId={record.get('gitlabProjectId')}
+        refresh={refresh}
+      />,
       okText: formatMessage({ id: 'execute' }),
       movable: false,
     });
@@ -67,7 +72,7 @@ const TreeItem = observer(({ record, search }) => {
         movable: false,
       });
     } else {
-      // changePipelineActive('');
+      changePipelineActive('enable');
     }
   }
 
@@ -203,12 +208,13 @@ const TreeItem = observer(({ record, search }) => {
     } else {
       const actionData = [
         {
-          // service: '',
+          service: ['devops-service.project-pipeline.create'],
           text: formatMessage({ id: `${intlPrefix}.execute` }),
           action: handleExecute,
         },
         {
-          service: ['devops-service.devops-ci-pipeline.disablePipeline'],
+          service: enabled ? ['devops-service.devops-ci-pipeline.disablePipeline',
+          ] : ['devops-service.devops-ci-pipeline.enablePipeline'],
           text: formatMessage({ id: enabled ? 'stop' : 'active' }),
           action: handleChangeActive,
         },

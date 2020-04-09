@@ -30,7 +30,7 @@ function formatData({ data, expandsKeys }) {
       if (item.hasMoreRecords) {
         newData.push({
           key: 'more',
-          parentId,
+          parentId: item.id.toString(),
         });
       }
     });
