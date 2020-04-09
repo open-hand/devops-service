@@ -44,7 +44,8 @@ export default observer(() => {
         {...item}
         edit={edit}
         pipelineId={pipelineId}
-        appServiceId={appServiceName}
+        appServiceId={appServiceId}
+        appServiceName={appServiceName}
       />);
     }
   }

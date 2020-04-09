@@ -7,6 +7,7 @@ import StageEditBlock from './components/stageEditBlock';
 
 export default observer((props) => {
   const { id, name, appServiceName, appServiceId, updateDate, status, active, projectId, triggerType, stepStore } = props;
+  console.log(props);
   return (
     // !getEditLoading
     <div className="c7n-piplineManage">

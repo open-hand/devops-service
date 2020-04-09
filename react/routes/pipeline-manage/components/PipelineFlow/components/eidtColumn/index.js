@@ -45,7 +45,7 @@ const EditItem = (props) => {
       title: `编辑${name}任务`,
       children: <AddTask
         jobDetail={jobDetail}
-        appServiceId={!edit && appServiceId}
+        appServiceId={!edit && appServiceName}
         appServiceName={!edit && appServiceName}
         handleOk={handleEditOk}
         PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
@@ -151,7 +151,8 @@ export default observer((props) => {
           sequence={sequence}
           key={Math.random()}
           edit={edit}
-          appServiceId={!edit && appServiceName}
+          appServiceId={appServiceId}
+          appServiceName={appServiceName}
           AppServiceOptionsDs={edit && AppServiceOptionsDs}
           PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
           jobDetail={item}
