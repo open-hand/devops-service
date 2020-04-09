@@ -14,6 +14,7 @@ public class CiJobWebHookVO {
     private String stage;
     private String name;
     private String status;
+    private String type;
     private Date createdAt;
     private Date startedAt;
     private Date finishedAt;
@@ -81,5 +82,13 @@ public class CiJobWebHookVO {
 
     public void setUser(GitlabWebHookUserVO user) {
         this.user = user;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

@@ -29,4 +29,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
         renameColumn(tableName: 'devops_ci_job_record', columnDataType: 'BIGINT UNSIGNED',
                 oldColumnName: 'gitlab_pipeline_id', newColumnName: 'ci_pipeline_record_id')
     }
+    changeSet(author: 'wanghao', id: '2020-04-09-add-column') {
+        addColumn(tableName: 'devops_ci_job_record') {
+            column(name: "type", type: "VARCHAR(255)", remarks: '任务类型')
+        }
+    }
 }

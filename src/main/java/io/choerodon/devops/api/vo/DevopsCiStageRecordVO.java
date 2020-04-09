@@ -14,6 +14,7 @@ public class DevopsCiStageRecordVO {
     private String name;
     private Long sequence;
     private String status;
+    private Long durationSeconds;
     private List<DevopsCiJobRecordVO> jobRecordVOList;
 
     public String getName() {
@@ -46,5 +47,13 @@ public class DevopsCiStageRecordVO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Long getDurationSeconds() {
+        return durationSeconds;
+    }
+
+    public void setDurationSeconds(Long durationSeconds) {
+        this.durationSeconds = durationSeconds;
     }
 }
