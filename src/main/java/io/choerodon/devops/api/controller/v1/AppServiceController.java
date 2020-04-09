@@ -847,11 +847,36 @@ public class AppServiceController {
             @RequestParam(value = "longList") List<Long> longList) {
         return new ResponseEntity<>(applicationServiceService.countByProjectId(longList), HttpStatus.OK);
     }
+
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "检查是否还能创建应用服务")
     @GetMapping("/check_enable_create")
     public ResponseEntity<Boolean> checkEnableCreateAppSvc(@PathVariable(name = "project_id") Long projectId) {
         return ResponseEntity.ok(applicationServiceService.checkEnableCreateAppSvc(projectId));
+    }
+
+    /**
+     * 查询用于创建CI流水线的应用服务
+     * 1. 默认查询20条
+     * 2. 要用户有权限的
+     * 3. 要创建成功且启用的
+     * 4. 要能够模糊搜索
+     * 5. 不能查出已经有流水线的
+     * 6. 要有master分支的
+     *
+     * @param projectId 项目id
+     * @param params    查询参数，用于搜索
+     * @return 应用服务列表
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "查询没有CI流水线的应用服务")
+    @PostMapping("/list_app_services_without_ci")
+    public ResponseEntity<List<AppServiceSimpleVO>> listAppServiceWithoutCiPipeline(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(name = "project_id") Long projectId,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return ResponseEntity.ok(applicationServiceService.listAppServiceToCreateCiPipeline(projectId, params));
     }
 }
 

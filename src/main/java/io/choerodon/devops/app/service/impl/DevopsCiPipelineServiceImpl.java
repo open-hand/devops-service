@@ -7,6 +7,14 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
@@ -21,13 +29,6 @@ import io.choerodon.devops.infra.enums.SonarAuthType;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.util.*;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 /**
  * 〈功能简述〉
@@ -56,7 +57,16 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private UserAttrService userAttrService;
     private AppServiceService appServiceService;
 
-    public DevopsCiPipelineServiceImpl(DevopsCiPipelineMapper devopsCiPipelineMapper, @Lazy DevopsCiPipelineRecordService devopsCiPipelineRecordService, DevopsCiStageService devopsCiStageService, DevopsCiJobService devopsCiJobService, DevopsCiContentService devopsCiContentService, GitlabServiceClientOperator gitlabServiceClientOperator, UserAttrService userAttrService, AppServiceService appServiceService) {
+    public DevopsCiPipelineServiceImpl(
+            DevopsCiPipelineMapper devopsCiPipelineMapper,
+            // 这里的懒加载是为了避免循环依赖
+            @Lazy DevopsCiPipelineRecordService devopsCiPipelineRecordService,
+            DevopsCiStageService devopsCiStageService,
+            DevopsCiJobService devopsCiJobService,
+            DevopsCiContentService devopsCiContentService,
+            GitlabServiceClientOperator gitlabServiceClientOperator,
+            UserAttrService userAttrService,
+            AppServiceService appServiceService) {
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
         this.devopsCiStageService = devopsCiStageService;
@@ -124,7 +134,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     GitOpsConstants.GITLAB_CI_FILE_NAME,
                     buildIncludeYaml(ciFileIncludeUrl),
                     GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
-                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
+                    GitOpsConstants.MASTER);
         } else {
             // 将原先的配置文件内容注释并放在原本文件中
             String originFileContent = new String(Base64.getDecoder().decode(repositoryFile.getContent().getBytes()), Charset.forName("UTF-8"));
@@ -172,7 +183,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 devopsCiStageService.update(devopsCiStageVO);
                 devopsCiJobService.deleteByStageId(devopsCiStageVO.getId());
                 // 保存job信息
-                if(!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
+                if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setId(null);
@@ -187,7 +198,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 DevopsCiStageDTO devopsCiStageDTO = ConvertUtils.convertObject(devopsCiStageVO, DevopsCiStageDTO.class);
                 DevopsCiStageDTO savedDevopsCiStageDTO = devopsCiStageService.create(devopsCiStageDTO);
                 // 保存job信息
-                if(!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
+                if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
@@ -268,7 +279,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      * @param iamUserId    用户id
      */
     private void checkUserPermission(Long appServiceId, Long iamUserId) {
-        if (!appServiceService.checkAppSerivcePermissionForUser(appServiceId, iamUserId)) {
+        if (!appServiceService.checkAppServicePermissionForUser(appServiceId, iamUserId)) {
             throw new CommonException(ERROR_USER_HAVE_NO_APP_PERMISSION);
         }
 
@@ -308,7 +319,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         gitlabCi.setImage(GitOpsConstants.CI_IMAGE);
         gitlabCi.setStages(stages);
         devopsCiPipelineVO.getStageList().forEach(stageVO -> {
-            if(!CollectionUtils.isEmpty(stageVO.getJobList())) {
+            if (!CollectionUtils.isEmpty(stageVO.getJobList())) {
                 stageVO.getJobList().forEach(jobV0 -> {
                     CiJob ciJob = new CiJob();
                     ciJob.setStage(stageVO.getName());
