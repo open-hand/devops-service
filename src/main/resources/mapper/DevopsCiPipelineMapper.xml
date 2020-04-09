@@ -5,6 +5,10 @@
          update devops_ci_pipeline set is_enabled = false
         where id = #{ciPipelineId}
     </update>
+    <update id="enablePipeline">
+        update devops_ci_pipeline set is_enabled = true
+        where id = #{ciPipelineId}
+    </update>
 
 
     <select id="queryByProjectIdAndName" resultType="io.choerodon.devops.api.vo.DevopsCiPipelineVO">

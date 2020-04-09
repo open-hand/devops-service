@@ -519,7 +519,7 @@ public interface GitlabServiceClient {
      * @param ref       分支
      * @return Pipeline
      */
-    @ApiOperation(value = "Cancel a pipelines jobs ")
+    @ApiOperation(value = "Create a pipelines jobs ")
     @PostMapping("/v1/projects/{projectId}/pipelines")
     ResponseEntity createPipeline(
             @ApiParam(value = "项目id", required = true)

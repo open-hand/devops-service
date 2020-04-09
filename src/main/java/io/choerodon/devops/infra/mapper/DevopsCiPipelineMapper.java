@@ -22,4 +22,6 @@ public interface DevopsCiPipelineMapper extends Mapper<DevopsCiPipelineDTO> {
     DevopsCiPipelineVO queryById(@Param("ciPipelineId") Long ciPipelineId);
 
     int disablePipeline(@Param("ciPipelineId") Long ciPipelineId);
+
+    int enablePipeline(@Param("ciPipelineId") Long ciPipelineId);
 }

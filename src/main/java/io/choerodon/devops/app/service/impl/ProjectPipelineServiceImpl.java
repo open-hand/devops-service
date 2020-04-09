@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.app.service.ProjectPipelineService;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
@@ -43,7 +44,7 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
 
     @Override
     public Boolean create(Long gitlabProjectId, String ref) {
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
         return gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(), userAttrDTO.getGitlabUserId().intValue(), ref);
     }
 }
