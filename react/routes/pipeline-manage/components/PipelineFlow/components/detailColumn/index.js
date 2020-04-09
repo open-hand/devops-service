@@ -66,7 +66,7 @@ const DetailItem = (props) => {
     handleRefresh,
   } = props;
 
-  const { gitlabProjectId } = getDetailData && getDetailData.devopsCiPipelineVO;
+  const { gitlabProjectId, appServiceId } = getDetailData && getDetailData.devopsCiPipelineVO;
 
   function handleDropDown() {
     setExpand(!expand);
@@ -108,7 +108,7 @@ const DetailItem = (props) => {
       style: {
         width: 'calc(100vw - 3.52rem)',
       },
-      children: <CodeQuality />,
+      children: <CodeQuality appServiceId={appServiceId} />,
       drawer: true,
       okText: '关闭',
       footer: (okbtn) => (

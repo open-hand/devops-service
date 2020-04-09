@@ -13,8 +13,14 @@ export default observer(() => {
     projectId,
     handleRefresh,
   } = usePipelineFlowStore();
+  
   const renderPipeline = () => (
-    parentId ? <OptsDetailContent handleRefresh={handleRefresh} {...getSelectedMenu} projectId={projectId} detailStore={detailStore} /> : <PiplineEdit {...getSelectedMenu} stepStore={stepStore} />
+    parentId ? <OptsDetailContent
+      handleRefresh={handleRefresh}
+      {...getSelectedMenu}
+      projectId={projectId}
+      detailStore={detailStore}
+    /> : <PiplineEdit {...getSelectedMenu} stepStore={stepStore} />
   );
 
   return (

@@ -87,22 +87,16 @@ const data = {
 
 export default function useStore() {
   return useLocalStore(() => ({
-    data: [],
+    data: null,
     loading: false,
-    loadCodeQualityData() {
+    loadCodeQualityData(projectId, appServeiceId) {
       this.loading = true;
-      // return axios.get(`/devops/v1/projects/${projectId}/app_service/${appServiceId}/sonarqube`)
-      //   .then((data) => {
-      //     this.loading = false;
-      //     const res = handlePromptError(data);
-      //     if (res) {
-      //       this.data = data;
-      //     }
-      //   });
-      setTimeout(() => {
-        this.data = data;
-        this.loading = false;
-      }, 1000);
+      axios.get(`/devops/v1/projects/${projectId}/app_service/${appServeiceId}/sonarqube`).then((res) => {
+        if (res && !res.failed) {
+          this.data = res;
+          this.loading = false;
+        }
+      });
     },
   }));
 }

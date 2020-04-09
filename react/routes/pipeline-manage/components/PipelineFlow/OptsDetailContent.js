@@ -12,7 +12,6 @@ export default observer((props) => {
     id,
     parentId,
     updateDate,
-    status,
     stages,
     gitlabPipelineId,
     ciPipelineId,
@@ -33,7 +32,7 @@ export default observer((props) => {
   }, [projectId, gitlabPipelineId]);
 
   const {
-    stageRecordVOList, devopsCiPipelineVO,
+    stageRecordVOList, devopsCiPipelineVO, status,
   } = getDetailData;
 
   const renderStage = () => (

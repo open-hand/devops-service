@@ -20,8 +20,8 @@ export default observer(() => {
     stepStore,
     edit,
     appServiceId,
+    appServiceName,
   } = usePipelineStageEditStore();
-
   const {
     setStepData,
     getStepData,
@@ -44,7 +44,7 @@ export default observer(() => {
         {...item}
         edit={edit}
         pipelineId={pipelineId}
-        appServiceId={appServiceId}
+        appServiceId={appServiceName}
       />);
     }
   }

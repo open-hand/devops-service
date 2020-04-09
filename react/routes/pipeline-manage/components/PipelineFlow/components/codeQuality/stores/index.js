@@ -13,12 +13,14 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
   const {
     children,
     intl: { formatMessage },
+    appServiceId,
+    AppState: { currentMenuType: { projectId } },
   } = props;
 
   const mainStore = useStore();
 
   useEffect(() => {
-    mainStore.loadCodeQualityData();
+    mainStore.loadCodeQualityData(projectId, appServiceId);
   }, []);
 
   const value = {

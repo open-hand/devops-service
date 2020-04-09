@@ -15,7 +15,6 @@ const jobTask = {
 
 const EditItem = (props) => {
   const {
-    taskName,
     index,
     sequence,
     edit,
@@ -23,6 +22,7 @@ const EditItem = (props) => {
     PipelineCreateFormDataSet,
     AppServiceOptionsDs,
     appServiceId,
+    appServiceName,
   } = props;
 
   const { type, name } = jobDetail;
@@ -46,6 +46,7 @@ const EditItem = (props) => {
       children: <AddTask
         jobDetail={jobDetail}
         appServiceId={!edit && appServiceId}
+        appServiceName={!edit && appServiceName}
         handleOk={handleEditOk}
         PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
         AppServiceOptionsDs={edit && AppServiceOptionsDs}
@@ -94,7 +95,7 @@ const EditItem = (props) => {
 };
 
 export default observer((props) => {
-  const { jobList, sequence, name, columnIndex, edit, appServiceId } = props;
+  const { jobList, sequence, name, columnIndex, edit, appServiceId, appServiceName } = props;
 
   const {
     addStepDs,
@@ -150,7 +151,7 @@ export default observer((props) => {
           sequence={sequence}
           key={Math.random()}
           edit={edit}
-          appServiceId={!edit && appServiceId}
+          appServiceId={!edit && appServiceName}
           AppServiceOptionsDs={edit && AppServiceOptionsDs}
           PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
           jobDetail={item}
@@ -203,7 +204,8 @@ export default observer((props) => {
         PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
         AppServiceOptionsDs={edit && AppServiceOptionsDs}
         handleOk={hanleStepCreateOk}
-        appServiceId={!edit && appServiceId}
+        appServiceId={!edit && appServiceName}
+        appServiceName={!edit && appServiceName}
       />,
       style: {
         width: '740px',
@@ -245,6 +247,7 @@ export default observer((props) => {
         type="primary"
         onClick={openNewTaskModal}
         style={{ marginTop: '10px' }}
+        disabled={PipelineCreateFormDataSet && !PipelineCreateFormDataSet.current.get('appServiceId')}
       >添加任务</Button>
       <Button
         funcType="raised"
