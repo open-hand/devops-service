@@ -776,7 +776,6 @@
           AND das.is_active = TRUE
           AND dcp.id IS NULL
           AND db.branch_name = 'master'
-          AND db.status = 'success'
         <include refid="sqlparams"/>
         LIMIT #{limitSize,jdbcType=BIGINT}
     </select>
@@ -796,7 +795,6 @@
                AND das.is_skip_check_permission = TRUE
                AND dcp.id IS NULL
                AND db.branch_name = 'master'
-               AND db.status = 'success'
              <include refid="sqlparams"/>
              UNION ALL
              SELECT das.id, das.name, das.code
@@ -812,7 +810,6 @@
                AND das.is_skip_check_permission = FALSE
                AND dcp.id IS NULL
                AND db.branch_name = 'master'
-               AND db.status = 'success'
              <include refid="sqlparams"/>
              ) tmp
         LIMIT #{limitSize,jdbcType=BIGINT}
