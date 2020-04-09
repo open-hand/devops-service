@@ -43,6 +43,10 @@ const TreeItem = observer(({ record, search }) => {
     marginRight: '.04rem',
   }), []);
 
+  function refresh() {
+    treeDs.query();
+  }
+
   function handleExecute() {
     Modal.open({
       key: executeKey,
@@ -53,17 +57,28 @@ const TreeItem = observer(({ record, search }) => {
     });
   }
   function handleChangeActive() {
-    if (record.get('active')) {
+    if (record.get('enabled')) {
       Modal.open({
         key: stopKey,
         title: formatMessage({ id: `${intlPrefix}.stop.title` }),
         children: formatMessage({ id: `${intlPrefix}.stop.des` }),
         okText: formatMessage({ id: 'stop' }),
+        onOk: () => changePipelineActive('disable'),
         movable: false,
       });
+    } else {
+      // changePipelineActive('');
     }
   }
-  function handleDelete() {
+
+  async function changePipelineActive(type) {
+    const res = await mainStore.changePipelineActive({ projectId, pipelineId: record.get('id'), type });
+    if (res) {
+      refresh();
+    }
+  }
+
+  async function handleDelete() {
     const modalProps = {
       title: formatMessage({ id: `${intlPrefix}.delete.title` }),
       children: formatMessage({ id: `${intlPrefix}.delete.des` }),
@@ -71,14 +86,20 @@ const TreeItem = observer(({ record, search }) => {
       okProps: { color: 'red' },
       cancelProps: { color: 'dark' },
     };
-    treeDs.delete(record, modalProps);
+    await treeDs.delete(record, modalProps);
+    refresh();
   }
 
-  function handleCancelExecute() {
-
-  }
-  function handleRecordExecute() {
-
+  async function changeRecordExecute(type) {
+    const res = await mainStore.changeRecordExecute({
+      projectId,
+      gitlabProjectId: record.get('gitlabProjectId'),
+      recordId: record.get('gitlabPipelineId'),
+      type,
+    });
+    if (res) {
+      refresh();
+    }
   }
 
   async function loadMoreRecord(deleteRecord) {
@@ -146,17 +167,17 @@ const TreeItem = observer(({ record, search }) => {
         case 'pending':
         case 'running':
           actionData = [{
-            // service: '',
+            service: ['devops-service.project-pipeline.cancel'],
             text: formatMessage({ id: `${intlPrefix}.execute.cancel` }),
-            action: handleCancelExecute,
+            action: () => changeRecordExecute('cancel'),
           }];
           break;
         case 'failed':
         case 'canceled':
           actionData = [{
-            // service: '',
+            service: ['devops-service.project-pipeline.retry'],
             text: formatMessage({ id: `${intlPrefix}.execute.retry` }),
-            action: handleRecordExecute,
+            action: () => changeRecordExecute('retry'),
           }];
           break;
         default:
@@ -187,12 +208,12 @@ const TreeItem = observer(({ record, search }) => {
           action: handleExecute,
         },
         {
-          // service: '',
+          service: ['devops-service.devops-ci-pipeline.disablePipeline'],
           text: formatMessage({ id: enabled ? 'stop' : 'active' }),
           action: handleChangeActive,
         },
         {
-          // service: '',
+          service: ['devops-service.devops-ci-pipeline.deletePipeline'],
           text: formatMessage({ id: 'delete' }),
           action: handleDelete,
         },

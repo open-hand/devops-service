@@ -34,12 +34,24 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
         mainStore.setSelectedMenu(newRecord.toData());
       }
     }
-  }, [treeDs.data]);
+  }, [treeDs.records]);
 
   const value = {
     ...props,
     prefixCls: 'c7ncd-pipelineManage',
     intlPrefix: 'c7ncd.pipelineManage',
+    permissions: [
+      'devops-service.devops-ci-pipeline-record.pagingPipelineRecord',
+      'devops-service.devops-ci-pipeline-record.queryPipelineRecordDetails',
+      'devops-service.devops-ci-pipeline.listByProjectIdAndAppName',
+      'devops-service.devops-ci-pipeline.create',
+      'devops-service.devops-ci-pipeline.query',
+      'devops-service.devops-ci-pipeline.update',
+      'devops-service.devops-ci-pipeline.deletePipeline',
+      'devops-service.devops-ci-pipeline.disablePipeline',
+      'devops-service.project-pipeline.cancel',
+      'devops-service.project-pipeline.retry',
+    ],
     mainStore,
     treeDs,
     detailStore,
