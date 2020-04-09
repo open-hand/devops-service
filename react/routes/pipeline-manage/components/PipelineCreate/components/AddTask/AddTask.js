@@ -30,14 +30,16 @@ const AddTask = observer(() => {
   const [testConnect, setTestConnect] = useState('');
 
   useEffect(() => {
-    AddTaskFormDataSet.current.set('glyyfw', appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')));
     if (jobDetail) {
       const data = {
         ...jobDetail,
         triggerRefs: jobDetail.triggerRefs.split(','),
+        glyyfw: appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')),
       };
       AddTaskFormDataSet.loadData([data]);
       setSteps(JSON.parse(jobDetail.metadata.replace(/'/g, '"')).mavenbuildTemplateVOList);
+    } else {
+      AddTaskFormDataSet.current.set('glyyfw', appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')));
     }
   }, []);
 
