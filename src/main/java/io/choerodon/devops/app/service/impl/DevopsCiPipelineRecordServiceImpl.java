@@ -226,9 +226,15 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         DevopsCiPipelineRecordDTO pipelineRecordDTO = new DevopsCiPipelineRecordDTO();
         pipelineRecordDTO.setGitlabPipelineId(gitlabPipelineId);
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectOne(pipelineRecordDTO);
+
+
+
         DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = ConvertUtils.convertObject(devopsCiPipelineRecordDTO, DevopsCiPipelineRecordVO.class);
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsCiPipelineRecordDTO.getTriggerUserId());
         devopsCiPipelineRecordVO.setUserDTO(iamUserDTO);
+
+        DevopsCiPipelineVO ciPipelineVO = devopsCiPipelineService.queryById(devopsCiPipelineRecordDTO.getCiPipelineId());
+        devopsCiPipelineRecordVO.setDevopsCiPipelineVO(ciPipelineVO);
 
         // 查询流水线记录下的job记录
         DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
