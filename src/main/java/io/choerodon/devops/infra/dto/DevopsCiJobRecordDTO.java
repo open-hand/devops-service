@@ -32,6 +32,8 @@ public class DevopsCiJobRecordDTO extends BaseDTO {
     private Long triggerUserId;
     @ApiModelProperty("名称")
     private String name;
+    @ApiModelProperty("任务类型")
+    private String type;
     @ApiModelProperty("job状态")
     private String status;
     @ApiModelProperty("job开始时间")
@@ -119,5 +121,13 @@ public class DevopsCiJobRecordDTO extends BaseDTO {
 
     public void setDurationSeconds(Long durationSeconds) {
         this.durationSeconds = durationSeconds;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }
