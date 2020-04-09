@@ -11,7 +11,7 @@ export default observer((props) => {
     // !getEditLoading
     <div className="c7n-piplineManage">
       <EditHeader type={triggerType} name={name} iconSize={18} />
-      <StageEditBlock pipelineId={id} stepStore={stepStore} appServiceId={appServiceId} projectId={projectId} />
+      <StageEditBlock pipelineId={id} stepStore={stepStore} appServiceId={appServiceId} {...props} />
     </div>
   );
 });

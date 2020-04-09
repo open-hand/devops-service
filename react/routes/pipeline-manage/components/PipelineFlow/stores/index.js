@@ -12,8 +12,8 @@ export function usePipelineFlowStore() {
 export const StoreProvider = injectIntl(inject('AppState')((props) => {
   const {
     children,
+    AppState: { currentMenuType: { projectId } },
   } = props;
-
   const {
     mainStore: {
       getSelectedMenu,
@@ -23,9 +23,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
   const value = {
     ...props,
     getSelectedMenu,
-    // : {
-    //   parentId, Id, type, status, name,
-    // },
+    projectId,
   };
 
   return (

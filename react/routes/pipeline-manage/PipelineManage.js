@@ -26,10 +26,15 @@ const PipelineManage = observer((props) => {
     prefixCls,
     mainStore,
     editBlockStore,
+    detailStore,
+    detailStore: {
+      loadDetailData, getDetailData,
+    },
     editBlockStore: {
       getMainData, loadData,
     },
     treeDs,
+    projectId,
   } = usePipelineManageStore();
 
 
@@ -53,13 +58,13 @@ const PipelineManage = observer((props) => {
   async function handleRefresh() {
     await treeDs.query();
     const { id } = getMainData;
-    const { projectId } = getSelectedMenu;
-    loadData(projectId, id);
+    const { parentId } = getSelectedMenu;
+    const { gitlabPipelineId } = getDetailData;
+    !parentId ? loadData(projectId, id) : loadDetailData(projectId, gitlabPipelineId);
   }
 
   async function handleSaveEdit() {
     const { id } = getMainData;
-    const { projectId } = getSelectedMenu;
     try {
       const res = await axios.put(`/devops/v1/projects/${projectId}/ci_pipelines/${id}`, getMainData);
       if (handlePromptError(res)) {
@@ -156,7 +161,7 @@ const PipelineManage = observer((props) => {
             />
             <PipelineTree />
             <div className={`${prefixCls}-main ${prefixCls}-animate`}>
-              <PipelineFlow stepStore={editBlockStore} />
+              <PipelineFlow stepStore={editBlockStore} detailStore={detailStore} handleRefresh={handleRefresh} />
             </div>
           </div>
         )}

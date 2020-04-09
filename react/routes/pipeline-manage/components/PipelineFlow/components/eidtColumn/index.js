@@ -10,7 +10,7 @@ import { usePipelineCreateStore } from '../../../PipelineCreate/stores';
 
 const jobTask = {
   build: '构建',
-  sonnar: '代码优化',
+  sonar: '代码优化',
 };
 
 const EditItem = (props) => {
@@ -42,7 +42,7 @@ const EditItem = (props) => {
   function openEditJobModal() {
     Modal.open({
       key: Modal.key(),
-      title: `编辑${taskName}任务`,
+      title: `编辑${name}任务`,
       children: <AddTask
         jobDetail={jobDetail}
         appServiceId={!edit && appServiceId}
@@ -61,7 +61,7 @@ const EditItem = (props) => {
   function openDeleteJobModal() {
     Modal.open({
       key: Modal.key(),
-      title: `删除${taskName}任务`,
+      title: `删除${name}任务`,
       children: '确认删除此任务吗？',
       okText: '确认',
       onOk: () => removeStepTask(sequence, index, edit),
