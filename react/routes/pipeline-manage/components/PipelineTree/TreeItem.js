@@ -47,7 +47,7 @@ const TreeItem = observer(({ record, search }) => {
     Modal.open({
       key: executeKey,
       title: formatMessage({ id: `${intlPrefix}.execute` }),
-      children: <ExecuteContent />,
+      children: <ExecuteContent appServiceId={record.get('appServiceId')} />,
       okText: formatMessage({ id: 'execute' }),
       movable: false,
     });

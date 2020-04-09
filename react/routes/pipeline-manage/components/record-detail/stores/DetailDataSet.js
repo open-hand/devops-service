@@ -16,6 +16,6 @@ export default ({ formatMessage, intlPrefix, projectId, pipelineRecordId }) => (
     { name: 'status', type: 'string', label: formatMessage({ id: `${intlPrefix}.result` }) },
     { name: 'userDTO', type: 'object', label: formatMessage({ id: `${intlPrefix}.trigger.user` }) },
     { name: 'finishedDate', type: 'string', label: formatMessage({ id: `${intlPrefix}.execute.date` }) },
-    { name: 'durationSeconds', type: 'string', label: formatMessage({ id: `${intlPrefix}.time` }) },
+    { name: 'durationSeconds', type: 'number', label: formatMessage({ id: `${intlPrefix}.time` }) },
   ],
 });
