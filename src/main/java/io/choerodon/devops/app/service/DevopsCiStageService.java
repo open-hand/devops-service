@@ -35,4 +35,6 @@ public interface DevopsCiStageService {
     void deleteById(Long id);
 
     void update(DevopsCiStageVO devopsCiStageVO);
+
+    void deleteByPipelineId(Long ciPipelineId);
 }

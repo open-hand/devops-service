@@ -22,4 +22,6 @@ public interface DevopsCiContentService {
      * @param devopsCiContentDTO
      */
     void create(DevopsCiContentDTO devopsCiContentDTO);
+
+    void deleteByPipelineId(Long ciPipelineId);
 }

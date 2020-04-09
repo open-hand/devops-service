@@ -74,4 +74,26 @@ public class DevopsCiPipelineController {
             @RequestParam(value = "name", required = false) String name) {
         return ResponseEntity.ok(devopsCiPipelineService.listByProjectIdAndAppName(projectId, name));
     }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "停用流水线")
+    @PutMapping("/{ci_pipeline_id}/disable")
+    public ResponseEntity<DevopsCiPipelineDTO> disablePipeline(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "ci_pipeline_id") Long ciPipelineId) {
+        return ResponseEntity.ok(devopsCiPipelineService.disablePipeline(projectId, ciPipelineId));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "删除流水线")
+    @DeleteMapping("/{ci_pipeline_id}")
+    public ResponseEntity<Void> deletePipeline(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "ci_pipeline_id") Long ciPipelineId) {
+        devopsCiPipelineService.deletePipeline(projectId, ciPipelineId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

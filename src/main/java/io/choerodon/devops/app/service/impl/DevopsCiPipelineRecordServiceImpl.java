@@ -26,6 +26,7 @@ import io.choerodon.devops.infra.util.PageRequestUtil;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 /**
@@ -37,6 +38,8 @@ import org.springframework.util.CollectionUtils;
  */
 @Service
 public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecordService {
+
+    private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
 
     private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
     private DevopsCiJobRecordService devopsCiJobRecordService;
@@ -193,6 +196,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
             recordDTO.setCiPipelineRecordId(pipelineRecord.getId());
             List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOS = devopsCiJobRecordMapper.select(recordDTO);
+
             // 只返回job的最新记录
             devopsCiJobRecordDTOS = filterJobs(devopsCiJobRecordDTOS);
             Map<String, List<DevopsCiJobRecordDTO>> jobRecordMap = devopsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStage));
@@ -252,31 +256,65 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
         recordDTO.setCiPipelineRecordId(devopsCiPipelineRecordDTO.getId());
         List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOS = devopsCiJobRecordMapper.select(recordDTO);
+
         // 只返回job的最新记录
         devopsCiJobRecordDTOS = filterJobs(devopsCiJobRecordDTOS);
 
-        Map<String, List<DevopsCiJobRecordDTO>> jobRecordMap = devopsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStage));
+        // 添加job type
+        List<DevopsCiJobRecordVO> devopsCiJobRecordVOList = ConvertUtils.convertList(devopsCiJobRecordDTOS, DevopsCiJobRecordVO.class);
+        List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
+        Map<String, DevopsCiJobDTO> jobDTOMap = devopsCiJobDTOS.stream().collect(Collectors.toMap(DevopsCiJobDTO::getName, v -> v));
+        devopsCiJobRecordVOList.forEach(jobVO -> {
+            DevopsCiJobDTO jobDTO = jobDTOMap.get(jobVO.getName());
+            if (jobDTO != null) {
+                jobVO.setType(jobDTO.getType());
+            }
+        });
+
+        Map<String, List<DevopsCiJobRecordVO>> jobRecordMap = devopsCiJobRecordVOList.stream().collect(Collectors.groupingBy(DevopsCiJobRecordVO::getStage));
+
         // 查询阶段信息
         List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
         List<DevopsCiStageRecordVO> devopsCiStageRecordVOS = ConvertUtils.convertList(devopsCiStageDTOList, DevopsCiStageRecordVO.class);
 
         // 计算stage状态
         devopsCiStageRecordVOS.forEach(stageRecord -> {
-            List<DevopsCiJobRecordDTO> ciJobRecordDTOS = jobRecordMap.get(stageRecord.getName());
-            if (!CollectionUtils.isEmpty(ciJobRecordDTOS)) {
-                Map<String, List<DevopsCiJobRecordDTO>> statsuMap = ciJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStatus));
+            List<DevopsCiJobRecordVO> devopsCiJobRecordVOS = jobRecordMap.get(stageRecord.getName());
+            if (!CollectionUtils.isEmpty(devopsCiJobRecordVOS)) {
+                Map<String, List<DevopsCiJobRecordVO>> statsuMap = devopsCiJobRecordVOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordVO::getStatus));
                 calculateStageStatus(stageRecord, statsuMap);
-                List<DevopsCiJobRecordVO> devopsCiJobRecordVOS = ConvertUtils.convertList(ciJobRecordDTOS, DevopsCiJobRecordVO.class);
                 stageRecord.setJobRecordVOList(devopsCiJobRecordVOS);
             }
         });
         // stage排序
         devopsCiStageRecordVOS = devopsCiStageRecordVOS.stream().sorted(Comparator.comparing(DevopsCiStageRecordVO::getSequence)).filter(v -> v.getStatus() != null).collect(Collectors.toList());
         devopsCiPipelineRecordVO.setStageRecordVOList(devopsCiStageRecordVOS);
+
         return devopsCiPipelineRecordVO;
     }
 
-    private void calculateStageStatus(DevopsCiStageRecordVO stageRecord, Map<String, List<DevopsCiJobRecordDTO>> statsuMap) {
+    @Override
+    @Transactional
+    public void deleteByPipelineId(Long ciPipelineId) {
+        if (ciPipelineId == null) {
+            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+        }
+        DevopsCiPipelineRecordDTO pipelineRecordDTO = new DevopsCiPipelineRecordDTO();
+        pipelineRecordDTO.setCiPipelineId(ciPipelineId);
+        devopsCiPipelineRecordMapper.delete(pipelineRecordDTO);
+    }
+
+    @Override
+    public List<DevopsCiPipelineRecordDTO> queryByPipelineId(Long ciPipelineId) {
+        if (ciPipelineId == null) {
+            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+        }
+        DevopsCiPipelineRecordDTO pipelineRecordDTO = new DevopsCiPipelineRecordDTO();
+        pipelineRecordDTO.setCiPipelineId(ciPipelineId);
+        return devopsCiPipelineRecordMapper.select(pipelineRecordDTO);
+    }
+
+    private <T> void calculateStageStatus(DevopsCiStageRecordVO stageRecord, Map<String, List<T>> statsuMap) {
         if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.CREATED.value()))) {
             stageRecord.setStatus(JobStatusEnum.CREATED.value());
         } else if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.PENDING.value()))) {

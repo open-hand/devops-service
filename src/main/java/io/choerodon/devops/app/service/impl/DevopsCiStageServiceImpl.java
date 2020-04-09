@@ -67,4 +67,15 @@ public class DevopsCiStageServiceImpl implements DevopsCiStageService {
         }
     }
 
+    @Override
+    @Transactional
+    public void deleteByPipelineId(Long ciPipelineId) {
+        if (ciPipelineId == null) {
+            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+        }
+        DevopsCiStageDTO record = new DevopsCiStageDTO();
+        record.setCiPipelineId(ciPipelineId);
+        devopsCiStageMapper.delete(record);
+    }
+
 }

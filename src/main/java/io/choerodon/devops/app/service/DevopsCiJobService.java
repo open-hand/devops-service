@@ -49,4 +49,6 @@ public interface DevopsCiJobService {
     String queryTrace(Long projectId, Long jobId);
 
     JobDTO retryJob(Long gitlabProjectId, Long jobId);
+
+    void deleteByPipelineId(Long ciPipelineId);
 }
