@@ -307,7 +307,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 先使用默认的image,后面可以考虑让用户自己指定
         gitlabCi.setImage(GitOpsConstants.CI_IMAGE);
         gitlabCi.setStages(stages);
-        devopsCiPipelineVO.getStageList().forEach(stageVO ->
+        devopsCiPipelineVO.getStageList().forEach(stageVO -> {
+            if(!CollectionUtils.isEmpty(stageVO.getJobList())) {
                 stageVO.getJobList().forEach(jobV0 -> {
                     CiJob ciJob = new CiJob();
                     ciJob.setStage(stageVO.getName());
@@ -315,8 +316,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     ciJob.setScript(buildScript(jobV0));
                     // todo except && cache未配置
                     gitlabCi.addJob(jobV0.getName(), ciJob);
-                })
-        );
+                });
+            }
+        });
         gitlabCi.setBeforeScript(ArrayUtil.singleAsList(GitOpsConstants.CHOERODON_BEFORE_SCRIPT));
         return gitlabCi;
     }
