@@ -47,7 +47,7 @@ const TreeItem = observer(({ record, search }) => {
     Modal.open({
       key: executeKey,
       title: formatMessage({ id: `${intlPrefix}.execute` }),
-      children: <ExecuteContent />,
+      children: <ExecuteContent appServiceId={record.get('appServiceId')} />,
       okText: formatMessage({ id: 'execute' }),
       movable: false,
     });
@@ -108,7 +108,20 @@ const TreeItem = observer(({ record, search }) => {
   }
 
   function getItem() {
-    const { key, name, appServiceName, latestExecuteDate, createdDate, status = 'success', enabled = false, triggerType, id, parentId, stageRecordVOList } = record.toData();
+    const {
+      gitlabPipelineId,
+      key,
+      name,
+      appServiceName,
+      latestExecuteDate,
+      createdDate,
+      status = 'success',
+      enabled = false,
+      triggerType,
+      id,
+      parentId,
+      stageRecordVOList,
+    } = record.toData();
     if (key === 'more') {
       if (record.getState('isLoading')) {
         return <Spin />;
@@ -152,7 +165,7 @@ const TreeItem = observer(({ record, search }) => {
       return (
         <div className={`${prefixCls}-sidebar-header-node`}>
           <span className={`${prefixCls}-sidebar-header-number`}>
-            <TreeItemName name={`#${id}`} search={search} headSpace={false} />
+            <TreeItemName name={`#${gitlabPipelineId}`} search={search} headSpace={false} />
           </span>
           <div className={`${prefixCls}-sidebar-header-stage`}>
             {map(stageRecordVOList, ({ status: stageStatus }) => (

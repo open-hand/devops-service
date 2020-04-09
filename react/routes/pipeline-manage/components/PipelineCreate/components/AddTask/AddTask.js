@@ -22,6 +22,8 @@ const AddTask = observer(() => {
       },
     },
     jobDetail,
+    appServiceId,
+    PipelineCreateFormDataSet,
   } = useAddTaskStore();
 
   const [steps, setSteps] = useState([]);
@@ -32,6 +34,7 @@ const AddTask = observer(() => {
       AddTaskFormDataSet.loadData([{
         ...jobDetail,
         triggerRefs: jobDetail.triggerRefs.split(','),
+        glyyfw: appServiceId || PipelineCreateFormDataSet.current.get('appServiceId'),
       }]);
       setSteps(JSON.parse(jobDetail.metadata.replace(/'/g, '"')).mavenbuildTemplateVOList);
     }
