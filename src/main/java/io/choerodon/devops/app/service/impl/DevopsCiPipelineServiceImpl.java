@@ -85,12 +85,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCiStageDTO savedDevopsCiStageDTO = devopsCiStageService.create(devopsCiStageDTO);
 
             // 保存job信息
-            devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
-                DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
-                devopsCiJobDTO.setCiPipelineId(devopsCiPipelineDTO.getId());
-                devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
-                devopsCiJobService.create(devopsCiJobDTO);
-            });
+            if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
+                devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
+                    DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
+                    devopsCiJobDTO.setCiPipelineId(devopsCiPipelineDTO.getId());
+                    devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
+                    devopsCiJobService.create(devopsCiJobDTO);
+                });
+            }
+
         });
 
         // TODO 保存ci配置文件
@@ -169,25 +172,29 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 devopsCiStageService.update(devopsCiStageVO);
                 devopsCiJobService.deleteByStageId(devopsCiStageVO.getId());
                 // 保存job信息
-                devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
-                    DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
-                    devopsCiJobDTO.setId(null);
-                    devopsCiJobDTO.setCiStageId(devopsCiStageVO.getId());
-                    devopsCiJobDTO.setCiPipelineId(ciPipelineId);
-                    devopsCiJobService.create(devopsCiJobDTO);
-                });
+                if(!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
+                    devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
+                        DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
+                        devopsCiJobDTO.setId(null);
+                        devopsCiJobDTO.setCiStageId(devopsCiStageVO.getId());
+                        devopsCiJobDTO.setCiPipelineId(ciPipelineId);
+                        devopsCiJobService.create(devopsCiJobDTO);
+                    });
+                }
             } else {
                 // 新增
                 devopsCiStageVO.setCiPipelineId(ciPipelineId);
                 DevopsCiStageDTO devopsCiStageDTO = ConvertUtils.convertObject(devopsCiStageVO, DevopsCiStageDTO.class);
                 DevopsCiStageDTO savedDevopsCiStageDTO = devopsCiStageService.create(devopsCiStageDTO);
                 // 保存job信息
-                devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
-                    DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
-                    devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
-                    devopsCiJobDTO.setCiPipelineId(ciPipelineId);
-                    devopsCiJobService.create(devopsCiJobDTO);
-                });
+                if(!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
+                    devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
+                        DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
+                        devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
+                        devopsCiJobDTO.setCiPipelineId(ciPipelineId);
+                        devopsCiJobService.create(devopsCiJobDTO);
+                    });
+                }
             }
         });
         saveCiContent(ciPipelineId, devopsCiPipelineVO);
