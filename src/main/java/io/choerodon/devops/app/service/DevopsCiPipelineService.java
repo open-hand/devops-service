@@ -7,7 +7,7 @@ import io.choerodon.devops.infra.dto.DevopsCiPipelineDTO;
 
 /**
  * 〈功能简述〉
- * 〈ci流水线servcie〉
+ * 〈ci流水线service〉
  *
  * @author wanghao
  * @Date 2020/4/2 17:59
@@ -15,7 +15,8 @@ import io.choerodon.devops.infra.dto.DevopsCiPipelineDTO;
 public interface DevopsCiPipelineService {
     /**
      * 创建流水线
-     * @param projectId
+     *
+     * @param projectId          项目id
      * @param devopsCiPipelineVO
      * @return
      */
@@ -23,8 +24,9 @@ public interface DevopsCiPipelineService {
 
     /**
      * 更新流水线
-     * @param projectId
-     * @param ciPipelineId
+     *
+     * @param projectId          项目id
+     * @param ciPipelineId       流水线id
      * @param devopsCiPipelineVO
      * @return
      */
@@ -34,10 +36,11 @@ public interface DevopsCiPipelineService {
 
     /**
      * 根据应用服务id查询流水线
-     * @param id
+     *
+     * @param appServiceId 应用服务id
      * @return
      */
-    DevopsCiPipelineDTO queryByAppSvcId(Long id);
+    DevopsCiPipelineDTO queryByAppSvcId(Long appServiceId);
 
     List<DevopsCiPipelineVO> listByProjectIdAndAppName(Long projectId, String name);
 
