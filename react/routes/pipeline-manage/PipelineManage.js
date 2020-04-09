@@ -74,12 +74,12 @@ const PipelineManage = observer((props) => {
   }
 
   function openRecordDetail() {
-    const { id } = getSelectedMenu;
+    const { gitlabPipelineId } = getSelectedMenu;
     Modal.open({
       key: recordDetailKey,
       style: modalStyle,
-      title: formatMessage({ id: `${intlPrefix}.record.detail.title` }, { id }),
-      children: <RecordDetail recordId={id} intlPrefix={intlPrefix} />,
+      title: formatMessage({ id: `${intlPrefix}.record.detail.title` }, { id: gitlabPipelineId }),
+      children: <RecordDetail pipelineRecordId={gitlabPipelineId} intlPrefix={intlPrefix} />,
       drawer: true,
       okCancel: false,
       okText: formatMessage({ id: 'close' }),

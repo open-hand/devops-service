@@ -3,9 +3,9 @@ import { observer } from 'mobx-react-lite';
 import { Form, Output, Spin } from 'choerodon-ui/pro';
 import { useRecordDetailStore } from './stores';
 import StatusTag from '../PipelineFlow/components/StatusTag';
+import UserInfo from '../../../../components/userInfo';
 
 import './index.less';
-import UserInfo from '../../../../components/userInfo';
 
 export default observer(() => {
   const {
@@ -17,7 +17,8 @@ export default observer(() => {
   const record = useMemo(() => detailDs.current, [detailDs.current]);
 
   function renderUser({ value }) {
-    return <UserInfo name={value} avatar={record.get('userImageUrl')} showName />;
+    const { realName, imageUrl } = value || {};
+    return <UserInfo name={realName} avatar={imageUrl} showName />;
   }
 
   if (!record) {
@@ -34,9 +35,9 @@ export default observer(() => {
       <Output name="pipelineName" />
       <Output name="appServiceName" />
       <Output name="status" renderer={({ value }) => <StatusTag status={value} size={12} />} />
-      <Output name="userName" renderer={renderUser} />
-      <Output name="date" />
-      <Output name="time" />
+      <Output name="userDTO" renderer={renderUser} />
+      <Output name="finishedDate" />
+      <Output name="durationSeconds" />
     </Form>
   </div>);
 });

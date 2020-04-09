@@ -1,11 +1,12 @@
-export default ({ formatMessage, intlPrefix, projectId }) => ({
+export default ({ formatMessage, intlPrefix, projectId, pipelineRecordId }) => ({
   autoCreate: false,
+  autoQuery: true,
   selection: false,
   paging: false,
   dataKey: null,
   transport: {
     read: {
-      url: '',
+      url: `devops/v1/projects/${projectId}/ci_pipeline_records/${pipelineRecordId}/details`,
       method: 'get',
     },
   },
@@ -13,8 +14,8 @@ export default ({ formatMessage, intlPrefix, projectId }) => ({
     { name: 'pipelineName', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }) },
     { name: 'appServiceName', type: 'string', label: formatMessage({ id: `${intlPrefix}.appService` }) },
     { name: 'status', type: 'string', label: formatMessage({ id: `${intlPrefix}.result` }) },
-    { name: 'userName', type: 'string', label: formatMessage({ id: `${intlPrefix}.trigger.user` }) },
-    { name: 'date', type: 'string', label: formatMessage({ id: `${intlPrefix}.execute.date` }) },
-    { name: 'time', type: 'string', label: formatMessage({ id: `${intlPrefix}.time` }) },
+    { name: 'userDTO', type: 'object', label: formatMessage({ id: `${intlPrefix}.trigger.user` }) },
+    { name: 'finishedDate', type: 'string', label: formatMessage({ id: `${intlPrefix}.execute.date` }) },
+    { name: 'durationSeconds', type: 'string', label: formatMessage({ id: `${intlPrefix}.time` }) },
   ],
 });
