@@ -1,4 +1,4 @@
-export default (AppServiceOptionsDs) => ({
+export default (AppServiceOptionsDs, projectId) => ({
   autoCreate: true,
   fields: [{
     name: 'name',
@@ -11,9 +11,19 @@ export default (AppServiceOptionsDs) => ({
     type: 'number',
     label: '关联应用服务',
     required: true,
-    textField: 'name',
-    valueField: 'id',
-    options: AppServiceOptionsDs,
+    textField: 'appServiceName',
+    valueField: 'appServiceId',
+    lookupAxiosConfig: (data) => ({
+      method: 'post',
+      url: `/devops/v1/projects/${projectId}/app_service/list_app_services_without_ci`,
+      data: {
+        param: [],
+        searchParam: {
+          name: data.params.appServiceName || '',
+        },
+      },
+
+    }),
   }, {
     name: 'triggerType',
     type: 'string',

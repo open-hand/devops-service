@@ -1,6 +1,6 @@
 import React, { Fragment, useRef, useMemo, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Page, Header, Breadcrumb, Content } from '@choerodon/boot';
+import { Page, Header, Breadcrumb, Content, Permission } from '@choerodon/boot';
 import { Button, Modal } from 'choerodon-ui/pro';
 import { axios, Choerodon } from '@choerodon/boot';
 import { handlePromptError } from '../../utils';
@@ -24,6 +24,7 @@ const PipelineManage = observer((props) => {
     intl: { formatMessage },
     intlPrefix,
     prefixCls,
+    permissions,
     mainStore,
     editBlockStore,
     detailStore,
@@ -91,20 +92,56 @@ const PipelineManage = observer((props) => {
     });
   }
 
+  async function changeRecordExecute(type) {
+    const { gitlabProjectId, gitlabPipelineId } = getSelectedMenu;
+    const res = await mainStore.changeRecordExecute({
+      projectId,
+      gitlabProjectId,
+      recordId: gitlabPipelineId,
+      type,
+    });
+    if (res) {
+      handleRefresh();
+    }
+  }
+
   function getButtons() {
     const { parentId, status } = getSelectedMenu;
     if (!parentId) {
-      return <Button icon="playlist_add" onClick={handleSaveEdit}>{formatMessage({ id: 'save' })}</Button>;
+      return (
+        <Permission service={['devops-service.devops-ci-pipeline.update']}>
+          <Button
+            icon="playlist_add"
+            onClick={handleSaveEdit}
+          >
+            {formatMessage({ id: 'save' })}
+          </Button>
+        </Permission>
+      );
     } else {
       let btn;
       switch (status) {
         case 'running':
         case 'pending':
-          btn = <Button icon="power_settings_new">{formatMessage({ id: `${intlPrefix}.execute.cancel` })}</Button>;
+          btn = <Permission service={['devops-service.project-pipeline.cancel']}>
+            <Button
+              icon="power_settings_new"
+              onClick={() => changeRecordExecute('cancel')}
+            >
+              {formatMessage({ id: `${intlPrefix}.execute.cancel` })}
+            </Button>
+          </Permission>;
           break;
         case 'canceled':
         case 'failed':
-          btn = <Button icon="refresh">{formatMessage({ id: `${intlPrefix}.execute.retry` })}</Button>;
+          btn = <Permission service={['devops-service.project-pipeline.retry']}>
+            <Button
+              icon="refresh"
+              onClick={() => changeRecordExecute('retry')}
+            >
+              {formatMessage({ id: `${intlPrefix}.execute.retry` })}
+            </Button>
+          </Permission>;
           break;
         default:
           break;
@@ -122,14 +159,16 @@ const PipelineManage = observer((props) => {
   }
 
   return (
-    <Page className="pipelineManage_page">
+    <Page service={permissions} className="pipelineManage_page">
       <Header title="流水线">
-        <Button
-          onClick={handleCreatePipeline}
-          icon="playlist_add"
-        >
-          {formatMessage({ id: `${intlPrefix}.create` })}
-        </Button>
+        <Permission service={['devops-service.devops-ci-pipeline.create']}>
+          <Button
+            onClick={handleCreatePipeline}
+            icon="playlist_add"
+          >
+            {formatMessage({ id: `${intlPrefix}.create` })}
+          </Button>
+        </Permission>
         {!treeDs.length && treeDs.status === 'ready' ? null : getButtons()}
         <Button
           onClick={handleRefresh}

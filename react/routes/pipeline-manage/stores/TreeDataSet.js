@@ -10,20 +10,22 @@ function handleSelect(record, store) {
 
 function formatData({ data, expandsKeys }) {
   const newData = [];
-  function flatData(value) {
+  function flatData(value, gitlabProjectId) {
     forEach(value, (item) => {
       const parentId = item.ciPipelineId;
       const key = `${parentId ? `${parentId}-` : ''}${item.id}`;
+      const newGitlabProjectId = item.gitlabProjectId || gitlabProjectId;
       const newItem = {
         ...item,
         key,
         parentId: parentId ? parentId.toString() : null,
         status: item.latestExecuteStatus || item.status,
         expand: expandsKeys.includes(key),
+        gitlabProjectId: newGitlabProjectId,
       };
       newData.push(newItem);
       if (!isEmpty(item.pipelineRecordVOList)) {
-        flatData(item.pipelineRecordVOList);
+        flatData(item.pipelineRecordVOList, newGitlabProjectId);
       }
       if (item.hasMoreRecords) {
         newData.push({
@@ -63,6 +65,10 @@ export default ({ projectId, mainStore }) => ({
         }
       },
     },
+    destroy: ({ data: [data] }) => ({
+      url: `/devops/v1/projects/${projectId}/ci_pipelines/${data.id}`,
+      method: 'delete',
+    }),
   },
   events: {
     select: ({ record }) => {
