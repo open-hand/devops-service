@@ -50,4 +50,6 @@ public interface DevopsCiPipelineService {
     DevopsCiPipelineDTO disablePipeline(Long projectId, Long ciPipelineId);
 
     void deletePipeline(Long projectId, Long ciPipelineId);
+
+    DevopsCiPipelineDTO enablePipeline(Long projectId, Long ciPipelineId);
 }

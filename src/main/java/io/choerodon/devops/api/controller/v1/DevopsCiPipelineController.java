@@ -84,6 +84,15 @@ public class DevopsCiPipelineController {
             @PathVariable(value = "ci_pipeline_id") Long ciPipelineId) {
         return ResponseEntity.ok(devopsCiPipelineService.disablePipeline(projectId, ciPipelineId));
     }
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "启用流水线")
+    @PutMapping("/{ci_pipeline_id}/enable")
+    public ResponseEntity<DevopsCiPipelineDTO> enablePipeline(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "ci_pipeline_id") Long ciPipelineId) {
+        return ResponseEntity.ok(devopsCiPipelineService.enablePipeline(projectId, ciPipelineId));
+    }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除流水线")

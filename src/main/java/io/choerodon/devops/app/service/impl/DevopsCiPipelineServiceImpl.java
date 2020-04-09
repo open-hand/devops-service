@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
@@ -43,10 +45,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private static final String CREATE_PIPELINE_FAILED = "create.pipeline.failed";
     private static final String UPDATE_PIPELINE_FAILED = "update.pipeline.failed";
     private static final String DISABLE_PIPELINE_FAILED = "disable.pipeline.failed";
+    private static final String ENABLE_PIPELINE_FAILED = "enable.pipeline.failed";
     private static final String DELETE_PIPELINE_FAILED = "delete.pipeline.failed";
     private static final String ERROR_USER_HAVE_NO_APP_PERMISSION = "error.user.have.no.app.permission";
     private static final String ERROR_APP_SVC_ID_IS_NULL = "error.app.svc.id.is.null";
     private static final String ERROR_PROJECT_ID_IS_NULL = "error.project.id.is.null";
+    private static final String ERROR_NOT_GITLAB_OWNER = "error.not.gitlab.owner";
     @Value("${services.gateway.url}")
     private String gatewayUrl;
 
@@ -59,6 +63,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private UserAttrService userAttrService;
     private AppServiceService appServiceService;
     private DevopsCiJobRecordService devopsCiJobRecordService;
+    private PermissionHelper permissionHelper;
+    private BaseServiceClientOperator baseServiceClientOperator;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiPipelineMapper devopsCiPipelineMapper,
@@ -70,7 +76,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             GitlabServiceClientOperator gitlabServiceClientOperator,
             UserAttrService userAttrService,
             AppServiceService appServiceService,
-            DevopsCiJobRecordService devopsCiJobRecordService) {
+            DevopsCiJobRecordService devopsCiJobRecordService,
+            PermissionHelper permissionHelper,
+            BaseServiceClientOperator baseServiceClientOperator) {
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
         this.devopsCiStageService = devopsCiStageService;
@@ -80,7 +88,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.userAttrService = userAttrService;
         this.appServiceService = appServiceService;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
-
+        this.permissionHelper = permissionHelper;
+        this.baseServiceClientOperator = baseServiceClientOperator;
     }
 
     @Override
@@ -160,6 +169,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     @Transactional
     public DevopsCiPipelineDTO update(Long projectId, Long ciPipelineId, DevopsCiPipelineVO devopsCiPipelineVO) {
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        checkUserPermission(devopsCiPipelineVO.getAppServiceId(), userId);
         DevopsCiPipelineDTO devopsCiPipelineDTO = ConvertUtils.convertObject(devopsCiPipelineVO, DevopsCiPipelineDTO.class);
         devopsCiPipelineDTO.setId(ciPipelineId);
         if (devopsCiPipelineMapper.updateByPrimaryKeySelective(devopsCiPipelineDTO) != 1) {
@@ -290,6 +301,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     @Transactional
     public void deletePipeline(Long projectId, Long ciPipelineId) {
+        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineMapper.selectByPrimaryKey(ciPipelineId);
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(devopsCiPipelineDTO.getAppServiceId());
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(appServiceDTO.getProjectId())
+                && !permissionHelper.isOrganzationRoot(userId, baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId()).getOrganizationId())) {
+            throw new CommonException(ERROR_NOT_GITLAB_OWNER);
+        }
         // 删除流水线
         if (devopsCiPipelineMapper.deleteByPrimaryKey(ciPipelineId) != 1) {
             throw new CommonException(DELETE_PIPELINE_FAILED);
@@ -311,7 +329,28 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         // TODO
         // 删除.gitlab-ci.yaml文件
+        deleteGitlabCiFile(appServiceDTO.getGitlabProjectId(), userId);
+    }
 
+    @Override
+    @Transactional
+    public DevopsCiPipelineDTO enablePipeline(Long projectId, Long ciPipelineId) {
+        if (devopsCiPipelineMapper.enablePipeline(ciPipelineId) != 1) {
+            throw new CommonException(ENABLE_PIPELINE_FAILED);
+        }
+        return devopsCiPipelineMapper.selectByPrimaryKey(ciPipelineId);
+    }
+
+    private void deleteGitlabCiFile(Integer gitlabProjectId, Long iamUserId) {
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(iamUserId);
+        RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(gitlabProjectId, GitOpsConstants.MASTER, GitOpsConstants.GITLAB_CI_FILE_NAME);
+        if (repositoryFile != null) {
+            gitlabServiceClientOperator.deleteFile(
+                    gitlabProjectId,
+                    GitOpsConstants.GITLAB_CI_FILE_NAME,
+                    GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
+                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        }
     }
 
     /**
