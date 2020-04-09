@@ -2,9 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_GITLAB_CI_PIPELINE;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,6 +23,7 @@ import io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PageRequestUtil;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -55,7 +54,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     public DevopsCiPipelineRecordServiceImpl(DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
                                              DevopsCiJobRecordService devopsCiJobRecordService,
                                              DevopsCiStageService devopsCiStageService,
-                                             DevopsCiJobService devopsCiJobService,
+                                             @Lazy DevopsCiJobService devopsCiJobService,
                                              DevopsCiJobRecordMapper devopsCiJobRecordMapper,
                                              DevopsCiPipelineService devopsCiPipelineService,
                                              AppServiceService applicationService,
@@ -138,29 +137,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             devopsCiPipelineRecordMapper.insertSelective(devopsCiPipelineRecordDTO);
             // 保存job执行记录
             Long pipelineRecordId = devopsCiPipelineRecordDTO.getId();
-            pipelineWebHookVO.getBuilds().forEach(ciJobWebHookVO -> {
-                DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(ciJobWebHookVO.getId());
-                if (devopsCiJobRecordDTO == null) {
-                    devopsCiJobRecordDTO = new DevopsCiJobRecordDTO();
-                    devopsCiJobRecordDTO.setGitlabJobId(ciJobWebHookVO.getId());
-                    devopsCiJobRecordDTO.setCiPipelineRecordId(pipelineRecordId);
-                    devopsCiJobRecordDTO.setStartedDate(ciJobWebHookVO.getStartedAt());
-                    devopsCiJobRecordDTO.setFinishedDate(ciJobWebHookVO.getFinishedAt());
-                    devopsCiJobRecordDTO.setStage(ciJobWebHookVO.getStage());
-                    devopsCiJobRecordDTO.setName(ciJobWebHookVO.getName());
-                    devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
-                    devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
-                    devopsCiJobRecordMapper.insertSelective(devopsCiJobRecordDTO);
-                } else {
-                    devopsCiJobRecordDTO.setCiPipelineRecordId(pipelineRecordId);
-                    devopsCiJobRecordDTO.setStartedDate(ciJobWebHookVO.getStartedAt());
-                    devopsCiJobRecordDTO.setFinishedDate(ciJobWebHookVO.getFinishedAt());
-                    devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
-                    devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
-                    devopsCiJobRecordMapper.updateByPrimaryKeySelective(devopsCiJobRecordDTO);
-                }
-            });
-
+            saveJobRecords(pipelineWebHookVO, pipelineRecordId);
         } else {
             devopsCiPipelineRecordDTO.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
             devopsCiPipelineRecordDTO.setTriggerUserId(iamUserId);
@@ -172,18 +149,34 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             devopsCiPipelineRecordMapper.updateByPrimaryKeySelective(devopsCiPipelineRecordDTO);
             // 更新job状态
             // 保存job执行记录
-            pipelineWebHookVO.getBuilds().forEach(ciJobWebHookVO -> {
-                DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(ciJobWebHookVO.getId());
-                if (devopsCiJobRecordDTO != null) {
-                    devopsCiJobRecordDTO.setStartedDate(ciJobWebHookVO.getStartedAt());
-                    devopsCiJobRecordDTO.setFinishedDate(ciJobWebHookVO.getFinishedAt());
-                    devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
-                    devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
-                    devopsCiJobRecordMapper.updateByPrimaryKeySelective(devopsCiJobRecordDTO);
-                }
-
-            });
+            Long pipelineRecordId = devopsCiPipelineRecordDTO.getId();
+            saveJobRecords(pipelineWebHookVO, pipelineRecordId);
         }
+    }
+
+    private void saveJobRecords(PipelineWebHookVO pipelineWebHookVO, Long pipelineRecordId) {
+        pipelineWebHookVO.getBuilds().forEach(ciJobWebHookVO -> {
+            DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(ciJobWebHookVO.getId());
+            if (devopsCiJobRecordDTO == null) {
+                devopsCiJobRecordDTO = new DevopsCiJobRecordDTO();
+                devopsCiJobRecordDTO.setGitlabJobId(ciJobWebHookVO.getId());
+                devopsCiJobRecordDTO.setCiPipelineRecordId(pipelineRecordId);
+                devopsCiJobRecordDTO.setStartedDate(ciJobWebHookVO.getStartedAt());
+                devopsCiJobRecordDTO.setFinishedDate(ciJobWebHookVO.getFinishedAt());
+                devopsCiJobRecordDTO.setStage(ciJobWebHookVO.getStage());
+                devopsCiJobRecordDTO.setName(ciJobWebHookVO.getName());
+                devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
+                devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
+                devopsCiJobRecordMapper.insertSelective(devopsCiJobRecordDTO);
+            } else {
+                devopsCiJobRecordDTO.setCiPipelineRecordId(pipelineRecordId);
+                devopsCiJobRecordDTO.setStartedDate(ciJobWebHookVO.getStartedAt());
+                devopsCiJobRecordDTO.setFinishedDate(ciJobWebHookVO.getFinishedAt());
+                devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
+                devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
+                devopsCiJobRecordMapper.updateByPrimaryKeySelective(devopsCiJobRecordDTO);
+            }
+        });
     }
 
     @Override
@@ -200,6 +193,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
             recordDTO.setCiPipelineRecordId(pipelineRecord.getId());
             List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOS = devopsCiJobRecordMapper.select(recordDTO);
+            // 只返回job的最新记录
+            devopsCiJobRecordDTOS = filterJobs(devopsCiJobRecordDTOS);
             Map<String, List<DevopsCiJobRecordDTO>> jobRecordMap = devopsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStage));
             // 查询阶段信息
             List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(ciPipelineId);
@@ -221,6 +216,23 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         return pipelineRecordInfo;
     }
 
+    private List<DevopsCiJobRecordDTO> filterJobs(List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOS) {
+        List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOList = new ArrayList<>();
+        if (CollectionUtils.isEmpty(devopsCiJobRecordDTOS)) {
+            return devopsCiJobRecordDTOList;
+        }
+        Map<String, List<DevopsCiJobRecordDTO>> jobMap = devopsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getName));
+        jobMap.forEach((k,v) -> {
+            if (v.size() > 1) {
+                Optional<DevopsCiJobRecordDTO> ciJobRecordDTO = v.stream().sorted(Comparator.comparing(DevopsCiJobRecordDTO::getId).reversed()).findFirst();
+                devopsCiJobRecordDTOList.add(ciJobRecordDTO.get());
+            } else if (v.size() == 1) {
+                devopsCiJobRecordDTOList.add(v.get(0));
+            }
+        });
+        return devopsCiJobRecordDTOList;
+    }
+
     @Override
     public DevopsCiPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId) {
         DevopsCiPipelineRecordDTO pipelineRecordDTO = new DevopsCiPipelineRecordDTO();
@@ -240,6 +252,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
         recordDTO.setCiPipelineRecordId(devopsCiPipelineRecordDTO.getId());
         List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOS = devopsCiJobRecordMapper.select(recordDTO);
+        // 只返回job的最新记录
+        devopsCiJobRecordDTOS = filterJobs(devopsCiJobRecordDTOS);
+
         Map<String, List<DevopsCiJobRecordDTO>> jobRecordMap = devopsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStage));
         // 查询阶段信息
         List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
