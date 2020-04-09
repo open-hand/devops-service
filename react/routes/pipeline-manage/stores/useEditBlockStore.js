@@ -150,7 +150,7 @@ export default function useStore() {
       } else {
         this.dataSource.forEach((item, index) => {
           if (item.sequence === sequence) {
-            this.dataSource2[index].jobList[key] = data;
+            this.dataSource[index].jobList[key] = data;
           }
         });
       }
