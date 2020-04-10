@@ -39,12 +39,20 @@
       }
     }
 
+    .c7n-scrollbar-y {
+      height: 95%;
+    }
+
     &-tree {
       margin-top: .16rem;
 
       .@{c7n-prefix}-tree-treenode {
         width: 100%;
         padding: 0;
+
+        &:last-child {
+          margin-bottom: .1rem;
+        }
 
         &:last-child,
         .@{c7n-prefix}-tree-node-content-wrapper-open {

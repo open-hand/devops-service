@@ -20,8 +20,8 @@ export default ({ formatMessage, intlPrefix, projectId, pipelineRecordId, store,
   ],
   events: {
     load: ({ dataSet }) => {
-      const { status } = store.getSelectedMenu;
-      if (dataSet.current.get('status') !== status) {
+      const { status, gitlabPipelineId } = store.getSelectedMenu;
+      if (dataSet.current.get('gitlabPipelineId') === gitlabPipelineId && dataSet.current.get('status') !== status) {
         refresh();
       }
     },

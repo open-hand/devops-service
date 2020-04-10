@@ -116,7 +116,7 @@ const PipelineManage = observer((props) => {
       return (
         <Permission service={['devops-service.devops-ci-pipeline.update']}>
           <Button
-            icon="playlist_add"
+            icon="save-o"
             onClick={handleSaveEdit}
           >
             {formatMessage({ id: 'save' })}
@@ -153,7 +153,7 @@ const PipelineManage = observer((props) => {
       }
       return (<Fragment>
         <Button
-          icon="find_in_page"
+          icon="find_in_page-o"
           onClick={openRecordDetail}
         >
           {formatMessage({ id: `${intlPrefix}.record.detail` })}
