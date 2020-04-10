@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Spin } from 'choerodon-ui';
+import map from 'lodash/map';
+import isEqual from 'lodash/isEqual';
 import DetailHeader from './components/detailHeader';
 import DetailColumn from './components/detailColumn';
 
@@ -11,6 +13,7 @@ export default observer((props) => {
     projectId,
     status: treeStatus,
     treeDs,
+    stageRecordVOList: treeStageRecordVOList,
   } = props;
 
   const {
@@ -30,12 +33,13 @@ export default observer((props) => {
     stageRecordVOList, devopsCiPipelineVO, status, gitlabPipelineId: pipelineRecordId,
   } = getDetailData;
 
-
   useEffect(() => {
-    if (pipelineRecordId === gitlabPipelineId && status !== treeStatus) {
+    const treeStatusList = map(treeStageRecordVOList || [], 'status');
+    const detailStatusList = map(stageRecordVOList || [], 'status');
+    if (pipelineRecordId === gitlabPipelineId && (status !== treeStatus || !isEqual(detailStatusList, treeStatusList))) {
       treeDs && treeDs.query();
     }
-  }, [gitlabPipelineId]);
+  }, [pipelineRecordId]);
 
   const renderStage = () => (
     stageRecordVOList && stageRecordVOList.length > 0 ? stageRecordVOList.map((item) => {
@@ -59,7 +63,6 @@ export default observer((props) => {
         <DetailHeader
           gitlabPipelineId={gitlabPipelineId}
           parentName={devopsCiPipelineVO && devopsCiPipelineVO.name}
-          status={status}
         />
         <div className="c7n-piplineManage-detail">
           {renderStage()}
