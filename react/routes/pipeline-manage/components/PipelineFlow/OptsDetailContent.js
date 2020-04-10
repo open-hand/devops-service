@@ -63,6 +63,7 @@ export default observer((props) => {
         <DetailHeader
           gitlabPipelineId={gitlabPipelineId}
           parentName={devopsCiPipelineVO && devopsCiPipelineVO.name}
+          status={status}
         />
         <div className="c7n-piplineManage-detail">
           {renderStage()}
