@@ -69,6 +69,7 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
     type: 'string',
     label: 'SonarQube',
     defaultValue: 'username',
+    required: true,
   }, {
     name: 'username',
     type: 'string',
@@ -80,6 +81,7 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
     name: 'password',
     type: 'string',
     label: '密码',
+    required: true,
   }, {
     name: 'sonarUrl',
     type: 'string',

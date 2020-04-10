@@ -1,11 +1,12 @@
-import React from 'react';
-import { Form, TextField, Select, SelectBox, Modal, Button } from 'choerodon-ui/pro';
+import React, { useEffect } from 'react';
+import { Form, TextField, Select, SelectBox, Modal, Button, DataSet } from 'choerodon-ui/pro';
 import { message } from 'choerodon-ui';
 import { observer } from 'mobx-react-lite';
 import { usePipelineCreateStore } from './stores';
 import AddTask from './components/AddTask';
 import { usePipelineManageStore } from '../../stores';
 import StageEditBlock from '../PipelineFlow/components/stageEditBlock';
+
 
 const { Option } = Select;
 
@@ -22,6 +23,7 @@ const PipelineCreate = observer(() => {
     },
     refreshTree,
   } = usePipelineCreateStore();
+
 
   const handleCreate = async () => {
     const result = await PipelineCreateFormDataSet.validate();
