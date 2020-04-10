@@ -1,4 +1,4 @@
-export default ({ formatMessage, intlPrefix, projectId, pipelineRecordId }) => ({
+export default ({ formatMessage, intlPrefix, projectId, pipelineRecordId, store, refresh }) => ({
   autoCreate: false,
   autoQuery: true,
   selection: false,
@@ -18,4 +18,12 @@ export default ({ formatMessage, intlPrefix, projectId, pipelineRecordId }) => (
     { name: 'finishedDate', type: 'string', label: formatMessage({ id: `${intlPrefix}.execute.date` }) },
     { name: 'durationSeconds', type: 'number', label: formatMessage({ id: `${intlPrefix}.time` }) },
   ],
+  events: {
+    load: ({ dataSet }) => {
+      const { status } = store.getSelectedMenu;
+      if (dataSet.current.get('status') !== status) {
+        refresh();
+      }
+    },
+  },
 });

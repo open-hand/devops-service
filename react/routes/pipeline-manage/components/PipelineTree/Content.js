@@ -72,8 +72,8 @@ const TreeMenu = observer(() => {
       treeDs.forEach((treeRecord) => {
         const pipelineName = treeRecord.get('name');
         const appServiceName = treeRecord.get('appServiceName');
-        const id = treeRecord.get('id').toString();
         const parentId = treeRecord.get('parentId');
+        const id = parentId && treeRecord.get('gitlabPipelineId') ? treeRecord.get('gitlabPipelineId').toString() : null;
         if (value) {
           if (!parentId && (toUpper(pipelineName).indexOf(toUpper(value)) > -1 || toUpper(appServiceName).indexOf(toUpper(value)) > -1)) {
             expandParents(treeRecord, expandedKeys);

@@ -5,6 +5,7 @@ import { observer } from 'mobx-react-lite';
 import { Icon, Modal, Spin, Tooltip } from 'choerodon-ui/pro';
 import map from 'lodash/map';
 import forEach from 'lodash/forEach';
+import includes from 'lodash/includes';
 import { usePipelineManageStore } from '../../stores';
 import TimePopover from '../../../../components/timePopover';
 import eventStopProp from '../../../../utils/eventStopProp';
@@ -27,6 +28,7 @@ const TreeItem = observer(({ record, search }) => {
   } = usePipelineManageStore();
   const {
     treeStore,
+    handleRefresh,
   } = usePipelineTreeStore();
 
   const iconType = useMemo(() => ({
@@ -36,6 +38,7 @@ const TreeItem = observer(({ record, search }) => {
     canceled: 'cancle_b',
     deleted: 'cancel',
     pending: 'pause_circle_filled',
+    skipped: 'skipped_b',
 
   }), []);
   const timePopoverStyle = useMemo(() => ({
@@ -103,7 +106,7 @@ const TreeItem = observer(({ record, search }) => {
       type,
     });
     if (res) {
-      refresh();
+      handleRefresh();
     }
   }
 
@@ -141,14 +144,14 @@ const TreeItem = observer(({ record, search }) => {
       appServiceName,
       latestExecuteDate,
       createdDate,
-      status = 'success',
+      status,
       enabled = false,
       triggerType,
       id,
       parentId,
       stageRecordVOList,
     } = record.toData();
-    if (key === 'more') {
+    if (includes(key, 'more')) {
       if (record.getState('isLoading')) {
         return <Spin />;
       }
@@ -241,9 +244,9 @@ const TreeItem = observer(({ record, search }) => {
             <span className={`${prefixCls}-sidebar-header-service`}>
               <TreeItemName name={appServiceName} search={search} headSpace={false} />
             </span>
-            <Tooltip title={formatMessage({ id: status })} placement="top">
+            {status && <Tooltip title={formatMessage({ id: `${intlPrefix}.status.${status}` })} placement="top">
               <Icon type={iconType[status]} className={`${prefixCls}-sidebar-header-icon ${prefixCls}-sidebar-header-icon-${status}`} />
-            </Tooltip>
+            </Tooltip>}
           </div>
         </div>
       );
