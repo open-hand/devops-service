@@ -48,6 +48,29 @@ const jobType = {
   },
 };
 
+function renderDuration(value) {
+  let secondTime = parseInt(value, 10);// 秒
+  let minuteTime = 0;// 分
+  let hourTime = 0;// 小时
+  if (secondTime > 60) { 
+    minuteTime = parseInt(secondTime / 60, 10);
+    secondTime = parseInt(secondTime % 60, 10);
+    if (minuteTime > 60) {
+      hourTime = parseInt(minuteTime / 60, 10);
+      minuteTime = parseInt(minuteTime % 60, 10);
+    }
+  }
+  let result = `${parseInt(secondTime, 10)}秒`;
+
+  if (minuteTime > 0) {
+    result = `${parseInt(minuteTime, 10)}分${result}`;
+  }
+  if (hourTime > 0) {
+    result = `${parseInt(hourTime, 10)}小时${result}`;
+  }
+  return result;
+}
+
 const DetailItem = (props) => {
   const [expand, setExpand] = useState(false);
   const {
@@ -60,7 +83,7 @@ const DetailItem = (props) => {
     projectId,
     gitlabJobId,
     detailStore: {
-      retryJob, getDetailData, loadDetailData, setDetailData, setDetailLoading,
+      retryJob, getDetailData,
     },
     name,
     handleRefresh,
@@ -196,7 +219,7 @@ const DetailItem = (props) => {
         }
         <span className="c7n-piplineManage-detail-column-item-time">
           <span>任务耗时：</span>
-          <span>{durationSeconds ? `${durationSeconds}s` : '-'}</span>
+          <span>{durationSeconds ? `${renderDuration(durationSeconds)}` : '-'}</span>
         </span>
       </footer>
     </div>
@@ -235,7 +258,7 @@ export default observer((props) => {
       <div className="c7n-piplineManage-detail-column-header">
         <StatusDot size={17} status={piplineStatus} />
         <span>{piplineName}</span>
-        {seconds && <span>{seconds}S</span>}
+        {seconds && <span>{renderDuration(seconds)}</span>}
       </div>
       <div className="c7n-piplineManage-detail-column-lists">
         <h6>任务列表</h6>

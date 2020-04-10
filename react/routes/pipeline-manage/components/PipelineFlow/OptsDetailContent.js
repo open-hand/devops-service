@@ -23,6 +23,9 @@ export default observer((props) => {
     loadDetailData(projectId, gitlabPipelineId);
   }, [projectId, gitlabPipelineId]);
 
+  // stageRecordVOList: 各个详情阶段记录
+  // devopsCipiplineVO: 本流水线记录得信息
+   
   const {
     stageRecordVOList, devopsCiPipelineVO, status,
   } = getDetailData;
@@ -31,7 +34,7 @@ export default observer((props) => {
     if (status !== treeStatus) {
       treeDs && treeDs.query();
     }
-  });
+  }, [treeStatus]);
 
   const renderStage = () => (
     stageRecordVOList && stageRecordVOList.length > 0 ? stageRecordVOList.map((item) => {
