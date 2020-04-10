@@ -46,7 +46,7 @@ export default observer((props) => {
           {...props}
         />
       );
-    }) : '暂无数据...'
+    }) : '暂无数据....'
   );
 
   return (
