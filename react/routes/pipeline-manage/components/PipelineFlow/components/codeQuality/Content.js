@@ -20,7 +20,7 @@ import './index.less';
 
 export default withRouter(observer((props) => {
   const { formatMessage, codeQuality } = useCodeQualityStore();
-  
+
   const { location: {
     search,
   } } = props;
@@ -47,7 +47,7 @@ export default withRouter(observer((props) => {
           <div className="c7n-codeQuality-content-head">
             <span className="codeQuality-head-title">{formatMessage({ id: 'codeQuality.content.title' })}</span>
             <span className={`codeQuality-head-status codeQuality-head-status-${status}`}>{formatMessage({ id: `codeQuality.status.${status}` })}</span>
-            <span className="codeQuality-head-date">{formatMessage({ id: 'codeQuality.analysis' })}：{date.split('+')[0].replace(/T/g, ' ')}</span>
+            <span className="codeQuality-head-date">执行时间：{date.split('+')[0].replace(/T/g, ' ')}</span>
           </div>
           {_.map(quality, (value, objKey) => (
             <div className="c7n-codeQuality-detail" key={objKey}>
@@ -70,16 +70,16 @@ export default withRouter(observer((props) => {
                       {key === 'coverage' && <Percentage data={Number(innerValue)} />}
                       {key === 'duplicated_lines_density' && <Rating rating={rate} size="18px" type="pie" />}
                       {hasReport && (
-                      <Link
-                        to={{
-                          pathname: '/devops/reports/code-quality',
-                          search,
-                          state: { type: OBJECT_TYPE[objKey] },
-                          // appId: appServiceId,
-                        }}
-                      >
-                        <Icon type="timeline" className="reports-icon" />
-                      </Link>
+                        <Link
+                          to={{
+                            pathname: '/devops/reports/code-quality',
+                            search,
+                            state: { type: OBJECT_TYPE[objKey] },
+                            // appId: appServiceId,
+                          }}
+                        >
+                          <Icon type="timeline" className="reports-icon" />
+                        </Link>
                       )}
                     </div>
                   ))
@@ -101,7 +101,7 @@ export default withRouter(observer((props) => {
     <div
       className="c7n-region c7n-codeQuality-wrapper"
     >
-      { codeQuality.loading ? <Loading display /> : getDetail()}
+      {codeQuality.loading ? <Loading display /> : getDetail()}
     </div>
   );
 }));

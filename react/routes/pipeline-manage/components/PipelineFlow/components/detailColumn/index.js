@@ -52,7 +52,7 @@ function renderDuration(value) {
   let secondTime = parseInt(value, 10);// 秒
   let minuteTime = 0;// 分
   let hourTime = 0;// 小时
-  if (secondTime > 60) { 
+  if (secondTime > 60) {
     minuteTime = parseInt(secondTime / 60, 10);
     secondTime = parseInt(secondTime % 60, 10);
     if (minuteTime > 60) {
@@ -78,7 +78,6 @@ const DetailItem = (props) => {
     itemStatus,
     startedDate,
     finishedDate,
-    gitlabPipelineId,
     type,
     projectId,
     gitlabJobId,
@@ -172,7 +171,7 @@ const DetailItem = (props) => {
         </div>
         <Button
           className="c7n-piplineManage-detail-column-item-btn"
-          icon="arrow_drop_down"
+          icon={!expand ? 'arrow_drop_down' : 'arrow_drop_up'}
           shape="circle"
           funcType="flat"
           size="small"

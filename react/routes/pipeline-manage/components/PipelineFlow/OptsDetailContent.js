@@ -27,20 +27,15 @@ export default observer((props) => {
   // devopsCipiplineVO: 本流水线记录得信息
 
   const {
-    stageRecordVOList, devopsCiPipelineVO, status,
+    stageRecordVOList, devopsCiPipelineVO, status, gitlabPipelineId: pipelineRecordId,
   } = getDetailData;
 
-  let checkStatus = status || undefined;
 
   useEffect(() => {
-    checkStatus = undefined;
-  }, [gitlabPipelineId]);
-
-  useEffect(() => {
-    if (checkStatus !== undefined && checkStatus !== treeStatus) {
+    if (pipelineRecordId === gitlabPipelineId && status !== treeStatus) {
       treeDs && treeDs.query();
     }
-  }, [treeStatus]);
+  }, [gitlabPipelineId]);
 
   const renderStage = () => (
     stageRecordVOList && stageRecordVOList.length > 0 ? stageRecordVOList.map((item) => {
@@ -64,7 +59,7 @@ export default observer((props) => {
         <DetailHeader
           gitlabPipelineId={gitlabPipelineId}
           parentName={devopsCiPipelineVO && devopsCiPipelineVO.name}
-          status={checkStatus}
+          status={status}
         />
         <div className="c7n-piplineManage-detail">
           {renderStage()}
