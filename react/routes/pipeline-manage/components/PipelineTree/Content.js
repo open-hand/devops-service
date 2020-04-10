@@ -6,6 +6,7 @@ import { Collapse } from 'choerodon-ui';
 import toUpper from 'lodash/toUpper';
 import { usePipelineManageStore } from '../../stores';
 import TreeItem from './TreeItem';
+import ScrollArea from '../../../../components/scroll-area';
 
 import './index.less';
 
@@ -103,12 +104,17 @@ const TreeMenu = observer(() => {
       value={mainStore.getSearchValue}
       onChange={handleSearch}
     />
-    <Tree
-      dataSet={treeDs}
-      renderer={nodeRenderer}
-      onExpand={handleExpanded}
-      className={`${prefixCls}-sidebar-tree`}
-    />
+    <ScrollArea
+      vertical
+      // className="c7ncd-menu-scroll"
+    >
+      <Tree
+        dataSet={treeDs}
+        renderer={nodeRenderer}
+        onExpand={handleExpanded}
+        className={`${prefixCls}-sidebar-tree`}
+      />
+    </ScrollArea>
   </nav>;
 });
 
