@@ -81,7 +81,9 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
     name: 'password',
     type: 'string',
     label: '密码',
-    required: true,
+    dynamicProps: ({ record, name }) => ({
+      required: record.get('type') === 'sonar' && record.get('authType') === 'username',
+    }),
   }, {
     name: 'sonarUrl',
     type: 'string',
