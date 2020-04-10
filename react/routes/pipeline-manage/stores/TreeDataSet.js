@@ -29,7 +29,7 @@ function formatData({ data, expandsKeys }) {
       }
       if (item.hasMoreRecords) {
         newData.push({
-          key: 'more',
+          key: `${item.id}-more`,
           parentId: item.id.toString(),
         });
       }
@@ -57,8 +57,14 @@ export default ({ projectId, mainStore }) => ({
           if (data && data.failed) {
             return data;
           } else {
-            const { getExpandedKeys } = mainStore;
-            return formatData({ data, expandsKeys: getExpandedKeys });
+            const { getExpandedKeys, setExpandedKeys } = mainStore;
+            let expandsKeys = getExpandedKeys;
+            if (isEmpty(getExpandedKeys) && data.length) {
+              const newKeys = data[0].id.toString();
+              expandsKeys = [newKeys];
+              setExpandedKeys(newKeys);
+            }
+            return formatData({ data, expandsKeys });
           }
         } catch (e) {
           return response;
@@ -86,14 +92,12 @@ export default ({ projectId, mainStore }) => ({
         const selectedRecord = dataSet.find((treeRecord) => key === treeRecord.get('key'));
         if (selectedRecord) {
           selectedRecord.isSelected = true;
-        } else {
-          record.isSelected = true;
-          handleSelect(record, mainStore);
+          handleSelect(selectedRecord, mainStore);
+          return;
         }
-      } else {
-        record.isSelected = true;
-        handleSelect(record, mainStore);
       }
+      record.isSelected = true;
+      handleSelect(record, mainStore);
     },
   },
 });

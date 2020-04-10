@@ -85,7 +85,12 @@ const PipelineManage = observer((props) => {
       key: recordDetailKey,
       style: modalStyle,
       title: formatMessage({ id: `${intlPrefix}.record.detail.title` }, { id: gitlabPipelineId }),
-      children: <RecordDetail pipelineRecordId={gitlabPipelineId} intlPrefix={intlPrefix} />,
+      children: <RecordDetail
+        pipelineRecordId={gitlabPipelineId}
+        intlPrefix={intlPrefix}
+        refresh={handleRefresh}
+        store={mainStore}
+      />,
       drawer: true,
       okCancel: false,
       okText: formatMessage({ id: 'close' }),
@@ -198,9 +203,14 @@ const PipelineManage = observer((props) => {
               parentRef={rootRef}
               store={mainStore}
             />
-            <PipelineTree />
+            <PipelineTree handleRefresh={handleRefresh} />
             <div className={`${prefixCls}-main ${prefixCls}-animate`}>
-              <PipelineFlow stepStore={editBlockStore} detailStore={detailStore} handleRefresh={handleRefresh} />
+              <PipelineFlow
+                stepStore={editBlockStore}
+                detailStore={detailStore}
+                handleRefresh={handleRefresh}
+                treeDs={treeDs}
+              />
             </div>
           </div>
         )}

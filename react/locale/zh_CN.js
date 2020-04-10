@@ -787,6 +787,12 @@ const pipelineManage = {
   'c7ncd.pipelineManage.time': '流程耗时',
   'c7ncd.pipelineManage.create': '创建流水线',
   'c7ncd.pipelineManage.more': '加载更多',
+  'c7ncd.pipelineManage.status.success': '最近执行结果：成功',
+  'c7ncd.pipelineManage.status.failed': '最近执行结果：失败',
+  'c7ncd.pipelineManage.status.running': '最近执行结果：执行中',
+  'c7ncd.pipelineManage.status.pending': '最近执行结果：准备中',
+  'c7ncd.pipelineManage.status.skipped': '最近执行结果：已跳过',
+  'c7ncd.pipelineManage.status.canceled': '最近执行结果：已取消',
 };
 
 const emptyPage = {

@@ -32,7 +32,7 @@ export default observer(() => {
 
 
   useEffect(() => {
-    pipelineId ? loadData(projectId, pipelineId) : setStepData(defaultData, edit);
+    pipelineId && !edit ? loadData(projectId, pipelineId) : setStepData(defaultData, edit);
   }, [pipelineId, projectId]);
 
   function renderColumn() {

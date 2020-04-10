@@ -25,7 +25,7 @@ const statusObj = {
     text: '未执行',
   },
   pending: {
-    icon: 'timelapse',
+    icon: 'pause_circle_filled',
     text: '准备中',
   },
   skipped: {
