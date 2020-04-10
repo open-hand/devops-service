@@ -37,9 +37,9 @@ export default observer((props) => {
 
   const renderStage = () => (
     stageRecordVOList && stageRecordVOList.length > 0 ? stageRecordVOList.map((item, index) => {
-      const { name, status: stageStatus } = item;
+      const { name, status: stageStatus, durationSeconds } = item;
       return (
-        <DetailColumn piplineName={name} piplineStatus={stageStatus} {...item} {...props} />
+        <DetailColumn piplineName={name} seconds={durationSeconds} piplineStatus={stageStatus} {...item} {...props} />
       );
     }) : '暂无数据...'
   );

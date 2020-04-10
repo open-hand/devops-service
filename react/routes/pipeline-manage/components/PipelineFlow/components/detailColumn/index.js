@@ -205,10 +205,9 @@ const DetailItem = (props) => {
 
 export default observer((props) => {
   // 抛出piplineName
-  const { piplineName, piplineStatus, jobRecordVOList } = props;
+  const { piplineName, piplineStatus, jobRecordVOList, seconds } = props;
 
   useEffect(() => {
-
   }, []);
 
   const renderItem = () => {
@@ -228,7 +227,7 @@ export default observer((props) => {
           {...item}
         />
       );
-    }) : '无任务执行详情...';
+    }) : '无执行详情...';
   };
 
   return (
@@ -236,7 +235,7 @@ export default observer((props) => {
       <div className="c7n-piplineManage-detail-column-header">
         <StatusDot size={17} status={piplineStatus} />
         <span>{piplineName}</span>
-        <span>12S</span>
+        {seconds && <span>{seconds}S</span>}
       </div>
       <div className="c7n-piplineManage-detail-column-lists">
         <h6>任务列表</h6>
