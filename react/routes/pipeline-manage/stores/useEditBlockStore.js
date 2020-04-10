@@ -159,13 +159,13 @@ export default function useStore() {
       if (edit) {
         this.dataSource2.forEach((item, index) => {
           if (item.sequence === sequence) {
-            this.dataSource2[index].jobList.splice(index, 1);
+            this.dataSource2[index].jobList.splice(key, 1);
           }
         });
       } else {
         this.dataSource.forEach((item, index) => {
           if (item.sequence === sequence) {
-            this.dataSource[index].jobList.splice(index, 1);
+            this.dataSource[index].jobList.splice(key, 1);
           }
         });
       }
