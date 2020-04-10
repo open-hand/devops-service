@@ -16,7 +16,7 @@ export default function useStore() {
       this.mainStore = value;
     },
 
-    loading: false,
+    loading: true,
     setLoading(value) {
       this.loading = value;
     },

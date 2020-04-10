@@ -200,7 +200,12 @@ const PipelineManage = observer((props) => {
             />
             <PipelineTree />
             <div className={`${prefixCls}-main ${prefixCls}-animate`}>
-              <PipelineFlow stepStore={editBlockStore} detailStore={detailStore} handleRefresh={handleRefresh} />
+              <PipelineFlow
+                stepStore={editBlockStore}
+                detailStore={detailStore}
+                handleRefresh={handleRefresh}
+                treeDs={treeDs}
+              />
             </div>
           </div>
         )}

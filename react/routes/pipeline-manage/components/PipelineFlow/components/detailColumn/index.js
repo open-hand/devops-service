@@ -1,7 +1,7 @@
 import React, { useEffect, Fragment, useState } from 'react';
 
 import { observer } from 'mobx-react-lite';
-import { Icon, Tooltip } from 'choerodon-ui';
+import { Tooltip } from 'choerodon-ui';
 import { Button } from 'choerodon-ui/pro';
 import { Modal } from 'choerodon-ui/pro';
 import { Choerodon } from '@choerodon/boot';

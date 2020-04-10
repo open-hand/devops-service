@@ -10,7 +10,7 @@ import { usePipelineCreateStore } from '../../../PipelineCreate/stores';
 
 const jobTask = {
   build: '构建',
-  sonar: '代码优化',
+  sonar: '代码检查',
 };
 
 const EditItem = (props) => {

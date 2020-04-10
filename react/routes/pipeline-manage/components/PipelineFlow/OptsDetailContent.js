@@ -1,29 +1,21 @@
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Spin } from 'choerodon-ui';
-import { Choerodon } from '@choerodon/boot';
 import DetailHeader from './components/detailHeader';
 import DetailColumn from './components/detailColumn';
-import { handlePromptError } from '../../../../utils';
-
 
 export default observer((props) => {
   const {
-    id,
-    parentId,
-    updateDate,
-    stages,
     gitlabPipelineId,
-    ciPipelineId,
     detailStore,
     projectId,
+    status: treeStatus,
+    treeDs,
   } = props;
 
   const {
     loadDetailData,
     getDetailLoading,
-    setDetailLoading,
-    setDetailData,
     getDetailData,
   } = detailStore;
 
@@ -35,11 +27,24 @@ export default observer((props) => {
     stageRecordVOList, devopsCiPipelineVO, status,
   } = getDetailData;
 
+  useEffect(() => {
+    if (status !== treeStatus) {
+      treeDs && treeDs.query();
+    }
+  });
+
   const renderStage = () => (
-    stageRecordVOList && stageRecordVOList.length > 0 ? stageRecordVOList.map((item, index) => {
-      const { name, status: stageStatus, durationSeconds } = item;
+    stageRecordVOList && stageRecordVOList.length > 0 ? stageRecordVOList.map((item) => {
+      const { name, status: stageStatus, durationSeconds, sequence } = item;
       return (
-        <DetailColumn piplineName={name} seconds={durationSeconds} piplineStatus={stageStatus} {...item} {...props} />
+        <DetailColumn
+          key={sequence}
+          piplineName={name}
+          seconds={durationSeconds}
+          piplineStatus={stageStatus}
+          {...item}
+          {...props}
+        />
       );
     }) : '暂无数据...'
   );
@@ -47,7 +52,11 @@ export default observer((props) => {
   return (
     !getDetailLoading
       ? <div className="c7n-piplineManage">
-        <DetailHeader gitlabPipelineId={gitlabPipelineId} parentName={devopsCiPipelineVO && devopsCiPipelineVO.name} status={status} />
+        <DetailHeader
+          gitlabPipelineId={gitlabPipelineId}
+          parentName={devopsCiPipelineVO && devopsCiPipelineVO.name}
+          status={status}
+        />
         <div className="c7n-piplineManage-detail">
           {renderStage()}
         </div>

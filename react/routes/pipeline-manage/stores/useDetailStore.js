@@ -1,5 +1,5 @@
 import { useLocalStore } from 'mobx-react-lite';
-import { axios, Choerodon } from '@choerodon/boot';
+import { axios } from '@choerodon/boot';
 
 
 export default function useStore() {
@@ -27,7 +27,7 @@ export default function useStore() {
       return this.detailData;
     },
 
-    detailLoading: false,
+    detailLoading: true,
     setDetailLoading(value) {
       this.detailLoading = value;
     },
