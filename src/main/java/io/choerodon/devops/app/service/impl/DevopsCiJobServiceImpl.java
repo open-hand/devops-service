@@ -1,7 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import io.choerodon.core.exception.CommonException;
@@ -13,6 +15,7 @@ import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.enums.SonarAuthType;
 import io.choerodon.devops.infra.feign.SonarClient;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.DevopsCiJobMapper;
@@ -39,13 +42,16 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private DevopsCiJobMapper devopsCiJobMapper;
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     private UserAttrService userAttrService;
+    private BaseServiceClientOperator baseServiceClientOperator;
 
     public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper,
                                   GitlabServiceClientOperator gitlabServiceClientOperator,
-                                  UserAttrService userAttrService) {
+                                  UserAttrService userAttrService,
+                                  BaseServiceClientOperator baseServiceClientOperator) {
         this.devopsCiJobMapper = devopsCiJobMapper;
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
         this.userAttrService = userAttrService;
+        this.baseServiceClientOperator = baseServiceClientOperator;
     }
 
     @Override
@@ -92,18 +98,6 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
                     SONAR,
                     sonarQubeConfigVO.getUsername(),
                     sonarQubeConfigVO.getPassword());
-            try {
-                sonarClient.getUser().execute();
-            } catch (IOException e) {
-                return false;
-            }
-            return true;
-        }
-        if (SonarAuthType.TOKEN.value().equals(sonarQubeConfigVO.getAuthType())) {
-            SonarClient sonarClient = RetrofitHandler.getSonarClient(
-                    sonarQubeConfigVO.getSonarUrl(),
-                    SONAR,
-                    sonarQubeConfigVO.getToken());
             try {
                 sonarClient.getUser().execute();
             } catch (IOException e) {
