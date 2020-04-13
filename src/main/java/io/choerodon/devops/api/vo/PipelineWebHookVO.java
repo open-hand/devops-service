@@ -1,8 +1,11 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.List;
+
 public class PipelineWebHookVO {
     private PipelineWebHookAttributesVO objectAttributes;
     private PipelineWebHookUserVO user;
+    private List<CiJobWebHookVO> builds;
     private String token;
 
     public PipelineWebHookAttributesVO getObjectAttributes() {
@@ -29,4 +32,11 @@ public class PipelineWebHookVO {
         this.token = token;
     }
 
+    public List<CiJobWebHookVO> getBuilds() {
+        return builds;
+    }
+
+    public void setBuilds(List<CiJobWebHookVO> builds) {
+        this.builds = builds;
+    }
 }

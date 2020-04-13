@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper">
+    <update id="disablePipeline">
+         update devops_ci_pipeline set is_enabled = false
+        where id = #{ciPipelineId}
+    </update>
+    <update id="enablePipeline">
+        update devops_ci_pipeline set is_enabled = true
+        where id = #{ciPipelineId}
+    </update>
+
+
+    <select id="queryByProjectIdAndName" resultType="io.choerodon.devops.api.vo.DevopsCiPipelineVO">
+        SELECT
+        dcp.id,dcp.`name`,dcp.is_enabled AS enabled, dcp.app_service_id,dcp.trigger_type,dcp.project_id,
+        das.`name` AS app_service_name, das.gitlab_project_id
+        FROM devops_ci_pipeline dcp
+        INNER JOIN devops_app_service das ON dcp.app_service_id = das.id
+        <where>
+            dcp.project_id = #{projectId}
+            <if test="name">
+                and das.name like CONCAT(CONCAT('%', #{name}),'%')
+            </if>
+        </where>
+    </select>
+    <select id="queryById" resultType="io.choerodon.devops.api.vo.DevopsCiPipelineVO">
+        SELECT
+        dcp.id,dcp.`name`,dcp.is_enabled AS enabled, dcp.app_service_id,dcp.trigger_type,dcp.project_id,
+        das.`name` AS app_service_name, das.gitlab_project_id
+        FROM devops_ci_pipeline dcp
+        INNER JOIN devops_app_service das ON dcp.app_service_id = das.id
+        where dcp.id = #{ciPipelineId}
+    </select>
+</mapper>

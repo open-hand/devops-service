@@ -511,4 +511,37 @@ public interface GitlabServiceClient {
             @RequestParam(value = "user_id") Integer userId,
             @ApiParam(value = "操作文件相关的信息")
             @RequestBody CommitPayloadDTO commitPayloadDTO);
+
+    /**
+     * Create a new pipeline
+     *
+     * @param projectId 项目id
+     * @param ref       分支
+     * @return Pipeline
+     */
+    @ApiOperation(value = "Create a pipelines jobs ")
+    @PostMapping("/v1/projects/{projectId}/pipelines")
+    ResponseEntity createPipeline(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "projectId") Integer projectId,
+            @ApiParam(value = "userId")
+            @RequestParam(value = "userId") Integer userId,
+            @ApiParam(value = "分支")
+            @RequestParam(value = "ref") String ref);
+
+    /**
+     * 查询job执行日志
+     */
+    @GetMapping(value = "/v1/projects/{projectId}/jobs/{jobId}/trace")
+    ResponseEntity<String> queryTrace(
+            @PathVariable(value = "projectId") Integer projectId,
+            @PathVariable(value = "jobId") Integer jobId,
+            @RequestParam(value = "userId") Integer userId);
+
+    @ApiOperation(value = "重试job")
+    @PutMapping(value = "/v1/projects/{projectId}/jobs/{jobId}/retry")
+    ResponseEntity<JobDTO> retryJob(
+            @PathVariable(value = "projectId") Integer projectId,
+            @PathVariable(value = "jobId") Integer jobId,
+            @RequestParam(value = "userId") Integer userId);
 }

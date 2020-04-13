@@ -101,6 +101,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String NORMAL = "normal";
     private static final String APP_SERVICE = "appService";
     private static final String ERROR_USER_NOT_GITLAB_OWNER = "error.user.not.gitlab.owner";
+    private static final String ERROR_GITLAB_USER_SYNC_FAILED = "error.gitlab.user.sync.failed";
     private static final String METRICS = "metrics";
     private static final String SONAR_NAME = "sonar_default";
     private static final String APPLICATION = "application";
@@ -255,7 +256,8 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     /**
      * 判断项目下是否还能创建应用服务
-     * @param projectId
+     *
+     * @param projectId 项目id
      */
     private void checkEnableCreateAppSvcOrThrowE(Long projectId, int appSize) {
         if (Boolean.FALSE.equals(checkEnableCreateAppSvcWithSize(projectId, appSize))) {
@@ -2712,6 +2714,52 @@ public class AppServiceServiceImpl implements AppServiceService {
         return checkEnableCreateAppSvcWithSize(projectId, 1);
     }
 
+    @Override
+    public boolean checkAppServicePermissionForUser(Long appSvcId, Long userId) {
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appSvcId);
+
+        // 查询用户是否在该gitlab project下
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
+        if (userAttrDTO == null) {
+            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+        }
+        // 判断用户是否同步成功
+        userAttrService.checkUserSync(userAttrDTO, TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        // 判断用户是否有应用服务权限
+        if (permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(appServiceDTO.getProjectId())
+                || permissionHelper.isOrganzationRoot(userId, baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId()).getOrganizationId())
+                || appServiceDTO.getIsSkipCheckPermission()) {
+            return true;
+        } else {
+            AppServiceUserRelDTO appServiceUserRelDTO = new AppServiceUserRelDTO();
+            appServiceUserRelDTO.setAppServiceId(appSvcId);
+            appServiceUserRelDTO.setIamUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            return appServiceUserRelMapper.selectCount(appServiceUserRelDTO) > 0;
+        }
+    }
+
+    @Override
+    public List<AppServiceSimpleVO> listAppServiceToCreateCiPipeline(Long projectId, @Nullable String params) {
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
+        // 校验用户是否同步
+        userAttrService.checkUserSync(userAttrDTO, userId);
+
+        // 默认查询的列表数量，出于界面展示的目的
+        Long defaultLimitSize = 20L;
+        // 查询参数
+        Map<String, Object> paramsMap = TypeUtil.castMapParams(params);
+        Map<String, Object> searchParamMap = TypeUtil.cast(paramsMap.get(TypeUtil.SEARCH_PARAM));
+        List<String> paramList = TypeUtil.cast(paramsMap.get(TypeUtil.PARAMS));
+
+        // 判断权限
+        if (permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId)) {
+            return ConvertUtils.convertList(appServiceMapper.listAppServiceToCreatePipelineForOwner(projectId, defaultLimitSize, searchParamMap, paramList), app -> new AppServiceSimpleVO(app.getId(), app.getName(), app.getCode()));
+        } else {
+            return ConvertUtils.convertList(appServiceMapper.listAppServiceToCreatePipelineForMember(projectId, userId, defaultLimitSize, searchParamMap, paramList), app -> new AppServiceSimpleVO(app.getId(), app.getName(), app.getCode()));
+        }
+    }
+
     /**
      * 释放资源
      */
@@ -2747,7 +2795,7 @@ public class AppServiceServiceImpl implements AppServiceService {
      * @param devOpsAppServicePayload 此次操作相关信息
      */
     private void operateGitlabMemberPermission(DevOpsAppServicePayload devOpsAppServicePayload) {
-        List<Long> iamUserIds = null;
+        List<Long> iamUserIds;
         // 不跳过权限检查，则为gitlab项目分配项目成员权限
         if (!devOpsAppServicePayload.getSkipCheckPermission()) {
             iamUserIds = devOpsAppServicePayload.getUserIds();

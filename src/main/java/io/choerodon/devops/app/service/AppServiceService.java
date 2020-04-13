@@ -454,10 +454,10 @@ public interface AppServiceService {
     /**
      * 批量查询应用服务
      *
-     * @param ids          应用服务id
-     * @param doPage       是否分页
-     * @param pageable     分页参数
-     * @param params       查询参数
+     * @param ids      应用服务id
+     * @param doPage   是否分页
+     * @param pageable 分页参数
+     * @param params   查询参数
      * @return 应用服务信息
      */
     PageInfo<AppServiceRepVO> listAppServiceByIds(Set<Long> ids, Boolean doPage, Pageable pageable, String params);
@@ -514,9 +514,35 @@ public interface AppServiceService {
     List<AppServiceSimpleVO> listAppServiceHavingVersions(Long projectId);
 
     Map<Long, Integer> countByProjectId(List<Long> longList);
+
     /**
      * 判断项目下是否还能创建应用服务
-     * @param projectId
+     *
+     * @param projectId 项目id
      */
     Boolean checkEnableCreateAppSvc(Long projectId);
+
+    /**
+     * 校验用户是否拥有应用服务权限
+     *
+     * @param appSvcId 应用服务id
+     * @param userId   用户id
+     * @return
+     */
+    boolean checkAppServicePermissionForUser(Long appSvcId, Long userId);
+
+    /**
+     * 查询用于创建CI流水线的应用服务
+     * 1. 默认查询20条
+     * 2. 要用户有权限的
+     * 3. 要创建成功且启用的
+     * 4. 要能够模糊搜索
+     * 5. 不能查出已经有流水线的
+     * 6. 要有master分支的
+     *
+     * @param projectId 项目id
+     * @param params    查询参数，用于搜索
+     * @return 应用服务列表
+     */
+    List<AppServiceSimpleVO> listAppServiceToCreateCiPipeline(Long projectId, @Nullable String params);
 }

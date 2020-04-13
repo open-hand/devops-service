@@ -5,6 +5,7 @@ import io.choerodon.devops.api.vo.ConfigVO;
 public class ConfigurationProperties extends HarborConfigurationProperties {
 
     private String type;
+    private String token;
 
 
     public ConfigurationProperties() {
@@ -42,4 +43,11 @@ public class ConfigurationProperties extends HarborConfigurationProperties {
         this.type = type;
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 }

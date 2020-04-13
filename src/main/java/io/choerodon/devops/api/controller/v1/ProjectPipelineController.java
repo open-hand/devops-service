@@ -7,10 +7,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.annotation.Permission;
 import io.choerodon.core.enums.ResourceType;
@@ -75,4 +72,29 @@ public class ProjectPipelineController {
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.cancel"));
     }
+
+    /**
+     * Create a new pipeline
+     *
+     * @param projectId       项目id
+     * @param gitlabProjectId gitlab项目id
+     * @param ref      分支
+     * @return Boolean
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "创建GitLab流水线")
+    @PostMapping(value = "/gitlab_projects/{gitlab_project_id}/pipelines")
+    public ResponseEntity<Boolean> create(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "gitlab项目ID", required = true)
+            @PathVariable(value = "gitlab_project_id") Long gitlabProjectId,
+            @ApiParam(value = "分支名", required = true)
+            @RequestParam(value = "ref") String ref) {
+        return Optional.ofNullable(projectPipelineService.create(gitlabProjectId, ref))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.pipeline.create"));
+    }
+
+
 }

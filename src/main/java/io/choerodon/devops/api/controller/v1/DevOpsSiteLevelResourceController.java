@@ -55,9 +55,7 @@ public class DevOpsSiteLevelResourceController {
     public ResponseEntity<List<UserAttrVO>> listByUserIds(
             @ApiParam(value = "用户id", required = true)
             @RequestBody Set<Long> iamUserIds) {
-        return Optional.ofNullable(userAttrService.listByUserIds(iamUserIds))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.user.get"));
+        return new ResponseEntity<>(userAttrService.listByUserIds(iamUserIds), HttpStatus.OK);
     }
 
 
@@ -67,9 +65,15 @@ public class DevOpsSiteLevelResourceController {
     public ResponseEntity<PageInfo<AppServiceRepVO>> batchQueryAppService(
             @ApiParam(value = "应用服务Ids, 不能为空，也不能为空数组", required = true)
             @RequestBody Set<Long> ids) {
-        return Optional.ofNullable(
-                appServiceService.listAppServiceByIds(ids, false, null, null))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.list.app.service.ids"));
+        return new ResponseEntity<>(appServiceService.listAppServiceByIds(ids, false, null, null), HttpStatus.OK);
+    }
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "根据一组Gitlab用户id查询用户信息")
+    @PostMapping(value = "/users/list_by_gitlab_user_ids")
+    public ResponseEntity<List<UserAttrVO>> listUsersByGitlabUserIds(
+            @ApiParam(value = "Gitlab用户id", required = true)
+            @RequestBody Set<Long> gitlabUserIds) {
+        return new ResponseEntity<>(userAttrService.listUsersByGitlabUserIds(gitlabUserIds), HttpStatus.OK);
     }
 }

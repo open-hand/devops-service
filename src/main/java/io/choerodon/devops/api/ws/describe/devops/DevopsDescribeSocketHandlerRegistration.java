@@ -77,7 +77,6 @@ public class DevopsDescribeSocketHandlerRegistration implements SocketHandlerReg
 
     @Override
     public void afterConnectionEstablished(WebSocketSession webSocketSession) {
-
         //解析参数列表，并存储
         Map<String, Object> attribute = WebSocketTool.getAttribute(webSocketSession);
 

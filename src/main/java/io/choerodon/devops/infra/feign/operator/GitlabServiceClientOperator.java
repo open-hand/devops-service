@@ -284,6 +284,15 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    /**
+     * 这里是更新master分支上的文件内容
+     *
+     * @param projectId     项目id
+     * @param path          文件路径
+     * @param content       文件内容
+     * @param commitMessage 提交信息
+     * @param userId        gitlab用户id
+     */
     public void updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
         try {
             FileCreationVO fileCreationVO = new FileCreationVO();
@@ -1038,5 +1047,30 @@ public class GitlabServiceClientOperator {
         } catch (FeignException ex) {
             throw new CommonException("error.manipulate.gitlab.files");
         }
+    }
+
+    public RepositoryFileDTO getWholeFile(Integer projectId, String branch, String filePath) {
+        try {
+            return gitlabServiceClient.getFile(projectId, branch, filePath).getBody();
+        } catch (FeignException e) {
+            return null;
+        }
+    }
+
+    public Boolean createPipeline(int projectId, int gitlabUserid, String ref) {
+        try {
+            gitlabServiceClient.createPipeline(projectId, gitlabUserid, ref);
+        } catch (FeignException e) {
+            return false;
+        }
+        return true;
+    }
+
+    public String queryTrace(int projectId, int jobId, int gitlabUserid) {
+        return gitlabServiceClient.queryTrace(projectId, jobId, gitlabUserid).getBody();
+    }
+
+    public JobDTO retryJob(int gitlabProjectId, int jobId, int gitlabUserId) {
+        return gitlabServiceClient.retryJob(gitlabProjectId, jobId, gitlabUserId).getBody();
     }
 }

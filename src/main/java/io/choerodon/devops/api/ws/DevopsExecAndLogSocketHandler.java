@@ -81,6 +81,9 @@ public class DevopsExecAndLogSocketHandler {
 
         String registerKey = TypeUtil.objToString(attribute.get("key"));
 
+        String path = webSocketSession.getUri() == null ? null : webSocketSession.getUri().getPath();
+        logger.info("Connection established from client. The registerKey is {} and the path is {}", registerKey, path);
+
         //通知agent建立与前端同样的ws连接
         PipeRequestVO pipeRequest = new PipeRequestVO(attribute.get("podName").toString(), attribute.get("containerName").toString(), attribute.get("logId").toString(), attribute.get("env").toString());
         Long clusterId = TypeUtil.objToLong(registerKey.split("\\.")[0].split(":")[1]);

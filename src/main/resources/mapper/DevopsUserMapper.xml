@@ -21,4 +21,16 @@
         SET is_gitlab_admin = #{isGitlabAdmin}
         WHERE iam_user_id = #{iamUserId}
     </update>
+
+    <select id="listByGitlabUserIds" resultType="io.choerodon.devops.infra.dto.UserAttrDTO">
+        SELECT
+        du.iam_user_id,
+        du.gitlab_user_id
+        FROM devops_user du
+        WHERE
+        du.gitlab_user_id IN
+        <foreach collection="gitlabUserIds" item="gitlabUserId" open="(" separator="," close=")">
+            #{gitlabUserId}
+        </foreach>
+    </select>
 </mapper>

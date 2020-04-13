@@ -5,6 +5,14 @@ public class UserAttrVO {
     private Long iamUserId;
     private Long gitlabUserId;
 
+    public UserAttrVO() {
+    }
+
+    public UserAttrVO(Long iamUserId, Long gitlabUserId) {
+        this.iamUserId = iamUserId;
+        this.gitlabUserId = gitlabUserId;
+    }
+
     public Long getIamUserId() {
         return iamUserId;
     }

@@ -1,8 +1,6 @@
 package io.choerodon.devops.infra.enums;
 
 
-import io.choerodon.devops.infra.dto.DevopsServiceDTO;
-
 import java.util.HashMap;
 import java.util.Map;
 

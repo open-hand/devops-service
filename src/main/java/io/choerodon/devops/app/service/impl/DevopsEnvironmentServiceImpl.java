@@ -1456,6 +1456,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (devopsProjectDTO.getDevopsClusterEnvGroupId() == null) {
             // 如果是0.20版本之前创建的项目，是没有这个GitLab组的，此时创建
             gitlabGroupService.createClusterEnvGroup(projectDTO, organizationDTO, userAttrDTO);
+
             devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
         }
 

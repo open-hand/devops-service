@@ -3,10 +3,18 @@ package io.choerodon.devops.app.eventhandler;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.choerodon.devops.api.vo.OrgAdministratorVO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -25,6 +33,7 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.springframework.util.CollectionUtils;
 
 
 /**
@@ -39,6 +48,7 @@ public class SagaHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(SagaHandler.class);
     private final Gson gson = new Gson();
 
+
     @Autowired
     private GitlabGroupService gitlabGroupService;
     @Autowired
@@ -49,6 +59,8 @@ public class SagaHandler {
     private GitlabUserService gitlabUserService;
     @Autowired
     private OrgAppMarketService orgAppMarketService;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
 
 
     private void loggerInfo(Object o) {
@@ -71,6 +83,14 @@ public class SagaHandler {
         BeanUtils.copyProperties(projectPayload, gitlabGroupPayload);
         loggerInfo(gitlabGroupPayload);
         gitlabGroupService.createGroups(gitlabGroupPayload);
+        //为新项目的三个组添加组织下管理员角色
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectPayload.getProjectId());
+        List<OrgAdministratorVO> orgAdministratorVOS = baseServiceClientOperator.listOrgAdministrator(projectDTO.getOrganizationId()).getList();
+        if (!CollectionUtils.isEmpty(orgAdministratorVOS)) {
+            orgAdministratorVOS.stream().forEach(orgAdministratorVO -> {
+                gitlabGroupMemberService.assignGitLabGroupMemeberForOwner(projectDTO, orgAdministratorVO.getId());
+            });
+        }
         return msg;
     }
 

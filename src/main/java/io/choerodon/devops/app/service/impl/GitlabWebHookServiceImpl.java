@@ -3,14 +3,11 @@ package io.choerodon.devops.app.service.impl;
 import com.alibaba.fastjson.JSONArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.choerodon.devops.api.vo.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.devops.api.vo.DevopsMergeRequestVO;
-import io.choerodon.devops.api.vo.JobWebHookVO;
-import io.choerodon.devops.api.vo.PipelineWebHookVO;
-import io.choerodon.devops.api.vo.PushWebHookVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.util.FastjsonParserConfigProvider;
@@ -24,13 +21,16 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
     private DevopsGitService devopsGitService;
     private DevopsGitlabCommitService devopsGitlabCommitService;
     private DevopsGitlabPipelineService devopsGitlabPipelineService;
+    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
+    private DevopsCiJobRecordService devopsCiJobRecordService;
 
-    public GitlabWebHookServiceImpl(DevopsMergeRequestService devopsMergeRequestService, DevopsGitService devopsGitService, DevopsGitlabCommitService devopsGitlabCommitService,
-                                    DevopsGitlabPipelineService devopsGitlabPipelineService) {
+    public GitlabWebHookServiceImpl(DevopsMergeRequestService devopsMergeRequestService, DevopsGitService devopsGitService, DevopsGitlabCommitService devopsGitlabCommitService, DevopsGitlabPipelineService devopsGitlabPipelineService, DevopsCiPipelineRecordService devopsCiPipelineRecordService, DevopsCiJobRecordService devopsCiJobRecordService) {
         this.devopsMergeRequestService = devopsMergeRequestService;
         this.devopsGitService = devopsGitService;
-        this.devopsGitlabPipelineService = devopsGitlabPipelineService;
         this.devopsGitlabCommitService = devopsGitlabCommitService;
+        this.devopsGitlabPipelineService = devopsGitlabPipelineService;
+        this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
+        this.devopsCiJobRecordService = devopsCiJobRecordService;
     }
 
     @Override
@@ -60,10 +60,13 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                     LOGGER.info(pipelineWebHookVO.toString());
                 }
                 devopsGitlabPipelineService.create(pipelineWebHookVO, token);
+                // 保存ci流水线执行记录
+                devopsCiPipelineRecordService.create(pipelineWebHookVO, token);
                 break;
             case "build":
                 JobWebHookVO jobWebHookVO = JSONArray.parseObject(body, JobWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());
                 devopsGitlabPipelineService.updateStages(jobWebHookVO);
+                devopsCiJobRecordService.update(jobWebHookVO);
                 break;
             case "tag_push":
                 PushWebHookVO tagPushWebHookVO = JSONArray.parseObject(body, PushWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());

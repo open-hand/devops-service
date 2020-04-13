@@ -872,8 +872,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void resourceSync(String key, String msg, Long clusterId) {
+        logger.info("Resource sync: key: {}, msg: {}, clusterId: {}", key, msg, clusterId);
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
             logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
@@ -887,6 +889,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             resourceType = ResourceType.MISSTYPE;
         }
         if (resourceSyncPayloadDTO.getResources() == null) {
+            logger.info("Resource sync: namespace {} has non resource.", KeyParseUtil.getNamespace(key));
             return;
         }
         switch (resourceType) {
@@ -930,6 +933,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 }
                 break;
             default:
+                logger.info("Resource sync: miss type: {}", resourceSyncPayloadDTO.getResourceType());
                 // TODO 可能需要增加其他资源的同步
                 break;
         }
