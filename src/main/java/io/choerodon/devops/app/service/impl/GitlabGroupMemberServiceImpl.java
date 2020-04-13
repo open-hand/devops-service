@@ -117,10 +117,12 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     private void deleteGitLabPermissions(List<ProjectDTO> projectDTOS, GitlabGroupMemberVO gitlabGroupMemberVO) {
         projectDTOS.stream().forEach(projectDTO -> {
-            LOGGER.info("start ddelete project id is {} for gitlab org owner", projectDTO.getId());
-            deleteProcess(gitlabGroupMemberVO);
+            LOGGER.info("start delete project id is {} for gitlab org owner", projectDTO.getId());
+            //如果删除的成员为该项目下的项目所有者，则不删除gitlab相应的权限
+            if (!baseServiceClientOperator.isProjectOwner(gitlabGroupMemberVO.getUserId(), projectDTO.getId())) {
+                deleteProcess(gitlabGroupMemberVO);
+            }
         });
-
     }
 
 
@@ -128,11 +130,19 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     public void deleteGitlabGroupMemberRole(List<GitlabGroupMemberVO> gitlabGroupMemberVOList) {
         gitlabGroupMemberVOList.stream()
                 .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(PROJECT))
-                .forEach(this::deleteProcess);
+                .forEach(gitlabGroupMemberVO -> {
+                    //删除用户的项目所有者权限，如果是组织root,则不删除该项目下gitlab相应的权限
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(gitlabGroupMemberVO.getResourceId());
+                    if (!baseServiceClientOperator.isOrganzationRoot(gitlabGroupMemberVO.getUserId(), projectDTO.getOrganizationId())) {
+                        deleteProcess(gitlabGroupMemberVO);
+                    }
+                });
         //组织root的标签，那么删除在组织下的root的权限
-        gitlabGroupMemberVOList.stream().filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceType.ORGANIZATION.value())).forEach(gitlabGroupMemberVO -> {
-            screenOrgLable(gitlabGroupMemberVO, Boolean.FALSE);
-        });
+        gitlabGroupMemberVOList.stream()
+                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceType.ORGANIZATION.value()))
+                .forEach(gitlabGroupMemberVO -> {
+                    screenOrgLable(gitlabGroupMemberVO, Boolean.FALSE);
+                });
     }
 
 
