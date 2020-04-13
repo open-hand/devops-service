@@ -40,7 +40,7 @@ export default observer(() => {
     return <Spin />;
   }
 
-  return (<div className="c7ncd-pipelineMange-record-detail">
+  return (<div className="c7ncd-pipelineManage-record-detail">
     <Form
       dataSet={detailDs}
       labelLayout="horizontal"

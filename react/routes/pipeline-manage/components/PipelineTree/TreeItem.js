@@ -44,7 +44,8 @@ const TreeItem = observer(({ record, search }) => {
   const timePopoverStyle = useMemo(() => ({
     fontSize: '.12rem',
     color: 'rgba(58,52,95,0.65)',
-    marginRight: '.04rem',
+    margin: '0 .04rem 0 auto',
+    flexShrink: '0',
   }), []);
 
   function refresh() {
@@ -235,7 +236,9 @@ const TreeItem = observer(({ record, search }) => {
               <TreeItemName name={name} search={search} headSpace={false} />
             </span>
             <TimePopover content={latestExecuteDate} style={timePopoverStyle} />
-            <Action data={actionData} onClick={eventStopProp} />
+            <div style={{ flexShrink: '0' }}>
+              <Action data={actionData} onClick={eventStopProp} />
+            </div>
           </div>
           <div className={`${prefixCls}-sidebar-header`}>
             <span className={`${prefixCls}-sidebar-header-active ${prefixCls}-sidebar-header-active-${enabled}`}>

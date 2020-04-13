@@ -70,6 +70,7 @@
       .@{c7n-prefix}-tree-node-content-wrapper {
         width: 100%;
         padding: 0;
+        overflow: hidden;
       }
 
       .@{c7n-prefix}-tree-treenode-selected {
@@ -136,7 +137,14 @@
 
       &-name {
         font-weight: 500;
-        margin: 0 auto 0 .04rem;
+        margin-left: .04rem;
+        flex-grow: 1;
+        overflow: hidden;
+
+        .c7ncd-treemenu-text {
+          display: block;
+          width: 100%;
+        }
       }
 
       &-time {
@@ -233,5 +241,9 @@
         }
       }
     }
+  }
+
+  &-title-type {
+    flex-shrink: 0;
   }
 }
