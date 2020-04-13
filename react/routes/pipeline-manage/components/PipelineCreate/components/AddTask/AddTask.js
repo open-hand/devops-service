@@ -349,7 +349,7 @@ const AddTask = observer(() => {
           <Option value="token">Token</Option>
         </SelectBox>,
         ...extra,
-        <Button onClick={handleTestConnect} funcType="raised" style={{ width: 76, color: '#3F51B5' }} newLine>测试连接</Button>,
+        <Button onClick={handleTestConnect} funcType="raised" style={{ width: 'auto', color: '#3F51B5' }} newLine>测试连接</Button>,
         <div className="addTask_testConnect" newLine>
           测试连接：{handleShowTestConnectResult()}
         </div>,
