@@ -221,7 +221,7 @@ const ListView = withRouter(observer((props) => {
     }
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     const record = listDs.current;
     const appId = record.get('id');
     const modalProps = {
@@ -231,8 +231,11 @@ const ListView = withRouter(observer((props) => {
       okProps: { color: 'red' },
       cancelProps: { color: 'dark' },
     };
-    listDs.delete(record, modalProps);
-    checkLocalstorage(appId);
+    const res = await listDs.delete(record, modalProps);
+    if (res && res.success) {
+      refresh();
+      checkLocalstorage(appId);
+    }
   }
 
   async function changeActive(active) {

@@ -1,5 +1,5 @@
-import React, { Fragment, useState, useEffect } from 'react';
-import { Form, TextField, Select, SelectBox } from 'choerodon-ui/pro';
+import React, { Fragment, useState, useEffect, useMemo } from 'react';
+import { Form, TextField, Select, SelectBox, Spin } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Choerodon } from '@choerodon/boot';
@@ -29,7 +29,7 @@ const ImportForm = injectIntl(observer((props) => {
     selectedDs,
     importStore,
   } = useImportAppServiceStore();
-  const record = importDs.current;
+  const record = useMemo(() => importDs.current || importDs.records[0], [importDs.current]);
   const [hasFailed, setHasFailed] = useState(false);
 
   useEffect(() => {

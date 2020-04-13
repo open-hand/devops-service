@@ -164,7 +164,11 @@ export default ({ intlPrefix, formatMessage, projectId, serviceTypeDs, selectedD
         type: 'url',
         dynamicProps: {
           required: isGit,
-          label: ({ record }) => formatMessage({ id: `${intlPrefix}.url.${record.get('platformType')}` }),
+          label: ({ record }) => {
+            if (record.get('platformType') === 'gitlab' || record.get('platformType') === 'github') {
+              return formatMessage({ id: `${intlPrefix}.url.${record.get('platformType')}` });
+            }
+          },
         },
       },
       {
