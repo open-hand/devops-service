@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import ReactCodeMirror from 'react-codemirror';
 import './index.less';
-import { Spin } from 'choerodon-ui';
 import { observer } from 'mobx-react-lite';
 import { axios } from '@choerodon/boot';
+import Loading from '../../../../../../components/loading';
 
 
 const LOG_OPTIONS = {
@@ -36,7 +36,7 @@ export default observer((props) => {
         value={value}
         className="c7n-log-editor"
         options={LOG_OPTIONS}
-      /> : <Spin />}
+      /> : <Loading display />}
     </div>
   );
 });
