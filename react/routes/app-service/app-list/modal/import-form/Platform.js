@@ -26,7 +26,7 @@ const Platform = injectIntl(observer(({ checkData }) => {
     selectedDs,
     importStore,
   } = useImportAppServiceStore();
-  const importRecord = importDs.current;
+  const importRecord = useMemo(() => importDs.current || importDs.records[0], [importDs.current]);
 
   function openModal() {
     Modal.open({
