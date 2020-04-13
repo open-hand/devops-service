@@ -1066,8 +1066,8 @@ public class GitlabServiceClientOperator {
         return true;
     }
 
-    public String queryTrace(int projectId, int jobId, int gitlabUserid) {
-        return gitlabServiceClient.queryTrace(projectId, jobId, gitlabUserid).getBody();
+    public String queryTrace(int gitlabProjectId, int jobId, int gitlabUserid) {
+        return gitlabServiceClient.queryTrace(gitlabProjectId, jobId, gitlabUserid).getBody();
     }
 
     public JobDTO retryJob(int gitlabProjectId, int jobId, int gitlabUserId) {

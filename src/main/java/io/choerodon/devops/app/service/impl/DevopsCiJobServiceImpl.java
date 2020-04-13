@@ -115,9 +115,9 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     }
 
     @Override
-    public String queryTrace(Long projectId, Long jobId) {
+    public String queryTrace(Long gitlabProjectId, Long jobId) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId().longValue());
-        return gitlabServiceClientOperator.queryTrace(projectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+        return gitlabServiceClientOperator.queryTrace(gitlabProjectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue());
     }
 
     @Override

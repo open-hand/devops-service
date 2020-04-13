@@ -26,6 +26,8 @@ public class DevopsCiJobRecordDTO extends BaseDTO {
     private Long gitlabJobId;
     @ApiModelProperty("流水线记录id")
     private Long ciPipelineRecordId;
+    @ApiModelProperty("gitlabProjectId")
+    private Long gitlabProjectId;
     @ApiModelProperty("阶段名称")
     private String stage;
     @ApiModelProperty("触发用户")
@@ -129,5 +131,13 @@ public class DevopsCiJobRecordDTO extends BaseDTO {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public Long getGitlabProjectId() {
+        return gitlabProjectId;
+    }
+
+    public void setGitlabProjectId(Long gitlabProjectId) {
+        this.gitlabProjectId = gitlabProjectId;
     }
 }

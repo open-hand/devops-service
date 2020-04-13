@@ -86,8 +86,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
         List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(devopsCiPipelineDTO.getId());
         List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(devopsCiPipelineDTO.getId());
-        Map<Long, DevopsCiStageDTO> stageMap = devopsCiStageDTOList.stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
-        Map<String, DevopsCiJobDTO> jobMap = devopsCiJobDTOS.stream().collect(Collectors.toMap(v -> v.getName(), v -> v));
+        Map<Long, DevopsCiStageDTO> stageMap = devopsCiStageDTOList.stream().collect(Collectors.toMap(DevopsCiStageDTO::getId, v -> v));
+        Map<String, DevopsCiJobDTO> jobMap = devopsCiJobDTOS.stream().collect(Collectors.toMap(DevopsCiJobDTO::getName, v -> v));
         // 检验是否是手动修改gitlab-ci.yaml文件生成的流水线记录
         for(CiJobWebHookVO job : pipelineWebHookVO.getBuilds()) {
             DevopsCiJobDTO devopsCiJobDTO = jobMap.get(job.getName());
@@ -139,6 +139,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             devopsCiPipelineRecordDTO.setFinishedDate(pipelineWebHookVO.getObjectAttributes().getFinishedAt());
             devopsCiPipelineRecordDTO.setDurationSeconds(pipelineWebHookVO.getObjectAttributes().getDuration());
             devopsCiPipelineRecordDTO.setStatus(pipelineWebHookVO.getObjectAttributes().getStatus());
+            devopsCiPipelineRecordDTO.setGitlabProjectId(pipelineWebHookVO.getProject().getId());
             devopsCiPipelineRecordMapper.insertSelective(devopsCiPipelineRecordDTO);
             // 保存job执行记录
             Long pipelineRecordId = devopsCiPipelineRecordDTO.getId();
@@ -173,6 +174,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setName(ciJobWebHookVO.getName());
                 devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
                 devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
+                devopsCiJobRecordDTO.setGitlabProjectId(pipelineWebHookVO.getProject().getId());
                 devopsCiJobRecordMapper.insertSelective(devopsCiJobRecordDTO);
             } else {
                 devopsCiJobRecordDTO.setCiPipelineRecordId(pipelineRecordId);
@@ -314,6 +316,15 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         DevopsCiPipelineRecordDTO pipelineRecordDTO = new DevopsCiPipelineRecordDTO();
         pipelineRecordDTO.setCiPipelineId(ciPipelineId);
         return devopsCiPipelineRecordMapper.select(pipelineRecordDTO);
+    }
+
+    @Override
+    @Transactional
+    public void deleteByGitlabProjectId(Long gitlabProjectId) {
+        Objects.requireNonNull(gitlabProjectId);
+        DevopsCiPipelineRecordDTO pipelineRecordDTO = new DevopsCiPipelineRecordDTO();
+        pipelineRecordDTO.setGitlabProjectId(gitlabProjectId);
+        devopsCiPipelineRecordMapper.delete(pipelineRecordDTO);
     }
 
     private <T> void calculateStageStatus(DevopsCiStageRecordVO stageRecord, Map<String, List<T>> statsuMap) {

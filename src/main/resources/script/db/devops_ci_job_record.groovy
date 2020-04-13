@@ -34,4 +34,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
             column(name: "type", type: "VARCHAR(255)", remarks: '任务类型')
         }
     }
+    changeSet(author: 'wanghao', id: '2020-04-13-add-column') {
+        addColumn(tableName: 'devops_ci_job_record') {
+            column(name: "gitlab_project_id", type: "BIGINT UNSIGNED", remarks: 'gitlab_project_id')
+        }
+        createIndex(tableName: 'devops_ci_job_record', indexName: 'ci_job_record_gpid_idx') {
+            column(name: 'gitlab_project_id')
+        }
+    }
 }

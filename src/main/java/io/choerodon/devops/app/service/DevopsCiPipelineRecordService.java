@@ -20,11 +20,33 @@ public interface DevopsCiPipelineRecordService {
 
     void handleCreate(PipelineWebHookVO pipelineWebHookVO);
 
+    /**
+     * 分页查询流水线记录
+     * @param projectId
+     * @param ciPipelineId
+     * @param pageable
+     * @return
+     */
     PageInfo<DevopsCiPipelineRecordVO> pagingPipelineRecord(Long projectId, Long ciPipelineId, Pageable pageable);
 
     DevopsCiPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId);
 
+    /**
+     * 删除流水线的执行记录
+     * @param ciPipelineId
+     */
     void deleteByPipelineId(Long ciPipelineId);
 
+    /**
+     * 查询流水线执行记录
+     * @param ciPipelineId
+     * @return
+     */
     List<DevopsCiPipelineRecordDTO> queryByPipelineId(Long ciPipelineId);
+
+    /**
+     * 根据gitlabProjectId删除pipeline record
+     * @param gitlabProjectId
+     */
+    void deleteByGitlabProjectId(Long gitlabProjectId);
 }

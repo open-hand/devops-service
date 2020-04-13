@@ -25,4 +25,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_record.groovy') {
         addUniqueConstraint(tableName: 'devops_ci_pipeline_record',
                 constraintName: 'uk_gitlab_pipeline_id', columnNames: 'gitlab_pipeline_id')
     }
+    changeSet(author: 'wanghao', id: '2020-04-13-add-column') {
+        addColumn(tableName: 'devops_ci_pipeline_record') {
+            column(name: "gitlab_project_id", type: "BIGINT UNSIGNED", remarks: 'gitlab_project_id')
+        }
+        createIndex(tableName: 'devops_ci_pipeline_record', indexName: 'ci_pipeline_record_gpid_idx') {
+            column(name: 'gitlab_project_id')
+        }
+    }
 }

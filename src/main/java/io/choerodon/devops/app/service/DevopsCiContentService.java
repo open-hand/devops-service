@@ -23,5 +23,9 @@ public interface DevopsCiContentService {
      */
     void create(DevopsCiContentDTO devopsCiContentDTO);
 
+    /**
+     * 删除流水线ci文件
+     * @param ciPipelineId
+     */
     void deleteByPipelineId(Long ciPipelineId);
 }
