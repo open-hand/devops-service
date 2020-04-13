@@ -19,7 +19,7 @@ import { useCodeQualityStore } from './stores';
 import './index.less';
 
 export default withRouter(observer((props) => {
-  const { formatMessage, codeQuality } = useCodeQualityStore();
+  const { formatMessage, codeQuality, appServiceId } = useCodeQualityStore();
 
   const { location: {
     search,
@@ -74,8 +74,7 @@ export default withRouter(observer((props) => {
                           to={{
                             pathname: '/devops/reports/code-quality',
                             search,
-                            state: { type: OBJECT_TYPE[objKey] },
-                            // appId: appServiceId,
+                            state: { appId: appServiceId, type: OBJECT_TYPE[objKey] },
                           }}
                         >
                           <Icon type="timeline" className="reports-icon" />

@@ -26,6 +26,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
   const value = {
     ...props,
     formatMessage,
+    appServiceId,
     codeQuality: mainStore,
   };
 
