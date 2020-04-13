@@ -95,8 +95,10 @@ const TreeItem = observer(({ record, search }) => {
       okProps: { color: 'red' },
       cancelProps: { color: 'dark' },
     };
-    await treeDs.delete(record, modalProps);
-    refresh();
+    const res = await treeDs.delete(record, modalProps);
+    if (res && res.success) {
+      refresh();
+    }
   }
 
   async function changeRecordExecute(type) {
