@@ -16,12 +16,33 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface DevopsCiPipelineMapper extends Mapper<DevopsCiPipelineDTO> {
 
+    /**
+     * 查询项目下流水线集合
+     * @param projectId
+     * @param name
+     * @return
+     */
     List<DevopsCiPipelineVO> queryByProjectIdAndName(@Param("projectId") Long projectId,
                                                      @Param("name") String name);
 
+    /**
+     * 根据id查询流水线（包含关联应用服务name,gitlab_project_id）
+     * @param ciPipelineId
+     * @return
+     */
     DevopsCiPipelineVO queryById(@Param("ciPipelineId") Long ciPipelineId);
 
+    /**
+     * 停用流水线
+     * @param ciPipelineId
+     * @return
+     */
     int disablePipeline(@Param("ciPipelineId") Long ciPipelineId);
 
+    /**
+     * 启用流水线
+     * @param ciPipelineId
+     * @return
+     */
     int enablePipeline(@Param("ciPipelineId") Long ciPipelineId);
 }

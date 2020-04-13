@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.Objects;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.JobWebHookVO;
@@ -78,5 +79,14 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
             });
         }
 
+    }
+
+    @Override
+    @Transactional
+    public void deleteByGitlabProjectId(Long gitlabProjectId) {
+        Objects.requireNonNull(gitlabProjectId);
+        DevopsCiJobRecordDTO jobRecordDTO = new DevopsCiJobRecordDTO();
+        jobRecordDTO.setGitlabProjectId(gitlabProjectId);
+        devopsCiJobRecordMapper.delete(jobRecordDTO);
     }
 }

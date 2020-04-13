@@ -24,6 +24,8 @@ public class DevopsCiPipelineRecordDTO extends BaseDTO {
     private Long gitlabPipelineId;
     @ApiModelProperty("流水线id")
     private Long ciPipelineId;
+    @ApiModelProperty("gitlabProjectId")
+    private Long gitlabProjectId;
     @ApiModelProperty("gitlab commit sha")
     private String commitSha;
     @ApiModelProperty("触发分支")
@@ -117,5 +119,13 @@ public class DevopsCiPipelineRecordDTO extends BaseDTO {
 
     public void setDurationSeconds(Long durationSeconds) {
         this.durationSeconds = durationSeconds;
+    }
+
+    public Long getGitlabProjectId() {
+        return gitlabProjectId;
+    }
+
+    public void setGitlabProjectId(Long gitlabProjectId) {
+        this.gitlabProjectId = gitlabProjectId;
     }
 }

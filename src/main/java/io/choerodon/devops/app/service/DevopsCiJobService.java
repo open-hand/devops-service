@@ -46,9 +46,25 @@ public interface DevopsCiJobService {
      */
     Boolean sonarConnect(Long projectId, SonarQubeConfigVO sonarQubeConfigVO);
 
-    String queryTrace(Long projectId, Long jobId);
+    /**
+     * 查询job日志
+     * @param gitlabProjectId
+     * @param jobId gitlab job id
+     * @return
+     */
+    String queryTrace(Long gitlabProjectId, Long jobId);
 
+    /**
+     * 重试job
+     * @param gitlabProjectId
+     * @param jobId gitlab job id
+     * @return
+     */
     JobDTO retryJob(Long gitlabProjectId, Long jobId);
 
+    /**
+     * 删除流水线下的job
+     * @param ciPipelineId
+     */
     void deleteByPipelineId(Long ciPipelineId);
 }

@@ -32,6 +32,12 @@ public interface DevopsCiPipelineService {
      */
     DevopsCiPipelineDTO update(Long projectId, Long ciPipelineId, DevopsCiPipelineVO devopsCiPipelineVO);
 
+    /**
+     * 查询流水线详情（包含阶段和job信息）
+     * @param projectId
+     * @param ciPipelineId
+     * @return
+     */
     DevopsCiPipelineVO query(Long projectId, Long ciPipelineId);
 
     /**
@@ -42,14 +48,41 @@ public interface DevopsCiPipelineService {
      */
     DevopsCiPipelineDTO queryByAppSvcId(Long appServiceId);
 
+    /**
+     * 查询项目下流水线列表（包含5条执行记录）
+     * @param projectId
+     * @param name
+     * @return
+     */
     List<DevopsCiPipelineVO> listByProjectIdAndAppName(Long projectId, String name);
 
+    /**
+     * 查询流水线信息
+     * @param ciPipelineId
+     * @return
+     */
     DevopsCiPipelineVO queryById(Long ciPipelineId);
 
-
+    /**
+     * 停用流水线
+     * @param projectId 项目id
+     * @param ciPipelineId 流水线id
+     * @return
+     */
     DevopsCiPipelineDTO disablePipeline(Long projectId, Long ciPipelineId);
 
+    /**
+     * 删除流水线
+     * @param projectId
+     * @param ciPipelineId
+     */
     void deletePipeline(Long projectId, Long ciPipelineId);
 
+    /**
+     * 启用流水线
+     * @param projectId 项目id
+     * @param ciPipelineId 流水线id
+     * @return
+     */
     DevopsCiPipelineDTO enablePipeline(Long projectId, Long ciPipelineId);
 }

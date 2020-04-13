@@ -21,4 +21,10 @@ public interface DevopsCiJobRecordService {
     void update(JobWebHookVO jobWebHookVO);
 
     void deleteByPipelineId(Long ciPipelineId);
+
+    /**
+     * 根据gitlab_project_id删除job record
+     * @param gitlabProjectId
+     */
+    void deleteByGitlabProjectId(Long gitlabProjectId);
 }

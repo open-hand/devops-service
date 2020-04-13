@@ -7,6 +7,7 @@ public class PipelineWebHookVO {
     private PipelineWebHookUserVO user;
     private List<CiJobWebHookVO> builds;
     private String token;
+    private PipelineWebHookProjectVO project;
 
     public PipelineWebHookAttributesVO getObjectAttributes() {
         return objectAttributes;
@@ -38,5 +39,13 @@ public class PipelineWebHookVO {
 
     public void setBuilds(List<CiJobWebHookVO> builds) {
         this.builds = builds;
+    }
+
+    public PipelineWebHookProjectVO getProject() {
+        return project;
+    }
+
+    public void setProject(PipelineWebHookProjectVO project) {
+        this.project = project;
     }
 }

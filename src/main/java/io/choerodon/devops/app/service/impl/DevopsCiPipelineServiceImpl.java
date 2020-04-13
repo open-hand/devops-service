@@ -1,23 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
@@ -28,9 +19,17 @@ import io.choerodon.devops.infra.dto.gitlab.ci.OnlyExceptPolicy;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.DefaultTriggerRefTypeEnum;
 import io.choerodon.devops.infra.enums.SonarAuthType;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.util.*;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 /**
  * 〈功能简述〉
@@ -121,7 +120,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         });
 
-        // TODO 保存ci配置文件
+        // 保存ci配置文件
         saveCiContent(devopsCiPipelineDTO.getId(), devopsCiPipelineVO);
 
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(devopsCiPipelineDTO.getAppServiceId());
@@ -153,7 +152,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     GitOpsConstants.MASTER);
         } else {
             // 将原先的配置文件内容注释并放在原本文件中
-            String originFileContent = new String(Base64.getDecoder().decode(repositoryFile.getContent().getBytes()), Charset.forName("UTF-8"));
+            String originFileContent = new String(Base64.getDecoder().decode(repositoryFile.getContent().getBytes()), StandardCharsets.UTF_8);
             // 注释后的内容
             String commentedLines = GitlabCiUtil.commentLines(originFileContent);
             // 更新文件
@@ -319,15 +318,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCiJobService.deleteByPipelineId(ciPipelineId);
 
         // 删除job记录
-        devopsCiJobRecordService.deleteByPipelineId(ciPipelineId);
+        devopsCiJobRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
 
         // 删除pipeline记录
-        devopsCiPipelineRecordService.deleteByPipelineId(ciPipelineId);
+        devopsCiPipelineRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
 
         // 删除content file
         devopsCiContentService.deleteByPipelineId(ciPipelineId);
 
-        // TODO
         // 删除.gitlab-ci.yaml文件
         deleteGitlabCiFile(appServiceDTO.getGitlabProjectId(), userId);
     }
@@ -414,7 +412,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         gitlabCi.setBeforeScript(ArrayUtil.singleAsList(GitOpsConstants.CHOERODON_BEFORE_SCRIPT));
         return gitlabCi;
     }
-    // todo 待处理
 
     /**
      * 把配置转换为gitlab-ci配置（maven,sonarqube）
@@ -423,7 +420,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      * @return 生成的脚本列表
      */
     private List<String> buildScript(DevopsCiJobVO jobVO) {
-        // TODO
         if (CiJobTypeEnum.SONAR.value().equals(jobVO.getType())) {
             // sonar配置转化为gitlab-ci配置
             List<String> scripts = new ArrayList<>();
