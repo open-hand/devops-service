@@ -5,13 +5,13 @@ import java.util.Map;
 import java.util.Set;
 import javax.validation.Valid;
 
-import io.choerodon.core.domain.PageInfo;
-import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
@@ -97,7 +97,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<com.github.pagehelper.Page<ProjectWithRoleVO>> listProjectWithRole(Long id, int page, int size) {
+    public ResponseEntity<Page<ProjectWithRoleVO>> listProjectWithRole(Long id, int page, int size) {
         throw new CommonException("error.project.role.get");
     }
 

@@ -51,7 +51,6 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
-import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -907,7 +906,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Page<UserVO> allProjectMemberPage = getMembersFromProject(new PageRequest(0, 0), projectId, "");
 
         // 所有项目成员中有权限的
-        List<UserVO> usersToBeAdded = allProjectMemberPage.getList().stream().filter(e -> userIds.contains(e.getId())).collect(Collectors.toList());
+        List<UserVO> usersToBeAdded = allProjectMemberPage.getContent().stream().filter(e -> userIds.contains(e.getId())).collect(Collectors.toList());
         Map<Long, UserAttrDTO> devopsUsersToBeAdded = userAttrService.baseListByUserIds(usersToBeAdded.stream().map(UserVO::getId).collect(Collectors.toList()))
                 .stream()
                 .collect(Collectors.toMap(UserAttrDTO::getIamUserId, Functions.identity()));
@@ -1059,7 +1058,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<IamUserDTO> allProjectMembers = baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_DEVELOPER.getValue());
         if (allProjectMembers.isEmpty()) {
             Page<DevopsEnvUserVO> pageInfo = new Page<>();
-            pageInfo.setList(new ArrayList<>());
+            pageInfo.setContent(new ArrayList<>());
             return pageInfo;
         }
 
@@ -1089,13 +1088,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         Page<IamUserDTO> pageInfo;
-        CustomPageRequest customPageRequest;
-        if (pageable.getPageSize() == 0) {
-            customPageRequest = CustomPageRequest.of(0, 0);
-            pageInfo = PageInfoUtil.createPageFromList(members, customPageRequest);
+        if (pageable.getSize() == 0) {
+            pageInfo = PageInfoUtil.createPageFromList(members, pageable);
         } else {
-            customPageRequest = CustomPageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
-            pageInfo = PageInfoUtil.createPageFromList(members, customPageRequest);
+            pageInfo = PageInfoUtil.createPageFromList(members, pageable);
         }
 
         return ConvertUtils.convertPage(pageInfo, member -> new DevopsEnvUserVO(member.getId(), member.getLdap() ? member.getLoginName() : member.getEmail(), member.getRealName(), member.getImageUrl()));

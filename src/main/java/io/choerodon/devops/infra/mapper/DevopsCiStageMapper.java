@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
 import io.choerodon.devops.infra.dto.DevopsCiStageDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * 〈功能简述〉

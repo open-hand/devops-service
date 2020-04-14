@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsEnvUserVO;
 import io.choerodon.devops.app.service.DevopsEnvUserPermissionService;
@@ -55,9 +56,8 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
         List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
 
         return ConvertUtils.convertPage(
-                PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize())
-                        .doSelectPageInfo(() -> devopsEnvUserPermissionMapper
-                                .listUserEnvPermissionByOption(envId, searchParamMap, paramList)),
+                PageHelper.doPage(pageable, () -> devopsEnvUserPermissionMapper
+                        .listUserEnvPermissionByOption(envId, searchParamMap, paramList)),
                 DevopsEnvUserVO.class);
     }
 

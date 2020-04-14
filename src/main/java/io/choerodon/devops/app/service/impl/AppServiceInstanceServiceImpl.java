@@ -178,12 +178,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public Page<AppServiceInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, PageRequest pageable, String params) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
-        Page<AppServiceInstanceInfoVO> pageInfo = ConvertUtils.convertPage(PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderString(pageable.getSort(), orderByFieldMap))
-                        .doSelectPageInfo(() -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(
-                                envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
+        Page<AppServiceInstanceInfoVO> pageInfo = ConvertUtils.convertPage(PageHelper.doPageAndSort(PageRequestUtil.getMappedPage(pageable, orderByFieldMap), () -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(
+                envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
                 AppServiceInstanceInfoVO.class);
         List<Long> updatedEnv = clusterConnectionHandler.getUpdatedClusterList();
-        pageInfo.getList().forEach(appServiceInstanceInfoVO -> {
+        pageInfo.getContent().forEach(appServiceInstanceInfoVO -> {
                     AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceInstanceInfoVO.getAppServiceId());
                     appServiceInstanceInfoVO.setAppServiceType(applicationService.checkAppServiceType(projectId, appServiceDTO));
                     appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoVO.getClusterId()));
@@ -1137,7 +1136,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public Page<DeployDTO> basePageDeployFrequencyTable(Long projectId, PageRequest pageable, Long[] envIds, Long appServiceId,
                                                         Date startTime, Date endTime) {
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
+        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () ->
                 appServiceInstanceMapper
                         .listDeployFrequency(projectId, envIds, appServiceId, new java.sql.Date(startTime.getTime()),
                                 new java.sql.Date(endTime.getTime())));
@@ -1146,7 +1145,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public Page<DeployDTO> basePageDeployTimeTable(Long projectId, PageRequest pageable, Long envId, Long[] appServiceIds,
                                                    Date startTime, Date endTime) {
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
+        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () ->
                 appServiceInstanceMapper
                         .listDeployTime(projectId, envId, appServiceIds, new java.sql.Date(startTime.getTime()),
                                 new java.sql.Date(endTime.getTime())));
@@ -1700,7 +1699,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         List<DeployDetailTableVO> deployDetailTableVOS = new ArrayList<>();
 
-        deployDTOPageInfo.getList().forEach(deployDTO -> {
+        deployDTOPageInfo.getContent().forEach(deployDTO -> {
             DeployDetailTableVO deployDetailTableVO = ConvertUtils.convertObject(deployDTO, DeployDetailTableVO.class);
             deployDetailTableVO.setDeployTime(
                     getDeployTime(deployDTO.getLastUpdateDate().getTime() - deployDTO.getCreationDate().getTime()));
@@ -1712,7 +1711,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             }
             deployDetailTableVOS.add(deployDetailTableVO);
         });
-        pageDeployDetailDTOS.setList(deployDetailTableVOS);
+        pageDeployDetailDTOS.setContent(deployDetailTableVOS);
         return pageDeployDetailDTOS;
     }
 

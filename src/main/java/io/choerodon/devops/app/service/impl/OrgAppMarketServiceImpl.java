@@ -28,6 +28,7 @@ import retrofit2.Retrofit;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.ApplicationValidator;
@@ -177,16 +178,13 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                                                      String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         List<String> paramList = TypeUtil.cast(mapParams.get(TypeUtil.PARAMS));
-        Page<AppServiceDTO> appServiceDTOPageInfo = PageHelper.startPage(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> appServiceMapper.listByProjectId(appId, TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)), paramList));
+        Page<AppServiceDTO> appServiceDTOPageInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper.listByProjectId(appId, TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)), paramList));
 
         Page<AppServiceUploadPayload> appServiceMarketVOPageInfo = ConvertUtils.convertPage(appServiceDTOPageInfo, this::dtoToMarketVO);
-        List<AppServiceUploadPayload> list = appServiceMarketVOPageInfo.getList();
+        List<AppServiceUploadPayload> list = appServiceMarketVOPageInfo.getContent();
         list.forEach(appServiceMarketVO -> appServiceMarketVO.setAppServiceVersionUploadPayloads(
                 ConvertUtils.convertList(appServiceVersionService.baseListByAppServiceId(appServiceMarketVO.getAppServiceId()), AppServiceVersionUploadPayload.class)));
-        appServiceMarketVOPageInfo.setList(list);
+        appServiceMarketVOPageInfo.setContent(list);
         return appServiceMarketVOPageInfo;
     }
 
@@ -712,7 +710,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(t.getId());
                 ConfigVO configVO;
                 if (appServiceVersionDTO.getHarborConfigId() != null) {
-                    DevopsConfigDTO devopsConfigDTO=devopsConfigService.baseQuery(appServiceVersionDTO.getHarborConfigId());
+                    DevopsConfigDTO devopsConfigDTO = devopsConfigService.baseQuery(appServiceVersionDTO.getHarborConfigId());
                     configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
                     AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceVersionDTO.getAppServiceId());
                     if (devopsConfigDTO.getName().equals(HARBOR_NAME) && appServiceDTO.getProjectId() != null) {

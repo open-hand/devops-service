@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
@@ -15,6 +16,7 @@ import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 
 /**
@@ -111,12 +113,11 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
                     .collect(Collectors.joining(","));
         }
         String sortString = sortResult;
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize())
-                .doSelectPageInfo(
-                        () -> devopsBranchMapper.list(appServiceId,
-                                sortString,
-                                TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                                TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
+        return PageHelper.doPage(pageable,
+                () -> devopsBranchMapper.list(appServiceId,
+                        sortString,
+                        TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                        TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
     }
 
 

@@ -15,6 +15,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
@@ -119,9 +120,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         }
         if (CollectionUtils.isEmpty(paramList) && StringUtils.isEmpty(name) && StringUtils.isEmpty(code)) {
             // 如果不搜索，在数据库中进行分页
-            Page<DevopsCertificationProRelationshipDTO> relationPage = PageHelper.startPage(
-                    pageable.getPageNumber(), pageable.getPageSize())
-                    .doSelectPageInfo(() -> devopsCertificationProRelationshipService.baseListByCertificationId(certId));
+            Page<DevopsCertificationProRelationshipDTO> relationPage = PageHelper.doPage(pageable, () -> devopsCertificationProRelationshipService.baseListByCertificationId(certId));
             return ConvertUtils.convertPage(relationPage, permission -> {
                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
                 return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
@@ -318,8 +317,8 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         BeanUtils.copyProperties(certificationDTOS, orgCertificationDTOS);
         List<ProjectCertificationVO> orgCertifications = new ArrayList<>();
 
-        if (!certificationDTOS.getList().isEmpty()) {
-            certificationDTOS.getList().forEach(certificationDTO -> {
+        if (!certificationDTOS.getContent().isEmpty()) {
+            certificationDTOS.getContent().forEach(certificationDTO -> {
                 List<String> stringList = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
                 }.getType());
                 ProjectCertificationVO orgCertificationVO = new ProjectCertificationVO();
@@ -331,7 +330,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
                 orgCertifications.add(orgCertificationVO);
             });
         }
-        orgCertificationDTOS.setList(orgCertifications);
+        orgCertificationDTOS.setContent(orgCertifications);
         return orgCertificationDTOS;
     }
 

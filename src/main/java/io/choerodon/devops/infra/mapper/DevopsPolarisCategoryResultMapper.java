@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.ClusterPolarisSummaryItemVO;
 import io.choerodon.devops.infra.dto.DevopsPolarisCategoryResultDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * @author zmf

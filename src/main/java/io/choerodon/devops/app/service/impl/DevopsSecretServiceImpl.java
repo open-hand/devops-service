@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
 import io.choerodon.devops.api.vo.SecretReqVO;
@@ -490,8 +491,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         Map<String, Object> paramsMap = TypeUtil.castMapParams(params);
         Map<String, Object> searchParamMap = TypeUtil.cast(paramsMap.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(paramsMap.get(TypeUtil.PARAMS));
-        return PageHelper
-                .startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> devopsSecretMapper.listByOption(envId, searchParamMap, paramList, appServiceId));
+        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> devopsSecretMapper.listByOption(envId, searchParamMap, paramList, appServiceId));
     }
 
     @Override

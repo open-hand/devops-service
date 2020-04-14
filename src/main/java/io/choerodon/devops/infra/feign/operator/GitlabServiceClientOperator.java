@@ -600,9 +600,9 @@ public class GitlabServiceClientOperator {
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        Page<TagDTO> resp = PageInfoUtil.createPageFromList(tagList, PageRequest.of(page, size));
+        Page<TagDTO> resp = PageInfoUtil.createPageFromList(tagList, new PageRequest(page, size));
 
-        resp.getList().stream()
+        resp.getContent().stream()
                 .sorted(this::sortTag)
                 .forEach(t -> {
                     IamUserDTO userDTO = baseServiceClientOperator.queryByEmail(TypeUtil.objToLong(gitlabProjectId), t.getCommit().getAuthorEmail());

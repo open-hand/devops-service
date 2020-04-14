@@ -30,8 +30,8 @@ import io.choerodon.devops.infra.enums.OrgPublishMarketStatus;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.util.FeignParamUtils;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
  * Created by Sheep on 2019/7/11.
@@ -87,14 +87,14 @@ public class BaseServiceClientOperator {
 
 
     public List<ProjectDTO> listIamProjectByOrgId(Long organizationId, String name, String code, String params) {
-        CustomPageRequest customPageRequest = CustomPageRequest.of(0, 0);
+        PageRequest customPageRequest = new PageRequest(0, 0);
         ResponseEntity<Page<ProjectDTO>> pageResponseEntity =
                 baseServiceClient.pageProjectsByOrgId(organizationId, FeignParamUtils.encodePageRequest(customPageRequest), name, code, true, params);
-        return Objects.requireNonNull(pageResponseEntity.getBody()).getList();
+        return Objects.requireNonNull(pageResponseEntity.getBody()).getContent();
     }
 
     public Page<ProjectDTO> pageProjectByOrgId(Long organizationId, int page, int size, Sort sort, String name, String code, String params) {
-        CustomPageRequest pageable = CustomPageRequest.of(page, size, sort == null ? Sort.unsorted() : sort);
+        PageRequest pageable = new PageRequest(page, size, sort);
         try {
             ResponseEntity<Page<ProjectDTO>> pageInfoResponseEntity = baseServiceClient.pageProjectsByOrgId(organizationId,
                     FeignParamUtils.encodePageRequest(pageable), name, code, true, params);
@@ -111,8 +111,8 @@ public class BaseServiceClientOperator {
         ResponseEntity<Page<ProjectWithRoleVO>> pageResponseEntity =
                 baseServiceClient.listProjectWithRole(userId, page, size);
         Page<ProjectWithRoleVO> projectWithRoleDTOPage = pageResponseEntity.getBody();
-        if (!projectWithRoleDTOPage.getList().isEmpty()) {
-            returnList.addAll(projectWithRoleDTOPage.getList());
+        if (projectWithRoleDTOPage != null && !projectWithRoleDTOPage.getContent().isEmpty()) {
+            returnList.addAll(projectWithRoleDTOPage.getContent());
         }
         return returnList;
     }
@@ -160,10 +160,10 @@ public class BaseServiceClientOperator {
         try {
             ResponseEntity<Page<IamUserDTO>> userDOResponseEntity = baseServiceClient
                     .listUsersByEmail(projectId, 0, 0, email);
-            if (userDOResponseEntity.getBody().getList().isEmpty()) {
+            if (userDOResponseEntity.getBody().getContent().isEmpty()) {
                 return null;
             }
-            return userDOResponseEntity.getBody().getList().get(0);
+            return userDOResponseEntity.getBody().getContent().get(0);
         } catch (FeignException e) {
             LOGGER.error("get user by email {} error", email);
             return null;
@@ -173,7 +173,7 @@ public class BaseServiceClientOperator {
     public Long queryRoleIdByCode(String roleCode) {
         try {
 
-            return baseServiceClient.queryRoleIdByCode(roleCode).getBody().getList().get(0).getId();
+            return baseServiceClient.queryRoleIdByCode(roleCode).getBody().getContent().get(0).getId();
         } catch (FeignException e) {
             LOGGER.error("get role id by code {} error", roleCode);
             return null;
@@ -378,7 +378,7 @@ public class BaseServiceClientOperator {
     public List<ProjectWithRoleVO> listProjectWithRole(Long userId, int page, int size) {
         try {
             ResponseEntity<Page<ProjectWithRoleVO>> pageInfoResponseEntity = baseServiceClient.listProjectWithRole(userId, page, size);
-            return (pageInfoResponseEntity.getBody() == null) ? Collections.emptyList() : pageInfoResponseEntity.getBody().getList();
+            return (pageInfoResponseEntity.getBody() == null) ? Collections.emptyList() : pageInfoResponseEntity.getBody().getContent();
         } catch (Exception ex) {
             return Collections.emptyList();
         }

@@ -1,9 +1,12 @@
 package io.choerodon.devops.infra.util;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import javax.annotation.Nullable;
 
 import com.google.common.collect.Lists;
 
@@ -32,31 +35,75 @@ public class PageRequestUtil {
     }
 
 
-    public static String getOrderBy(PageRequest pageable) {
-        Sort sort = pageable.getSort();
+    /**
+     * 简单的将page对象中的排序字段转换为下划线形式
+     *
+     * @param pageRequest 分页请求
+     * @return 转化过sort的分页请求
+     */
+    public static PageRequest simpleConvertSortForPage(PageRequest pageRequest) {
+        pageRequest.setSort(simpleConvertSort(pageRequest.getSort()));
+        return pageRequest;
+    }
+
+    /**
+     * 简单的sort进行处理转换
+     *
+     * @param sort 排序字段，可为空
+     * @return 返回转为下划线形式的排序字段
+     */
+    @Nullable
+    public static Sort simpleConvertSort(@Nullable Sort sort) {
         if (sort != null) {
-            return Lists.newArrayList(pageable.getSort().iterator()).stream()
-                    .map(t -> HumpToUnderlineUtil.toUnderLine(t.getProperty()) + " " + t.getDirection())
+            List<Sort.Order> orders = new ArrayList<>();
+            sort.iterator().forEachRemaining(s -> orders.add(new Sort.Order(s.getDirection(), HumpToUnderlineUtil.toUnderLine(s.getProperty()))));
+            return new Sort(orders);
+        } else {
+            return null;
+        }
+    }
+
+    public static String getOrderBy(PageRequest pageRequest) {
+        Sort sort = pageRequest.getSort();
+        if (sort != null) {
+            return Lists.newArrayList(pageRequest.getSort().iterator()).stream()
+                    .map(t -> t.getProperty() + " " + t.getDirection())
                     .collect(Collectors.joining(","));
         }
         return "";
     }
 
     /**
-     * 获取排序SQL字符串
+     * 处理排序字段
      *
-     * @param sort            {@link PageRequest#getSort()}中的sort对象
+     * @param page            page请求
      * @param orderByFieldMap 前端传入的字段与mybatis中字段的映射。如果前端传入的字段在map中不存在就抛异常，防止SQL注入
      * @return 排序SQL字段
      */
-    public static String getOrderString(Sort sort, Map<String, String> orderByFieldMap) {
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(sort.iterator(), Spliterator.ORDERED), false).map(t -> {
-            String field = orderByFieldMap.get(t.getProperty());
+    public static PageRequest getMappedPage(PageRequest page, Map<String, String> orderByFieldMap) {
+        if (page.getSort() != null) {
+            page.setSort(getMappedSort(page.getSort(), orderByFieldMap));
+        }
+        return page;
+    }
+
+    /**
+     * 处理排序字段
+     *
+     * @param sort            排序数据
+     * @param orderByFieldMap 前端传入的字段与mybatis中字段的映射。如果前端传入的字段在map中不存在就抛异常，防止SQL注入
+     * @return 排序SQL字段
+     */
+    public static Sort getMappedSort(Sort sort, Map<String, String> orderByFieldMap) {
+        List<Sort.Order> newOrders = new ArrayList<>();
+        sort.iterator().forEachRemaining(s -> {
+            String field = orderByFieldMap.get(s.getProperty());
             if (field == null) {
-                throw new CommonException("error.field.not.supported.for.sort", t.getProperty());
+                throw new CommonException("error.field.not.supported.for.sort", s.getProperty());
             }
-            return field + ONE_SPACE + t.getDirection();
-        }).collect(Collectors.joining(","));
+            newOrders.add(new Sort.Order(s.getDirection(), field));
+        });
+        return new Sort(newOrders);
     }
 
     public static List<DevopsUserPermissionVO> sortUserPermission(List<DevopsUserPermissionVO> toBeSorted, Sort sort) {

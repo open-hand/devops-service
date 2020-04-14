@@ -52,7 +52,6 @@ import io.choerodon.devops.infra.mapper.PipelineMapper;
 import io.choerodon.devops.infra.mapper.PipelineRecordMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.web.util.PageRequestHelper;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -144,7 +143,7 @@ public class PipelineServiceImpl implements PipelineService {
 
         Page<PipelineVO> pageInfo = PageInfoUtil.createPageFromList(pipelineVOList, pageable);
 
-        pageInfo.setList(pageInfo.getList().stream().peek(t -> {
+        pageInfo.setContent(pageInfo.getContent().stream().peek(t -> {
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(t.getCreatedBy());
             t.setCreateUserName(iamUserDTO.getLdap() ? iamUserDTO.getLoginName() : iamUserDTO.getEmail());
             t.setCreateUserRealName(iamUserDTO.getRealName());
@@ -153,7 +152,7 @@ public class PipelineServiceImpl implements PipelineService {
             t.setEdit(checkPipelineEnvPermission(pipelineEnvIds, projectOwnerOrRoot));
             List<PipelineDTO> pipelineDTOS = pipelineMapper.selectByProjectId(t.getId());
             if (!CollectionUtils.isEmpty(pipelineDTOS)) {
-                t.setEnvName(pipelineDTOS.stream().map(e -> e.getEnvName()).distinct().collect(Collectors.joining(",")));
+                t.setEnvName(pipelineDTOS.stream().map(PipelineDTO::getEnvName).distinct().collect(Collectors.joining(",")));
             }
         }).collect(Collectors.toList()));
 
@@ -923,7 +922,7 @@ public class PipelineServiceImpl implements PipelineService {
         List<String> userIds = new ArrayList<>();
         if (auditUser != null && !auditUser.isEmpty()) {
             userIds = Arrays.asList(auditUser.split(","));
-            List arrList = new ArrayList(userIds);
+            List<String> arrList = new ArrayList<>(userIds);
             arrList.remove(TypeUtil.objToString(GitUserNameUtil.getUserId()));
             userIds = arrList;
         }

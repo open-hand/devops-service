@@ -1,7 +1,9 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dto.DevopsCiContentDTO;
 import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.infra.dto.DevopsCiContentDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * 〈功能简述〉

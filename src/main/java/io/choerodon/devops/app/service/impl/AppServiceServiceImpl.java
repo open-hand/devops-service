@@ -45,6 +45,7 @@ import retrofit2.Retrofit;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -74,7 +75,6 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
-import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -346,11 +346,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppServicePayload.setAppServiceId(appServiceId);
         devOpsAppServicePayload.setIamProjectId(projectId);
         //删除应用服务后需要发送消息，这里将消息的内容封近paylod
-        List<DevopsUserPermissionVO> list = pagePermissionUsers(appServiceDTO.getProjectId(), appServiceDTO.getId(), CustomPageRequest.of(0, 0), null).getList();
+        List<DevopsUserPermissionVO> list = pagePermissionUsers(appServiceDTO.getProjectId(), appServiceDTO.getId(), new PageRequest(0, 0), null).getContent();
         if (!CollectionUtils.isEmpty(list)) {
-            list.forEach(devopsUserPermissionVO -> {
-                devopsUserPermissionVO.setCreationDate(null);
-            });
+            list.forEach(devopsUserPermissionVO -> devopsUserPermissionVO.setCreationDate(null));
         }
         devOpsAppServicePayload.setAppServiceDTO(appServiceDTO);
         devOpsAppServicePayload.setDevopsUserPermissionVOS(list);
@@ -539,7 +537,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         Page<AppServiceDTO> applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-        initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOS.getList(), urlSlash);
+        initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOS.getContent(), urlSlash);
 
         return ConvertUtils.convertPage(applicationServiceDTOS, this::dtoToRepVo);
     }
@@ -553,12 +551,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         Map maps = gson.fromJson(params, Map.class);
-        Page<AppServiceDTO> applicationServiceDTOPageInfo = PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> appServiceMapper.listCodeRepository(projectId,
+        Page<AppServiceDTO> applicationServiceDTOPageInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper.listCodeRepository(projectId,
                 TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(maps.get(TypeUtil.PARAMS)), isProjectOwnerOrRoot, userAttrDTO.getIamUserId()));
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
 
-        initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOPageInfo.getList(), urlSlash);
+        initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOPageInfo.getContent(), urlSlash);
 
         return ConvertUtils.convertPage(applicationServiceDTOPageInfo, AppServiceRepVO.class);
     }
@@ -1592,9 +1590,9 @@ public class AppServiceServiceImpl implements AppServiceService {
                 );
         Page<AppServiceDTO> applicationServiceDTOPageInfo = new Page<>();
         if (doPage) {
-            applicationServiceDTOPageInfo = PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> appServiceMapper.listShareApplicationService(appServiceIds, projectId, null, TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
+            applicationServiceDTOPageInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper.listShareApplicationService(appServiceIds, projectId, null, TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
         } else {
-            applicationServiceDTOPageInfo.setList(appServiceMapper.listShareApplicationService(appServiceIds, projectId, null, TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
+            applicationServiceDTOPageInfo.setContent(appServiceMapper.listShareApplicationService(appServiceIds, projectId, null, TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
         }
         return ConvertUtils.convertPage(applicationServiceDTOPageInfo, AppServiceRepVO.class);
     }
@@ -1708,7 +1706,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<IamUserDTO> allProjectMembers = baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_DEVELOPER.getValue());
         if (allProjectMembers.isEmpty()) {
             Page<DevopsUserPermissionVO> pageInfo = new Page<>();
-            pageInfo.setList(new ArrayList<>());
+            pageInfo.setContent(new ArrayList<>());
             return pageInfo;
         }
         // 获取项目下所有的项目所有者
@@ -1734,13 +1732,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         Page<IamUserDTO> pageInfo;
-        CustomPageRequest customPageRequest;
-        if (pageable.getPageSize() == 0) {
-            customPageRequest = CustomPageRequest.of(0, 0);
-            pageInfo = PageInfoUtil.createPageFromList(members, customPageRequest);
+        if (pageable.getSize() == 0) {
+            pageInfo = PageInfoUtil.createPageFromList(members, pageable);
         } else {
-            customPageRequest = CustomPageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
-            pageInfo = PageInfoUtil.createPageFromList(members, customPageRequest);
+            pageInfo = PageInfoUtil.createPageFromList(members, pageable);
         }
 
         return ConvertUtils.convertPage(pageInfo, member -> new DevopsUserPermissionVO(member.getId(), member.getLdap() ? member.getLoginName() : member.getEmail(), member.getRealName(), member.getImageUrl()));
@@ -2038,12 +2033,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (projectOwnerOrRoot) {
             //是否需要分页
             if (doPage == null || doPage) {
-                return PageHelper
-                        .startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable))
-                        .doSelectPageInfo(
-                                () -> appServiceMapper.list(projectId, isActive, hasVersion, type,
-                                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable)));
+                return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
+                        () -> appServiceMapper.list(projectId, isActive, hasVersion, type,
+                                TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable)));
             } else {
                 list = appServiceMapper.list(projectId, isActive, hasVersion, type,
                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
@@ -2052,12 +2045,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         } else {
             //是否需要分页
             if (doPage == null || doPage) {
-                return PageHelper
-                        .startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable))
-                        .doSelectPageInfo(
-                                () -> appServiceMapper.listProjectMembersAppService(projectId, isActive, hasVersion, type,
-                                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable), userId));
+                return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
+                        () -> appServiceMapper.listProjectMembersAppService(projectId, isActive, hasVersion, type,
+                                TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable), userId));
             } else {
                 list = appServiceMapper.listProjectMembersAppService(projectId, isActive, hasVersion, type,
                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
@@ -2065,14 +2056,14 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
         }
 
-        return new Page<>(list);
+        return PageInfoUtil.listAsPage(list);
     }
 
     @Override
     public Page<AppServiceDTO> basePageCodeRepository(Long projectId, PageRequest pageable, String params,
                                                       Boolean isProjectOwner, Long userId) {
         Map maps = gson.fromJson(params, Map.class);
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> appServiceMapper.listCodeRepository(projectId,
+        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper.listCodeRepository(projectId,
                 TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(maps.get(TypeUtil.PARAMS)), isProjectOwner, userId));
     }
@@ -2105,7 +2096,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public Page<AppServiceDTO> basePageByEnvId(Long projectId, Long envId, Long appServiceId, PageRequest pageable) {
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> appServiceMapper.listByEnvId(projectId, envId, appServiceId, NODELETED));
+        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper.listByEnvId(projectId, envId, appServiceId, NODELETED));
 
     }
 
@@ -2127,7 +2118,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         final Map<String, Object> finalSearchParam = searchParam;
         final List<String> finalParam = paramList;
 
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> appServiceMapper
+        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper
                 .basePageByActiveAndPubAndHasVersion(projectId, isActive, finalSearchParam, finalParam));
     }
 
@@ -2538,7 +2529,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (doPage) {
             return PageInfoUtil.createPageFromList(list, pageable);
         } else {
-            return new Page<>(list);
+            return PageInfoUtil.listAsPage(list);
         }
 
     }
@@ -2575,7 +2566,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (doPage == null || doPage) {
             return PageInfoUtil.createPageFromList(collect, pageable);
         } else {
-            return new Page<>(collect);
+            return PageInfoUtil.listAsPage(collect);
         }
     }
 
@@ -2607,7 +2598,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (doPage == null || doPage) {
             return PageInfoUtil.createPageFromList(collect, pageable);
         } else {
-            return new Page<>(collect);
+            return PageInfoUtil.listAsPage(collect);
         }
     }
 
@@ -2620,18 +2611,18 @@ public class AppServiceServiceImpl implements AppServiceService {
             // 指定应用服务id，从这些id中根据参数决定是否分页
             // 如果不分页
             if (Boolean.FALSE.equals(doPage)) {
-                return new Page<>(ConvertUtils.convertList(appServiceMapper.listAppServiceByIds(ids, null, null), AppServiceVO.class));
+                return PageInfoUtil.listAsPage(ConvertUtils.convertList(appServiceMapper.listAppServiceByIds(ids, null, null), AppServiceVO.class));
             } else {
                 // 如果分页
-                return ConvertUtils.convertPage(PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> appServiceMapper.listAppServiceByIds(ids, null, null)), AppServiceVO.class);
+                return ConvertUtils.convertPage(PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper.listAppServiceByIds(ids, null, null)), AppServiceVO.class);
             }
         }
     }
 
     @Override
     public List<ProjectVO> listProjectByShare(Long projectId, Boolean share) {
-        Page<AppServiceGroupInfoVO> appServiceGroupInfoVOPageInfo = pageAppServiceByMode(projectId, share, null, null, CustomPageRequest.of(0, 0));
-        List<AppServiceGroupInfoVO> list = appServiceGroupInfoVOPageInfo.getList();
+        Page<AppServiceGroupInfoVO> appServiceGroupInfoVOPageInfo = pageAppServiceByMode(projectId, share, null, null, new PageRequest(0, 0));
+        List<AppServiceGroupInfoVO> list = appServiceGroupInfoVOPageInfo.getContent();
         List<ProjectVO> projectVOS = new ArrayList<>();
         if (CollectionUtils.isEmpty(list)) {
             return new ArrayList<>();

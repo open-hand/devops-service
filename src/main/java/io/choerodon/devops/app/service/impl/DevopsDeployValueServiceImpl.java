@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsDeployValueVO;
@@ -89,7 +90,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
             deployValueDTOPageInfo = basePageByOptionsWithMember(projectId, appServiceId, envId, userId, pageable, params);
         }
         Page<DevopsDeployValueVO> page = ConvertUtils.convertPage(deployValueDTOPageInfo, DevopsDeployValueVO.class);
-        page.getList().forEach(value -> {
+        page.getContent().forEach(value -> {
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(value.getCreatedBy());
             value.setCreateUserName(iamUserDTO.getLoginName());
             value.setCreateUserUrl(iamUserDTO.getImageUrl());
@@ -145,8 +146,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderString(pageable.getSort(), orderByFieldMap))
-                .doSelectPageInfo(() -> devopsDeployValueMapper.listByOptionsWithOwner(projectId, appServiceId, envId, userId, searchParamMap, paramList));
+        return PageHelper.doPageAndSort(PageRequestUtil.getMappedPage(pageable, orderByFieldMap), () -> devopsDeployValueMapper.listByOptionsWithOwner(projectId, appServiceId, envId, userId, searchParamMap, paramList));
     }
 
     @Override
@@ -154,8 +154,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderString(pageable.getSort(), orderByFieldMap))
-                .doSelectPageInfo(() -> devopsDeployValueMapper.listByOptionsWithMember(projectId, appServiceId, envId, userId, searchParamMap, paramList));
+        return PageHelper.doPageAndSort(PageRequestUtil.getMappedPage(pageable, orderByFieldMap), () -> devopsDeployValueMapper.listByOptionsWithMember(projectId, appServiceId, envId, userId, searchParamMap, paramList));
     }
 
     @Override

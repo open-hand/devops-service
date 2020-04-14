@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsEnvFileErrorVO;
 import io.choerodon.devops.app.service.DevopsEnvFileErrorService;
@@ -67,7 +68,7 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
         }
         Page<DevopsEnvFileErrorDTO> devopsEnvFileErrorDTOPageInfo = devopsEnvFileErrorService.basePageByEnvId(envId, pageable);
         Page<DevopsEnvFileErrorVO> devopsEnvFileErrorVOPageInfo = ConvertUtils.convertPage(devopsEnvFileErrorDTOPageInfo, this::dtoToVo);
-        devopsEnvFileErrorVOPageInfo.getList().forEach(devopsEnvFileErrorVO -> setCommitAndFileUrl(devopsEnvFileErrorVO, gitlabProjectPath));
+        devopsEnvFileErrorVOPageInfo.getContent().forEach(devopsEnvFileErrorVO -> setCommitAndFileUrl(devopsEnvFileErrorVO, gitlabProjectPath));
         return devopsEnvFileErrorVOPageInfo;
     }
 

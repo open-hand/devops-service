@@ -1,8 +1,10 @@
 package io.choerodon.devops.infra.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.api.vo.DevopsPrometheusVO;
 import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
-import org.apache.ibatis.annotations.Param;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * @author: 25499

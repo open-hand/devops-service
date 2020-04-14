@@ -8,32 +8,35 @@ import javax.annotation.Nullable;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import io.choerodon.core.notify.WebHookJsonSendDTO;
-import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
-import io.choerodon.devops.infra.enums.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.notify.NoticeSendDTO;
+import io.choerodon.core.notify.WebHookJsonSendDTO;
 import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
+import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.NoticeCodeConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.CommandType;
+import io.choerodon.devops.infra.enums.EnvironmentType;
+import io.choerodon.devops.infra.enums.ObjectType;
+import io.choerodon.devops.infra.enums.SendSettingEnum;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
-import org.springframework.util.CollectionUtils;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 发送DevOps相关通知的实现类
@@ -227,8 +230,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         JSONObject.put("enabled", appServiceDTO.getActive());
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.APP_SERVICE_ENABLED,
-                        app -> mapNullListToEmpty(appServiceService.pagePermissionUsers(app.getProjectId(), app.getId(), CustomPageRequest.of(0, 0), null)
-                                .getList())
+                        app -> mapNullListToEmpty(appServiceService.pagePermissionUsers(app.getProjectId(), app.getId(), new PageRequest(0, 0), null)
+                                .getContent())
                                 .stream()
                                 .map(p -> constructTargetUser(p.getIamUserId()))
                                 .collect(Collectors.toList()),
@@ -266,8 +269,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, NoticeCodeConstants.APP_SERVICE_DISABLE,
-                        app -> mapNullListToEmpty(appServiceService.pagePermissionUsers(app.getProjectId(), app.getId(), CustomPageRequest.of(0, 0), null)
-                                .getList())
+                        app -> mapNullListToEmpty(appServiceService.pagePermissionUsers(app.getProjectId(), app.getId(), new PageRequest(0, 0), null)
+                                .getContent())
                                 .stream()
                                 .map(p -> constructTargetUser(p.getIamUserId()))
                                 .collect(Collectors.toList()),

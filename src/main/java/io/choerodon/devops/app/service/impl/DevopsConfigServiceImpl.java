@@ -50,7 +50,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsConfigServiceImpl implements DevopsConfigService {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(DevopsConfigServiceImpl.class);
 
-    public static final String APP_SERVICE = "appService";
+    private static final String APP_SERVICE = "appService";
     private static final String HARBOR = "harbor";
     private static final String AUTHTYPE_PULL = "pull";
     private static final String AUTHTYPE_PUSH = "push";
@@ -442,8 +442,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     public Page<DevopsConfigDTO> basePageByOptions(Long projectId, PageRequest pageable, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
 
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable))
-                .doSelectPageInfo(() -> devopsConfigMapper.listByOptions(projectId,
+        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
+                () -> devopsConfigMapper.listByOptions(projectId,
                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable)));
     }
@@ -464,7 +464,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     }
 
 
-    public DevopsConfigDTO baseQueryDefaultConfig(String type) {
+    private DevopsConfigDTO baseQueryDefaultConfig(String type) {
         DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
         if (type.equals(HARBOR)) {
             devopsConfigDTO.setName(DevopsCommandRunner.HARBOR_NAME);
@@ -484,7 +484,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         }
     }
 
-    public List<DevopsConfigDTO> baseListByResource(Long resourceId, String resourceType) {
+    private List<DevopsConfigDTO> baseListByResource(Long resourceId, String resourceType) {
         DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
         setResourceId(resourceId, resourceType, devopsConfigDTO);
         return devopsConfigMapper.select(devopsConfigDTO);

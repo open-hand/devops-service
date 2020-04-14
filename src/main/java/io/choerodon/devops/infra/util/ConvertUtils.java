@@ -57,7 +57,7 @@ public class ConvertUtils {
             return null;
         }
         Page<D> destination = new Page<>();
-        BeanUtils.copyProperties(source, destination, "list");
+        BeanUtils.copyProperties(source, destination, "content");
         if (source.getContent() != null) {
             destination.setContent(source.getContent().stream().map(converter).collect(Collectors.toList()));
         } else {
@@ -79,7 +79,7 @@ public class ConvertUtils {
             return null;
         }
         Page<D> destination = new Page<>();
-        BeanUtils.copyProperties(source, destination, "list");
+        BeanUtils.copyProperties(source, destination, "content");
         if (source.getContent() != null) {
             destination.setContent(source.getContent().stream().map(s -> convertObject(s, destinationClass)).collect(Collectors.toList()));
         }

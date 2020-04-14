@@ -52,14 +52,14 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
     public Page<DevopsMergeRequestDTO> basePageByOptions(Integer gitlabProjectId, String state, PageRequest pageable) {
         // 如果传入的state字段是这个值，表明的是查询待这个用户审核的MergeRequest
         if ("assignee".equals(state)) {
-            return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
+            return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () ->
                     devopsMergeRequestMapper.listToBeAuditedByThisUser(gitlabProjectId, DetailsHelper.getUserDetails() == null ? 0L : DetailsHelper.getUserDetails().getUserId()));
         } else {
             // 否则的话按照state字段查询
             DevopsMergeRequestDTO devopsMergeRequestDTO = new DevopsMergeRequestDTO();
             devopsMergeRequestDTO.setGitlabProjectId(gitlabProjectId.longValue());
             devopsMergeRequestDTO.setState(state);
-            return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
+            return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () ->
                     devopsMergeRequestMapper.select(devopsMergeRequestDTO));
         }
     }

@@ -378,7 +378,7 @@ public class CertificationServiceImpl implements CertificationService {
     public Page<CertificationVO> pageByOptions(Long projectId, Long envId, PageRequest pageable, String params) {
         Page<CertificationVO> certificationDTOPage = ConvertUtils.convertPage(basePage(null, envId, pageable, params), this::dtoToVo);
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
-        certificationDTOPage.getList().stream()
+        certificationDTOPage.getContent().stream()
                 .filter(certificationDTO -> certificationDTO.getOrganizationId() == null)
                 .forEach(certificationDTO -> {
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(certificationDTO.getEnvId());
@@ -493,11 +493,10 @@ public class CertificationServiceImpl implements CertificationService {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
 
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        Page<CertificationDTO> certificationDTOPage = PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderString(pageable.getSort(), orderByFieldMap))
-                .doSelectPageInfo(() -> devopsCertificationMapper.listCertificationByOptions(projectId, envId, searchParamMap, TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
+        Page<CertificationDTO> certificationDTOPage = PageHelper.doPageAndSort(PageRequestUtil.getMappedPage(pageable, orderByFieldMap), () -> devopsCertificationMapper.listCertificationByOptions(projectId, envId, searchParamMap, TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
 
         // check if cert is overdue
-        certificationDTOPage.getList().forEach(dto -> {
+        certificationDTOPage.getContent().forEach(dto -> {
             if (CertificationStatus.ACTIVE.getStatus().equals(dto.getStatus())) {
                 if (!checkValidity(new Date(), dto.getValidFrom(), dto.getValidUntil())) {
                     dto.setStatus(CertificationStatus.OVERDUE.getStatus());

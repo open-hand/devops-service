@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsPolarisNamespaceDetailDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * @author zmf

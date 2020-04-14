@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsEnvFileErrorVO;
 import io.choerodon.devops.app.service.DevopsEnvFileErrorService;
@@ -58,8 +59,7 @@ public class DevopsEnvFileErrorServiceImpl implements DevopsEnvFileErrorService 
     public Page<DevopsEnvFileErrorDTO> basePageByEnvId(Long envId, PageRequest pageable) {
         DevopsEnvFileErrorDTO devopsEnvFileErrorDTO = new DevopsEnvFileErrorDTO();
         devopsEnvFileErrorDTO.setEnvId(envId);
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(),
-                PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> devopsEnvFileErrorMapper.select(devopsEnvFileErrorDTO));
+        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> devopsEnvFileErrorMapper.select(devopsEnvFileErrorDTO));
     }
 
 

@@ -5,7 +5,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.PageSerializable;
 import com.google.gson.Gson;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.models.*;
@@ -43,7 +42,6 @@ import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
 import io.choerodon.devops.infra.mapper.DevopsPrometheusMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvMapper;
 import io.choerodon.devops.infra.util.*;
-import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -99,8 +97,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         // params 是遍历字段模糊查询
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
         String orderBy = PageRequestUtil.getOrderBy(pageable);
-        Page<DevopsPvDTO> pvDTOPageInfo = PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize())
-                .doSelectPageInfo(() -> devopsPvMapper.listPvByOptions(
+        Page<DevopsPvDTO> pvDTOPageInfo = PageHelper.doPage(pageable, () -> devopsPvMapper.listPvByOptions(
                         projectDTO.getOrganizationId(),
                         projectId,
                         null,
@@ -110,7 +107,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 ));
 
         List<Long> updatedClusterList = clusterConnectionHandler.getUpdatedClusterList();
-        pvDTOPageInfo.getList().forEach(i -> i.setClusterConnect(updatedClusterList.contains(i.getClusterId())));
+        pvDTOPageInfo.getContent().forEach(i -> i.setClusterConnect(updatedClusterList.contains(i.getClusterId())));
         return pvDTOPageInfo;
     }
 
@@ -354,10 +351,10 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             throw new CommonException("error.pv.not.exists");
         }
 
-        CustomPageRequest customPageRequest = CustomPageRequest.of(1, 0);
+        PageRequest customPageRequest = new PageRequest(1, 0);
 
         List<ProjectReqVO> projectReqVOList = Optional.ofNullable(pageProjects(projectId, pvId, customPageRequest, params))
-                .map(PageSerializable::getList)
+                .map(Page::getContent)
                 .orElseThrow(() -> new CommonException("error.project.get"));
 
         //根据PvId查权限表中关联的projectId
@@ -496,9 +493,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         if (CollectionUtils.isEmpty(paramList) && StringUtils.isEmpty(name) && StringUtils.isEmpty(code)) {
             // 如果不搜索
-            Page<DevopsPvProPermissionDTO> relationPage = PageHelper.startPage(
-                    pageable.getPageNumber(), pageable.getPageSize())
-                    .doSelectPageInfo(() -> devopsPvProPermissionService.baseListByPvId(pvId));
+            Page<DevopsPvProPermissionDTO> relationPage = PageHelper.doPage(pageable, () -> devopsPvProPermissionService.baseListByPvId(pvId));
             return ConvertUtils.convertPage(relationPage, permission -> {
                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
                 return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
@@ -747,10 +742,10 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 .filter(devopsPvVOIdList::contains)
                 .collect(Collectors.toList());
         devopsPvVOList.forEach(pv -> {
-            CustomPageRequest customPageRequest = CustomPageRequest.of(1, 0);
+            PageRequest customPageRequest = new PageRequest(1, 0);
             //获得跳过权限的与本项目有关联的pv
             if (pv.getSkipCheckProjectPermission()) {
-                List<ProjectReqVO> list = new ArrayList<>(Optional.ofNullable(pageProjects(pv.getProjectId(), pv.getId(), customPageRequest, params).getList()).orElse(new ArrayList<>()));
+                List<ProjectReqVO> list = new ArrayList<>(Optional.ofNullable(pageProjects(pv.getProjectId(), pv.getId(), customPageRequest, params).getContent()).orElse(new ArrayList<>()));
                 if (list.stream().map(ProjectReqVO::getId).collect(Collectors.toList()).contains(projectId)) {
                     projectRelatedPvIdsList.add(pv.getId());
                 }

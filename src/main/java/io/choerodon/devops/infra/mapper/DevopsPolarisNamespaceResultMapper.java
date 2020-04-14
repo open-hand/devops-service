@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import io.choerodon.devops.api.vo.DevopsEnvWithPolarisResultVO;
 import io.choerodon.devops.api.vo.polaris.InstanceWithPolarisStorageVO;
 import io.choerodon.devops.infra.dto.DevopsPolarisNamespaceResultDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * @author zmf

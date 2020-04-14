@@ -23,6 +23,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
@@ -50,7 +51,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
      */
     private static final String CLUSTER_INFO_KEY_TEMPLATE = "cluster-%s-info";
 
-    private static final String UPGRADE_MESSAGE = "Version is too low, please upgrade!";
     private static final String ERROR_CLUSTER_NOT_EXIST = "error.cluster.not.exist";
     private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private static final String ERROR_ORGANIZATION_CLUSTER_NUM_MAX = "error.organization.cluster.num.max";
@@ -242,9 +242,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         Page<ClusterWithNodesVO> devopsClusterRepDTOPage = ConvertUtils.convertPage(devopsClusterRepVOPageInfo, ClusterWithNodesVO.class);
 
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
-        devopsClusterRepVOPageInfo.getList().forEach(devopsClusterRepVO -> devopsClusterRepVO.setConnect(updatedEnvList.contains(devopsClusterRepVO.getId())));
+        devopsClusterRepVOPageInfo.getContent().forEach(devopsClusterRepVO -> devopsClusterRepVO.setConnect(updatedEnvList.contains(devopsClusterRepVO.getId())));
 
-        devopsClusterRepDTOPage.setList(fromClusterE2ClusterWithNodesDTO(devopsClusterRepVOPageInfo.getList(), projectId));
+        devopsClusterRepDTOPage.setContent(fromClusterE2ClusterWithNodesDTO(devopsClusterRepVOPageInfo.getContent(), projectId));
         return devopsClusterRepDTOPage;
     }
 
@@ -429,7 +429,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
         if (CollectionUtils.isEmpty(paramList)) {
             //如果不分页
-            if (pageable.getPageSize() == 0) {
+            if (pageable.getSize() == 0) {
                 Set<Long> devopsProjectIds = devopsClusterProPermissionService.baseListByClusterId(clusterId).stream()
                         .map(DevopsClusterProPermissionDTO::getProjectId)
                         .collect(Collectors.toSet());
@@ -439,9 +439,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 return PageInfoUtil.createPageFromList(projectReqVOList, pageable);
             } else {
                 // 如果不搜索
-                Page<DevopsClusterProPermissionDTO> relationPage = PageHelper.startPage(
-                        pageable.getPageNumber(), pageable.getPageSize())
-                        .doSelectPageInfo(() -> devopsClusterProPermissionService.baseListByClusterId(clusterId));
+                Page<DevopsClusterProPermissionDTO> relationPage = PageHelper.doPage(pageable, () -> devopsClusterProPermissionService.baseListByClusterId(clusterId));
                 return ConvertUtils.convertPage(relationPage, permission -> {
                     if (permission.getProjectId() == null) {
                         return null;
@@ -537,7 +535,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         Page<DevopsEnvPodDTO> devopsEnvPodDTOPageInfo = basePageQueryPodsByNodeName(clusterId, nodeName, pageable, searchParam);
         Page<DevopsEnvPodVO> envPodVOPageInfo = ConvertUtils.convertPage(devopsEnvPodDTOPageInfo, DevopsEnvPodVO.class);
 
-        envPodVOPageInfo.setList(devopsEnvPodDTOPageInfo.getList().stream().map(this::podDTO2VO).collect(Collectors.toList()));
+        envPodVOPageInfo.setContent(devopsEnvPodDTOPageInfo.getContent().stream().map(this::podDTO2VO).collect(Collectors.toList()));
         return envPodVOPageInfo;
     }
 
@@ -600,12 +598,11 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     public Page<DevopsClusterDTO> basePageClustersByOptions(Long projectId, Boolean doPage, PageRequest pageable, String params) {
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable))
-                .doSelectPageInfo(
-                        () -> devopsClusterMapper.listClusters(
-                                projectId,
-                                TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                                TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
+        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
+                () -> devopsClusterMapper.listClusters(
+                        projectId,
+                        TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                        TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
     }
 
     @Override
@@ -628,7 +625,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     public Page<DevopsEnvPodDTO> basePageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageable, String searchParam) {
         Map<String, Object> paramMap = TypeUtil.castMapParams(searchParam);
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> devopsClusterMapper.pageQueryPodsByNodeName(
+        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> devopsClusterMapper.pageQueryPodsByNodeName(
                 clusterId, nodeName,
                 TypeUtil.cast(paramMap.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(paramMap.get(TypeUtil.PARAMS))));
@@ -715,7 +712,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
      */
     private List<ClusterWithNodesVO> fromClusterE2ClusterWithNodesDTO(List<DevopsClusterRepVO> devopsClusterRepVOS, Long projectId) {
         // default three records of nodes in the instance
-        PageRequest pageable = PageRequest.of(1, 3);
+        PageRequest pageable = new PageRequest(1, 3);
 
         return devopsClusterRepVOS.stream().map(cluster -> {
             ClusterWithNodesVO clusterWithNodesDTO = new ClusterWithNodesVO();

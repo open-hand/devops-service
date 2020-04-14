@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
@@ -37,6 +37,7 @@ import io.choerodon.devops.infra.mapper.AppServiceVersionReadmeMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 @Service
 public class AppServiceVersionServiceImpl implements AppServiceVersionService {
@@ -265,15 +266,14 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         if (!market) {
             Boolean share = !(appServiceDTO.getProjectId() == null || appServiceDTO.getProjectId().equals(projectId));
             if (doPage != null && doPage) {
-                applicationVersionDTOPageInfo = PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable))
-                        .doSelectPageInfo(() -> appServiceVersionMapper.listByAppServiceIdAndVersion(appServiceId,
-                                appServiceVersionId,
-                                projectId,
-                                share,
-                                deployOnly,
-                                TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
-                                PageRequestUtil.checkSortIsEmpty(pageable), version));
+                applicationVersionDTOPageInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceVersionMapper.listByAppServiceIdAndVersion(appServiceId,
+                        appServiceVersionId,
+                        projectId,
+                        share,
+                        deployOnly,
+                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
+                        PageRequestUtil.checkSortIsEmpty(pageable), version));
             } else {
                 applicationVersionDTOPageInfo = new Page<>();
                 List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppServiceIdAndVersion(appServiceId, appServiceVersionId, projectId, share, deployOnly,
@@ -281,9 +281,9 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                         TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
                         PageRequestUtil.checkSortIsEmpty(pageable), version);
                 if (doPage == null) {
-                    applicationVersionDTOPageInfo.setList(appServiceVersionDTOS.stream().limit(20).collect(Collectors.toList()));
+                    applicationVersionDTOPageInfo.setContent(appServiceVersionDTOS.stream().limit(20).collect(Collectors.toList()));
                 } else {
-                    applicationVersionDTOPageInfo.setList(appServiceVersionDTOS);
+                    applicationVersionDTOPageInfo.setContent(appServiceVersionDTOS);
                 }
             }
         } else {
@@ -291,12 +291,11 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             List<Long> appServiceVersionIds = baseServiceClientOperator.listServiceVersionsForMarket(projectDTO.getOrganizationId(), deployOnly);
             if (appServiceVersionIds != null && !appServiceVersionIds.isEmpty()) {
                 if (doPage != null && doPage) {
-                    applicationVersionDTOPageInfo = PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable))
-                            .doSelectPageInfo(() -> appServiceVersionMapper.listByAppServiceVersionIdForMarket(appServiceId,
-                                    appServiceVersionIds,
-                                    TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                                    TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
-                                    PageRequestUtil.checkSortIsEmpty(pageable), version));
+                    applicationVersionDTOPageInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceVersionMapper.listByAppServiceVersionIdForMarket(appServiceId,
+                            appServiceVersionIds,
+                            TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                            TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
+                            PageRequestUtil.checkSortIsEmpty(pageable), version));
                 } else {
                     applicationVersionDTOPageInfo = new Page<>();
                     List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppServiceVersionIdForMarket(appServiceId, appServiceVersionIds,
@@ -304,9 +303,9 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                             TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
                             PageRequestUtil.checkSortIsEmpty(pageable), version);
                     if (doPage == null) {
-                        applicationVersionDTOPageInfo.setList(appServiceVersionDTOS.stream().limit(20).collect(Collectors.toList()));
+                        applicationVersionDTOPageInfo.setContent(appServiceVersionDTOS.stream().limit(20).collect(Collectors.toList()));
                     } else {
-                        applicationVersionDTOPageInfo.setList(appServiceVersionDTOS);
+                        applicationVersionDTOPageInfo.setContent(appServiceVersionDTOS);
                     }
                 }
             }
@@ -494,10 +493,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Override
     public Page<AppServiceVersionRespVO> pageShareVersionByAppId(Long appServiceId, PageRequest pageable, String params) {
         Map<String, Object> paramMap = TypeUtil.castMapParams(params);
-        Page<AppServiceVersionDTO> applicationDTOPageInfo = PageHelper.startPage(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> appServiceVersionMapper.listShareVersionByAppId(appServiceId, TypeUtil.cast(paramMap.get(TypeUtil.PARAMS))));
+        Page<AppServiceVersionDTO> applicationDTOPageInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceVersionMapper.listShareVersionByAppId(appServiceId, TypeUtil.cast(paramMap.get(TypeUtil.PARAMS))));
         return ConvertUtils.convertPage(applicationDTOPageInfo, AppServiceVersionRespVO.class);
     }
 
@@ -552,25 +548,24 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                                                         String searchParam, Boolean isProjectOwner,
                                                         Long userId) {
         Sort sort = pageable.getSort();
-        String sortResult = "";
         if (sort != null) {
-            sortResult = Lists.newArrayList(pageable.getSort().iterator()).stream()
-                    .map(t -> {
-                        String property = t.getProperty();
-                        if (property.equals("version")) {
-                            property = "dav.version";
-                        } else if (property.equals("creationDate")) {
-                            property = "dav.creation_date";
-                        }
-                        return property + " " + t.getDirection();
-                    })
-                    .collect(Collectors.joining(","));
+            List<Sort.Order> newOrders = new ArrayList<>();
+            sort.iterator().forEachRemaining(s -> {
+                String property = s.getProperty();
+                if (property.equals("version")) {
+                    property = "dav.version";
+                } else if (property.equals("creationDate")) {
+                    property = "dav.creation_date";
+                }
+                newOrders.add(new Sort.Order(s.getDirection(), property));
+            });
+            pageable.setSort(new Sort(newOrders));
         }
 
         Page<AppServiceVersionDTO> applicationVersionDTOPageInfo;
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParam);
         applicationVersionDTOPageInfo = PageHelper
-                .startPage(pageable.getPageNumber(), pageable.getPageSize(), sortResult).doSelectPageInfo(() -> appServiceVersionMapper.listApplicationVersion(projectId, appServiceId,
+                .doPageAndSort(pageable, () -> appServiceVersionMapper.listApplicationVersion(projectId, appServiceId,
                         TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS)), isProjectOwner, userId));
         return applicationVersionDTOPageInfo;
@@ -632,7 +627,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     public List<AppServiceVersionDTO> listAppServiceVersionByIdsAndProjectId(Set<Long> ids, Long projectId, String params) {
         List<AppServiceVersionDTO> appServiceVersionDTOS = new ArrayList<>();
         List<Long> appServiceIds = applicationService.listAppByProjectId(projectId, false, null, null)
-                .getList().stream().map(AppServiceVO::getId).collect(Collectors.toList());
+                .getContent().stream().map(AppServiceVO::getId).collect(Collectors.toList());
         Set<Long> localProjectIds = new HashSet<>();
         Set<Long> shareServiceIds = new HashSet<>();
         // 分别获取本项目的应用服务和共享服务
