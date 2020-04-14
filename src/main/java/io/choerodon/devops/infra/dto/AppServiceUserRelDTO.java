@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by n!Ck
@@ -12,7 +12,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  */
 
 @Table(name = "devops_app_service_user_rel")
-public class AppServiceUserRelDTO extends BaseDTO {
+public class AppServiceUserRelDTO extends AuditDomain {
     private Long iamUserId;
     private Long appServiceId;
 

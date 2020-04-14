@@ -6,14 +6,14 @@ import javax.persistence.*;
 import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.devops.api.vo.polaris.PolarisSummaryItemContentVO;
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author zmf
  * @since 2/17/20
  */
 @Table(name = "devops_polaris_category_result")
-public class DevopsPolarisCategoryResultDTO extends BaseDTO {
+public class DevopsPolarisCategoryResultDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @ApiModelProperty("自增主键")

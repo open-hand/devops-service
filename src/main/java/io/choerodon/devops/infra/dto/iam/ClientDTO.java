@@ -7,13 +7,13 @@ import javax.validation.constraints.Size;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author superlee
  * @since 2019-04-22
  */
-public class ClientDTO extends BaseDTO {
+public class ClientDTO extends AuditDomain {
 
     private static final String REGEX = "^[a-z0-9A-Z]+$";
 

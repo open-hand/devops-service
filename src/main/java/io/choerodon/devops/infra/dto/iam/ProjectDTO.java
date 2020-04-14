@@ -4,13 +4,13 @@ import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author superlee
  * @since 2019-04-22
  */
-public class ProjectDTO extends BaseDTO {
+public class ProjectDTO extends AuditDomain {
 
     @ApiModelProperty(value = "主键ID/非必填")
     private Long id;

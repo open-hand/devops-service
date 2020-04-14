@@ -2,13 +2,13 @@ package io.choerodon.devops.infra.dto.iam;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author zongw.lee@gmail.com
  * @since 2019/7/30
  */
-public class ApplicationDTO extends BaseDTO {
+public class ApplicationDTO extends AuditDomain {
     @ApiModelProperty(value = "主键ID/非必填")
     private Long id;
 

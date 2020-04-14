@@ -7,7 +7,7 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * 按类别分的资源详细扫描结果
@@ -16,7 +16,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * @since 2/17/20
  */
 @Table(name = "devops_polaris_category_detail")
-public class DevopsPolarisCategoryDetailDTO extends BaseDTO {
+public class DevopsPolarisCategoryDetailDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @ApiModelProperty("自增id")

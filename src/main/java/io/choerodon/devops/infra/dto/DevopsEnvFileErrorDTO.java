@@ -2,10 +2,10 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.*;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 @Table(name = "devops_env_file_error")
-public class DevopsEnvFileErrorDTO extends BaseDTO {
+public class DevopsEnvFileErrorDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

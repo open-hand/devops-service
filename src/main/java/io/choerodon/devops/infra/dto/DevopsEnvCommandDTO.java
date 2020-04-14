@@ -2,10 +2,10 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.*;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 @Table(name = "devops_env_command")
-public class DevopsEnvCommandDTO extends BaseDTO {
+public class DevopsEnvCommandDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

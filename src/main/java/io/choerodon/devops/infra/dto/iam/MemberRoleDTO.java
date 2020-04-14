@@ -1,12 +1,12 @@
 package io.choerodon.devops.infra.dto.iam;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author superlee
  * @since 2019-04-23
  */
-public class MemberRoleDTO extends BaseDTO {
+public class MemberRoleDTO extends AuditDomain {
     private Long id;
 
     private Long roleId;

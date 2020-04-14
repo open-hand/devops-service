@@ -2,13 +2,13 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.*;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by ernst on 2018/5/12.
  */
 @Table(name = "devops_app_service_share_rule")
-public class AppServiceShareRuleDTO extends BaseDTO {
+public class AppServiceShareRuleDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -5,7 +5,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by n!Ck
@@ -14,7 +14,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Description:
  */
 @Table(name = "devops_certification_file")
-public class CertificationFileDTO extends BaseDTO {
+public class CertificationFileDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

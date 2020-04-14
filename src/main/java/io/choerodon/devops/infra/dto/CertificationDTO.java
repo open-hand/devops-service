@@ -5,7 +5,7 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by n!Ck
@@ -14,7 +14,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Description:
  */
 @Table(name = "devops_certification")
-public class CertificationDTO extends BaseDTO {
+public class CertificationDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

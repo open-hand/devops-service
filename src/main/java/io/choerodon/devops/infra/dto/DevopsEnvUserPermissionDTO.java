@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by n!Ck
@@ -12,7 +12,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  */
 
 @Table(name = "devops_env_user_permission")
-public class DevopsEnvUserPermissionDTO extends BaseDTO {
+public class DevopsEnvUserPermissionDTO extends AuditDomain {
     private String loginName;
     private Long iamUserId;
     private String realName;

@@ -3,7 +3,7 @@ package io.choerodon.devops.infra.dto;
 import java.util.Map;
 import javax.persistence.*;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by n!Ck
@@ -13,7 +13,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  */
 
 @Table(name = "devops_secret")
-public class DevopsSecretDTO extends BaseDTO {
+public class DevopsSecretDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
