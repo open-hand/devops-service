@@ -42,7 +42,7 @@ public class DevopsExcetionHandler {
             LOGGER.trace("exception message {}", exception);
         }
         return new ResponseEntity<>(
-                new ExceptionResponse(true, exception.getCode(), message != null ? message : exception.getTrace()),
+                new ExceptionResponse(exception.getCode(), message != null ? message : exception.getTrace()),
                 HttpStatus.BAD_REQUEST);
     }
 

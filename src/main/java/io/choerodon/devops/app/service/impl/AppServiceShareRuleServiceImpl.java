@@ -69,21 +69,18 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     @Override
     public Page<AppServiceShareRuleVO> pageByOptions(Long projectId, Long appServiceId, PageRequest pageable, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
-        Page<AppServiceShareRuleDTO> devopsProjectConfigDTOPageInfo = PageHelper.startPage(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(
+        Page<AppServiceShareRuleDTO> devopsProjectConfigDTOPageInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                 () -> appServiceShareRuleMapper.listByOptions(appServiceId,
                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(mapParams.get(TypeUtil.PARAMS))));
         Page<AppServiceShareRuleVO> shareRuleVOPageInfo = ConvertUtils.convertPage(devopsProjectConfigDTOPageInfo, AppServiceShareRuleVO.class);
-        List<AppServiceShareRuleVO> appServiceShareRuleVOS = shareRuleVOPageInfo.getList().stream().peek(t -> {
+        List<AppServiceShareRuleVO> appServiceShareRuleVOS = shareRuleVOPageInfo.getContent().stream().peek(t -> {
             if (t.getProjectId() != null) {
                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(t.getProjectId());
                 t.setProjectName(projectDTO.getName());
             }
         }).collect(Collectors.toList());
-        shareRuleVOPageInfo.setList(appServiceShareRuleVOS);
+        shareRuleVOPageInfo.setContent(appServiceShareRuleVOS);
         return shareRuleVOPageInfo;
     }
 

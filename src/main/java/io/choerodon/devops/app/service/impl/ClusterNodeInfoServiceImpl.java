@@ -148,8 +148,8 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
 
     @Override
     public Page<ClusterNodeInfoVO> pageClusterNodeInfo(Long clusterId, Long projectId, PageRequest pageable) {
-        long start = (long) (pageable.getPageNumber() - 1) * (long) pageable.getPageSize();
-        long stop = start + (long) pageable.getPageSize() - 1;
+        long start = (long) (pageable.getPage() - 1) * (long) pageable.getSize();
+        long stop = start + (long) pageable.getSize() - 1;
         String redisKey = getRedisClusterKey(clusterId, projectId);
 
         long total = stringRedisTemplate.opsForList().size(redisKey);
@@ -159,16 +159,16 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                 .stream()
                 .map(node -> JSONObject.parseObject(node, ClusterNodeInfoVO.class))
                 .collect(Collectors.toList());
-        Page<ClusterNodeInfoVO> result = new PageInfo();
-        if (total < pageable.getPageSize() * pageable.getPageNumber()) {
-            result.setSize(TypeUtil.objToInt(total) - (pageable.getPageSize() * (pageable.getPageNumber() - 1)));
+        Page<ClusterNodeInfoVO> result = new Page<>();
+        if (total < pageable.getSize() * pageable.getPage()) {
+            result.setSize(TypeUtil.objToInt(total) - (pageable.getSize() * (pageable.getPage() - 1)));
         } else {
-            result.setSize(pageable.getPageSize());
+            result.setSize(pageable.getSize());
         }
-        result.setPageSize(pageable.getPageSize());
-        result.setPageNum(pageable.getPageNumber());
-        result.setTotal(total);
-        result.setList(nodes);
+        result.setSize(pageable.getSize());
+        result.setNumber(pageable.getPage());
+        result.setTotalElements(total);
+        result.setContent(nodes);
         return result;
     }
 

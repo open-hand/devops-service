@@ -126,7 +126,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     public Page<PipelineVO> pageByOptions(Long projectId, PipelineSearchVO pipelineSearchVO, PageRequest pageable) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        String sortSql = PageRequestHelper.getSortSql(pageable.getSort());
+        String sortSql = PageRequestUtil.getOrderBy(pageable.getSort());
         String sortSqlUnder = HumpToUnderlineUtil.toUnderLine(sortSql);
         List<PipelineVO> pipelineVOS = ConvertUtils.convertList(pipelineMapper.listByOptions(projectId, pipelineSearchVO, userId, sortSqlUnder), PipelineVO.class);
         List<PipelineVO> pipelineVOList;

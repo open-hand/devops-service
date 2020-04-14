@@ -1,9 +1,6 @@
 package io.choerodon.devops.infra.util;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -34,7 +31,6 @@ public class PageRequestUtil {
         return index;
     }
 
-
     /**
      * 简单的将page对象中的排序字段转换为下划线形式
      *
@@ -63,14 +59,17 @@ public class PageRequestUtil {
         }
     }
 
-    public static String getOrderBy(PageRequest pageRequest) {
-        Sort sort = pageRequest.getSort();
+    public static String getOrderBy(Sort sort) {
         if (sort != null) {
-            return Lists.newArrayList(pageRequest.getSort().iterator()).stream()
+            return Lists.newArrayList(sort.iterator()).stream()
                     .map(t -> t.getProperty() + " " + t.getDirection())
                     .collect(Collectors.joining(","));
         }
         return "";
+    }
+
+    public static String getOrderBy(PageRequest pageRequest) {
+        return getOrderBy(pageRequest.getSort());
     }
 
     /**

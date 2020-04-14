@@ -161,7 +161,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
 
         Page<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator.pageProjectByOrgId(
                 Objects.requireNonNull(organizationId),
-                pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort(), name, code,
+                pageable.getPage(), pageable.getSize(), pageable.getSort(), name, code,
                 CollectionUtils.isEmpty(paramList) ? null : paramList.get(0));
         return ConvertUtils.convertPage(projectDTOPageInfo, ProjectReqVO.class);
     }

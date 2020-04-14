@@ -125,11 +125,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public Page<DevopsServiceVO> pageByInstance(Long projectId, Long envId, Long instanceId, PageRequest pageable, Long appServiceId, String searchParam) {
         Page<DevopsServiceVO> devopsServiceByPage = ConvertUtils.convertPage(basePageByOptions(
                 projectId, envId, instanceId, pageable, null, appServiceId), this::queryDtoToVo);
-        if (!devopsServiceByPage.getList().isEmpty()) {
-            devopsServiceByPage.getList().forEach(devopsServiceVO -> {
+        if (!devopsServiceByPage.getContent().isEmpty()) {
+            devopsServiceByPage.getContent().forEach(devopsServiceVO -> {
                 Page<DevopsIngressVO> devopsIngressVOPageInfo = devopsIngressService
-                        .basePageByOptions(projectId, null, devopsServiceVO.getId(), PageRequest.of(0, 100), null);
-                devopsServiceVO.setDevopsIngressVOS(devopsIngressVOPageInfo.getList());
+                        .basePageByOptions(projectId, null, devopsServiceVO.getId(), new PageRequest(0, 100), null);
+                devopsServiceVO.setDevopsIngressVOS(devopsIngressVOPageInfo.getContent());
             });
         }
         return devopsServiceByPage;
@@ -478,12 +478,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     .collect(Collectors.joining(","));
         }
 
-        int start = getBegin(pageable.getPageNumber(), pageable.getPageSize());
-        int stop = start + pageable.getPageSize();
+        int start = getBegin(pageable.getPage(), pageable.getSize());
+        int stop = start + pageable.getSize();
         //分页组件暂不支持级联查询，只能手写分页
         Page<DevopsServiceQueryDTO> result = new Page<>();
-        result.setPageSize(pageable.getPageSize());
-        result.setPageNum(pageable.getPageNumber());
+        result.setNumber(pageable.getPage());
+        result.setSize(pageable.getSize());
         int count;
         List<DevopsServiceQueryDTO> devopsServiceQueryDTOS;
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParam);
@@ -491,16 +491,16 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS)), appServiceId);
 
-        result.setTotal(count);
+        result.setTotalElements(count);
         List<String> paramList = TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS));
         devopsServiceQueryDTOS = devopsServiceMapper.listDevopsServiceByPage(
                 projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                 paramList, sortResult, appServiceId);
-        result.setList(devopsServiceQueryDTOS.subList(start, stop > devopsServiceQueryDTOS.size() ? devopsServiceQueryDTOS.size() : stop));
-        if (devopsServiceQueryDTOS.size() < pageable.getPageSize() * pageable.getPageNumber()) {
-            result.setSize(TypeUtil.objToInt(devopsServiceQueryDTOS.size()) - (pageable.getPageSize() * (pageable.getPageNumber() - 1)));
+        result.setContent(devopsServiceQueryDTOS.subList(start, stop > devopsServiceQueryDTOS.size() ? devopsServiceQueryDTOS.size() : stop));
+        if (devopsServiceQueryDTOS.size() < pageable.getSize() * pageable.getPage()) {
+            result.setSize(TypeUtil.objToInt(devopsServiceQueryDTOS.size()) - (pageable.getSize() * (pageable.getPage() - 1)));
         } else {
-            result.setSize(pageable.getPageSize());
+            result.setSize(pageable.getSize());
         }
         return result;
     }

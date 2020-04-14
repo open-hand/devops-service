@@ -85,11 +85,9 @@ public class SagaHandler {
         gitlabGroupService.createGroups(gitlabGroupPayload);
         //为新项目的三个组添加组织下管理员角色
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectPayload.getProjectId());
-        List<OrgAdministratorVO> orgAdministratorVOS = baseServiceClientOperator.listOrgAdministrator(projectDTO.getOrganizationId()).getList();
+        List<OrgAdministratorVO> orgAdministratorVOS = baseServiceClientOperator.listOrgAdministrator(projectDTO.getOrganizationId()).getContent();
         if (!CollectionUtils.isEmpty(orgAdministratorVOS)) {
-            orgAdministratorVOS.stream().forEach(orgAdministratorVO -> {
-                gitlabGroupMemberService.assignGitLabGroupMemeberForOwner(projectDTO, orgAdministratorVO.getId());
-            });
+            orgAdministratorVOS.forEach(orgAdministratorVO -> gitlabGroupMemberService.assignGitLabGroupMemeberForOwner(projectDTO, orgAdministratorVO.getId()));
         }
         return msg;
     }

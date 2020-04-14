@@ -218,8 +218,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     @Override
     public Page<DevopsCiPipelineRecordVO> pagingPipelineRecord(Long projectId, Long ciPipelineId, PageRequest pageable) {
-        Page<DevopsCiPipelineRecordVO> pipelineRecordInfo = PageHelper
-                .doPageAndSort(PageRequestUtil, () -> devopsCiPipelineRecordMapper.listByCiPipelineId(ciPipelineId));
+        Page<DevopsCiPipelineRecordVO> pipelineRecordInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> devopsCiPipelineRecordMapper.listByCiPipelineId(ciPipelineId));
         List<DevopsCiPipelineRecordVO> pipelineRecordVOList = pipelineRecordInfo.getContent();
         if (CollectionUtils.isEmpty(pipelineRecordVOList)) {
             return pipelineRecordInfo;

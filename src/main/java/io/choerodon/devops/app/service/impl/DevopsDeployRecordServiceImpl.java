@@ -65,12 +65,12 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         Page<DevopsDeployRecordVO> devopsDeployRecordVOPageInfo = ConvertUtils.convertPage(devopsDeployRecordDTOPageInfo, DevopsDeployRecordVO.class);
 
         //查询用户信息
-        List<Long> userIds = devopsDeployRecordVOPageInfo.getList().stream().map(DevopsDeployRecordVO::getDeployCreatedBy).collect(Collectors.toList());
-        Map<Long, IamUserDTO> userMap = new HashMap<>(pageable.getPageSize());
+        List<Long> userIds = devopsDeployRecordVOPageInfo.getContent().stream().map(DevopsDeployRecordVO::getDeployCreatedBy).collect(Collectors.toList());
+        Map<Long, IamUserDTO> userMap = new HashMap<>(pageable.getSize());
         baseServiceClientOperator.listUsersByIds(userIds).forEach(user -> userMap.put(user.getId(), user));
 
         //设置环境信息以及用户信息
-        devopsDeployRecordVOPageInfo.getList().forEach(devopsDeployRecordVO -> {
+        devopsDeployRecordVOPageInfo.getContent().forEach(devopsDeployRecordVO -> {
             if (devopsDeployRecordVO.getDeployType().equals("auto") && !devopsDeployRecordVO.getDeployStatus().equals("success")) {
                 pipelineService.setPipelineRecordDetail(projectOwnerOrRoot, devopsDeployRecordVO);
             }
@@ -102,7 +102,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         }
         maps.put(TypeUtil.SEARCH_PARAM, cast);
 
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> devopsDeployRecordMapper.listByProjectId(projectId,
+        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> devopsDeployRecordMapper.listByProjectId(projectId,
                 TypeUtil.cast(maps.get(TypeUtil.PARAMS)),
                 TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM))
         ));

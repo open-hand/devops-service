@@ -250,7 +250,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         Page<DevopsCustomizeResourceDTO> devopsCustomizeResourceDTOPageInfo = pageDevopsCustomizeResourceE(envId, pageable, params);
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
         Page<DevopsCustomizeResourceVO> devopsCustomizeResourceVOPageInfo = ConvertUtils.convertPage(devopsCustomizeResourceDTOPageInfo, DevopsCustomizeResourceVO.class);
-        devopsCustomizeResourceVOPageInfo.getList().forEach(devopsCustomizeResourceVO -> {
+        devopsCustomizeResourceVOPageInfo.getContent().forEach(devopsCustomizeResourceVO -> {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
             devopsCustomizeResourceVO.setEnvStatus(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
         });
@@ -415,10 +415,9 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     @Override
     public Page<DevopsCustomizeResourceDTO> pageDevopsCustomizeResourceE(Long envId, PageRequest pageable, String params) {
         Map maps = TypeUtil.castMapParams(params);
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable))
-                .doSelectPageInfo(() -> devopsCustomizeResourceMapper.pageResources(envId,
-                        maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                        maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
+        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> devopsCustomizeResourceMapper.pageResources(envId,
+                maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
     }
 
     @Override

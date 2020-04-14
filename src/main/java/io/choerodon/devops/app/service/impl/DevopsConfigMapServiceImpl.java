@@ -315,8 +315,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     @Override
     public Page<DevopsConfigMapDTO> basePageByEnv(Long envId, PageRequest pageable, String params, Long appServiceId) {
         Map maps = gson.fromJson(params, Map.class);
-        return PageHelper
-                .doPage(pageable.getPage(), pageable.getSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> devopsConfigMapMapper.listByEnv(envId,
+        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> devopsConfigMapMapper.listByEnv(envId,
                         TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(maps.get(TypeUtil.PARAMS)),
                         appServiceId));

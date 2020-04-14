@@ -195,7 +195,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 List<IamUserDTO> iamUserDTOS = baseServiceClientOperator
                         .listProjectOwnerByProjectId(devopsEnvironmentDTO.getProjectId());
                 if (!iamUserDTOS.isEmpty()) {
-                    iamUserDTOS.stream().forEach(v -> {
+                    iamUserDTOS.forEach(v -> {
                         NoticeSendDTO.User user = new NoticeSendDTO.User();
                         user.setEmail(v.getEmail());
                         user.setId(v.getId());
