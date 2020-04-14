@@ -9,9 +9,8 @@ import org.apache.ibatis.annotations.Param;
 import io.choerodon.devops.api.vo.BaseApplicationServiceVO;
 import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
 import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
-import io.choerodon.mybatis.common.Mapper;
 
-public interface DevopsEnvAppServiceMapper extends Mapper<DevopsEnvAppServiceDTO> {
+public interface DevopsEnvAppServiceMapper extends BaseMapper<DevopsEnvAppServiceDTO> {
 
     /**
      * 当记录不存在时，插入记录

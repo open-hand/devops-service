@@ -2,7 +2,6 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 
-import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsEnvResourceDTO;
@@ -10,7 +9,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvResourceDTO;
 /**
  * Created by younger on 2018/4/24.
  */
-public interface DevopsEnvResourceMapper extends Mapper<DevopsEnvResourceDTO> {
+public interface DevopsEnvResourceMapper extends BaseMapper<DevopsEnvResourceDTO> {
     List<DevopsEnvResourceDTO> listJobs(@Param("commandId") Long commandId);
 
     List<DevopsEnvResourceDTO> queryResource(@Param("instanceId") Long instanceId,

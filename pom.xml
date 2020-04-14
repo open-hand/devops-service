@@ -10,7 +10,7 @@
     <parent>
         <groupId>io.choerodon</groupId>
         <artifactId>choerodon-framework-parent</artifactId>
-        <version>0.16.0.RELEASE</version>
+        <version>0.16.2-SNAPSHOT</version>
     </parent>
 
 
@@ -22,42 +22,32 @@
     </properties>
 
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>Choerodon Release</id>
-            <name>Choerodon Release Repository</name>
-            <url>https://nexus.choerodon.com.cn/repository/choerodon-release</url>
-        </pluginRepository>
-    </pluginRepositories>
+    <!--<pluginRepositories>-->
+        <!--<pluginRepository>-->
+            <!--<id>Choerodon Release</id>-->
+            <!--<name>Choerodon Release Repository</name>-->
+            <!--<url>https://nexus.choerodon.com.cn/repository/choerodon-release</url>-->
+        <!--</pluginRepository>-->
+    <!--</pluginRepositories>-->
 
 
     <dependencies>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
         <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-oauth-resource</artifactId>
+            <groupId>org.hzero.starter</groupId>
+            <artifactId>hzero-starter-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-swagger</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-mybatis</artifactId>
+            <groupId>org.hzero.starter</groupId>
+            <artifactId>hzero-starter-mybatis-mapper</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-websocket</artifactId>
+            <groupId>org.hzero.starter</groupId>
+            <artifactId>hzero-starter-websocket</artifactId>
         </dependency>
 
         <dependency>
@@ -66,8 +56,8 @@
         </dependency>
 
         <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-metric</artifactId>
+            <groupId>org.hzero.starter</groupId>
+            <artifactId>hzero-starter-metric</artifactId>
         </dependency>
 
         <dependency>
@@ -76,8 +66,8 @@
         </dependency>
 
         <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-feign-replay</artifactId>
+            <groupId>org.hzero.starter</groupId>
+            <artifactId>hzero-starter-feign-replay</artifactId>
         </dependency>
 
         <dependency>
@@ -86,8 +76,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-asgard</artifactId>
+            <groupId>org.hzero.starter</groupId>
+            <artifactId>hzero-starter-asgard</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -297,7 +287,7 @@
         </dependency>
 
     </dependencies>
-        <build>
+    <build>
         <finalName>app</finalName>
-        </build>
+    </build>
 </project>

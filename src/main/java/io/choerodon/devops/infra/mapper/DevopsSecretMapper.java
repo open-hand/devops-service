@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.devops.infra.dto.DevopsSecretDTO;
-import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -13,7 +12,7 @@ import org.apache.ibatis.annotations.Param;
  * Time: 上午10:13
  * Description:
  */
-public interface DevopsSecretMapper extends Mapper<DevopsSecretDTO> {
+public interface DevopsSecretMapper extends BaseMapper<DevopsSecretDTO> {
 
     DevopsSecretDTO queryById(@Param("secretId") Long secretId);
 

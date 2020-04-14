@@ -5,13 +5,12 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsDeployRecordInstanceDTO;
-import io.choerodon.mybatis.common.Mapper;
 
 /**
  * @author zmf
  * @since 2/26/20
  */
-public interface DevopsDeployRecordInstanceMapper extends Mapper<DevopsDeployRecordInstanceDTO> {
+public interface DevopsDeployRecordInstanceMapper extends BaseMapper<DevopsDeployRecordInstanceDTO> {
     void batchInsert(@Param("items") List<DevopsDeployRecordInstanceDTO> items);
 
     /**

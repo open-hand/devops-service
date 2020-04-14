@@ -6,7 +6,7 @@ import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
 
-public interface DevopsPvProPermissionMapper extends Mapper<DevopsPvProPermissionDTO> {
+public interface DevopsPvProPermissionMapper extends BaseMapper<DevopsPvProPermissionDTO> {
     void batchInsert(@Param("pvId") Long pvId, @Param("projectIds") List<Long> projectIds);
 
     void batchDeleteByPvIdsAndProjectId(@Param("pvIds") List<Long> pvIds, @Param("projectId") Long projectId);

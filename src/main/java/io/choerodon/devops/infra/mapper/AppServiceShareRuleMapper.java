@@ -6,12 +6,11 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.AppServiceShareRuleDTO;
-import io.choerodon.mybatis.common.Mapper;
 
 /**
  * Created by ernst on 2018/5/12.
  */
-public interface AppServiceShareRuleMapper extends Mapper<AppServiceShareRuleDTO> {
+public interface AppServiceShareRuleMapper extends BaseMapper<AppServiceShareRuleDTO> {
 
     List<AppServiceShareRuleDTO> listByOptions(@Param("appServiceId") Long appServiceId,
                                                @Param("searchParam") Map<String, Object> searchParam,

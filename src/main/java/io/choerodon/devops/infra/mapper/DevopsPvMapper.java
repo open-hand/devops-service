@@ -8,7 +8,7 @@ import tk.mybatis.mapper.common.Mapper;
 
 import io.choerodon.devops.infra.dto.DevopsPvDTO;
 
-public interface DevopsPvMapper extends Mapper<DevopsPvDTO> {
+public interface DevopsPvMapper extends BaseMapper<DevopsPvDTO> {
 
 
     List<DevopsPvDTO> listPvByOptions(@Param("organizationId") Long organizationId,

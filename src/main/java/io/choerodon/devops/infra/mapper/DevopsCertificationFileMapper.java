@@ -3,7 +3,6 @@ package io.choerodon.devops.infra.mapper;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.CertificationFileDTO;
-import io.choerodon.mybatis.common.Mapper;
 
 /**
  * Created by n!Ck
@@ -12,7 +11,7 @@ import io.choerodon.mybatis.common.Mapper;
  * Description:
  */
 
-public interface DevopsCertificationFileMapper extends Mapper<CertificationFileDTO> {
+public interface DevopsCertificationFileMapper extends BaseMapper<CertificationFileDTO> {
     CertificationFileDTO queryByCertificationId(@Param("certificationId") Long certificationId);
 }
 

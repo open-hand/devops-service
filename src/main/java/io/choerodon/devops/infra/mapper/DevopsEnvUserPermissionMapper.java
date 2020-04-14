@@ -3,7 +3,6 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO;
@@ -14,7 +13,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO;
  * Time: 9:17
  * Description:
  */
-public interface DevopsEnvUserPermissionMapper extends Mapper<DevopsEnvUserPermissionDTO> {
+public interface DevopsEnvUserPermissionMapper extends BaseMapper<DevopsEnvUserPermissionDTO> {
 
     List<DevopsEnvUserPermissionDTO> listUserEnvPermissionByOption(@Param("envId") Long envId,
                                                                    @Param("searchParam") Map<String, Object> searchParam,

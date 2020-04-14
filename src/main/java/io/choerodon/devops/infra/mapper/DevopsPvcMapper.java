@@ -7,7 +7,7 @@ import tk.mybatis.mapper.common.Mapper;
 import java.util.List;
 import java.util.Map;
 
-public interface DevopsPvcMapper extends Mapper<DevopsPvcDTO> {
+public interface DevopsPvcMapper extends BaseMapper<DevopsPvcDTO> {
     List<DevopsPvcDTO> listByOption(@Param("envId") Long envId,
                                     @Param("searchParam") Map<String, Object> searchParam,
                                     @Param("params") List<String> params);
