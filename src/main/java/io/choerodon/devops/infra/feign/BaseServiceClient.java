@@ -27,16 +27,16 @@ import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
  * Created by younger on 2018/3/29.
  */
 
-@FeignClient(value = "base-service", fallback = BaseServiceClientFallback.class)
+@FeignClient(value = "hzero-iam", fallback = BaseServiceClientFallback.class)
 public interface BaseServiceClient {
 
-    @GetMapping(value = "/v1/projects/{projectId}")
+    @GetMapping(value = "/choerodon/v1/projects/{projectId}")
     ResponseEntity<ProjectDTO> queryIamProject(@PathVariable("projectId") Long projectId);
 
-    @GetMapping("/v1/organizations/self")
+    @GetMapping(value = "/choerodon/v1/organizations/self")
     ResponseEntity<OrganizationDTO> queryOrganization();
 
-    @GetMapping("/v1/organizations/{organizationId}")
+    @GetMapping(value = "/choerodon/v1/organizations/{organizationId}")
     ResponseEntity<OrganizationDTO> queryOrganizationById(@PathVariable("organizationId") Long organizationId);
 
     /**
@@ -45,58 +45,58 @@ public interface BaseServiceClient {
      * @param ids id集合，去重
      * @return 组织集合
      */
-    @PostMapping("/v1/organizations/ids")
+    @PostMapping(value = "/choerodon/v1/organizations/ids")
     ResponseEntity<List<OrganizationDTO>> queryOrgByIds(@RequestBody Set<Long> ids);
 
-    @GetMapping("v1/organizations")
+    @GetMapping(value = "/choerodon/v1/organizations")
     ResponseEntity<Page<OrganizationDTO>> listOrganizations(@RequestParam("page") Integer page,
                                                             @RequestParam("size") Integer size);
 
 
-    @PostMapping(value = "/v1/project/{projectId}/memberRoles/single")
+    @PostMapping(value = "/choerodon/v1/project/{projectId}/memberRoles/single")
     ResponseEntity<MemberRoleVO> addMemberRole(@PathVariable("projectId") Long projectId, @RequestBody @Valid MemberRoleVO memberRoleVo);
 
-    @GetMapping(value = "/v1/users")
+    @GetMapping(value = "/choerodon/v1/users")
     ResponseEntity<IamUserDTO> queryByLoginName(@RequestParam("login_name") String loginName);
 
-    @GetMapping(value = "/v1/users/{id}/info")
+    @GetMapping(value = "/choerodon/v1/users/{id}/info")
     ResponseEntity<IamUserDTO> queryById(@PathVariable("id") Long id);
 
-    @GetMapping(value = "v1/projects/{project_id}/users?id={id}")
+    @GetMapping(value = "/choerodon/v1/projects/{project_id}/users?id={id}")
     ResponseEntity<Page<IamUserDTO>> queryInProjectById(@PathVariable("project_id") Long projectId, @PathVariable("id") Long id);
 
 
-    @PostMapping(value = "/v1/users/ids")
+    @PostMapping(value = "/choerodon/v1/users/ids")
     ResponseEntity<List<IamUserDTO>> listUsersByIds(@RequestBody Long[] ids, @RequestParam(value = "only_enabled") Boolean onlyEnabled);
 
-    @GetMapping(value = "/v1/projects/{project_id}/users")
+    @GetMapping(value = "/choerodon/v1/projects/{project_id}/users")
     ResponseEntity<Page<IamUserDTO>> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);
 
-    @PostMapping(value = "/v1/projects/{project_id}/role_members/users/count")
+    @PostMapping(value = "/choerodon/v1/projects/{project_id}/role_members/users/count")
     ResponseEntity<List<RoleVO>> listRolesWithUserCountOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
                                                                       @RequestBody(required = false) @Valid RoleAssignmentSearchVO roleAssignmentSearchVO);
 
-    @PostMapping(value = "/v1/projects/{project_id}/gitlab_role/users")
+    @PostMapping(value = "/choerodon/v1/projects/{project_id}/gitlab_role/users")
     ResponseEntity<List<IamUserDTO>> listUsersWithGitlabLabel(
             @PathVariable(name = "project_id") Long projectId,
             @RequestBody RoleAssignmentSearchVO roleAssignmentSearchVO,
             @RequestParam(name = "label_name") String labelName);
 
-    @GetMapping(value = "/v1/users/{id}/project_roles")
+    @GetMapping(value = "/choerodon/v1/users/{id}/project_roles")
     ResponseEntity<Page<ProjectWithRoleVO>> listProjectWithRole(@PathVariable("id") Long id,
                                                                     @RequestParam("page") int page,
                                                                     @RequestParam("size") int size);
 
-    @GetMapping(value = "/v1/roles/search")
+    @GetMapping(value = "/choerodon/v1/roles/search")
     ResponseEntity<Page<RoleVO>> queryRoleIdByCode(@RequestParam(value = "code", required = false) String code);
 
 
-    @PostMapping("/v1/organizations/{organization_id}/projects")
+    @PostMapping(value = "/choerodon/v1/organizations/{organization_id}/projects")
     ResponseEntity<ProjectDTO> createProject(@PathVariable(name = "organization_id") Long organizationId,
                                              @RequestBody @Valid ProjectCreateDTO projectCreateDTO);
 
 
-    @GetMapping("/v1/organizations/{organization_id}/projects")
+    @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/projects")
     ResponseEntity<Page<ProjectDTO>> pageProjectsByOrgId(@PathVariable(name = "organization_id") Long organizationId,
                                                              @RequestParam Map<String, Object> pageable,
                                                              @RequestParam(name = "name", required = false) String name,
@@ -104,30 +104,30 @@ public interface BaseServiceClient {
                                                              @RequestParam(name = "enabled", required = false) Boolean enabled,
                                                              @RequestParam(value = "params", required = false) String params);
 
-    @GetMapping(value = "/v1/applications/{id}")
+    @GetMapping(value = "/choerodon/v1/applications/{id}")
     ResponseEntity<ApplicationDTO> queryAppById(@PathVariable(value = "id") Long id);
 
-    @PutMapping(value = "/v1/projects/{project_id}/publish_version_infos/{id}/fail")
+    @PutMapping(value = "/choerodon/v1/projects/{project_id}/publish_version_infos/{id}/fail")
     ResponseEntity<Boolean> publishFail(@PathVariable("project_id") Long projectId,
                                         @PathVariable("id") Long id,
                                         @RequestParam("error_code") String errorCode,
                                         @RequestParam("fix_flag") Boolean fixFlag);
 
-    @PostMapping(value = "/v1/applications/{app_download_recode_id}/complete_downloading")
+    @PostMapping(value = "/choerodon/v1/applications/{app_download_recode_id}/complete_downloading")
     ResponseEntity<String> completeDownloadApplication(@PathVariable("app_download_recode_id") Long appDownloadRecordId,
                                                        @RequestParam("app_version_id") Long appVersionId,
                                                        @RequestParam("organization_id") Long organizationId,
                                                        @RequestBody List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS);
 
-    @PutMapping(value = "/v1/applications/{app_download_record_id}/fail_downloading")
+    @PutMapping(value = "/choerodon/v1/applications/{app_download_record_id}/fail_downloading")
     ResponseEntity<String> failToDownloadApplication(@PathVariable("app_download_record_id") Long appDownloadRecordId,
                                                      @RequestParam("app_version_id") Long appVersionId,
                                                      @RequestParam("organization_id") Long organizationId);
 
-    @GetMapping(value = "/v1/remote_token/authorization/check/latest")
+    @GetMapping(value = "/choerodon/v1/remote_token/authorization/check/latest")
     ResponseEntity<RemoteTokenAuthorizationVO> checkLatestToken();
 
-    @PostMapping(value = "/v1/projects/ids")
+    @PostMapping(value = "/choerodon/v1/projects/ids")
     ResponseEntity<List<ProjectDTO>> queryByIds(@RequestBody Set<Long> ids);
 
 
@@ -138,14 +138,14 @@ public interface BaseServiceClient {
      * @param projectCode    项目code
      * @return 根据组织Id及项目code查询项目
      */
-    @GetMapping(value = "/v1/organizations/{organization_id}/projects/by_code")
+    @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/projects/by_code")
     ResponseEntity<ProjectDTO> queryProjectByCodeAndOrgId(@PathVariable(name = "organization_id") Long organizationId,
                                                           @RequestParam(name = "code") String projectCode);
 
-    @GetMapping("/v1/organizations/{organization_id}/services/{app_type}")
+    @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/services/{app_type}")
     ResponseEntity<Set<Long>> listService(@PathVariable("organization_id") Long organizationId, @PathVariable("app_type") String appType);
 
-    @GetMapping("/v1/organizations/{organization_id}/services/{app_type}/versions")
+    @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/services/{app_type}/versions")
     ResponseEntity<Set<Long>> listSvcVersion(@PathVariable("organization_id") Long organizationId, @PathVariable("app_type") String appType);
 
     /**
@@ -155,7 +155,7 @@ public interface BaseServiceClient {
      * @param clientVO       clientVO
      * @return 分配结果
      */
-    @PostMapping(value = "/v1/organizations/{organization_id}/clients/wih_type")
+    @PostMapping(value = "/choerodon/v1/organizations/{organization_id}/clients/wih_type")
     ResponseEntity<ClientDTO> createClient(@PathVariable("organization_id") Long organizationId,
                                            @RequestBody @Valid ClientVO clientVO);
 
@@ -166,7 +166,7 @@ public interface BaseServiceClient {
      * @param clientId       clientId
      * @return 分配结果
      */
-    @DeleteMapping(value = "/v1/organizations/{organization_id}/clients/{client_id}")
+    @DeleteMapping(value = "/choerodon/v1/organizations/{organization_id}/clients/{client_id}")
     ResponseEntity deleteClient(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId);
 
     /**
@@ -176,17 +176,17 @@ public interface BaseServiceClient {
      * @param sourceId
      * @return
      */
-    @GetMapping(value = "/v1/organizations/{organization_id}/clients/source/{source_id}")
+    @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/clients/source/{source_id}")
     ResponseEntity<ClientDTO> queryClientBySourceId(@PathVariable("organization_id") Long organizationId, @PathVariable("source_id") Long sourceId);
 
 
-    @GetMapping("/v1/users/{id}/projects/{project_id}/check_is_gitlab_owner")
+    @GetMapping(value = "/choerodon/v1/users/{id}/projects/{project_id}/check_is_gitlab_owner")
     ResponseEntity<Boolean> checkIsGitlabProjectOwner(
             @PathVariable("id") Long id,
             @PathVariable("project_id") Long projectId);
 
     @ApiOperation(value = "判断用户是否为组织层root")
-    @GetMapping("/v1/users/{id}/projects/{project_id}/check_is_gitlab_org_owner")
+    @GetMapping(value = "/choerodon/v1/users/{id}/projects/{project_id}/check_is_gitlab_org_owner")
     ResponseEntity<Boolean> checkIsGitlabOrgOwner(@PathVariable("id") Long id,
                                                   @PathVariable("project_id") Long projectId);
 
@@ -196,16 +196,16 @@ public interface BaseServiceClient {
      * @param loginName 登录名
      * @return 用户信息
      */
-    @GetMapping("/v1/users")
+    @GetMapping(value = "/choerodon/v1/users")
     ResponseEntity<IamUserDTO> query(@RequestParam(name = "login_name") String loginName);
 
 
     @ApiOperation(value = "查询所有的Root用户 / DevOps服务迁移数据需要")
-    @GetMapping("/v1/users/admin_all")
+    @GetMapping(value = "/choerodon/v1/users/admin_all")
     ResponseEntity<List<IamUserDTO>> queryAllAdminUsers();
 
     @ApiOperation(value = "查询所有的组织管理员 / 修复数据时用到")
-    @GetMapping("/v1/users/admin_org_all")
+    @GetMapping(value = "/choerodon/v1/users/admin_org_all")
     ResponseEntity<List<IamUserDTO>> queryAllOrgRoot();
 
 
@@ -215,7 +215,7 @@ public interface BaseServiceClient {
      * @param id
      * @return
      */
-    @GetMapping("/v1/users/{id}/check_is_root")
+    @GetMapping(value = "/choerodon/v1/users/{id}/check_is_root")
     ResponseEntity<Boolean> checkIsRoot(@PathVariable("id") Long id);
 
     /**
@@ -225,7 +225,7 @@ public interface BaseServiceClient {
      * @param userId
      * @return
      */
-    @GetMapping(value = "/v1/organizations/{organization_id}/users/{user_id}/check_is_root")
+    @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/users/{user_id}/check_is_root")
     ResponseEntity<Boolean> checkIsOrgRoot(@PathVariable(name = "organization_id") Long organizationId,
                                            @PathVariable(name = "user_id") Long userId);
 
@@ -236,12 +236,12 @@ public interface BaseServiceClient {
      * @param projectId 项目id
      * @return true表示是
      */
-    @GetMapping("/v1/users/{id}/projects/{project_id}/check_is_owner")
+    @GetMapping(value = "/choerodon/v1/users/{id}/projects/{project_id}/check_is_owner")
     ResponseEntity<Boolean> checkIsProjectOwner(
             @PathVariable("id") Long id,
             @PathVariable("project_id") Long projectId);
 
-    @GetMapping("/v1/projects/{project_id}/owner/list")
+    @GetMapping(value = "/choerodon/v1/projects/{project_id}/owner/list")
     ResponseEntity<List<IamUserDTO>> listProjectOwnerByProjectId(@PathVariable("project_id") Long projectId);
 
     /**
@@ -249,11 +249,11 @@ public interface BaseServiceClient {
      * @param organizationId
      * @return
      */
-    @GetMapping("/v1/organizations/{organization_id}/check_is_new")
+    @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/check_is_new")
     ResponseEntity<Boolean> checkOrganizationIsNew(@PathVariable(name = "organization_id") Long organizationId);
 
 
-    @GetMapping("/v1/organizations/{organization_id}/org_administrator")
+    @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/org_administrator")
     ResponseEntity<Page<OrgAdministratorVO>> listOrgAdministrator(
             @PathVariable("organization_id") Long organizationId,
             @RequestParam("size") Integer size);

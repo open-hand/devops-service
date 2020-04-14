@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
  * Created by Sheep on 2019/5/15.
  */
 
-@FeignClient(value = "notify-service", fallback = NotifyServiceClientFallBack.class)
+@FeignClient(value = "hzero-message", fallback = NotifyServiceClientFallBack.class)
 public interface NotifyClient {
 
     @PostMapping("/v1/notices")
