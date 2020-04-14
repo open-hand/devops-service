@@ -3,8 +3,10 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.infra.dto.DevopsCustomizeResourceDTO;
 import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.infra.dto.DevopsCustomizeResourceDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * Created by Sheep on 2019/6/26.

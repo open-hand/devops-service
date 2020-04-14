@@ -3,16 +3,16 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import java.util.Set;
 
-import com.github.pagehelper.PageInfo;
 import org.springframework.web.multipart.MultipartFile;
 
-import org.springframework.data.domain.Pageable;
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.AppServiceVersionAndCommitVO;
 import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
 import io.choerodon.devops.api.vo.AppServiceVersionVO;
 import io.choerodon.devops.api.vo.DeployVersionVO;
 import io.choerodon.devops.infra.dto.AppServiceLatestVersionDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by Zenger on 2018/4/3.
@@ -60,7 +60,7 @@ public interface AppServiceVersionService {
      * @param version      模糊搜索参数
      * @return ApplicationVersionRespVO
      */
-    PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, Long appServiceVersionId, Boolean deployOnly, Boolean doPage, String params, Pageable pageable, String version);
+    Page<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, Long appServiceVersionId, Boolean deployOnly, Boolean doPage, String params, PageRequest pageable, String version);
 
     /**
      * 根据应用id查询需要升级的应用版本
@@ -120,7 +120,7 @@ public interface AppServiceVersionService {
      * @param params
      * @return
      */
-    PageInfo<AppServiceVersionRespVO> pageShareVersionByAppId(Long appServiceId, Pageable pageable, String params);
+    Page<AppServiceVersionRespVO> pageShareVersionByAppId(Long appServiceId, PageRequest pageable, String params);
 
 
     List<AppServiceLatestVersionDTO> baseListAppNewestVersion(Long projectId);
@@ -138,9 +138,9 @@ public interface AppServiceVersionService {
 
     AppServiceVersionDTO baseQueryByAppServiceIdAndVersion(Long appServiceId, String version);
 
-    PageInfo<AppServiceVersionDTO> basePageByOptions(Long projectId, Long appServiceId, Pageable pageable,
-                                                     String searchParam, Boolean isProjectOwner,
-                                                     Long userId);
+    Page<AppServiceVersionDTO> basePageByOptions(Long projectId, Long appServiceId, PageRequest pageable,
+                                                 String searchParam, Boolean isProjectOwner,
+                                                 Long userId);
 
     void baseUpdate(AppServiceVersionDTO appServiceVersionDTO);
 

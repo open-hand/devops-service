@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.PipelineSearchVO;
 import io.choerodon.devops.infra.dto.PipelineDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -22,6 +23,7 @@ public interface PipelineMapper extends BaseMapper<PipelineDTO> {
 
     /**
      * 通过流水线id,查询该流水线中的部署任务属于哪个环境
+     *
      * @param pipelineId
      * @return
      */

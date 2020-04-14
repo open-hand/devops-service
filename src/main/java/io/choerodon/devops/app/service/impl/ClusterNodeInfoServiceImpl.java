@@ -6,16 +6,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AgentNodeInfoVO;
 import io.choerodon.devops.api.vo.ClusterNodeInfoVO;
@@ -24,6 +24,7 @@ import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author zmf
@@ -146,7 +147,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     }
 
     @Override
-    public PageInfo<ClusterNodeInfoVO> pageClusterNodeInfo(Long clusterId, Long projectId, Pageable pageable) {
+    public Page<ClusterNodeInfoVO> pageClusterNodeInfo(Long clusterId, Long projectId, PageRequest pageable) {
         long start = (long) (pageable.getPageNumber() - 1) * (long) pageable.getPageSize();
         long stop = start + (long) pageable.getPageSize() - 1;
         String redisKey = getRedisClusterKey(clusterId, projectId);
@@ -158,7 +159,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                 .stream()
                 .map(node -> JSONObject.parseObject(node, ClusterNodeInfoVO.class))
                 .collect(Collectors.toList());
-        PageInfo<ClusterNodeInfoVO> result = new PageInfo();
+        Page<ClusterNodeInfoVO> result = new PageInfo();
         if (total < pageable.getPageSize() * pageable.getPageNumber()) {
             result.setSize(TypeUtil.objToInt(total) - (pageable.getPageSize() * (pageable.getPageNumber() - 1)));
         } else {

@@ -3,23 +3,24 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.Optional;
 import java.util.Set;
 
-import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.AppServiceVO;
 import io.choerodon.devops.api.vo.ClusterOverViewVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.app.service.DevopsClusterService;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -39,7 +40,7 @@ public class DevopsOrganizationController {
     @Permission(level = ResourceLevel.SITE, permissionWithin = true)
     @ApiOperation(value = "批量查询应用服务")
     @PostMapping(value = "/app_service/list_app_service_ids")
-    public ResponseEntity<PageInfo<AppServiceVO>> batchQueryAppService(
+    public ResponseEntity<Page<AppServiceVO>> batchQueryAppService(
             @ApiParam(value = "组织ID")
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "应用服务Ids")
@@ -47,7 +48,7 @@ public class DevopsOrganizationController {
             @ApiParam(value = "是否分页")
             @RequestParam(value = "doPage", required = false) Boolean doPage,
             @ApiParam(value = "分页参数")
-            @ApiIgnore Pageable pageable,
+            @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(

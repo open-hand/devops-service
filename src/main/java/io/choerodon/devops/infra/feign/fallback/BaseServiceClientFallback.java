@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.validation.Valid;
 
-import com.github.pagehelper.PageInfo;
+import io.choerodon.core.domain.PageInfo;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,7 +51,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<PageInfo<OrganizationDTO>> listOrganizations(Integer page, Integer size) {
+    public ResponseEntity<Page<OrganizationDTO>> listOrganizations(Integer page, Integer size) {
         throw new CommonException("error.organization.get");
     }
 
@@ -71,7 +71,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<PageInfo<IamUserDTO>> queryInProjectById(Long projectId, Long id) {
+    public ResponseEntity<Page<IamUserDTO>> queryInProjectById(Long projectId, Long id) {
         throw new CommonException("error.userInProject.get");
     }
 
@@ -81,7 +81,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<PageInfo<IamUserDTO>> listUsersByEmail(Long projectId, int page, int size, String email) {
+    public ResponseEntity<Page<IamUserDTO>> listUsersByEmail(Long projectId, int page, int size, String email) {
         return new ResponseEntity("error.user.get.byEmail", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -97,12 +97,12 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<com.github.pagehelper.PageInfo<ProjectWithRoleVO>> listProjectWithRole(Long id, int page, int size) {
+    public ResponseEntity<com.github.pagehelper.Page<ProjectWithRoleVO>> listProjectWithRole(Long id, int page, int size) {
         throw new CommonException("error.project.role.get");
     }
 
     @Override
-    public ResponseEntity<PageInfo<RoleVO>> queryRoleIdByCode(String code) {
+    public ResponseEntity<Page<RoleVO>> queryRoleIdByCode(String code) {
         throw new CommonException("error.roleId.get");
     }
 
@@ -113,7 +113,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<PageInfo<ProjectDTO>> pageProjectsByOrgId(Long organizationId, Map<String, Object> pageable, String name, String code, Boolean enabled, String params) {
+    public ResponseEntity<Page<ProjectDTO>> pageProjectsByOrgId(Long organizationId, Map<String, Object> pageable, String name, String code, Boolean enabled, String params) {
         return null;
     }
 
@@ -227,7 +227,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<PageInfo<OrgAdministratorVO>> listOrgAdministrator(Long organizationId, Integer size) {
+    public ResponseEntity<Page<OrgAdministratorVO>> listOrgAdministrator(Long organizationId, Integer size) {
         throw new CommonException("error.query.org.by.id");
     }
 }

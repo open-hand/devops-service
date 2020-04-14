@@ -3,7 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Set;
 
-import com.github.pagehelper.PageInfo;
+import io.choerodon.core.domain.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +59,7 @@ public class DevOpsSiteLevelResourceController {
     @Permission(level = ResourceLevel.SITE, permissionLogin = true)
     @ApiOperation(value = "批量查询应用服务")
     @PostMapping(value = "/app_service/list_app_service_by_ids")
-    public ResponseEntity<PageInfo<AppServiceRepVO>> batchQueryAppService(
+    public ResponseEntity<Page<AppServiceRepVO>> batchQueryAppService(
             @ApiParam(value = "应用服务Ids, 不能为空，也不能为空数组", required = true)
             @RequestBody Set<Long> ids) {
         return new ResponseEntity<>(appServiceService.listAppServiceByIds(ids, false, null, null), HttpStatus.OK);

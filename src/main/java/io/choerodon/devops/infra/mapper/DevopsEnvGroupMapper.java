@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsEnvGroupDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * Creator: Runge
@@ -15,6 +16,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvGroupDTO;
 public interface DevopsEnvGroupMapper extends BaseMapper<DevopsEnvGroupDTO> {
     /**
      * 查出在集合中的环境组
+     *
      * @param ids
      * @return
      */

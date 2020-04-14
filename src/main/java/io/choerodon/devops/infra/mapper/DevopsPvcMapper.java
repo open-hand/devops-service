@@ -1,11 +1,12 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dto.DevopsPvcDTO;
-import org.apache.ibatis.annotations.Param;
-import tk.mybatis.mapper.common.Mapper;
-
 import java.util.List;
 import java.util.Map;
+
+import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.infra.dto.DevopsPvcDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 public interface DevopsPvcMapper extends BaseMapper<DevopsPvcDTO> {
     List<DevopsPvcDTO> listByOption(@Param("envId") Long envId,

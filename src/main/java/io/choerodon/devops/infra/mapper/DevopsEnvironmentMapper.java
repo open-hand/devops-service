@@ -9,6 +9,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentInfoDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentViewDTO;
 import io.choerodon.devops.infra.dto.DevopsResourceEnvOverviewDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * Created by younger on 2018/4/9.

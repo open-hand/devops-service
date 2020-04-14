@@ -2,11 +2,10 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import com.github.pagehelper.PageInfo;
-
-import org.springframework.data.domain.Pageable;
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.iam.AppServiceAndVersionVO;
 import io.choerodon.devops.app.eventhandler.payload.*;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -22,9 +21,9 @@ public interface OrgAppMarketService {
      * @param params
      * @return
      */
-    PageInfo<AppServiceUploadPayload> pageByAppId(Long appId,
-                                                  Pageable pageable,
-                                                  String params);
+    Page<AppServiceUploadPayload> pageByAppId(Long appId,
+                                              PageRequest pageable,
+                                              String params);
 
     /**
      * 根据appServiceId 查询所有服务版本

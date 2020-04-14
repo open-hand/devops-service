@@ -5,19 +5,17 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.PageInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
@@ -42,6 +40,9 @@ import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
 import io.choerodon.devops.infra.util.*;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
+
 
 /**
  * 〈功能简述〉
@@ -262,16 +263,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             throw new CommonException(ERROR_PROJECT_ID_IS_NULL);
         }
         List<DevopsCiPipelineVO> devopsCiPipelineVOS = devopsCiPipelineMapper.queryByProjectIdAndName(projectId, name);
-        PageRequest pageable = PageRequest.of(1, 5, Sort.by(Sort.Direction.DESC, "id"));
+        PageRequest pageable = new PageRequest(1, 5, new Sort(new Sort.Order(Sort.Direction.DESC, "id")));
 
         devopsCiPipelineVOS.forEach(devopsCiPipelineVO -> {
-            PageInfo<DevopsCiPipelineRecordVO> pipelineRecordVOPageInfo = devopsCiPipelineRecordService.pagingPipelineRecord(projectId, devopsCiPipelineVO.getId(), pageable);
+            Page<DevopsCiPipelineRecordVO> pipelineRecordVOPageInfo = devopsCiPipelineRecordService.pagingPipelineRecord(projectId, devopsCiPipelineVO.getId(), pageable);
             if (pipelineRecordVOPageInfo.getSize() > 0) {
-                devopsCiPipelineVO.setLatestExecuteDate(pipelineRecordVOPageInfo.getList().get(0).getCreatedDate());
-                devopsCiPipelineVO.setLatestExecuteStatus(pipelineRecordVOPageInfo.getList().get(0).getStatus());
+                devopsCiPipelineVO.setLatestExecuteDate(pipelineRecordVOPageInfo.getContent().get(0).getCreatedDate());
+                devopsCiPipelineVO.setLatestExecuteStatus(pipelineRecordVOPageInfo.getContent().get(0).getStatus());
             }
-            devopsCiPipelineVO.setPipelineRecordVOList(pipelineRecordVOPageInfo.getList());
-            devopsCiPipelineVO.setHasMoreRecords(pipelineRecordVOPageInfo.isHasNextPage());
+            devopsCiPipelineVO.setPipelineRecordVOList(pipelineRecordVOPageInfo.getContent());
         });
 
         return devopsCiPipelineVOS;

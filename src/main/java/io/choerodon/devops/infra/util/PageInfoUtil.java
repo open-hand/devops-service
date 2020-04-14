@@ -3,8 +3,7 @@ package io.choerodon.devops.infra.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.pagehelper.PageInfo;
-import org.springframework.data.domain.Pageable;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author zmf
@@ -20,8 +19,8 @@ public class PageInfoUtil {
      * @param pageable 分页参数
      * @return 根据分页参数所得分页内容
      */
-    public static <T> PageInfo<T> createPageFromList(List<T> all, Pageable pageable) {
-        PageInfo<T> result = new PageInfo<>();
+    public static <T> Page<T> createPageFromList(List<T> all, PageRequest pageable) {
+        Page<T> result = new Page<>();
         boolean queryAll = pageable.getPageNumber() == 0 || pageable.getPageSize() == 0;
         //当前页大小
         result.setPageSize(queryAll ? all.size() : pageable.getPageSize());

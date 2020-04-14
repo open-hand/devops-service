@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.app.service.GitlabUserService;
 import io.choerodon.swagger.annotation.Permission;
 

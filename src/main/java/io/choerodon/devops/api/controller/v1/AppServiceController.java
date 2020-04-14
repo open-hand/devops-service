@@ -2,24 +2,24 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.*;
 
-import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.infra.enums.GitPlatformType;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -190,7 +190,7 @@ public class AppServiceController {
     @ApiOperation(value = "项目下分页查询应用服务")
     @CustomPageRequest
     @PostMapping("/page_by_options")
-    public ResponseEntity<PageInfo<AppServiceRepVO>> pageByOptions(
+    public ResponseEntity<Page<AppServiceRepVO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务是否启用")
@@ -204,7 +204,7 @@ public class AppServiceController {
             @ApiParam(value = "是否分页")
             @RequestParam(value = "doPage", required = false) Boolean doPage,
             @ApiParam(value = "分页参数")
-            @ApiIgnore Pageable pageable,
+            @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
@@ -224,7 +224,7 @@ public class AppServiceController {
     @ApiOperation(value = "根据环境id分页获取已部署正在运行实例的服务")
     @CustomPageRequest
     @GetMapping("/page_by_ids")
-    public ResponseEntity<PageInfo<AppServiceCodeVO>> pageByEnvIdAndappServiceId(
+    public ResponseEntity<Page<AppServiceCodeVO>> pageByEnvIdAndappServiceId(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID", required = true)
@@ -232,7 +232,7 @@ public class AppServiceController {
             @ApiParam(value = "服务 Id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore Pageable pageable) {
+            @ApiIgnore PageRequest pageable) {
         return Optional.ofNullable(applicationServiceService.pageByIds(projectId, envId, appServiceId, pageable))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.service.query.ids"));
@@ -404,11 +404,11 @@ public class AppServiceController {
 //    @ApiOperation(value = "项目下查询所有已经启用的且未发布的且有版本的服务")
 //    @CustomPageRequest
 //    @PostMapping(value = "/page_unPublish")
-//    public ResponseEntity<PageInfo<AppServiceReqVO>> pageByActiveAndPubAndVersion(
+//    public ResponseEntity<Page<AppServiceReqVO>> pageByActiveAndPubAndVersion(
 //            @ApiParam(value = "项目 ID", required = true)
 //            @PathVariable(value = "project_id") Long projectId,
 //            @ApiParam(value = "分页参数")
-//            @ApiIgnore Pageable pageable,
+//            @ApiIgnore PageRequest pageable,
 //            @ApiParam(value = "查询参数")
 //            @RequestBody(required = false) String params) {
 //        return Optional.ofNullable(applicationServiceService.pageByActiveAndPubAndVersion(projectId, pageable, params))
@@ -430,12 +430,12 @@ public class AppServiceController {
     @ApiOperation(value = "项目下分页查询代码仓库")
     @CustomPageRequest
     @PostMapping("/page_code_repository")
-    public ResponseEntity<PageInfo<AppServiceRepVO>> pageCodeRepository(
+    public ResponseEntity<Page<AppServiceRepVO>> pageCodeRepository(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
-            @ApiIgnore Pageable pageable,
+            @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
@@ -583,13 +583,13 @@ public class AppServiceController {
     @ApiOperation(value = "项目下分页查询共享服务")
     @CustomPageRequest
     @PostMapping(value = "/page_share_app_service")
-    public ResponseEntity<PageInfo<AppServiceRepVO>> pageShareApps(
+    public ResponseEntity<Page<AppServiceRepVO>> pageShareApps(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "是否分页")
             @RequestParam(value = "doPage", required = false, defaultValue = "true") Boolean doPage,
             @ApiParam(value = "分页参数")
-            @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable pageable,
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(
@@ -602,13 +602,13 @@ public class AppServiceController {
     @ApiOperation(value = "查询拥有应用服务权限的用户")
     @CustomPageRequest
     @PostMapping(value = "/{app_service_id}/page_permission_users")
-    public ResponseEntity<PageInfo<DevopsUserPermissionVO>> pagePermissionUsers(
+    public ResponseEntity<Page<DevopsUserPermissionVO>> pagePermissionUsers(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务服务Id")
             @PathVariable(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore Pageable pageable,
+            @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(
@@ -620,13 +620,13 @@ public class AppServiceController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询没有服务应用服务权限的成员")
     @PostMapping(value = "/{app_service_id}/list_non_permission_users")
-    public ResponseEntity<PageInfo<DevopsUserPermissionVO>> listNonPermissionUsers(
+    public ResponseEntity<Page<DevopsUserPermissionVO>> listNonPermissionUsers(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务服务Id")
             @PathVariable(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore Pageable pageable,
+            @ApiIgnore PageRequest pageable,
             @ApiParam(value = "指定的用户Id")
             @RequestParam(value = "iamUserId", required = false) Long selectedIamUserId,
             @ApiParam(value = "查询参数")
@@ -697,13 +697,13 @@ public class AppServiceController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "导入应用下根据组织共享或者市场下载查询应用服务")
     @GetMapping(value = "/page_by_mode")
-    public ResponseEntity<PageInfo<AppServiceGroupInfoVO>> listAppServiceGroup(
+    public ResponseEntity<Page<AppServiceGroupInfoVO>> listAppServiceGroup(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "市场来源", required = true)
             @RequestParam(required = true) Boolean share,
             @ApiParam(value = "分页参数")
-            @ApiIgnore Pageable pageable,
+            @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询项目Id", required = false)
             @RequestParam(value = "search_project_id", required = false) Long searchProjectId,
             @ApiParam(value = "查询条件", required = false)
@@ -717,13 +717,13 @@ public class AppServiceController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询单个项目下的应用服务")
     @PostMapping(value = "/list_by_project_id")
-    public ResponseEntity<PageInfo<AppServiceVO>> listAppByProjectId(
+    public ResponseEntity<Page<AppServiceVO>> listAppByProjectId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "是否分页")
             @RequestParam(value = "doPage", required = false) Boolean doPage,
             @ApiParam(value = "分页参数")
-            @ApiIgnore Pageable pageable,
+            @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
@@ -755,7 +755,7 @@ public class AppServiceController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "批量查询应用服务")
     @PostMapping(value = "/list_app_service_ids")
-    public ResponseEntity<PageInfo<AppServiceVO>> batchQueryAppService(
+    public ResponseEntity<Page<AppServiceVO>> batchQueryAppService(
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用服务Ids")
@@ -765,7 +765,7 @@ public class AppServiceController {
             @ApiParam(value = "是否需要版本信息", required = false)
             @RequestParam(value = "with_version", required = false, defaultValue = "true") boolean withVersion,
             @ApiParam(value = "分页参数")
-            @ApiIgnore Pageable pageable,
+            @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
@@ -777,13 +777,13 @@ public class AppServiceController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "通过一组id分页查询或者不传id时进行分页查询")
     @PostMapping(value = "/list_by_ids_or_page")
-    public ResponseEntity<PageInfo<AppServiceVO>> listOrPage(
+    public ResponseEntity<Page<AppServiceVO>> listOrPage(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "是否分页")
             @RequestParam(value = "doPage", required = false, defaultValue = "true") Boolean doPage,
             @ApiParam(value = "分页参数")
-            @ApiIgnore Pageable pageable,
+            @ApiIgnore PageRequest pageable,
             @ApiParam(value = "应用服务Ids")
             @RequestBody(required = false) Set<Long> ids) {
         return Optional.ofNullable(

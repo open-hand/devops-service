@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.mapper;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsRegistrySecretDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * Created by Sheep on 2019/3/14.

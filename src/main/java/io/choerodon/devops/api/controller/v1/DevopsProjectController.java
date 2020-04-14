@@ -2,11 +2,9 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Optional;
 
-import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +15,7 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.service.DevopsProjectService;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -57,11 +56,11 @@ public class DevopsProjectController {
     @ApiOperation(value = "分页查询与该项目在同一组织的项目列表（包含自身）")
     @CustomPageRequest
     @PostMapping("/page_projects")
-    public ResponseEntity<PageInfo<ProjectReqVO>> pageProjects(
+    public ResponseEntity<Page<ProjectReqVO>> pageProjects(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore Pageable pageable,
+            @ApiIgnore PageRequest pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsProjectService.pageProjects(projectId, pageable, params))
@@ -80,11 +79,11 @@ public class DevopsProjectController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取所有项目成员和项目所有者")
     @PostMapping(value = "/users/list_users")
-    public ResponseEntity<PageInfo<UserVO>> getAllUsers(
+    public ResponseEntity<Page<UserVO>> getAllUsers(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore Pageable pageable,
+            @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params
     ) {

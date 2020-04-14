@@ -8,7 +8,6 @@ import javax.annotation.PostConstruct;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.PageInfo;
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
@@ -16,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +24,7 @@ import org.springframework.util.StringUtils;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -53,6 +52,7 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by younger on 2018/4/9.
@@ -904,7 +904,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         // 获取项目下所有项目成员
-        PageInfo<UserVO> allProjectMemberPage = getMembersFromProject(CustomPageRequest.of(0, 0), projectId, "");
+        Page<UserVO> allProjectMemberPage = getMembersFromProject(new PageRequest(0, 0), projectId, "");
 
         // 所有项目成员中有权限的
         List<UserVO> usersToBeAdded = allProjectMemberPage.getList().stream().filter(e -> userIds.contains(e.getId())).collect(Collectors.toList());
@@ -989,7 +989,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public PageInfo<DevopsUserPermissionVO> pageUserPermissionByEnvId(Long projectId, Pageable
+    public Page<DevopsUserPermissionVO> pageUserPermissionByEnvId(Long projectId, PageRequest
             pageable, String params, Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
 
@@ -1034,7 +1034,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public PageInfo<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, Long selectedIamUserId, Pageable pageable, String params) {
+    public Page<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, Long selectedIamUserId, PageRequest pageable, String params) {
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         roleAssignmentSearchVO.setEnabled(true);
         // 处理搜索参数
@@ -1058,7 +1058,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 根据参数搜索所有的项目成员
         List<IamUserDTO> allProjectMembers = baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_DEVELOPER.getValue());
         if (allProjectMembers.isEmpty()) {
-            PageInfo<DevopsEnvUserVO> pageInfo = new PageInfo<>();
+            Page<DevopsEnvUserVO> pageInfo = new Page<>();
             pageInfo.setList(new ArrayList<>());
             return pageInfo;
         }
@@ -1088,7 +1088,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             }
         }
 
-        PageInfo<IamUserDTO> pageInfo;
+        Page<IamUserDTO> pageInfo;
         CustomPageRequest customPageRequest;
         if (pageable.getPageSize() == 0) {
             customPageRequest = CustomPageRequest.of(0, 0);
@@ -1242,7 +1242,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
 
-    private PageInfo<UserVO> getMembersFromProject(Pageable pageable, Long projectId, String searchParams) {
+    private Page<UserVO> getMembersFromProject(PageRequest pageable, Long projectId, String searchParams) {
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         if (!StringUtils.isEmpty(searchParams)) {
             Map maps = gson.fromJson(searchParams, Map.class);
@@ -1270,7 +1270,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         List<IamUserDTO> returnUserDTOList;
         if (iamUserDTOS.isEmpty()) {
-            return ConvertUtils.convertPage(new PageInfo<>(), UserVO.class);
+            return ConvertUtils.convertPage(new Page<>(), UserVO.class);
         } else {
             returnUserDTOList = iamUserDTOS.stream()
                     .peek(e -> {

@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * Created by Sheep on 2019/7/29.

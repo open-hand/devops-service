@@ -2,8 +2,7 @@ package io.choerodon.devops.infra.util;
 
 import java.util.*;
 
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * feign param util
@@ -21,7 +20,7 @@ public class FeignParamUtils {
      * @param pageable
      * @return
      */
-    public static Map<String, Object> encodePageRequest(Pageable pageable) {
+    public static Map<String, Object> encodePageRequest(PageRequest pageable) {
         Map<String, Object> map = new HashMap<>(3);
         map.put("page", pageable.getPageNumber());
         map.put("size", pageable.getPageSize());

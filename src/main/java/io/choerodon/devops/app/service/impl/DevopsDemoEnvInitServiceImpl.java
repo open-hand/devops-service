@@ -10,6 +10,13 @@ import javax.annotation.PostConstruct;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.AppServiceRepVO;
@@ -35,12 +42,6 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StreamUtils;
 
 /**
  * 为搭建Demo环境初始化项目中的一些数据，包含应用，分支，提交，版本，应用市场等
@@ -259,8 +260,8 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @return the version
      */
 //    private AppMarketVersionVO getApplicationVersion(Long projectId, Long applicationId) {
-//        Pageable pageable = new Pageable(0, 1);
-//        PageInfo<ApplicationVersionRespVO> versions = applicationVersionService.pageByOptions(projectId, applicationId, pageable, null);
+//        PageRequest pageable = new PageRequest(0, 1);
+//        Page<ApplicationVersionRespVO> versions = applicationVersionService.pageByOptions(projectId, applicationId, pageable, null);
 //        if (!versions.getList().isEmpty()) {
 //            AppMarketVersionVO appMarketVersionVO = new AppMarketVersionVO();
 //            BeanUtils.copyProperties(versions.getList().get(0), appMarketVersionVO);

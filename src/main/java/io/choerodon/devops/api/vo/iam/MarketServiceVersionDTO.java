@@ -1,13 +1,13 @@
 package io.choerodon.devops.api.vo.iam;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  15:04 2019/8/27
  * Description: 应用市场上传修复版本Payload使用
  */
-public class MarketServiceVersionDTO extends BaseDTO {
+public class MarketServiceVersionDTO extends AuditDomain {
 
     private Long id;
 

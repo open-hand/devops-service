@@ -1,7 +1,9 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dto.DevopsEnvFileDTO;
 import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.infra.dto.DevopsEnvFileDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 public interface DevopsEnvFileMapper extends BaseMapper<DevopsEnvFileDTO> {
 

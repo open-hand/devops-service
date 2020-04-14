@@ -5,17 +5,16 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ExceptionResponse;
 import io.choerodon.core.exception.FeignException;
@@ -31,7 +30,8 @@ import io.choerodon.devops.infra.enums.OrgPublishMarketStatus;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.util.FeignParamUtils;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
  * Created by Sheep on 2019/7/11.
@@ -88,15 +88,15 @@ public class BaseServiceClientOperator {
 
     public List<ProjectDTO> listIamProjectByOrgId(Long organizationId, String name, String code, String params) {
         CustomPageRequest customPageRequest = CustomPageRequest.of(0, 0);
-        ResponseEntity<PageInfo<ProjectDTO>> pageResponseEntity =
+        ResponseEntity<Page<ProjectDTO>> pageResponseEntity =
                 baseServiceClient.pageProjectsByOrgId(organizationId, FeignParamUtils.encodePageRequest(customPageRequest), name, code, true, params);
         return Objects.requireNonNull(pageResponseEntity.getBody()).getList();
     }
 
-    public PageInfo<ProjectDTO> pageProjectByOrgId(Long organizationId, int page, int size, Sort sort, String name, String code, String params) {
+    public Page<ProjectDTO> pageProjectByOrgId(Long organizationId, int page, int size, Sort sort, String name, String code, String params) {
         CustomPageRequest pageable = CustomPageRequest.of(page, size, sort == null ? Sort.unsorted() : sort);
         try {
-            ResponseEntity<PageInfo<ProjectDTO>> pageInfoResponseEntity = baseServiceClient.pageProjectsByOrgId(organizationId,
+            ResponseEntity<Page<ProjectDTO>> pageInfoResponseEntity = baseServiceClient.pageProjectsByOrgId(organizationId,
                     FeignParamUtils.encodePageRequest(pageable), name, code, true, params);
             return pageInfoResponseEntity.getBody();
         } catch (FeignException e) {
@@ -108,9 +108,9 @@ public class BaseServiceClientOperator {
         List<ProjectWithRoleVO> returnList = new ArrayList<>();
         int page = 0;
         int size = 0;
-        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity =
+        ResponseEntity<Page<ProjectWithRoleVO>> pageResponseEntity =
                 baseServiceClient.listProjectWithRole(userId, page, size);
-        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = pageResponseEntity.getBody();
+        Page<ProjectWithRoleVO> projectWithRoleDTOPage = pageResponseEntity.getBody();
         if (!projectWithRoleDTOPage.getList().isEmpty()) {
             returnList.addAll(projectWithRoleDTOPage.getList());
         }
@@ -158,7 +158,7 @@ public class BaseServiceClientOperator {
 
     public IamUserDTO queryByEmail(Long projectId, String email) {
         try {
-            ResponseEntity<PageInfo<IamUserDTO>> userDOResponseEntity = baseServiceClient
+            ResponseEntity<Page<IamUserDTO>> userDOResponseEntity = baseServiceClient
                     .listUsersByEmail(projectId, 0, 0, email);
             if (userDOResponseEntity.getBody().getList().isEmpty()) {
                 return null;
@@ -377,7 +377,7 @@ public class BaseServiceClientOperator {
 
     public List<ProjectWithRoleVO> listProjectWithRole(Long userId, int page, int size) {
         try {
-            ResponseEntity<PageInfo<ProjectWithRoleVO>> pageInfoResponseEntity = baseServiceClient.listProjectWithRole(userId, page, size);
+            ResponseEntity<Page<ProjectWithRoleVO>> pageInfoResponseEntity = baseServiceClient.listProjectWithRole(userId, page, size);
             return (pageInfoResponseEntity.getBody() == null) ? Collections.emptyList() : pageInfoResponseEntity.getBody().getList();
         } catch (Exception ex) {
             return Collections.emptyList();
@@ -505,9 +505,9 @@ public class BaseServiceClientOperator {
         return responseEntity.getBody();
     }
 
-    public PageInfo<OrgAdministratorVO> listOrgAdministrator(Long organizationId) {
-        ResponseEntity<PageInfo<OrgAdministratorVO>> pageInfoResponseEntity = baseServiceClient.listOrgAdministrator(organizationId, 0);
-        PageInfo<OrgAdministratorVO> body = pageInfoResponseEntity.getBody();
+    public Page<OrgAdministratorVO> listOrgAdministrator(Long organizationId) {
+        ResponseEntity<Page<OrgAdministratorVO>> pageInfoResponseEntity = baseServiceClient.listOrgAdministrator(organizationId, 0);
+        Page<OrgAdministratorVO> body = pageInfoResponseEntity.getBody();
         return body;
     }
 }

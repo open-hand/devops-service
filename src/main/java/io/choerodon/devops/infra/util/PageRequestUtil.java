@@ -1,17 +1,16 @@
 package io.choerodon.devops.infra.util;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.google.common.collect.Lists;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -24,16 +23,16 @@ public class PageRequestUtil {
     private PageRequestUtil() {
     }
 
-    public static String checkSortIsEmpty(Pageable pageable) {
+    public static String checkSortIsEmpty(PageRequest pageable) {
         String index = "";
-        if (pageable.getSort() == null || pageable.getSort().isUnsorted()) {
+        if (pageable.getSort() == null) {
             index = "true";
         }
         return index;
     }
 
 
-    public static String getOrderBy(Pageable pageable) {
+    public static String getOrderBy(PageRequest pageable) {
         Sort sort = pageable.getSort();
         if (sort != null) {
             return Lists.newArrayList(pageable.getSort().iterator()).stream()
@@ -46,12 +45,12 @@ public class PageRequestUtil {
     /**
      * 获取排序SQL字符串
      *
-     * @param sort            {@link Pageable#getSort()}中的sort对象
+     * @param sort            {@link PageRequest#getSort()}中的sort对象
      * @param orderByFieldMap 前端传入的字段与mybatis中字段的映射。如果前端传入的字段在map中不存在就抛异常，防止SQL注入
      * @return 排序SQL字段
      */
     public static String getOrderString(Sort sort, Map<String, String> orderByFieldMap) {
-        return sort.stream().map(t -> {
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(sort.iterator(), Spliterator.ORDERED), false).map(t -> {
             String field = orderByFieldMap.get(t.getProperty());
             if (field == null) {
                 throw new CommonException("error.field.not.supported.for.sort", t.getProperty());
@@ -61,7 +60,7 @@ public class PageRequestUtil {
     }
 
     public static List<DevopsUserPermissionVO> sortUserPermission(List<DevopsUserPermissionVO> toBeSorted, Sort sort) {
-        if (sort.isSorted()) {
+        if (sort != null) {
             // 取第一个
             Sort.Order order = sort.iterator().next();
             switch (order.getProperty()) {

@@ -5,8 +5,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.PageSerializable;
 import com.google.gson.Gson;
 import io.kubernetes.client.custom.Quantity;
@@ -14,7 +12,6 @@ import io.kubernetes.client.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -22,6 +19,7 @@ import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsPvValidator;
@@ -46,6 +44,8 @@ import io.choerodon.devops.infra.mapper.DevopsPrometheusMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
 public class DevopsPvServiceImpl implements DevopsPvService {
@@ -93,13 +93,13 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     private Gson gson = new Gson();
 
     @Override
-    public PageInfo<DevopsPvDTO> basePagePvByOptions(Long projectId, Pageable pageable, String params) {
+    public Page<DevopsPvDTO> basePagePvByOptions(Long projectId, PageRequest pageable, String params) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         // search_param 根据确定的键值对查询
         // params 是遍历字段模糊查询
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
         String orderBy = PageRequestUtil.getOrderBy(pageable);
-        PageInfo<DevopsPvDTO> pvDTOPageInfo = PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize())
+        Page<DevopsPvDTO> pvDTOPageInfo = PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize())
                 .doSelectPageInfo(() -> devopsPvMapper.listPvByOptions(
                         projectDTO.getOrganizationId(),
                         projectId,
@@ -115,7 +115,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     }
 
     @Override
-    public PageInfo<DevopsPvVO> pageByOptions(Long projectId, Pageable pageable, String params) {
+    public Page<DevopsPvVO> pageByOptions(Long projectId, PageRequest pageable, String params) {
         return ConvertUtils.convertPage(basePagePvByOptions(projectId, pageable, params), DevopsPvVO.class);
     }
 
@@ -348,7 +348,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     }
 
     @Override
-    public PageInfo<ProjectReqVO> listNonRelatedProjects(Long projectId, Long pvId, Long selectedProjectId, Pageable pageable, String params) {
+    public Page<ProjectReqVO> listNonRelatedProjects(Long projectId, Long pvId, Long selectedProjectId, PageRequest pageable, String params) {
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
         if (devopsPvDTO == null) {
             throw new CommonException("error.pv.not.exists");
@@ -459,7 +459,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
     //跳过权限校验,PV分配的有权限的项目和集群下有权限的项目一样
     @Override
-    public PageInfo<ProjectReqVO> pageProjects(Long projectId, Long pvId, Pageable pageable, String params) {
+    public Page<ProjectReqVO> pageProjects(Long projectId, Long pvId, PageRequest pageable, String params) {
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
         if (devopsPvDTO == null) {
             throw new CommonException("error.pv.not.exists");
@@ -476,7 +476,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     }
 
     @Override
-    public PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long pvId, Pageable pageable, String params) {
+    public Page<ProjectReqVO> pageRelatedProjects(Long projectId, Long pvId, PageRequest pageable, String params) {
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
         if (devopsPvDTO == null) {
             throw new CommonException("error.pv.not.exists");
@@ -496,7 +496,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         if (CollectionUtils.isEmpty(paramList) && StringUtils.isEmpty(name) && StringUtils.isEmpty(code)) {
             // 如果不搜索
-            PageInfo<DevopsPvProPermissionDTO> relationPage = PageHelper.startPage(
+            Page<DevopsPvProPermissionDTO> relationPage = PageHelper.startPage(
                     pageable.getPageNumber(), pageable.getPageSize())
                     .doSelectPageInfo(() -> devopsPvProPermissionService.baseListByPvId(pvId));
             return ConvertUtils.convertPage(relationPage, permission -> {

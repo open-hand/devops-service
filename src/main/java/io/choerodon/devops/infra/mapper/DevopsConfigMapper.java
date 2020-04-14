@@ -7,6 +7,7 @@ import java.util.Set;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 
 /**

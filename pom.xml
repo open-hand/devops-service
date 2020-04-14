@@ -19,6 +19,8 @@
         <powermock.version>2.0.0-beta.5</powermock.version>
         <choerodon.serviceBuild>true</choerodon.serviceBuild>
         <choerodon.mainClass>io.choerodon.devops.DevopsServiceApplication</choerodon.mainClass>
+        <choerodon.starter.version>0.16.1.RELEASE</choerodon.starter.version>
+        <hzero.starter.version>1.4.0-SNAPSHOT</hzero.starter.version>
     </properties>
 
 
@@ -45,24 +47,45 @@
             <artifactId>hzero-starter-mybatis-mapper</artifactId>
         </dependency>
 
+        <!--<dependency>-->
+        <!--<groupId>org.hzero.starter</groupId>-->
+        <!--<artifactId>hzero-starter-websocket</artifactId>-->
+        <!--</dependency>-->
+
         <dependency>
-            <groupId>org.hzero.starter</groupId>
-            <artifactId>hzero-starter-websocket</artifactId>
+            <groupId>io.choerodon</groupId>
+            <artifactId>choerodon-starter-websocket</artifactId>
+            <version>${choerodon.starter.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-actuator</artifactId>
+            <version>0.16.1.RELEASE</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.github.pagehelper</groupId>
+                    <artifactId>pagehelper</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.hzero.starter</groupId>
             <artifactId>hzero-starter-metric</artifactId>
+            <version>${hzero.starter.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-webmvc</artifactId>
+            <version>0.16.1.RELEASE</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.data</groupId>
+                    <artifactId>spring-data-commons</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -73,11 +96,13 @@
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-liquibase</artifactId>
+            <version>0.16.1.RELEASE</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hzero.starter</groupId>
             <artifactId>hzero-starter-asgard</artifactId>
+            <version>${hzero.starter.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -195,6 +220,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.data</groupId>
+                    <artifactId>spring-data-commons</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

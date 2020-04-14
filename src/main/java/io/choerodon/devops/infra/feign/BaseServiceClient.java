@@ -5,7 +5,8 @@ import java.util.Map;
 import java.util.Set;
 import javax.validation.Valid;
 
-import com.github.pagehelper.PageInfo;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.domain.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -48,8 +49,8 @@ public interface BaseServiceClient {
     ResponseEntity<List<OrganizationDTO>> queryOrgByIds(@RequestBody Set<Long> ids);
 
     @GetMapping("v1/organizations")
-    ResponseEntity<PageInfo<OrganizationDTO>> listOrganizations(@RequestParam("page") Integer page,
-                                                                @RequestParam("size") Integer size);
+    ResponseEntity<Page<OrganizationDTO>> listOrganizations(@RequestParam("page") Integer page,
+                                                            @RequestParam("size") Integer size);
 
 
     @PostMapping(value = "/v1/project/{projectId}/memberRoles/single")
@@ -62,14 +63,14 @@ public interface BaseServiceClient {
     ResponseEntity<IamUserDTO> queryById(@PathVariable("id") Long id);
 
     @GetMapping(value = "v1/projects/{project_id}/users?id={id}")
-    ResponseEntity<PageInfo<IamUserDTO>> queryInProjectById(@PathVariable("project_id") Long projectId, @PathVariable("id") Long id);
+    ResponseEntity<Page<IamUserDTO>> queryInProjectById(@PathVariable("project_id") Long projectId, @PathVariable("id") Long id);
 
 
     @PostMapping(value = "/v1/users/ids")
     ResponseEntity<List<IamUserDTO>> listUsersByIds(@RequestBody Long[] ids, @RequestParam(value = "only_enabled") Boolean onlyEnabled);
 
     @GetMapping(value = "/v1/projects/{project_id}/users")
-    ResponseEntity<PageInfo<IamUserDTO>> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);
+    ResponseEntity<Page<IamUserDTO>> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);
 
     @PostMapping(value = "/v1/projects/{project_id}/role_members/users/count")
     ResponseEntity<List<RoleVO>> listRolesWithUserCountOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
@@ -82,12 +83,12 @@ public interface BaseServiceClient {
             @RequestParam(name = "label_name") String labelName);
 
     @GetMapping(value = "/v1/users/{id}/project_roles")
-    ResponseEntity<PageInfo<ProjectWithRoleVO>> listProjectWithRole(@PathVariable("id") Long id,
+    ResponseEntity<Page<ProjectWithRoleVO>> listProjectWithRole(@PathVariable("id") Long id,
                                                                     @RequestParam("page") int page,
                                                                     @RequestParam("size") int size);
 
     @GetMapping(value = "/v1/roles/search")
-    ResponseEntity<PageInfo<RoleVO>> queryRoleIdByCode(@RequestParam(value = "code", required = false) String code);
+    ResponseEntity<Page<RoleVO>> queryRoleIdByCode(@RequestParam(value = "code", required = false) String code);
 
 
     @PostMapping("/v1/organizations/{organization_id}/projects")
@@ -96,7 +97,7 @@ public interface BaseServiceClient {
 
 
     @GetMapping("/v1/organizations/{organization_id}/projects")
-    ResponseEntity<PageInfo<ProjectDTO>> pageProjectsByOrgId(@PathVariable(name = "organization_id") Long organizationId,
+    ResponseEntity<Page<ProjectDTO>> pageProjectsByOrgId(@PathVariable(name = "organization_id") Long organizationId,
                                                              @RequestParam Map<String, Object> pageable,
                                                              @RequestParam(name = "name", required = false) String name,
                                                              @RequestParam(name = "code", required = false) String code,
@@ -253,7 +254,7 @@ public interface BaseServiceClient {
 
 
     @GetMapping("/v1/organizations/{organization_id}/org_administrator")
-    ResponseEntity<PageInfo<OrgAdministratorVO>> listOrgAdministrator(
+    ResponseEntity<Page<OrgAdministratorVO>> listOrgAdministrator(
             @PathVariable("organization_id") Long organizationId,
             @RequestParam("size") Integer size);
 }

@@ -2,10 +2,9 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import com.github.pagehelper.PageInfo;
 import org.springframework.web.multipart.MultipartFile;
 
-import org.springframework.data.domain.Pageable;
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.C7nCertificationVO;
 import io.choerodon.devops.api.vo.CertificationRespVO;
 import io.choerodon.devops.api.vo.CertificationVO;
@@ -13,6 +12,7 @@ import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.infra.dto.CertificationDTO;
 import io.choerodon.devops.infra.dto.CertificationFileDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by n!Ck
@@ -38,7 +38,7 @@ public interface CertificationService {
 
     void certDeleteByGitOps(Long certId);
 
-    PageInfo<CertificationVO> pageByOptions(Long projectId, Long envId, Pageable pageable, String params);
+    Page<CertificationVO> pageByOptions(Long projectId, Long envId, PageRequest pageable, String params);
 
     List<CertificationVO> queryActiveCertificationByDomain(Long projectId, Long envId, String domain);
 
@@ -72,7 +72,7 @@ public interface CertificationService {
 
     CertificationDTO baseQueryByEnvAndName(Long envId, String name);
 
-    PageInfo<CertificationDTO> basePage(Long projectId, Long envId, Pageable pageable, String params);
+    Page<CertificationDTO> basePage(Long projectId, Long envId, PageRequest pageable, String params);
 
     List<CertificationDTO> baseQueryActiveByDomain(Long projectId, Long clusterId, String domain);
 

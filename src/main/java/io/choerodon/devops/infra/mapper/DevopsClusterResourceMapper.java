@@ -1,8 +1,9 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO;
-
 import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * @author zhaotianxin

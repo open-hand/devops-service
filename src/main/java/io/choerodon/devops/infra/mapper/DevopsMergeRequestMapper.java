@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * Created with IntelliJ IDEA.
