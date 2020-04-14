@@ -7,19 +7,18 @@ import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.core.annotation.Permission;
-import org.springframework.data.domain.Pageable;
-import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.AppServiceAndVersionVO;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.OrgAppMarketService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -32,7 +31,7 @@ public class OrgAppMarketController {
     @Autowired
     private OrgAppMarketService orgAppMarketService;
 
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
+    @Permission(level = ResourceLevel.SITE, permissionWithin = true)
     @ApiOperation(value = "根据应用Id，获取应用服务和应用服务版本")
     @CustomPageRequest
     @PostMapping("/page_app_services")
@@ -49,7 +48,7 @@ public class OrgAppMarketController {
                 .orElseThrow(() -> new CommonException("error.app.services.page"));
     }
 
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
+    @Permission(level = ResourceLevel.SITE, permissionWithin = true)
     @ApiOperation(value = "根据应用服务ID查询所对应的应用版本")
     @GetMapping("/list_versions/{app_service_id}")
     public ResponseEntity<List<AppServiceVersionUploadPayload>> listVersionsByAppServiceId(
@@ -62,7 +61,7 @@ public class OrgAppMarketController {
     }
 
 
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
+    @Permission(level = ResourceLevel.SITE, permissionWithin = true)
     @ApiOperation(value = "应用上传")
     @PostMapping("/upload")
     public ResponseEntity uploadAPP(
@@ -72,7 +71,7 @@ public class OrgAppMarketController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
+    @Permission(level = ResourceLevel.SITE, permissionWithin = true)
     @ApiOperation(value = "应用上传 版本修复")
     @PostMapping("/upload_fix_version")
     public ResponseEntity uploadAPPFixVersion(
@@ -82,7 +81,7 @@ public class OrgAppMarketController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
+    @Permission(level = ResourceLevel.SITE, permissionWithin = true)
     @ApiOperation(value = "应用下载")
     @PostMapping("/download")
     public ResponseEntity downLoadApp(
@@ -92,7 +91,7 @@ public class OrgAppMarketController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
+    @Permission(level = ResourceLevel.SITE, permissionWithin = true)
     @ApiOperation(value = "查询应用服务版本")
     @PostMapping("/list_versions")
     public ResponseEntity<List<AppServiceAndVersionVO>> listVersions(

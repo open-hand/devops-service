@@ -9,14 +9,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.core.annotation.Permission;
-import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.api.vo.DevopsConfigRepVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsConfigService;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author zongw.lee@gmail.com
@@ -39,7 +38,7 @@ public class DevopsProjectConfigController {
      * @param devopsConfigRepVO 配置信息
      * @return void
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建配置")
     @PostMapping
     public ResponseEntity create(
@@ -58,7 +57,7 @@ public class DevopsProjectConfigController {
      * @param projectId 项目id
      * @return 配置详情
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询配置详情")
     @GetMapping
     public ResponseEntity<DevopsConfigRepVO> query(
@@ -77,7 +76,7 @@ public class DevopsProjectConfigController {
      * @param projectId 项目id
      * @return ProjectDefaultConfigDTO
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "获取项目默认的配置")
     @GetMapping("/default_config")
     public ResponseEntity<DefaultConfigVO> queryProjectDefaultConfig(
@@ -99,7 +98,7 @@ public class DevopsProjectConfigController {
      * @param project  harbor项目
      * @param email    harbor邮箱
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验harbor配置信息是否正确")
     @GetMapping(value = "/check_harbor")
     public void checkHarbor(
@@ -124,7 +123,7 @@ public class DevopsProjectConfigController {
      *
      * @param url chartmusume地址
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验chart配置信息是否正确")
     @GetMapping(value = "/check_chart")
     public void checkChart(

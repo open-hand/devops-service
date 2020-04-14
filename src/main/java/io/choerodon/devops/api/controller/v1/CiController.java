@@ -10,9 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.choerodon.core.annotation.Permission;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.AppServiceVersionService;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * Created by younger on 2018/4/13.

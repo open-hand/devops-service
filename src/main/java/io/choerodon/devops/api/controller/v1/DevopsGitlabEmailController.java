@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.choerodon.core.annotation.Permission;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.GitlabUserService;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author zongw.lee@gmail.com

@@ -12,13 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.core.annotation.Permission;
-import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -38,7 +37,7 @@ public class DevopsEnvPodController {
      * @param searchParam 查询参数
      * @return page of DevopsEnvironmentPodVO
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询环境下pod")
@@ -70,7 +69,7 @@ public class DevopsEnvPodController {
 //     * @param sort  排序条件
 //     * @return 环境下相关资源的数量
 //     */
-//    @Permission(type = ResourceType.PROJECT,
+//    @Permission(level = ResourceLevel.PROJECT,
 //            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
 //    @ApiOperation(value = "按资源用量列出环境下Pod信息")
 //    @GetMapping("/pod_ranking")
@@ -93,7 +92,7 @@ public class DevopsEnvPodController {
      * @param podId pod id
      * @return void
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除环境下的pod")
     @DeleteMapping("/{pod_id}")

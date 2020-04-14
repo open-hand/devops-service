@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.choerodon.core.annotation.Permission;
 import io.choerodon.devops.api.ws.gitops.AgentGitOpsSocketHandlerRegistration;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * 用于在Pod退出前的回调接口，用于清理这个pod所持有的一些资源

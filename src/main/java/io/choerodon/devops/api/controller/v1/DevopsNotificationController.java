@@ -9,12 +9,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.core.annotation.Permission;
-import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.ResourceCheckVO;
 import io.choerodon.devops.app.service.DevopsNotificationService;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -35,7 +34,7 @@ public class DevopsNotificationController {
      * @param objectType 资源对象类型
      * @return 校验结果
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/check_delete_resource")
     @ApiOperation(value = "校验删除对象是否需要发送验证码")
@@ -61,7 +60,7 @@ public class DevopsNotificationController {
      * @param notificationId 通知Id
      * @param objectType     对象类型
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/send_message")
     @ApiOperation(value = "发送验证码")
@@ -89,7 +88,7 @@ public class DevopsNotificationController {
      * @param captcha    验证码
      * @param objectType 对象类型
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/validate_captcha")
     @ApiOperation(value = "校验验证码")
@@ -107,7 +106,7 @@ public class DevopsNotificationController {
         notificationService.validateCaptcha(envId, objectId, objectType, captcha);
     }
 
-//    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+//    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
 //    @GetMapping(value = "/transfer/data")
 //    public ResponseEntity<List<DevopsNotificationTransferDataVO>> transferDate(
 //            @ApiParam(value = "项目ID")
