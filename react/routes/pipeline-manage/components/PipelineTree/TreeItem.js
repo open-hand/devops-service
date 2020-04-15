@@ -13,6 +13,7 @@ import PipelineType from '../pipeline-type';
 import ExecuteContent from './execute-content';
 import TreeItemName from '../../../../components/treeitem-name';
 import { usePipelineTreeStore } from './stores';
+import StatusTag from '../PipelineFlow/components/StatusTag';
 
 const executeKey = Modal.key();
 const stopKey = Modal.key();
@@ -44,7 +45,7 @@ const TreeItem = observer(({ record, search }) => {
   const timePopoverStyle = useMemo(() => ({
     fontSize: '.12rem',
     color: 'rgba(58,52,95,0.65)',
-    margin: '0 .04rem 0 auto',
+    margin: '0 0 0 auto',
     flexShrink: '0',
   }), []);
 
@@ -234,10 +235,14 @@ const TreeItem = observer(({ record, search }) => {
         <div className={`${prefixCls}-sidebar-header-parent`}>
           <div className={`${prefixCls}-sidebar-header`}>
             <PipelineType name={name} type={triggerType} />
-            <span className={`${prefixCls}-sidebar-header-name`}>
-              <TreeItemName name={name} search={search} headSpace={false} />
-            </span>
-            <TimePopover content={latestExecuteDate} style={timePopoverStyle} />
+            <Tooltip title={`${name}(${appServiceName})`} placement="top">
+              <span className={`${prefixCls}-sidebar-header-name`}>
+                <TreeItemName name={name} search={search} headSpace={false} />
+                <span className={`${prefixCls}-sidebar-header-service`}>
+                  (<TreeItemName name={appServiceName} search={search} headSpace={false} />)
+                </span>
+              </span>
+            </Tooltip>
             <div style={{ flexShrink: '0' }}>
               <Action data={actionData} onClick={eventStopProp} />
             </div>
@@ -246,12 +251,8 @@ const TreeItem = observer(({ record, search }) => {
             <span className={`${prefixCls}-sidebar-header-active ${prefixCls}-sidebar-header-active-${enabled}`}>
               {formatMessage({ id: enabled ? 'active' : 'stop' })}
             </span>
-            <span className={`${prefixCls}-sidebar-header-service`}>
-              <TreeItemName name={appServiceName} search={search} headSpace={false} />
-            </span>
-            {status && <Tooltip title={formatMessage({ id: `${intlPrefix}.status.${status}` })} placement="top">
-              <Icon type={iconType[status]} className={`${prefixCls}-sidebar-header-icon ${prefixCls}-sidebar-header-icon-${status}`} />
-            </Tooltip>}
+            <StatusTag status={status} size={12} className={`${prefixCls}-sidebar-header-status`} />
+            <TimePopover content={latestExecuteDate} style={{ ...timePopoverStyle, marginRight: '0.24rem' }} />
           </div>
         </div>
       );
