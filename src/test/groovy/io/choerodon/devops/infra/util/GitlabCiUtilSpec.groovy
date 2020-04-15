@@ -167,4 +167,17 @@ class GitlabCiUtilSpec extends Specification {
         then: "校验结果"
         result == expect
     }
+
+    def "deployJar"() {
+        given: "准备数据"
+        String serverId = "local-snapshot"
+        String repoUrl = "http://localhost:8081/repository/test-snapshot/"
+        String expectResult = "mvn deploy -DaltDeploymentRepository=local-snapshot::default::http://localhost:8081/repository/test-snapshot/ -s settings.xml"
+
+        when: "调用方法"
+        def result = GitlabCiUtil.deployJar(serverId, repoUrl)
+
+        then: "校验结果"
+        result == expectResult
+    }
 }

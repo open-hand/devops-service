@@ -184,4 +184,17 @@ public class GitlabCiUtil {
                 .replace(SONAR_TOKEN_ANCHOR, sonarUsername)
                 .replace(SONAR_PASSWORD_ANCHOR, sonarPassword);
     }
+
+    /**
+     * 生成用于发布jar包的命令
+     *
+     * @param serverId 用户认证信息在settings文件的id
+     * @param repoUrl  maven仓库地址
+     * @return shell命令
+     */
+    public static String deployJar(String serverId, String repoUrl) {
+        // IDEA建议直接字符串拼接而不是StringBuilder
+        // 结果形如: mvn deploy -DaltDeploymentRepository=local-snapshot::default::http://localhost:8081/repository/test-snapshot/ -s settings.xml
+        return "mvn deploy -DaltDeploymentRepository=" + serverId + "::default::" + repoUrl + " -s settings.xml";
+    }
 }
