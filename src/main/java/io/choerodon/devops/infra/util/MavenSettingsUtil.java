@@ -29,6 +29,13 @@ public class MavenSettingsUtil {
      */
     private static final int BYTE_ARRAY_INIT_SIZE = 3000;
 
+    /**
+     * 生成maven的settings文件
+     *
+     * @param servers      用户认证信息
+     * @param repositories 仓库信息
+     * @return 生成的settings文件
+     */
     public static String generateMavenSettings(List<Server> servers, List<Repository> repositories) {
         try {
             // 获取JAXB的上下文环境，需要传入具体的 Java bean -> 这里使用Settings
