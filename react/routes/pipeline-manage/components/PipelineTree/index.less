@@ -64,7 +64,7 @@
       }
 
       .@{c7n-prefix}-tree-switcher {
-        padding-top: .1rem;
+        padding-top: .05rem;
       }
 
       .@{c7n-prefix}-tree-node-content-wrapper {
@@ -105,9 +105,9 @@
       line-height: .18rem;
 
       &-parent {
-        padding: .1rem .04rem;
+        padding: .05rem .04rem;
         border-top: 1px solid rgba(216, 220, 235, 1);
-        border-image: linear-gradient(to right, rgba(216, 220, 235, 0), rgba(216, 220, 235)) 30 30;
+        border-image: linear-gradient(to right, rgba(216, 220, 235, 0.2), rgba(216, 220, 235)) 30 30;
       }
 
       &-node {
@@ -129,7 +129,7 @@
       }
 
       &:first-child {
-        margin-bottom: .1rem;
+        margin-bottom: .05rem;
       }
       &:last-child {
         margin-bottom: 0;
@@ -140,9 +140,9 @@
         margin-left: .04rem;
         flex-grow: 1;
         overflow: hidden;
+        text-overflow: ellipsis;
 
         .c7ncd-treemenu-text {
-          display: block;
           width: 100%;
         }
       }
@@ -172,9 +172,12 @@
       }
 
       &-service {
-        font-size: .12rem;
-        color: #3a345f;
-        margin: 0 auto 0 .16rem;
+        color: rgba(0, 0, 0, 0.65);
+      }
+
+      &-status {
+        transform: scale(0.8);
+        margin-left: -.05rem;
       }
 
       &-icon {

@@ -48,14 +48,14 @@ const tagObj = {
   },
 };
 
-const renderTag = ({ status, size }) => {
+const renderTag = ({ status, size, className }) => {
   const {
     borderColor, backgroundColor, color, text,
   } = tagObj[status] || {};
   return (
     tagObj[status]
       ? <span
-        className="c7ncd-pipelineManage-optsDetail-header-tag"
+        className={`${className} c7ncd-pipelineManage-optsDetail-header-tag`}
         style={{ borderColor, backgroundColor, color, fontSize: `${size}px` }}
       >
         {text}
@@ -66,10 +66,12 @@ const renderTag = ({ status, size }) => {
 renderTag.propTypes = {
   status: PropTypes.string.isRequired,
   size: PropTypes.number,
+  className: PropTypes.string,
 };
 
 renderTag.defaultProps = {
   size: 12,
+  className: '',
 };
 
 export default renderTag;
