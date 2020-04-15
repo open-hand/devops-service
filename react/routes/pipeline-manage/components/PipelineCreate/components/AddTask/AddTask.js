@@ -9,6 +9,11 @@ import './index.less';
 
 const { Option } = Select;
 
+const obj = {
+  Maven: 'Maven构建',
+  npm: 'Npm构建',
+};
+
 const AddTask = observer(() => {
   const {
     AddTaskFormDataSet,
@@ -139,6 +144,7 @@ const AddTask = observer(() => {
         <Form dataSet={AddTaskStepFormDataSet}>
           <Select name="kybz">
             <Option value="Maven">Maven构建</Option>
+            <Option value="npm">Npm构建</Option>
           </Select>
         </Form>
       ),
@@ -146,13 +152,14 @@ const AddTask = observer(() => {
       okText: '添加',
       onOk: () => {
         if (AddTaskStepFormDataSet.current && AddTaskStepFormDataSet.current.get('kybz')) {
-          if (AddTaskStepFormDataSet.current.get('kybz') === 'Maven') {
+          const value = AddTaskStepFormDataSet.current.get('kybz');
+          if (value) {
             const newSteps = steps;
             newSteps.splice(index, 0, {
-              name: 'Maven构建',
-              value: 'Maven',
+              name: obj[value],
+              value,
               checked: true,
-              yaml: useStore.getYaml,
+              yaml: useStore.getYaml[value],
               // children: (
               //   <div
               //     style={{
@@ -259,13 +266,13 @@ const AddTask = observer(() => {
   });
 
   const handleChangeBuildTemple = (value) => {
-    if (value === 'Maven') {
-      AddTaskFormDataSet.current.set('bzmc', 'Maven构建');
+    if (value) {
+      AddTaskFormDataSet.current.set('bzmc', obj[value]);
       setSteps([{
-        name: 'Maven构建',
-        value: 'Maven',
+        name: obj[value],
+        value,
         checked: true,
-        yaml: useStore.getYaml,
+        yaml: useStore.getYaml[value],
       },
       // , {
       //   name: '上传软件包至发布库',
@@ -292,6 +299,7 @@ const AddTask = observer(() => {
         </div>,
         <Select onChange={handleChangeBuildTemple} name="gjmb">
           <Option value="Maven">Maven模板</Option>
+          <Option value="npm">Npm构建</Option>
         </Select>,
         <div newLine colSpan={2} style={{ display: 'flex', flexDirection: 'column' }} className="AddTask_stepContent">
           {generateSteps()}
@@ -325,6 +333,7 @@ const AddTask = observer(() => {
               value={steps.length > 0 ? steps.find(s => s.checked).yaml : ''}
               onValueChange={(valueYaml) => handleChangeValue(valueYaml)}
               modeChange={false}
+              showError={false}
             />
           </div>
         </div>,
