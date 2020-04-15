@@ -9,13 +9,15 @@ import javax.xml.bind.annotation.XmlElementWrapper;
  * @since 20-4-15
  */
 public class Profile {
+    private String id;
     private Activation activation;
     private List<Repository> repositories;
 
     public Profile() {
     }
 
-    public Profile(Activation activation, List<Repository> repositories) {
+    public Profile(String id, Activation activation, List<Repository> repositories) {
+        this.id = id;
         this.activation = activation;
         this.repositories = repositories;
     }
@@ -36,5 +38,13 @@ public class Profile {
 
     public void setRepositories(List<Repository> repositories) {
         this.repositories = repositories;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }
