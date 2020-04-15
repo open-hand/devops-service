@@ -145,16 +145,6 @@ public class RetrofitHandler {
         return retrofit.create(SonarClient.class);
     }
 
-    public static SonarClient getSonarClient(String sonarqubeUrl, String sonar, String token) {
-        ConfigurationProperties configurationProperties = new ConfigurationProperties();
-        configurationProperties.setBaseUrl(sonarqubeUrl);
-        configurationProperties.setType(sonar);
-        configurationProperties.setToken(token);
-        configurationProperties.setInsecureSkipTlsVerify(true);
-        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-        return retrofit.create(SonarClient.class);
-    }
-
     public static MarketServicePublicClient getMarketServiceClient(String gatewayUrl, String type) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setBaseUrl(gatewayUrl);
