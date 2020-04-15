@@ -22,6 +22,8 @@ import io.choerodon.devops.infra.dto.maven.*;
 public class MavenSettingsUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(MavenSettingsUtil.class);
 
+    private static final String DEFAULT_PROFILE_ID = "default";
+
     /**
      * 数组字节流的初始大小
      */
@@ -55,6 +57,6 @@ public class MavenSettingsUtil {
     }
 
     private static List<Profile> initProfiles(List<Repository> repositories) {
-        return ArrayUtil.singleAsList(new Profile(new Activation(true), repositories));
+        return ArrayUtil.singleAsList(new Profile(DEFAULT_PROFILE_ID, new Activation(true), repositories));
     }
 }
