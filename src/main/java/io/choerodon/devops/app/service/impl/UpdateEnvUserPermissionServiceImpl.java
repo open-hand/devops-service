@@ -47,7 +47,7 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
 
     @Autowired
     public UpdateEnvUserPermissionServiceImpl(DevopsEnvironmentService devopsEnvironmentService, DevopsEnvUserPermissionService devopsEnvUserPermissionService, UserAttrService userAttrService, DevopsProjectService devopsProjectService, GitlabServiceClientOperator gitlabServiceClientOperator, BaseServiceClientOperator baseServiceClientOperator, AppServiceMapper appServiceMapper, DevopsEnvironmentMapper devopsEnvironmentMapper) {
-        super(gitlabServiceClientOperator, userAttrService, appServiceMapper, devopsEnvironmentMapper);
+        super(gitlabServiceClientOperator, userAttrService, appServiceMapper, devopsEnvironmentMapper,baseServiceClientOperator);
         this.devopsEnvironmentService = devopsEnvironmentService;
         this.devopsEnvUserPermissionService = devopsEnvUserPermissionService;
         this.userAttrService = userAttrService;
@@ -117,10 +117,7 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
                 addGitlabUserIds.removeAll(allMemberGitlabIdsWithoutOwner);
 
                 deleteGitlabUserIds = new ArrayList<>(allMemberGitlabIdsWithoutOwner);
-
-                List<Long> orgRootIds = getAllGitlabMemberIsOrgRoot(devopsEnvUserPayload.getIamUserIds());
                 deleteGitlabUserIds.removeAll(updateGitlabUserIds);
-                deleteGitlabUserIds.removeAll(orgRootIds);
 
                 super.updateGitlabUserPermission("env", gitlabGroupId, gitlabProjectId, addGitlabUserIds, deleteGitlabUserIds);
                 return true;
