@@ -1,10 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.springframework.util.CollectionUtils;
 
 
 /**
@@ -97,7 +99,6 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
         Integer gitlabProjectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(devopsEnvUserPayload.getIamProjectId());
         Integer gitlabGroupId = devopsProjectDTO.getDevopsAppGroupId().intValue();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
 
         // 如果之前对应的gitlab project同步失败时，不进行后续操作
         if (gitlabProjectId == null) {
@@ -107,13 +108,8 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
         switch (devopsEnvUserPayload.getOption()) {
             // 原来跳过，现在不跳过，需要更新权限表，而且需要去掉原来gitlab中的权限
             case 1:
-                List<Long> longList = devopsEnvUserPayload.getIamUserIds()
-                        .stream()
-                        .filter(aLong -> !baseServiceClientOperator.isOrganzationRoot(aLong, projectDTO.getOrganizationId()))
-                        .collect(Collectors.toList());
-                updateGitlabUserIds = userAttrService.baseListByUserIds(longList)
-                        .stream()
-                        .map(e -> TypeUtil.objToInteger(e.getGitlabUserId())).collect(Collectors.toList());
+                updateGitlabUserIds = userAttrService.baseListByUserIds(devopsEnvUserPayload.getIamUserIds())
+                        .stream().map(e -> TypeUtil.objToInteger(e.getGitlabUserId())).collect(Collectors.toList());
                 // 获取项目下所有项目成员的gitlabUserIds，过滤掉项目所有者
                 allMemberGitlabIdsWithoutOwner = getAllGitlabMemberWithoutOwner(devopsEnvUserPayload.getIamProjectId());
 
@@ -121,7 +117,10 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
                 addGitlabUserIds.removeAll(allMemberGitlabIdsWithoutOwner);
 
                 deleteGitlabUserIds = new ArrayList<>(allMemberGitlabIdsWithoutOwner);
+
+                List<Long> orgRootIds = getAllGitlabMemberIsOrgRoot(devopsEnvUserPayload.getIamUserIds());
                 deleteGitlabUserIds.removeAll(updateGitlabUserIds);
+                deleteGitlabUserIds.removeAll(orgRootIds);
 
                 super.updateGitlabUserPermission("env", gitlabGroupId, gitlabProjectId, addGitlabUserIds, deleteGitlabUserIds);
                 return true;
@@ -145,6 +144,15 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
             default:
                 return true;
         }
+    }
+
+    private List<Long> getAllGitlabMemberIsOrgRoot(List<Long> iamUserIds) {
+        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(iamUserIds);
+        if (!CollectionUtils.isEmpty(iamUserDTOS)) {
+            return iamUserDTOS.stream().filter(iamUserDTO -> baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), iamUserDTO.getOrganizationId()))
+                    .map(IamUserDTO::getId).collect(Collectors.toList());
+        }
+        return Collections.emptyList();
     }
 
 
