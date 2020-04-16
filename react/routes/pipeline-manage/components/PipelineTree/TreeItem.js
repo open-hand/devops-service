@@ -61,6 +61,7 @@ const TreeItem = observer(({ record, search }) => {
         appServiceId={record.get('appServiceId')}
         gitlabProjectId={record.get('gitlabProjectId')}
         refresh={refresh}
+        prefixCls={prefixCls}
       />,
       okText: formatMessage({ id: 'execute' }),
       movable: false,
@@ -117,6 +118,7 @@ const TreeItem = observer(({ record, search }) => {
   async function loadMoreRecord(deleteRecord) {
     const parentId = record.get('parentId');
     deleteRecord.setState('isLoading', true);
+    deleteRecord.status = 'add';
     try {
       const { getPageList, setPageList } = mainStore;
       const page = getPageList[parentId] || 2;
