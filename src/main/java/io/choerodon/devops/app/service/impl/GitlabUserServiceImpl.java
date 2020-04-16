@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -39,6 +41,8 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
 
 
     @Override
@@ -73,9 +77,15 @@ public class GitlabUserServiceImpl implements GitlabUserService {
         checkGitlabUser(gitlabUserReqDTO);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(gitlabUserReqDTO.getExternUid()));
         if (userAttrDTO != null) {
-            gitlabServiceClientOperator.updateUser(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
-                    gitlabConfigurationProperties.getProjectLimit(),
-                    ConvertUtils.convertObject(gitlabUserReqDTO, GitlabUserReqDTO.class));
+            //更新项目成员的角色，如果项目是组织管理员则不更新权限
+            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrDTO.getIamUserId());
+            if (!Objects.isNull(iamUserDTO)) {
+                if (!baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), iamUserDTO.getOrganizationId())) {
+                    gitlabServiceClientOperator.updateUser(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
+                            gitlabConfigurationProperties.getProjectLimit(),
+                            ConvertUtils.convertObject(gitlabUserReqDTO, GitlabUserReqDTO.class));
+                }
+            }
         }
     }
 
