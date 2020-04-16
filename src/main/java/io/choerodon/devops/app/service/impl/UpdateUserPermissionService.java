@@ -73,8 +73,9 @@ public abstract class UpdateUserPermissionService {
                 if (gitlabProjectIds != null && !gitlabProjectIds.isEmpty()) {
                     gitlabProjectIds.stream().filter(Objects::nonNull).forEach(aLong -> addGitlabMember(type, TypeUtil.objToInteger(aLong), TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
                 }
+            }else {
+                addGitlabMember(type, TypeUtil.objToInteger(gitlabProjectId), e);
             }
-            addGitlabMember(type, TypeUtil.objToInteger(gitlabProjectId), e);
         });
         deleteGitlabUserIds.forEach(e -> deleteGitlabMember(TypeUtil.objToInteger(gitlabProjectId), e));
     }
