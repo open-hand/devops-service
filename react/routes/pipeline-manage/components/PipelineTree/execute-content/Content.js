@@ -1,9 +1,11 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Form, Progress, Select } from 'choerodon-ui/pro';
+import { Form, Progress, Select, Icon } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';
 import { map, some, debounce } from 'lodash';
 import { axios, Choerodon } from '@choerodon/boot';
 import { useExecuteContentStore } from './stores';
+
+import './index.less';
 
 const { OptGroup, Option } = Select;
 
@@ -16,6 +18,7 @@ export default observer(() => {
     store,
     modal,
     refresh,
+    prefixCls,
   } = useExecuteContentStore();
 
   const [branchPage, setBranchPage] = useState(1);
@@ -114,10 +117,10 @@ export default observer(() => {
       return (
         <div
           onClick={loadMore.bind(this, record.get('value'))}
-          className="c7n-option-popover"
+          className={`${prefixCls}-popover`}
         >
           {progress}
-          <span className="c7n-option-span">{formatMessage({ id: 'loadMore' })}</span>
+          <span className={`${prefixCls}-popover-option-more`}>{formatMessage({ id: 'loadMore' })}</span>
         </div>);
     }
 
@@ -136,7 +139,10 @@ export default observer(() => {
   function renderOption(text) {
     if (!text) return null;
     return (<span>
-      <i className={`icon c7n-branch-formItem-icon ${text.slice(-7) === '_type_t' ? 'icon-local_offer' : 'icon-branch'}`} />
+      <Icon
+        type={text.slice(-7) === '_type_t' ? 'local_offer' : 'branch'}
+        className={`${prefixCls}-popover-option-icon`}
+      />
       {text && text.slice(0, -7)}
     </span>);
   }
