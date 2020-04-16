@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -96,6 +97,7 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
         Integer gitlabProjectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(devopsEnvUserPayload.getIamProjectId());
         Integer gitlabGroupId = devopsProjectDTO.getDevopsAppGroupId().intValue();
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
 
         // 如果之前对应的gitlab project同步失败时，不进行后续操作
         if (gitlabProjectId == null) {
@@ -105,8 +107,13 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
         switch (devopsEnvUserPayload.getOption()) {
             // 原来跳过，现在不跳过，需要更新权限表，而且需要去掉原来gitlab中的权限
             case 1:
-                updateGitlabUserIds = userAttrService.baseListByUserIds(devopsEnvUserPayload.getIamUserIds())
-                        .stream().map(e -> TypeUtil.objToInteger(e.getGitlabUserId())).collect(Collectors.toList());
+                List<Long> longList = devopsEnvUserPayload.getIamUserIds()
+                        .stream()
+                        .filter(aLong -> !baseServiceClientOperator.isOrganzationRoot(aLong, projectDTO.getOrganizationId()))
+                        .collect(Collectors.toList());
+                updateGitlabUserIds = userAttrService.baseListByUserIds(longList)
+                        .stream()
+                        .map(e -> TypeUtil.objToInteger(e.getGitlabUserId())).collect(Collectors.toList());
                 // 获取项目下所有项目成员的gitlabUserIds，过滤掉项目所有者
                 allMemberGitlabIdsWithoutOwner = getAllGitlabMemberWithoutOwner(devopsEnvUserPayload.getIamProjectId());
 
