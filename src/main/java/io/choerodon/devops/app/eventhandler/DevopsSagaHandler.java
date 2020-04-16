@@ -3,12 +3,15 @@ package io.choerodon.devops.app.eventhandler;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.kubernetes.client.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,6 +89,8 @@ public class DevopsSagaHandler {
     @Autowired
     @Lazy
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
 
 
     /**
@@ -208,9 +213,16 @@ public class DevopsSagaHandler {
         DevOpsUserPayload devOpsUserPayload = gson.fromJson(data, DevOpsUserPayload.class);
         try {
             UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
-            updateUserPermissionService
-                    .updateUserPermission(devOpsUserPayload.getIamProjectId(), devOpsUserPayload.getAppServiceId(),
-                            devOpsUserPayload.getIamUserIds(), devOpsUserPayload.getOption());
+            //如果是用户是组织层的root，则跳过权限跟新
+            devOpsUserPayload.getIamUserIds().stream().forEach(userId -> {
+                IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
+                if (!baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), iamUserDTO.getOrganizationId())) {
+                    updateUserPermissionService
+                            .updateUserPermission(devOpsUserPayload.getIamProjectId(), devOpsUserPayload.getAppServiceId(),
+                                    Arrays.asList(userId), devOpsUserPayload.getOption());
+                }
+            });
+
         } catch (Exception e) {
             LOGGER.error("update gitlab users {} error", devOpsUserPayload.getIamUserIds());
             throw e;
