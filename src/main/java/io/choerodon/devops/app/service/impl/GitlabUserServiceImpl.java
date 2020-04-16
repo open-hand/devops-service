@@ -77,15 +77,9 @@ public class GitlabUserServiceImpl implements GitlabUserService {
         checkGitlabUser(gitlabUserReqDTO);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(gitlabUserReqDTO.getExternUid()));
         if (userAttrDTO != null) {
-            //更新项目成员的角色，如果项目是组织管理员则不更新权限
-            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrDTO.getIamUserId());
-            if (!Objects.isNull(iamUserDTO)) {
-                if (!baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), iamUserDTO.getOrganizationId())) {
-                    gitlabServiceClientOperator.updateUser(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
-                            gitlabConfigurationProperties.getProjectLimit(),
-                            ConvertUtils.convertObject(gitlabUserReqDTO, GitlabUserReqDTO.class));
-                }
-            }
+            gitlabServiceClientOperator.updateUser(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
+                    gitlabConfigurationProperties.getProjectLimit(),
+                    ConvertUtils.convertObject(gitlabUserReqDTO, GitlabUserReqDTO.class));
         }
     }
 

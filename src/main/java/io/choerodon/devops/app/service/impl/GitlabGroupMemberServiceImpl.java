@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -355,8 +356,13 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 memberHelper.getProjectOwnerAccessLevel().toValue(),
                 memberHelper.getOrganizationAccessLevel().toValue()};
         AccessLevel accessLevel = AccessLevel.forValue(Collections.max(Arrays.asList(roles)));
-        // 如果当前iam用户只有项目成员的权限
-        if (AccessLevel.DEVELOPER.equals(accessLevel)) {
+        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrDTO.getIamUserId());
+        if (Objects.isNull(iamUserDTO)) {
+            return;
+        }
+        // 如果当前iam用户只有项目成员的权限,并且他不是组织管理员
+        if (AccessLevel.DEVELOPER.equals(accessLevel)
+                && !baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), iamUserDTO.getOrganizationId())) {
             // 查看是不是由项目所有者改为项目成员
             devopsProjectDTO = devopsProjectService.baseQueryByProjectId(resourceId);
 
