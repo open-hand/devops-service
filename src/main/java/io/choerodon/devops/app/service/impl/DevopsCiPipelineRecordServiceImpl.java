@@ -349,6 +349,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         pipelineRecordDTO.setDurationSeconds(TypeUtil.objToLong(pipeline.getDuration()));
         pipelineRecordDTO.setStatus(pipeline.getStatus().toValue());
         pipelineRecordDTO.setTriggerUserId(DetailsHelper.getUserDetails().getUserId());
+        pipelineRecordDTO.setGitlabTriggerRef(pipeline.getRef());
         devopsCiPipelineRecordMapper.insertSelective(pipelineRecordDTO);
     }
 
