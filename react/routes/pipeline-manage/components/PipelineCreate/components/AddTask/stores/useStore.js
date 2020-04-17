@@ -41,7 +41,7 @@ mvn package -Dmaven.test.skip=true -U -e -X -B`,
 export PATH=$PATH:/root/.npm-global/bin
 #设置Devcloud镜像仓加速构建
 npm config set registry https://mirrors.huaweicloud.com/repository/npm/
-npm config set prefix '~/.npm-global'
+npm config set prefix ~/.npm-global
 #如需安装node-sass
 #npm config set sass_binary_site https://repo.huaweicloud.com/node-sass/
 #npm install node-sass
@@ -49,6 +49,25 @@ npm config set prefix '~/.npm-global'
 npm install
 #默认构建
 npm run build`,
+      custom: `
+# job模板，使用时根据需求替换
+# job名称（与任务名称保持一致）
+job_1:
+  # job所属阶段名称，与创建阶段时保持一致
+  stage: build
+  # job执行内容
+  script:
+    - echo "hello world!"
+  # 执行job的必须条件
+  only:
+    refs:
+      - master
+  # 不执行job的条件
+  except:
+    refs:
+      - tags
+# 详细定义，请参考：https://docs.gitlab.com/ee/ci/yaml/README.html
+      `,
     },
 
     get getYaml() {
