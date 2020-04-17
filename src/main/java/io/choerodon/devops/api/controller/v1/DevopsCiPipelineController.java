@@ -111,6 +111,7 @@ public class DevopsCiPipelineController {
     public ResponseEntity<Boolean> executeNew(
             @PathVariable(value = "ci_pipeline_id") Long ciPipelineId,
             @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
             @RequestParam(value = "gitlab_project_id") Long gitlabProjectId,
             @ApiParam(value = "分支名", required = true)
             @RequestParam(value = "ref") String ref) {

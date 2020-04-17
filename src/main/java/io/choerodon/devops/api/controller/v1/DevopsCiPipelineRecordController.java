@@ -58,6 +58,7 @@ public class DevopsCiPipelineRecordController {
     @ApiOperation(value = "重试GitLab流水线")
     @PostMapping(value = "/{gitlab_pipeline_id}/retry")
     public ResponseEntity<Boolean> retry(
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @PathVariable("gitlab_pipeline_id") Long gitlabPipelineId,
             @ApiParam(value = "流水线ID", required = true)
@@ -74,6 +75,7 @@ public class DevopsCiPipelineRecordController {
     @ApiOperation(value = "取消GitLab流水线")
     @PostMapping(value = "/{gitlab_pipeline_id}/cancel")
     public ResponseEntity<Boolean> cancel(
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @PathVariable("gitlab_pipeline_id") Long gitlabPipelineId,
             @ApiParam(value = "流水线ID", required = true)
