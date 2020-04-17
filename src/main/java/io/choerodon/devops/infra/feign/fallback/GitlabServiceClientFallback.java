@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 
+import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -318,12 +319,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<GitlabPipelineDTO> retryPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+    public ResponseEntity<Pipeline> retryPipeline(Integer projectId, Integer pipelineId, Integer userId) {
         throw new CommonException("error.pipeline.retry");
     }
 
     @Override
-    public ResponseEntity<GitlabPipelineDTO> cancelPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+    public ResponseEntity<Pipeline> cancelPipeline(Integer projectId, Integer pipelineId, Integer userId) {
         throw new CommonException("error.pipeline.cancel");
     }
 
