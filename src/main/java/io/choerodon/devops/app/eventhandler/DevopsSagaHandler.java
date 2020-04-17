@@ -3,6 +3,7 @@ package io.choerodon.devops.app.eventhandler;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -222,9 +223,16 @@ public class DevopsSagaHandler {
         DevOpsUserPayload devOpsUserPayload = gson.fromJson(data, DevOpsUserPayload.class);
         try {
             UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
-            updateUserPermissionService
-                    .updateUserPermission(devOpsUserPayload.getIamProjectId(), devOpsUserPayload.getAppServiceId(),
-                            devOpsUserPayload.getIamUserIds(), devOpsUserPayload.getOption());
+            //如果是用户是组织层的root，则跳过权限跟新
+            devOpsUserPayload.getIamUserIds().stream().forEach(userId -> {
+                IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
+                if (!baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), iamUserDTO.getOrganizationId())) {
+                    updateUserPermissionService
+                            .updateUserPermission(devOpsUserPayload.getIamProjectId(), devOpsUserPayload.getAppServiceId(),
+                                    Arrays.asList(userId), devOpsUserPayload.getOption());
+                }
+            });
+
         } catch (Exception e) {
             LOGGER.error("update gitlab users {} error", devOpsUserPayload.getIamUserIds());
             throw e;

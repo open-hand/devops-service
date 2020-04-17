@@ -7,6 +7,8 @@ import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
@@ -25,22 +27,26 @@ public abstract class UpdateUserPermissionService {
     private UserAttrService userAttrService;
     private AppServiceMapper appServiceMapper;
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
+    private BaseServiceClientOperator baseServiceClientOperator;
 
     protected UpdateUserPermissionService() {
         this.gitlabServiceClientOperator = ApplicationContextHelper.getSpringFactory().getBean(GitlabServiceClientOperator.class);
         this.userAttrService = ApplicationContextHelper.getSpringFactory().getBean(UserAttrService.class);
         this.appServiceMapper = ApplicationContextHelper.getSpringFactory().getBean(AppServiceMapper.class);
         this.devopsEnvironmentMapper = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvironmentMapper.class);
+        this.baseServiceClientOperator = ApplicationContextHelper.getSpringFactory().getBean(BaseServiceClientOperator.class);
     }
 
     protected UpdateUserPermissionService(GitlabServiceClientOperator gitlabServiceClientOperator,
                                           UserAttrService userAttrService,
                                           AppServiceMapper appServiceMapper,
-                                          DevopsEnvironmentMapper devopsEnvironmentMapper) {
+                                          DevopsEnvironmentMapper devopsEnvironmentMapper,
+                                          BaseServiceClientOperator baseServiceClientOperator) {
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
         this.userAttrService = userAttrService;
         this.appServiceMapper = appServiceMapper;
         this.devopsEnvironmentMapper = devopsEnvironmentMapper;
+        this.baseServiceClientOperator = baseServiceClientOperator;
     }
 
     public abstract Boolean updateUserPermission(Long projectId, Long id, List<Long> userIds, Integer option);
@@ -51,7 +57,15 @@ public abstract class UpdateUserPermissionService {
         addGitlabUserIds.forEach(e -> {
             MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(gitlabGroupId, TypeUtil.objToInteger(e));
             if (memberDTO != null) {
-                gitlabServiceClientOperator.deleteGroupMember(gitlabGroupId, TypeUtil.objToInteger(e));
+                //如果用户为组织root则不删除权限
+                UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(Long.valueOf(e));
+                if (!Objects.isNull(userAttrDTO)) {
+                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrDTO.getIamUserId());
+                    if (!Objects.isNull(iamUserDTO)
+                            && !baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), iamUserDTO.getOrganizationId())) {
+                        gitlabServiceClientOperator.deleteGroupMember(gitlabGroupId, TypeUtil.objToInteger(e));
+                    }
+                }
                 UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(e));
                 List<Long> gitlabProjectIds = type.equals("env") ?
                         devopsEnvironmentMapper.listGitlabProjectIdByEnvPermission(TypeUtil.objToLong(gitlabGroupId), userAttrE.getIamUserId())
@@ -59,8 +73,9 @@ public abstract class UpdateUserPermissionService {
                 if (gitlabProjectIds != null && !gitlabProjectIds.isEmpty()) {
                     gitlabProjectIds.stream().filter(Objects::nonNull).forEach(aLong -> addGitlabMember(type, TypeUtil.objToInteger(aLong), TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
                 }
+            }else {
+                addGitlabMember(type, TypeUtil.objToInteger(gitlabProjectId), e);
             }
-            addGitlabMember(type, TypeUtil.objToInteger(gitlabProjectId), e);
         });
         deleteGitlabUserIds.forEach(e -> deleteGitlabMember(TypeUtil.objToInteger(gitlabProjectId), e));
     }

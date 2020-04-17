@@ -1,9 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,7 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.springframework.util.CollectionUtils;
 
 
 /**
@@ -44,7 +47,7 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
 
     @Autowired
     public UpdateEnvUserPermissionServiceImpl(DevopsEnvironmentService devopsEnvironmentService, DevopsEnvUserPermissionService devopsEnvUserPermissionService, UserAttrService userAttrService, DevopsProjectService devopsProjectService, GitlabServiceClientOperator gitlabServiceClientOperator, BaseServiceClientOperator baseServiceClientOperator, AppServiceMapper appServiceMapper, DevopsEnvironmentMapper devopsEnvironmentMapper) {
-        super(gitlabServiceClientOperator, userAttrService, appServiceMapper, devopsEnvironmentMapper);
+        super(gitlabServiceClientOperator, userAttrService, appServiceMapper, devopsEnvironmentMapper,baseServiceClientOperator);
         this.devopsEnvironmentService = devopsEnvironmentService;
         this.devopsEnvUserPermissionService = devopsEnvUserPermissionService;
         this.userAttrService = userAttrService;
@@ -138,6 +141,15 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
             default:
                 return true;
         }
+    }
+
+    private List<Long> getAllGitlabMemberIsOrgRoot(List<Long> iamUserIds) {
+        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(iamUserIds);
+        if (!CollectionUtils.isEmpty(iamUserDTOS)) {
+            return iamUserDTOS.stream().filter(iamUserDTO -> baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), iamUserDTO.getOrganizationId()))
+                    .map(IamUserDTO::getId).collect(Collectors.toList());
+        }
+        return Collections.emptyList();
     }
 
 

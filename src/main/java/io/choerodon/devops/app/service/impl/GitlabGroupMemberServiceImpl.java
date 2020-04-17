@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,7 +119,10 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     private void deleteGitLabPermissions(List<ProjectDTO> projectDTOS, GitlabGroupMemberVO gitlabGroupMemberVO) {
         projectDTOS.stream().forEach(projectDTO -> {
             LOGGER.info("start delete project id is {} for gitlab org owner", projectDTO.getId());
-            deleteProcess(gitlabGroupMemberVO);
+            //如果删除的成员为该项目下的项目所有者，则不删除gitlab相应的权限
+            if (!baseServiceClientOperator.isProjectOwner(gitlabGroupMemberVO.getUserId(), projectDTO.getId())) {
+                deleteProcess(gitlabGroupMemberVO, projectDTO.getId());
+            }
         });
     }
 
@@ -127,15 +131,23 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     public void deleteGitlabGroupMemberRole(List<GitlabGroupMemberVO> gitlabGroupMemberVOList) {
         gitlabGroupMemberVOList.stream()
                 .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(PROJECT))
-                .forEach(this::deleteProcess);
+                .forEach(gitlabGroupMemberVO -> {
+                    //删除用户的项目所有者权限，如果是组织root,则不删除该项目下gitlab相应的权限
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(gitlabGroupMemberVO.getResourceId());
+                    if (!baseServiceClientOperator.isOrganzationRoot(gitlabGroupMemberVO.getUserId(), projectDTO.getOrganizationId())) {
+                        deleteProcess(gitlabGroupMemberVO, projectDTO.getId());
+                    }
+                });
         //组织root的标签，那么删除在组织下的root的权限
-        gitlabGroupMemberVOList.stream().filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceType.ORGANIZATION.value())).forEach(gitlabGroupMemberVO -> {
-            screenOrgLable(gitlabGroupMemberVO, Boolean.FALSE);
-        });
+        gitlabGroupMemberVOList.stream()
+                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceType.ORGANIZATION.value()))
+                .forEach(gitlabGroupMemberVO -> {
+                    screenOrgLable(gitlabGroupMemberVO, Boolean.FALSE);
+                });
     }
 
 
-    private void deleteProcess(GitlabGroupMemberVO gitlabGroupMemberVO) {
+    private void deleteProcess(GitlabGroupMemberVO gitlabGroupMemberVO, Long projectId) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupMemberVO.getUserId());
         userAttrService.checkUserSync(userAttrDTO, gitlabGroupMemberVO.getUserId());
         Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
@@ -147,7 +159,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         }
         DevopsProjectDTO devopsProjectDTO;
         MemberDTO memberDTO;
-        devopsProjectDTO = devopsProjectService.baseQueryByProjectId(gitlabGroupMemberVO.getResourceId());
+        devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
 
         // 删除应用服务对应gitlab的权限
         memberDTO = gitlabServiceClientOperator.queryGroupMember(
@@ -344,8 +356,13 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 memberHelper.getProjectOwnerAccessLevel().toValue(),
                 memberHelper.getOrganizationAccessLevel().toValue()};
         AccessLevel accessLevel = AccessLevel.forValue(Collections.max(Arrays.asList(roles)));
-        // 如果当前iam用户只有项目成员的权限
-        if (AccessLevel.DEVELOPER.equals(accessLevel)) {
+        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrDTO.getIamUserId());
+        if (Objects.isNull(iamUserDTO)) {
+            return;
+        }
+        // 如果当前iam用户只有项目成员的权限,并且他不是组织管理员
+        if (AccessLevel.DEVELOPER.equals(accessLevel)
+                && !baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), iamUserDTO.getOrganizationId())) {
             // 查看是不是由项目所有者改为项目成员
             devopsProjectDTO = devopsProjectService.baseQueryByProjectId(resourceId);
 
