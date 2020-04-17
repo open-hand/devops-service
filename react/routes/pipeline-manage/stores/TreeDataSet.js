@@ -96,8 +96,10 @@ export default ({ projectId, mainStore }) => ({
           return;
         }
       }
-      record.isSelected = true;
-      handleSelect(record, mainStore);
+      if (record) {
+        record.isSelected = true;
+        handleSelect(record, mainStore);
+      }
     },
   },
 });
