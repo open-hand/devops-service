@@ -552,7 +552,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         List<String> shells = GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(ciConfigTemplateVO.getScript()), true, true);
         if (hasSettings) {
             // 插入shell指令将配置的settings文件下载到项目目录下
-            shells.add(0, GitlabCiUtil.downloadMavenSettings(projectId, jobId, ciConfigTemplateVO.getSequence()));
+            shells.add(0, GitlabCiUtil.downloadMavenSettings(gatewayUrl, projectId, jobId, ciConfigTemplateVO.getSequence()));
         }
         return shells;
     }
