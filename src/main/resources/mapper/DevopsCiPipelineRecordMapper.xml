@@ -7,4 +7,9 @@
         FROM devops_ci_pipeline_record dcpr
         WHERE dcpr.ci_pipeline_id = #{ciPipelineId}
     </select>
+    <update id="updateStatusByGitlabPipelineId">
+        UPDATE devops_ci_pipeline_record
+        set status = #{status}
+        WHERE gitlab_pipeline_id = #{gitlabPipelineId}
+    </update>
 </mapper>

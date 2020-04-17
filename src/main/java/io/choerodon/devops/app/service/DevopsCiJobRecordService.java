@@ -1,7 +1,10 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.api.vo.JobWebHookVO;
 import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
+import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 
 /**
  * 〈功能简述〉
@@ -27,4 +30,6 @@ public interface DevopsCiJobRecordService {
      * @param gitlabProjectId
      */
     void deleteByGitlabProjectId(Long gitlabProjectId);
+
+    void create(Long gitlabPipelineId, Long gitlabProjectId, List<JobDTO> jobDTOS);
 }

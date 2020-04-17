@@ -12,10 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 /**
@@ -55,5 +52,33 @@ public class DevopsCiPipelineRecordController {
             @ApiParam(value = "gitlab流水线Id", required = true)
             @PathVariable(value = "gitlab_pipeline_id") Long gitlabPipelineId) {
         return ResponseEntity.ok(devopsCiPipelineRecordService.queryPipelineRecordDetails(projectId, gitlabPipelineId));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "重试GitLab流水线")
+    @PostMapping(value = "/{gitlab_pipeline_id}/retry")
+    public ResponseEntity<Boolean> retry(
+            @ApiParam(value = "gitlab项目ID", required = true)
+            @PathVariable("gitlab_pipeline_id") Long gitlabPipelineId,
+            @ApiParam(value = "流水线ID", required = true)
+            @RequestParam("gitlab_project_id") Long gitlabProjectId) {
+        devopsCiPipelineRecordService.retry(gitlabPipelineId, gitlabProjectId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Cancel jobs in a pipeline
+     *
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "取消GitLab流水线")
+    @PostMapping(value = "/{gitlab_pipeline_id}/cancel")
+    public ResponseEntity<Boolean> cancel(
+            @ApiParam(value = "gitlab项目ID", required = true)
+            @PathVariable("gitlab_pipeline_id") Long gitlabPipelineId,
+            @ApiParam(value = "流水线ID", required = true)
+            @RequestParam("gitlab_project_id") Long gitlabProjectId) {
+        devopsCiPipelineRecordService.cancel(gitlabPipelineId, gitlabProjectId);
+        return ResponseEntity.noContent().build();
     }
 }

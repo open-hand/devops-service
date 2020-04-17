@@ -105,4 +105,16 @@ public class DevopsCiPipelineController {
         return ResponseEntity.noContent().build();
     }
 
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "全新执行GitLab流水线")
+    @PostMapping(value = "/{ci_pipeline_id}/execute")
+    public ResponseEntity<Boolean> executeNew(
+            @PathVariable(value = "ci_pipeline_id") Long ciPipelineId,
+            @ApiParam(value = "项目ID", required = true)
+            @RequestParam(value = "gitlab_project_id") Long gitlabProjectId,
+            @ApiParam(value = "分支名", required = true)
+            @RequestParam(value = "ref") String ref) {
+        devopsCiPipelineService.executeNew(ciPipelineId, gitlabProjectId, ref);
+        return ResponseEntity.noContent().build();
+    }
 }

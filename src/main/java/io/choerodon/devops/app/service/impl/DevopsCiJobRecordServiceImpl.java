@@ -9,7 +9,9 @@ import io.choerodon.devops.app.service.DevopsCiJobRecordService;
 import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
 import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
+import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper;
+import io.choerodon.devops.infra.util.TypeUtil;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,5 +90,20 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         DevopsCiJobRecordDTO jobRecordDTO = new DevopsCiJobRecordDTO();
         jobRecordDTO.setGitlabProjectId(gitlabProjectId);
         devopsCiJobRecordMapper.delete(jobRecordDTO);
+    }
+
+    @Override
+    public void create(Long gitlabPipelineId, Long gitlabProjectId, List<JobDTO> jobDTOS) {
+        jobDTOS.forEach(job -> {
+            DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
+            recordDTO.setCiPipelineRecordId(gitlabPipelineId);
+            recordDTO.setGitlabProjectId(gitlabProjectId);
+            recordDTO.setStatus(job.getStatus().toValue());
+            recordDTO.setStage(job.getStage());
+            recordDTO.setGitlabJobId(TypeUtil.objToLong(job.getId()));
+            recordDTO.setStartedDate(job.getStartedAt());
+            recordDTO.setFinishedDate(job.getFinishedAt());
+            devopsCiJobRecordMapper.insertSelective(recordDTO);
+        });
     }
 }
