@@ -85,4 +85,12 @@ public interface DevopsCiPipelineService {
      * @return
      */
     DevopsCiPipelineDTO enablePipeline(Long projectId, Long ciPipelineId);
+
+    /**
+     * 全新执行流水线
+     * @param ciPipelineId
+     * @param gitlabProjectId
+     * @param ref
+     */
+    void executeNew(Long ciPipelineId, Long gitlabProjectId, String ref);
 }

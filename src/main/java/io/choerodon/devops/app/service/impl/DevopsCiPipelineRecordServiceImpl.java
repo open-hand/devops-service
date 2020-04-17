@@ -13,20 +13,26 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.JobDTO;
+import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.JobStatusEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PageRequestUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 /**
@@ -40,6 +46,8 @@ import org.springframework.util.CollectionUtils;
 public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecordService {
 
     private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
+    private static final String ERROR_GITLAB_PIPELINE_ID_IS_NULL = "error.gitlab.pipeline.id.is.null";
+    private static final String ERROR_GITLAB_PROJECT_ID_IS_NULL = "error.gitlab.project.id.is.null";
 
     private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
     private DevopsCiJobRecordService devopsCiJobRecordService;
@@ -51,6 +59,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private TransactionalProducer transactionalProducer;
     private UserAttrService userAttrService;
     private BaseServiceClientOperator baseServiceClientOperator;
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -63,7 +72,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                              AppServiceService applicationService,
                                              TransactionalProducer transactionalProducer,
                                              UserAttrService userAttrService,
-                                             BaseServiceClientOperator baseServiceClientOperator) {
+                                             BaseServiceClientOperator baseServiceClientOperator,
+                                             GitlabServiceClientOperator gitlabServiceClientOperator) {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
         this.devopsCiStageService = devopsCiStageService;
@@ -74,6 +84,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         this.transactionalProducer = transactionalProducer;
         this.userAttrService = userAttrService;
         this.baseServiceClientOperator = baseServiceClientOperator;
+        this.gitlabServiceClientOperator = gitlabServiceClientOperator;
     }
 
     @Override
@@ -326,6 +337,54 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         pipelineRecordDTO.setGitlabProjectId(gitlabProjectId);
         devopsCiPipelineRecordMapper.delete(pipelineRecordDTO);
     }
+
+    @Override
+    public void create(Long ciPipelineId, Long gitlabProjectId, Pipeline pipeline) {
+        DevopsCiPipelineRecordDTO pipelineRecordDTO = new DevopsCiPipelineRecordDTO();
+        pipelineRecordDTO.setCiPipelineId(ciPipelineId);
+        pipelineRecordDTO.setGitlabProjectId(gitlabProjectId);
+        pipelineRecordDTO.setGitlabPipelineId(TypeUtil.objToLong(pipeline.getId()));
+        pipelineRecordDTO.setCreatedDate(pipeline.getCreatedAt());
+        pipelineRecordDTO.setFinishedDate(pipeline.getFinished_at());
+        pipelineRecordDTO.setDurationSeconds(TypeUtil.objToLong(pipeline.getDuration()));
+        pipelineRecordDTO.setStatus(pipeline.getStatus().toValue());
+        pipelineRecordDTO.setTriggerUserId(DetailsHelper.getUserDetails().getUserId());
+        pipelineRecordDTO.setGitlabTriggerRef(pipeline.getRef());
+        devopsCiPipelineRecordMapper.insertSelective(pipelineRecordDTO);
+    }
+
+    @Override
+    public void retry(Long gitlabPipelineId, Long gitlabProjectId) {
+        Assert.notNull(gitlabPipelineId, ERROR_GITLAB_PIPELINE_ID_IS_NULL);
+        Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
+        // 重试pipeline
+        Pipeline pipeline = gitlabServiceClientOperator.retryPipeline(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+        // 更新pipeline status
+        devopsCiPipelineRecordMapper.updateStatusByGitlabPipelineId(gitlabPipelineId, pipeline.getStatus().toValue());
+
+        // 更新job status
+        List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+        jobDTOS.forEach(jobDTO -> devopsCiJobRecordMapper.updateStatusByGitlabJobId(jobDTO.getId().longValue(), jobDTO.getStatus().toValue()));
+    }
+
+    @Override
+    public void cancel(Long gitlabPipelineId, Long gitlabProjectId) {
+        Assert.notNull(gitlabPipelineId, ERROR_GITLAB_PIPELINE_ID_IS_NULL);
+        Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
+        Pipeline pipeline = gitlabServiceClientOperator.cancelPipeline(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+
+        // 更新pipeline status
+        devopsCiPipelineRecordMapper.updateStatusByGitlabPipelineId(gitlabPipelineId, pipeline.getStatus().toValue());
+
+        // 更新job status
+        List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+        jobDTOS.forEach(jobDTO -> devopsCiJobRecordMapper.updateStatusByGitlabJobId(jobDTO.getId().longValue(), jobDTO.getStatus().toValue()));
+    }
+
 
     private <T> void calculateStageStatus(DevopsCiStageRecordVO stageRecord, Map<String, List<T>> statsuMap) {
         if (!CollectionUtils.isEmpty(statsuMap.get(JobStatusEnum.CREATED.value()))) {

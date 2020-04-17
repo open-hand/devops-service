@@ -1,9 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
 import io.choerodon.devops.app.service.ProjectPipelineService;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -22,6 +24,8 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private UserAttrService userAttrService;
+    @Autowired
+    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
 
 
     public Integer getGitlabUserId() {
@@ -33,18 +37,18 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
     @Override
     public Boolean retry(Long gitlabProjectId, Long pipelineId) {
         return gitlabServiceClientOperator.retryPipeline(gitlabProjectId.intValue(),
-                pipelineId.intValue(), getGitlabUserId());
+                pipelineId.intValue(), getGitlabUserId()) != null;
     }
 
     @Override
     public Boolean cancel(Long gitlabProjectId, Long pipelineId) {
         return gitlabServiceClientOperator.cancelPipeline(gitlabProjectId.intValue(),
-                pipelineId.intValue(), getGitlabUserId());
+                pipelineId.intValue(), getGitlabUserId()) != null;
     }
 
     @Override
     public Boolean create(Long gitlabProjectId, String ref) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
-        return gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(), userAttrDTO.getGitlabUserId().intValue(), ref);
+        return gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(), userAttrDTO.getGitlabUserId().intValue(), ref) != null;
     }
 }

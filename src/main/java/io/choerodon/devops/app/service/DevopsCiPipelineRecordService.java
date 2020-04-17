@@ -6,6 +6,7 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
+import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import org.springframework.data.domain.Pageable;
 
 /**
@@ -49,4 +50,20 @@ public interface DevopsCiPipelineRecordService {
      * @param gitlabProjectId
      */
     void deleteByGitlabProjectId(Long gitlabProjectId);
+
+    void create(Long ciPipelineId, Long gitlabProjectId, Pipeline pipeline);
+
+    /**
+     * 重试流水线
+     * @param gitlabPipelineId
+     * @param gitlabProjectId
+     */
+    void retry(Long gitlabPipelineId, Long gitlabProjectId);
+
+    /**
+     * 取消执行流水线
+     * @param gitlabPipelineId
+     * @param gitlabProjectId
+     */
+    void cancel(Long gitlabPipelineId, Long gitlabProjectId);
 }

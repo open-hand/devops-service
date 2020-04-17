@@ -4,16 +4,16 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 
+import io.choerodon.devops.api.vo.FileCreationVO;
+import io.choerodon.devops.infra.dto.RepositoryFileDTO;
+import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
+import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import io.choerodon.devops.api.vo.FileCreationVO;
-import io.choerodon.devops.infra.dto.RepositoryFileDTO;
-import io.choerodon.devops.infra.dto.gitlab.*;
-import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
 
 /**
  * gitlab服务 feign客户端
@@ -250,13 +250,13 @@ public interface GitlabServiceClient {
                                                @RequestParam(value = "userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}/retry")
-    ResponseEntity<GitlabPipelineDTO> retryPipeline(
+    ResponseEntity<Pipeline> retryPipeline(
             @PathVariable("projectId") Integer projectId,
             @PathVariable("pipelineId") Integer pipelineId,
             @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}/cancel")
-    ResponseEntity<GitlabPipelineDTO> cancelPipeline(
+    ResponseEntity<Pipeline> cancelPipeline(
             @PathVariable("projectId") Integer projectId,
             @PathVariable("pipelineId") Integer pipelineId,
             @RequestParam("userId") Integer userId);
@@ -521,7 +521,7 @@ public interface GitlabServiceClient {
      */
     @ApiOperation(value = "Create a pipelines jobs ")
     @PostMapping("/v1/projects/{projectId}/pipelines")
-    ResponseEntity createPipeline(
+    ResponseEntity<Pipeline> createPipeline(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "projectId") Integer projectId,
             @ApiParam(value = "userId")

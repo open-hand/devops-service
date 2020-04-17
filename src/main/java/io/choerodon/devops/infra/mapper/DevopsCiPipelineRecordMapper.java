@@ -5,6 +5,7 @@ import java.util.List;
 import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
 import io.choerodon.mybatis.common.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 〈功能简述〉
@@ -20,5 +21,7 @@ public interface DevopsCiPipelineRecordMapper extends Mapper<DevopsCiPipelineRec
      * @param ciPipelineId
      * @return
      */
-    List<DevopsCiPipelineRecordVO> listByCiPipelineId(Long ciPipelineId);
+    List<DevopsCiPipelineRecordVO> listByCiPipelineId(@Param("ciPipelineId") Long ciPipelineId);
+
+    int updateStatusByGitlabPipelineId(@Param("gitlabPipelineId") Long gitlabPipelineId, @Param("status") String status);
 }

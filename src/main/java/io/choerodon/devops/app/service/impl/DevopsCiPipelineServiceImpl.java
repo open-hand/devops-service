@@ -13,9 +13,11 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
 import io.choerodon.devops.infra.dto.gitlab.ci.OnlyExceptPolicy;
+import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.DefaultTriggerRefTypeEnum;
 import io.choerodon.devops.infra.enums.SonarAuthType;
@@ -337,6 +339,16 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             throw new CommonException(ENABLE_PIPELINE_FAILED);
         }
         return devopsCiPipelineMapper.selectByPrimaryKey(ciPipelineId);
+    }
+
+    @Override
+    public void executeNew(Long ciPipelineId, Long gitlabProjectId, String ref) {
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
+        Pipeline pipeline = gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(), userAttrDTO.getGitlabUserId().intValue(), ref);
+        // 保存执行记录
+        devopsCiPipelineRecordService.create(ciPipelineId, gitlabProjectId, pipeline);
+        List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), pipeline.getId(), userAttrDTO.getGitlabUserId().intValue());
+        devopsCiJobRecordService.create(TypeUtil.objToLong(pipeline.getId()), gitlabProjectId, jobDTOS);
     }
 
     private void deleteGitlabCiFile(Integer gitlabProjectId, Long iamUserId) {
