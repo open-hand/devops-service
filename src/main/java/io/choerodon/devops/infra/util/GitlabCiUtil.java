@@ -204,16 +204,29 @@ public class GitlabCiUtil {
     }
 
     /**
+     * 下载文件并打印http_status_code
+     *
+     * @param url      文件下载地址
+     * @param fileName 文件保存名称
+     */
+    public static String downloadFile(String url, String fileName) {
+        String rawCommand = "rm -rf %s && http_status_code=`curl -o %s -s -m 10 --connect-timeout 10 -w %%{http_code} \"%s\"`&& echo \"status_code:\"$http_status_code";
+        return String.format(rawCommand, fileName, fileName, url);
+    }
+
+    /**
      * 根据参数生成获取相应maven settings文件到本地的命令
      *
-     * @param projectId 项目id
-     * @param ciJobId   jobId
-     * @param sequence  序列号
-     * @return shell命令
+     * @param gatewayUrl 主机名地址
+     * @param projectId  项目id
+     * @param ciJobId    jobId
+     * @param sequence   序列号
+     * @return String  shell命令
      */
-    public static String downloadMavenSettings(Long projectId, Long ciJobId, Long sequence) {
-        // TODO by li hao
-        return null;
+    public static String downloadMavenSettings(String gatewayUrl, Long projectId, Long ciJobId, Long sequence) {
+        String SettingsUrlFormat = "%s/devops/v1/projects/%s/ci_jobs/maven_settings?ciJobId=%s&sequence=%s";
+        String url = String.format(SettingsUrlFormat, gatewayUrl, projectId, ciJobId, sequence);
+        return downloadFile(url, "settings.xml");
     }
 
     public static String generateUploadTgzScripts(Long projectId) {
