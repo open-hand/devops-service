@@ -197,4 +197,17 @@ public class GitlabCiUtil {
         // 结果形如: mvn deploy -DaltDeploymentRepository=local-snapshot::default::http://localhost:8081/repository/test-snapshot/ -s settings.xml
         return "mvn deploy -DaltDeploymentRepository=" + serverId + "::default::" + repoUrl + " -s settings.xml";
     }
+
+    /**
+     * 根据参数生成获取相应maven settings文件到本地的命令
+     *
+     * @param projectId 项目id
+     * @param ciJobId   jobId
+     * @param sequence  序列号
+     * @return shell命令
+     */
+    public static String downloadMavenSettings(Long projectId, Long ciJobId, Long sequence) {
+        // TODO by li hao
+        return null;
+    }
 }

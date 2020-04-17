@@ -1,0 +1,14 @@
+package io.choerodon.devops.infra.mapper;
+
+import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.infra.dto.DevopsCiMavenSettingsDTO;
+import io.choerodon.mybatis.common.Mapper;
+
+/**
+ * @author zmf
+ * @since 20-4-16
+ */
+public interface DevopsCiMavenSettingsMapper extends Mapper<DevopsCiMavenSettingsDTO> {
+    String queryMavenSettings(@Param("jobId") Long jobId, @Param("sequence") Long sequence);
+}

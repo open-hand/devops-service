@@ -1,10 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
@@ -15,13 +16,11 @@ import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.enums.SonarAuthType;
 import io.choerodon.devops.infra.feign.SonarClient;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.DevopsCiJobMapper;
+import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 〈功能简述〉
@@ -42,16 +41,16 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private DevopsCiJobMapper devopsCiJobMapper;
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     private UserAttrService userAttrService;
-    private BaseServiceClientOperator baseServiceClientOperator;
+    private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
 
     public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper,
                                   GitlabServiceClientOperator gitlabServiceClientOperator,
                                   UserAttrService userAttrService,
-                                  BaseServiceClientOperator baseServiceClientOperator) {
+                                  DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper) {
         this.devopsCiJobMapper = devopsCiJobMapper;
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
         this.userAttrService = userAttrService;
-        this.baseServiceClientOperator = baseServiceClientOperator;
+        this.devopsCiMavenSettingsMapper = devopsCiMavenSettingsMapper;
     }
 
     @Override
@@ -129,5 +128,10 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
         devopsCiJobDTO.setCiPipelineId(ciPipelineId);
         devopsCiJobMapper.delete(devopsCiJobDTO);
+    }
+
+    @Override
+    public String queryMavenSettings(Long projectId, Long jobId, Long sequence) {
+        return devopsCiMavenSettingsMapper.queryMavenSettings(jobId, sequence);
     }
 }
