@@ -17,54 +17,53 @@ public interface DevopsCiJobService {
     /**
      * 创建ci流水线job
      *
-     * @param devopsCiJobDTO
-     * @return
+     * @param devopsCiJobDTO 创建信息
+     * @return 创建结果
      */
     DevopsCiJobDTO create(DevopsCiJobDTO devopsCiJobDTO);
 
     /**
      * 删除stage下的job
      *
-     * @param stageId
+     * @param stageId stageId
      */
     void deleteByStageId(Long stageId);
 
     /**
      * 查询pipeline下的jobs
      *
-     * @param ciPipelineId
-     * @return
+     * @param ciPipelineId 流水线id
+     * @return 结果
      */
     List<DevopsCiJobDTO> listByPipelineId(Long ciPipelineId);
 
     /**
      * sonar的连接测试
-     *
-     * @param projectId
-     * @param sonarQubeConfigVO
-     * @return
      */
     Boolean sonarConnect(Long projectId, SonarQubeConfigVO sonarQubeConfigVO);
 
     /**
      * 查询job日志
-     * @param gitlabProjectId
-     * @param jobId gitlab job id
-     * @return
      */
     String queryTrace(Long gitlabProjectId, Long jobId);
 
     /**
      * 重试job
-     * @param gitlabProjectId
-     * @param jobId gitlab job id
-     * @return
      */
     JobDTO retryJob(Long gitlabProjectId, Long jobId);
 
     /**
      * 删除流水线下的job
-     * @param ciPipelineId
      */
     void deleteByPipelineId(Long ciPipelineId);
+
+    /**
+     * 查询maven settings文件内容
+     *
+     * @param projectId 项目id
+     * @param jobId     job id
+     * @param sequence  maven构建步骤的序列号
+     * @return settings文件内容
+     */
+    String queryMavenSettings(Long projectId, Long jobId, Long sequence);
 }

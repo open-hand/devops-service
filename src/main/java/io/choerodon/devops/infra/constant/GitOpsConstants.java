@@ -132,4 +132,10 @@ public class GitOpsConstants {
      * 定位sonar的密码的变量替换位置的锚点
      */
     public static final String SONAR_PASSWORD_ANCHOR = "{{SonarPassword}}";
+
+    public static final String COMMA = ",";
+
+    public static final String RELEASE = "release";
+
+    public static final String SNAPSHOT = "snapshot";
 }
