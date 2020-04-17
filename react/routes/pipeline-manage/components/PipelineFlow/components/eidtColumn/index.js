@@ -11,6 +11,7 @@ import { usePipelineCreateStore } from '../../../PipelineCreate/stores';
 const jobTask = {
   build: '构建',
   sonar: '代码检查',
+  custom: '自定义',
 };
 
 const EditItem = (props) => {
