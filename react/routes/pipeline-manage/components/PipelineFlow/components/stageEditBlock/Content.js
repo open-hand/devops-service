@@ -50,9 +50,21 @@ export default observer(() => {
     }
   }
 
-  return (
-    !getLoading ? <div className="c7n-piplineManage-edit">
-      {renderColumn()}
-    </div> : <Spin />
-  );
+  function renderBlock() {
+    if (edit) {
+      return (
+        <div className="c7n-piplineManage-edit">
+          {renderColumn()}
+        </div>
+      );
+    } else {
+      return (
+        !getLoading && !edit ? <div className="c7n-piplineManage-edit">
+          {renderColumn()}
+        </div> : <Spin />
+      );
+    }
+  }
+
+  return renderBlock();
 });
