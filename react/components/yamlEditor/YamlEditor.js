@@ -27,12 +27,14 @@ export default class YamlEditor extends Component {
     handleEnableNext: PropTypes.func,
     onValueChange: PropTypes.func,
     modeChange: PropTypes.bool,
+    showError: PropTypes.bool,
   };
 
   static defaultProps = {
     readOnly: true,
     originValue: '',
     modeChange: true,
+    showError: true,
     handleEnableNext: () => {
     },
     onValueChange: () => {
@@ -109,6 +111,7 @@ export default class YamlEditor extends Component {
       value,
       modeChange,
       readOnly,
+      showError,
     } = this.props;
     const { errorTip } = this.state;
 
@@ -131,7 +134,7 @@ export default class YamlEditor extends Component {
             }}
           />
         </div>
-        {errorTip ? (
+        {showError && errorTip ? (
           <div className="c7ncd-yaml-error">
             <Icon type="error" className="c7ncd-yaml-error-icon" />
             <span className="c7ncd-yaml-error-msg">

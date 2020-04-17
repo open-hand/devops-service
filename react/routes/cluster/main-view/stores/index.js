@@ -27,6 +27,10 @@ export const StoreProvider = injectIntl(inject('AppState')(observer((props) => {
     }
   }, [projectId, id]);
 
+  useEffect(() => {
+    mainStore.checkCreate(projectId);
+  }, [projectId]);
+
   const value = {
     ...props,
     prefixCls: 'c7ncd-cluster',

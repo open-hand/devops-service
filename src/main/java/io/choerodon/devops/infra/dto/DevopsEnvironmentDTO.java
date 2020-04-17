@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.List;
+
 import io.choerodon.mybatis.entity.BaseDTO;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -53,6 +55,10 @@ public class DevopsEnvironmentDTO extends BaseDTO {
     private String clusterName;
     @Transient
     private String clusterCode;
+
+    @ApiModelProperty("环境下实例的code")
+    @Transient
+    private List<String> instances;
 
     public String getClusterName() {
         return clusterName;
@@ -248,6 +254,14 @@ public class DevopsEnvironmentDTO extends BaseDTO {
         this.clusterCode = clusterCode;
     }
 
+    public List<String> getInstances() {
+        return instances;
+    }
+
+    public void setInstances(List<String> instances) {
+        this.instances = instances;
+    }
+
     @Override
     public String toString() {
         return "DevopsEnvironmentDTO{" +
@@ -275,6 +289,7 @@ public class DevopsEnvironmentDTO extends BaseDTO {
                 ", permission=" + permission +
                 ", clusterName='" + clusterName + '\'' +
                 ", clusterCode='" + clusterCode + '\'' +
+                ", instances=" + instances +
                 '}';
     }
 }

@@ -421,7 +421,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     userAttrDTO.getGitlabUserId(),
                     devopsServiceDTO.getId(), SERVICE, null, false, devopsEnvironmentDTO.getId(), path);
         }
-
+        //删除成功后发送webhook json
+        sendNotificationService.sendWhenServiceCreationSuccessOrDelete(devopsServiceDTO, devopsEnvironmentDTO, SendSettingEnum.DELETE_RESOURCE.value());
     }
 
 
@@ -1144,6 +1145,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 serviceSagaPayLoad.getDevopsIngressVO().setPathList(devopsIngressPathVOS);
                 devopsIngressService.createIngress(serviceSagaPayLoad.getDevopsEnvironmentDTO().getProjectId(), serviceSagaPayLoad.getDevopsIngressVO());
             }
+            //创建网络成功，发送webhook json
+            sendNotificationService.sendWhenServiceCreationSuccessOrDelete(serviceSagaPayLoad.getDevopsServiceDTO(), serviceSagaPayLoad.getDevopsEnvironmentDTO(), SendSettingEnum.CREATE_RESOURCE.value());
 
         } catch (Exception e) {
             LOGGER.info("create or update service failed", e);
@@ -1162,8 +1165,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 devopsEnvCommandDTO.setError("create or update service failed");
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
 
-                // 发送创建失败通知
-                sendNotificationService.sendWhenServiceCreationFailure(devopsServiceDTO.getEnvId(), devopsServiceDTO.getName(), devopsServiceDTO.getCreatedBy(), null);
+                // 发送创建失败通知 加上webhook json
+                sendNotificationService.sendWhenServiceCreationFailure(devopsServiceDTO, devopsServiceDTO.getCreatedBy(), serviceSagaPayLoad.getDevopsEnvironmentDTO(), null);
             } else {
                 throw e;
             }

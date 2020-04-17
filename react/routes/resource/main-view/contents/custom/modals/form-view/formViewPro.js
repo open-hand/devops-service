@@ -152,6 +152,7 @@ const ResourceSidebar = injectIntl(inject('AppState')(observer((props) => {
     setChangedValue(null);
     setHasEditorError(false);
     setShowError(false);
+    setFileDisabled(false);
     setMode(modeCurrent);
 
     modal.update({ okProps: { disabled: false } });
@@ -228,6 +229,7 @@ const ResourceSidebar = injectIntl(inject('AppState')(observer((props) => {
             })(
               <Upload
                 // action="//jsonplaceholder.typicode.com/posts/"
+                accept=".yml"
                 disabled={fileDisabled}
                 beforeUpload={beforeUpload}
                 onRemove={removeFile}

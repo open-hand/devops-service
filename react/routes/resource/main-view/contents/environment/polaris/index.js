@@ -1,6 +1,6 @@
 import React, { Fragment, Suspense, useMemo, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button } from 'choerodon-ui/pro';
+import { Button, Spin } from 'choerodon-ui/pro';
 import { Choerodon } from '@choerodon/boot';
 import EmptyPage from '../../../../../../components/empty-page';
 import NumberDetail from './number-detail';
@@ -31,6 +31,14 @@ const polaris = observer((props) => {
   const [delay, setDelay] = useState(false);
 
   const statusLoading = useMemo(() => polarisNumDS.current && polarisNumDS.current.get('status') === 'operating', [polarisNumDS.current]);
+
+  useEffect(() => {
+    if (statusLoading) {
+      setDelay(5000);
+    } else {
+      setDelay(false);
+    }
+  }, [statusLoading]);
 
   useEffect(() => {
     setLoading(false);
@@ -93,6 +101,10 @@ const polaris = observer((props) => {
   }
 
   useInterval(loadData, delay);
+
+  if (polarisNumDS.status === 'sync') {
+    return <Spin />;
+  }
 
   return (
     <div className={`${prefixCls}-polaris-wrap`}>

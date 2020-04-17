@@ -15,6 +15,7 @@ import io.choerodon.devops.infra.constant.NoticeCodeConstants;
         pmEnabledFlag = true,
         emailEnabledFlag = true,
         proPmEnabledFlag = true,
+        webhookJsonEnabledFlag = false, webhookOtherEnabledFlag = false,
         notifyType = ServiceNotifyType.DEVOPS_NOTIFY,
         targetUserType = {TargetUserType.TARGET_USER_CREATOR})
 @Component

@@ -1,0 +1,8 @@
+build_job:
+  stage: build
+  script:
+    - echo "hello world!"
+  only:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /run-end-to-end-tests-empty-pipelien/
+

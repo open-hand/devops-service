@@ -1,16 +1,8 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.*;
+
 import com.github.pagehelper.PageInfo;
-
-import io.choerodon.core.annotation.Permission;
-import io.choerodon.core.enums.ResourceType;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.infra.enums.GitPlatformType;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +14,14 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import java.util.*;
+import io.choerodon.core.annotation.Permission;
+import io.choerodon.core.enums.ResourceType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.infra.enums.GitPlatformType;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
  * Created by younger on 2018/4/4.
@@ -763,12 +762,32 @@ public class AppServiceController {
             @RequestParam(value = "ids") Set<Long> ids,
             @ApiParam(value = "是否分页")
             @RequestParam(value = "doPage", required = false) Boolean doPage,
+            @ApiParam(value = "是否需要版本信息", required = false)
+            @RequestParam(value = "with_version", required = false, defaultValue = "true") boolean withVersion,
             @ApiParam(value = "分页参数")
             @ApiIgnore Pageable pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationServiceService.listAppServiceByIds(projectId, ids, doPage, pageable, params))
+                applicationServiceService.listAppServiceByIds(projectId, ids, doPage, withVersion, pageable, params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.list.app.service.ids"));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "通过一组id分页查询或者不传id时进行分页查询")
+    @PostMapping(value = "/list_by_ids_or_page")
+    public ResponseEntity<PageInfo<AppServiceVO>> listOrPage(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "是否分页")
+            @RequestParam(value = "doPage", required = false, defaultValue = "true") Boolean doPage,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore Pageable pageable,
+            @ApiParam(value = "应用服务Ids")
+            @RequestBody(required = false) Set<Long> ids) {
+        return Optional.ofNullable(
+                applicationServiceService.listByIdsOrPage(projectId, ids, doPage, pageable))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.service.ids"));
     }
@@ -819,14 +838,45 @@ public class AppServiceController {
         return new ResponseEntity<>(applicationServiceService.listAppServiceHavingVersions(projectId), HttpStatus.OK);
     }
 
-    @Permission(type = ResourceType.ORGANIZATION, roles = InitRoleCode.ORGANIZATION_ADMINISTRATOR)
+    @Permission(permissionWithin = true)
     @ApiOperation(value = "查询项目下应用服务的数量")
     @GetMapping("/list_by_project_id")
-    public ResponseEntity<Map<Long,Integer>> countByProjectId(
+    public ResponseEntity<Map<Long, Integer>> countByProjectId(
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam(value = "longList") List<Long> longList) {
         return new ResponseEntity<>(applicationServiceService.countByProjectId(longList), HttpStatus.OK);
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "检查是否还能创建应用服务")
+    @GetMapping("/check_enable_create")
+    public ResponseEntity<Boolean> checkEnableCreateAppSvc(@PathVariable(name = "project_id") Long projectId) {
+        return ResponseEntity.ok(applicationServiceService.checkEnableCreateAppSvc(projectId));
+    }
+
+    /**
+     * 查询用于创建CI流水线的应用服务
+     * 1. 默认查询20条
+     * 2. 要用户有权限的
+     * 3. 要创建成功且启用的
+     * 4. 要能够模糊搜索
+     * 5. 不能查出已经有流水线的
+     * 6. 要有master分支的
+     *
+     * @param projectId 项目id
+     * @param params    查询参数，用于搜索
+     * @return 应用服务列表
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "查询没有CI流水线的应用服务")
+    @PostMapping("/list_app_services_without_ci")
+    public ResponseEntity<List<AppServiceSimpleVO>> listAppServiceWithoutCiPipeline(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(name = "project_id") Long projectId,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return ResponseEntity.ok(applicationServiceService.listAppServiceToCreateCiPipeline(projectId, params));
     }
 }
 

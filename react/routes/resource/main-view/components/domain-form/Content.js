@@ -1,6 +1,6 @@
-import React, { Fragment } from 'react/index';
+import React, { Fragment, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Form, Select, TextField, SelectBox, Button, Icon, Tooltip } from 'choerodon-ui/pro';
+import { Form, Select, TextField, SelectBox, Button, Icon, Tooltip, Spin } from 'choerodon-ui/pro';
 import { Choerodon } from '@choerodon/boot';
 import map from 'lodash/map';
 import { useDomainFormStore } from './stores';
@@ -15,6 +15,7 @@ export default observer(() => {
     formDs,
     pathListDs,
     serviceDs,
+    annotationDs,
     intl: { formatMessage },
     prefixCls,
     modal,
@@ -22,8 +23,10 @@ export default observer(() => {
     saveNetworkIds,
   } = useDomainFormStore();
 
-  const record = formDs.current;
-  if (!record) return;
+  const record = useMemo(() => formDs.current, [formDs.current]);
+  if (!record) {
+    return <Spin />;
+  }
   const isModify = record.status !== 'add';
 
   function formValidate() {
@@ -63,8 +66,16 @@ export default observer(() => {
     pathListDs.create();
   }
 
+  function handleAddAnnotation() {
+    annotationDs.create();
+  }
+
   function handleRemovePath(removeRecord) {
     pathListDs.remove(removeRecord);
+  }
+
+  function handleRemoveAnnotation(annotationRecord) {
+    annotationDs.remove(annotationRecord);
   }
 
   function renderService({ serviceRecord, text }) {
@@ -144,6 +155,33 @@ export default observer(() => {
         onClick={handleAddPath}
       >
         {formatMessage({ id: 'domain.path.add' })}
+      </Button>
+      <div className={`${prefixCls}-domain-form-annotation-title`}>
+        Annotations
+      </div>
+      {map(annotationDs.data, (annotationRecord) => (
+        <Form columns={14} record={annotationRecord} style={{ width: '103.3%' }} key={annotationRecord.id}>
+          <TextField colSpan={3} name="domain" />
+          <span className={`${prefixCls}-domain-form-annotation-equal`}>/</span>
+          <TextField colSpan={3} name="key" />
+          <span className={`${prefixCls}-domain-form-annotation-equal`}>=</span>
+          <TextField colSpan={5} name="value" />
+          {annotationDs.length > 1 ? (
+            <Button
+              funcType="flat"
+              icon="delete"
+              onClick={() => handleRemoveAnnotation(annotationRecord)}
+            />
+          ) : <span />}
+        </Form>
+      ))}
+      <Button
+        funcType="flat"
+        color="primary"
+        icon="add"
+        onClick={handleAddAnnotation}
+      >
+        {formatMessage({ id: 'domain.annotation.add' })}
       </Button>
     </div>
   );

@@ -108,4 +108,16 @@
         devops_cluster dc
         WHERE dc.organization_id=#{organizationId}
     </select>
+
+    <select id="countByOptions" resultType="int">
+        SELECT COUNT(1)
+        FROM devops_cluster dc
+        WHERE 1 = 1
+        <if test="organizationId != null">
+            AND dc.organization_id = #{organizationId,jdbcType=BIGINT}
+        </if>
+        <if test="projectId != null">
+            AND dc.project_id = #{projectId,jdbcType=BIGINT}
+        </if>
+    </select>
 </mapper>

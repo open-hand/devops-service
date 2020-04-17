@@ -6,12 +6,12 @@ import java.util.Set;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
@@ -21,7 +21,6 @@ import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
-import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Created by younger on 2018/3/29.
@@ -38,6 +37,15 @@ public interface BaseServiceClient {
 
     @GetMapping("/v1/organizations/{organizationId}")
     ResponseEntity<OrganizationDTO> queryOrganizationById(@PathVariable("organizationId") Long organizationId);
+
+    /**
+     * 根据id集合查询组织
+     *
+     * @param ids id集合，去重
+     * @return 组织集合
+     */
+    @PostMapping("/v1/organizations/ids")
+    ResponseEntity<List<OrganizationDTO>> queryOrgByIds(@RequestBody Set<Long> ids);
 
     @GetMapping("v1/organizations")
     ResponseEntity<PageInfo<OrganizationDTO>> listOrganizations(@RequestParam("page") Integer page,
@@ -235,9 +243,17 @@ public interface BaseServiceClient {
     @GetMapping("/v1/projects/{project_id}/owner/list")
     ResponseEntity<List<IamUserDTO>> listProjectOwnerByProjectId(@PathVariable("project_id") Long projectId);
 
+    /**
+     * 判断组织是否是新组织
+     * @param organizationId
+     * @return
+     */
+    @GetMapping("/v1/organizations/{organization_id}/check_is_new")
+    ResponseEntity<Boolean> checkOrganizationIsNew(@PathVariable(name = "organization_id") Long organizationId);
+
+
     @GetMapping("/v1/organizations/{organization_id}/org_administrator")
     ResponseEntity<PageInfo<OrgAdministratorVO>> listOrgAdministrator(
             @PathVariable("organization_id") Long organizationId,
             @RequestParam("size") Integer size);
-
 }

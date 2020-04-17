@@ -1,10 +1,16 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.List;
+
+import io.swagger.annotations.ApiModelProperty;
+
 public class GitEnvConfigVO {
     private String namespace;
     private Long envId;
     private String gitRsaKey;
     private String gitUrl;
+    @ApiModelProperty("环境的实例的code")
+    private List<String> instances;
 
     public String getNamespace() {
         return namespace;
@@ -36,5 +42,13 @@ public class GitEnvConfigVO {
 
     public void setGitUrl(String gitUrl) {
         this.gitUrl = gitUrl;
+    }
+
+    public List<String> getInstances() {
+        return instances;
+    }
+
+    public void setInstances(List<String> instances) {
+        this.instances = instances;
     }
 }

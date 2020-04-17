@@ -38,4 +38,6 @@ public class CertManagerConstants {
     public static final String DELETED = "deleted";
 
     public static final String RELEASE_NAME = "releaseName";
+
+    public static final String NAMESPACE = "namespace";
 }

@@ -32,10 +32,7 @@ function ClusterItem({
 
   function getStatus() {
     const connect = record.get('connect');
-    const upgrade = record.get('upgrade');
-    if (upgrade) {
-      return ['disconnect'];
-    } else if (connect) {
+    if (connect) {
       return ['running', 'connect'];
     }
     return ['disconnect'];
@@ -110,6 +107,7 @@ function ClusterItem({
       const res = await mainStore.deleteCluster({ projectId, clusterId: record.get('id') });
       if (handlePromptError(res, false)) {
         freshMenu();
+        mainStore.checkCreate(projectId);
       } else {
         return false;
       }
@@ -177,7 +175,7 @@ function ClusterItem({
       });
     }
     return <Action placement="bottomRight" data={Data} />;
-  }, []);
+  }, [record]);
 
   const clearClick = (e) => {
     e.stopPropagation();

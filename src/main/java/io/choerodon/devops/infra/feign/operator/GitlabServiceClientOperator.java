@@ -7,6 +7,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.base.Functions;
 import feign.FeignException;
 import feign.RetryableException;
+import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,9 @@ import io.choerodon.devops.infra.util.TypeUtil;
 @Component
 public class GitlabServiceClientOperator {
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabServiceClientOperator.class);
-
+    private static final String ERROR_CREATE_PIPELINE_FILED = "error.create.pipeline.filed";
+    private static final String ERROR_RETRY_PIPELINE_FILED = "error.retry.pipeline.filed";
+    private static final String ERROR_CANCEL_PIPELINE_FILED = "error.cancel.pipeline.filed";
     @Autowired
     private GitlabServiceClient gitlabServiceClient;
     @Autowired
@@ -284,6 +287,15 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    /**
+     * 这里是更新master分支上的文件内容
+     *
+     * @param projectId     项目id
+     * @param path          文件路径
+     * @param content       文件内容
+     * @param commitMessage 提交信息
+     * @param userId        gitlab用户id
+     */
     public void updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
         try {
             FileCreationVO fileCreationVO = new FileCreationVO();
@@ -792,23 +804,25 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public Boolean retryPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+    public Pipeline retryPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+        ResponseEntity<Pipeline> pipeline;
         try {
-            gitlabServiceClient.retryPipeline(projectId, pipelineId, userId);
+            pipeline = gitlabServiceClient.retryPipeline(projectId, pipelineId, userId);
         } catch (FeignException e) {
-            return false;
+            throw new CommonException(ERROR_RETRY_PIPELINE_FILED);
         }
-        return true;
+        return pipeline.getBody();
     }
 
 
-    public Boolean cancelPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+    public Pipeline cancelPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+        ResponseEntity<Pipeline> pipeline;
         try {
-            gitlabServiceClient.cancelPipeline(projectId, pipelineId, userId);
+            pipeline = gitlabServiceClient.cancelPipeline(projectId, pipelineId, userId);
         } catch (FeignException e) {
-            return false;
+            throw new CommonException(ERROR_CANCEL_PIPELINE_FILED);
         }
-        return true;
+        return pipeline.getBody();
     }
 
 
@@ -1038,5 +1052,31 @@ public class GitlabServiceClientOperator {
         } catch (FeignException ex) {
             throw new CommonException("error.manipulate.gitlab.files");
         }
+    }
+
+    public RepositoryFileDTO getWholeFile(Integer projectId, String branch, String filePath) {
+        try {
+            return gitlabServiceClient.getFile(projectId, branch, filePath).getBody();
+        } catch (FeignException e) {
+            return null;
+        }
+    }
+
+    public Pipeline createPipeline(int projectId, int gitlabUserid, String ref) {
+        ResponseEntity<Pipeline> pipeline;
+        try {
+            pipeline = gitlabServiceClient.createPipeline(projectId, gitlabUserid, ref);
+        } catch (FeignException e) {
+           throw new CommonException(ERROR_CREATE_PIPELINE_FILED);
+        }
+        return pipeline.getBody();
+    }
+
+    public String queryTrace(int gitlabProjectId, int jobId, int gitlabUserid) {
+        return gitlabServiceClient.queryTrace(gitlabProjectId, jobId, gitlabUserid).getBody();
+    }
+
+    public JobDTO retryJob(int gitlabProjectId, int jobId, int gitlabUserId) {
+        return gitlabServiceClient.retryJob(gitlabProjectId, jobId, gitlabUserId).getBody();
     }
 }

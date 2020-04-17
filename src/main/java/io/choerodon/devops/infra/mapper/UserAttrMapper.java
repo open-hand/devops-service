@@ -14,6 +14,8 @@ import io.choerodon.mybatis.common.Mapper;
 public interface UserAttrMapper extends Mapper<UserAttrDTO> {
     List<UserAttrDTO> listByUserIds(@Param("userIds") List<Long> userIds);
 
+    List<UserAttrDTO> listByGitlabUserIds(@Param("gitlabUserIds") List<Long> gitlabUserIds);
+
     void updateIsGitlabAdmin(@Param("iamUserId") Long iamUserId,
                              @Param("isGitlabAdmin") Boolean isGitlabAdmin);
 }

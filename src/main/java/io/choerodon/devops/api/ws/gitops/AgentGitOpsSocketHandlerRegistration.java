@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.app.service.SendNotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +63,9 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
     @Autowired
     private AgentCommandService agentCommandService;
 
+    @Autowired
+    private SendNotificationService sendNotificationService;
+
 
     @Override
     public String path() {
@@ -107,6 +111,9 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
         } else {
             logger.info("Init agent: init agent with cluster id {} and version {}", clusterId, clusterSession.getVersion());
             agentCommandService.initCluster(clusterId);
+            //集群链接成功发送web hook
+            DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+            sendNotificationService.sendWhenActiviteCluster(devopsClusterDTO);
         }
     }
 

@@ -158,8 +158,8 @@ const Content = observer(() => {
     if (record) {
       const name = record.get('name');
       const connect = record.get('connect');
-
-      return <EnvItem isTitle connect={connect} name={name} />;
+      const clusterName = record.get('clusterName');
+      return <EnvItem isTitle connect={connect} name={name} formatMessage={formatMessage} clusterName={clusterName} />;
     }
     return null;
   }

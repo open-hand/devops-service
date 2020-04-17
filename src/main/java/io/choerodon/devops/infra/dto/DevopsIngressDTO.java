@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Objects;
 import javax.persistence.*;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
@@ -22,6 +24,8 @@ public class DevopsIngressDTO extends BaseDTO {
     private Long commandId;
     private String name;
     private String domain;
+    @ApiModelProperty("ingress对象的Annotations字段的JSON格式字符串")
+    private String annotations;
     private Boolean isUsable;
     private String status;
     private Long certId;
@@ -108,6 +112,14 @@ public class DevopsIngressDTO extends BaseDTO {
 
     public void setDomain(String domain) {
         this.domain = domain;
+    }
+
+    public String getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(String annotations) {
+        this.annotations = annotations;
     }
 
     public Long getEnvId() {

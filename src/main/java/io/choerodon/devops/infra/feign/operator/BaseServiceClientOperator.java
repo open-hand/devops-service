@@ -7,18 +7,19 @@ import javax.annotation.Nullable;
 
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ExceptionResponse;
 import io.choerodon.core.exception.FeignException;
+import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
@@ -51,7 +52,9 @@ public class BaseServiceClientOperator {
 
     public ProjectDTO queryIamProjectById(Long projectId) {
         ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProject(projectId);
-        if (!projectDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
+        ProjectDTO projectDTO = projectDTOResponseEntity.getBody();
+        // 判断id是否为空是因为可能会返回 CommonException 但是也会被反序列化为  ProjectDTO
+        if (projectDTO == null || projectDTO.getId() == null) {
             throw new CommonException("error.project.query.by.id", projectId);
         }
         return projectDTOResponseEntity.getBody();
@@ -59,6 +62,18 @@ public class BaseServiceClientOperator {
 
     public OrganizationDTO queryOrganizationById(Long organizationId) {
         ResponseEntity<OrganizationDTO> organizationDTOResponseEntity = baseServiceClient.queryOrganizationById(organizationId);
+        if (organizationDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
+            return organizationDTOResponseEntity.getBody();
+        } else {
+            throw new CommonException("error.organization.get");
+        }
+    }
+
+    public List<OrganizationDTO> listOrganizationByIds(Set<Long> organizationIds) {
+        if (CollectionUtils.isEmpty(organizationIds)) {
+            return Collections.emptyList();
+        }
+        ResponseEntity<List<OrganizationDTO>> organizationDTOResponseEntity = baseServiceClient.queryOrgByIds(organizationIds);
         if (organizationDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
             return organizationDTOResponseEntity.getBody();
         } else {
@@ -477,6 +492,17 @@ public class BaseServiceClientOperator {
     public List<IamUserDTO> listProjectOwnerByProjectId(Long projectId) {
         ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.listProjectOwnerByProjectId(projectId);
         return responseEntity == null ? Collections.emptyList() : responseEntity.getBody();
+    }
+
+    /**
+     * 判断组织是否是新组织
+     *
+     * @param organizationId
+     * @return
+     */
+    public Boolean checkOrganizationIsNew(Long organizationId) {
+        ResponseEntity<Boolean> responseEntity = baseServiceClient.checkOrganizationIsNew(organizationId);
+        return responseEntity.getBody();
     }
 
     public PageInfo<OrgAdministratorVO> listOrgAdministrator(Long organizationId) {

@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.github.pagehelper.PageInfo;
 
+import io.choerodon.core.notify.WebHookJsonSendDTO;
 import org.springframework.data.domain.Pageable;
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.vo.*;
@@ -62,7 +63,7 @@ public interface PipelineService {
 
     void failed(Long projectId, Long recordId);
 
-    void sendSiteMessage(Long pipelineRecordId, String type, List<NoticeSendDTO.User> users, Map<String, Object> params);
+    void sendSiteMessage(Long pipelineRecordId, String type, List<NoticeSendDTO.User> users, Map<String, Object> params, WebHookJsonSendDTO webHookJsonSendDTO);
 
     PipelineDTO baseCreate(Long projectId, PipelineDTO devopsPipelineDTO);
 

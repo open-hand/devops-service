@@ -105,15 +105,13 @@ const BuildDuration = observer(() => {
         axisPointer: {
           type: 'none',
         },
-        backgroundColor: '#fff',
+        backgroundColor: 'rgba(0,0,0,0.75)',
         textStyle: {
-          color: '#000',
-          fontSize: 13,
-          lineHeight: 20,
+          color: '#fff',
         },
         padding: [10, 15],
         extraCssText:
-          'box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2); border: 1px solid #ddd; border-radius: 0;',
+          'box-shadow: 0px 2px 8px 0px rgba(0,0,0,0.12);padding:15px 17px',
         formatter(params, ticket) {
           const version = versions[params[0].dataIndex] ? `${versions[params[0].dataIndex]}` : `${formatMessage({ id: 'report.build-duration.noversion' })}`;
           let time = params[0].value;

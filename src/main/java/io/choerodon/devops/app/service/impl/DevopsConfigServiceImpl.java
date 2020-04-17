@@ -578,7 +578,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             projectResponse = listProject.execute();
             if (projectResponse != null && projectResponse.body() != null) {
                 Optional<ProjectDetail> optional = projectResponse.body().stream().filter(t -> t.getName().equals(devopsConfigVO.getConfig().getProject())).findFirst();
-                if (optional == null || !optional.isPresent()) {
+                if (Objects.isNull(optional) || !optional.isPresent()) {
                     throw new CommonException("error.harbor.get.project");
                 }
                 if ("false".equals(optional.get().getMetadata().getHarborPublic())) {
@@ -667,7 +667,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     @Override
     public Integer getHarborProjectId(List<ProjectDetail> projectDetailList, String harborProjectName) {
         Optional<ProjectDetail> optional = projectDetailList.stream().filter(t -> t.getName().equals(harborProjectName)).findFirst();
-        if (optional == null || !optional.isPresent()) {
+        if (Objects.isNull(optional) || !optional.isPresent()) {
             throw new CommonException("error.harbor.get.project");
         }
         return optional.get().getProjectId();
