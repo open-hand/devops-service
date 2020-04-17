@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.SendSettingEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -224,7 +225,7 @@ public class DevopsSagaHandler {
         try {
             UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
             //如果是用户是组织层的root，则跳过权限跟新
-            devOpsUserPayload.getIamUserIds().stream().forEach(userId -> {
+            devOpsUserPayload.getIamUserIds().forEach(userId -> {
                 IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
                 if (!baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), iamUserDTO.getOrganizationId())) {
                     updateUserPermissionService
