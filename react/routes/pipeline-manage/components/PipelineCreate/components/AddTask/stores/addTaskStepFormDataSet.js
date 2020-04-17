@@ -4,5 +4,6 @@ export default () => ({
     name: 'kybz',
     type: 'string',
     label: '可用步骤',
+    required: true,
   }],
 });

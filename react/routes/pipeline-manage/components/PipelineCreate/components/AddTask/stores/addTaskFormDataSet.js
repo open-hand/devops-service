@@ -43,6 +43,14 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
     type: 'string',
     label: '构建模板',
   }, {
+    name: 'private',
+    type: 'string',
+    label: 'Setting配置',
+    multiple: true,
+    dynamicProps: {
+      required: ({ record }) => record.get('gjmb') === 'Maven',
+    },
+  }, {
     name: 'bzmc',
     type: 'string',
     label: '步骤名称',
@@ -57,19 +65,32 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
     name: 'mm',
     type: 'string',
     label: '密码',
+  }, {
+    name: 'uploadFilePattern',
+    type: 'string',
+    label: '构建包路径',
+    required: true,
   },
-  //   {
-  //   name: 'gjblj',
-  //   type: 'string',
-  //   label: '构建包路径',
-  //   required: true,
-  // },
+  {
+    name: 'dockerContextDir',
+    type: 'string',
+    label: 'Docker工作目录',
+    required: true,
+  },
+  {
+    name: 'dockerFilePath',
+    type: 'string',
+    label: 'Dockerfile文件路径',
+    required: true,
+  },
   {
     name: 'authType',
     type: 'string',
     label: 'SonarQube',
     defaultValue: 'username',
-    required: true,
+    dynamicProps: ({ record, name }) => ({
+      required: record.get('type') === 'sonar',
+    }),
   }, {
     name: 'username',
     type: 'string',
