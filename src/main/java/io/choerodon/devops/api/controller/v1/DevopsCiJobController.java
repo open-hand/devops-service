@@ -2,8 +2,10 @@ package io.choerodon.devops.api.controller.v1;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.annotation.Permission;
 import io.choerodon.core.enums.ResourceType;
@@ -68,5 +70,25 @@ public class DevopsCiJobController {
             @ApiParam("猪齿鱼中流水线的step的sequence")
             @RequestParam(value = "sequence") Long sequence) {
         return ResponseEntity.ok(devopsCiJobService.queryMavenSettings(projectId, job_id, sequence));
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation("CI过程上传软件包")
+    @PostMapping("/upload_artifact")
+    public ResponseEntity uploadJobArtifact(
+            @ApiParam(value = "应用服务token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "此次ci的commit", required = true)
+            @RequestParam String commit,
+            @ApiParam(value = "gitlab内置的流水线id")
+            @RequestParam(value = "ci_pipeline_id") Long ciPipelineId,
+            @ApiParam(value = "gitlab内置的jobId")
+            @RequestParam(value = "ci_job_id") Long ciJobId,
+            @ApiParam(value = "文件名称")
+            @RequestParam(value = "artifact_name") String artifactName,
+            @ApiParam(value = "taz包", required = true)
+            @RequestParam MultipartFile file) {
+        // TODO by zmf
+        return new ResponseEntity(HttpStatus.OK);
     }
 }
