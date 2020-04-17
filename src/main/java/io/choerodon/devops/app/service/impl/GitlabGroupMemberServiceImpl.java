@@ -121,7 +121,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             LOGGER.info("start delete project id is {} for gitlab org owner", projectDTO.getId());
             //如果删除的成员为该项目下的项目所有者，则不删除gitlab相应的权限
             if (!baseServiceClientOperator.isProjectOwner(gitlabGroupMemberVO.getUserId(), projectDTO.getId())) {
-                deleteProcess(gitlabGroupMemberVO);
+                deleteProcess(gitlabGroupMemberVO, projectDTO.getId());
             }
         });
     }
@@ -135,7 +135,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     //删除用户的项目所有者权限，如果是组织root,则不删除该项目下gitlab相应的权限
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(gitlabGroupMemberVO.getResourceId());
                     if (!baseServiceClientOperator.isOrganzationRoot(gitlabGroupMemberVO.getUserId(), projectDTO.getOrganizationId())) {
-                        deleteProcess(gitlabGroupMemberVO);
+                        deleteProcess(gitlabGroupMemberVO, projectDTO.getId());
                     }
                 });
         //组织root的标签，那么删除在组织下的root的权限
@@ -147,7 +147,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     }
 
 
-    private void deleteProcess(GitlabGroupMemberVO gitlabGroupMemberVO) {
+    private void deleteProcess(GitlabGroupMemberVO gitlabGroupMemberVO, Long projectId) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupMemberVO.getUserId());
         userAttrService.checkUserSync(userAttrDTO, gitlabGroupMemberVO.getUserId());
         Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
@@ -159,7 +159,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         }
         DevopsProjectDTO devopsProjectDTO;
         MemberDTO memberDTO;
-        devopsProjectDTO = devopsProjectService.baseQueryByProjectId(gitlabGroupMemberVO.getResourceId());
+        devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
 
         // 删除应用服务对应gitlab的权限
         memberDTO = gitlabServiceClientOperator.queryGroupMember(
