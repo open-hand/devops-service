@@ -63,12 +63,13 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
+    // @lazy解决循环依赖
     public DevopsCiPipelineRecordServiceImpl(DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
                                              DevopsCiJobRecordService devopsCiJobRecordService,
                                              DevopsCiStageService devopsCiStageService,
                                              @Lazy DevopsCiJobService devopsCiJobService,
                                              DevopsCiJobRecordMapper devopsCiJobRecordMapper,
-                                             DevopsCiPipelineService devopsCiPipelineService,
+                                             @Lazy DevopsCiPipelineService devopsCiPipelineService,
                                              AppServiceService applicationService,
                                              TransactionalProducer transactionalProducer,
                                              UserAttrService userAttrService,
