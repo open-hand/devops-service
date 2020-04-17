@@ -138,4 +138,6 @@ public class GitOpsConstants {
     public static final String RELEASE = "release";
 
     public static final String SNAPSHOT = "snapshot";
+
+    public static final String CHART_BUILD = "chart_build";
 }

@@ -2,9 +2,7 @@ package io.choerodon.devops.infra.util;
 
 import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.util.StringUtils;
@@ -12,6 +10,7 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
 
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
 
 /**
@@ -121,6 +120,9 @@ public class GitlabCiUtil {
      * @return 列表
      */
     public static List<String> simpleSplitLinesToList(String string) {
+        if (StringUtils.isEmpty(string)) {
+            return Collections.emptyList();
+        }
         return Arrays.asList(simpleSplitLinesToArray(string));
     }
 
@@ -131,6 +133,9 @@ public class GitlabCiUtil {
      * @return 分割后的shell脚本内容
      */
     public static List<String> splitLinesForShell(String shellContent) {
+        if (StringUtils.isEmpty(shellContent)) {
+            return Collections.emptyList();
+        }
         String[] lines = simpleSplitLinesToArray(shellContent);
         List<String> result = new ArrayList<>();
         StringBuilder multiLineShellCommand = new StringBuilder();
@@ -209,5 +214,54 @@ public class GitlabCiUtil {
     public static String downloadMavenSettings(Long projectId, Long ciJobId, Long sequence) {
         // TODO by li hao
         return null;
+    }
+
+    public static String generateUploadTgzScripts(Long projectId) {
+        // TODO by lihao
+        return null;
+    }
+
+    /**
+     * 生成用于下载从‘上传软件包’步骤中上传的软件包到本地并解压
+     */
+    private static String generateDownloadTgzScripts(Long projectId, Long ciJobId) {
+        // TODO by li hao
+        return null;
+    }
+
+    /**
+     * 生成docker构建需要的脚本
+     *
+     * @param dockerBuildContextDir docker构建上下文目录
+     * @param dockerFilePath        dockerfile文件路径
+     */
+    private static String generateDockerScripts(String dockerBuildContextDir, String dockerFilePath) {
+        // TODO by li hao
+        return null;
+    }
+
+    /**
+     * 生成docker构建的步骤的脚本
+     *
+     * @param projectId             项目id
+     * @param jobId                 jobId
+     * @param dockerBuildContextDir docker构建上下文
+     * @param dockerFilePath        dockerfile路径
+     * @return 脚本
+     */
+    public static List<String> generateDockerScripts(final Long projectId, final Long jobId, String dockerBuildContextDir, String dockerFilePath) {
+        List<String> scripts = new ArrayList<>();
+        scripts.add(GitlabCiUtil.generateDownloadTgzScripts(projectId, jobId));
+        scripts.add(GitlabCiUtil.generateDockerScripts(Objects.requireNonNull(dockerBuildContextDir), Objects.requireNonNull(dockerFilePath)));
+        return scripts;
+    }
+
+    /**
+     * 生成chart build步骤的script
+     *
+     * @return 脚本
+     */
+    public static String generateChartBuildScripts() {
+        return GitOpsConstants.CHART_BUILD;
     }
 }

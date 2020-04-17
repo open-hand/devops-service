@@ -3,8 +3,8 @@ package io.choerodon.devops.app.service.impl;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -29,7 +30,8 @@ import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import io.choerodon.devops.infra.dto.maven.Repository;
 import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
 import io.choerodon.devops.infra.dto.maven.Server;
-import io.choerodon.devops.infra.enums.CiJobTypeEnum;
+import io.choerodon.devops.infra.enums.CiJobScriptTypeEnum;
+import io.choerodon.devops.infra.enums.CiStageTypeEnum;
 import io.choerodon.devops.infra.enums.DefaultTriggerRefTypeEnum;
 import io.choerodon.devops.infra.enums.SonarAuthType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -37,6 +39,7 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.util.*;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -60,6 +63,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private static final String ERROR_STEP_SEQUENCE_DUPLICATED = "error.step.sequence.duplicated";
     private static final String ERROR_CI_MAVEN_REPOSITORY_TYPE = "error.ci.maven.repository.type";
     private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "error.maven.settings.insert";
+    private static final String ERROR_UNSUPPORTED_STEP_TYPE = "error.unsupported.step.type";
 
     @Value("${services.gateway.url}")
     private String gatewayUrl;
@@ -469,11 +473,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      * @return 生成的脚本列表
      */
     private List<String> buildScript(final Long projectId, DevopsCiJobVO jobVO) {
-        if (CiJobTypeEnum.SONAR.value().equals(jobVO.getType())) {
+        Assert.notNull(jobVO, "Job can't be null");
+        final Long jobId = jobVO.getId();
+        Assert.notNull(jobId, "Ci job id is required.");
+
+        if (CiStageTypeEnum.SONAR.value().equals(jobVO.getType())) {
             // sonar配置转化为gitlab-ci配置
             List<String> scripts = new ArrayList<>();
-            JSONObject jsonObject = JSON.parseObject(jobVO.getMetadata());
-            SonarQubeConfigVO sonarQubeConfigVO = jsonObject.toJavaObject(SonarQubeConfigVO.class);
+            SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(jobVO.getMetadata(), SonarQubeConfigVO.class);
             if (Objects.isNull(sonarQubeConfigVO.getSonarUrl())) {
                 throw new CommonException("error.sonar.url.is.null");
             }
@@ -483,23 +490,50 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 scripts.add(GitlabCiUtil.renderSonarCommand(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getToken()));
             }
             return scripts;
-        }
-        if (CiJobTypeEnum.BUILD.value().equals(jobVO.getType())) {
-            // maven配置转换为gitlab-ci配置
-            MavenBuildVO mavenBuildVO = JSONObject.parseObject(jobVO.getMetadata(), MavenBuildVO.class);
-            if (mavenBuildVO == null || CollectionUtils.isEmpty(mavenBuildVO.getMavenbuildTemplateVOList())) {
+        } else if (CiStageTypeEnum.BUILD.value().equals(jobVO.getType())) {
+            // 将构建类型的stage中的job的每个step进行解析和转化
+            CiConfigVO ciConfigVO = JSONObject.parseObject(jobVO.getMetadata(), CiConfigVO.class);
+            if (ciConfigVO == null || CollectionUtils.isEmpty(ciConfigVO.getCiConfigTemplateVOList())) {
                 return Collections.emptyList();
             }
-            List<String> result = new ArrayList<>();
+
             List<Long> existedSequences = new ArrayList<>();
-            // 处理settings文件
+            // 校验前端传入的sequence不为null且不重复
+            ciConfigVO.getCiConfigTemplateVOList().forEach(config -> validConfigSequence(config.getSequence(), config.getName(), existedSequences));
+
+            // 最后生成的所有script集合
+            List<String> result = new ArrayList<>();
+
+            // 同一个job中的所有step要按照sequence顺序来
             // 将每一个step都转为一个List<String>并将所有的list合并为一个
-            mavenBuildVO.getMavenbuildTemplateVOList()
+            ciConfigVO.getCiConfigTemplateVOList()
                     .stream()
-                    .peek(maven -> this.buildMavenSettings(Objects.requireNonNull(jobVO.getId()), maven, existedSequences))
-                    .sorted(Comparator.comparingLong(t -> TypeUtil.wrappedLongToPrimitive(t.getSequence())))
-                    .map(t -> buildMavenShells(projectId, jobVO.getId(), t))
-                    .forEach(result::addAll);
+                    .sorted(Comparator.comparingLong(CiConfigTemplateVO::getSequence))
+                    .forEach(config -> {
+                        CiJobScriptTypeEnum type = CiJobScriptTypeEnum.forType(config.getType());
+                        if (type == null) {
+                            throw new CommonException(ERROR_UNSUPPORTED_STEP_TYPE, config.getType());
+                        }
+
+                        switch (type) {
+                            case NPM:
+                                result.addAll(buildNpmScripts(config));
+                                break;
+                            case MAVEN:
+                                // 处理settings文件
+                                boolean hasSettings = buildAndSaveMavenSettings(jobId, config);
+                                result.addAll(buildMavenScripts(projectId, jobId, config, hasSettings));
+                                break;
+                            case UPLOAD:
+                                result.add(GitlabCiUtil.generateUploadTgzScripts(projectId));
+                                break;
+                            case DOCKER:
+                                result.addAll(GitlabCiUtil.generateDockerScripts(projectId, jobId, config.getDockerContextDir(), config.getDockerFilePath()));
+                            case CHART:
+                                result.add(GitlabCiUtil.generateChartBuildScripts());
+                                break;
+                        }
+                    });
             return result;
         }
         return Collections.emptyList();
@@ -508,36 +542,64 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     /**
      * 生成maven构建相关的脚本
      *
-     * @param projectId            项目id
-     * @param jobId                job id
-     * @param mavenbuildTemplateVO maven构建阶段的信息
+     * @param projectId          项目id
+     * @param jobId              job id
+     * @param ciConfigTemplateVO maven构建阶段的信息
+     * @param hasSettings        这个阶段是否有配置settings
      * @return 生成的shell脚本
      */
-    private List<String> buildMavenShells(final Long projectId, final Long jobId, MavenbuildTemplateVO mavenbuildTemplateVO) {
-        List<String> shells = GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(mavenbuildTemplateVO.getScript()), true, true);
-        if (mavenbuildTemplateVO.getHasSettings()) {
+    private List<String> buildMavenScripts(final Long projectId, final Long jobId, CiConfigTemplateVO ciConfigTemplateVO, boolean hasSettings) {
+        List<String> shells = GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(ciConfigTemplateVO.getScript()), true, true);
+        if (hasSettings) {
             // 插入shell指令将配置的settings文件下载到项目目录下
-            shells.add(0, GitlabCiUtil.downloadMavenSettings(projectId, jobId, mavenbuildTemplateVO.getSequence()));
+            shells.add(0, GitlabCiUtil.downloadMavenSettings(projectId, jobId, ciConfigTemplateVO.getSequence()));
         }
         return shells;
     }
 
-    private void buildMavenSettings(Long jobId, MavenbuildTemplateVO mavenbuildTemplateVO, List<Long> existedSequences) {
-        if (mavenbuildTemplateVO.getSequence() == null) {
-            throw new CommonException(ERROR_STEP_SEQUENCE_NULl, mavenbuildTemplateVO.getName());
+    /**
+     * 生成Npm构建过程的脚本
+     *
+     * @param ciConfigTemplateVO 配置信息
+     * @return npm构建的脚本
+     */
+    private List<String> buildNpmScripts(CiConfigTemplateVO ciConfigTemplateVO) {
+        return GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(ciConfigTemplateVO.getScript()), true, true);
+    }
+
+
+    /**
+     * 校验sequence不为null也不重复
+     *
+     * @param sequence         step的序列号
+     * @param templateName     构建步骤的名称，用于报错信息
+     * @param existedSequences 已经存在的sequence
+     */
+    private void validConfigSequence(@Nullable Long sequence, String templateName, List<Long> existedSequences) {
+        if (sequence == null) {
+            throw new CommonException(ERROR_STEP_SEQUENCE_NULl, templateName);
         }
-        if (existedSequences.contains(mavenbuildTemplateVO.getSequence())) {
-            throw new CommonException(ERROR_STEP_SEQUENCE_DUPLICATED, mavenbuildTemplateVO.getName());
+        if (existedSequences.contains(sequence)) {
+            throw new CommonException(ERROR_STEP_SEQUENCE_DUPLICATED, templateName);
         }
-        existedSequences.add(mavenbuildTemplateVO.getSequence());
-        if (CollectionUtils.isEmpty(mavenbuildTemplateVO.getRepos())) {
-            mavenbuildTemplateVO.setHasSettings(Boolean.FALSE);
-            return;
+        existedSequences.add(sequence);
+    }
+
+    /**
+     * 生成并存储maven settings
+     *
+     * @param jobId              job id
+     * @param ciConfigTemplateVO 配置模板
+     * @return true表示有settings配置，false表示没有
+     */
+    private boolean buildAndSaveMavenSettings(Long jobId, CiConfigTemplateVO ciConfigTemplateVO) {
+        if (CollectionUtils.isEmpty(ciConfigTemplateVO.getRepos())) {
+            return false;
         }
-        String settings = buildSettings(mavenbuildTemplateVO.getRepos());
-        mavenbuildTemplateVO.setHasSettings(Boolean.TRUE);
-        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, mavenbuildTemplateVO.getSequence(), settings);
+        String settings = buildSettings(ciConfigTemplateVO.getRepos());
+        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, ciConfigTemplateVO.getSequence(), settings);
         MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
+        return true;
     }
 
 
