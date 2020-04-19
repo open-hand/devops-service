@@ -9,7 +9,8 @@ package io.choerodon.devops.infra.enums;
  */
 public enum CiStageTypeEnum {
     BUILD("build"),
-    SONAR("sonar");
+    SONAR("sonar"),
+    CUSTOM("custom");
 
     private String value;
 

@@ -42,4 +42,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
             column(name: 'gitlab_project_id')
         }
     }
+    changeSet(author: 'wanghao', id: '2020-04-19-add-primary-key') {
+        addNotNullConstraint(tableName: "devops_ci_job_record", columnName: "name", columnDataType: "VARCHAR(255)")
+    }
 }

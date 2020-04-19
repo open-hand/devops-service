@@ -93,17 +93,22 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     }
 
     @Override
-    public void create(Long gitlabPipelineId, Long gitlabProjectId, List<JobDTO> jobDTOS) {
-        jobDTOS.forEach(job -> {
-            DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
-            recordDTO.setCiPipelineRecordId(gitlabPipelineId);
-            recordDTO.setGitlabProjectId(gitlabProjectId);
-            recordDTO.setStatus(job.getStatus().toValue());
-            recordDTO.setStage(job.getStage());
-            recordDTO.setGitlabJobId(TypeUtil.objToLong(job.getId()));
-            recordDTO.setStartedDate(job.getStartedAt());
-            recordDTO.setFinishedDate(job.getFinishedAt());
-            devopsCiJobRecordMapper.insertSelective(recordDTO);
-        });
+    public void create(Long gitlabPipelineId, Long gitlabProjectId, List<JobDTO> jobDTOS, Long iamUserId) {
+        jobDTOS.forEach(job -> create(gitlabPipelineId, gitlabProjectId, job, iamUserId));
+    }
+
+    @Override
+    public void create(Long gitlabPipelineId, Long gitlabProjectId, JobDTO jobDTO, Long iamUserId) {
+        DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
+        recordDTO.setCiPipelineRecordId(gitlabPipelineId);
+        recordDTO.setGitlabProjectId(gitlabProjectId);
+        recordDTO.setStatus(jobDTO.getStatus().toValue());
+        recordDTO.setStage(jobDTO.getStage());
+        recordDTO.setGitlabJobId(TypeUtil.objToLong(jobDTO.getId()));
+        recordDTO.setStartedDate(jobDTO.getStartedAt());
+        recordDTO.setFinishedDate(jobDTO.getFinishedAt());
+        recordDTO.setName(jobDTO.getName());
+        recordDTO.setTriggerUserId(iamUserId);
+        devopsCiJobRecordMapper.insertSelective(recordDTO);
     }
 }

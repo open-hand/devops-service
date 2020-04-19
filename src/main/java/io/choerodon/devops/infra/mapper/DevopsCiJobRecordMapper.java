@@ -13,5 +13,4 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface DevopsCiJobRecordMapper extends Mapper<DevopsCiJobRecordDTO> {
 
-    int updateStatusByGitlabJobId(@Param("gitlabJobId") Long gitlabJobId, @Param("status") String status);
 }

@@ -324,7 +324,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 保存执行记录
         devopsCiPipelineRecordService.create(ciPipelineId, gitlabProjectId, pipeline);
         List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), pipeline.getId(), userAttrDTO.getGitlabUserId().intValue());
-        devopsCiJobRecordService.create(TypeUtil.objToLong(pipeline.getId()), gitlabProjectId, jobDTOS);
+
+        devopsCiJobRecordService.create(TypeUtil.objToLong(pipeline.getId()), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
     }
 
     private void deleteGitlabCiFile(Integer gitlabProjectId, Long iamUserId) {
@@ -424,6 +425,17 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private void saveCiContent(final Long projectId, Long pipelineId, DevopsCiPipelineVO devopsCiPipelineVO) {
         GitlabCi gitlabCi = buildGitLabCiObject(projectId, devopsCiPipelineVO);
         String gitlabCiYaml = GitlabCiUtil.gitlabCi2yaml(gitlabCi);
+
+        // 拼接自定义job
+        if (!CollectionUtils.isEmpty(devopsCiPipelineVO.getStageList())) {
+            List<DevopsCiJobVO> ciJobVOS = devopsCiPipelineVO.getStageList().stream()
+                    .flatMap(v -> v.getJobList().stream()).filter(job -> CiJobTypeEnum.CUSTOM.value().equalsIgnoreCase(job.getType()))
+                    .collect(Collectors.toList());
+            for (DevopsCiJobVO job : ciJobVOS) {
+                gitlabCiYaml += job.getMetadata();
+            }
+        }
+
         //保存gitlab-ci配置文件
         DevopsCiContentDTO devopsCiContentDTO = new DevopsCiContentDTO();
         devopsCiContentDTO.setCiPipelineId(pipelineId);
@@ -452,6 +464,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCiPipelineVO.getStageList().forEach(stageVO -> {
             if (!CollectionUtils.isEmpty(stageVO.getJobList())) {
                 stageVO.getJobList().forEach(job -> {
+                    if (CiJobTypeEnum.CUSTOM.value().equals(job.getType())) {
+                        return;
+                    }
                     CiJob ciJob = new CiJob();
                     ciJob.setStage(stageVO.getName());
                     ciJob.setOnly(buildOnlyExceptPolicyObject(job.getTriggerRefs()));
