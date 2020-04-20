@@ -1,9 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.GitOpsConstants.ARTIFACT_NAME_PATTERN;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -42,8 +43,6 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class DevopsCiJobServiceImpl implements DevopsCiJobService {
-    private static final Pattern ARTIFACT_NAME_PATTERN = Pattern.compile("[0-9a-zA-Z._-]{6,30}");
-
     private static final String CREATE_JOB_FAILED = "create.job.failed";
     private static final String DELETE_JOB_FAILED = "delete.job.failed";
     private static final String ERROR_STAGE_ID_IS_NULL = "error.stage.id.is.null";
