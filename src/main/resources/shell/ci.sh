@@ -182,6 +182,7 @@ function downloadFile() {
 
 # $1 压缩包名称
 # $2 打包路径
+# $3 project_id
 function compressAndUpload() {
   # 打包文件
   tar -zcvf "$1.tgz" "$2"
@@ -201,7 +202,7 @@ function compressAndUpload() {
       -F "ci_job_id=${CI_JOB_ID}" \
       -F "artifact_name=$1.tgz" \
       -F "file=@$1.tgz" \
-      "${CHOERODON_URL}/devops/v1/upload_artifact" \
+      "${CHOERODON_URL}/devops/v1/projects/$3/ci_jobs/upload_artifact" \
       -o "${CI_COMMIT_SHA}-ci.response" \
       -w %{http_code}
   )
@@ -217,6 +218,7 @@ function compressAndUpload() {
 }
 
 # $1 文件名称
+# $2 project_id
 function downloadAndUncompress() {
 
   # 先访问devops获得文件下载路径
@@ -224,7 +226,7 @@ function downloadAndUncompress() {
     curl -s -m 10 --connect-timeout 10 \
       -w %{http_code} \
       -o response.url \
-      "${CHOERODON_URL}/devops/v1/projects/{project_id}/ci_jobs?token=${Token}&commit=${CI_COMMIT_SHA}&ci_pipeline_id=${CI_PIPELINE_ID}&ci_job_id=${CI_JOB_ID}&artifact_name=${CI_PIPELINE_ID}-$1"
+      "${CHOERODON_URL}/devops/v1/projects/$2/ci_jobs?token=${Token}&commit=${CI_COMMIT_SHA}&ci_pipeline_id=${CI_PIPELINE_ID}&ci_job_id=${CI_JOB_ID}&artifact_name=${CI_PIPELINE_ID}-$1"
   )
 
   if [ "$http_status_code" != 200 ]; then

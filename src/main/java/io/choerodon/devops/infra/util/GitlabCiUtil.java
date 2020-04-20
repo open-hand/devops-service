@@ -234,9 +234,9 @@ public class GitlabCiUtil {
      * @param
      * @return
      */
-    public static String generateUploadTgzScripts(String artifactFileName, String directory) {
-        String rawCommand = "compressAndUpload %s %s";
-        return String.format(rawCommand, artifactFileName, directory);
+    public static String generateUploadTgzScripts(Long projectId, String artifactFileName, String directory) {
+        String rawCommand = "compressAndUpload %s %s %s";
+        return String.format(rawCommand, artifactFileName, directory, projectId);
     }
 
     /**
@@ -244,9 +244,9 @@ public class GitlabCiUtil {
      *
      * @param artifactFileName 需要下载的包名称
      */
-    private static String generateDownloadTgzScripts(String artifactFileName) {
-        String rawCommand = "downloadAndUncompress %s";
-        return String.format(rawCommand, artifactFileName);
+    private static String generateDownloadTgzScripts(String artifactFileName, Long projectId) {
+        String rawCommand = "downloadAndUncompress %s %s";
+        return String.format(rawCommand, artifactFileName, projectId);
     }
 
     /**
@@ -268,9 +268,9 @@ public class GitlabCiUtil {
      * @param dockerFilePath        dockerfile路径
      * @return 脚本
      */
-    public static List<String> generateDockerScripts(String artifactFileName, String dockerBuildContextDir, String dockerFilePath) {
+    public static List<String> generateDockerScripts(Long projectId, String artifactFileName, String dockerBuildContextDir, String dockerFilePath) {
         List<String> scripts = new ArrayList<>();
-        scripts.add(GitlabCiUtil.generateDownloadTgzScripts(artifactFileName));
+        scripts.add(GitlabCiUtil.generateDownloadTgzScripts(artifactFileName, projectId));
         scripts.add(GitlabCiUtil.generateDockerScripts(Objects.requireNonNull(dockerBuildContextDir), Objects.requireNonNull(dockerFilePath)));
         return scripts;
     }

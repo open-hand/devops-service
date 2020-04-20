@@ -591,10 +591,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                 result.addAll(buildMavenScripts(projectId, jobId, config, hasSettings));
                                 break;
                             case UPLOAD:
-                                result.add(GitlabCiUtil.generateUploadTgzScripts(config.getArtifactFileName(), config.getUploadFilePattern()));
+                                result.add(GitlabCiUtil.generateUploadTgzScripts(projectId, config.getArtifactFileName(), config.getUploadFilePattern()));
                                 break;
                             case DOCKER:
-                                result.addAll(GitlabCiUtil.generateDockerScripts(config.getArtifactFileName(), config.getDockerContextDir(), config.getDockerFilePath()));
+                                result.addAll(GitlabCiUtil.generateDockerScripts(projectId, config.getArtifactFileName(), config.getDockerContextDir(), config.getDockerFilePath()));
                                 break;
                             case CHART:
                                 result.add(GitlabCiUtil.generateChartBuildScripts());
