@@ -484,7 +484,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     .collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(ciJobVOS)) {
                 for (DevopsCiJobVO job : ciJobVOS) {
-                    gitlabCiYaml.append(System.getProperty(GitOpsConstants.NEW_LINE)).append(job.getMetadata());
+                    gitlabCiYaml.append(GitOpsConstants.NEW_LINE).append(job.getMetadata());
                 }
             }
 
