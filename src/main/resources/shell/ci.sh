@@ -170,11 +170,13 @@ function chart_build() {
   fi
 }
 
-# $1 下载地址
-# $2 文件名称
+# $1 fileName
+# $2 project_id
+# $3 ciJobId
+# $4 sequence
 function downloadFile() {
-  rm -rf "$2"
-  http_status_code=$(curl -o "$2" -s -m 10 --connect-timeout 10 -w %{http_code} "$1?token=${Token}")
+  rm -rf "$1"
+  http_status_code=$(curl -o "$2" -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/v1/projects/$2/ci_jobs/maven_settings?ciJobId=$3&sequence=$4&token=${Token}")
   if [ "$http_status_code" != "200" ]; then
     echo "failed to downloadFile"
   fi
