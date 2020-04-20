@@ -1079,4 +1079,12 @@ public class GitlabServiceClientOperator {
     public JobDTO retryJob(int gitlabProjectId, int jobId, int gitlabUserId) {
         return gitlabServiceClient.retryJob(gitlabProjectId, jobId, gitlabUserId).getBody();
     }
+
+    public BranchDTO getBranch(int gitlabProjectId, String ref) {
+        return gitlabServiceClient.getBranch(gitlabProjectId, ref).getBody();
+    }
+
+    public MemberDTO getMember(Long gitlabProjectId, Long gitlabUserId) {
+        return gitlabServiceClient.getProjectMember(gitlabProjectId.intValue(), gitlabUserId.intValue()).getBody();
+    }
 }

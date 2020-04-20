@@ -93,4 +93,12 @@ public interface DevopsCiPipelineService {
      * @param ref
      */
     void executeNew(Long ciPipelineId, Long gitlabProjectId, String ref);
+
+    /**
+     * 校验用户是否有分支权限
+     * @param gitlabUserId
+     * @param gitlabProjectId
+     * @param ref
+     */
+     void checkUserPermission(Long gitlabUserId, Long gitlabProjectId, String ref);
 }

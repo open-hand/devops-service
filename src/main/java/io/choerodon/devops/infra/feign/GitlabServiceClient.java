@@ -544,4 +544,10 @@ public interface GitlabServiceClient {
             @PathVariable(value = "projectId") Integer projectId,
             @PathVariable(value = "jobId") Integer jobId,
             @RequestParam(value = "userId") Integer userId);
+
+    @GetMapping(value = "/v1/projects/{projectId}/repository/branches/{name}")
+    ResponseEntity<BranchDTO> getBranch(
+            @ApiParam(value = "项目id", required = true) @PathVariable Integer projectId,
+            @ApiParam(value = "用户Id")
+            @RequestParam(value = "name") String name);
 }

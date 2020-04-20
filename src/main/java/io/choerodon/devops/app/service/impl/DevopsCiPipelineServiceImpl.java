@@ -26,7 +26,9 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
 import io.choerodon.devops.infra.dto.gitlab.ci.OnlyExceptPolicy;
@@ -34,10 +36,7 @@ import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import io.choerodon.devops.infra.dto.maven.Repository;
 import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
 import io.choerodon.devops.infra.dto.maven.Server;
-import io.choerodon.devops.infra.enums.CiJobScriptTypeEnum;
-import io.choerodon.devops.infra.enums.CiJobTypeEnum;
-import io.choerodon.devops.infra.enums.DefaultTriggerRefTypeEnum;
-import io.choerodon.devops.infra.enums.SonarAuthType;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
@@ -71,6 +70,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "error.maven.settings.insert";
     private static final String ERROR_UNSUPPORTED_STEP_TYPE = "error.unsupported.step.type";
     private static final String ERROR_CUSTOM_JOB_FORMAT_INVALID = "error.custom.job.format.invalid";
+    private static final String ERROR_BRANCH_PERMISSION_MISSMATCH = "error.branch.permission.missmatch";
 
     @Value("${services.gateway.url}")
     private String gatewayUrl;
@@ -327,7 +327,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     public void executeNew(Long ciPipelineId, Long gitlabProjectId, String ref) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
-        Pipeline pipeline = gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(), userAttrDTO.getGitlabUserId().intValue(), ref);
+        checkUserPermission(userAttrDTO.getGitlabUserId(), gitlabProjectId, ref);
+        Pipeline pipeline = gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(), 20567, ref);
         // 保存执行记录
         try {
             DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.create(ciPipelineId, gitlabProjectId, pipeline);
@@ -335,6 +336,16 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             devopsCiJobRecordService.create(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
         } catch (Exception e) {
             LOGGER.info("save pipeline Records failed， ciPipelineId {}.", ciPipelineId);
+        }
+    }
+
+
+    public void checkUserPermission(Long gitlabUserId, Long gitlabProjectId, String ref) {
+        BranchDTO branchDTO =  gitlabServiceClientOperator.getBranch(gitlabProjectId.intValue(), ref);
+        MemberDTO memberDTO = gitlabServiceClientOperator.getMember(gitlabProjectId, gitlabUserId);
+
+        if (Boolean.FALSE.equals(branchDTO.getDevelopersCanPush()) && memberDTO.getAccessLevel() <= AccessLevel.DEVELOPER.toValue()) {
+            throw new CommonException(ERROR_BRANCH_PERMISSION_MISSMATCH, ref);
         }
     }
 
