@@ -8,18 +8,6 @@ import javax.annotation.Nullable;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import org.yaml.snakeyaml.Yaml;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
@@ -42,6 +30,17 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * 〈功能简述〉
@@ -327,8 +326,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     public void executeNew(Long ciPipelineId, Long gitlabProjectId, String ref) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
-        checkUserPermission(userAttrDTO.getGitlabUserId(), gitlabProjectId, ref);
-        Pipeline pipeline = gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(), 20567, ref);
+        checkUserBranchPushPermission(userAttrDTO.getGitlabUserId(), gitlabProjectId, ref);
+        Pipeline pipeline = gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(), userAttrDTO.getGitlabUserId().intValue(), ref);
         // 保存执行记录
         try {
             DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.create(ciPipelineId, gitlabProjectId, pipeline);
@@ -340,7 +339,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
 
-    public void checkUserPermission(Long gitlabUserId, Long gitlabProjectId, String ref) {
+    public void checkUserBranchPushPermission(Long gitlabUserId, Long gitlabProjectId, String ref) {
         BranchDTO branchDTO =  gitlabServiceClientOperator.getBranch(gitlabProjectId.intValue(), ref);
         MemberDTO memberDTO = gitlabServiceClientOperator.getMember(gitlabProjectId, gitlabUserId);
 

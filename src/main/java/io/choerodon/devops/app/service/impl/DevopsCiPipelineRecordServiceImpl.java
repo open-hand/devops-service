@@ -368,7 +368,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
-        checkUserPermission(gitlabPipelineId, gitlabProjectId, userAttrDTO.getGitlabUserId());
+        checkUserBranchPushPermission(gitlabPipelineId, gitlabProjectId, userAttrDTO.getGitlabUserId());
         // 重试pipeline
         Pipeline pipeline = gitlabServiceClientOperator.retryPipeline(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
 
@@ -390,7 +390,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
-        checkUserPermission(gitlabPipelineId, gitlabProjectId, userAttrDTO.getGitlabUserId());
+        checkUserBranchPushPermission(gitlabPipelineId, gitlabProjectId, userAttrDTO.getGitlabUserId());
 
         gitlabServiceClientOperator.cancelPipeline(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
 
@@ -408,11 +408,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     /**
      * 校验用户是否有分支权限
      */
-    private void checkUserPermission(Long gitlabPipelineId, Long gitlabProjectId, Long gitlabUserId) {
+    private void checkUserBranchPushPermission(Long gitlabPipelineId, Long gitlabProjectId, Long gitlabUserId) {
         DevopsCiPipelineRecordDTO recordDTO = new DevopsCiPipelineRecordDTO();
         recordDTO.setGitlabPipelineId(gitlabPipelineId);
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectOne(recordDTO);
-        devopsCiPipelineService.checkUserPermission(gitlabUserId, gitlabProjectId, devopsCiPipelineRecordDTO.getGitlabTriggerRef());
+        devopsCiPipelineService.checkUserBranchPushPermission(gitlabUserId, gitlabProjectId, devopsCiPipelineRecordDTO.getGitlabTriggerRef());
     }
 
     /**

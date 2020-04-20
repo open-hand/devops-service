@@ -100,5 +100,5 @@ public interface DevopsCiPipelineService {
      * @param gitlabProjectId
      * @param ref
      */
-     void checkUserPermission(Long gitlabUserId, Long gitlabProjectId, String ref);
+    void checkUserBranchPushPermission(Long gitlabUserId, Long gitlabProjectId, String ref);
 }
