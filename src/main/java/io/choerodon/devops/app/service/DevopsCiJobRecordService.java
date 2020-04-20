@@ -31,5 +31,13 @@ public interface DevopsCiJobRecordService {
      */
     void deleteByGitlabProjectId(Long gitlabProjectId);
 
-    void create(Long gitlabPipelineId, Long gitlabProjectId, List<JobDTO> jobDTOS);
+    /**
+     * 保存多条job记录
+     */
+    void create(Long gitlabPipelineId, Long gitlabProjectId, List<JobDTO> jobDTOS, Long iamUserId);
+
+    /**
+     * 保存一条job记录
+     */
+    void create(Long gitlabPipelineId, Long gitlabProjectId, JobDTO jobDTO, Long iamUserId);
 }

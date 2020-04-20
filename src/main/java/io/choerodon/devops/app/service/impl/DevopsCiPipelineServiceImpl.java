@@ -7,6 +7,8 @@ import javax.annotation.Nullable;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
@@ -31,7 +33,7 @@ import io.choerodon.devops.infra.dto.maven.Repository;
 import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
 import io.choerodon.devops.infra.dto.maven.Server;
 import io.choerodon.devops.infra.enums.CiJobScriptTypeEnum;
-import io.choerodon.devops.infra.enums.CiStageTypeEnum;
+import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.DefaultTriggerRefTypeEnum;
 import io.choerodon.devops.infra.enums.SonarAuthType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -49,6 +51,8 @@ import io.choerodon.devops.infra.util.*;
  */
 @Service
 public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCiPipelineServiceImpl.class);
 
     private static final String CREATE_PIPELINE_FAILED = "create.pipeline.failed";
     private static final String UPDATE_PIPELINE_FAILED = "update.pipeline.failed";
@@ -322,9 +326,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
         Pipeline pipeline = gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(), userAttrDTO.getGitlabUserId().intValue(), ref);
         // 保存执行记录
-        devopsCiPipelineRecordService.create(ciPipelineId, gitlabProjectId, pipeline);
-        List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), pipeline.getId(), userAttrDTO.getGitlabUserId().intValue());
-        devopsCiJobRecordService.create(TypeUtil.objToLong(pipeline.getId()), gitlabProjectId, jobDTOS);
+        try {
+            devopsCiPipelineRecordService.create(ciPipelineId, gitlabProjectId, pipeline);
+            List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), pipeline.getId(), userAttrDTO.getGitlabUserId().intValue());
+            devopsCiJobRecordService.create(TypeUtil.objToLong(pipeline.getId()), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
+        } catch (Exception e) {
+            LOGGER.error("save pipeline Records failed， ciPipelineId {}.", ciPipelineId);
+        }
     }
 
     private void deleteGitlabCiFile(Integer gitlabProjectId, Long iamUserId) {
@@ -424,6 +432,17 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private void saveCiContent(final Long projectId, Long pipelineId, DevopsCiPipelineVO devopsCiPipelineVO) {
         GitlabCi gitlabCi = buildGitLabCiObject(projectId, devopsCiPipelineVO);
         String gitlabCiYaml = GitlabCiUtil.gitlabCi2yaml(gitlabCi);
+
+        // 拼接自定义job
+        if (!CollectionUtils.isEmpty(devopsCiPipelineVO.getStageList())) {
+            List<DevopsCiJobVO> ciJobVOS = devopsCiPipelineVO.getStageList().stream()
+                    .flatMap(v -> v.getJobList().stream()).filter(job -> CiJobTypeEnum.CUSTOM.value().equalsIgnoreCase(job.getType()))
+                    .collect(Collectors.toList());
+            for (DevopsCiJobVO job : ciJobVOS) {
+                gitlabCiYaml += job.getMetadata();
+            }
+        }
+
         //保存gitlab-ci配置文件
         DevopsCiContentDTO devopsCiContentDTO = new DevopsCiContentDTO();
         devopsCiContentDTO.setCiPipelineId(pipelineId);
@@ -452,6 +471,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCiPipelineVO.getStageList().forEach(stageVO -> {
             if (!CollectionUtils.isEmpty(stageVO.getJobList())) {
                 stageVO.getJobList().forEach(job -> {
+                    if (CiJobTypeEnum.CUSTOM.value().equals(job.getType())) {
+                        return;
+                    }
                     CiJob ciJob = new CiJob();
                     ciJob.setStage(stageVO.getName());
                     ciJob.setOnly(buildOnlyExceptPolicyObject(job.getTriggerRefs()));
@@ -477,7 +499,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         final Long jobId = jobVO.getId();
         Assert.notNull(jobId, "Ci job id is required.");
 
-        if (CiStageTypeEnum.SONAR.value().equals(jobVO.getType())) {
+        if (CiJobTypeEnum.SONAR.value().equals(jobVO.getType())) {
             // sonar配置转化为gitlab-ci配置
             List<String> scripts = new ArrayList<>();
             SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(jobVO.getMetadata(), SonarQubeConfigVO.class);
@@ -490,7 +512,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 scripts.add(GitlabCiUtil.renderSonarCommand(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getToken()));
             }
             return scripts;
-        } else if (CiStageTypeEnum.BUILD.value().equals(jobVO.getType())) {
+        } else if (CiJobTypeEnum.BUILD.value().equals(jobVO.getType())) {
             // 将构建类型的stage中的job的每个step进行解析和转化
             CiConfigVO ciConfigVO = JSONObject.parseObject(jobVO.getMetadata(), CiConfigVO.class);
             if (ciConfigVO == null || CollectionUtils.isEmpty(ciConfigVO.getCiConfigTemplateVOList())) {

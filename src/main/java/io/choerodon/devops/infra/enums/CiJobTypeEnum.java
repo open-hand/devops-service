@@ -7,13 +7,14 @@ package io.choerodon.devops.infra.enums;
  * @author wanghao
  * @Date 2020/4/3 16:57
  */
-public enum CiStageTypeEnum {
+public enum CiJobTypeEnum {
     BUILD("build"),
-    SONAR("sonar");
+    SONAR("sonar"),
+    CUSTOM("custom");
 
     private String value;
 
-    CiStageTypeEnum(String value) {
+    CiJobTypeEnum(String value) {
         this.value = value;
     }
 
