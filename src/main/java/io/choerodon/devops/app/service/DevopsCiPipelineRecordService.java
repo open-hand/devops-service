@@ -51,7 +51,7 @@ public interface DevopsCiPipelineRecordService {
      */
     void deleteByGitlabProjectId(Long gitlabProjectId);
 
-    void create(Long ciPipelineId, Long gitlabProjectId, Pipeline pipeline);
+    DevopsCiPipelineRecordDTO create(Long ciPipelineId, Long gitlabProjectId, Pipeline pipeline);
 
     /**
      * 重试流水线

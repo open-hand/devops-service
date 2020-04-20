@@ -93,14 +93,14 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     }
 
     @Override
-    public void create(Long gitlabPipelineId, Long gitlabProjectId, List<JobDTO> jobDTOS, Long iamUserId) {
-        jobDTOS.forEach(job -> create(gitlabPipelineId, gitlabProjectId, job, iamUserId));
+    public void create(Long ciPipelineRecordId, Long gitlabProjectId, List<JobDTO> jobDTOS, Long iamUserId) {
+        jobDTOS.forEach(job -> create(ciPipelineRecordId, gitlabProjectId, job, iamUserId));
     }
 
     @Override
-    public void create(Long gitlabPipelineId, Long gitlabProjectId, JobDTO jobDTO, Long iamUserId) {
+    public void create(Long ciPipelineRecordId, Long gitlabProjectId, JobDTO jobDTO, Long iamUserId) {
         DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
-        recordDTO.setCiPipelineRecordId(gitlabPipelineId);
+        recordDTO.setCiPipelineRecordId(ciPipelineRecordId);
         recordDTO.setGitlabProjectId(gitlabProjectId);
         recordDTO.setStatus(jobDTO.getStatus().toValue());
         recordDTO.setStage(jobDTO.getStage());

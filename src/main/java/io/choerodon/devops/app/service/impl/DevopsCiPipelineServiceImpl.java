@@ -330,9 +330,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         Pipeline pipeline = gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(), userAttrDTO.getGitlabUserId().intValue(), ref);
         // 保存执行记录
         try {
-            devopsCiPipelineRecordService.create(ciPipelineId, gitlabProjectId, pipeline);
+            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.create(ciPipelineId, gitlabProjectId, pipeline);
             List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), pipeline.getId(), userAttrDTO.getGitlabUserId().intValue());
-            devopsCiJobRecordService.create(TypeUtil.objToLong(pipeline.getId()), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
+            devopsCiJobRecordService.create(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
         } catch (Exception e) {
             LOGGER.info("save pipeline Records failed， ciPipelineId {}.", ciPipelineId);
         }
@@ -484,7 +484,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     .collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(ciJobVOS)) {
                 for (DevopsCiJobVO job : ciJobVOS) {
-                    gitlabCiYaml.append(System.getProperty("line.separator")).append(job.getMetadata());
+                    gitlabCiYaml.append(System.getProperty(GitOpsConstants.NEW_LINE)).append(job.getMetadata());
                 }
             }
 
