@@ -17,7 +17,7 @@ public class GenerateUUID {
      * @return 生成的随机密码
      */
     public static String generateRandomGitlabPassword() {
-        return UUID.randomUUID().toString().replaceAll("-", "").substring(0, 10);
+        return UUID.randomUUID().toString().replaceAll("-", "a").substring(0, 10);
     }
 
     /**
@@ -26,6 +26,6 @@ public class GenerateUUID {
      * @return 10位的随机字符串
      */
     public static String generateRandomString() {
-        return UUID.randomUUID().toString().replaceAll("-", "").substring(0, 10);
+        return UUID.randomUUID().toString().replaceAll("-", "a").substring(0, 10);
     }
 }
