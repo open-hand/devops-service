@@ -210,4 +210,10 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
             throw new DevopsCiInvalidException(ERROR_UPLOAD_ARTIFACT_TO_MINIO, e);
         }
     }
+
+    @Override
+    public String queryArtifactUrl(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName) {
+        DevopsCiJobArtifactRecordDTO recordDTO = devopsCiJobArtifactRecordMapper.queryByPipelineIdAndName(ciPipelineId, artifactName);
+        return recordDTO == null ? null : recordDTO.getFileUrl();
+    }
 }
