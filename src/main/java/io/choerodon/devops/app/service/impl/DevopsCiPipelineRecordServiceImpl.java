@@ -471,7 +471,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     private Long getIamUserIdByGitlabUserName(String username) {
         if ("admin1".equals(username) || "root".equals(username)) {
-            username = "admin";
+           return 1L;
         }
         UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserName(username);
         return userAttrE.getIamUserId();
