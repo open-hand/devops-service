@@ -174,7 +174,7 @@ function chart_build() {
 # $2 文件名称
 function downloadFile() {
   rm -rf "$2"
-  http_status_code=$(curl -o "$2" -s -m 10 --connect-timeout 10 -w %{http_code} "$1")
+  http_status_code=$(curl -o "$2" -s -m 10 --connect-timeout 10 -w %{http_code} "$1?token=${Token}")
   if [ "$http_status_code" != "200" ]; then
     echo "failed to downloadFile"
   fi
@@ -186,9 +186,9 @@ function compressAndUpload() {
   # 打包文件
   tar -zcvf "$1.tgz" "$2"
   # 压缩后的包大于200M，退出ci执行
-  fileSize=$(du test.tar.gz | awk '{print $1}')
+  fileSize=$(du "$1.tgz" | awk '{print $1}')
   if [ "$fileSize" -gt "204800" ]; then
-    echo "over maxinum file size"
+    echo "over maximum file size 200M"
     exit 1
   fi
 
@@ -218,7 +218,25 @@ function compressAndUpload() {
 
 # $1 文件名称
 function downloadAndUncompress() {
-  http_status_code=$(curl -o "${CI_PIPELINE_ID}-$1.tgz" -s -m 10 --connect-timeout 10 -w %%{http_code} "${MINIO_URL}/devops-service-ci-artifacts/${CI_PIPELINE_ID}-$1.tgz")
+
+  # 先访问devops获得文件下载路径
+  http_status_code=$(
+    curl -s -m 10 --connect-timeout 10 \
+      -w %{http_code} \
+      -o response.url \
+      "${CHOERODON_URL}/devops/v1/projects/{project_id}/ci_jobs?token=${Token}&commit=${CI_COMMIT_SHA}&ci_pipeline_id=${CI_PIPELINE_ID}&ci_job_id=${CI_JOB_ID}&artifact_name=${CI_PIPELINE_ID}-$1"
+  )
+
+  if [ "$http_status_code" != 200 ]; then
+    echo "file $1 not exists"
+    exit 1
+  fi
+
+  url=$(cat response.url)
+  rm response.url
+
+  # 下载文件
+  http_status_code=$(curl -o "${CI_PIPELINE_ID}-$1.tgz" -s -m 10 --connect-timeout 10 -w %%{http_code} "$url")
   if [ "$http_status_code" != "200" ]; then
     echo "failed to download ${CI_PIPELINE_ID}-$1.tgz"
     exit 1
