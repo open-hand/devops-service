@@ -3,15 +3,17 @@ package io.choerodon.devops.app.service.impl;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StreamUtils;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCiContentService;
 import io.choerodon.devops.infra.dto.DevopsCiContentDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineDTO;
+import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.mapper.DevopsCiContentMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StreamUtils;
 
 /**
  * 〈功能简述〉
@@ -22,7 +24,7 @@ import org.springframework.util.StreamUtils;
  */
 @Service
 public class DevopsCiContentServiceImpl implements DevopsCiContentService {
-
+    private static final String ERROR_PIPELINE_TOKEN_MISMATCH = "error.pipeline.token.mismatch";
     private static final String CREATE_CI_CONTENT_FAILED = "create.ci.content.failed";
     private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
 
@@ -36,8 +38,11 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
     }
 
     @Override
-    public String queryLatestContent(Long pipelineId) {
-        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineMapper.selectByPrimaryKey(pipelineId);
+    public String queryLatestContent(String pipelineToken) {
+        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineMapper.queryByToken(pipelineToken);
+        if (devopsCiPipelineDTO == null) {
+            throw new DevopsCiInvalidException(ERROR_PIPELINE_TOKEN_MISMATCH);
+        }
         if (Boolean.FALSE.equals(devopsCiPipelineDTO.getEnabled())) {
             String content = "";
             try {
@@ -47,7 +52,7 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
             }
             return content;
         }
-        return devopsCiContentMapper.queryLatestContent(pipelineId);
+        return devopsCiContentMapper.queryLatestContent(devopsCiPipelineDTO.getId());
     }
 
     @Override
