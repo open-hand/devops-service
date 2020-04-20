@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.annotation.Permission;
 import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
 import io.choerodon.devops.api.vo.DevopsCiPipelineVO;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineDTO;
@@ -39,6 +40,7 @@ public class DevopsCiPipelineController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody @Valid DevopsCiPipelineVO devopsCiPipelineVO) {
+        DevopsCiPipelineAdditionalValidator.additionalCheckPipeline(devopsCiPipelineVO);
         return ResponseEntity.ok(devopsCiPipelineService.create(projectId, devopsCiPipelineVO));
     }
 
@@ -51,6 +53,7 @@ public class DevopsCiPipelineController {
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "ci_pipeline_id") Long ciPipelineId,
             @RequestBody @Valid DevopsCiPipelineVO devopsCiPipelineVO) {
+        DevopsCiPipelineAdditionalValidator.additionalCheckPipeline(devopsCiPipelineVO);
         return ResponseEntity.ok(devopsCiPipelineService.update(projectId, ciPipelineId, devopsCiPipelineVO));
     }
 
