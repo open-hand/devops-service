@@ -172,7 +172,7 @@ public class GitlabCiUtil {
      * @return sonar命令
      */
     public static String renderSonarCommand(String sonarUrl, String token) {
-        return SONAR_TOKEN_TEMPLATE.replace(SONAR_URL_ANCHOR, sonarUrl).replace(SONAR_TOKEN_ANCHOR, token);
+        return String.format(SONAR_TOKEN_TEMPLATE, sonarUrl, token);
     }
 
     /**
@@ -184,10 +184,7 @@ public class GitlabCiUtil {
      * @return sonar命令
      */
     public static String renderSonarCommand(String sonarUrl, String sonarUsername, String sonarPassword) {
-        return SONAR_USER_PASSWORD_TEMPLATE
-                .replace(SONAR_URL_ANCHOR, sonarUrl)
-                .replace(SONAR_TOKEN_ANCHOR, sonarUsername)
-                .replace(SONAR_PASSWORD_ANCHOR, sonarPassword);
+        return String.format(SONAR_USER_PASSWORD_TEMPLATE, sonarUrl, sonarUsername, sonarPassword);
     }
 
     /**

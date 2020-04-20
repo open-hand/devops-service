@@ -4,7 +4,6 @@ import java.util.List;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -41,6 +40,9 @@ public class CiConfigTemplateVO {
 
     @ApiModelProperty("上传软件包的文件路径")
     private String uploadFilePattern;
+
+    @ApiModelProperty("上传或下载软件包的名称")
+    private String artifactFileName;
 
     public String getName() {
         return name;
@@ -104,5 +106,13 @@ public class CiConfigTemplateVO {
 
     public void setUploadFilePattern(String uploadFilePattern) {
         this.uploadFilePattern = uploadFilePattern;
+    }
+
+    public String getArtifactFileName() {
+        return artifactFileName;
+    }
+
+    public void setArtifactFileName(String artifactFileName) {
+        this.artifactFileName = artifactFileName;
     }
 }

@@ -2,9 +2,12 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
+import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 
 /**
  * 〈功能简述〉
@@ -66,4 +69,17 @@ public interface DevopsCiJobService {
      * @return settings文件内容
      */
     String queryMavenSettings(Long projectId, Long jobId, Long sequence);
+
+    /**
+     * CI过程上传软件包
+     * 如果有异常，会抛出{@link DevopsCiInvalidException}，目的是给客户端非2xx的状态码
+     *
+     * @param token        应用服务token
+     * @param commit       ci的commit值
+     * @param ciPipelineId 流水线id
+     * @param ciJobId      流水线的job id
+     * @param artifactName 软件包名称
+     * @param file         软件包
+     */
+    void uploadArtifact(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName, MultipartFile file);
 }
