@@ -102,4 +102,33 @@ public class DevopsCiJobController {
         devopsCiJobService.uploadArtifact(token, commit, ciPipelineId, ciJobId, artifactName, file);
         return new ResponseEntity(HttpStatus.OK);
     }
+
+    /**
+     * 查询上传的软件包的url
+     *
+     * @param token        应用服务token
+     * @param commit       ci的commit值
+     * @param ciPipelineId 流水线id
+     * @param ciJobId      流水线的job id
+     * @param artifactName 软件包名称
+     * @return 状态码200 表示ok并返回url， 404表示未找到
+     */
+    @Permission(permissionPublic = true)
+    @ApiOperation("查询上传的软件包的url, 状态码200 表示ok并返回url， 404表示未找到")
+    @PostMapping("/artifact_url")
+    public ResponseEntity<String> queryArtifactUrl(
+            @ApiParam(value = "应用服务token", required = true)
+            @RequestParam(value = "token") String token,
+            @ApiParam(value = "此次ci的commit", required = true)
+            @RequestParam(value = "commit") String commit,
+            @ApiParam(value = "gitlab内置的流水线id", required = true)
+            @RequestParam(value = "ci_pipeline_id") Long ciPipelineId,
+            @ApiParam(value = "gitlab内置的jobId", required = true)
+            @RequestParam(value = "ci_job_id") Long ciJobId,
+            @ApiParam(value = "文件名称", required = true)
+            @RequestParam(value = "artifact_name") String artifactName) {
+        String url = devopsCiJobService.queryArtifactUrl(token, commit, ciPipelineId, ciJobId, artifactName);
+        return url == null ? ResponseEntity.notFound().build() : new ResponseEntity<>(url, HttpStatus.OK);
+    }
+
 }

@@ -82,4 +82,16 @@ public interface DevopsCiJobService {
      * @param file         软件包
      */
     void uploadArtifact(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName, MultipartFile file);
+
+    /**
+     * CI过程上传软件包
+     * 如果有异常，会抛出{@link DevopsCiInvalidException}，目的是给客户端非2xx的状态码
+     *
+     * @param token        应用服务token
+     * @param commit       ci的commit值
+     * @param ciPipelineId 流水线id
+     * @param ciJobId      流水线的job id
+     * @param artifactName 软件包名称
+     */
+    String queryArtifactUrl(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName);
 }
