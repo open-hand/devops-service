@@ -10,13 +10,13 @@ import java.util.List;
  * @Date 2020/4/7 14:04
  */
 public class CiConfigVO {
-    private List<CiConfigTemplateVO> ciConfigTemplateVOList;
+    private List<CiConfigTemplateVO> config;
 
-    public List<CiConfigTemplateVO> getCiConfigTemplateVOList() {
-        return ciConfigTemplateVOList;
+    public List<CiConfigTemplateVO> getConfig() {
+        return config;
     }
 
-    public void setCiConfigTemplateVOList(List<CiConfigTemplateVO> ciConfigTemplateVOList) {
-        this.ciConfigTemplateVOList = ciConfigTemplateVOList;
+    public void setConfig(List<CiConfigTemplateVO> config) {
+        this.config = config;
     }
 }

@@ -515,20 +515,20 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         } else if (CiJobTypeEnum.BUILD.value().equals(jobVO.getType())) {
             // 将构建类型的stage中的job的每个step进行解析和转化
             CiConfigVO ciConfigVO = JSONObject.parseObject(jobVO.getMetadata(), CiConfigVO.class);
-            if (ciConfigVO == null || CollectionUtils.isEmpty(ciConfigVO.getCiConfigTemplateVOList())) {
+            if (ciConfigVO == null || CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
                 return Collections.emptyList();
             }
 
             List<Long> existedSequences = new ArrayList<>();
             // 校验前端传入的sequence不为null且不重复
-            ciConfigVO.getCiConfigTemplateVOList().forEach(config -> validConfigSequence(config.getSequence(), config.getName(), existedSequences));
+            ciConfigVO.getConfig().forEach(config -> validConfigSequence(config.getSequence(), config.getName(), existedSequences));
 
             // 最后生成的所有script集合
             List<String> result = new ArrayList<>();
 
             // 同一个job中的所有step要按照sequence顺序来
             // 将每一个step都转为一个List<String>并将所有的list合并为一个
-            ciConfigVO.getCiConfigTemplateVOList()
+            ciConfigVO.getConfig()
                     .stream()
                     .sorted(Comparator.comparingLong(CiConfigTemplateVO::getSequence))
                     .forEach(config -> {
