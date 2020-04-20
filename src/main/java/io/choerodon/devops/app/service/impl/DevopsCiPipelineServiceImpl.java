@@ -340,7 +340,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
 
     public void checkUserBranchPushPermission(Long gitlabUserId, Long gitlabProjectId, String ref) {
-        BranchDTO branchDTO =  gitlabServiceClientOperator.getBranch(gitlabProjectId.intValue(), ref);
+        BranchDTO branchDTO = gitlabServiceClientOperator.getBranch(gitlabProjectId.intValue(), ref);
         MemberDTO memberDTO = gitlabServiceClientOperator.getMember(gitlabProjectId, gitlabUserId);
 
         if (Boolean.FALSE.equals(branchDTO.getDevelopersCanPush()) && memberDTO.getAccessLevel() <= AccessLevel.DEVELOPER.toValue()) {
@@ -631,7 +631,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         List<String> shells = GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(ciConfigTemplateVO.getScript()), true, true);
         if (hasSettings) {
             // 插入shell指令将配置的settings文件下载到项目目录下
-            shells.add(0, GitlabCiUtil.downloadMavenSettings(gatewayUrl, projectId, jobId, ciConfigTemplateVO.getSequence()));
+            shells.add(0, GitlabCiUtil.downloadMavenSettings(projectId, jobId, ciConfigTemplateVO.getSequence()));
         }
         return shells;
     }
