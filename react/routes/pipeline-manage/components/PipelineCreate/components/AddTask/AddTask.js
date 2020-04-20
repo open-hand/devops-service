@@ -195,6 +195,7 @@ const AddTask = observer(() => {
       AddTaskFormDataSet.getField('uploadFilePattern').set('required', false);
       AddTaskFormDataSet.getField('dockerContextDir').set('required', false);
       AddTaskFormDataSet.getField('dockerFilePath').set('required', false);
+      AddTaskFormDataSet.getField('uploadArtifactFileName').set('required', false);
     }
   }, [testConnect, AddTaskFormDataSet.current.get('type'), AddTaskFormDataSet.current.get('authType')]);
 
