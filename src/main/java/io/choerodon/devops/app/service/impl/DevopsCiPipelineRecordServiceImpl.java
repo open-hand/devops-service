@@ -28,6 +28,8 @@ import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -44,6 +46,9 @@ import org.springframework.util.CollectionUtils;
  */
 @Service
 public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecordService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCiPipelineServiceImpl.class);
+
 
     private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
     private static final String ERROR_GITLAB_PIPELINE_ID_IS_NULL = "error.gitlab.pipeline.id.is.null";
@@ -364,12 +369,17 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
         // 重试pipeline
         Pipeline pipeline = gitlabServiceClientOperator.retryPipeline(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
-        // 更新pipeline status
-        devopsCiPipelineRecordMapper.updateStatusByGitlabPipelineId(gitlabPipelineId, pipeline.getStatus().toValue());
 
-        // 更新job status
-        List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
-        updateOrInsertJobRecord(gitlabPipelineId, gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
+        try {
+            // 更新pipeline status
+            devopsCiPipelineRecordMapper.updateStatusByGitlabPipelineId(gitlabPipelineId, pipeline.getStatus().toValue());
+
+            // 更新job status
+            List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+            updateOrInsertJobRecord(gitlabPipelineId, gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
+        } catch (Exception e) {
+            LOGGER.error("update pipeline Records failed， gitlabPipelineId {}.", gitlabPipelineId);
+        }
 
     }
 
@@ -381,12 +391,16 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
         Pipeline pipeline = gitlabServiceClientOperator.cancelPipeline(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
 
-        // 更新pipeline status
-        devopsCiPipelineRecordMapper.updateStatusByGitlabPipelineId(gitlabPipelineId, pipeline.getStatus().toValue());
+        try {
+            // 更新pipeline status
+            devopsCiPipelineRecordMapper.updateStatusByGitlabPipelineId(gitlabPipelineId, pipeline.getStatus().toValue());
 
-        // 更新job status
-        List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
-        updateOrInsertJobRecord(gitlabPipelineId, gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
+            // 更新job status
+            List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+            updateOrInsertJobRecord(gitlabPipelineId, gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
+        } catch (Exception e) {
+            LOGGER.error("update pipeline Records failed， gitlabPipelineId {}.", gitlabPipelineId);
+        }
     }
 
     private void updateOrInsertJobRecord(Long gitlabPipelineId, Long gitlabProjectId, List<JobDTO> jobDTOS, Long iamUserId) {
