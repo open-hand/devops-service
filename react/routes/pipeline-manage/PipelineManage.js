@@ -128,7 +128,7 @@ const PipelineManage = observer((props) => {
       switch (status) {
         case 'running':
         case 'pending':
-          btn = <Permission service={['devops-service.project-pipeline.cancel']}>
+          btn = <Permission service={['devops-service.devops-ci-pipeline-record.cancel']}>
             <Button
               icon="power_settings_new"
               onClick={() => changeRecordExecute('cancel')}
@@ -139,7 +139,7 @@ const PipelineManage = observer((props) => {
           break;
         case 'canceled':
         case 'failed':
-          btn = <Permission service={['devops-service.project-pipeline.retry']}>
+          btn = <Permission service={['devops-service.devops-ci-pipeline-record.retry']}>
             <Button
               icon="refresh"
               onClick={() => changeRecordExecute('retry')}
