@@ -256,7 +256,6 @@ public class GitlabCiUtil {
      * @param dockerFilePath        dockerfile文件路径
      */
     private static String generateDockerScripts(String dockerBuildContextDir, String dockerFilePath) {
-        // TODO by li hao
         String rawCommand = "kaniko -c %s -f %s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
         return String.format(rawCommand, dockerBuildContextDir, dockerFilePath);
     }
