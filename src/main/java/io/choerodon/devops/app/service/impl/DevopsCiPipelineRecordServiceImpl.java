@@ -378,7 +378,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
             updateOrInsertJobRecord(gitlabPipelineId, gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
         } catch (Exception e) {
-            LOGGER.error("update pipeline Records failed， gitlabPipelineId {}.", gitlabPipelineId);
+            LOGGER.info("update pipeline Records failed， gitlabPipelineId {}.", gitlabPipelineId);
         }
 
     }
@@ -399,7 +399,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
             updateOrInsertJobRecord(gitlabPipelineId, gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
         } catch (Exception e) {
-            LOGGER.error("update pipeline Records failed， gitlabPipelineId {}.", gitlabPipelineId);
+            LOGGER.info("update pipeline Records failed， gitlabPipelineId {}.", gitlabPipelineId);
         }
     }
 
