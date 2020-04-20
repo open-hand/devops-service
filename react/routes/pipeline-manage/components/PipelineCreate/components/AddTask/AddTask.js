@@ -14,6 +14,9 @@ const { Option } = Select;
 const obj = {
   Maven: 'Maven构建',
   npm: 'Npm构建',
+  upload: '上传软件包至存储库',
+  docker: 'Docker构建',
+  chart: 'Chart构建',
 };
 
 const AddTask = observer(() => {
@@ -48,6 +51,7 @@ const AddTask = observer(() => {
       AddTaskFormDataSet.getField('uploadFilePattern').set('required', steps.some(s => s.type === 'upload'));
       AddTaskFormDataSet.getField('dockerContextDir').set('required', steps.some(s => s.type === 'docker'));
       AddTaskFormDataSet.getField('dockerFilePath').set('required', steps.some(s => s.type === 'docker'));
+
       // else {
       //   AddTaskFormDataSet.current.set('private', '');
       // }
@@ -61,12 +65,16 @@ const AddTask = observer(() => {
         let uploadFilePattern;
         let dockerContextDir;
         let dockerFilePath;
+        let uploadArtifactFileName;
+        let dockerArtifactFileName;
         config.forEach((c) => {
           if (c.type === 'upload') {
             uploadFilePattern = c.uploadFilePattern;
+            uploadArtifactFileName = c.artifactFileName;
           } else if (c.type === 'docker') {
             dockerContextDir = c.dockerContextDir;
             dockerFilePath = c.dockerFilePath;
+            dockerArtifactFileName = c.artifactFileName;
           }
         });
         const newSteps = config || [];
@@ -75,6 +83,8 @@ const AddTask = observer(() => {
           uploadFilePattern,
           dockerContextDir,
           dockerFilePath,
+          uploadArtifactFileName,
+          dockerArtifactFileName,
           triggerRefs: jobDetail.triggerRefs.split(','),
           glyyfw: appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')),
           bzmc: newSteps.find(s => s.checked) ? newSteps.find(s => s.checked).name : '',
@@ -126,10 +136,16 @@ const AddTask = observer(() => {
                 }
                 if (s.type === 'upload') {
                   s.uploadFilePattern = data.uploadFilePattern;
+                  if (data.uploadArtifactFileName) {
+                    s.artifactFileName = data.uploadArtifactFileName;
+                  }
                 }
                 if (s.type === 'docker') {
                   s.dockerContextDir = data.dockerContextDir;
                   s.dockerFilePath = data.dockerFilePath;
+                  if (data.dockerArtifactFileName) {
+                    s.artifactFileName = data.dockerArtifactFileName;
+                  }
                 }
                 return s;
               }),
@@ -204,9 +220,17 @@ const AddTask = observer(() => {
       },
       children: (
         <Form dataSet={AddTaskStepFormDataSet}>
-          <Select name="kybz">
+          <Select
+            onOption={({ record }) => ({
+              disabled: steps.map(s => s.type).includes(record.get('value')),
+            })}
+            name="kybz"
+          >
             <Option value="Maven">Maven构建</Option>
             <Option value="npm">Npm构建</Option>
+            <Option value="upload">上传软件包至存储库</Option>
+            <Option value="docker">Docker构建</Option>
+            <Option value="chart">Chart构建</Option>
           </Select>
         </Form>
       ),
@@ -225,7 +249,7 @@ const AddTask = observer(() => {
               name: obj[value],
               type: value,
               checked: true,
-              yaml: useStore.getYaml[value],
+              yaml: useStore.getYaml[value] || '',
               // children: (
               //   <div
               //     style={{
@@ -604,13 +628,15 @@ const AddTask = observer(() => {
                     </div>
                   );
                 } else if (type === 'upload') {
-                  return (
-                    <TextField style={{ width: 339, marginBottom: 20 }} name="uploadFilePattern" />
-                  );
+                  return [
+                    <TextField style={{ width: 339, marginBottom: 20 }} name="uploadFilePattern" />,
+                    <TextField style={{ width: 339, marginBottom: 20 }} name="uploadArtifactFileName" />,
+                  ];
                 } else if (type === 'docker') {
                   return [
                     <TextField style={{ width: 339, marginBottom: 20 }} name="dockerContextDir" />,
                     <TextField style={{ width: 339, marginBottom: 20 }} name="dockerFilePath" />,
+                    <TextField style={{ width: 339, marginBottom: 20 }} name="dockerArtifactFileName" />,
                   ];
                 }
               }
