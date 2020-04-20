@@ -60,6 +60,7 @@ const TreeItem = observer(({ record, search }) => {
       children: <ExecuteContent
         appServiceId={record.get('appServiceId')}
         gitlabProjectId={record.get('gitlabProjectId')}
+        pipelineId={record.get('id')}
         refresh={refresh}
         prefixCls={prefixCls}
       />,
@@ -217,7 +218,7 @@ const TreeItem = observer(({ record, search }) => {
     } else {
       const actionData = [
         {
-          service: ['devops-service.project-pipeline.create'],
+          service: ['devops-service.devops-ci-pipeline.executeNew'],
           text: formatMessage({ id: `${intlPrefix}.execute` }),
           action: handleExecute,
         },
