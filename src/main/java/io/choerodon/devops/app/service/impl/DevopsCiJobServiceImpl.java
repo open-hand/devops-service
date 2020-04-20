@@ -6,18 +6,20 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.mapper.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.DevopsCiJobService;
-import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
@@ -27,10 +29,6 @@ import io.choerodon.devops.infra.feign.FileFeignClient;
 import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
-import io.choerodon.devops.infra.mapper.DevopsCiJobArtifactRecordMapper;
-import io.choerodon.devops.infra.mapper.DevopsCiJobMapper;
-import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
-import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.MapperUtil;
 
@@ -43,10 +41,14 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class DevopsCiJobServiceImpl implements DevopsCiJobService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCiPipelineRecordServiceImpl.class);
+
     private static final String CREATE_JOB_FAILED = "create.job.failed";
     private static final String DELETE_JOB_FAILED = "delete.job.failed";
     private static final String ERROR_STAGE_ID_IS_NULL = "error.stage.id.is.null";
     private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
+    private static final String ERROR_GITLAB_PROJECT_ID_IS_NULL = "error.gitlab.project.id.is.null";
+    private static final String ERROR_GITLAB_JOB_ID_IS_NULL = "error.gitlab.job.id.is.null";
     private static final String ERROR_UPLOAD_ARTIFACT_TO_MINIO = "error.upload.file.to.minio";
     private static final String ERROR_TOKEN_MISMATCH = "error.app.service.token.mismatch";
     private static final String ERROR_CI_JOB_NON_EXIST = "error.ci.job.non.exist";
@@ -69,6 +71,9 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private AppServiceService appServiceService;
     private DevopsCiJobArtifactRecordMapper devopsCiJobArtifactRecordMapper;
     private DevopsCiPipelineMapper devopsCiPipelineMapper;
+    private DevopsCiPipelineService devopsCiPipelineService;
+    private DevopsCiJobRecordService devopsCiJobRecordService;
+    private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
 
     public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper,
                                   GitlabServiceClientOperator gitlabServiceClientOperator,
@@ -77,7 +82,10 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
                                   DevopsCiJobArtifactRecordMapper devopsCiJobArtifactRecordMapper,
                                   AppServiceService appServiceService,
                                   DevopsCiPipelineMapper devopsCiPipelineMapper,
-                                  DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper) {
+                                  DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
+                                  DevopsCiPipelineService devopsCiPipelineService,
+                                  DevopsCiJobRecordService devopsCiJobRecordService,
+                                  DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper) {
         this.devopsCiJobMapper = devopsCiJobMapper;
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
         this.userAttrService = userAttrService;
@@ -86,6 +94,9 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         this.appServiceService = appServiceService;
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
         this.fileFeignClient = fileFeignClient;
+        this.devopsCiPipelineService = devopsCiPipelineService;
+        this.devopsCiJobRecordService = devopsCiJobRecordService;
+        this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
     }
 
     @Override
@@ -149,9 +160,23 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     }
 
     @Override
-    public JobDTO retryJob(Long gitlabProjectId, Long jobId) {
+    public void retryJob(Long gitlabProjectId, Long jobId) {
+        Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
+        Assert.notNull(jobId, ERROR_GITLAB_JOB_ID_IS_NULL);
+
+
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId().longValue());
-        return gitlabServiceClientOperator.retryJob(gitlabProjectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(jobId);
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(devopsCiJobRecordDTO.getCiPipelineRecordId());
+        devopsCiPipelineService.checkUserBranchPushPermission(userAttrDTO.getGitlabUserId(), gitlabProjectId, devopsCiPipelineRecordDTO.getGitlabTriggerRef());
+
+        JobDTO jobDTO = gitlabServiceClientOperator.retryJob(gitlabProjectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+        // 保存job记录
+        try {
+            devopsCiJobRecordService.create(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTO, userAttrDTO.getIamUserId());
+        } catch (Exception e) {
+            LOGGER.info("update job Records failed， jobid {}.", jobId);
+        }
     }
 
     @Override

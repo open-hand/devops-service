@@ -52,11 +52,12 @@ public class DevopsCiJobController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "重试job")
     @GetMapping("/gitlab_projects/{gitlab_project_id}/gitlab_jobs/{job_id}/retry")
-    public ResponseEntity<JobDTO> retryJob(
+    public ResponseEntity<Void> retryJob(
             @PathVariable(value = "project_id") Long projectId,
             @PathVariable(value = "gitlab_project_id") Long gitlabProjectId,
             @PathVariable(value = "job_id") Long jobId) {
-        return ResponseEntity.ok(devopsCiJobService.retryJob(gitlabProjectId, jobId));
+        devopsCiJobService.retryJob(gitlabProjectId, jobId);
+        return ResponseEntity.noContent().build();
     }
 
     @ApiOperation("获取job指定sequence的step的maven构建的settings文件内容")
