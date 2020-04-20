@@ -65,11 +65,14 @@ public class DevopsCiJobController {
     public ResponseEntity<String> querySettings(
             @ApiParam("猪齿鱼项目id")
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务token", required = true)
+            @RequestParam(value = "token") String token,
             @ApiParam("猪齿鱼中流水线job id")
             @RequestParam(value = "job_id") Long job_id,
             @ApiParam("猪齿鱼中流水线的step的sequence")
             @RequestParam(value = "sequence") Long sequence) {
-        return ResponseEntity.ok(devopsCiJobService.queryMavenSettings(projectId, job_id, sequence));
+        String response = devopsCiJobService.queryMavenSettings(projectId, token, job_id, sequence);
+        return response == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(response);
     }
 
     /**
@@ -87,6 +90,8 @@ public class DevopsCiJobController {
     @ApiOperation("CI过程上传软件包, 大小不得大于200Mi")
     @PostMapping("/upload_artifact")
     public ResponseEntity uploadJobArtifact(
+            @ApiParam("猪齿鱼项目id")
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用服务token", required = true)
             @RequestParam(value = "token") String token,
             @ApiParam(value = "此次ci的commit", required = true)
@@ -117,6 +122,8 @@ public class DevopsCiJobController {
     @ApiOperation("查询上传的软件包的url, 状态码200 表示ok并返回url， 404表示未找到")
     @GetMapping("/artifact_url")
     public ResponseEntity<String> queryArtifactUrl(
+            @ApiParam("猪齿鱼项目id")
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用服务token", required = true)
             @RequestParam(value = "token") String token,
             @ApiParam(value = "此次ci的commit", required = true)
@@ -128,7 +135,7 @@ public class DevopsCiJobController {
             @ApiParam(value = "文件名称", required = true)
             @RequestParam(value = "artifact_name") String artifactName) {
         String url = devopsCiJobService.queryArtifactUrl(token, commit, ciPipelineId, ciJobId, artifactName);
-        return url == null ? ResponseEntity.notFound().build() : new ResponseEntity<>(url, HttpStatus.OK);
+        return url == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(url);
     }
 
 }

@@ -15,12 +15,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
+import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsCiJobService;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
-import io.choerodon.devops.infra.dto.DevopsCiJobArtifactRecordDTO;
-import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
-import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.enums.SonarAuthType;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
@@ -31,6 +30,7 @@ import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.DevopsCiJobArtifactRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiJobMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
+import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.MapperUtil;
 
@@ -48,6 +48,10 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private static final String ERROR_STAGE_ID_IS_NULL = "error.stage.id.is.null";
     private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
     private static final String ERROR_UPLOAD_ARTIFACT_TO_MINIO = "error.upload.file.to.minio";
+    private static final String ERROR_TOKEN_MISMATCH = "error.app.service.token.mismatch";
+    private static final String ERROR_CI_JOB_NON_EXIST = "error.ci.job.non.exist";
+    private static final String ERROR_TOKEN_PIPELINE_MISMATCH = "error.token.pipeline.mismatch";
+
     private static final String SONAR_KEY = "%s-%s:%s";
     private static final String SONAR = "sonar";
 
@@ -62,19 +66,25 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private UserAttrService userAttrService;
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
     private FileFeignClient fileFeignClient;
+    private AppServiceService appServiceService;
     private DevopsCiJobArtifactRecordMapper devopsCiJobArtifactRecordMapper;
+    private DevopsCiPipelineMapper devopsCiPipelineMapper;
 
     public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper,
                                   GitlabServiceClientOperator gitlabServiceClientOperator,
                                   UserAttrService userAttrService,
                                   FileFeignClient fileFeignClient,
                                   DevopsCiJobArtifactRecordMapper devopsCiJobArtifactRecordMapper,
+                                  AppServiceService appServiceService,
+                                  DevopsCiPipelineMapper devopsCiPipelineMapper,
                                   DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper) {
         this.devopsCiJobMapper = devopsCiJobMapper;
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
         this.userAttrService = userAttrService;
         this.devopsCiMavenSettingsMapper = devopsCiMavenSettingsMapper;
         this.devopsCiJobArtifactRecordMapper = devopsCiJobArtifactRecordMapper;
+        this.appServiceService = appServiceService;
+        this.devopsCiPipelineMapper = devopsCiPipelineMapper;
         this.fileFeignClient = fileFeignClient;
     }
 
@@ -156,7 +166,21 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     }
 
     @Override
-    public String queryMavenSettings(Long projectId, Long jobId, Long sequence) {
+    public String queryMavenSettings(Long projectId, String appServiceToken, Long jobId, Long sequence) {
+        AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(appServiceToken);
+        if (appServiceDTO == null) {
+            throw new DevopsCiInvalidException(ERROR_TOKEN_MISMATCH);
+        }
+        DevopsCiJobDTO devopsCiJobDTO = devopsCiJobMapper.selectByPrimaryKey(jobId);
+        if (devopsCiJobDTO == null) {
+            throw new DevopsCiInvalidException(ERROR_CI_JOB_NON_EXIST);
+        }
+
+        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineMapper.selectByPrimaryKey(devopsCiJobDTO.getCiPipelineId());
+        if (devopsCiPipelineDTO == null || !Objects.equals(devopsCiPipelineDTO.getAppServiceId(), appServiceDTO.getId())) {
+            throw new DevopsCiInvalidException(ERROR_TOKEN_PIPELINE_MISMATCH);
+        }
+
         return devopsCiMavenSettingsMapper.queryMavenSettings(jobId, sequence);
     }
 
@@ -164,6 +188,10 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     @Override
     public void uploadArtifact(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName, MultipartFile file) {
         // 这个方法暂时用不到的字段留待后用
+        AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
+        if (appServiceDTO == null) {
+            throw new DevopsCiInvalidException(ERROR_TOKEN_MISMATCH);
+        }
 
         if (!ARTIFACT_NAME_PATTERN.matcher(artifactName).matches()) {
             throw new DevopsCiInvalidException("error.artifact.name.invalid", artifactName);
@@ -213,6 +241,10 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
     @Override
     public String queryArtifactUrl(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName) {
+        AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
+        if (appServiceDTO == null) {
+            throw new DevopsCiInvalidException(ERROR_TOKEN_MISMATCH);
+        }
         DevopsCiJobArtifactRecordDTO recordDTO = devopsCiJobArtifactRecordMapper.queryByPipelineIdAndName(ciPipelineId, artifactName);
         return recordDTO == null ? null : recordDTO.getFileUrl();
     }

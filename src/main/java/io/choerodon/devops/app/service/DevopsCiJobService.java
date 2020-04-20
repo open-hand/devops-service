@@ -63,12 +63,13 @@ public interface DevopsCiJobService {
     /**
      * 查询maven settings文件内容
      *
-     * @param projectId 项目id
-     * @param jobId     job id
-     * @param sequence  maven构建步骤的序列号
+     * @param projectId       项目id
+     * @param appServiceToken 应用服务token
+     * @param jobId           job id
+     * @param sequence        maven构建步骤的序列号
      * @return settings文件内容
      */
-    String queryMavenSettings(Long projectId, Long jobId, Long sequence);
+    String queryMavenSettings(Long projectId, String appServiceToken, Long jobId, Long sequence);
 
     /**
      * CI过程上传软件包
