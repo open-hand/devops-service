@@ -143,10 +143,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      *
      * @param gitlabProjectId  gitlab项目id
      * @param ciFileIncludeUrl include中的链接
-     * @param iamUserId        iam用户id
      */
-    private void initGitlabCiFile(Integer gitlabProjectId, String ciFileIncludeUrl, Long iamUserId) {
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(iamUserId);
+    private void initGitlabCiFile(Integer gitlabProjectId, String ciFileIncludeUrl) {
         RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(gitlabProjectId, GitOpsConstants.MASTER, GitOpsConstants.GITLAB_CI_FILE_NAME);
 
         if (repositoryFile == null) {
@@ -157,7 +155,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     GitOpsConstants.GITLAB_CI_FILE_NAME,
                     buildIncludeYaml(ciFileIncludeUrl),
                     GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
-                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
+                    GitUserNameUtil.getAdminId(),
                     GitOpsConstants.MASTER);
         } else {
             // 将原先的配置文件内容注释并放在原本文件中
@@ -170,7 +168,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     GitOpsConstants.GITLAB_CI_FILE_NAME,
                     buildIncludeYaml(ciFileIncludeUrl) + GitOpsConstants.NEW_LINE + commentedLines,
                     GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
-                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                    GitUserNameUtil.getAdminId());
         }
     }
 
@@ -209,7 +207,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(devopsCiPipelineDTO.getAppServiceId());
         String ciFileIncludeUrl = gatewayUrl + "/devops/v1/projects/" + projectId + "/ci_contents/pipelines/" + devopsCiPipelineDTO.getId() + "/content.yaml";
-        initGitlabCiFile(appServiceDTO.getGitlabProjectId(), ciFileIncludeUrl, iamUserId);
+        initGitlabCiFile(appServiceDTO.getGitlabProjectId(), ciFileIncludeUrl);
         return devopsCiPipelineMapper.selectByPrimaryKey(devopsCiPipelineDTO.getId());
     }
 
@@ -312,7 +310,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCiContentService.deleteByPipelineId(ciPipelineId);
 
         // 删除.gitlab-ci.yaml文件
-        deleteGitlabCiFile(appServiceDTO.getGitlabProjectId(), userId);
+        deleteGitlabCiFile(appServiceDTO.getGitlabProjectId());
     }
 
     @Override
@@ -338,15 +336,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
     }
 
-    private void deleteGitlabCiFile(Integer gitlabProjectId, Long iamUserId) {
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(iamUserId);
+    private void deleteGitlabCiFile(Integer gitlabProjectId) {
         RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(gitlabProjectId, GitOpsConstants.MASTER, GitOpsConstants.GITLAB_CI_FILE_NAME);
         if (repositoryFile != null) {
             gitlabServiceClientOperator.deleteFile(
                     gitlabProjectId,
                     GitOpsConstants.GITLAB_CI_FILE_NAME,
                     GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
-                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                    GitUserNameUtil.getAdminId());
         }
     }
 

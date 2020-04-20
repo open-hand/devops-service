@@ -19,6 +19,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
+import io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.JobStatusEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -389,11 +390,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
-        Pipeline pipeline = gitlabServiceClientOperator.cancelPipeline(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+        gitlabServiceClientOperator.cancelPipeline(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
 
         try {
             // 更新pipeline status
-            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = updatePipelineStatus(gitlabPipelineId, pipeline.getStatus().toValue());
+            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = updatePipelineStatus(gitlabPipelineId, PipelineStatus.CANCELED.toValue());
             // 更新job status
             List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
             updateOrInsertJobRecord(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
