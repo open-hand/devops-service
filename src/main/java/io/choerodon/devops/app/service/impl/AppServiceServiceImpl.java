@@ -117,6 +117,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     DevopsSagaHandler devopsSagaHandler;
     private Gson gson = new Gson();
     private JSON json = new JSON();
+    @Value("${services.minio.url")
+    private String minioUrl;
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
     @Value("${services.gitlab.sshUrl}")
@@ -857,6 +859,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 params.put("{{ SONAR_LOGIN }}", "");
                 params.put("{{ SONAR_URL }}", "");
             }
+            params.put("{{ MINIO_URL }}", minioUrl);
             params.put("{{ GROUP_NAME }}", groupName);
             params.put("{{ PROJECT_NAME }}", appServiceDTO.getCode());
             params.put("{{ PRO_CODE }}", projectDTO.getCode());

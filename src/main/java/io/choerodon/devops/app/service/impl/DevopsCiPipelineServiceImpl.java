@@ -579,7 +579,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     .stream()
                     .sorted(Comparator.comparingLong(CiConfigTemplateVO::getSequence))
                     .forEach(config -> {
-                        CiJobScriptTypeEnum type = CiJobScriptTypeEnum.forType(config.getType());
+                        CiJobScriptTypeEnum type = CiJobScriptTypeEnum.forType(config.getType().toLowerCase());
                         if (type == null) {
                             throw new CommonException(ERROR_UNSUPPORTED_STEP_TYPE, config.getType());
                         }
@@ -594,10 +594,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                 result.addAll(buildMavenScripts(projectId, jobId, config, hasSettings));
                                 break;
                             case UPLOAD:
-                                result.add(GitlabCiUtil.generateUploadTgzScripts(projectId));
+                                result.add(GitlabCiUtil.generateUploadTgzScripts(config.getArtifactFileName(), config.getUploadFilePattern()));
                                 break;
                             case DOCKER:
-                                result.addAll(GitlabCiUtil.generateDockerScripts(projectId, jobId, config.getDockerContextDir(), config.getDockerFilePath()));
+                                result.addAll(GitlabCiUtil.generateDockerScripts(config.getArtifactFileName(), config.getDockerContextDir(), config.getDockerFilePath()));
+                                break;
                             case CHART:
                                 result.add(GitlabCiUtil.generateChartBuildScripts());
                                 break;

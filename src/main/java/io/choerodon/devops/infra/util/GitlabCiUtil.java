@@ -207,8 +207,8 @@ public class GitlabCiUtil {
      * @param fileName 文件保存名称
      */
     public static String downloadFile(String url, String fileName) {
-        String rawCommand = "rm -rf %s && http_status_code=`curl -o %s -s -m 10 --connect-timeout 10 -w %%{http_code} \"%s\"`&& echo \"status_code:\"$http_status_code";
-        return String.format(rawCommand, fileName, fileName, url);
+        String rawCommand = "downloadFile %s %s";
+        return String.format(rawCommand, url, fileName);
     }
 
     /**
@@ -226,17 +226,27 @@ public class GitlabCiUtil {
         return downloadFile(url, "settings.xml");
     }
 
-    public static String generateUploadTgzScripts(Long projectId) {
-        // TODO by lihao
-        return null;
+    /**
+     * 将mvn构建的jar包进行打包上传
+     *
+     * @param artifactFileName
+     * @param directory
+     * @param
+     * @return
+     */
+    public static String generateUploadTgzScripts(String artifactFileName, String directory) {
+        String rawCommand = "compressAndUpload %s %s";
+        return String.format(rawCommand, artifactFileName, directory);
     }
 
     /**
      * 生成用于下载从‘上传软件包’步骤中上传的软件包到本地并解压
+     *
+     * @param artifactFileName 需要下载的包名称
      */
-    private static String generateDownloadTgzScripts(Long projectId, Long ciJobId) {
-        // TODO by li hao
-        return null;
+    private static String generateDownloadTgzScripts(String artifactFileName) {
+        String rawCommand = "downloadAndUncompress %s";
+        return String.format(rawCommand, artifactFileName);
     }
 
     /**
@@ -247,21 +257,21 @@ public class GitlabCiUtil {
      */
     private static String generateDockerScripts(String dockerBuildContextDir, String dockerFilePath) {
         // TODO by li hao
-        return null;
+        String rawCommand = "kaniko -c %s -f %s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
+        return String.format(rawCommand, dockerBuildContextDir, dockerFilePath);
     }
 
     /**
      * 生成docker构建的步骤的脚本
      *
-     * @param projectId             项目id
-     * @param jobId                 jobId
+     * @param artifactFileName      需要下载的包名称
      * @param dockerBuildContextDir docker构建上下文
      * @param dockerFilePath        dockerfile路径
      * @return 脚本
      */
-    public static List<String> generateDockerScripts(final Long projectId, final Long jobId, String dockerBuildContextDir, String dockerFilePath) {
+    public static List<String> generateDockerScripts(String artifactFileName, String dockerBuildContextDir, String dockerFilePath) {
         List<String> scripts = new ArrayList<>();
-        scripts.add(GitlabCiUtil.generateDownloadTgzScripts(projectId, jobId));
+        scripts.add(GitlabCiUtil.generateDownloadTgzScripts(artifactFileName));
         scripts.add(GitlabCiUtil.generateDockerScripts(Objects.requireNonNull(dockerBuildContextDir), Objects.requireNonNull(dockerFilePath)));
         return scripts;
     }
