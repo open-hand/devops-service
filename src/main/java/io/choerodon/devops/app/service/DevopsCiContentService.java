@@ -12,19 +12,22 @@ import io.choerodon.devops.infra.dto.DevopsCiContentDTO;
 public interface DevopsCiContentService {
     /**
      * 查询流水线的最新配置
-     * @param pipelineId
-     * @return
+     *
+     * @param token 流水线token
+     * @return ci内容
      */
-    String queryLatestContent(Long pipelineId);
+    String queryLatestContent(String token);
 
     /**
      * 保存流水线配置
+     *
      * @param devopsCiContentDTO
      */
     void create(DevopsCiContentDTO devopsCiContentDTO);
 
     /**
      * 删除流水线ci文件
+     *
      * @param ciPipelineId
      */
     void deleteByPipelineId(Long ciPipelineId);

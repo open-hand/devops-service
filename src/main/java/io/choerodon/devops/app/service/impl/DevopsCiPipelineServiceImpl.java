@@ -8,6 +8,18 @@ import javax.annotation.Nullable;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.yaml.snakeyaml.Yaml;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
@@ -31,17 +43,6 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.util.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import org.yaml.snakeyaml.Yaml;
 
 /**
  * 〈功能简述〉
@@ -180,6 +181,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         checkCustomJobFormat(devopsCiPipelineVO);
         devopsCiPipelineVO.setProjectId(projectId);
         DevopsCiPipelineDTO devopsCiPipelineDTO = ConvertUtils.convertObject(devopsCiPipelineVO, DevopsCiPipelineDTO.class);
+        devopsCiPipelineDTO.setToken(GenerateUUID.generateUUID());
         if (devopsCiPipelineMapper.insertSelective(devopsCiPipelineDTO) != 1) {
             throw new CommonException(CREATE_PIPELINE_FAILED);
         }
@@ -206,7 +208,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         saveCiContent(projectId, devopsCiPipelineDTO.getId(), devopsCiPipelineVO);
 
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(devopsCiPipelineDTO.getAppServiceId());
-        String ciFileIncludeUrl = gatewayUrl + "/devops/v1/projects/" + projectId + "/ci_contents/pipelines/" + devopsCiPipelineDTO.getId() + "/content.yaml";
+        String ciFileIncludeUrl = String.format(GitOpsConstants.CI_CONTENT_URL_TEMPLATE, gatewayUrl, projectId, devopsCiPipelineDTO.getToken());
         initGitlabCiFile(appServiceDTO.getGitlabProjectId(), ciFileIncludeUrl);
         return devopsCiPipelineMapper.selectByPrimaryKey(devopsCiPipelineDTO.getId());
     }

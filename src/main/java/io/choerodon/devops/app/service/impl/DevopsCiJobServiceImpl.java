@@ -50,7 +50,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private static final String ERROR_UPLOAD_ARTIFACT_TO_MINIO = "error.upload.file.to.minio";
     private static final String ERROR_TOKEN_MISMATCH = "error.app.service.token.mismatch";
     private static final String ERROR_CI_JOB_NON_EXIST = "error.ci.job.non.exist";
-    private static final String ERROR_TOKEN_PIPELINE_MISMATCH = "error.token.pipeline.mismatch";
+    private static final String ERROR_TOKEN_PIPELINE_MISMATCH = "error.app.service.token.pipeline.mismatch";
 
     private static final String SONAR_KEY = "%s-%s:%s";
     private static final String SONAR = "sonar";

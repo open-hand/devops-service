@@ -32,4 +32,10 @@
         INNER JOIN devops_app_service das ON dcp.app_service_id = das.id
         where dcp.id = #{ciPipelineId}
     </select>
+
+    <select id="queryByToken" resultType="io.choerodon.devops.infra.dto.DevopsCiPipelineDTO">
+        SELECT dcp.*
+        FROM devops_ci_pipeline dcp
+        WHERE dcp.token = #{token,jdbcType=VARCHAR}
+    </select>
 </mapper>

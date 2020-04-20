@@ -140,4 +140,12 @@ public class GitOpsConstants {
     public static final String CI_JOB_ARTIFACT_NAME_TEMPLATE = "%s-%s.tgz";
 
     public static final Pattern ARTIFACT_NAME_PATTERN = Pattern.compile("[0-9a-zA-Z._-]{6,30}");
+
+    /**
+     * 获取流水线ci内容的url，有三个参数：
+     * 网关地址
+     * 项目id
+     * 流水线token
+     */
+    public static final String CI_CONTENT_URL_TEMPLATE = "%s/devops/v1/projects/%s/ci_contents/pipelines/%s/content.yaml";
 }

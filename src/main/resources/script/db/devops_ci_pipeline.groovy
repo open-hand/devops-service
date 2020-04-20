@@ -25,4 +25,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline.groovy') {
             column(name: "is_enabled", type: "TINYINT UNSIGNED", defaultValue: "1", remarks: '是否启用')
         }
     }
+    changeSet(author: 'zmf', id: '2020-04-20-add-token') {
+        addColumn(tableName: 'devops_ci_pipeline') {
+            column(name: 'token', type: 'CHAR(36)', remarks: '流水线token，安全性考虑')
+        }
+    }
 }

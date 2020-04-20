@@ -1,9 +1,10 @@
 package io.choerodon.devops.infra.dto;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import javax.persistence.*;
+
 import io.swagger.annotations.ApiModelProperty;
 
-import javax.persistence.*;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  *
@@ -26,6 +27,8 @@ public class DevopsCiPipelineDTO extends BaseDTO {
     @ApiModelProperty("是否启用")
     @Column(name = "is_enabled")
     private Boolean enabled;
+    @ApiModelProperty("流水线token")
+    private String token;
 
     public Long getId() {
         return id;
@@ -73,5 +76,13 @@ public class DevopsCiPipelineDTO extends BaseDTO {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }
