@@ -47,9 +47,9 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
     type: 'string',
     label: 'Setting配置',
     multiple: true,
-    dynamicProps: {
-      required: ({ record }) => record.get('gjmb') === 'Maven',
-    },
+    // dynamicProps: {
+    //   required: ({ record }) => record.get('gjmb') === 'Maven',
+    // },
   }, {
     name: 'bzmc',
     type: 'string',
@@ -70,6 +70,17 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
     type: 'string',
     label: '构建包路径',
     required: true,
+  },
+  {
+    name: 'uploadArtifactFileName',
+    type: 'string',
+    label: '构建包名称',
+    required: true,
+  },
+  {
+    name: 'dockerArtifactFileName',
+    type: 'string',
+    label: '存储库构建包名称',
   },
   {
     name: 'dockerContextDir',
