@@ -50,7 +50,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
       'devops-service.devops-ci-pipeline.deletePipeline',
       'devops-service.devops-ci-pipeline.disablePipeline',
       'devops-service.devops-ci-pipeline.enablePipeline',
-      'devops-service.project-pipeline.create',
+      'devops-service.devops-ci-pipeline.executeNew',
       'devops-service.project-pipeline.cancel',
       'devops-service.project-pipeline.retry',
     ],
