@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.feign;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -27,6 +28,11 @@ public interface FileFeignClient {
     ResponseEntity<String> uploadFile(@RequestParam("bucket_name") String bucketName,
                                       @RequestParam("file_name") String fileName,
                                       @RequestPart("file") MultipartFile multipartFile);
+
+    @DeleteMapping("/v1/files")
+    ResponseEntity deleteFile(
+            @RequestParam("bucket_name") String bucketName,
+            @RequestParam("url") String url);
 
     @PostMapping(
             value = "/v1/documents",

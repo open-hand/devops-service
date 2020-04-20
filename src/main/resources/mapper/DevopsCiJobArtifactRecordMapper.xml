@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiJobArtifactRecordMapper">
+    <select id="queryByPipelineIdAndName"
+            resultType="io.choerodon.devops.infra.dto.DevopsCiJobArtifactRecordDTO">
+        SELECT dcjar.*
+        FROM devops_ci_job_artifact_record dcjar
+        WHERE dcjar.gitlab_pipeline_id = #{gitlabPipelineId,jdbcType=BIGINT}
+        AND dcjar.name = #{name,jdbcType=VARCHAR}
+    </select>
+</mapper>

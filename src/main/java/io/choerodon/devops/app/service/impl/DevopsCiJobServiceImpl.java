@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.exception.CommonException;
@@ -174,15 +175,34 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         try {
             // 存到文件服务器的文件名
             String fileName = String.format(GitOpsConstants.CI_JOB_ARTIFACT_NAME_TEMPLATE, ciPipelineId, artifactName);
-            ResponseEntity<String> response = fileFeignClient.uploadFile(GitOpsConstants.DEV_OPS_CI_ARTIFACT_FILE_BUCKET, fileName, file);
-            if (response == null) {
-                throw new DevopsCiInvalidException(ERROR_UPLOAD_ARTIFACT_TO_MINIO);
-            }
 
-            // 插入纪录到数据库
-            String artifactUrl = response.getBody();
-            DevopsCiJobArtifactRecordDTO devopsCiJobArtifactRecordDTO = new DevopsCiJobArtifactRecordDTO(ciPipelineId, artifactName, artifactUrl);
-            MapperUtil.resultJudgedInsert(devopsCiJobArtifactRecordMapper, devopsCiJobArtifactRecordDTO, "error.insert.artifact.record");
+            DevopsCiJobArtifactRecordDTO recordDTO = devopsCiJobArtifactRecordMapper.queryByPipelineIdAndName(ciPipelineId, artifactName);
+            if (recordDTO == null) {
+                ResponseEntity<String> response = fileFeignClient.uploadFile(GitOpsConstants.DEV_OPS_CI_ARTIFACT_FILE_BUCKET, fileName, file);
+                String artifactUrl;
+                if (response == null || StringUtils.isEmpty((artifactUrl = response.getBody()))) {
+                    throw new DevopsCiInvalidException(ERROR_UPLOAD_ARTIFACT_TO_MINIO);
+                }
+
+                // 插入纪录到数据库
+                DevopsCiJobArtifactRecordDTO devopsCiJobArtifactRecordDTO = new DevopsCiJobArtifactRecordDTO(ciPipelineId, artifactName, artifactUrl);
+                MapperUtil.resultJudgedInsert(devopsCiJobArtifactRecordMapper, devopsCiJobArtifactRecordDTO, "error.insert.artifact.record");
+            } else {
+                // 先删除旧的
+                fileFeignClient.deleteFile(GitOpsConstants.DEV_OPS_CI_ARTIFACT_FILE_BUCKET, recordDTO.getFileUrl());
+                // 上传新的
+                ResponseEntity<String> response = fileFeignClient.uploadFile(GitOpsConstants.DEV_OPS_CI_ARTIFACT_FILE_BUCKET, fileName, file);
+                String artifactUrl;
+                if (response == null || StringUtils.isEmpty((artifactUrl = response.getBody()))) {
+                    throw new DevopsCiInvalidException(ERROR_UPLOAD_ARTIFACT_TO_MINIO);
+                }
+
+                // 更新数据库纪录
+                recordDTO.setFileUrl(artifactUrl);
+                recordDTO.setGitlabPipelineId(ciPipelineId);
+                recordDTO.setName(artifactName);
+                devopsCiJobArtifactRecordMapper.updateByPrimaryKeySelective(recordDTO);
+            }
         } catch (CommonException e) {
             throw new DevopsCiInvalidException(e.getCode(), e.getCause());
         } catch (DevopsCiInvalidException e) {
