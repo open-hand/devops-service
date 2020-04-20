@@ -5,19 +5,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
@@ -41,6 +31,17 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * 〈功能简述〉
@@ -68,6 +69,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private static final String ERROR_CI_MAVEN_REPOSITORY_TYPE = "error.ci.maven.repository.type";
     private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "error.maven.settings.insert";
     private static final String ERROR_UNSUPPORTED_STEP_TYPE = "error.unsupported.step.type";
+    private static final String ERROR_CUSTOM_JOB_FORMAT_INVALID = "error.custom.job.format.invalid";
 
     @Value("${services.gateway.url}")
     private String gatewayUrl;
@@ -177,6 +179,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     public DevopsCiPipelineDTO create(Long projectId, DevopsCiPipelineVO devopsCiPipelineVO) {
         Long iamUserId = TypeUtil.objToLong(GitUserNameUtil.getUserId());
         checkUserPermission(devopsCiPipelineVO.getAppServiceId(), iamUserId);
+        checkCustomJobFormat(devopsCiPipelineVO);
         devopsCiPipelineVO.setProjectId(projectId);
         DevopsCiPipelineDTO devopsCiPipelineDTO = ConvertUtils.convertObject(devopsCiPipelineVO, DevopsCiPipelineDTO.class);
         if (devopsCiPipelineMapper.insertSelective(devopsCiPipelineDTO) != 1) {
@@ -331,7 +334,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), pipeline.getId(), userAttrDTO.getGitlabUserId().intValue());
             devopsCiJobRecordService.create(TypeUtil.objToLong(pipeline.getId()), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
         } catch (Exception e) {
-            LOGGER.error("save pipeline Records failed， ciPipelineId {}.", ciPipelineId);
+            LOGGER.info("save pipeline Records failed， ciPipelineId {}.", ciPipelineId);
         }
     }
 
@@ -371,6 +374,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     public DevopsCiPipelineDTO update(Long projectId, Long ciPipelineId, DevopsCiPipelineVO devopsCiPipelineVO) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         checkUserPermission(devopsCiPipelineVO.getAppServiceId(), userId);
+        // 校验自定义任务格式
+        checkCustomJobFormat(devopsCiPipelineVO);
         DevopsCiPipelineDTO devopsCiPipelineDTO = ConvertUtils.convertObject(devopsCiPipelineVO, DevopsCiPipelineDTO.class);
         devopsCiPipelineDTO.setId(ciPipelineId);
         if (devopsCiPipelineMapper.updateByPrimaryKeySelective(devopsCiPipelineDTO) != 1) {
@@ -429,24 +434,66 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return devopsCiPipelineMapper.selectByPrimaryKey(ciPipelineId);
     }
 
+    /**
+     * 校验自定义任务格式
+     */
+    private void checkCustomJobFormat(DevopsCiPipelineVO devopsCiPipelineVO) {
+        if (CollectionUtils.isEmpty(devopsCiPipelineVO.getStageList())) {
+            return;
+        }
+        devopsCiPipelineVO.getStageList().forEach(stage -> {
+            List<DevopsCiJobVO> ciJobVOS = stage.getJobList().stream().filter(job -> CiJobTypeEnum.CUSTOM.value().equalsIgnoreCase(job.getType()))
+                    .collect(Collectors.toList());
+
+            if (!CollectionUtils.isEmpty(ciJobVOS)) {
+                ciJobVOS.forEach(job -> {
+                    Yaml yaml = new Yaml();
+                    Object load = yaml.load(job.getMetadata());
+                    // 不是yaml格式报错
+                    if (!(load instanceof Map)) {
+                        throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
+                    }
+                    // 校验自定义yaml的 job name和stage name 是否匹配
+                    ((Map<String, Object>) load).forEach((key, value) -> {
+                        if (!key.equals(job.getName())) {
+                            throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
+                        }
+                        CiJob ciJob = JSON.parseObject(value.toString(), CiJob.class);
+                        if (ciJob == null || !stage.getName().equals(ciJob.getStage())) {
+                            throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
+                        }
+                        if (CollectionUtils.isEmpty(ciJob.getScript())) {
+                            throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
+                        }
+                    });
+                });
+            }
+        });
+
+
+    }
+
     private void saveCiContent(final Long projectId, Long pipelineId, DevopsCiPipelineVO devopsCiPipelineVO) {
         GitlabCi gitlabCi = buildGitLabCiObject(projectId, devopsCiPipelineVO);
-        String gitlabCiYaml = GitlabCiUtil.gitlabCi2yaml(gitlabCi);
+        StringBuilder gitlabCiYaml = new StringBuilder(GitlabCiUtil.gitlabCi2yaml(gitlabCi));
 
         // 拼接自定义job
         if (!CollectionUtils.isEmpty(devopsCiPipelineVO.getStageList())) {
             List<DevopsCiJobVO> ciJobVOS = devopsCiPipelineVO.getStageList().stream()
                     .flatMap(v -> v.getJobList().stream()).filter(job -> CiJobTypeEnum.CUSTOM.value().equalsIgnoreCase(job.getType()))
                     .collect(Collectors.toList());
-            for (DevopsCiJobVO job : ciJobVOS) {
-                gitlabCiYaml += job.getMetadata();
+            if (!CollectionUtils.isEmpty(ciJobVOS)) {
+                for (DevopsCiJobVO job : ciJobVOS) {
+                    gitlabCiYaml.append(System.getProperty("line.separator")).append(job.getMetadata());
+                }
             }
+
         }
 
         //保存gitlab-ci配置文件
         DevopsCiContentDTO devopsCiContentDTO = new DevopsCiContentDTO();
         devopsCiContentDTO.setCiPipelineId(pipelineId);
-        devopsCiContentDTO.setCiContentFile(gitlabCiYaml);
+        devopsCiContentDTO.setCiContentFile(gitlabCiYaml.toString());
         devopsCiContentService.create(devopsCiContentDTO);
     }
 
