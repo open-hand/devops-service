@@ -136,5 +136,5 @@ public class GitOpsConstants {
     /**
      * ci生成的软件包的名称的模板, ${gitlabPipelineId}-${artifactName}
      */
-    public static final String CI_JOB_ARTIFACT_NAME_TEMPLATE = "%s-%s";
+    public static final String CI_JOB_ARTIFACT_NAME_TEMPLATE = "%s-%s.tgz";
 }
