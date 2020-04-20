@@ -115,7 +115,7 @@ public class DevopsCiJobController {
      */
     @Permission(permissionPublic = true)
     @ApiOperation("查询上传的软件包的url, 状态码200 表示ok并返回url， 404表示未找到")
-    @PostMapping("/artifact_url")
+    @GetMapping("/artifact_url")
     public ResponseEntity<String> queryArtifactUrl(
             @ApiParam(value = "应用服务token", required = true)
             @RequestParam(value = "token") String token,
