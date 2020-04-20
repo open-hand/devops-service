@@ -117,7 +117,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     DevopsSagaHandler devopsSagaHandler;
     private Gson gson = new Gson();
     private JSON json = new JSON();
-    @Value("${services.minio.url")
+    @Value("${services.minio.url}")
     private String minioUrl;
     @Value("${services.gitlab.url}")
     private String gitlabUrl;

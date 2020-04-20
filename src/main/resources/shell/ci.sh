@@ -220,7 +220,7 @@ function compressAndUpload() {
 function downloadAndUncompress() {
   http_status_code=$(curl -o "${CI_PIPELINE_ID}-$1.tgz" -s -m 10 --connect-timeout 10 -w %%{http_code} "${MINIO_URL}/devops-service-ci-artifacts/${CI_PIPELINE_ID}-$1.tgz")
   if [ "$http_status_code" != "200" ]; then
-    echo "failed to download $1.tgz"
+    echo "failed to download ${CI_PIPELINE_ID}-$1.tgz"
     exit 1
   fi
   tar -zxvf "${CI_PIPELINE_ID}-$1.tgz" .
