@@ -608,10 +608,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     /**
-     * 生成并存储maven settings
+     * 生成并存储maven settings到数据库
      *
      * @param jobId              job id
-     * @param ciConfigTemplateVO 配置模板
+     * @param ciConfigTemplateVO 配置信息
      * @return true表示有settings配置，false表示没有
      */
     private boolean buildAndSaveMavenSettings(Long jobId, CiConfigTemplateVO ciConfigTemplateVO) {

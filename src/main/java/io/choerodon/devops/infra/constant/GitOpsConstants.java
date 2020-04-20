@@ -110,28 +110,18 @@ public class GitOpsConstants {
 
     /**
      * 使用Token认证的sonar命令
+     * SonarUrl
+     * Token
      */
-    public static final String SONAR_TOKEN_TEMPLATE = "mvn --batch-mode verify sonar:sonar -Dsonar.host.url={{SonarUrl}} -Dsonar.login={{Token}} -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}";
+    public static final String SONAR_TOKEN_TEMPLATE = "mvn --batch-mode verify sonar:sonar -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}";
 
     /**
      * 使用用户名密码认证的sonar命令
+     * SonarUrl
+     * SonarUsername sonar的用户名
+     * SonarPassword
      */
-    public static final String SONAR_USER_PASSWORD_TEMPLATE = "mvn --batch-mode verify sonar:sonar -Dsonar.host.url={{SonarUrl}} -Dsonar.login={{Token}} -Dsonar.password={{SonarPassword}} -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}";
-
-    /**
-     * 定位sonar url变量替换位置的锚点
-     */
-    public static final String SONAR_URL_ANCHOR = "{{SonarUrl}}";
-
-    /**
-     * 定位sonar的token或者用户名的变量替换位置的锚点
-     */
-    public static final String SONAR_TOKEN_ANCHOR = "{{Token}}";
-
-    /**
-     * 定位sonar的密码的变量替换位置的锚点
-     */
-    public static final String SONAR_PASSWORD_ANCHOR = "{{SonarPassword}}";
+    public static final String SONAR_USER_PASSWORD_TEMPLATE = "mvn --batch-mode verify sonar:sonar -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.password=%s -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}";
 
     public static final String COMMA = ",";
 
@@ -140,4 +130,11 @@ public class GitOpsConstants {
     public static final String SNAPSHOT = "snapshot";
 
     public static final String CHART_BUILD = "chart_build";
+
+    public static final String DEV_OPS_CI_ARTIFACT_FILE_BUCKET = "devops-service-ci-artifacts";
+
+    /**
+     * ci生成的软件包的名称的模板, ${gitlabPipelineId}-${artifactName}
+     */
+    public static final String CI_JOB_ARTIFACT_NAME_TEMPLATE = "%s-%s";
 }
