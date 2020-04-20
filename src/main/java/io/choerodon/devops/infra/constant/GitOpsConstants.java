@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.constant;
 
 import java.io.File;
+import java.util.regex.Pattern;
 
 /**
  * 和GitOps有关的常量
@@ -137,4 +138,6 @@ public class GitOpsConstants {
      * ci生成的软件包的名称的模板, ${gitlabPipelineId}-${artifactName}
      */
     public static final String CI_JOB_ARTIFACT_NAME_TEMPLATE = "%s-%s.tgz";
+
+    public static final Pattern ARTIFACT_NAME_PATTERN = Pattern.compile("[0-9a-zA-Z._-]{6,30}");
 }
