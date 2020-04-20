@@ -15,7 +15,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_maven_settings.groovy') {
     }
 
     changeSet(author: 'zmf', id: '2020-04-20-maven-settings-add-audit-domain') {
-        addColumns(tableName: 'devops_ci_maven_settings') {
+        addColumn(tableName: 'devops_ci_maven_settings') {
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
