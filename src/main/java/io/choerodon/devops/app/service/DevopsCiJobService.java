@@ -60,7 +60,7 @@ public interface DevopsCiJobService {
     /**
      * 重试job
      */
-    void retryJob(Long gitlabProjectId, Long jobId);
+    void retryJob(Long projectId, Long gitlabProjectId, Long jobId);
 
     /**
      * 删除流水线下的job

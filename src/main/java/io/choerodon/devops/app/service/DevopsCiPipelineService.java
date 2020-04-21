@@ -88,17 +88,19 @@ public interface DevopsCiPipelineService {
 
     /**
      * 全新执行流水线
+     * @param projectId
      * @param ciPipelineId
      * @param gitlabProjectId
      * @param ref
      */
-    void executeNew(Long ciPipelineId, Long gitlabProjectId, String ref);
+    void executeNew(Long projectId, Long ciPipelineId, Long gitlabProjectId, String ref);
 
     /**
      * 校验用户是否有分支权限
+     * @param projectId
      * @param gitlabUserId
      * @param gitlabProjectId
      * @param ref
      */
-    void checkUserBranchPushPermission(Long gitlabUserId, Long gitlabProjectId, String ref);
+    void checkUserBranchPushPermission(Long projectId, Long gitlabUserId, Long gitlabProjectId, String ref);
 }
