@@ -5,6 +5,7 @@ import static io.choerodon.devops.infra.constant.GitOpsConstants.ARTIFACT_NAME_P
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,9 +117,15 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         if (stageId == null) {
             throw new CommonException(ERROR_STAGE_ID_IS_NULL);
         }
-        DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
-        devopsCiJobDTO.setCiStageId(stageId);
-        devopsCiJobMapper.delete(devopsCiJobDTO);
+
+        List<Long> jobIds = listByStageId(stageId).stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList());
+        if (!jobIds.isEmpty()) {
+            deleteMavenSettingsRecordByJobIds(jobIds);
+
+            DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
+            devopsCiJobDTO.setCiStageId(stageId);
+            devopsCiJobMapper.delete(devopsCiJobDTO);
+        }
     }
 
     @Override
@@ -128,6 +135,13 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         }
         DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
         devopsCiJobDTO.setCiPipelineId(ciPipelineId);
+        return devopsCiJobMapper.select(devopsCiJobDTO);
+    }
+
+    @Override
+    public List<DevopsCiJobDTO> listByStageId(Long stageId) {
+        DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
+        devopsCiJobDTO.setCiStageId(Objects.requireNonNull(stageId));
         return devopsCiJobMapper.select(devopsCiJobDTO);
     }
 
@@ -187,6 +201,10 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         if (ciPipelineId == null) {
             throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
         }
+
+        // 删除maven settings
+        deleteMavenSettingsRecordByJobIds(listByPipelineId(ciPipelineId).stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList()));
+
         DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
         devopsCiJobDTO.setCiPipelineId(ciPipelineId);
         devopsCiJobMapper.delete(devopsCiJobDTO);

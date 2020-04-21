@@ -302,9 +302,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 删除stage
         devopsCiStageService.deleteByPipelineId(ciPipelineId);
 
-        // 删除job之前，删除job关联的maven settings纪录
-        devopsCiJobService.deleteMavenSettingsRecordByJobIds(devopsCiJobService.listByPipelineId(ciPipelineId).stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList()));
-
         // 删除job
         devopsCiJobService.deleteByPipelineId(ciPipelineId);
 
