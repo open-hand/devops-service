@@ -684,11 +684,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         List<String> refs = new ArrayList<>();
         for (String ref : triggerRefs.split(",")) {
             if (!DefaultTriggerRefTypeEnum.contains(ref)) {
-                ref = "/^.*" + ref + ".*$/";
+                if ("tag".equals(ref)) {
+                    ref = DefaultTriggerRefTypeEnum.TAGS.value();
+                } else {
+                    ref = "/^.*" + ref + ".*$/";
+                }
+
             }
-            if ("tag".equals(ref)) {
-                ref = DefaultTriggerRefTypeEnum.TAGS.value();
-            }
+
             refs.add(ref);
         }
         onlyExceptPolicy.setRefs(refs);
