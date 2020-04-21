@@ -46,6 +46,10 @@ const jobType = {
       },
     ],
   },
+  custom: {
+    name: '自定义',
+    children: [],
+  },
 };
 
 function renderDuration(value) {
