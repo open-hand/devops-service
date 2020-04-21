@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
@@ -103,9 +102,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             PermissionHelper permissionHelper,
             DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
             BaseServiceClientOperator baseServiceClientOperator,
-            DevopsProjectService devopsProjectService) {
-            DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
-            BaseServiceClientOperator baseServiceClientOperator) {
+            DevopsProjectService devopsProjectService,
+            DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper) {
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
         this.devopsCiStageService = devopsCiStageService;
