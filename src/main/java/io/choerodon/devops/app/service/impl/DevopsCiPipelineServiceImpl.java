@@ -21,6 +21,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
@@ -64,8 +65,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private static final String ERROR_APP_SVC_ID_IS_NULL = "error.app.svc.id.is.null";
     private static final String ERROR_PROJECT_ID_IS_NULL = "error.project.id.is.null";
     private static final String ERROR_NOT_GITLAB_OWNER = "error.not.gitlab.owner";
-    private static final String ERROR_STEP_SEQUENCE_NULl = "error.step.sequence.null";
-    private static final String ERROR_STEP_SEQUENCE_DUPLICATED = "error.step.sequence.duplicated";
     private static final String ERROR_CI_MAVEN_REPOSITORY_TYPE = "error.ci.maven.repository.type";
     private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "error.maven.settings.insert";
     private static final String ERROR_UNSUPPORTED_STEP_TYPE = "error.unsupported.step.type";
@@ -124,7 +123,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         List<Repository> repositories = new ArrayList<>();
 
         mavenRepoList.forEach(m -> {
-            // TODO 校验
             String[] types = Objects.requireNonNull(m.getType()).split(GitOpsConstants.COMMA);
             if (types.length > 2) {
                 throw new CommonException(ERROR_CI_MAVEN_REPOSITORY_TYPE, m.getType());
@@ -581,7 +579,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
             List<Long> existedSequences = new ArrayList<>();
             // 校验前端传入的sequence不为null且不重复
-            ciConfigVO.getConfig().forEach(config -> validConfigSequence(config.getSequence(), config.getName(), existedSequences));
+            ciConfigVO.getConfig().forEach(config -> DevopsCiPipelineAdditionalValidator.validConfigSequence(config.getSequence(), config.getName(), existedSequences));
 
             // 最后生成的所有script集合
             List<String> result = new ArrayList<>();
@@ -599,10 +597,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
                         switch (type) {
                             case NPM:
+                                // npm步骤数据暂时不需要校验
                                 result.addAll(buildNpmScripts(config));
                                 break;
                             case MAVEN:
                                 // 处理settings文件
+                                DevopsCiPipelineAdditionalValidator.validateMavenStep(config);
                                 boolean hasSettings = buildAndSaveMavenSettings(jobId, config);
                                 result.addAll(buildMavenScripts(projectId, jobId, config, hasSettings));
                                 break;
@@ -650,23 +650,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(ciConfigTemplateVO.getScript()), true, true);
     }
 
-
-    /**
-     * 校验sequence不为null也不重复
-     *
-     * @param sequence         step的序列号
-     * @param templateName     构建步骤的名称，用于报错信息
-     * @param existedSequences 已经存在的sequence
-     */
-    private void validConfigSequence(@Nullable Long sequence, String templateName, List<Long> existedSequences) {
-        if (sequence == null) {
-            throw new CommonException(ERROR_STEP_SEQUENCE_NULl, templateName);
-        }
-        if (existedSequences.contains(sequence)) {
-            throw new CommonException(ERROR_STEP_SEQUENCE_DUPLICATED, templateName);
-        }
-        existedSequences.add(sequence);
-    }
 
     /**
      * 生成并存储maven settings到数据库

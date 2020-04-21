@@ -141,6 +141,12 @@ public class GitOpsConstants {
 
     public static final Pattern ARTIFACT_NAME_PATTERN = Pattern.compile("[0-9a-zA-Z._-]{6,30}");
 
+
+    /**
+     * http或者https的地址正则表达式
+     */
+    public static final Pattern HTTP_URL_PATTERN = Pattern.compile("^https?://(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)$");
+
     /**
      * 获取流水线ci内容的url，有三个参数：
      * 网关地址
