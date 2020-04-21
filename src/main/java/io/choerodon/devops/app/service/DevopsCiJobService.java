@@ -6,7 +6,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
-import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 
 /**
@@ -39,6 +38,14 @@ public interface DevopsCiJobService {
      * @return 结果
      */
     List<DevopsCiJobDTO> listByPipelineId(Long ciPipelineId);
+
+    /**
+     * 根据stage查询job列表
+     *
+     * @param stageId stage的id
+     * @return job列表
+     */
+    List<DevopsCiJobDTO> listByStageId(Long stageId);
 
     /**
      * sonar的连接测试
