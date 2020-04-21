@@ -176,9 +176,11 @@ function chart_build() {
 # $4 sequence
 function downloadFile() {
   rm -rf "$1"
-  http_status_code=$(curl -o "$2" -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/v1/projects/$2/ci_jobs/maven_settings?ciJobId=$3&sequence=$4&token=${Token}")
+  http_status_code=$(curl -o "$1" -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/v1/projects/$2/ci_jobs/maven_settings?job_id=$3&sequence=$4&token=${Token}")
+
   if [ "$http_status_code" != "200" ]; then
-    echo "failed to downloadFile"
+    echo "failed to downloadFile: $1"
+    exit 1
   fi
 }
 
@@ -222,16 +224,15 @@ function compressAndUpload() {
 # $1 文件名称
 # $2 project_id
 function downloadAndUncompress() {
-
   # 先访问devops获得文件下载路径
   http_status_code=$(
     curl -s -m 10 --connect-timeout 10 \
       -w %{http_code} \
       -o response.url \
-      "${CHOERODON_URL}/devops/v1/projects/$2/ci_jobs?token=${Token}&commit=${CI_COMMIT_SHA}&ci_pipeline_id=${CI_PIPELINE_ID}&ci_job_id=${CI_JOB_ID}&artifact_name=${CI_PIPELINE_ID}-$1"
+      "${CHOERODON_URL}/devops/v1/projects/$2/ci_jobs/artifact_url?token=${Token}&commit=${CI_COMMIT_SHA}&ci_pipeline_id=${CI_PIPELINE_ID}&ci_job_id=${CI_JOB_ID}&artifact_name=$1.tgz"
   )
 
-  if [ "$http_status_code" != 200 ]; then
+  if [ "$http_status_code" != "200" ]; then
     echo "file $1 not exists"
     exit 1
   fi
@@ -240,10 +241,10 @@ function downloadAndUncompress() {
   rm response.url
 
   # 下载文件
-  http_status_code=$(curl -o "${CI_PIPELINE_ID}-$1.tgz" -s -m 10 --connect-timeout 10 -w %%{http_code} "$url")
+  http_status_code=$(curl -o "$1.tgz" -s -m 10 --connect-timeout 10 -w %{http_code} "$url")
   if [ "$http_status_code" != "200" ]; then
-    echo "failed to download ${CI_PIPELINE_ID}-$1.tgz"
+    echo "failed to download $1.tgz"
     exit 1
   fi
-  tar -zxvf "${CI_PIPELINE_ID}-$1.tgz" .
+  tar -zxvf "$1.tgz" .
 }
