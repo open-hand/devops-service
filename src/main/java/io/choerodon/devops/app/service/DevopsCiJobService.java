@@ -53,7 +53,7 @@ public interface DevopsCiJobService {
     /**
      * 重试job
      */
-    JobDTO retryJob(Long gitlabProjectId, Long jobId);
+    void retryJob(Long gitlabProjectId, Long jobId);
 
     /**
      * 删除流水线下的job

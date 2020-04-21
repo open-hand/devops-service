@@ -48,7 +48,7 @@ import org.springframework.util.CollectionUtils;
 @Service
 public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecordService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCiPipelineServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCiPipelineRecordServiceImpl.class);
 
 
     private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
@@ -471,7 +471,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     private Long getIamUserIdByGitlabUserName(String username) {
         if ("admin1".equals(username) || "root".equals(username)) {
-            username = "admin";
+           return 1L;
         }
         UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserName(username);
         return userAttrE.getIamUserId();
