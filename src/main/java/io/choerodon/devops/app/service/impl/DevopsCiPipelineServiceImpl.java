@@ -353,7 +353,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (memberDTO == null || memberDTO.getId() == null) {
             memberDTO = gitlabServiceClientOperator.getMember(gitlabProjectId, gitlabUserId);
         }
-        if (Boolean.FALSE.equals(branchDTO.getDevelopersCanMerge()) && memberDTO.getAccessLevel() <= AccessLevel.DEVELOPER.toValue()) {
+        if (Boolean.TRUE.equals(branchDTO.getProtected())
+                && Boolean.FALSE.equals(branchDTO.getDevelopersCanMerge())
+                && Boolean.FALSE.equals(branchDTO.getDevelopersCanPush())
+                && memberDTO.getAccessLevel() <= AccessLevel.DEVELOPER.toValue()) {
             throw new CommonException(ERROR_BRANCH_PERMISSION_MISMATCH, ref);
         }
     }
