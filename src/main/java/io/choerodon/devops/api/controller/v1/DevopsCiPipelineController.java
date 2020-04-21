@@ -118,7 +118,7 @@ public class DevopsCiPipelineController {
             @RequestParam(value = "gitlab_project_id") Long gitlabProjectId,
             @ApiParam(value = "分支名", required = true)
             @RequestParam(value = "ref") String ref) {
-        devopsCiPipelineService.executeNew(ciPipelineId, gitlabProjectId, ref);
+        devopsCiPipelineService.executeNew(projectId, ciPipelineId, gitlabProjectId, ref);
         return ResponseEntity.noContent().build();
     }
 }

@@ -12,7 +12,6 @@ import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.app.service.DevopsCiJobService;
-import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 
 /**
  * 〈功能简述〉
@@ -56,7 +55,7 @@ public class DevopsCiJobController {
             @PathVariable(value = "project_id") Long projectId,
             @PathVariable(value = "gitlab_project_id") Long gitlabProjectId,
             @PathVariable(value = "job_id") Long jobId) {
-        devopsCiJobService.retryJob(gitlabProjectId, jobId);
+        devopsCiJobService.retryJob(projectId, gitlabProjectId, jobId);
         return ResponseEntity.noContent().build();
     }
 

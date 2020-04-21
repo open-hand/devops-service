@@ -87,6 +87,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private BaseServiceClientOperator baseServiceClientOperator;
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
     private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
+    private DevopsProjectService devopsProjectService;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiPipelineMapper devopsCiPipelineMapper,
@@ -101,6 +102,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCiJobRecordService devopsCiJobRecordService,
             PermissionHelper permissionHelper,
             DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
+            BaseServiceClientOperator baseServiceClientOperator,
+            DevopsProjectService devopsProjectService) {
             DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
             BaseServiceClientOperator baseServiceClientOperator) {
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
@@ -116,6 +119,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsCiMavenSettingsMapper = devopsCiMavenSettingsMapper;
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.baseServiceClientOperator = baseServiceClientOperator;
+        this.devopsProjectService = devopsProjectService;
     }
 
     private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
@@ -329,9 +333,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     @Override
-    public void executeNew(Long ciPipelineId, Long gitlabProjectId, String ref) {
+    public void executeNew(Long projectId, Long ciPipelineId, Long gitlabProjectId, String ref) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
-        checkUserBranchPushPermission(userAttrDTO.getGitlabUserId(), gitlabProjectId, ref);
+        checkUserBranchPushPermission(projectId, userAttrDTO.getGitlabUserId(), gitlabProjectId, ref);
         Pipeline pipeline = gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(), userAttrDTO.getGitlabUserId().intValue(), ref);
         // 保存执行记录
         try {
@@ -344,10 +348,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
 
-    public void checkUserBranchPushPermission(Long gitlabUserId, Long gitlabProjectId, String ref) {
+    public void checkUserBranchPushPermission(Long projectId, Long gitlabUserId, Long gitlabProjectId, String ref) {
         BranchDTO branchDTO = gitlabServiceClientOperator.getBranch(gitlabProjectId.intValue(), ref);
-        MemberDTO memberDTO = gitlabServiceClientOperator.getMember(gitlabProjectId, gitlabUserId);
-
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+        MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(devopsProjectDTO.getDevopsAppGroupId().intValue(), gitlabUserId.intValue());
+        if (memberDTO == null || memberDTO.getId() == null) {
+            memberDTO = gitlabServiceClientOperator.getMember(gitlabProjectId, gitlabUserId);
+        }
         if (Boolean.FALSE.equals(branchDTO.getDevelopersCanPush()) && memberDTO.getAccessLevel() <= AccessLevel.DEVELOPER.toValue()) {
             throw new CommonException(ERROR_BRANCH_PERMISSION_MISMATCH, ref);
         }

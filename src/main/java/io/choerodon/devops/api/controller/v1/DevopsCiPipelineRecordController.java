@@ -1,11 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.core.annotation.Permission;
-import io.choerodon.core.enums.ResourceType;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
-import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +9,12 @@ import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
+
+import io.choerodon.core.annotation.Permission;
+import io.choerodon.core.enums.ResourceType;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
+import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
 
 /**
  * 〈功能简述〉
@@ -63,7 +64,7 @@ public class DevopsCiPipelineRecordController {
             @PathVariable("gitlab_pipeline_id") Long gitlabPipelineId,
             @ApiParam(value = "流水线ID", required = true)
             @RequestParam("gitlab_project_id") Long gitlabProjectId) {
-        devopsCiPipelineRecordService.retry(gitlabPipelineId, gitlabProjectId);
+        devopsCiPipelineRecordService.retry(projectId, gitlabPipelineId, gitlabProjectId);
         return ResponseEntity.noContent().build();
     }
 
@@ -80,7 +81,7 @@ public class DevopsCiPipelineRecordController {
             @PathVariable("gitlab_pipeline_id") Long gitlabPipelineId,
             @ApiParam(value = "流水线ID", required = true)
             @RequestParam("gitlab_project_id") Long gitlabProjectId) {
-        devopsCiPipelineRecordService.cancel(gitlabPipelineId, gitlabProjectId);
+        devopsCiPipelineRecordService.cancel(projectId, gitlabPipelineId, gitlabProjectId);
         return ResponseEntity.noContent().build();
     }
 }
