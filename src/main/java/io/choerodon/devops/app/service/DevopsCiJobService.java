@@ -71,6 +71,15 @@ public interface DevopsCiJobService {
      */
     String queryMavenSettings(Long projectId, String appServiceToken, Long jobId, Long sequence);
 
+
+    /**
+     * 根据job id列表批量删除纪录
+     *
+     * @param jobIds 猪齿鱼job id 列表
+     */
+    void deleteMavenSettingsRecordByJobIds(List<Long> jobIds);
+
+
     /**
      * CI过程上传软件包
      * 如果有异常，会抛出{@link DevopsCiInvalidException}，目的是给客户端非2xx的状态码
@@ -83,6 +92,13 @@ public interface DevopsCiJobService {
      * @param file         软件包
      */
     void uploadArtifact(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName, MultipartFile file);
+
+    /**
+     * 删除和这些gitlab流水线纪录相关的软件包
+     *
+     * @param gitlabPipelineIds gitlab流水线id列表
+     */
+    void deleteArtifactsByGitlabProjectId(List<Long> gitlabPipelineIds);
 
     /**
      * CI过程上传软件包

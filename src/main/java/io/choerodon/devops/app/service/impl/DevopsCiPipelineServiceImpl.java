@@ -40,6 +40,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
+import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
 import io.choerodon.devops.infra.util.*;
 
 /**
@@ -69,7 +70,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "error.maven.settings.insert";
     private static final String ERROR_UNSUPPORTED_STEP_TYPE = "error.unsupported.step.type";
     private static final String ERROR_CUSTOM_JOB_FORMAT_INVALID = "error.custom.job.format.invalid";
-    private static final String ERROR_BRANCH_PERMISSION_MISSMATCH = "error.branch.permission.missmatch";
+    private static final String ERROR_BRANCH_PERMISSION_MISMATCH = "error.branch.permission.mismatch";
 
     @Value("${services.gateway.url}")
     private String gatewayUrl;
@@ -86,6 +87,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private PermissionHelper permissionHelper;
     private BaseServiceClientOperator baseServiceClientOperator;
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
+    private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiPipelineMapper devopsCiPipelineMapper,
@@ -100,6 +102,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCiJobRecordService devopsCiJobRecordService,
             PermissionHelper permissionHelper,
             DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
+            DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
             BaseServiceClientOperator baseServiceClientOperator) {
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
@@ -112,6 +115,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsCiJobRecordService = devopsCiJobRecordService;
         this.permissionHelper = permissionHelper;
         this.devopsCiMavenSettingsMapper = devopsCiMavenSettingsMapper;
+        this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.baseServiceClientOperator = baseServiceClientOperator;
     }
 
@@ -298,11 +302,17 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 删除stage
         devopsCiStageService.deleteByPipelineId(ciPipelineId);
 
+        // 删除job之前，删除job关联的maven settings纪录
+        devopsCiJobService.deleteMavenSettingsRecordByJobIds(devopsCiJobService.listByPipelineId(ciPipelineId).stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList()));
+
         // 删除job
         devopsCiJobService.deleteByPipelineId(ciPipelineId);
 
         // 删除job记录
         devopsCiJobRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
+
+        // 删除pipeline之前执行过程上传的软件包数据
+        devopsCiJobService.deleteArtifactsByGitlabProjectId(devopsCiPipelineRecordMapper.listGitlabPipelineIdsByPipelineId(ciPipelineId));
 
         // 删除pipeline记录
         devopsCiPipelineRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
@@ -344,7 +354,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         MemberDTO memberDTO = gitlabServiceClientOperator.getMember(gitlabProjectId, gitlabUserId);
 
         if (Boolean.FALSE.equals(branchDTO.getDevelopersCanPush()) && memberDTO.getAccessLevel() <= AccessLevel.DEVELOPER.toValue()) {
-            throw new CommonException(ERROR_BRANCH_PERMISSION_MISSMATCH, ref);
+            throw new CommonException(ERROR_BRANCH_PERMISSION_MISMATCH, ref);
         }
     }
 

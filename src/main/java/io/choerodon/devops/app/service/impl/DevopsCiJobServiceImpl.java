@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -212,6 +213,16 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
+    public void deleteMavenSettingsRecordByJobIds(List<Long> jobIds) {
+        if (CollectionUtils.isEmpty(jobIds)) {
+            return;
+        }
+
+        devopsCiMavenSettingsMapper.deleteByJobIds(jobIds);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
     public void uploadArtifact(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName, MultipartFile file) {
         // 这个方法暂时用不到的字段留待后用
         AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
@@ -262,6 +273,20 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
             throw e;
         } catch (Exception e) {
             throw new DevopsCiInvalidException(ERROR_UPLOAD_ARTIFACT_TO_MINIO, e);
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void deleteArtifactsByGitlabProjectId(List<Long> gitlabPipelineIds) {
+        if (CollectionUtils.isEmpty(gitlabPipelineIds)) {
+            return;
+        }
+        List<DevopsCiJobArtifactRecordDTO> artifacts = devopsCiJobArtifactRecordMapper.listByGitlabPipelineIds(gitlabPipelineIds);
+        if (!artifacts.isEmpty()) {
+            // TODO 要能够文件不存在删除也不报错的接口，融合之后实现
+            artifacts.forEach(artifact -> fileFeignClient.deleteFile(GitOpsConstants.DEV_OPS_CI_ARTIFACT_FILE_BUCKET, artifact.getFileUrl()));
+            devopsCiJobArtifactRecordMapper.deleteByGitlabPipelineIds(gitlabPipelineIds);
         }
     }
 

@@ -12,4 +12,10 @@
         set status = #{status}
         WHERE gitlab_pipeline_id = #{gitlabPipelineId}
     </update>
+
+    <select id="listGitlabPipelineIdsByPipelineId" resultType="java.lang.Long">
+        SELECT dcpr.gitlab_pipeline_id
+        FROM devops_ci_pipeline_record dcpr
+        WHERE dcpr.ci_pipeline_id = #{ciPipelineId}
+    </select>
 </mapper>

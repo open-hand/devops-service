@@ -9,6 +9,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -29,14 +38,6 @@ import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
 
 /**
  * 〈功能简述〉
@@ -299,7 +300,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 Map<String, List<DevopsCiJobRecordVO>> statsuMap = devopsCiJobRecordVOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordVO::getStatus));
                 calculateStageStatus(stageRecord, statsuMap);
                 // 计算stage耗时
-                stageRecord.setDurationSeconds(calculateStageduration(devopsCiJobRecordVOS));
+                stageRecord.setDurationSeconds(calculateStageDuration(devopsCiJobRecordVOS));
                 stageRecord.setJobRecordVOList(devopsCiJobRecordVOS);
             }
         });
@@ -310,7 +311,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         return devopsCiPipelineRecordVO;
     }
 
-    private Long calculateStageduration(List<DevopsCiJobRecordVO> devopsCiJobRecordVOS) {
+    private Long calculateStageDuration(List<DevopsCiJobRecordVO> devopsCiJobRecordVOS) {
         Optional<DevopsCiJobRecordVO> max = devopsCiJobRecordVOS.stream().filter(v -> v.getDurationSeconds() != null).max(Comparator.comparingInt(v -> v.getDurationSeconds().intValue()));
         return max.orElse(new DevopsCiJobRecordVO()).getDurationSeconds();
     }
@@ -416,7 +417,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     }
 
     /**
-     * 更新pipeline statsu
+     * 更新pipeline status
      * @param gitlabPipelineId
      * @param status
      * @return
