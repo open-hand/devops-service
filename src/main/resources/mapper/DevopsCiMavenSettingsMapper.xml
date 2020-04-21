@@ -8,4 +8,13 @@
         WHERE dcms.ci_job_id = #{jobId,jdbcType=BIGINT}
         AND dcms.sequence = #{sequence,jdbcType=BIGINT}
     </select>
+
+    <delete id="deleteByJobIds">
+        DELETE dcms.*
+        FROM devops_ci_maven_settings dcms
+        WHERE dcms.ci_job_id IN
+        <foreach collection="jobIds" item="jobId" open="(" separator="," close=")">
+            #{jobId,jdbcType=BIGINT}
+        </foreach>
+    </delete>
 </mapper>

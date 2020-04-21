@@ -8,4 +8,24 @@
         WHERE dcjar.gitlab_pipeline_id = #{gitlabPipelineId,jdbcType=BIGINT}
         AND dcjar.name = #{name,jdbcType=VARCHAR}
     </select>
+
+    <select id="listByGitlabPipelineIds"
+            resultType="io.choerodon.devops.infra.dto.DevopsCiJobArtifactRecordDTO">
+        SELECT dcjar.*
+        FROM devops_ci_job_artifact_record dcjar
+        WHERE dcjar.gitlab_pipeline_id IN
+        <foreach collection="gitlabPipelineIds" item="gitlabPipelineId" open="(" separator="," close=")">
+            #{gitlabPipelineId}
+        </foreach>
+    </select>
+
+
+    <delete id="deleteByGitlabPipelineIds">
+        DELETE dcjar.*
+        FROM devops_ci_job_artifact_record dcjar
+        WHERE dcjar.gitlab_pipeline_id IN
+        <foreach collection="gitlabPipelineIds" item="gitlabPipelineId" open="(" separator="," close=")">
+            #{gitlabPipelineId}
+        </foreach>
+    </delete>
 </mapper>

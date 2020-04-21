@@ -14,6 +14,7 @@ import io.choerodon.devops.infra.feign.FileFeignClient;
 @Component
 public class FileFeignClientFallback implements FileFeignClient {
     private static final String MSG_ERROR_UPLOAD = "error.file.upload";
+    private static final String ERROR_FILE_DELETE = "error.file.delete";
 
     @Override
     public ResponseEntity<String> uploadFile(String bucketName, String fileName, MultipartFile multipartFile) {
@@ -22,7 +23,7 @@ public class FileFeignClientFallback implements FileFeignClient {
 
     @Override
     public ResponseEntity deleteFile(String bucketName, String url) {
-        return ResponseEntity.badRequest().build();
+        throw new CommonException(ERROR_FILE_DELETE, url);
     }
 
     @Override
