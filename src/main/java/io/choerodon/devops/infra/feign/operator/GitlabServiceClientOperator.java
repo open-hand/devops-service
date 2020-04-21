@@ -7,7 +7,6 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.base.Functions;
 import feign.FeignException;
 import feign.RetryableException;
-import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +24,7 @@ import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
@@ -1081,7 +1081,7 @@ public class GitlabServiceClientOperator {
     }
 
     public BranchDTO getBranch(int gitlabProjectId, String ref) {
-        return gitlabServiceClient.getBranch(gitlabProjectId, ref).getBody();
+        return gitlabServiceClient.queryBranchByName(gitlabProjectId, ref).getBody();
     }
 
     public MemberDTO getMember(Long gitlabProjectId, Long gitlabUserId) {

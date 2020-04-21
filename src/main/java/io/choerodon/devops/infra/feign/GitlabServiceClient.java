@@ -4,16 +4,17 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 
-import io.choerodon.devops.api.vo.FileCreationVO;
-import io.choerodon.devops.infra.dto.RepositoryFileDTO;
-import io.choerodon.devops.infra.dto.gitlab.*;
-import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
-import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import io.choerodon.devops.api.vo.FileCreationVO;
+import io.choerodon.devops.infra.dto.RepositoryFileDTO;
+import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
+import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
 
 /**
  * gitlab服务 feign客户端
@@ -545,9 +546,10 @@ public interface GitlabServiceClient {
             @PathVariable(value = "jobId") Integer jobId,
             @RequestParam(value = "userId") Integer userId);
 
-    @GetMapping(value = "/v1/projects/{projectId}/repository/branches/{name}")
-    ResponseEntity<BranchDTO> getBranch(
-            @ApiParam(value = "项目id", required = true) @PathVariable Integer projectId,
-            @ApiParam(value = "用户Id")
-            @RequestParam(value = "name") String name);
+    @GetMapping(value = "/v1/projects/{projectId}/repository/branches/{branchName}")
+    ResponseEntity<BranchDTO> queryBranchByName(
+            @ApiParam(value = "工程id", required = true)
+            @PathVariable Integer projectId,
+            @ApiParam(value = "要查询的分支名", required = true)
+            @PathVariable("branchName") String branchName);
 }
