@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
-import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
@@ -29,6 +28,7 @@ import io.choerodon.devops.infra.feign.FileFeignClient;
 import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
+import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.MapperUtil;
 
