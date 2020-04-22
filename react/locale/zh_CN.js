@@ -774,7 +774,7 @@ const pipelineManage = {
   'c7ncd.pipelineManage.execute.cancel': '取消执行',
   'c7ncd.pipelineManage.execute.retry': '重试',
   'c7ncd.pipelineManage.delete.title': '删除流水线',
-  'c7ncd.pipelineManage.delete.des': '确定删除该条流水线吗？',
+  'c7ncd.pipelineManage.delete.des': '删除CI流水线后，之前上传至存储库的所有软件包也会随之清除；确定删除该条CI流水线吗？',
   'c7ncd.pipelineManage.stop.title': '停用流水线',
   'c7ncd.pipelineManage.stop.des': '确定停用该条流水线吗？',
   'c7ncd.pipelineManage.record.detail': '流水线记录详情',
