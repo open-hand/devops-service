@@ -54,7 +54,7 @@ export default class YamlEditor extends Component {
       lineNumbers: !props.readOnly,
       lineWrapping: true,
       viewportMargin: Infinity,
-      lint: !props.readOnly,
+      lint: !props.readOnly && props.showError,
       gutters: !props.readOnly ? ['CodeMirror-lint-markers'] : [],
     };
   }
