@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Form, Select, TextField, Modal, SelectBox, Button, Password } from 'choerodon-ui/pro';
-import { Icon, Spin } from 'choerodon-ui';
+import { Icon, Spin, Tooltip } from 'choerodon-ui';
+import Tips from '../../../../../../components/Tips';
 import YamlEditor from '../../../../../../components/yamlEditor';
 import emptyImg from '../../../../../../components/empty-page/image/owner.png';
 import DependRepo from './DependRepo';
@@ -17,6 +18,11 @@ const obj = {
   upload: '上传软件包至存储库',
   docker: 'Docker构建',
   chart: 'Chart构建',
+};
+
+const checkField = {
+  upload: ['uploadFilePattern', 'uploadArtifactFileName'],
+  docker: ['dockerContextDir', 'dockerFilePath'],
 };
 
 const AddTask = observer(() => {
@@ -68,7 +74,7 @@ const AddTask = observer(() => {
         let dockerFilePath;
         let uploadArtifactFileName;
         let dockerArtifactFileName;
-        config.forEach((c) => {
+        config && config.forEach((c) => {
           if (c.type === 'upload') {
             uploadFilePattern = c.uploadFilePattern;
             uploadArtifactFileName = c.artifactFileName;
@@ -94,7 +100,7 @@ const AddTask = observer(() => {
           token,
           password,
           sonarUrl,
-          private: newSteps.find(s => s.checked).repos ? newSteps.find(s => s.checked).repos.map(r => String(r.privateIf)) : '',
+          private: newSteps.length > 0 && newSteps.find(s => s.checked).repos ? newSteps.find(s => s.checked).repos.map(r => String(r.privateIf)) : '',
         };
         AddTaskFormDataSet.loadData([data]);
         setSteps(newSteps);
@@ -165,6 +171,31 @@ const AddTask = observer(() => {
       handleOk(data);
       return true;
     } else {
+      let checkedIndex;
+      for (let i = 0; i < steps.length; i++) {
+        if (Object.keys(checkField).includes(steps[i].type)) {
+          for (let j = 0; j < checkField[steps[i].type].length; j++) {
+            const isValid = AddTaskFormDataSet.current.getField(checkField[steps[i].type][j]).isValid();
+            if (!isValid) {
+              checkedIndex = i;
+              break;
+            }
+          }
+        }
+        if (String(checkedIndex) !== 'undefined') {
+          break;
+        }
+      }
+      if (String(checkedIndex) !== 'undefined') {
+        setSteps(steps.map((s, sIndex) => {
+          if (String(sIndex) === String(checkedIndex)) {
+            s.checked = true;
+          } else {
+            s.checked = false;
+          }
+          return s;
+        }));
+      }
       return false;
     }
   };
@@ -196,6 +227,9 @@ const AddTask = observer(() => {
       AddTaskFormDataSet.getField('dockerContextDir').set('required', false);
       AddTaskFormDataSet.getField('dockerFilePath').set('required', false);
       AddTaskFormDataSet.getField('uploadArtifactFileName').set('required', false);
+    }
+    if (AddTaskFormDataSet.current.get('type') === 'custom') {
+      AddTaskFormDataSet.getField('name').set('required', false);
     }
   }, [testConnect, AddTaskFormDataSet.current.get('type'), AddTaskFormDataSet.current.get('authType')]);
 
@@ -578,7 +612,21 @@ const AddTask = observer(() => {
             />
             {
               steps.find(s => s.checked) && steps.find(s => s.checked).type === 'Maven' ? (
-                <SelectBox style={{ marginTop: 30 }} onChange={handleChangePrivate} name="private">
+                <SelectBox
+                  style={{ marginTop: 30 }}
+                  onChange={handleChangePrivate}
+                  name="private"
+                  label={(
+                    <span>Setting配置
+                      <Tooltip
+                        title=""
+                        theme="light"
+                      >
+                        <Icon type="help" />
+                      </Tooltip>
+                    </span>
+                  )}
+                >
                   <Option value="false">
                     <span style={{ display: 'inline-flex', alignItems: 'center' }}>
                       公有依赖库
@@ -631,7 +679,20 @@ const AddTask = observer(() => {
                   );
                 } else if (type === 'upload') {
                   return [
-                    <TextField style={{ width: 339, marginBottom: 20 }} name="uploadFilePattern" />,
+                    <TextField
+                      style={{ width: 339, marginBottom: 20 }}
+                      label={(
+                        <span style={{ display: 'inline-flex', justifyContent: 'center', alignItems: 'center' }}>构建包路径
+                          <Tooltip
+                            title="此处定义的路径将用于存放构建所需的全部内容"
+                            theme="light"
+                          >
+                            <Icon type="help" />
+                          </Tooltip>
+                        </span>
+                      )}
+                      name="uploadFilePattern"
+                    />,
                     <TextField style={{ width: 339, marginBottom: 20 }} name="uploadArtifactFileName" />,
                   ];
                 } else if (type === 'docker') {
@@ -680,9 +741,9 @@ const AddTask = observer(() => {
           <Option value="sonar">代码检查</Option>
           <Option value="custom">自定义</Option>
         </Select>
-        <TextField name="name" />
         {
           AddTaskFormDataSet.current.get('type') !== 'custom' ? [
+            <TextField name="name" />,
             <TextField name="glyyfw" />,
             <Select combo searchable name="triggerRefs">
               <Option value="master">master</Option>
