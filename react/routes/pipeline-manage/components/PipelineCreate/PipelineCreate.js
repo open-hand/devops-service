@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Form, TextField, Select, SelectBox, Modal, Button, DataSet } from 'choerodon-ui/pro';
-import { message } from 'choerodon-ui';
+import { message, Icon } from 'choerodon-ui';
 import { observer } from 'mobx-react-lite';
 import { usePipelineCreateStore } from './stores';
 import AddTask from './components/AddTask';
@@ -77,7 +77,7 @@ const PipelineCreate = observer(() => {
         {/*  <Option disabled value="F">手动触发</Option> */}
         {/* </SelectBox> */}
       </Form>
-      <p className="pipeline_createInfo"><span>!</span>此页面定义了阶段与任务后，GitLab仓库中的.gitlab-ci.yml文件也会同步修改。</p>
+      <p className="pipeline_createInfo"><Icon style={{ color: 'red', verticalAlign: 'text-bottom' }} type="error" />此页面定义了阶段与任务后，GitLab仓库中的.gitlab-ci.yml文件也会同步修改。</p>
       <StageEditBlock editBlockStore={editBlockStore} edit />
     </div>
   );
