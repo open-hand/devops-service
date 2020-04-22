@@ -224,6 +224,13 @@ function compressAndUpload() {
 # $1 文件名称
 # $2 project_id
 function downloadAndUncompress() {
+
+  if [ -e "$1.tgz" ]; then
+    echo "file $1.tgz exists"
+    tar -zxvf "$1.tgz" .
+    return
+  fi
+
   # 先访问devops获得文件下载路径
   http_status_code=$(
     curl -s -m 10 --connect-timeout 10 \
