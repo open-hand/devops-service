@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -477,9 +478,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     }
                     // 校验自定义yaml的 job name和stage name 是否匹配
                     ((Map<String, Object>) load).forEach((key, value) -> {
-                        if (!key.equals(job.getName())) {
+                        if (StringUtils.isBlank(key)) {
                             throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
                         }
+                        job.setName(key);
                         JSONObject jsonObject = new JSONObject((Map<String, Object>) value);
                         if (!stage.getName().equals(jsonObject.getString("stage"))) {
                             throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
