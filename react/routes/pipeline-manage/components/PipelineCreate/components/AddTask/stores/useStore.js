@@ -17,6 +17,9 @@ export default function useStore() {
 #  -U：每次构建检查依赖更新，可避免缓存中快照版本依赖不更新问题，但会牺牲部分性能
 #  -e -X ：打印调试信息，定位疑难构建问题时建议使用此参数构建
 #  -B：以batch模式运行，可避免日志打印时出现ArrayIndexOutOfBoundsException异常
+#       -s 指定用户级别的maven settings配置文件，如果在流水线中定义了maven仓库设置，
+#          运行时一份settings.xml会下载到根目录，此时可以使用-s settings指定使用
+#       -gs 指定系统级别的settings.xml
 # 更多帮助信息请执行此命令进行查看：mvn org.jacoco:jacoco-maven-plugin:help
 # mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test -Dmaven.test.failure.ignore=true -DskipTests=false -U -e -X -B
 
@@ -25,6 +28,9 @@ export default function useStore() {
 # repackage可以将已经存在的jar和war格式的文件重新打包
 # 打出的jar包将可以在命令行使用java -jar命令执行。
 # 更多帮助信息请执行此命令进行查看：mvn spring-boot:help
+#       -s 指定用户级别的maven settings配置文件，如果在流水线中定义了maven仓库设置，
+#          运行时一份settings.xml会下载到根目录，此时可以使用-s settings指定使用
+#       -gs 指定系统级别的settings.xml
 # mvn package spring-boot:repackage
 
 
@@ -34,9 +40,23 @@ export default function useStore() {
 #  -U：每次构建检查依赖更新，可避免缓存中快照版本依赖不更新问题，但会牺牲部分性能
 #  -e -X ：打印调试信息，定位疑难构建问题时建议使用此参数构建
 #  -B：以batch模式运行，可避免日志打印时出现ArrayIndexOutOfBoundsException异常
+#       -s 指定用户级别的maven settings配置文件，如果在流水线中定义了maven仓库设置，
+#          运行时一份settings.xml会下载到根目录，此时可以使用-s settings指定使用
+#       -gs 指定系统级别的settings.xml
 # 使用场景： 打包项目且不需要执行单元测试时使用
 # 更多帮助信息请执行此命令进行查看：mvn help:describe -Dcmd=package
-mvn package -Dmaven.test.skip=true -U -e -X -B`,
+mvn package -Dmaven.test.skip=true -U -e -X -B
+
+
+# 功能：打包并发布依赖包到私有依赖库
+# 使用场景： 需要将当前项目构建结果发布到私有依赖仓库以供其他maven项目引用时使用
+# 使用参数：settings.xml由用户在猪齿鱼CI流水线界面上填写信息生成存放在服务器，CI过程自动从远程服务器拉取到本地项目根目录，
+#           文件名为 settings.xml，使用-s参数指定为用户settings （Alternate path for the user settings file）
+#           使用-s指定settings.xml后，maven不会再去$HOME/.m2/settings.xml读取内容。
+#           也可以使用-gs指定为全局 settings.xml 文件
+#           此处的用户认证信息id就是在配置仓库时的仓库名称
+# 更多帮助信息请执行此命令进行查看：mvn help:describe -Dcmd=deploy
+#mvn deploy -Dmaven.test.skip=true -U -e -X -B -s settings.xml -DaltDeploymentRepository=用户认证信息id::default::仓库url`,
       npm: `
 export PATH=$PATH:/root/.npm-global/bin
 #设置Devcloud镜像仓加速构建

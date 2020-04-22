@@ -1,3 +1,5 @@
+import { Icon } from 'choerodon-ui';
+
 export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, projectId) => ({
   autoCreate: true,
   fields: [{
@@ -45,7 +47,7 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
   }, {
     name: 'private',
     type: 'string',
-    label: 'Setting配置',
+    // label: 'Setting配置',
     multiple: true,
     // dynamicProps: {
     //   required: ({ record }) => record.get('gjmb') === 'Maven',
@@ -68,7 +70,7 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
   }, {
     name: 'uploadFilePattern',
     type: 'string',
-    label: '构建包路径',
+    // label: '构建包路径',
     required: true,
   },
   {
