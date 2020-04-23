@@ -3,8 +3,9 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.swagger.annotations.ApiModelProperty;
+
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
  * 〈功能简述〉
@@ -23,6 +24,8 @@ public class DevopsCiPipelineRecordVO {
     private String status;
     @ApiModelProperty("触发用户")
     private String username;
+    @ApiModelProperty("触发分支")
+    private String gitlabTriggerRef;
     @ApiModelProperty("创建时间")
     private Date createdDate;
     @ApiModelProperty("结束时间")
@@ -33,6 +36,8 @@ public class DevopsCiPipelineRecordVO {
     private DevopsCiPipelineVO devopsCiPipelineVO;
 
     private IamUserDTO userDTO;
+    @ApiModelProperty("提交信息")
+    private CustomCommitVO commit;
 
     public Long getId() {
         return id;
@@ -120,5 +125,21 @@ public class DevopsCiPipelineRecordVO {
 
     public void setDevopsCiPipelineVO(DevopsCiPipelineVO devopsCiPipelineVO) {
         this.devopsCiPipelineVO = devopsCiPipelineVO;
+    }
+
+    public String getGitlabTriggerRef() {
+        return gitlabTriggerRef;
+    }
+
+    public void setGitlabTriggerRef(String gitlabTriggerRef) {
+        this.gitlabTriggerRef = gitlabTriggerRef;
+    }
+
+    public CustomCommitVO getCommit() {
+        return commit;
+    }
+
+    public void setCommit(CustomCommitVO commit) {
+        this.commit = commit;
     }
 }
