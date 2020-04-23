@@ -70,7 +70,7 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
   }, {
     name: 'uploadFilePattern',
     type: 'string',
-    // label: '构建包路径',
+    label: '构建包路径',
     required: true,
   },
   {

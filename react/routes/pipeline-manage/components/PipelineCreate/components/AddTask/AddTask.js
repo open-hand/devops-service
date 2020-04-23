@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Form, Select, TextField, Modal, SelectBox, Button, Password } from 'choerodon-ui/pro';
 import { Icon, Spin, Tooltip } from 'choerodon-ui';
-import Tips from '../../../../../../components/Tips';
+import Tips from '../../../../../../components/new-tips';
 import YamlEditor from '../../../../../../components/yamlEditor';
 import emptyImg from '../../../../../../components/empty-page/image/owner.png';
 import DependRepo from './DependRepo';
@@ -680,20 +680,11 @@ const AddTask = observer(() => {
                 } else if (type === 'upload') {
                   return [
                     <TextField
-                      style={{ width: 339, marginBottom: 20 }}
-                      label={(
-                        <span style={{ display: 'inline-flex', justifyContent: 'center', alignItems: 'center' }}>构建包路径
-                          <Tooltip
-                            title="此处定义的路径将用于存放构建所需的全部内容"
-                            theme="light"
-                          >
-                            <Icon type="help" />
-                          </Tooltip>
-                        </span>
-                      )}
+                      style={{ width: 314 }}
+                      addonAfter={<Tips helpText="此处定义的路径将用于存放构建所需的全部内容" />}
                       name="uploadFilePattern"
                     />,
-                    <TextField style={{ width: 339, marginBottom: 20 }} name="uploadArtifactFileName" />,
+                    <TextField style={{ width: 339, marginTop: 20, marginBottom: 20 }} name="uploadArtifactFileName" />,
                   ];
                 } else if (type === 'docker') {
                   return [
