@@ -435,6 +435,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         devopsCiJobDTO.setCiStageId(devopsCiStageVO.getId());
                         devopsCiJobDTO.setCiPipelineId(ciPipelineId);
                         devopsCiJobService.create(devopsCiJobDTO);
+                        devopsCiJobVO.setId(devopsCiJobDTO.getId());
                     });
                 }
             } else {
@@ -449,6 +450,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
                         devopsCiJobDTO.setCiPipelineId(ciPipelineId);
                         devopsCiJobService.create(devopsCiJobDTO);
+                        devopsCiJobVO.setId(devopsCiJobDTO.getId());
                     });
                 }
             }
