@@ -1,12 +1,6 @@
 import forEach from 'lodash/forEach';
 import isEmpty from 'lodash/isEmpty';
 
-function handleSelect(record, store) {
-  if (record) {
-    const data = record.toData();
-    store.setSelectedMenu(data);
-  }
-}
 
 function formatData({ data, expandsKeys }) {
   const newData = [];
@@ -39,7 +33,7 @@ function formatData({ data, expandsKeys }) {
   return newData;
 }
 
-export default ({ projectId, mainStore }) => ({
+export default ({ projectId, mainStore, editBlockStore, handleSelect }) => ({
   autoCreate: false,
   autoQuery: true,
   selection: 'single',
@@ -77,8 +71,8 @@ export default ({ projectId, mainStore }) => ({
     }),
   },
   events: {
-    select: ({ record }) => {
-      handleSelect(record, mainStore);
+    select: ({ record, previous }) => {
+      handleSelect(record, mainStore, editBlockStore, previous);
     },
     unSelect: ({ record }) => {
       // 禁用取消选中
@@ -92,13 +86,13 @@ export default ({ projectId, mainStore }) => ({
         const selectedRecord = dataSet.find((treeRecord) => key === treeRecord.get('key'));
         if (selectedRecord) {
           selectedRecord.isSelected = true;
-          handleSelect(selectedRecord, mainStore);
+          handleSelect(selectedRecord, mainStore, editBlockStore);
           return;
         }
       }
       if (record) {
         record.isSelected = true;
-        handleSelect(record, mainStore);
+        handleSelect(record, mainStore, editBlockStore);
       }
     },
   },
