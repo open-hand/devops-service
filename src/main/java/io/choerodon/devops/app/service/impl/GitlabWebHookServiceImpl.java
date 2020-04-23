@@ -40,9 +40,6 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
         switch (kind) {
             case "merge_request":
                 DevopsMergeRequestVO devopsMergeRequestVO = JSONArray.parseObject(body, DevopsMergeRequestVO.class, FastjsonParserConfigProvider.getParserConfig());
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info(devopsMergeRequestVO.toString());
-                }
 
                 devopsMergeRequestService.create(devopsMergeRequestVO);
                 break;
@@ -56,9 +53,6 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                 break;
             case "pipeline":
                 PipelineWebHookVO pipelineWebHookVO = JSONArray.parseObject(body, PipelineWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info(pipelineWebHookVO.toString());
-                }
                 devopsGitlabPipelineService.create(pipelineWebHookVO, token);
                 // 保存ci流水线执行记录
                 devopsCiPipelineRecordService.create(pipelineWebHookVO, token);
