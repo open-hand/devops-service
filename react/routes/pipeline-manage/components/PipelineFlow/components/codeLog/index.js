@@ -1,42 +1,41 @@
 import React, { useEffect, useState } from 'react';
-import ReactCodeMirror from 'react-codemirror';
-import './index.less';
+import forEach from 'lodash/forEach';
+import { Terminal } from 'xterm';
+import { fit } from 'xterm/lib/addons/fit/fit';
 import { observer } from 'mobx-react-lite';
-import { axios } from '@choerodon/boot';
-import Loading from '../../../../../../components/loading';
+import { axios, Choerodon } from '@choerodon/boot';
 
-
-const LOG_OPTIONS = {
-  readOnly: true,
-  lineNumbers: true,
-  lineWrapping: true,
-  autofocus: true,
-  theme: 'base16-dark',
-};
+import 'xterm/dist/xterm.css';
+import './index.less';
 
 export default observer((props) => {
-  const [value, setValue] = useState('');
   const { gitlabJobId, projectId, gitlabProjectId } = props;
-  function loadData() {
-    axios.get(`/devops/v1/projects/${projectId}/ci_jobs/gitlab_projects/${gitlabProjectId}/gitlab_jobs/${gitlabJobId}/trace`).then((res) => {
+  const term = new Terminal({
+    fontSize: 13,
+    fontWeight: 400,
+    fontFamily: 'monospace',
+    disableStdin: true,
+  });
+
+  async function loadData() {
+    try {
+      const res = await axios.get(`/devops/v1/projects/${projectId}/ci_jobs/gitlab_projects/${gitlabProjectId}/gitlab_jobs/${gitlabJobId}/trace`);
       if (res && !res.failed) {
-        setValue(res);
+        const newRes = res.split(/\n/);
+        forEach(newRes, (item) => term.writeln(item));
       }
-    });
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+    }
   }
 
   useEffect(() => {
     loadData();
+    term.open(document.getElementById('jobLog'));
+    fit(term);
   }, []);
 
   return (
-    <div className="c7n-pipelineManage-codeLog">
-      {value ? <ReactCodeMirror
-        visible={value}
-        value={value}
-        className="c7n-log-editor"
-        options={LOG_OPTIONS}
-      /> : <Loading display />}
-    </div>
+    <div className="c7n-pipelineManage-codeLog" id="jobLog" />
   );
 });
