@@ -4,6 +4,7 @@ import java.util.List;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -13,6 +14,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @author wanghao
  * @Date 2020/4/3 9:57
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CiConfigTemplateVO {
     @ApiModelProperty("步骤名称")
     @NotEmpty(message = "error.step.name.cannot.be.null")

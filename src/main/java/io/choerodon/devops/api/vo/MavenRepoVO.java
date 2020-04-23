@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import com.alibaba.fastjson.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -7,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @author zmf
  * @since 20-4-16
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MavenRepoVO {
     @ApiModelProperty("仓库名称")
     private String name;
@@ -19,6 +22,7 @@ public class MavenRepoVO {
 
     @ApiModelProperty("是否是私有仓库, true表示是")
     @JsonProperty("private")
+    @JSONField(name = "private")
     private Boolean privateRepo;
 
     @ApiModelProperty("用户名 / 私有仓库必填，公开仓库不填")
@@ -51,11 +55,13 @@ public class MavenRepoVO {
         this.type = type;
     }
 
+    @JSONField(name = "private")
     @JsonProperty("private")
     public Boolean getPrivateRepo() {
         return privateRepo;
     }
 
+    @JSONField(name = "private")
     @JsonProperty("private")
     public void setPrivateRepo(Boolean privateRepo) {
         this.privateRepo = privateRepo;
@@ -75,5 +81,17 @@ public class MavenRepoVO {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    @Override
+    public String toString() {
+        return "MavenRepoVO{" +
+                "name='" + name + '\'' +
+                ", url='" + url + '\'' +
+                ", type='" + type + '\'' +
+                ", privateRepo=" + privateRepo +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                '}';
     }
 }
