@@ -67,6 +67,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private UserAttrService userAttrService;
     private BaseServiceClientOperator baseServiceClientOperator;
     private GitlabServiceClientOperator gitlabServiceClientOperator;
+    private DevopsGitlabCommitService devopsGitlabCommitService;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -81,7 +82,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                              TransactionalProducer transactionalProducer,
                                              UserAttrService userAttrService,
                                              BaseServiceClientOperator baseServiceClientOperator,
-                                             GitlabServiceClientOperator gitlabServiceClientOperator) {
+                                             GitlabServiceClientOperator gitlabServiceClientOperator,
+                                             DevopsGitlabCommitService devopsGitlabCommitService) {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
         this.devopsCiStageService = devopsCiStageService;
@@ -93,6 +95,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         this.userAttrService = userAttrService;
         this.baseServiceClientOperator = baseServiceClientOperator;
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
+        this.devopsGitlabCommitService = devopsGitlabCommitService;
     }
 
     @Override
@@ -273,6 +276,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsCiPipelineRecordDTO.getTriggerUserId());
         devopsCiPipelineRecordVO.setUserDTO(iamUserDTO);
 
+        // 添加提交信息
+        addCommitInfo(devopsCiPipelineRecordVO, devopsCiPipelineRecordDTO);
+
+        // 添加流水线信息
         DevopsCiPipelineVO ciPipelineVO = devopsCiPipelineService.queryById(devopsCiPipelineRecordDTO.getCiPipelineId());
         devopsCiPipelineRecordVO.setDevopsCiPipelineVO(ciPipelineVO);
 
@@ -309,6 +316,27 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsCiPipelineRecordVO.setStageRecordVOList(devopsCiStageRecordVOS);
 
         return devopsCiPipelineRecordVO;
+    }
+
+    /**
+     * 添加提交信息
+     *
+     * @param devopsCiPipelineRecordVO
+     * @param devopsCiPipelineRecordDTO
+     */
+    private void addCommitInfo(DevopsCiPipelineRecordVO devopsCiPipelineRecordVO, DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO) {
+        DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.baseQueryByShaAndRef(devopsCiPipelineRecordDTO.getGitlabTriggerRef(), devopsCiPipelineRecordDTO.getCommitSha());
+        IamUserDTO commitUser = baseServiceClientOperator.queryUserByUserId(devopsGitlabCommitDTO.getUserId());
+
+        CustomCommitVO customCommitVO = new CustomCommitVO();
+        customCommitVO.setRef(devopsCiPipelineRecordDTO.getGitlabTriggerRef());
+        customCommitVO.setCommitSha(devopsCiPipelineRecordDTO.getCommitSha());
+        customCommitVO.setCommitContent(devopsGitlabCommitDTO.getCommitContent());
+        customCommitVO.setCommitUrl(devopsGitlabCommitDTO.getUrl());
+        customCommitVO.setUserHeadUrl(commitUser.getImageUrl());
+        customCommitVO.setUserName(commitUser.getLdap() ? commitUser.getLoginName() : commitUser.getEmail());
+
+        devopsCiPipelineRecordVO.setCommit(customCommitVO);
     }
 
     private Long calculateStageDuration(List<DevopsCiJobRecordVO> devopsCiJobRecordVOS) {
