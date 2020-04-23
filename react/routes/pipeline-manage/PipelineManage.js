@@ -1,8 +1,9 @@
-import React, { Fragment, useRef, useMemo, Suspense } from 'react';
+import React, { Fragment, useRef, useMemo, Suspense, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Page, Header, Breadcrumb, Content, Permission } from '@choerodon/boot';
 import { Button, Modal } from 'choerodon-ui/pro';
 import { axios, Choerodon } from '@choerodon/boot';
+import { Prompt } from 'react-router-dom';
 import { handlePromptError } from '../../utils';
 import PipelineTree from './components/PipelineTree';
 import PipelineFlow from './components/PipelineFlow';
@@ -19,6 +20,12 @@ const modalStyle = {
   width: 380,
 };
 
+function beforeunload(e) {
+  const confirmationMessage = '您的修改尚未保存，确定要离开吗?';
+  (e || window.event).returnValue = confirmationMessage;
+  return confirmationMessage;
+}
+
 const PipelineManage = observer((props) => {
   const {
     intl: { formatMessage },
@@ -32,11 +39,20 @@ const PipelineManage = observer((props) => {
       loadDetailData, getDetailData,
     },
     editBlockStore: {
-      getMainData, loadData,
+      getMainData, loadData, getHasModify, setHasModify,
     },
     treeDs,
     projectId,
   } = usePipelineManageStore();
+
+
+  useEffect(() => {
+    if (getHasModify(false)) {
+      window.addEventListener('beforeunload', beforeunload);
+    } else {
+      window.removeEventListener('beforeunload', beforeunload);
+    }
+  }, [getHasModify(false)]);
 
 
   const handleCreatePipeline = () => {
@@ -56,7 +72,21 @@ const PipelineManage = observer((props) => {
 
   const { getSelectedMenu } = mainStore;
 
+  function checkHasModifyandRefresh() {
+    if (getHasModify(false)) {
+      Modal.open({
+        key: Modal.key(),
+        title: '保存提示',
+        children: '您的修改尚未保存，确定要离开吗?',
+        onOk: handleRefresh,
+      });
+    } else {
+      handleRefresh();
+    }
+  }
+
   async function handleRefresh() {
+    setHasModify(false, false);
     await treeDs.query();
     const { id } = getMainData;
     const { parentId } = getSelectedMenu;
@@ -69,6 +99,7 @@ const PipelineManage = observer((props) => {
     try {
       const res = await axios.put(`/devops/v1/projects/${projectId}/ci_pipelines/${id}`, getMainData);
       if (handlePromptError(res)) {
+        setHasModify(false, false);
         loadData(projectId, id);
         return res;
       }
@@ -118,6 +149,7 @@ const PipelineManage = observer((props) => {
           <Button
             icon="save-o"
             onClick={handleSaveEdit}
+            disabled={!getHasModify(false)}
           >
             {formatMessage({ id: 'save' })}
           </Button>
@@ -176,7 +208,7 @@ const PipelineManage = observer((props) => {
         </Permission>
         {!treeDs.length && treeDs.status === 'ready' ? null : getButtons()}
         <Button
-          onClick={handleRefresh}
+          onClick={checkHasModifyandRefresh}
           icon="refresh"
         >
           {formatMessage({ id: 'refresh' })}
@@ -210,6 +242,10 @@ const PipelineManage = observer((props) => {
                 detailStore={detailStore}
                 handleRefresh={handleRefresh}
                 treeDs={treeDs}
+              />
+              <Prompt
+                message="您的修改尚未保存，确定要离开吗?"
+                when={getHasModify(false)}
               />
             </div>
           </div>

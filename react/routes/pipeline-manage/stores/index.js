@@ -2,6 +2,7 @@ import React, { createContext, useContext, useMemo, useEffect } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
+import { Modal } from 'choerodon-ui/pro';
 import useStore from './useStore';
 import useEditBlockStore from './useEditBlockStore';
 import useDetailStore from './useDetailStore';
@@ -19,10 +20,33 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     children,
   } = props;
 
+  function handleSelect(record, store, editBlockStore, previous) {
+    const { getHasModify, setHasModify } = editBlockStore;
+    if (record) {
+      const data = record.toData();
+      if (getHasModify(false)) {
+        Modal.open({
+          key: Modal.key(),
+          title: '保存提示',
+          children: '您的修改尚未保存，确定要离开吗?',
+          onOk: () => {
+            store.setSelectedMenu(data);
+            record.isSelected = true;
+            setHasModify(false, false);
+          },
+          onCancel: () => { previous.isSelected = true; record.isSelected = false; },
+        });
+      } else {
+        store.setSelectedMenu(data);
+        // setHasModify(false, false);
+      }
+    }
+  }
+
   const mainStore = useStore();
   const editBlockStore = useEditBlockStore();
   const detailStore = useDetailStore();
-  const treeDs = useMemo(() => new DataSet(TreeDataSet({ projectId, mainStore })), [projectId]);
+  const treeDs = useMemo(() => new DataSet(TreeDataSet({ projectId, mainStore, editBlockStore, handleSelect })), [projectId]);
 
   useEffect(() => {
     const { key } = mainStore.getSelectedMenu;

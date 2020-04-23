@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
+import { Modal } from 'choerodon-ui/pro';
 import OptsDetailContent from './OptsDetailContent';
 import PiplineEdit from './StageEdit';
 import { usePipelineFlowStore } from './stores';
@@ -15,6 +16,10 @@ export default observer(() => {
     treeDs,
   } = usePipelineFlowStore();
 
+  const {
+    getHasModify, setHasModify,
+  } = stepStore;
+
   const renderPipeline = () => (
     parentId ? <OptsDetailContent
       handleRefresh={handleRefresh}
@@ -24,6 +29,7 @@ export default observer(() => {
       detailStore={detailStore}
     /> : <PiplineEdit {...getSelectedMenu} stepStore={stepStore} />
   );
+
 
   return (
     <div className="c7ncd-pipelineManage_flow">

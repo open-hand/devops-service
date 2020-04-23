@@ -41,6 +41,21 @@ export default function useStore() {
     dataSource: [],
     dataSource2: [],
 
+    hasModify1: false,
+    hasModify2: false,
+
+    getHasModify(edit) {
+      return edit ? this.hasModify2 : this.hasModify1;
+    },
+
+    setHasModify(value, edit) {
+      if (edit) {
+        this.hasModify2 = value;
+      } else {
+        this.hasModify1 = value;
+      }
+    },
+
     setStepData(value, edit) {
       if (edit) {
         this.dataSource2 = value;
@@ -60,6 +75,7 @@ export default function useStore() {
         name,
         jobList: [],
       };
+      this.setHasModify(true, edit);
       if (edit) {
         this.dataSource2.splice(index + 1, 0, stepObj);
         this.dataSource2 = this.dataSource2.map((item, i) => {
@@ -76,6 +92,7 @@ export default function useStore() {
     },
 
     removeStep(sequence, edit) {
+      this.setHasModify(true, edit);
       if (edit) {
         this.dataSource2.forEach((item, index) => {
           if (item.sequence === sequence) {
@@ -101,6 +118,7 @@ export default function useStore() {
       }
     },
     eidtStep(sequence, newName, edit) {
+      this.setHasModify(true, edit);
       if (edit) {
         this.dataSource2.forEach((item, index) => {
           if (item.sequence === sequence) {
@@ -118,6 +136,7 @@ export default function useStore() {
       }
     },
     newJob(sequence, data, edit) {
+      this.setHasModify(true, edit);
       if (edit) {
         this.dataSource2.forEach((item, index) => {
           if (item.sequence === sequence) {
@@ -141,6 +160,7 @@ export default function useStore() {
       }
     },
     editJob(sequence, key, data, edit) {
+      this.setHasModify(true, edit);
       if (edit) {
         this.dataSource2.forEach((item, index) => {
           if (item.sequence === sequence) {
@@ -156,6 +176,7 @@ export default function useStore() {
       }
     },
     removeStepTask(sequence, key, edit) {
+      this.setHasModify(true, edit);
       if (edit) {
         this.dataSource2.forEach((item, index) => {
           if (item.sequence === sequence) {
