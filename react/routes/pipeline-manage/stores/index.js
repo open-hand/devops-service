@@ -34,7 +34,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
             record.isSelected = true;
             setHasModify(false, false);
           },
-          onCancel: () => { previous.isSelected = true; },
+          onCancel: () => { previous.isSelected = true; record.isSelected = false; },
         });
       } else {
         store.setSelectedMenu(data);
