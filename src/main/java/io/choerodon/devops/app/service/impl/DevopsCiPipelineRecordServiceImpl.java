@@ -333,8 +333,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         customCommitVO.setCommitSha(devopsCiPipelineRecordDTO.getCommitSha());
         customCommitVO.setCommitContent(devopsGitlabCommitDTO.getCommitContent());
         customCommitVO.setCommitUrl(devopsGitlabCommitDTO.getUrl());
-        customCommitVO.setUserHeadUrl(commitUser.getImageUrl());
-        customCommitVO.setUserName(commitUser.getLdap() ? commitUser.getLoginName() : commitUser.getEmail());
+        if (commitUser != null) {
+            customCommitVO.setUserHeadUrl(commitUser.getImageUrl());
+            customCommitVO.setUserName(commitUser.getLdap() ? commitUser.getLoginName() : commitUser.getEmail());
+        }
 
         devopsCiPipelineRecordVO.setCommit(customCommitVO);
     }
