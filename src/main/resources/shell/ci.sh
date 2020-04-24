@@ -204,7 +204,7 @@ function compressAndUpload() {
       -F "commit=${CI_COMMIT_SHA}" \
       -F "ci_pipeline_id=${CI_PIPELINE_ID}" \
       -F "ci_job_id=${CI_JOB_ID}" \
-      -F "artifact_name=$1.tgz" \
+      -F "artifact_name=$1" \
       -F "file=@$1.tgz" \
       "${CHOERODON_URL}/devops/v1/projects/$3/ci_jobs/upload_artifact" \
       -o "${CI_COMMIT_SHA}-ci.response" \
@@ -236,7 +236,7 @@ function downloadAndUncompress() {
     curl -s -m 10 --connect-timeout 10 \
       -w %{http_code} \
       -o response.url \
-      "${CHOERODON_URL}/devops/v1/projects/$2/ci_jobs/artifact_url?token=${Token}&commit=${CI_COMMIT_SHA}&ci_pipeline_id=${CI_PIPELINE_ID}&ci_job_id=${CI_JOB_ID}&artifact_name=$1.tgz"
+      "${CHOERODON_URL}/devops/v1/projects/$2/ci_jobs/artifact_url?token=${Token}&commit=${CI_COMMIT_SHA}&ci_pipeline_id=${CI_PIPELINE_ID}&ci_job_id=${CI_JOB_ID}&artifact_name=$1"
   )
 
   if [ "$http_status_code" != "200" ]; then
@@ -245,13 +245,15 @@ function downloadAndUncompress() {
   fi
 
   url=$(cat response.url)
-  rm response.url
+  rm -f response.url
 
+  echo "start to download artifact..."
   # 下载文件
   http_status_code=$(curl -o "$1.tgz" -s -m 10 --connect-timeout 10 -w %{http_code} "$url")
   if [ "$http_status_code" != "200" ]; then
     echo "failed to download $1.tgz"
     exit 1
   fi
-  tar -zxvf "$1.tgz" .
+  echo "finished to download artifact..."
+  tar -zxvf "$1.tgz" -C .
 }

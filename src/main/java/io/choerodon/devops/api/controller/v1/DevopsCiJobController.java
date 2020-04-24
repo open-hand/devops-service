@@ -100,7 +100,7 @@ public class DevopsCiJobController {
             @RequestParam(value = "ci_pipeline_id") Long ciPipelineId,
             @ApiParam(value = "gitlab内置的jobId", required = true)
             @RequestParam(value = "ci_job_id") Long ciJobId,
-            @ApiParam(value = "文件名称", required = true)
+            @ApiParam(value = "ci流水线定义的软件包名称", required = true)
             @RequestParam(value = "artifact_name") String artifactName,
             @ApiParam(value = "taz包", required = true)
             @RequestParam MultipartFile file) {
@@ -132,7 +132,7 @@ public class DevopsCiJobController {
             @RequestParam(value = "ci_pipeline_id") Long ciPipelineId,
             @ApiParam(value = "gitlab内置的jobId", required = true)
             @RequestParam(value = "ci_job_id") Long ciJobId,
-            @ApiParam(value = "文件名称", required = true)
+            @ApiParam(value = "创建ci流水线时的软件包名称", required = true)
             @RequestParam(value = "artifact_name") String artifactName) {
         String url = devopsCiJobService.queryArtifactUrl(token, commit, ciPipelineId, ciJobId, artifactName);
         return url == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(url);
