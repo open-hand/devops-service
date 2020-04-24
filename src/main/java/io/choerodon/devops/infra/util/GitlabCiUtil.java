@@ -227,10 +227,10 @@ public class GitlabCiUtil {
     /**
      * 将mvn构建的jar包进行打包上传
      *
-     * @param artifactFileName
-     * @param directory
-     * @param
-     * @return
+     * @param artifactFileName 软件包名称
+     * @param directory        要打包的文件路径pattern
+     * @param projectId        项目id
+     * @return 上传软件包的shell脚本
      */
     public static String generateUploadTgzScripts(Long projectId, String artifactFileName, String directory) {
         String rawCommand = "compressAndUpload %s %s %s";
@@ -254,7 +254,7 @@ public class GitlabCiUtil {
      * @param dockerFilePath        dockerfile文件路径
      */
     private static String generateDockerScripts(String dockerBuildContextDir, String dockerFilePath) {
-        String rawCommand = "kaniko -c %s -f %s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
+        String rawCommand = "kaniko -c $PWD/%s -f $PWD/%s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
         return String.format(rawCommand, dockerBuildContextDir, dockerFilePath);
     }
 
