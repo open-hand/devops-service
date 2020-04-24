@@ -182,7 +182,7 @@ const TreeItem = observer(({ record, search }) => {
         case 'pending':
         case 'running':
           actionData = [{
-            service: ['devops-service.project-pipeline.cancel'],
+            service: ['devops-service.devops-ci-pipeline-record.cancel'],
             text: formatMessage({ id: `${intlPrefix}.execute.cancel` }),
             action: () => changeRecordExecute('cancel'),
           }];
@@ -190,7 +190,7 @@ const TreeItem = observer(({ record, search }) => {
         case 'failed':
         case 'canceled':
           actionData = [{
-            service: ['devops-service.project-pipeline.retry'],
+            service: ['devops-service.devops-ci-pipeline-record.retry'],
             text: formatMessage({ id: `${intlPrefix}.execute.retry` }),
             action: () => changeRecordExecute('retry'),
           }];
