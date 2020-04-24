@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Spin } from 'choerodon-ui';
 import EditColumn from '../eidtColumn';
 import { usePipelineStageEditStore } from './stores';
+import Loading from '../../../../../../components/loading';
 
 const defaultData = [
   {
@@ -61,7 +62,7 @@ export default observer(() => {
       return (
         !getLoading && !edit ? <div className="c7n-piplineManage-edit">
           {renderColumn()}
-        </div> : <Spin />
+        </div> : <Loading display={getLoading} />
       );
     }
   }
