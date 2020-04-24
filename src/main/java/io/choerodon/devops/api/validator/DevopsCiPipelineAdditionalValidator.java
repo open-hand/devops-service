@@ -24,7 +24,7 @@ import io.choerodon.devops.infra.enums.CiJobTypeEnum;
  * @since 20-4-20
  */
 public class DevopsCiPipelineAdditionalValidator {
-    private static final Pattern MAVEN_REPO_NAME_REGEX = Pattern.compile("[0-9a-zA-Z]{6,30}");
+    private static final Pattern MAVEN_REPO_NAME_REGEX = Pattern.compile("[0-9a-zA-Z-]{6,30}");
 
     private static final String ERROR_STAGES_EMPTY = "error.stages.empty";
     private static final String ERROR_ARTIFACT_NAME_INVALID = "error.artifact.name.invalid";
