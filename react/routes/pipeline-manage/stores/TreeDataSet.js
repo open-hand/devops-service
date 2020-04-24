@@ -91,8 +91,12 @@ export default ({ projectId, mainStore, editBlockStore, handleSelect }) => ({
         }
       }
       if (record) {
-        record.isSelected = true;
-        handleSelect(record, mainStore, editBlockStore);
+        let newRecord = record;
+        if (record.children && record.children.length) {
+          newRecord = (record.children)[0];
+        }
+        newRecord.isSelected = true;
+        handleSelect(newRecord, mainStore, editBlockStore);
       }
     },
   },
