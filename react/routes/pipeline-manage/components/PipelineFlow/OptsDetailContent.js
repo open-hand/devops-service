@@ -5,6 +5,7 @@ import map from 'lodash/map';
 import isEqual from 'lodash/isEqual';
 import DetailHeader from './components/detailHeader';
 import DetailColumn from './components/detailColumn';
+import Loading from '../../../../components/loading';
 
 export default observer((props) => {
   const {
@@ -68,6 +69,6 @@ export default observer((props) => {
         <div className="c7n-piplineManage-detail">
           {renderStage()}
         </div>
-      </div> : <Spin />
+      </div> : <Loading display={getDetailLoading} />
   );
 });
