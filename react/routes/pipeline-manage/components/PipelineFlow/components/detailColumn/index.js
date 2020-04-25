@@ -16,15 +16,11 @@ const jobType = {
     name: '构建',
     children: [
       {
-        name: '生成包名称：',
+        name: '构建包名称：',
         type: '',
       },
       {
-        name: '构建包路径：',
-        type: '',
-      },
-      {
-        name: '依赖库名称：',
+        name: '构建包下载地址：',
         type: '',
       },
     ],
