@@ -88,6 +88,21 @@ public class FileUtil {
     }
 
     /**
+     * 替换变量
+     *
+     * @param rawString 原始的字符串
+     * @param params    要替换的字符串映射
+     * @return 替换后的字符串
+     */
+    public static String replaceReturnString(final String rawString, Map<String, String> params) {
+        String result = rawString;
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            result = result.replaceAll(entry.getKey(), entry.getValue());
+        }
+        return result;
+    }
+
+    /**
      * 通过inputStream流 替换文件的参数 ，将file转换为流渲染参数后写回文件
      *
      * @param file   文件

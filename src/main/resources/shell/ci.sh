@@ -22,8 +22,6 @@ export SONAR_URL={{ SONAR_URL }}
 export SONAR_LOGIN={{ SONAR_LOGIN }}
 # HARBOR配置Id
 export HARBOR_CONFIG_ID={{ HARBOR_CONFIG_ID }}
-# 设置minio文件服务器
-export MINIO_URL={{ MINIO_URL }}
 # 设置docekr认证配置文件目录
 export DOCKER_CONFIG=$PWD/.choerodon/.docker
 

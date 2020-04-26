@@ -120,7 +120,7 @@ public interface AppServiceService {
      * @param token token
      * @return File
      */
-    String queryFile(String token, String type);
+    String queryFile(String token);
 
     /**
      * 根据环境id获取已部署正在运行实例的服务

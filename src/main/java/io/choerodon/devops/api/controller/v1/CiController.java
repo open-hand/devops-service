@@ -33,7 +33,6 @@ public class CiController {
      * 服务查询ci脚本文件
      *
      * @param token token
-     * @param type  类型
      * @return File
      */
     @Permission(
@@ -42,10 +41,8 @@ public class CiController {
     @GetMapping
     public ResponseEntity<String> queryFile(
             @ApiParam(value = "token")
-            @RequestParam String token,
-            @ApiParam(value = "类型")
-            @RequestParam(required = false) String type) {
-        return Optional.ofNullable(applicationService.queryFile(token, type))
+            @RequestParam String token) {
+        return Optional.ofNullable(applicationService.queryFile(token))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK)).orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
