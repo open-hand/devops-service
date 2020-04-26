@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 import java.util.Date;
+import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -9,7 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
  * 〈〉
  *
  * @author wanghao
- * @Date 2020/4/7 22:34
+ * @since 2020/4/7 22:34
  */
 public class DevopsCiJobRecordVO {
     private Long id;
@@ -33,6 +34,9 @@ public class DevopsCiJobRecordVO {
     private Date finishedDate;
     @ApiModelProperty("job执行时间")
     private Long durationSeconds;
+
+    @ApiModelProperty("job中的构建包列表")
+    private List<DevopsCiArtifactVO> artifacts;
 
     public Long getId() {
         return id;
@@ -120,5 +124,13 @@ public class DevopsCiJobRecordVO {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public List<DevopsCiArtifactVO> getArtifacts() {
+        return artifacts;
+    }
+
+    public void setArtifacts(List<DevopsCiArtifactVO> artifacts) {
+        this.artifacts = artifacts;
     }
 }

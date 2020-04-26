@@ -23,4 +23,6 @@ public interface DevopsCiJobArtifactRecordMapper extends Mapper<DevopsCiJobArtif
     List<DevopsCiJobArtifactRecordDTO> listByGitlabPipelineIds(@Param("gitlabPipelineIds") List<Long> gitlabPipelineIds);
 
     void deleteByGitlabPipelineIds(@Param("gitlabPipelineIds") List<Long> gitlabPipelineIds);
+
+    List<DevopsCiJobArtifactRecordDTO> listByGitlabJobId(@Param("gitlabJobId") Long gitlabJobId);
 }

@@ -22,6 +22,9 @@ public class DevopsCiJobArtifactRecordDTO extends BaseDTO {
     @ApiModelProperty("gitlab流水线记录id")
     private Long gitlabPipelineId;
 
+    @ApiModelProperty("gitlab内置的ci过程的job id")
+    private Long gitlabJobId;
+
     @ApiModelProperty("软件包名称，和流水线中定义的元数据一致")
     private String name;
 
@@ -31,8 +34,9 @@ public class DevopsCiJobArtifactRecordDTO extends BaseDTO {
     public DevopsCiJobArtifactRecordDTO() {
     }
 
-    public DevopsCiJobArtifactRecordDTO(Long gitlabPipelineId, String name, String fileUrl) {
+    public DevopsCiJobArtifactRecordDTO(Long gitlabPipelineId, Long gitlabJobId, String name, String fileUrl) {
         this.gitlabPipelineId = gitlabPipelineId;
+        this.gitlabJobId = gitlabJobId;
         this.name = name;
         this.fileUrl = fileUrl;
     }
@@ -67,5 +71,13 @@ public class DevopsCiJobArtifactRecordDTO extends BaseDTO {
 
     public void setFileUrl(String fileUrl) {
         this.fileUrl = fileUrl;
+    }
+
+    public Long getGitlabJobId() {
+        return gitlabJobId;
+    }
+
+    public void setGitlabJobId(Long gitlabJobId) {
+        this.gitlabJobId = gitlabJobId;
     }
 }
