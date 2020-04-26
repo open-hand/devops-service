@@ -2,6 +2,7 @@
   border-top: 1px solid #d8d8d8;
   margin-left: -0.24rem;
   margin-right: -0.24rem;
+  width: calc(100% + 0.48rem);
   p {
     margin-left: 0.24rem;
     font-size: 16px;
@@ -20,6 +21,7 @@
   padding: 20px 16px;
   .AddTask_stepItemsContainer {
     display: flex;
+    overflow: auto;
     .AddTask_stepMapContent {
       display: flex;
       align-items: center;
@@ -59,6 +61,8 @@
   }
 }
 .addTask_testConnect_container {
+  padding-top: 10px;
+  padding-bottom: 10px;
   border-radius: 4px;
   border: 1px dashed rgba(0, 0, 0, 0.2);
   width: 70%;
@@ -66,14 +70,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 120px;
+  min-height: 120px;
+  .addTest_notTestButton {
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 1px 2px 0 rgba(0, 0, 0, 0.14);
+    border-radius: 2px;
+  }
   .addTask_testConnect_havnot {
     margin-top: 14px;
     font-size: 14px;
     font-family: PingFangSC-Regular, PingFang SC;
     font-weight: 400;
     color: rgba(58, 52, 95, 0.76);
-    margin-bottom: 0;
+    margin-bottom: 12px;
     span {
       font-weight: 400;
       color: rgba(58, 52, 95, 0.76);
@@ -160,5 +169,13 @@
     background: #e0e0e0;
     position: absolute;
     right: 0;
+  }
+}
+.addTask_authType {
+  .c7n-pro-select-box {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 }

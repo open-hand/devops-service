@@ -72,6 +72,7 @@ const PipelineCreate = observer(() => {
           searchable
           searchMatcher="appServiceName"
         />
+        <TextField style={{ display: 'none' }} />
         {/* <SelectBox name="triggerType"> */}
         {/*  <Option value="auto">自动触发</Option> */}
         {/*  <Option disabled value="F">手动触发</Option> */}

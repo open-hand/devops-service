@@ -437,7 +437,7 @@ const AddTask = observer(() => {
           return (
             <React.Fragment>
               <div className="addTask_testConnect_success"><i className="success" /></div>
-              <p className="addTask_testConnect_havnot">测试连接: <span>成功</span></p>
+              <p className="addTask_testConnect_havnot" style={{ marginTop: '4px', marginBottom: '6px' }}>测试连接: <span>成功</span></p>
               <p style={{ color: 'rgba(58,52,95,0.65)' }}>(重新进行连接测试: <Button onClick={handleTestConnect} funcType="flat" style={{ width: 'auto', color: '#3F51B5' }}>测试连接</Button>)</p>
             </React.Fragment>
           );
@@ -445,7 +445,7 @@ const AddTask = observer(() => {
           return (
             <React.Fragment>
               <div style={{ borderColor: 'rgb(247, 122, 112)' }} className="addTask_testConnect_success"><i className="failure">X</i></div>
-              <p className="addTask_testConnect_havnot">测试连接: <span style={{ color: 'rgb(247, 122, 112)' }}>失败</span></p>
+              <p className="addTask_testConnect_havnot" style={{ marginTop: '4px', marginBottom: '6px' }}>测试连接: <span style={{ color: 'rgb(247, 122, 112)' }}>失败</span></p>
               <p style={{ color: 'rgba(58,52,95,0.65)' }}>(重新进行连接测试: <Button onClick={handleTestConnect} funcType="flat" style={{ width: 'auto', color: '#3F51B5' }}>测试连接</Button>)</p>
             </React.Fragment>
           );
@@ -456,7 +456,7 @@ const AddTask = observer(() => {
             <img style={{ width: 121, marginRight: 39 }} src={emptyImg} alt="none" />
             <div>
               <p className="addTask_testConnect_havnot">未进行过连接</p>
-              <Button onClick={handleTestConnect} funcType="raised" style={{ width: 'auto', color: '#3F51B5' }} newLine>测试连接</Button>
+              <Button className="addTest_notTestButton" onClick={handleTestConnect} funcType="raised" style={{ width: 'auto', color: '#3F51B5' }} newLine>测试连接</Button>
             </div>
           </React.Fragment>
         );
@@ -476,7 +476,7 @@ const AddTask = observer(() => {
                 return 'white';
               }
             }()),
-            flexDirection: !String(testConnect) ? 'row' : 'column',
+            flexDirection: !String(testConnect) && !ConnectLoading ? 'row' : 'column',
             textAlign: 'center',
           }}
         >
@@ -714,7 +714,7 @@ const AddTask = observer(() => {
         ];
       }
       return [
-        <SelectBox name="authType">
+        <SelectBox className="addTask_authType" name="authType">
           <Option value="username">用户名与密码</Option>
           <Option value="token">Token</Option>
         </SelectBox>,
