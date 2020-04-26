@@ -156,11 +156,16 @@
           line-height: .17rem;
           &:first-of-type {
             color: rgba(58, 52, 95, 1);
+            white-space: nowrap;
           }
           &:nth-of-type(2) {
             color: rgba(58, 52, 95, 0.65);
             max-width: 1.08rem;
             overflow-wrap: break-word;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            display: -webkit-box;
+            overflow: hidden;
           }
         }
       }

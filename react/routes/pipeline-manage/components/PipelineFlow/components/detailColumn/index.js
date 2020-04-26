@@ -17,11 +17,11 @@ const jobType = {
     children: [
       {
         name: '构建包名称：',
-        type: '',
+        type: 'artifactName',
       },
       {
         name: '构建包下载地址：',
-        type: '',
+        type: 'artifactUrl',
       },
     ],
   },
@@ -85,6 +85,7 @@ const DetailItem = (props) => {
       retryJob, getDetailData,
     },
     name,
+    artifacts,
     handleRefresh,
   } = props;
 
@@ -94,16 +95,29 @@ const DetailItem = (props) => {
     setExpand(!expand);
   }
 
-  function renderMain() {
-    return (
-      <main style={{ display: expand ? 'block' : 'none' }}>
-        {type && jobType[type].children.map(item => <div>
-          <span>{item.name}</span>
-          <span>-</span>
-        </div>)}
-      </main>
-    );
-  }
+  const renderMain = () => (
+    <main style={{ display: expand ? 'block' : 'none' }}>
+      {
+        artifacts && artifacts.map((artItem, artkey) => {
+          const { artifactName, artifactUrl } = artItem;
+          return (<Fragment>
+            <div>
+              <span>构建包名称：</span>
+              <Tooltip title={artifactName}>
+                <span>{artifactName}</span>
+              </Tooltip>
+            </div>
+            <div>
+              <span>构建包下载地址：</span>
+              <Tooltip title={artifactUrl}>
+                <span>{artifactUrl}</span>
+              </Tooltip>
+            </div>
+          </Fragment>);
+        })
+      }
+    </main>
+  );
 
   function openDescModal() {
     Modal.open({
@@ -169,17 +183,17 @@ const DetailItem = (props) => {
             </Tooltip>
           }
         </div>
-        <Button
+        {artifacts && <Button
           className="c7n-piplineManage-detail-column-item-btn"
           icon={!expand ? 'arrow_drop_down' : 'arrow_drop_up'}
           shape="circle"
           funcType="flat"
           size="small"
           onClick={handleDropDown}
-        />
+        />}
       </header>
 
-      {renderMain()}
+      {type === 'build' && renderMain()}
 
       <footer>
         <Tooltip title="查看日志">
