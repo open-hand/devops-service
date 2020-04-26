@@ -94,12 +94,21 @@ function cache_dist() {
 
 #################################### 微服务相关函数 ####################################
 # 更新maven项目本版本号
+# $1 填入true表示用项目根目录的settings.xml文件，其他任何值都不使用本地settings.xml
 function update_pom_version() {
-  mvn versions:set -DnewVersion=${CI_COMMIT_TAG} ||
-    find . -name pom.xml | xargs xml ed -L \
-      -N x=http://maven.apache.org/POM/4.0.0 \
-      -u '/x:project/x:version' -v "${CI_COMMIT_TAG}"
-  mvn versions:commit
+  if [ "$1" == "true" ];then
+      mvn versions:set -DnewVersion=${CI_COMMIT_TAG} -s settings.xml ||
+              find . -name pom.xml | xargs xml ed -L \
+                -N x=http://maven.apache.org/POM/4.0.0 \
+                -u '/x:project/x:version' -v "${CI_COMMIT_TAG}"
+      mvn versions:commit -s settings.xml
+  else
+      mvn versions:set -DnewVersion=${CI_COMMIT_TAG} ||
+        find . -name pom.xml | xargs xml ed -L \
+          -N x=http://maven.apache.org/POM/4.0.0 \
+          -u '/x:project/x:version' -v "${CI_COMMIT_TAG}"
+      mvn versions:commit
+  fi
 }
 
 function database_test() {
