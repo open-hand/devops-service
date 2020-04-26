@@ -8,15 +8,16 @@ export default function useStore() {
 # 功能： 更新pom文件中指定的项目的版本号
 # 说明： 此函数是猪齿鱼内置的shell函数，用于更新pom文件的版本号为对应commit的版本号,
 #        (这个值在猪齿鱼内置变量 CI_COMMIT_TAG 中)
+#        如果配置了依赖库，这里应该加上参数true，即：update_pom_version true
 # update_pom_version
 
 
 # 功能： 以jacoco为代理进行单元测试，可以分析单元测试覆盖率
 # 参数说明：
-#  -Dmaven.test.skip=false：不跳过单元测试
-#  -U：每次构建检查依赖更新，可避免缓存中快照版本依赖不更新问题，但会牺牲部分性能
-#  -e -X ：打印调试信息，定位疑难构建问题时建议使用此参数构建
-#  -B：以batch模式运行，可避免日志打印时出现ArrayIndexOutOfBoundsException异常
+#\t\t-Dmaven.test.skip=false：不跳过单元测试
+#\t\t-U：每次构建检查依赖更新，可避免缓存中快照版本依赖不更新问题，但会牺牲部分性能
+#\t\t-e -X ：打印调试信息，定位疑难构建问题时建议使用此参数构建
+#\t\t-B：以batch模式运行，可避免日志打印时出现ArrayIndexOutOfBoundsException异常
 #       -s 指定用户级别的maven settings配置文件，如果在流水线中定义了maven仓库设置，
 #          运行时一份settings.xml会下载到根目录，此时可以使用-s settings指定使用
 #       -gs 指定系统级别的settings.xml
@@ -36,10 +37,10 @@ export default function useStore() {
 
 # 功能：  打包
 # 参数说明：
-#  -Dmaven.test.skip=true：跳过单元测试，不建议
-#  -U：每次构建检查依赖更新，可避免缓存中快照版本依赖不更新问题，但会牺牲部分性能
-#  -e -X ：打印调试信息，定位疑难构建问题时建议使用此参数构建
-#  -B：以batch模式运行，可避免日志打印时出现ArrayIndexOutOfBoundsException异常
+#-Dmaven.test.skip=true：跳过单元测试，不建议
+#-U：每次构建检查依赖更新，可避免缓存中快照版本依赖不更新问题，但会牺牲部分性能
+#-e -X ：打印调试信息，定位疑难构建问题时建议使用此参数构建
+#-B：以batch模式运行，可避免日志打印时出现ArrayIndexOutOfBoundsException异常
 #       -s 指定用户级别的maven settings配置文件，如果在流水线中定义了maven仓库设置，
 #          运行时一份settings.xml会下载到根目录，此时可以使用-s settings指定使用
 #       -gs 指定系统级别的settings.xml
@@ -56,6 +57,8 @@ mvn package -Dmaven.test.skip=true -U -e -X -B
 #           也可以使用-gs指定为全局 settings.xml 文件
 #           此处的用户认证信息id就是在配置仓库时的仓库名称
 # 更多帮助信息请执行此命令进行查看：mvn help:describe -Dcmd=deploy
+# 注意：如果发布软件包失败请检查在此之前是否有执行 update_pom_version 函数，此函数会更改pom.xml指定的version值，
+#       如果有执行，建议执行前将pom文件保存一份，到此处再将原始pom.xml恢复
 #mvn deploy -Dmaven.test.skip=true -U -e -X -B -s settings.xml -DaltDeploymentRepository=用户认证信息id::default::仓库url`,
       npm: `
 export PATH=$PATH:/root/.npm-global/bin
