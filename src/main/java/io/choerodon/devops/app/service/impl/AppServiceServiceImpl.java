@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -20,6 +21,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
 import io.kubernetes.client.JSON;
+import org.apache.commons.io.IOUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -113,12 +115,16 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String LOGIN_NAME = "loginName";
     private static final String REAL_NAME = "realName";
     private static final String ERROR_PROJECT_APP_SVC_NUM_MAX = "error.project.app.svc.num.max";
+
+    /**
+     * CI 文件模板
+     */
+    private static final String CI_FILE_TEMPLATE;
+
     @Autowired
     DevopsSagaHandler devopsSagaHandler;
     private Gson gson = new Gson();
     private JSON json = new JSON();
-    @Value("${services.minio.url}")
-    private String minioUrl;
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
     @Value("${services.gitlab.sshUrl}")
@@ -184,6 +190,17 @@ public class AppServiceServiceImpl implements AppServiceService {
     private SendNotificationService sendNotificationService;
     @Autowired
     private PermissionHelper permissionHelper;
+
+
+    static {
+        InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh");
+        try {
+            CI_FILE_TEMPLATE = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new CommonException("error.load.ci.sh");
+        }
+    }
+
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE,
@@ -833,7 +850,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public String queryFile(String token, String type) {
+    public String queryFile(String token) {
         AppServiceDTO appServiceDTO = baseQueryByToken(token);
         if (appServiceDTO == null) {
             return null;
@@ -843,7 +860,6 @@ public class AppServiceServiceImpl implements AppServiceService {
             OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             DevopsConfigDTO harborConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR, AUTHTYPE_PUSH);
             ConfigVO harborProjectConfig = gson.fromJson(harborConfigDTO.getConfig(), ConfigVO.class);
-            InputStream inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");
             Map<String, String> params = new HashMap<>();
             String groupName = organizationDTO.getCode() + "-" + projectDTO.getCode();
             if (harborProjectConfig.getProject() != null) {
@@ -859,7 +875,6 @@ public class AppServiceServiceImpl implements AppServiceService {
                 params.put("{{ SONAR_LOGIN }}", "");
                 params.put("{{ SONAR_URL }}", "");
             }
-            params.put("{{ MINIO_URL }}", minioUrl);
             params.put("{{ GROUP_NAME }}", groupName);
             params.put("{{ PROJECT_NAME }}", appServiceDTO.getCode());
             params.put("{{ PRO_CODE }}", projectDTO.getCode());
@@ -868,8 +883,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{ DOCKER_USERNAME }}", harborProjectConfig.getUserName());
             params.put("{{ DOCKER_PASSWORD }}", harborProjectConfig.getPassword());
             params.put("{{ HARBOR_CONFIG_ID }}", harborConfigDTO.getId().toString());
-            // TODO 能不能优化为只读一次，读入内存?
-            return FileUtil.replaceReturnString(inputStream, params);
+            return FileUtil.replaceReturnString(CI_FILE_TEMPLATE, params);
         } catch (CommonException e) {
             return null;
         }

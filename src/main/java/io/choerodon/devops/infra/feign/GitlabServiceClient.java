@@ -549,7 +549,7 @@ public interface GitlabServiceClient {
     @GetMapping(value = "/v1/projects/{projectId}/repository/branches/{branchName}")
     ResponseEntity<BranchDTO> queryBranchByName(
             @ApiParam(value = "工程id", required = true)
-            @PathVariable Integer projectId,
+            @PathVariable("projectId") Integer projectId,
             @ApiParam(value = "要查询的分支名", required = true)
             @PathVariable("branchName") String branchName);
 }
