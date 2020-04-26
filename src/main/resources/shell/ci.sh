@@ -96,13 +96,15 @@ function cache_dist() {
 # 更新maven项目本版本号
 # $1 填入true表示用项目根目录的settings.xml文件，其他任何值都不使用本地settings.xml
 function update_pom_version() {
-  if [ "$1" == "true" ];then
+  if [ "$1" == "true" -a -f settings.xml ];then
+      echo "Update pom version: using custom settings.xml..."
       mvn versions:set -DnewVersion=${CI_COMMIT_TAG} -s settings.xml ||
               find . -name pom.xml | xargs xml ed -L \
                 -N x=http://maven.apache.org/POM/4.0.0 \
                 -u '/x:project/x:version' -v "${CI_COMMIT_TAG}"
       mvn versions:commit -s settings.xml
   else
+      echo "Update pom version: using default settings.xml..."
       mvn versions:set -DnewVersion=${CI_COMMIT_TAG} ||
         find . -name pom.xml | xargs xml ed -L \
           -N x=http://maven.apache.org/POM/4.0.0 \
