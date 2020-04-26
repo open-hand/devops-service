@@ -40,7 +40,7 @@ import io.choerodon.devops.infra.util.MapperUtil;
  * 〈〉
  *
  * @author wanghao
- * @Date 2020/4/3 9:24
+ * @since 2020/4/3 9:24
  */
 @Service
 public class DevopsCiJobServiceImpl implements DevopsCiJobService {
@@ -267,7 +267,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
                 }
 
                 // 插入纪录到数据库
-                DevopsCiJobArtifactRecordDTO devopsCiJobArtifactRecordDTO = new DevopsCiJobArtifactRecordDTO(ciPipelineId, artifactName, artifactUrl);
+                DevopsCiJobArtifactRecordDTO devopsCiJobArtifactRecordDTO = new DevopsCiJobArtifactRecordDTO(ciPipelineId, ciJobId, artifactName, artifactUrl);
                 MapperUtil.resultJudgedInsert(devopsCiJobArtifactRecordMapper, devopsCiJobArtifactRecordDTO, "error.insert.artifact.record");
             } else {
                 // 先删除旧的
@@ -282,6 +282,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
                 // 更新数据库纪录
                 recordDTO.setFileUrl(artifactUrl);
                 recordDTO.setGitlabPipelineId(ciPipelineId);
+                recordDTO.setGitlabJobId(ciJobId);
                 recordDTO.setName(artifactName);
                 devopsCiJobArtifactRecordMapper.updateByPrimaryKeySelective(recordDTO);
             }

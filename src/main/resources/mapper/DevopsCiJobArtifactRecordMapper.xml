@@ -28,4 +28,10 @@
             #{gitlabPipelineId}
         </foreach>
     </delete>
+
+    <select id="listByGitlabJobId" resultType="io.choerodon.devops.infra.dto.DevopsCiJobArtifactRecordDTO">
+        SELECT dcjar.*
+        FROM devops_ci_job_artifact_record dcjar
+        WHERE dcjar.gitlab_job_id = #{gitlabJobId,jdbcType=BIGINT}
+    </select>
 </mapper>
