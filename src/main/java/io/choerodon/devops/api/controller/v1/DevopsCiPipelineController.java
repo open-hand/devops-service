@@ -97,7 +97,7 @@ public class DevopsCiPipelineController {
         return ResponseEntity.ok(devopsCiPipelineService.enablePipeline(projectId, ciPipelineId));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除流水线")
     @DeleteMapping("/{ci_pipeline_id}")
     public ResponseEntity<Void> deletePipeline(
