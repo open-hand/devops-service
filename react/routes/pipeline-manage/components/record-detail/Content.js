@@ -1,6 +1,6 @@
 import React, { useMemo, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Form, Output, Spin } from 'choerodon-ui/pro';
+import { Form, Output, Spin, Icon } from 'choerodon-ui/pro';
 import { useRecordDetailStore } from './stores';
 import StatusTag from '../PipelineFlow/components/StatusTag';
 import UserInfo from '../../../../components/userInfo';
@@ -12,6 +12,7 @@ export default observer(() => {
   const {
     intl: { formatMessage },
     intlPrefix,
+    prefixCls,
     detailDs,
   } = useRecordDetailStore();
 
@@ -19,7 +20,7 @@ export default observer(() => {
 
   function renderUser({ value }) {
     const { realName, imageUrl } = value || {};
-    return <UserInfo name={realName} avatar={imageUrl} showName />;
+    return <UserInfo name={realName} avatar={imageUrl} />;
   }
 
   function renderDuration({ value }) {
@@ -35,12 +36,37 @@ export default observer(() => {
     const { appServiceName: name } = record.get('devopsCiPipelineVO') || {};
     return name;
   }
+  
+  function renderCommit({ value }) {
+    const { commitContent, commitSha, commitUrl, ref, userHeadUrl, userName } = value || {};
+    return (
+      <div className={`${prefixCls}-commit`}>
+        <div className={`${prefixCls}-commit-title`}>
+          <Icon type="branch" className={`${prefixCls}-commit-title-branch`} />
+          <span className={`${prefixCls}-commit-title-ref`}>{ref}</span>
+          <Icon type="point" className={`${prefixCls}-commit-title-point`} />
+          <a
+            href={commitUrl}
+            target="_blank"
+            rel="nofollow me noopener noreferrer"
+            className={`${prefixCls}-commit-title-sha`}
+          >
+            <span>{commitSha ? commitSha.slice(0, 8) : null}</span>
+          </a>
+        </div>
+        <div className={`${prefixCls}-commit-content`}>
+          <UserInfo name={userName || '?'} avatar={userHeadUrl} showName={false} />
+          <span className={`${prefixCls}-commit-content-text`}>{commitContent}</span>
+        </div>
+      </div>
+    );
+  }
 
   if (!record) {
     return <Spin />;
   }
 
-  return (<div className="c7ncd-pipelineManage-record-detail">
+  return (<div className={`${prefixCls}`}>
     <Form
       dataSet={detailDs}
       labelLayout="horizontal"
@@ -53,6 +79,7 @@ export default observer(() => {
       <Output name="userDTO" renderer={renderUser} />
       <Output name="finishedDate" />
       <Output name="durationSeconds" renderer={renderDuration} />
+      <Output name="commit" renderer={renderCommit} />
     </Form>
   </div>);
 });

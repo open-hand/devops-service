@@ -17,6 +17,7 @@ export default ({ formatMessage, intlPrefix, projectId, pipelineRecordId, store,
     { name: 'userDTO', type: 'object', label: formatMessage({ id: `${intlPrefix}.trigger.user` }) },
     { name: 'finishedDate', type: 'string', label: formatMessage({ id: `${intlPrefix}.execute.date` }) },
     { name: 'durationSeconds', type: 'number', label: formatMessage({ id: `${intlPrefix}.time` }) },
+    { name: 'commit', type: 'object', label: formatMessage({ id: 'commit' }) },
   ],
   events: {
     load: ({ dataSet }) => {
