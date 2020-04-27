@@ -291,11 +291,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     public void deletePipeline(Long projectId, Long ciPipelineId) {
         DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineMapper.selectByPrimaryKey(ciPipelineId);
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(devopsCiPipelineDTO.getAppServiceId());
+        // 校验用户是否有应用服务权限
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(appServiceDTO.getProjectId())
-                && !permissionHelper.isOrganzationRoot(userId, baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId()).getOrganizationId())) {
-            throw new CommonException(ERROR_NOT_GITLAB_OWNER);
-        }
+        checkUserPermission(appServiceDTO.getId(), userId);
         // 删除流水线
         if (devopsCiPipelineMapper.deleteByPrimaryKey(ciPipelineId) != 1) {
             throw new CommonException(DELETE_PIPELINE_FAILED);
