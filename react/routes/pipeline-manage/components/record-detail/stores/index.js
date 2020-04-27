@@ -25,6 +25,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
 
   const value = {
     ...props,
+    prefixCls: 'c7ncd-pipelineManage-record-detail',
     detailDs,
   };
 

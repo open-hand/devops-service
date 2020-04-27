@@ -11,4 +11,47 @@
     display: block;
     line-height: .24rem;
   }
+
+  &-commit {
+    line-height: .2rem;
+
+    &-title {
+      margin-bottom: .01rem;
+      display: flex;
+      align-items: center;
+
+      &-branch {
+        font-size: .18rem;
+      }
+
+      &-ref {
+        color: rgba(0, 0, 0, 0.65);
+        margin-left: .03rem;
+      }
+
+      &-point {
+        color: rgba(0, 0, 0, 0.54);
+        margin: 0 .08rem;
+      }
+
+      &-sha {
+        color: #3f51b5;
+      }
+    }
+
+    &-content {
+      display: flex;
+      align-items: center;
+
+      &-text {
+        color: rgba(0, 0, 0, 0.65);
+        margin-left: .03rem;
+      }
+
+      .c7ncd-userinfo-wrap {
+        display: inline-block;
+        line-height: .18rem;
+      }
+    }
+  }
 }
