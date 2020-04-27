@@ -26,6 +26,18 @@ function beforeunload(e) {
   return confirmationMessage;
 }
 
+function debounce(fn, ms) {
+  let timeoutId;
+  // eslint-disable-next-line func-names
+  return function () {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      // eslint-disable-next-line prefer-rest-params
+      fn.apply(this, arguments);
+    }, ms);
+  };
+}
+
 const PipelineManage = observer((props) => {
   const {
     intl: { formatMessage },
@@ -208,7 +220,7 @@ const PipelineManage = observer((props) => {
         </Permission>
         {!treeDs.length && treeDs.status === 'ready' ? null : getButtons()}
         <Button
-          onClick={checkHasModifyandRefresh}
+          onClick={debounce(checkHasModifyandRefresh, 500)}
           icon="refresh"
         >
           {formatMessage({ id: 'refresh' })}

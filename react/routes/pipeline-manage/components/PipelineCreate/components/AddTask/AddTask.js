@@ -348,29 +348,29 @@ const AddTask = observer(() => {
   const generateSteps = () => (
     <div className="AddTask_stepItemsContainer">
       {
-          steps.length > 0 ? steps.map((s, index) => (
-            <div className="AddTask_stepMapContent">
-              <div style={{ display: index === 0 ? 'flex' : 'none' }} className="AddTask_stepAdd">
-                <span onClick={() => handleAddStepItem(index)} style={{ fontSize: 20 }}>+</span>
-              </div>
-              <div className="AddTask_addLine" />
-              <div onClick={() => handleClickStepItem(index)} className={s.checked ? 'AddTask_stepItem AddTask_stepItemChecked' : 'AddTask_stepItem'}>
-                {s.name}
-                <Icon onClick={(e) => handleDeleteStep(index, e)} style={{ position: 'relative', bottom: '1px' }} type="delete_forever" />
-              </div>
-              <div className="AddTask_addLine" />
-              <div className="AddTask_stepAdd">
-                <span onClick={() => handleAddStepItem(index + 1)} style={{ fontSize: 20 }}>+</span>
-              </div>
+        steps.length > 0 ? steps.map((s, index) => (
+          <div className="AddTask_stepMapContent">
+            <div style={{ display: index === 0 ? 'flex' : 'none' }} className="AddTask_stepAdd">
+              <span onClick={() => handleAddStepItem(index)} style={{ fontSize: 20 }}>+</span>
             </div>
-          )) : (
-            <div className="AddTask_stepMapContent">
-              <div className="AddTask_stepAdd">
-                <span onClick={() => handleAddStepItem(0)} style={{ fontSize: 20 }}>+</span>
-              </div>
+            <div className="AddTask_addLine" />
+            <div onClick={() => handleClickStepItem(index)} className={s.checked ? 'AddTask_stepItem AddTask_stepItemChecked' : 'AddTask_stepItem'}>
+              {s.name}
+              <Icon onClick={(e) => handleDeleteStep(index, e)} style={{ position: 'relative', bottom: '1px' }} type="delete_forever" />
             </div>
-          )
-        }
+            <div className="AddTask_addLine" />
+            <div className="AddTask_stepAdd">
+              <span onClick={() => handleAddStepItem(index + 1)} style={{ fontSize: 20 }}>+</span>
+            </div>
+          </div>
+        )) : (
+          <div className="AddTask_stepMapContent">
+            <div className="AddTask_stepAdd">
+              <span onClick={() => handleAddStepItem(0)} style={{ fontSize: 20 }}>+</span>
+            </div>
+          </div>
+        )
+      }
     </div>
   );
 
@@ -736,7 +736,7 @@ const AddTask = observer(() => {
           AddTaskFormDataSet.current.get('type') !== 'custom' ? [
             <TextField name="name" />,
             <TextField name="glyyfw" />,
-            <Select combo searchable name="triggerRefs">
+            <Select combo searchable name="triggerRefs" showHelp="tooltip" help="您可以在此输入或选择触发该任务的分支类型，若不填写，则默认为所有分支或tag">
               <Option value="master">master</Option>
               <Option value="feature">feature</Option>
               <Option value="bugfix">bugfix</Option>

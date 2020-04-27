@@ -31,7 +31,12 @@ export default observer((props) => {
   // devopsCipiplineVO: 本流水线记录得信息
 
   const {
-    stageRecordVOList, devopsCiPipelineVO, status, gitlabPipelineId: pipelineRecordId, gitlabTriggerRef,
+    stageRecordVOList,
+    devopsCiPipelineVO,
+    status,
+    gitlabPipelineId: pipelineRecordId,
+    gitlabTriggerRef,
+    commit,
   } = getDetailData;
 
   useEffect(() => {
@@ -65,7 +70,9 @@ export default observer((props) => {
           gitlabPipelineId={gitlabPipelineId}
           parentName={devopsCiPipelineVO && devopsCiPipelineVO.name}
           appServiceName={devopsCiPipelineVO && devopsCiPipelineVO.appServiceName}
+          aHref={commit && commit.commitUrl}
           triggerRef={gitlabTriggerRef}
+
           status={status}
         />
         <div className="c7n-piplineManage-detail">

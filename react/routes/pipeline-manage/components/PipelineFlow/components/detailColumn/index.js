@@ -48,6 +48,12 @@ const jobType = {
   },
 };
 
+const sonarText = {
+  new_bugs: '检测Bugs数量：',
+  code_smells: '检测代码异味数量：',
+  vulnerabilities: '安全漏洞数量：',
+};
+
 function renderDuration(value) {
   let secondTime = parseInt(value, 10);// 秒
   let minuteTime = 0;// 分
@@ -86,6 +92,7 @@ const DetailItem = (props) => {
     },
     name,
     artifacts,
+    sonarContentVOS,
     handleRefresh,
   } = props;
 
@@ -95,27 +102,62 @@ const DetailItem = (props) => {
     setExpand(!expand);
   }
 
+  const renderMainPanel = () => {
+    if (type === 'build' && artifacts) {
+      return artifacts.map((artItem, artkey) => {
+        const { artifactName, artifactUrl } = artItem;
+        return (<Fragment>
+          <div>
+            <span>构建包名称：</span>
+            <Tooltip title={artifactName}>
+              <span>{artifactName}</span>
+            </Tooltip>
+          </div>
+          <div>
+            <span>构建包下载地址：</span>
+            <Tooltip title={artifactUrl}>
+              <span>{artifactUrl}</span>
+            </Tooltip>
+          </div>
+        </Fragment>);
+      });
+    } else if (type === 'sonar' && sonarContentVOS) {
+      const arr = sonarContentVOS.filter(item => sonarText[item.key]);
+      return arr.map((item, key) => (
+        <div>
+          <span>{sonarText[item.key]}</span>
+          <Tooltip>
+            <span>{item.value}</span>
+          </Tooltip>
+        </div>
+      ));
+    }
+  };
+
   const renderMain = () => (
     <main style={{ display: expand ? 'block' : 'none' }}>
-      {
-        artifacts && artifacts.map((artItem, artkey) => {
-          const { artifactName, artifactUrl } = artItem;
-          return (<Fragment>
-            <div>
-              <span>构建包名称：</span>
-              <Tooltip title={artifactName}>
-                <span>{artifactName}</span>
-              </Tooltip>
-            </div>
-            <div>
-              <span>构建包下载地址：</span>
-              <Tooltip title={artifactUrl}>
-                <span>{artifactUrl}</span>
-              </Tooltip>
-            </div>
-          </Fragment>);
-        })
-      }
+      {renderMainPanel()}
+      {/* {
+        type === 'sonar' && sonarContentVOS && sonarContentVOS
+        && <Fragment>
+          <div>
+            <span>检测Bugs数量：</span>
+            <Tooltip>
+              <span>-</span>
+            </Tooltip>
+          </div>
+          <div>
+            <span>检测代码异味数量：</span>
+            <Tooltip>
+              <span>-</span>
+            </Tooltip>
+          </div>
+          <div>
+            <span>安全漏洞数量：</span>
+            <span>-</span>
+          </div>
+        </Fragment>
+      } */}
     </main>
   );
 
@@ -183,7 +225,7 @@ const DetailItem = (props) => {
             </Tooltip>
           }
         </div>
-        {artifacts && <Button
+        {((type === 'build' && artifacts) || (type === 'sonar' && sonarContentVOS)) && <Button
           className="c7n-piplineManage-detail-column-item-btn"
           icon={!expand ? 'arrow_drop_down' : 'arrow_drop_up'}
           shape="circle"
@@ -193,7 +235,7 @@ const DetailItem = (props) => {
         />}
       </header>
 
-      {type === 'build' && renderMain()}
+      {(type === 'build' || type === 'sonar') && renderMain()}
 
       <footer>
         <Tooltip title="查看日志">
