@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
+import io.choerodon.devops.infra.enums.SonarQubeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -302,7 +303,23 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         //添加sonar
         for (DevopsCiJobRecordVO devopsCiJobRecordVO : devopsCiJobRecordVOList) {
             if (CiJobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
-                devopsCiJobRecordVO.setSonarContentsVO(applicationService.getSonarContent(ciPipelineVO.getProjectId(), ciPipelineVO.getAppServiceId()));
+                SonarContentsVO sonarContentsVO = applicationService.getSonarContent(ciPipelineVO.getProjectId(), ciPipelineVO.getAppServiceId());
+                if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
+                    List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
+                    List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> {
+                        if (SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())) {
+                            return Boolean.TRUE;
+                        }
+                        if (SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())) {
+                            return Boolean.TRUE;
+                        }
+                        if (SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey())) {
+                            return Boolean.TRUE;
+                        }
+                        return Boolean.FALSE;
+                    }).collect(Collectors.toList());
+                    devopsCiJobRecordVO.setSonarContentVOS(sonarContentVOS);
+                }
             }
         }
 
