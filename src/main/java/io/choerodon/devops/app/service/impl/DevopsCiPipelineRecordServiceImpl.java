@@ -307,16 +307,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
                     List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
                     List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> {
-                        if (SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())) {
-                            return Boolean.TRUE;
-                        }
-                        if (SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())) {
-                            return Boolean.TRUE;
-                        }
-                        if (SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey())) {
-                            return Boolean.TRUE;
-                        }
-                        return Boolean.FALSE;
+                        return SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())
+                                || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
+                                || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey());
                     }).collect(Collectors.toList());
                     devopsCiJobRecordVO.setSonarContentVOS(sonarContentVOS);
                 }
