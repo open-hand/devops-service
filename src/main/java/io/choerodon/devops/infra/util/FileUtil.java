@@ -97,7 +97,7 @@ public class FileUtil {
     public static String replaceReturnString(final String rawString, Map<String, String> params) {
         String result = rawString;
         for (Map.Entry<String, String> entry : params.entrySet()) {
-            result = result.replaceAll(entry.getKey(), entry.getValue());
+            result = result.replace(entry.getKey(), entry.getValue());
         }
         return result;
     }
