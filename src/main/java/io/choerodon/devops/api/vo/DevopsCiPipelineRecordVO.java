@@ -32,7 +32,7 @@ public class DevopsCiPipelineRecordVO {
     private Date finishedDate;
     @ApiModelProperty("执行耗时")
     private Long durationSeconds;
-    private List<DevopsCiStageRecordVO>  stageRecordVOList;
+    private List<DevopsCiStageRecordVO> stageRecordVOList;
     private DevopsCiPipelineVO devopsCiPipelineVO;
 
     private IamUserDTO userDTO;

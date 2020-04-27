@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -297,6 +298,13 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         // 添加job type
         List<DevopsCiJobRecordVO> devopsCiJobRecordVOList = ConvertUtils.convertList(devopsCiJobRecordDTOS, this::convertJobRecord);
+
+        //添加sonar
+        for (DevopsCiJobRecordVO devopsCiJobRecordVO : devopsCiJobRecordVOList) {
+            if (CiJobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
+                devopsCiJobRecordVO.setSonarContentsVO(applicationService.getSonarContent(ciPipelineVO.getProjectId(), ciPipelineVO.getAppServiceId()));
+            }
+        }
 
         Map<String, List<DevopsCiJobRecordVO>> jobRecordMap = devopsCiJobRecordVOList.stream().collect(Collectors.groupingBy(DevopsCiJobRecordVO::getStage));
 
