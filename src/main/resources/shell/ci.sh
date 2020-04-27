@@ -236,7 +236,7 @@ function downloadAndUncompress() {
 
   if [ -e "$1.tgz" ]; then
     echo "file $1.tgz exists"
-    tar -zxvf "$1.tgz" .
+    tar -zxvf "$1.tgz" -C .
     return
   fi
 
