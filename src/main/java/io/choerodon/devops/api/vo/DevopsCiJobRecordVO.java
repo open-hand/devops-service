@@ -37,6 +37,16 @@ public class DevopsCiJobRecordVO {
 
     @ApiModelProperty("job中的构建包列表")
     private List<DevopsCiArtifactVO> artifacts;
+    @ApiModelProperty("ci中返回sonar")
+    private List<SonarContentVO> sonarContentVOS;
+
+    public List<SonarContentVO> getSonarContentVOS() {
+        return sonarContentVOS;
+    }
+
+    public void setSonarContentVOS(List<SonarContentVO> sonarContentVOS) {
+        this.sonarContentVOS = sonarContentVOS;
+    }
 
     public Long getId() {
         return id;
