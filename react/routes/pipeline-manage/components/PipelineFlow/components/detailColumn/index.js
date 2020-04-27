@@ -98,7 +98,7 @@ const DetailItem = (props) => {
   const renderMain = () => (
     <main style={{ display: expand ? 'block' : 'none' }}>
       {
-        artifacts && artifacts.map((artItem, artkey) => {
+        type === 'build' && artifacts && artifacts.map((artItem, artkey) => {
           const { artifactName, artifactUrl } = artItem;
           return (<Fragment>
             <div>
@@ -115,6 +115,27 @@ const DetailItem = (props) => {
             </div>
           </Fragment>);
         })
+      }
+      {
+        type === 'sonar'
+        && <Fragment>
+          <div>
+            <span>检测Bugs数量：</span>
+            <Tooltip>
+              <span>-</span>
+            </Tooltip>
+          </div>
+          <div>
+            <span>检测代码异味数量：</span>
+            <Tooltip>
+              <span>-</span>
+            </Tooltip>
+          </div>
+          <div>
+            <span>安全漏洞数量：</span>
+            <span>-</span>
+          </div>
+        </Fragment>
       }
     </main>
   );
@@ -183,7 +204,7 @@ const DetailItem = (props) => {
             </Tooltip>
           }
         </div>
-        {artifacts && <Button
+        {((type === 'build' && artifacts) || type === 'sonar') && <Button
           className="c7n-piplineManage-detail-column-item-btn"
           icon={!expand ? 'arrow_drop_down' : 'arrow_drop_up'}
           shape="circle"
@@ -193,7 +214,7 @@ const DetailItem = (props) => {
         />}
       </header>
 
-      {type === 'build' && renderMain()}
+      {(type === 'build' || type === 'sonar') && renderMain()}
 
       <footer>
         <Tooltip title="查看日志">
