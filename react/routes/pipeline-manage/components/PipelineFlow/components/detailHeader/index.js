@@ -4,11 +4,11 @@ import PropTypes from 'prop-types';
 import { Icon } from 'choerodon-ui';
 import StatusTag from '../StatusTag';
 
-const detailHeader = ({ gitlabPipelineId, parentName, status, triggerRef, appServiceName }) => (
+const detailHeader = ({ gitlabPipelineId, parentName, status, triggerRef, appServiceName, aHref }) => (
   <div className="c7ncd-pipelineManage-optsDetail-header">
     <span>#{gitlabPipelineId}</span>
     <span>
-      (<Icon type="widgets_line" /><span>{appServiceName}</span>  -  <Icon type="branch" /><span>{triggerRef}</span>)
+      (<Icon type="widgets_line" /><span>{appServiceName}</span>  -  <Icon type="branch" /><a href={aHref} target="blank">{triggerRef}</a>)
     </span>
     <StatusTag status={status} size={12} />
   </div>
