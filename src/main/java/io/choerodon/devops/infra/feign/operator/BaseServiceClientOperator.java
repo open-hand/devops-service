@@ -7,7 +7,9 @@ import javax.annotation.Nullable;
 
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -459,12 +461,12 @@ public class BaseServiceClientOperator {
     /**
      * 校验用户是否是项目所有者
      *
-     * @param userId
-     * @param projectId
-     * @return
+     * @param userId    用户id
+     * @param projectId 项目id
+     * @return true表示是
      */
     public Boolean isProjectOwner(Long userId, Long projectId) {
-        ResponseEntity<Boolean> responseEntity = baseServiceClient.checkIsProjectOwner(projectId, userId);
+        ResponseEntity<Boolean> responseEntity = baseServiceClient.checkIsProjectOwner(userId, projectId);
         return responseEntity == null ? false : responseEntity.getBody();
     }
 

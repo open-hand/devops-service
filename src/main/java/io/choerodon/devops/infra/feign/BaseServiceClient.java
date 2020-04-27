@@ -6,7 +6,9 @@ import java.util.Set;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
+
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,7 @@ import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
+
 import springfox.documentation.annotations.ApiIgnore;
 
 /**
@@ -223,9 +226,9 @@ public interface BaseServiceClient {
     /**
      * 校验用户是否是项目所有者
      *
-     * @param id
-     * @param projectId
-     * @return
+     * @param id        用户id
+     * @param projectId 项目id
+     * @return true表示是
      */
     @GetMapping("/v1/users/{id}/projects/{project_id}/check_is_owner")
     ResponseEntity<Boolean> checkIsProjectOwner(
