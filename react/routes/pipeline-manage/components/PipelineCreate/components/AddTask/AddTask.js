@@ -405,10 +405,6 @@ const AddTask = observer(() => {
       let extra = [];
       if (value === 'Maven') {
         extra = [{
-          name: '上传软件包至存储库',
-          type: 'upload',
-          checked: false,
-        }, {
           name: 'Docker构建',
           type: 'docker',
           checked: false,
@@ -419,8 +415,12 @@ const AddTask = observer(() => {
         }];
       } else if (value === 'npm') {
         extra = [{
-          name: '上传软件包至存储库',
-          type: 'upload',
+          name: 'Docker构建',
+          type: 'docker',
+          checked: false,
+        }, {
+          name: 'Chart构建',
+          type: 'chart',
           checked: false,
         }];
       }
