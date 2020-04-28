@@ -1,9 +1,9 @@
-import React, { Fragment, useRef, useMemo, Suspense, useEffect } from 'react';
+import React, { Fragment, useRef, useState, Suspense, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Page, Header, Breadcrumb, Content, Permission } from '@choerodon/boot';
 import { Button, Modal } from 'choerodon-ui/pro';
 import { axios, Choerodon } from '@choerodon/boot';
-import { Prompt } from 'react-router-dom';
+import { Prompt, Router } from 'react-router-dom';
 import { handlePromptError } from '../../utils';
 import PipelineTree from './components/PipelineTree';
 import PipelineFlow from './components/PipelineFlow';
@@ -57,6 +57,7 @@ const PipelineManage = observer((props) => {
     projectId,
   } = usePipelineManageStore();
 
+  const [promptChanged, setPromptChange] = useState();
 
   useEffect(() => {
     if (getHasModify(false)) {
@@ -66,6 +67,11 @@ const PipelineManage = observer((props) => {
     }
   }, [getHasModify(false)]);
 
+  useEffect(() => {
+    if (promptChanged) {
+      window.removeEventListener('beforeunload', beforeunload);
+    }
+  }, [promptChanged]);
 
   const handleCreatePipeline = () => {
     Modal.open({
@@ -256,9 +262,13 @@ const PipelineManage = observer((props) => {
                 treeDs={treeDs}
               />
               <Prompt
-                message="您的修改尚未保存，确定要离开吗?"
+                message={() => {
+                  setPromptChange(true);
+                  return getHasModify && '您的修改尚未保存，确定要离开吗?';
+                }}
                 when={getHasModify(false)}
               />
+
             </div>
           </div>
         )}
