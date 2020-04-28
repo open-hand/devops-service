@@ -75,38 +75,6 @@ public class DevopsCiJobController {
         return response == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(response);
     }
 
-    /**
-     * CI过程上传软件包
-     *
-     * @param token        应用服务token
-     * @param commit       ci的commit值
-     * @param ciPipelineId 流水线id
-     * @param ciJobId      流水线的job id
-     * @param artifactName 软件包名称
-     * @param file         软件包
-     * @return 200 表示ok， 400表示错误
-     */
-    @Permission(permissionPublic = true)
-    @ApiOperation("CI过程上传软件包, 大小不得大于200Mi")
-    @PostMapping("/upload_artifact")
-    public ResponseEntity uploadJobArtifact(
-            @ApiParam("猪齿鱼项目id")
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用服务token", required = true)
-            @RequestParam(value = "token") String token,
-            @ApiParam(value = "此次ci的commit", required = true)
-            @RequestParam(value = "commit") String commit,
-            @ApiParam(value = "gitlab内置的流水线id", required = true)
-            @RequestParam(value = "ci_pipeline_id") Long ciPipelineId,
-            @ApiParam(value = "gitlab内置的jobId", required = true)
-            @RequestParam(value = "ci_job_id") Long ciJobId,
-            @ApiParam(value = "ci流水线定义的软件包名称", required = true)
-            @RequestParam(value = "artifact_name") String artifactName,
-            @ApiParam(value = "taz包", required = true)
-            @RequestParam MultipartFile file) {
-        devopsCiJobService.uploadArtifact(token, commit, ciPipelineId, ciJobId, artifactName, file);
-        return new ResponseEntity(HttpStatus.OK);
-    }
 
     /**
      * 查询上传的软件包的url
