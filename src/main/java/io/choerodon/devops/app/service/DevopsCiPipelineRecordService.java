@@ -69,4 +69,12 @@ public interface DevopsCiPipelineRecordService {
      * @param gitlabProjectId
      */
     void cancel(Long projectId, Long gitlabPipelineId, Long gitlabProjectId);
+
+    /**
+     * 查询流水线执行记录
+     *
+     * @param ciPipelineRecordId
+     * @return
+     */
+    DevopsCiPipelineRecordDTO queryById(Long ciPipelineRecordId);
 }

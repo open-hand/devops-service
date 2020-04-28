@@ -1,21 +1,26 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.JobWebHookVO;
 import io.choerodon.devops.app.service.DevopsCiJobRecordService;
+import io.choerodon.devops.app.service.DevopsCiJobService;
 import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
+import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 /**
  * 〈功能简述〉
@@ -33,11 +38,14 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
 
     private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
+    private DevopsCiJobService devopsCiJobService;
 
     public DevopsCiJobRecordServiceImpl(DevopsCiJobRecordMapper devopsCiJobRecordMapper,
-                                        @Lazy DevopsCiPipelineRecordService devopsCiPipelineRecordService) {
+                                        @Lazy DevopsCiPipelineRecordService devopsCiPipelineRecordService,
+                                        @Lazy DevopsCiJobService devopsCiJobService) {
         this.devopsCiJobRecordMapper = devopsCiJobRecordMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
+        this.devopsCiJobService = devopsCiJobService;
     }
 
     @Override
@@ -99,6 +107,10 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
 
     @Override
     public void create(Long ciPipelineRecordId, Long gitlabProjectId, JobDTO jobDTO, Long iamUserId) {
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(ciPipelineRecordId);
+        List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
+        Map<String, DevopsCiJobDTO> jobMap = devopsCiJobDTOS.stream().collect(Collectors.toMap(DevopsCiJobDTO::getName, v -> v));
+
         DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
         recordDTO.setCiPipelineRecordId(ciPipelineRecordId);
         recordDTO.setGitlabProjectId(gitlabProjectId);
@@ -109,6 +121,10 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         recordDTO.setFinishedDate(jobDTO.getFinishedAt());
         recordDTO.setName(jobDTO.getName());
         recordDTO.setTriggerUserId(iamUserId);
+        if (!CollectionUtils.isEmpty(jobMap) && jobMap.get(jobDTO.getName()) != null) {
+            recordDTO.setType(jobMap.get(jobDTO.getName()).getType());
+        }
+
         devopsCiJobRecordMapper.insertSelective(recordDTO);
     }
 }

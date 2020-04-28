@@ -9,8 +9,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import io.choerodon.devops.infra.enums.CiJobTypeEnum;
-import io.choerodon.devops.infra.enums.SonarQubeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -32,7 +30,9 @@ import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.JobStatusEnum;
+import io.choerodon.devops.infra.enums.SonarQubeType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiJobArtifactRecordMapper;
@@ -468,6 +468,12 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         } catch (Exception e) {
             LOGGER.info("update pipeline Records failed， gitlabPipelineId {}.", gitlabPipelineId);
         }
+    }
+
+    @Override
+    public DevopsCiPipelineRecordDTO queryById(Long ciPipelineRecordId) {
+
+        return devopsCiPipelineRecordMapper.selectByPrimaryKey(ciPipelineRecordId);
     }
 
     /**
