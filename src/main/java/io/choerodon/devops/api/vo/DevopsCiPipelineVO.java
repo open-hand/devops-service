@@ -32,6 +32,10 @@ public class DevopsCiPipelineVO {
     private String appServiceName;
     @ApiModelProperty("gitlab项目id/nullable")
     private Long gitlabProjectId;
+
+    @ApiModelProperty("runner镜像地址")
+    private String image;
+
     @ApiModelProperty("是否启用/nullable")
     private Boolean enabled;
     @ApiModelProperty("流水线触发方式")
@@ -161,5 +165,13 @@ public class DevopsCiPipelineVO {
 
     public void setGitlabProjectId(Long gitlabProjectId) {
         this.gitlabProjectId = gitlabProjectId;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }

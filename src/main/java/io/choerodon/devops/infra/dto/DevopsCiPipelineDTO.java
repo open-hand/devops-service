@@ -18,6 +18,8 @@ public class DevopsCiPipelineDTO extends BaseDTO {
     private Long id;
     @ApiModelProperty("流水线名称")
     private String name;
+    @ApiModelProperty("流水线镜像地址")
+    private String image;
     @ApiModelProperty("项目id")
     private Long projectId;
     @ApiModelProperty("流水线关联应用服务id")
@@ -84,5 +86,13 @@ public class DevopsCiPipelineDTO extends BaseDTO {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }

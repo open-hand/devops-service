@@ -30,4 +30,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline.groovy') {
             column(name: 'token', type: 'CHAR(36)', remarks: '流水线token，安全性考虑')
         }
     }
+
+    changeSet(author: 'zmf', id: '2020-04-28-pipeline-add-image') {
+        addColumn(tableName: 'devops_ci_pipeline') {
+            column(name: 'image', type: 'VARCHAR(280)', remarks: '流水线的镜像地址') {
+                constraints(nullable: true)
+            }
+        }
+    }
 }

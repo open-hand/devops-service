@@ -1,12 +1,13 @@
 package io.choerodon.devops.infra.dto;
 
-import io.choerodon.mybatis.entity.BaseDTO;
-import io.swagger.annotations.ApiModelProperty;
-
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import io.swagger.annotations.ApiModelProperty;
+
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  *
@@ -21,6 +22,10 @@ public class DevopsCiJobDTO extends BaseDTO {
     private Long id;
     @ApiModelProperty("任务名称")
     private String name;
+
+    @ApiModelProperty("镜像地址")
+    private String image;
+
     @ApiModelProperty("阶段id")
     private Long ciStageId;
     @ApiModelProperty("流水线id")
@@ -86,5 +91,13 @@ public class DevopsCiJobDTO extends BaseDTO {
 
     public void setMetadata(String metadata) {
         this.metadata = metadata;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }
