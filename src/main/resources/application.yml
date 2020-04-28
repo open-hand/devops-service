@@ -90,8 +90,13 @@ logging:
 #    io.choerodon.devops.app.service: debug
   config: classpath:logback-spring.xml
 
-# 批量部署的请求条数限制
+
 devops:
+  # 流水线生成Gitlab Ci文件中默认的runner 镜像地址
+  ci:
+    default:
+      image: registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.9.1
+  # 批量部署的请求条数限制
   batch:
     deployment:
       maxSize: 20

@@ -83,8 +83,6 @@ public class GitOpsConstants {
 
     public static final String CI_FILE_COMMIT_MESSAGE = "[UPD] update .gitlab-ci.yml";
 
-    public static final String CI_IMAGE = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.9.1";
-
     /**
      * 换行符
      */

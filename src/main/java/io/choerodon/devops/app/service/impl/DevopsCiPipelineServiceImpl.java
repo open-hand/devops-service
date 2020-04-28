@@ -74,6 +74,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Value("${services.gateway.url}")
     private String gatewayUrl;
 
+    @Value("${devops.ci.default.image}")
+    private String defaultCiImage;
+
     private DevopsCiPipelineMapper devopsCiPipelineMapper;
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     private DevopsCiStageService devopsCiStageService;
@@ -535,7 +538,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         GitlabCi gitlabCi = new GitlabCi();
 
         // 如果用户指定了就使用用户指定的，如果没有指定就使用默认的猪齿鱼提供的镜像
-        gitlabCi.setImage(StringUtils.isEmpty(devopsCiPipelineVO.getImage()) ? GitOpsConstants.CI_IMAGE : devopsCiPipelineVO.getImage());
+        gitlabCi.setImage(StringUtils.isEmpty(devopsCiPipelineVO.getImage()) ? defaultCiImage : devopsCiPipelineVO.getImage());
 
         gitlabCi.setStages(stages);
         devopsCiPipelineVO.getStageList().forEach(stageVO -> {
