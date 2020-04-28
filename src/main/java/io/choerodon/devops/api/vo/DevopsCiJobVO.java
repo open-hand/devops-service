@@ -22,6 +22,10 @@ public class DevopsCiJobVO {
     @ApiModelProperty("任务名称")
     @NotEmpty(message = "error.job.name.cannot.be.null")
     private String name;
+
+    @ApiModelProperty("runner镜像地址")
+    private String image;
+
     @ApiModelProperty("阶段id")
     private Long ciStageId;
     @ApiModelProperty("流水线id")
@@ -100,5 +104,13 @@ public class DevopsCiJobVO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }

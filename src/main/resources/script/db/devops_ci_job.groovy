@@ -25,4 +25,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
     changeSet(author: 'wanghao', id: '2020-04-08-change-column') {
         modifyDataType(tableName: 'devops_ci_job', columnName: 'metadata', newDataType: 'TEXT')
     }
+
+    changeSet(author: 'zmf', id: '2020-04-28-job-add-image') {
+        addColumn(tableName: 'devops_ci_job') {
+            column(name: 'image', type: 'VARCHAR(280)', remarks: 'job的镜像地址') {
+                constraints(nullable: true)
+            }
+        }
+    }
 }

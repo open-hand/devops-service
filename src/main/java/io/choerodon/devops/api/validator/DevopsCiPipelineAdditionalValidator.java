@@ -56,6 +56,8 @@ public class DevopsCiPipelineAdditionalValidator {
 
         List<String> uploadArtifactNames = new ArrayList<>();
 
+        validateImage(devopsCiPipelineVO.getImage());
+
         devopsCiPipelineVO.getStageList()
                 .stream()
                 .sorted(Comparator.comparingLong(DevopsCiStageVO::getSequence))
@@ -64,6 +66,8 @@ public class DevopsCiPipelineAdditionalValidator {
                         return;
                     }
                     stage.getJobList().forEach(job -> {
+                        validateImage(job.getImage());
+
                         if (CiJobTypeEnum.BUILD.value().equals(job.getType())) {
                             // 将构建类型的stage中的job的每个step进行解析和转化
                             CiConfigVO ciConfigVO = JSONObject.parseObject(job.getMetadata(), CiConfigVO.class);
@@ -159,6 +163,20 @@ public class DevopsCiPipelineAdditionalValidator {
                     }
                 }
             });
+        }
+    }
+
+    /**
+     * 校验runner的镜像地址是否正确
+     *
+     * @param image 镜像地址
+     */
+    public static void validateImage(String image) {
+        if (image == null) {
+            return;
+        }
+        if (!GitOpsConstants.IMAGE_REGISTRY.matcher(image).matches()) {
+            throw new CommonException("error.ci.image.invalid", image);
         }
     }
 }

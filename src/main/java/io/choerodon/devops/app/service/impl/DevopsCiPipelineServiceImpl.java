@@ -533,8 +533,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 .collect(Collectors.toList());
 
         GitlabCi gitlabCi = new GitlabCi();
-        // 先使用默认的image,后面可以考虑让用户自己指定
-        gitlabCi.setImage(GitOpsConstants.CI_IMAGE);
+
+        // 如果用户指定了就使用用户指定的，如果没有指定就使用默认的猪齿鱼提供的镜像
+        gitlabCi.setImage(StringUtils.isEmpty(devopsCiPipelineVO.getImage()) ? GitOpsConstants.CI_IMAGE : devopsCiPipelineVO.getImage());
+
         gitlabCi.setStages(stages);
         devopsCiPipelineVO.getStageList().forEach(stageVO -> {
             if (!CollectionUtils.isEmpty(stageVO.getJobList())) {
@@ -543,10 +545,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         return;
                     }
                     CiJob ciJob = new CiJob();
+                    if (!StringUtils.isEmpty(job.getImage())) {
+                        ciJob.setImage(job.getImage());
+                    }
                     ciJob.setStage(stageVO.getName());
                     ciJob.setOnly(buildOnlyExceptPolicyObject(job.getTriggerRefs()));
                     ciJob.setScript(buildScript(projectId, job));
-                    // todo except && cache未配置
                     gitlabCi.addJob(job.getName(), ciJob);
                 });
             }

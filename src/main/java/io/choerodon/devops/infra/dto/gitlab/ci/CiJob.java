@@ -9,6 +9,8 @@ import io.swagger.annotations.ApiModelProperty;
  * @since 20-4-2
  */
 public class CiJob {
+    @ApiModelProperty("job的镜像")
+    private String image;
     @ApiModelProperty("所属stage")
     private String stage;
     @ApiModelProperty("包含的脚本")
@@ -58,5 +60,13 @@ public class CiJob {
 
     public void setCache(Cache cache) {
         this.cache = cache;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }

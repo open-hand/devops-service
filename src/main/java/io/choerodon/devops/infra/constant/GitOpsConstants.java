@@ -154,4 +154,10 @@ public class GitOpsConstants {
      * 流水线token
      */
     public static final String CI_CONTENT_URL_TEMPLATE = "%s/devops/v1/projects/%s/ci_contents/pipelines/%s/content.yaml";
+
+    /**
+     * 镜像的地址正则
+     * 如： registry.gitlab.com/gitlab-org/gitlab-docs:11.6
+     */
+    public static final Pattern IMAGE_REGISTRY = Pattern.compile("^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}(/.+)*:.+$");
 }
