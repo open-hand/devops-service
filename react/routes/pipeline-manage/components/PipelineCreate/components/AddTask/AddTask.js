@@ -32,7 +32,7 @@ const AddTask = observer(() => {
     DependRepoDataSet,
     modal,
     handleOk,
-    useStore,
+    AddTaskUseStore: useStore,
     AppState: {
       currentMenuType: {
         id,
@@ -41,12 +41,14 @@ const AddTask = observer(() => {
     jobDetail,
     appServiceId,
     PipelineCreateFormDataSet,
+    image,
   } = useAddTaskStore();
 
   const [steps, setSteps] = useState([]);
   const [testConnect, setTestConnect] = useState('');
   const [ConnectLoading, setConnectLoading] = useState(false);
   const [customYaml, setCustomYaml] = useState(useStore.getYaml.custom);
+  const [expandIf, setExpandIf] = useState(false);
 
   useEffect(() => {
     if (steps.length > 0) {
@@ -66,51 +68,67 @@ const AddTask = observer(() => {
   }, [steps.find(s => s.checked)]);
 
   useEffect(() => {
-    if (jobDetail) {
-      if (jobDetail.type !== 'custom') {
-        const { config, authType, username, token, password, sonarUrl } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
-        let uploadFilePattern;
-        let dockerContextDir;
-        let dockerFilePath;
-        let uploadArtifactFileName;
-        let dockerArtifactFileName;
-        config && config.forEach((c) => {
-          if (c.type === 'upload') {
-            uploadFilePattern = c.uploadFilePattern;
-            uploadArtifactFileName = c.artifactFileName;
-          } else if (c.type === 'docker') {
-            dockerContextDir = c.dockerContextDir;
-            dockerFilePath = c.dockerFilePath;
-            dockerArtifactFileName = c.artifactFileName;
-          }
-        });
-        const newSteps = config || [];
-        const data = {
-          ...jobDetail,
-          uploadFilePattern,
-          dockerContextDir,
-          dockerFilePath,
-          uploadArtifactFileName,
-          dockerArtifactFileName,
-          triggerRefs: jobDetail.triggerRefs.split(','),
-          glyyfw: appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')),
-          bzmc: newSteps.find(s => s.checked) ? newSteps.find(s => s.checked).name : '',
-          authType,
-          username,
-          token,
-          password,
-          sonarUrl,
-          private: newSteps.length > 0 && newSteps.find(s => s.checked).repos ? newSteps.find(s => s.checked).repos.map(r => String(r.privateIf)) : '',
-        };
-        AddTaskFormDataSet.loadData([data]);
-        setSteps(newSteps);
+    const init = async () => {
+      const res = await useStore.axiosGetDefaultImage();
+      useStore.setDefaultImage(res);
+      AddTaskFormDataSet.current.set('image', res);
+      if (jobDetail) {
+        if (jobDetail.type !== 'custom') {
+          const { config, authType, username, token, password, sonarUrl } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
+          let uploadFilePattern;
+          let dockerContextDir;
+          let dockerFilePath;
+          let uploadArtifactFileName;
+          let dockerArtifactFileName;
+          config && config.forEach((c) => {
+            if (c.type === 'upload') {
+              uploadFilePattern = c.uploadFilePattern;
+              uploadArtifactFileName = c.artifactFileName;
+            } else if (c.type === 'docker') {
+              dockerContextDir = c.dockerContextDir;
+              dockerFilePath = c.dockerFilePath;
+              dockerArtifactFileName = c.artifactFileName;
+            }
+          });
+          const newSteps = config || [];
+          const data = {
+            ...jobDetail,
+            uploadFilePattern,
+            dockerContextDir,
+            dockerFilePath,
+            uploadArtifactFileName,
+            dockerArtifactFileName,
+            triggerRefs: jobDetail.triggerRefs.split(','),
+            glyyfw: appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')),
+            bzmc: newSteps.find(s => s.checked) ? newSteps.find(s => s.checked).name : '',
+            authType,
+            username,
+            token,
+            password,
+            sonarUrl,
+            private: newSteps.length > 0 && newSteps.find(s => s.checked).repos ? newSteps.find(s => s.checked).repos.map(r => String(r.privateIf)) : '',
+          };
+          AddTaskFormDataSet.loadData([data]);
+
+          setSteps(newSteps);
+        } else {
+          AddTaskFormDataSet.loadData([jobDetail]);
+          setCustomYaml(jobDetail.metadata);
+        }
+        if (jobDetail.image !== res) {
+          AddTaskFormDataSet.current.set('selectImage', '1');
+        } else {
+          AddTaskFormDataSet.current.set('selectImage', '0');
+        }
       } else {
-        AddTaskFormDataSet.loadData([jobDetail]);
-        setCustomYaml(jobDetail.metadata);
+        if (image) {
+          AddTaskFormDataSet.current.set('selectImage', image !== useStore.getDefaultImage ? '1' : '0');
+          AddTaskFormDataSet.current.set('image', image);
+        }
+        AddTaskFormDataSet.current.set('glyyfw', appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')));
       }
-    } else {
-      AddTaskFormDataSet.current.set('glyyfw', appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')));
-    }
+    };
+    init();
   }, []);
 
   const handleAdd = async () => {
@@ -724,6 +742,32 @@ const AddTask = observer(() => {
     }
   };
 
+  const handleChangeImage = (data) => {
+    if (data === '0') {
+      AddTaskFormDataSet.current.set('image', useStore.getDefaultImage);
+    }
+  };
+
+  const getImageDom = () => [
+    <div colSpan={2} newLine style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
+      <Icon type={expandIf ? 'expand_less' : 'expand_more'} />高级设置
+    </div>,
+    expandIf ? [
+      <SelectBox onChange={handleChangeImage} colSpan={2} newLine name="selectImage">
+        <Option value="0">默认Runner镜像</Option>
+        <Option value="1">自定义Runner镜像</Option>
+      </SelectBox>,
+      <TextField
+        disabled={
+          !!(AddTaskFormDataSet.current && AddTaskFormDataSet.current.get('selectImage') === '0')
+        }
+        newLine
+        colSpan={2}
+        name="image"
+      />,
+    ] : '',
+  ];
+
   return (
     <React.Fragment>
       <Form dataSet={AddTaskFormDataSet} columns={2}>
@@ -744,8 +788,10 @@ const AddTask = observer(() => {
               <Option value="release">release</Option>
               <Option value="tag">tag</Option>
             </Select>,
+            getImageDom(),
             getMissionOther(),
-          ] : (
+          ] : [
+            getImageDom(),
             <YamlEditor
               readOnly={false}
               colSpan={2}
@@ -754,8 +800,8 @@ const AddTask = observer(() => {
               onValueChange={(valueYaml) => setCustomYaml(valueYaml)}
               modeChange={false}
               showError={false}
-            />
-          )
+            />,
+          ]
         }
       </Form>
     </React.Fragment>

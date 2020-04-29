@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, TextField, Select, SelectBox, Modal, Button, DataSet } from 'choerodon-ui/pro';
 import { message, Icon } from 'choerodon-ui';
 import { observer } from 'mobx-react-lite';
@@ -25,6 +25,16 @@ const PipelineCreate = observer(() => {
     refreshTree,
   } = usePipelineCreateStore();
 
+  const [expandIf, setExpandIf] = useState(false);
+
+  useEffect(() => {
+    const init = async () => {
+      const res = await createUseStore.axiosGetDefaultImage();
+      createUseStore.setDefaultImage(res);
+      PipelineCreateFormDataSet.current.set('image', res);
+    };
+    init();
+  }, []);
 
   const handleCreate = async () => {
     const result = await PipelineCreateFormDataSet.validate();
@@ -48,6 +58,12 @@ const PipelineCreate = observer(() => {
   };
 
   modal.handleOk(handleCreate);
+
+  const handleChangeImage = (data) => {
+    if (data === '0') {
+      PipelineCreateFormDataSet.current.set('image', createUseStore.getDefaultImage);
+    }
+  };
 
   // const handleAddMission = () => {
   //   Modal.open({
@@ -73,13 +89,36 @@ const PipelineCreate = observer(() => {
           searchMatcher="appServiceName"
         />
         <TextField style={{ display: 'none' }} />
+        <div style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
+          <Icon type={expandIf ? 'expand_less' : 'expand_more'} />高级设置
+        </div>
+        {
+          expandIf ? [
+            <SelectBox onChange={handleChangeImage} colSpan={2} newLine name="selectImage">
+              <Option value="0">默认Runner镜像</Option>
+              <Option value="1">自定义Runner镜像</Option>
+            </SelectBox>,
+            <TextField
+              disabled={
+                !!(PipelineCreateFormDataSet.current && PipelineCreateFormDataSet.current.get('selectImage') === '0')
+              }
+              newLine
+              colSpan={2}
+              name="image"
+            />,
+          ] : ''
+        }
         {/* <SelectBox name="triggerType"> */}
         {/*  <Option value="auto">自动触发</Option> */}
         {/*  <Option disabled value="F">手动触发</Option> */}
         {/* </SelectBox> */}
       </Form>
       <p className="pipeline_createInfo"><Icon style={{ color: 'red', verticalAlign: 'text-bottom' }} type="error" />此页面定义了阶段与任务后，GitLab仓库中的.gitlab-ci.yml文件也会同步修改。</p>
-      <StageEditBlock editBlockStore={editBlockStore} edit />
+      <StageEditBlock
+        editBlockStore={editBlockStore}
+        edit
+        image={PipelineCreateFormDataSet.current.get('image')}
+      />
     </div>
   );
 });
