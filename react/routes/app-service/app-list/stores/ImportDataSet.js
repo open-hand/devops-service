@@ -24,37 +24,41 @@ function handleRequired(record, flag) {
 export default ((intlPrefix, formatMessage, projectId, selectedDs) => {
   async function checkCode(value) {
     const pa = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
-    if (value && pa.test(value)) {
-      try {
-        const res = await axios.get(`/devops/v1/projects/${projectId}/app_service/check_code?code=${value}`);
-        if (res && res.failed) {
-          return formatMessage({ id: 'checkCodeExist' });
-        } else {
-          return true;
+    if (value) {
+      if (pa.test(value)) {
+        try {
+          const res = await axios.get(`/devops/v1/projects/${projectId}/app_service/check_code?code=${value}`);
+          if (res && res.failed) {
+            return formatMessage({ id: 'checkCodeExist' });
+          } else {
+            return true;
+          }
+        } catch (err) {
+          return formatMessage({ id: 'checkCodeFailed' });
         }
-      } catch (err) {
-        return formatMessage({ id: 'checkCodeFailed' });
+      } else {
+        return formatMessage({ id: 'checkCodeReg' });
       }
-    } else {
-      return formatMessage({ id: 'checkCodeReg' });
     }
   }
 
   async function checkName(value) {
     const pa = /^\S+$/;
-    if (value && pa.test(value)) {
-      try {
-        const res = await axios.get(`/devops/v1/projects/${projectId}/app_service/check_name?name=${encodeURIComponent(value)}`);
-        if (res && res.failed) {
-          return formatMessage({ id: 'checkNameExist' });
-        } else {
-          return true;
+    if (value) {
+      if (pa.test(value)) {
+        try {
+          const res = await axios.get(`/devops/v1/projects/${projectId}/app_service/check_name?name=${encodeURIComponent(value)}`);
+          if (res && res.failed) {
+            return formatMessage({ id: 'checkNameExist' });
+          } else {
+            return true;
+          }
+        } catch (err) {
+          return formatMessage({ id: `${intlPrefix}.name.failed` });
         }
-      } catch (err) {
-        return formatMessage({ id: `${intlPrefix}.name.failed` });
+      } else {
+        return formatMessage({ id: 'nameCanNotHasSpaces' });
       }
-    } else {
-      return formatMessage({ id: 'nameCanNotHasSpaces' });
     }
   }
 
