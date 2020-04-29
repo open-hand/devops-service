@@ -100,5 +100,19 @@ job_1:
     axiosConnectTest(data, projectId) {
       return axios.post(`/devops/v1/projects/${projectId}/ci_jobs/sonar/connect`, data);
     },
+
+    defaultImage: '',
+
+    axiosGetDefaultImage() {
+      return axios.get('/devops/ci/default_image');
+    },
+
+    setDefaultImage(data) {
+      this.defaultImage = data;
+    },
+
+    get getDefaultImage() {
+      return this.defaultImage;
+    },
   }));
 }

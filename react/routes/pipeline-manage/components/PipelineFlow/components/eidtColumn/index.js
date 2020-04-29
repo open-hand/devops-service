@@ -96,7 +96,7 @@ const EditItem = (props) => {
 };
 
 export default observer((props) => {
-  const { jobList, sequence, name, columnIndex, edit, appServiceId, appServiceName } = props;
+  const { jobList, sequence, name, columnIndex, edit, appServiceId, appServiceName, image } = props;
 
   const {
     addStepDs,
@@ -208,6 +208,7 @@ export default observer((props) => {
         handleOk={hanleStepCreateOk}
         appServiceId={!edit && appServiceName}
         appServiceName={!edit && appServiceName}
+        image={image}
       />,
       style: {
         width: '740px',
