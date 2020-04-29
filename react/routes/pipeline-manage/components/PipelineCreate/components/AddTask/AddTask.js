@@ -71,7 +71,6 @@ const AddTask = observer(() => {
     const init = async () => {
       const res = await useStore.axiosGetDefaultImage();
       useStore.setDefaultImage(res);
-      AddTaskFormDataSet.current.set('image', res);
       if (jobDetail) {
         if (jobDetail.type !== 'custom') {
           const { config, authType, username, token, password, sonarUrl } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
@@ -115,14 +114,24 @@ const AddTask = observer(() => {
           AddTaskFormDataSet.loadData([jobDetail]);
           setCustomYaml(jobDetail.metadata);
         }
-        if (jobDetail.image !== res) {
-          AddTaskFormDataSet.current.set('selectImage', '1');
-        } else {
+        if (!jobDetail.image) {
           AddTaskFormDataSet.current.set('selectImage', '0');
+          if (!image) {
+            AddTaskFormDataSet.current.set('image', useStore.getDefaultImage);
+          } else {
+            AddTaskFormDataSet.current.set('image', image);
+          }
+        } else {
+          AddTaskFormDataSet.current.set('selectImage', '1');
         }
+        // if (jobDetail.image !== res) {
+        //   AddTaskFormDataSet.current.set('selectImage', '1');
+        // } else {
+        //   AddTaskFormDataSet.current.set('selectImage', '0');
+        // }
       } else {
         if (image) {
-          AddTaskFormDataSet.current.set('selectImage', image !== useStore.getDefaultImage ? '1' : '0');
+          AddTaskFormDataSet.current.set('selectImage', '0');
           AddTaskFormDataSet.current.set('image', image);
         }
         AddTaskFormDataSet.current.set('glyyfw', appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')));
@@ -143,6 +152,7 @@ const AddTask = observer(() => {
       let data = AddTaskFormDataSet.toData()[0];
       data = {
         ...data,
+        image: data.selectImage === '1' ? data.image : null,
         triggerRefs: data.triggerRefs.join(','),
         metadata: (function () {
           if (data.type === 'build') {

@@ -39,8 +39,10 @@ const PipelineCreate = observer(() => {
   const handleCreate = async () => {
     const result = await PipelineCreateFormDataSet.validate();
     if (result) {
+      const origin = PipelineCreateFormDataSet.toData()[0];
       const data = {
-        ...PipelineCreateFormDataSet.toData()[0],
+        ...origin,
+        image: origin.selectImage === '1' ? origin.image : null,
         stageList: editBlockStore.getStepData2,
       };
       return createUseStore.axiosCreatePipeline(data, id).then((res) => {
