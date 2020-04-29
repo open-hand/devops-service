@@ -1,9 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
-import static org.mockito.ArgumentMatchers.*
-
 import com.alibaba.fastjson.JSONArray
-import com.github.pagehelper.PageInfo
 import org.powermock.api.mockito.PowerMockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier

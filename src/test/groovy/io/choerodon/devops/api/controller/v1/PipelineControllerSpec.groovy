@@ -9,13 +9,8 @@ import io.choerodon.devops.infra.feign.WorkFlowServiceClient
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator
 import io.choerodon.devops.infra.mapper.PipelineTaskRecordMapper
 
-import static org.mockito.ArgumentMatchers.any
-import static org.mockito.ArgumentMatchers.anyLong
-import static org.mockito.ArgumentMatchers.anyString
-import static org.mockito.ArgumentMatchers.eq
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
-import com.github.pagehelper.PageInfo
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier

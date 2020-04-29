@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
-import com.github.pagehelper.PageInfo
+import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsConfigMapRespVO
@@ -38,7 +38,6 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -107,8 +106,8 @@ class DevopsConfigMapControllerSpec extends Specification {
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
-        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+        Page<ProjectWithRoleVO> projectWithRoleDTOPage = new Page<>(projectWithRoleDTOList)
+        ResponseEntity<Page<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
         MemberDTO memberDO = new MemberDTO()
@@ -235,7 +234,7 @@ class DevopsConfigMapControllerSpec extends Specification {
         String params = "{\"searchParam\":{},\"param\":\"\"}"
 
         when: '分页插叙'
-        def page = restTemplate.postForEntity(MAPPING + "/1/listByEnv?page=0&size=10", params, PageInfo.class, 1L)
+        def page = restTemplate.postForEntity(MAPPING + "/1/listByEnv?page=0&size=10", params, Page.class, 1L)
 
         then: '校验结果'
         page.getBody().get(0)["name"] == "asdasdqqqq"

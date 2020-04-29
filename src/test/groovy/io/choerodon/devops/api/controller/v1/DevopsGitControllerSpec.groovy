@@ -1,9 +1,7 @@
 package io.choerodon.devops.api.controller.v1
 
-import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
-import com.github.pagehelper.PageInfo
 import org.mockito.Mockito
 import org.powermock.api.mockito.PowerMockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -223,7 +221,7 @@ class DevopsGitControllerSpec extends Specification {
         map.put("app_service_id", 1)
         String params = "{\"searchParam\": {},\"params\": []}"
         when: '获取标签分页列表'
-        def page = restTemplate.postForObject(url, params, PageInfo.class, map)
+        def page = restTemplate.postForObject(url, params, Page.class, map)
 
         then: '校验返回值'
         page != null
@@ -349,7 +347,7 @@ class DevopsGitControllerSpec extends Specification {
         Mockito.doReturn(projectWithRoleDTOList).when(mockBaseServiceClientOperator).listProjectWithRoleDTO(anyLong())
 
         when: '获取工程下所有分支名'
-        def branches = restTemplate.postForObject("/v1/projects/1/app_service/1/git/page_branch_by_options?page=0&size=10&sort=branchName,asc", null, PageInfo.class)
+        def branches = restTemplate.postForObject("/v1/projects/1/app_service/1/git/page_branch_by_options?page=0&size=10&sort=branchName,asc", null, Page.class)
 
 
         then: '校验返回值'

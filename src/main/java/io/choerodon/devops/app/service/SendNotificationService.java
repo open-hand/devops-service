@@ -108,8 +108,6 @@ public interface SendNotificationService {
     /**
      * 当创建实例失败后
      *
-     * @param envId             环境id
-     * @param resourceName      资源的名称
      * @param creatorId         资源创建者的id
      * @param resourceCommandId 资源的command id (不为null时校验command的commandType是不是create)
      */
@@ -118,8 +116,6 @@ public interface SendNotificationService {
     /**
      * 当创建网络失败后
      *
-     * @param envId             环境id
-     * @param resourceName      资源的名称
      * @param creatorId         资源创建者的id
      * @param resourceCommandId 资源的command id (不为null时校验command的commandType是不是create)
      */
@@ -128,8 +124,6 @@ public interface SendNotificationService {
     /**
      * 当创建域名失败后
      *
-     * @param envId             环境id
-     * @param resourceName      资源的名称
      * @param creatorId         资源创建者的id
      * @param resourceCommandId 资源的command id (不为null时校验command的commandType是不是create)
      */
@@ -138,8 +132,6 @@ public interface SendNotificationService {
     /**
      * 当创建证书失败后
      *
-     * @param envId             环境id
-     * @param resourceName      资源的名称
      * @param creatorId         资源创建者的id
      * @param resourceCommandId 资源的command id (不为null时校验command的commandType是不是create)
      */

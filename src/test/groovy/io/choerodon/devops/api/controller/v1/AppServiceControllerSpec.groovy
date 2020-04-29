@@ -1,11 +1,9 @@
 package io.choerodon.devops.api.controller.v1
 
-import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 import java.util.function.Function
 
-import com.github.pagehelper.PageInfo
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
 import org.mockito.ArgumentMatcher
@@ -25,6 +23,7 @@ import spock.lang.Subject
 
 import io.choerodon.asgard.saga.producer.StartSagaBuilder
 import io.choerodon.asgard.saga.producer.TransactionalProducer
+import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
@@ -154,8 +153,8 @@ class AppServiceControllerSpec extends Specification {
             projectWithRoleDTO.setName("pro")
             projectWithRoleDTO.setRoles(roleDTOList)
             projectWithRoleDTOList.add(projectWithRoleDTO)
-            PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo(projectWithRoleDTOList)
-            ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+            Page<ProjectWithRoleVO> projectWithRoleDTOPage = new Page(projectWithRoleDTOList)
+            ResponseEntity<Page<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
             Mockito.doReturn(pageResponseEntity).when(baseServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
         }
     }
@@ -241,9 +240,9 @@ class AppServiceControllerSpec extends Specification {
         roleVO.setName("appName")
         List<RoleVO> roleVOList = new ArrayList<>()
         roleVOList.add(roleVO)
-        PageInfo rolePageInfo = new PageInfo()
-        rolePageInfo.setList(roleVOList)
-        ResponseEntity roleResponseEntity = new ResponseEntity(rolePageInfo, HttpStatus.OK)
+        Page rolePage = new Page()
+        rolePage.setList(roleVOList)
+        ResponseEntity roleResponseEntity = new ResponseEntity(rolePage, HttpStatus.OK)
         Mockito.when(baseServiceClient.queryRoleIdByCode(any())).thenReturn(roleResponseEntity)
 
         and: 'mock IamUserDTO'
@@ -259,17 +258,17 @@ class AppServiceControllerSpec extends Specification {
         List<IamUserDTO> iamUserDTOMemberArrayList = new ArrayList<>()
         iamUserDTOMemberArrayList.add(iamUserDTOMember)
         iamUserDTOMemberArrayList.add(iamUserDTOOwner)
-        PageInfo iamUserMemberPageInfo = new PageInfo()
-        iamUserMemberPageInfo.setList(iamUserDTOMemberArrayList)
-        ResponseEntity iamUserMemberResponseEntity = new ResponseEntity(iamUserMemberPageInfo, HttpStatus.OK)
+        Page iamUserMemberPage = new Page()
+        iamUserMemberPage.setList(iamUserDTOMemberArrayList)
+        ResponseEntity iamUserMemberResponseEntity = new ResponseEntity(iamUserMemberPage, HttpStatus.OK)
         Mockito.when(baseServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), eq(1L), anyLong(), anyBoolean(), any())).thenReturn(iamUserMemberResponseEntity)
 
         and: 'Mock OwnerResponseEntity'
         List<IamUserDTO> iamUserDTOOwnerArrayList = new ArrayList<>()
         iamUserDTOOwnerArrayList.add(iamUserDTOOwner)
-        PageInfo iamUserOwnerPageInfo = new PageInfo()
-        iamUserOwnerPageInfo.setList(iamUserDTOOwnerArrayList)
-        ResponseEntity iamUserOwnerResponseEntity = new ResponseEntity(iamUserOwnerPageInfo, HttpStatus.OK)
+        Page iamUserOwnerPage = new Page()
+        iamUserOwnerPage.setList(iamUserDTOOwnerArrayList)
+        ResponseEntity iamUserOwnerResponseEntity = new ResponseEntity(iamUserOwnerPage, HttpStatus.OK)
         Mockito.when(baseServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), eq(2L), anyLong(), anyBoolean(), any())).thenReturn(iamUserOwnerResponseEntity)
 
 
@@ -407,7 +406,7 @@ class AppServiceControllerSpec extends Specification {
         ResponseEntity responseEntity = new ResponseEntity(iamUserDTOList, HttpStatus.OK)
         Mockito.when(baseServiceClient.listUsersByIds(any())).thenReturn(responseEntity)
         when: '查询应用'
-        def page = restTemplate.postForObject(MAPPING + "/page_by_options?page=1&size=1", searchParam, PageInfo.class, 1L)
+        def page = restTemplate.postForObject(MAPPING + "/page_by_options?page=1&size=1", searchParam, Page.class, 1L)
 
         then: '返回值'
         page.getTotal() == 1
@@ -453,7 +452,7 @@ class AppServiceControllerSpec extends Specification {
         devopsEnvPodMapper.insert(devopsEnvPodDO)
 
         when: '查询运行实例的应用'
-        def applicationPage = restTemplate.getForObject(MAPPING + "/page_by_ids?env_id={env_id}", PageInfo.class, project_id, 1)
+        def applicationPage = restTemplate.getForObject(MAPPING + "/page_by_ids?env_id={env_id}", Page.class, project_id, 1)
 
         then: '返回值'
         applicationPage.getTotal() == 1
@@ -535,7 +534,7 @@ class AppServiceControllerSpec extends Specification {
         println appServiceVersionMapper.select(appServiceVersionDTO)
 
         when: '查询启用未发版的应用'
-        def entity = restTemplate.postForObject(MAPPING + "/page_unPublish", searchParam, PageInfo.class, 1L)
+        def entity = restTemplate.postForObject(MAPPING + "/page_unPublish", searchParam, Page.class, 1L)
 
         then: '验证返回值'
         entity.getList().get(0)["code"] == "appCode"
@@ -544,7 +543,7 @@ class AppServiceControllerSpec extends Specification {
     // 项目下分页查询代码仓库
     def "listCodeRepository"() {
         when: '查询代码仓库'
-        def entity = restTemplate.postForObject(MAPPING + "/page_code_repository?page=1&size=1", searchParam, PageInfo.class, project_id)
+        def entity = restTemplate.postForObject(MAPPING + "/page_code_repository?page=1&size=1", searchParam, Page.class, project_id)
 
         then: '检验结果'
         entity.getList().get(0)["code"] == "appCode"
@@ -792,9 +791,9 @@ class AppServiceControllerSpec extends Specification {
 
         List<RoleVO> memberRoleVoList = new ArrayList<>()
         memberRoleVoList.add(memberRoleVo)
-        PageInfo<RoleVO> memberPageInfo = new PageInfo<>()
-        memberPageInfo.setList(memberRoleVoList)
-        Mockito.when(baseServiceClient.queryRoleIdByCode(any())).thenReturn(new ResponseEntity<PageInfo<RoleVO>>(memberPageInfo, HttpStatus.OK))
+        Page<RoleVO> memberPage = new Page<>()
+        memberPage.setList(memberRoleVoList)
+        Mockito.when(baseServiceClient.queryRoleIdByCode(any())).thenReturn(new ResponseEntity<Page<RoleVO>>(memberPage, HttpStatus.OK))
 
         // owner
         RoleVO ownerRoleVO = new RoleVO()
@@ -806,9 +805,9 @@ class AppServiceControllerSpec extends Specification {
 
         List<RoleVO> ownerRoleVoList = new ArrayList<>()
         ownerRoleVoList.add(memberRoleVo)
-        PageInfo<RoleVO> ownerPageInfo = new PageInfo()
-        ownerPageInfo.setList(memberRoleVoList)
-        Mockito.when(baseServiceClient.queryRoleIdByCode(any())).thenReturn(new ResponseEntity<PageInfo<RoleVO>>(ownerPageInfo, HttpStatus.OK))
+        Page<RoleVO> ownerPage = new Page()
+        ownerPage.setList(memberRoleVoList)
+        Mockito.when(baseServiceClient.queryRoleIdByCode(any())).thenReturn(new ResponseEntity<Page<RoleVO>>(ownerPage, HttpStatus.OK))
 
         and: 'mock IamUserDTO'
         IamUserDTO iamUserDTOMember = new IamUserDTO()
@@ -823,21 +822,21 @@ class AppServiceControllerSpec extends Specification {
         List<IamUserDTO> iamUserDTOMemberArrayList = new ArrayList<>()
         iamUserDTOMemberArrayList.add(iamUserDTOMember)
         iamUserDTOMemberArrayList.add(iamUserDTOOwner)
-        PageInfo iamUserMemberPageInfo = new PageInfo()
-        iamUserMemberPageInfo.setList(iamUserDTOMemberArrayList)
-        ResponseEntity iamUserMemberResponseEntity = new ResponseEntity(iamUserMemberPageInfo, HttpStatus.OK)
+        Page iamUserMemberPage = new Page()
+        iamUserMemberPage.setList(iamUserDTOMemberArrayList)
+        ResponseEntity iamUserMemberResponseEntity = new ResponseEntity(iamUserMemberPage, HttpStatus.OK)
         Mockito.when(baseServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), eq(1L), anyLong(), anyBoolean(), any())).thenReturn(iamUserMemberResponseEntity)
 
         // Mock OwnerResponseEntity
         List<IamUserDTO> iamUserDTOOwnerArrayList = new ArrayList<>()
         iamUserDTOOwnerArrayList.add(iamUserDTOOwner)
-        PageInfo iamUserOwnerPageInfo = new PageInfo()
-        iamUserOwnerPageInfo.setList(iamUserDTOOwnerArrayList)
-        ResponseEntity iamUserOwnerResponseEntity = new ResponseEntity(iamUserOwnerPageInfo, HttpStatus.OK)
+        Page iamUserOwnerPage = new Page()
+        iamUserOwnerPage.setList(iamUserDTOOwnerArrayList)
+        ResponseEntity iamUserOwnerResponseEntity = new ResponseEntity(iamUserOwnerPage, HttpStatus.OK)
         Mockito.when(baseServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), eq(2L), anyLong(), anyBoolean(), any())).thenReturn(iamUserOwnerResponseEntity)
 
         when: '查询拥有服务权限的项目成员及项目所有者'
-        def result = restTemplate.postForEntity(url + '?page=1&size=1', searchParam, PageInfo.class, project_id, init_id)
+        def result = restTemplate.postForEntity(url + '?page=1&size=1', searchParam, Page.class, project_id, init_id)
 
         then:
         result.getBody().getList().size() != 0
@@ -878,22 +877,22 @@ class AppServiceControllerSpec extends Specification {
         List<ProjectDTO> projectDTOList = new ArrayList<>()
         projectDTOList.add(projectDTO1)
         projectDTOList.add(projectDTO2)
-        PageInfo<ProjectDTO> projectDTOPage = new PageInfo<>(projectDTOList)
+        Page<ProjectDTO> projectDTOPage = new Page<>(projectDTOList)
         projectDTOPage.setList(projectDTOList)
 
-        ResponseEntity<PageInfo<ProjectDTO>> projectDTOPageResponseEntity = new ResponseEntity<>(projectDTOPage, HttpStatus.OK)
+        ResponseEntity<Page<ProjectDTO>> projectDTOPageResponseEntity = new ResponseEntity<>(projectDTOPage, HttpStatus.OK)
 
         Mockito.doReturn(new ResponseEntity(projectDTO1, HttpStatus.OK)).when(baseServiceClient).queryIamProject(anyLong())
         Mockito.when(baseServiceClient.queryProjectByOrgId(anyLong(), anyInt(), anyInt(), eq(null), argThat(new ArgumentMatcher<String[]>() {
             @Override
-            boolean matches(String[] argument) {
+            boolean matches(Object argument) {
                 return true
             }
         }))).thenReturn(projectDTOPageResponseEntity)
 
 
         when: '查询共享服务'
-        def result = restTemplate.postForEntity(url + "?page=0&size=0", searchParam, PageInfo.class, project_id,)
+        def result = restTemplate.postForEntity(url + "?page=0&size=0", searchParam, Page.class, project_id,)
 
         then:
         result.body.getList().size() != 0
@@ -920,17 +919,17 @@ class AppServiceControllerSpec extends Specification {
 
         List<RoleVO> ownerRoleVOList = new ArrayList<>()
         ownerRoleVOList.add(ownerRoleVO)
-        PageInfo ownerRolePageInfo = new PageInfo()
-        ownerRolePageInfo.setList(ownerRoleVOList)
+        Page ownerRolePage = new Page()
+        ownerRolePage.setList(ownerRoleVOList)
         Mockito.when(baseServiceClient.queryRoleIdByCode(argThat(new ArgumentMatcher<RoleSearchVO>() {
             @Override
-            boolean matches(RoleSearchVO argument) {
+            boolean matches(Object argument) {
                 if (ownerRoleSearchVO.getCode() == PROJECT_OWNER) {
                     return true
                 }
                 return false
             }
-        }))).thenReturn(new ResponseEntity(ownerRolePageInfo, HttpStatus.OK))
+        }))).thenReturn(new ResponseEntity(ownerRolePage, HttpStatus.OK))
 
         // member
         RoleVO memberRoleVO = new RoleVO()
@@ -943,17 +942,17 @@ class AppServiceControllerSpec extends Specification {
 
         List<RoleVO> memberRoleVOList = new ArrayList<>()
         memberRoleVOList.add(memberRoleVO)
-        PageInfo memberRolePageInfo = new PageInfo()
-        memberRolePageInfo.setList(memberRoleVOList)
+        Page memberRolePage = new Page()
+        memberRolePage.setList(memberRoleVOList)
         Mockito.when(baseServiceClient.queryRoleIdByCode(argThat(new ArgumentMatcher<RoleSearchVO>() {
             @Override
-            boolean matches(RoleSearchVO argument) {
+            boolean matches(Object argument) {
                 if (memberRoleSearchVO.getCode() == PROJECT_MEMBER) {
                     return true
                 }
                 return false
             }
-        }))).thenReturn(new ResponseEntity(memberRolePageInfo, HttpStatus.OK))
+        }))).thenReturn(new ResponseEntity(memberRolePage, HttpStatus.OK))
 
         and: 'Mock 所有成员responseEntity'
         IamUserDTO iamUserDTOMember = new IamUserDTO()
@@ -967,9 +966,9 @@ class AppServiceControllerSpec extends Specification {
         List<IamUserDTO> iamUserDTOMemberArrayList = new ArrayList<>()
         iamUserDTOMemberArrayList.add(iamUserDTOMember)
         iamUserDTOMemberArrayList.add(iamUserDTOOwner)
-        PageInfo iamUserMemberPageInfo = new PageInfo()
-        iamUserMemberPageInfo.setList(iamUserDTOMemberArrayList)
-        ResponseEntity iamUserMemberResponseEntity = new ResponseEntity(iamUserMemberPageInfo, HttpStatus.OK)
+        Page iamUserMemberPage = new Page()
+        iamUserMemberPage.setList(iamUserDTOMemberArrayList)
+        ResponseEntity iamUserMemberResponseEntity = new ResponseEntity(iamUserMemberPage, HttpStatus.OK)
         Mockito.when(baseServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), eq(1L), anyLong(), anyBoolean(), any())).thenReturn(iamUserMemberResponseEntity)
 
         when: '查询没有权限的成员'
@@ -1060,9 +1059,9 @@ class AppServiceControllerSpec extends Specification {
         List<ProjectDTO> projectDTOList = new ArrayList<>()
         projectDTOList.add(projectDTO1)
         projectDTOList.add(projectDTO2)
-        PageInfo pageInfo = new PageInfo()
+        Page pageInfo = new Page()
         pageInfo.setList(projectDTOList)
-        Mockito.when(baseServiceClient.pagingProjectByOptions(anyLong(), anyBoolean(), anyInt(), anyInt(), any())).thenReturn(new ResponseEntity<PageInfo<ProjectDTO>>(pageInfo, HttpStatus.OK))
+        Mockito.when(baseServiceClient.pagingProjectByOptions(anyLong(), anyBoolean(), anyInt(), anyInt(), any())).thenReturn(new ResponseEntity<Page<ProjectDTO>>(pageInfo, HttpStatus.OK))
 
         when: '查询所有组织'
         def result = restTemplate.getForEntity(url, List.class, project_id, init_id)

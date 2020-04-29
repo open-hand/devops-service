@@ -1,10 +1,8 @@
 package io.choerodon.devops.api.controller.v1
 
-import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 import com.alibaba.fastjson.JSONArray
-import com.github.pagehelper.PageInfo
 import org.mockito.ArgumentMatcher
 import org.mockito.Mockito
 import org.powermock.api.mockito.PowerMockito
@@ -18,7 +16,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import org.springframework.data.domain.PageRequest
+import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.*
@@ -326,7 +324,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         ownerUserDTO.setLoginName("test")
         ownerUserDTO.setRealName("realTest")
         ownerUserDTOList.add(ownerUserDTO)
-        PageInfo<IamUserDTO> ownerUserDTOPage = new PageInfo<>(ownerUserDTOList)
+        Page<IamUserDTO> ownerUserDTOPage = new Page<>(ownerUserDTOList)
         PowerMockito.when(mockBaseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(any(PageRequest), any(RoleAssignmentSearchVO), eq(ownerRoleId), anyLong(), anyBoolean())).thenReturn(ownerUserDTOPage)
 
 
@@ -336,7 +334,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         memberUserDTO.setLoginName("test4")
         memberUserDTO.setRealName("realTest4")
         memberUserDTOList.add(memberUserDTO)
-        PageInfo<IamUserDTO> memberUserDTOPage = new PageInfo<>(memberUserDTOList)
+        Page<IamUserDTO> memberUserDTOPage = new Page<>(memberUserDTOList)
         Mockito.when(mockBaseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(any(PageRequest), any(RoleAssignmentSearchVO), eq(memberRoleId), anyLong(), anyBoolean())).thenReturn(memberUserDTOPage)
     }
 
@@ -350,7 +348,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         iamUserDTOS.add(iamUserDTO)
         PowerMockito.when(mockBaseServiceClientOperator.listUsersByIds(argThat(new ArgumentMatcher<List>() {
             @Override
-            boolean matches(List argument) {
+            boolean matches(Object argument) {
                 return argument != null && argument.contains(1L)
             }
         }))).thenReturn(iamUserDTOS)
@@ -365,7 +363,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         iamUserDTOS2.add(iamUserDTO1)
         PowerMockito.when(mockBaseServiceClientOperator.listUsersByIds(argThat(new ArgumentMatcher<List>() {
             @Override
-            boolean matches(List argument) {
+            boolean matches(Object argument) {
                 return argument != null && argument.contains(5L)
             }
         }))).thenReturn(iamUserDTOS2)
@@ -738,7 +736,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
 //        String params = "{\"searchParam\": {},\"params\": []}"
 //
 //        when: '分页查询项目下用户权限'
-//        def page = restTemplate.postForObject(url, params, PageInfo.class, map)
+//        def page = restTemplate.postForObject(url, params, Page.class, map)
 //
 //        then: '返回值'
 //        page != null
@@ -758,7 +756,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         String params = "{\"searchParam\": {},\"params\": []}"
 
         when: '分页查询项目下用户权限'
-        def page = restTemplate.postForObject(url, params, PageInfo.class, map)
+        def page = restTemplate.postForObject(url, params, Page.class, map)
 
         then: '返回值'
         page != null

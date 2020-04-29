@@ -1,12 +1,7 @@
 package io.choerodon.devops.app.service.impl
 
-import static org.mockito.ArgumentMatchers.any
-import static org.mockito.ArgumentMatchers.anyInt
-import static org.mockito.ArgumentMatchers.anyString
-
 import java.util.function.Consumer
 
-import org.mockito.ArgumentMatchers
 import org.powermock.api.mockito.PowerMockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier

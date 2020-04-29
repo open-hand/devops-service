@@ -20,10 +20,6 @@ import org.spockframework.runtime.Sputnik
 import spock.lang.Shared
 import spock.lang.Specification
 
-import static org.mockito.ArgumentMatchers.any
-import static org.mockito.ArgumentMatchers.anyLong
-import static org.mockito.ArgumentMatchers.anyString
-
 /**
  * Created by n!Ck
  * Date: 18-12-3

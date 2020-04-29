@@ -7,14 +7,14 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author zmf
  * @since 20-4-16
  */
 @Table(name = "devops_ci_maven_settings")
-public class DevopsCiMavenSettingsDTO extends BaseDTO {
+public class DevopsCiMavenSettingsDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @ApiModelProperty("自增主键")

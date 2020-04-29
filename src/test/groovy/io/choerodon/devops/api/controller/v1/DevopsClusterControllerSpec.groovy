@@ -1,21 +1,8 @@
 package io.choerodon.devops.api.controller.v1
 
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 import com.alibaba.fastjson.JSONObject
-import com.github.pagehelper.PageInfo
-import io.choerodon.core.exception.CommonException
-import io.choerodon.core.exception.ExceptionResponse
-import io.choerodon.devops.DependencyInjectUtil
-import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.*
-import io.choerodon.devops.app.service.impl.ClusterNodeInfoServiceImpl
-import io.choerodon.devops.infra.dto.*
-import io.choerodon.devops.infra.dto.iam.IamUserDTO
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO
-import io.choerodon.devops.infra.dto.iam.ProjectDTO
-import io.choerodon.devops.infra.feign.BaseServiceClient
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
-import io.choerodon.devops.infra.handler.ClusterConnectionHandler
-import io.choerodon.devops.infra.mapper.*
 import org.mockito.ArgumentMatcher
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,8 +19,21 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.ArgumentMatchers.*
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import io.choerodon.core.domain.Page
+import io.choerodon.core.exception.CommonException
+import io.choerodon.core.exception.ExceptionResponse
+import io.choerodon.devops.DependencyInjectUtil
+import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.api.vo.*
+import io.choerodon.devops.app.service.impl.ClusterNodeInfoServiceImpl
+import io.choerodon.devops.infra.dto.*
+import io.choerodon.devops.infra.dto.iam.IamUserDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.feign.BaseServiceClient
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler
+import io.choerodon.devops.infra.mapper.*
 
 /**
  * Created by n!Ck
@@ -121,11 +121,11 @@ class DevopsClusterControllerSpec extends Specification {
         List<ProjectDTO> projectDOList = new ArrayList<>()
         projectDOList.add(projectDO)
         projectDOList.add(projectDTO1)
-        PageInfo<ProjectDTO> projectDOPage = new PageInfo(projectDOList)
-        ResponseEntity<PageInfo<ProjectDTO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
+        Page<ProjectDTO> projectDOPage = new Page(projectDOList)
+        ResponseEntity<Page<ProjectDTO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
         Mockito.when(baseServiceClient.queryProjectByOrgId(anyLong(), anyInt(), anyInt(), isNull(), argThat(new ArgumentMatcher<String[]>() {
             @Override
-            boolean matches(String[] argument) {
+            boolean matches(Object argument) {
                 return true
             }
         }))).thenReturn(projectDOPageResponseEntity)
@@ -274,7 +274,7 @@ class DevopsClusterControllerSpec extends Specification {
         envList.add(2L)
 
         when: '分页查询项目列表'
-        def e = restTemplate.postForEntity(MAPPING + "/page_cluster", null, PageInfo.class, 1L)
+        def e = restTemplate.postForEntity(MAPPING + "/page_cluster", null, Page.class, 1L)
 
         then: '校验返回值'
         e.getBody().getList().size() != 0
@@ -288,7 +288,7 @@ class DevopsClusterControllerSpec extends Specification {
         devopsClusterProPermissionMapper.insert(devopsClusterProPermissionDTO)
 
         when: '查询已有权限的项目列表'
-        def e = restTemplate.postForEntity(MAPPING + "/{cluster_id}/permission/page_related", null, PageInfo.class, 1L, 1L)
+        def e = restTemplate.postForEntity(MAPPING + "/{cluster_id}/permission/page_related", null, Page.class, 1L, 1L)
 
         then: '校验返回值'
         e.getBody().getList().get(0)["code"] == "pro"
@@ -386,7 +386,7 @@ class DevopsClusterControllerSpec extends Specification {
         envList.add(2L)
 
         when: '集群列表查询'
-        def e = restTemplate.postForEntity(MAPPING + "/page_cluster?page=0&size=10&doPage=true", str, PageInfo.class, 1L)
+        def e = restTemplate.postForEntity(MAPPING + "/page_cluster?page=0&size=10&doPage=true", str, Page.class, 1L)
 
         then: '校验返回值'
         e.getBody().getList().get(0)["code"] == "uat"
@@ -396,7 +396,7 @@ class DevopsClusterControllerSpec extends Specification {
         given: '准备查询数据'
 
         when: '发送请求'
-        def e = restTemplate.postForEntity(MAPPING + "/page_node_pods?page=0&size=10&cluster_id={clusterId}&node_name={nodeName}", "{}", PageInfo.class, 1L, devopsClusterDTO.getId(), devopsEnvPodDO.getNodeName())
+        def e = restTemplate.postForEntity(MAPPING + "/page_node_pods?page=0&size=10&cluster_id={clusterId}&node_name={nodeName}", "{}", Page.class, 1L, devopsClusterDTO.getId(), devopsEnvPodDO.getNodeName())
 
         then: '校验结果'
         e.getStatusCode().is2xxSuccessful()
@@ -409,7 +409,7 @@ class DevopsClusterControllerSpec extends Specification {
         def url = MAPPING + "/page_nodes?cluster_id={cluster_id}&page=0&size=10"
 
         when: "发送请求"
-        def res = restTemplate.getForEntity(url, PageInfo.class, devopsClusterDTO.getProjectId(), devopsClusterDTO.getId())
+        def res = restTemplate.getForEntity(url, Page.class, devopsClusterDTO.getProjectId(), devopsClusterDTO.getId())
 
         then: "校验结果"
         res.getStatusCode().is2xxSuccessful()

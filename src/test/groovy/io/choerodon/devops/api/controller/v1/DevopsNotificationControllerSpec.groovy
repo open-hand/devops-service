@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.controller.v1
 
-import com.github.pagehelper.PageInfo
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsNotificationVO
 import io.choerodon.devops.api.vo.ResourceCheckVO

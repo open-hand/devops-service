@@ -1,9 +1,7 @@
 package io.choerodon.devops.app.eventhandler
 
-import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
-import com.github.pagehelper.PageInfo
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -15,6 +13,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
+import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.app.service.GitlabGroupMemberService
@@ -109,11 +108,11 @@ class SagaHandlerNewSpec extends Specification {
             ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
             Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(anyLong())
 
-            PageInfo<ProjectDTO> projectDOPage = new PageInfo<>()
+            Page<ProjectDTO> projectDOPage = new Page<>()
             List<ProjectDTO> projectDOList = new ArrayList<>()
             projectDOList.add(projectDO)
             projectDOPage.setList(projectDOList)
-            ResponseEntity<PageInfo<ProjectDTO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
+            ResponseEntity<Page<ProjectDTO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
             Mockito.doReturn(projectDOPageResponseEntity).when(iamServiceClient).queryProjectByOrgId(anyLong(), anyInt(), anyInt(), anyString(), any(String[]))
 
 

@@ -1,33 +1,7 @@
 package io.choerodon.devops.api.controller.v1
 
-import com.github.pagehelper.PageInfo
-import io.choerodon.asgard.saga.producer.TransactionalProducer
-import io.choerodon.core.exception.CommonException
-import io.choerodon.core.exception.ExceptionResponse
-import io.choerodon.devops.DependencyInjectUtil
-import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.AppServiceUpdateDTO
-import io.choerodon.devops.api.vo.DevopsPvcReqVO
-import io.choerodon.devops.api.vo.DevopsPvcRespVO
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
-import io.choerodon.devops.api.vo.iam.RoleVO
-import io.choerodon.devops.app.service.*
-import io.choerodon.devops.infra.dto.AppServiceDTO
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO
-import io.choerodon.devops.infra.dto.DevopsProjectDTO
-import io.choerodon.devops.infra.dto.DevopsPvDTO
-import io.choerodon.devops.infra.dto.DevopsPvcDTO
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO
-import io.choerodon.devops.infra.dto.iam.ProjectDTO
-import io.choerodon.devops.infra.feign.BaseServiceClient
-import io.choerodon.devops.infra.feign.GitlabServiceClient
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
-import io.choerodon.devops.infra.handler.ClusterConnectionHandler
-import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
-import io.choerodon.devops.infra.mapper.DevopsProjectMapper
-import io.choerodon.devops.infra.mapper.DevopsPvMapper
-import io.choerodon.devops.infra.mapper.DevopsPvcMapper
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -40,9 +14,29 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.ArgumentMatchers.anyInt
-import static org.mockito.ArgumentMatchers.anyLong
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import io.choerodon.asgard.saga.producer.TransactionalProducer
+import io.choerodon.core.domain.Page
+import io.choerodon.core.exception.ExceptionResponse
+import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.api.vo.DevopsPvcReqVO
+import io.choerodon.devops.api.vo.DevopsPvcRespVO
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
+import io.choerodon.devops.api.vo.iam.RoleVO
+import io.choerodon.devops.app.service.*
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO
+import io.choerodon.devops.infra.dto.DevopsProjectDTO
+import io.choerodon.devops.infra.dto.DevopsPvDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.feign.BaseServiceClient
+import io.choerodon.devops.infra.feign.GitlabServiceClient
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler
+import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
+import io.choerodon.devops.infra.mapper.DevopsProjectMapper
+import io.choerodon.devops.infra.mapper.DevopsPvMapper
+import io.choerodon.devops.infra.mapper.DevopsPvcMapper
 
 /**
  * Created by n!Ck
@@ -147,8 +141,8 @@ class DevopsPvcControllerSpec extends Specification {
             projectWithRoleDTO.setName("pro")
             projectWithRoleDTO.setRoles(roleDTOList)
             projectWithRoleDTOList.add(projectWithRoleDTO)
-            PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo(projectWithRoleDTOList)
-            ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+            Page<ProjectWithRoleVO> projectWithRoleDTOPage = new Page(projectWithRoleDTOList)
+            ResponseEntity<Page<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
             Mockito.doReturn(pageResponseEntity).when(baseServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
             DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO()
@@ -200,7 +194,7 @@ class DevopsPvcControllerSpec extends Specification {
     // 查询PVC
     def "page_by_option"() {
         when:
-        def entity = restTemplate.postForEntity(MAPPING + "/page_by_options?env_id={env_id}", searchParam, PageInfo.class, project_id, 1)
+        def entity = restTemplate.postForEntity(MAPPING + "/page_by_options?env_id={env_id}", searchParam, Page.class, project_id, 1)
         then:
         entity.statusCode.is2xxSuccessful()
         entity.getBody().size != 0

@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.controller.v1
 
-import com.github.pagehelper.PageInfo
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.HarborMarketVO
 import io.choerodon.devops.api.vo.iam.MarketApplicationVO

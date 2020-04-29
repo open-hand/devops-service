@@ -1,12 +1,11 @@
 package io.choerodon.devops.app.eventhandler
 
+import io.choerodon.core.domain.Page
 import io.choerodon.devops.api.vo.FileCreationVO
 
-import static org.mockito.ArgumentMatchers.*
 import static org.mockito.Mockito.when
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
-import com.github.pagehelper.PageInfo
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -131,9 +130,9 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
             RoleVO roleDTO = new RoleVO()
             roleDTO.setId(234L)
             roleDTO.setCode("role/project/default/project-owner")
-            PageInfo pageInfo = new PageInfo(0, 10, true)
+            Page pageInfo = new Page(0, 10, true)
             List<RoleVO> roleDTOS = Arrays.asList(roleDTO)
-            PageInfo<RoleVO> page = new PageInfo(roleDTOS, pageInfo, 1)
+            Page<RoleVO> page = new Page(roleDTOS, pageInfo, 1)
             when(iamServiceClient.queryRoleIdByCode(any(RoleSearchVO))).thenReturn(new ResponseEntity<>(page, HttpStatus.OK))
             when(gitlabServiceClient.listDeploykey(anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ArrayList(), HttpStatus.OK))
             when(gitlabServiceClient.getFile(anyInt(), anyString(), anyString())).thenReturn(new ResponseEntity<>(Boolean.FALSE, HttpStatus.OK))
@@ -182,9 +181,9 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
             Mockito.doReturn(mergeRequestDOResponseEntity).when(gitlabServiceClient).createMergeRequest(any(), any(), any(), any(), any(), any())
             Mockito.doReturn(null).when(gitlabServiceClient).acceptMergeRequest(any(), any(), any(), any(), any(), any())
 
-            PageInfo<UserVO> ownerUserDTOPage = new PageInfo<>()
+            Page<UserVO> ownerUserDTOPage = new Page<>()
             List<UserVO> ownerUserDTOList = new ArrayList<>()
-            PageInfo<UserVO> memberUserDTOPage = new PageInfo<>()
+            Page<UserVO> memberUserDTOPage = new Page<>()
             List<UserVO> memberUserDTOList = new ArrayList<>()
             UserVO ownerUserDTO = new UserVO()
             ownerUserDTO.setId(1L)
@@ -198,7 +197,7 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
             memberUserDTO.setRealName("realTest4")
             memberUserDTOList.add(memberUserDTO)
             memberUserDTOPage.setContent(memberUserDTOList)
-            ResponseEntity<PageInfo<UserVO>> ownerPageResponseEntity = new ResponseEntity<>(ownerUserDTOPage, HttpStatus.OK)
+            ResponseEntity<Page<UserVO>> ownerPageResponseEntity = new ResponseEntity<>(ownerUserDTOPage, HttpStatus.OK)
             RoleAssignmentSearchVO roleAssignmentSearchDTO = new RoleAssignmentSearchVO()
             roleAssignmentSearchDTO.setLoginName("")
             roleAssignmentSearchDTO.setRealName("")
@@ -242,10 +241,10 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
             projectWithRoleDTO.setName("pro")
             projectWithRoleDTO.setRoles(roleDTOList)
             projectWithRoleDTOList.add(projectWithRoleDTO)
-            PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo<>()
+            Page<ProjectWithRoleVO> projectWithRoleDTOPage = new Page<>()
             projectWithRoleDTOPage.setContent(projectWithRoleDTOList)
             projectWithRoleDTOPage.setTotalPages(2)
-            ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+            ResponseEntity<Page<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
             Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
         }
     }

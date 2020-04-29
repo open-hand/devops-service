@@ -1,13 +1,9 @@
 package io.choerodon.devops.api.controller.v1
 
-
-import static org.mockito.ArgumentMatchers.any
-import static org.mockito.ArgumentMatchers.anyBoolean
 import static org.mockito.Matchers.anyInt
 import static org.mockito.Matchers.anyLong
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
-import com.github.pagehelper.PageInfo
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -20,12 +16,11 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
+import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.DeployVersionVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
-
 import io.choerodon.devops.infra.dto.*
 import io.choerodon.devops.infra.dto.iam.IamUserDTO
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO
@@ -122,8 +117,8 @@ class AppServiceVersionControllerSpec extends Specification {
         projectWithRoleDTO.setName("test-name")
         projectWithRoleDTO.setRoles(roleDTOList)
         list.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleVO> page = new PageInfo(list)
-        ResponseEntity<PageInfo<ProjectWithRoleVO>> responseEntity2 = new ResponseEntity<>(page, HttpStatus.OK)
+        Page<ProjectWithRoleVO> page = new Page(list)
+        ResponseEntity<Page<ProjectWithRoleVO>> responseEntity2 = new ResponseEntity<>(page, HttpStatus.OK)
         Mockito.when(baseServiceClient.listProjectWithRole(anyLong(), anyInt(), anyInt())).thenReturn(responseEntity2)
         List<IamUserDTO> userDOList = new ArrayList<>()
         IamUserDTO userDO1 = new IamUserDTO()
@@ -206,7 +201,7 @@ class AppServiceVersionControllerSpec extends Specification {
 
         when: '分页查询应用版本'
         def page = restTemplate.postForObject(mapping + "/page_by_options?page=0&size=10&app_service_id={app_service_id}&deploy_only={deploy_only}", params,
-                PageInfo.class, project_id,init_id,deploy)
+                Page.class, project_id,init_id,deploy)
 
         then: '返回值'
         page.getTotal() == 0
@@ -220,7 +215,7 @@ class AppServiceVersionControllerSpec extends Specification {
 //        given:
 //        String version = "0.1.0-dev.20180521111826"
 //        when: '应用下查询应用所有版本'
-//        def page = restTemplate.getForObject(mapping + "/list_by_app/{app_service_id}?page=0&size=10", PageInfo.class, project_id, init_id)
+//        def page = restTemplate.getForObject(mapping + "/list_by_app/{app_service_id}?page=0&size=10", Page.class, project_id, init_id)
 //
 //        then: '返回值'
 //        page.getTotal() == 1

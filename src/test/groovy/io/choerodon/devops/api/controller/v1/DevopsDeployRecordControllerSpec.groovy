@@ -1,8 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
-import static org.mockito.ArgumentMatchers.any
 
-import com.github.pagehelper.PageInfo
 import org.powermock.api.mockito.PowerMockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -14,6 +12,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
+import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsDeployRecordVO
 import io.choerodon.devops.app.service.DevopsDeployRecordService
@@ -134,7 +133,7 @@ class DevopsDeployRecordControllerSpec extends Specification {
         params.put("size", 1)
 
         when: "调用方法"
-        def resp = restTemplate.postForObject(url, null, PageInfo, params)
+        def resp = restTemplate.postForObject(url, null, Page, params)
 
         then: "校验结果"
         resp != null

@@ -1,9 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
-import com.github.pagehelper.PageInfo
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
-
+import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
@@ -30,7 +27,6 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -76,12 +72,12 @@ class ProjectCertificationControllerSpec extends Specification {
 
         List<ProjectDTO> projectDOList = new ArrayList<>()
         projectDOList.add(projectDO)
-        PageInfo<ProjectDTO> projectDOPage = new PageInfo<>(projectDOList)
+        Page<ProjectDTO> projectDOPage = new Page<>(projectDOList)
         Mockito.when(baseServiceClientOperator.pageProjectByOrgId(anyLong(),anyInt(),anyInt(), any(Sort), anyString(),anyString(),anyString())).thenReturn(projectDOPage)
 
 //        List<ProjectDTO> projectDOList2 = new ArrayList<>()
 //        projectDOList.add(projectDO)
-//        PageInfo<ProjectDTO> projectDOPage2 = new PageInfo<>(projectDOList2)
+//        Page<ProjectDTO> projectDOPage2 = new Page<>(projectDOList2)
 //        Mockito.when(baseServiceClientOperator.listProject(anyLong(), any(PageRequest.class), any(String[]))).thenReturn(projectDOPage2)
 
     }
@@ -188,7 +184,7 @@ class ProjectCertificationControllerSpec extends Specification {
         String params = "{\"searchParam\": {},\"params\": []}"
 
         when: '分页查询项目列表'
-        def page = restTemplate.postForEntity(url, params, PageInfo.class, map)
+        def page = restTemplate.postForEntity(url, params, Page.class, map)
 
         then: '校验返回值'
         page.getBody().getList().get(0)["code"] == "pro"
@@ -225,7 +221,7 @@ class ProjectCertificationControllerSpec extends Specification {
         def url = MAPPING + "/page_cert?page=0&size=10"
         when: '证书列表查询'
 
-        def e = restTemplate.postForEntity(url, str, PageInfo.class, 1L)
+        def e = restTemplate.postForEntity(url, str, Page.class, 1L)
 
         then: '校验返回值'
         e.getBody().getList().get(0)["name"] == "test"

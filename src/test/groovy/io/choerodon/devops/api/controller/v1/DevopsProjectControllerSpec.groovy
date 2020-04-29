@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
-import com.github.pagehelper.PageInfo
+import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.infra.dto.DevopsProjectDTO
 import io.choerodon.devops.infra.dto.iam.ProjectDTO
@@ -46,7 +46,7 @@ class DevopsProjectControllerSpec extends Specification {
         projectDTO.setId(1L)
         projectDTO.setOrganizationId(1L)
         Mockito.doReturn(projectDTO).when(mockBaseServiceClientOperator).queryIamProjectById(1L)
-        PageInfo<ProjectDTO> pageInfo = new PageInfo<>()
+        Page<ProjectDTO> pageInfo = new Page<>()
         List<ProjectDTO> projectDTOList = new ArrayList<>()
 
         projectDTOList.add(projectDTO)
@@ -78,7 +78,7 @@ class DevopsProjectControllerSpec extends Specification {
         String params = "{\"searchParam\":{},\"params\":[]}"
         HttpEntity<String> httpEntity = new HttpEntity(params, headers)
         when: "执行测试"
-        def entity = restTemplate.postForEntity(MAPPING + "/page_projects", httpEntity, PageInfo.class, 1L)
+        def entity = restTemplate.postForEntity(MAPPING + "/page_projects", httpEntity, Page.class, 1L)
         then: "结果校验"
         entity.getStatusCode().is2xxSuccessful()
 

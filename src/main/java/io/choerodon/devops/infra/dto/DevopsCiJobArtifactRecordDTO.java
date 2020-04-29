@@ -7,14 +7,14 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author zmf
  * @since 20-4-20
  */
 @Table(name = "devops_ci_job_artifact_record")
-public class DevopsCiJobArtifactRecordDTO extends BaseDTO {
+public class DevopsCiJobArtifactRecordDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

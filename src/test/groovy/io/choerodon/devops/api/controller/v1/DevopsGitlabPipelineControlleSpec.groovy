@@ -1,6 +1,16 @@
 package io.choerodon.devops.api.controller.v1
 
-import com.github.pagehelper.PageInfo
+import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.context.annotation.Import
+import spock.lang.Shared
+import spock.lang.Specification
+import spock.lang.Stepwise
+import spock.lang.Subject
+
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.PipelineFrequencyVO
 import io.choerodon.devops.api.vo.PipelineTimeVO
@@ -14,18 +24,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
 import io.choerodon.devops.infra.mapper.AppServiceMapper
 import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper
 import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper
-import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.context.annotation.Import
-import spock.lang.Shared
-import spock.lang.Specification
-import spock.lang.Stepwise
-import spock.lang.Subject
-
-import static org.mockito.ArgumentMatchers.any
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
@@ -121,7 +119,7 @@ class DevopsGitlabPipelineControlleSpec extends Specification {
         given: "初始化数据"
         devopsGitlabCommitMapper.insert(devopsGitlabCommitDTO)
         when: '分页获取pipeline'
-        def pages = restTemplate.getForObject("/v1/projects/1/pipeline/page_by_options?app_service_id=1&start_time=2015/10/13&end_time=3018/10/19&page=0&size=10", PageInfo.class)
+        def pages = restTemplate.getForObject("/v1/projects/1/pipeline/page_by_options?app_service_id=1&start_time=2015/10/13&end_time=3018/10/19&page=0&size=10", Page.class)
 
         then: '校验返回值'
         pages.getSize() == 1
