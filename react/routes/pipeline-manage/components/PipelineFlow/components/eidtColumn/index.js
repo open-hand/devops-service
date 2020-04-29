@@ -24,6 +24,7 @@ const EditItem = (props) => {
     AppServiceOptionsDs,
     appServiceId,
     appServiceName,
+    image,
   } = props;
 
   const { type, name } = jobDetail;
@@ -51,6 +52,7 @@ const EditItem = (props) => {
         handleOk={handleEditOk}
         PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
         AppServiceOptionsDs={edit && AppServiceOptionsDs}
+        image={image}
       />,
       style: {
         width: '740px',
@@ -157,6 +159,7 @@ export default observer((props) => {
           AppServiceOptionsDs={edit && AppServiceOptionsDs}
           PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
           jobDetail={item}
+          image={image}
         />)
       }
     </div> : null
