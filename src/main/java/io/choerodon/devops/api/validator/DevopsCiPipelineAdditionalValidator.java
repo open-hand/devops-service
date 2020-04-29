@@ -3,18 +3,17 @@ package io.choerodon.devops.api.validator;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.CiConfigTemplateVO;
-import io.choerodon.devops.api.vo.CiConfigVO;
-import io.choerodon.devops.api.vo.DevopsCiPipelineVO;
-import io.choerodon.devops.api.vo.DevopsCiStageVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.enums.CiJobScriptTypeEnum;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
@@ -40,6 +39,9 @@ public class DevopsCiPipelineAdditionalValidator {
     private static final String ERROR_MAVEN_REPO_URL_INVALID = "error.maven.repository.url.invalid";
     private static final String ERROR_MAVEN_REPO_USERNAME_EMPTY = "error.maven.repository.username.empty";
     private static final String ERROR_MAVEN_REPO_PASSWORD_EMPTY = "error.maven.repository.password.empty";
+    private static final String ERROR_CUSTOM_JOB_FORMAT_INVALID = "error.custom.job.format.invalid";
+    private static final String ERROR_JOB_NAME_NOT_UNIQUE = "error.job.name.not.unique";
+    private static final String ERROR_STAGE_NAME_NOT_UNIQUE = "error.stage.name.not.unique";
 
     private DevopsCiPipelineAdditionalValidator() {
     }
@@ -55,6 +57,8 @@ public class DevopsCiPipelineAdditionalValidator {
         }
 
         List<String> uploadArtifactNames = new ArrayList<>();
+        List<String> jobNames = new ArrayList<>();
+        List<String> stageNames = new ArrayList<>();
 
         validateImage(devopsCiPipelineVO.getImage());
 
@@ -65,8 +69,14 @@ public class DevopsCiPipelineAdditionalValidator {
                     if (CollectionUtils.isEmpty(stage.getJobList())) {
                         return;
                     }
+
+                    // 校验stage名称唯一
+                    validateStageNameUniqueInPipeline(stage.getName(), stageNames);
+
                     stage.getJobList().forEach(job -> {
                         validateImage(job.getImage());
+                        validateCustomJobFormat(job);
+                        validateJobNameUniqueInPipeline(job.getName(), jobNames);
 
                         if (CiJobTypeEnum.BUILD.value().equals(job.getType())) {
                             // 将构建类型的stage中的job的每个step进行解析和转化
@@ -171,12 +181,65 @@ public class DevopsCiPipelineAdditionalValidator {
      *
      * @param image 镜像地址
      */
-    public static void validateImage(String image) {
+    private static void validateImage(String image) {
         if (image == null) {
             return;
         }
         if (!GitOpsConstants.IMAGE_REGISTRY.matcher(image).matches()) {
             throw new CommonException("error.ci.image.invalid", image);
         }
+    }
+
+    /**
+     * 校验自定义任务格式
+     */
+    @SuppressWarnings("unchecked")
+    private static void validateCustomJobFormat(DevopsCiJobVO devopsCiJobVO) {
+        if (!CiJobTypeEnum.CUSTOM.value().equalsIgnoreCase(devopsCiJobVO.getType())) {
+            return;
+        }
+        Yaml yaml = new Yaml();
+        Object load = yaml.load(devopsCiJobVO.getMetadata());
+        // 不是yaml格式报错
+        if (!(load instanceof Map)) {
+            throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
+        }
+        // 校验自定义yaml的 job name和stage name 是否匹配
+        ((Map<String, Object>) load).forEach((key, value) -> {
+            if (org.apache.commons.lang3.StringUtils.isBlank(key)) {
+                throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
+            }
+            devopsCiJobVO.setName(key);
+            JSONObject jsonObject = new JSONObject((Map<String, Object>) value);
+            if (!devopsCiJobVO.getName().equals(jsonObject.getString("stage"))) {
+                throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
+            }
+        });
+    }
+
+    /**
+     * 校验job的name唯一，校验通过会将jobName加入list
+     *
+     * @param jobName  job的name
+     * @param jobNames 已有的job name
+     */
+    private static void validateJobNameUniqueInPipeline(String jobName, List<String> jobNames) {
+        if (jobNames.contains(jobName)) {
+            throw new CommonException(ERROR_JOB_NAME_NOT_UNIQUE, jobName);
+        }
+        jobNames.add(jobName);
+    }
+
+    /**
+     * 校验stage的name唯一，校验通过会将stageName加入list
+     *
+     * @param stageName  stage的name
+     * @param stageNames 已有的stage name
+     */
+    private static void validateStageNameUniqueInPipeline(String stageName, List<String> stageNames) {
+        if (stageNames.contains(stageName)) {
+            throw new CommonException(ERROR_STAGE_NAME_NOT_UNIQUE);
+        }
+        stageNames.add(stageName);
     }
 }

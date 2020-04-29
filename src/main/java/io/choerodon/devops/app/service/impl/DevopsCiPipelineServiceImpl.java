@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -64,11 +63,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private static final String ERROR_USER_HAVE_NO_APP_PERMISSION = "error.user.have.no.app.permission";
     private static final String ERROR_APP_SVC_ID_IS_NULL = "error.app.svc.id.is.null";
     private static final String ERROR_PROJECT_ID_IS_NULL = "error.project.id.is.null";
-    private static final String ERROR_NOT_GITLAB_OWNER = "error.not.gitlab.owner";
     private static final String ERROR_CI_MAVEN_REPOSITORY_TYPE = "error.ci.maven.repository.type";
     private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "error.maven.settings.insert";
     private static final String ERROR_UNSUPPORTED_STEP_TYPE = "error.unsupported.step.type";
-    private static final String ERROR_CUSTOM_JOB_FORMAT_INVALID = "error.custom.job.format.invalid";
     private static final String ERROR_BRANCH_PERMISSION_MISMATCH = "error.branch.permission.mismatch";
 
     @Value("${services.gateway.url}")
@@ -185,8 +182,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     public DevopsCiPipelineDTO create(Long projectId, DevopsCiPipelineVO devopsCiPipelineVO) {
         Long iamUserId = TypeUtil.objToLong(GitUserNameUtil.getUserId());
         checkUserPermission(devopsCiPipelineVO.getAppServiceId(), iamUserId);
-        checkCustomJobFormat(devopsCiPipelineVO);
         devopsCiPipelineVO.setProjectId(projectId);
+
+        // 设置默认镜像
+        if (StringUtils.isEmpty(devopsCiPipelineVO.getImage())) {
+            devopsCiPipelineVO.setImage(defaultCiImage);
+        }
+
         DevopsCiPipelineDTO devopsCiPipelineDTO = ConvertUtils.convertObject(devopsCiPipelineVO, DevopsCiPipelineDTO.class);
         devopsCiPipelineDTO.setToken(GenerateUUID.generateUUID());
         if (devopsCiPipelineMapper.insertSelective(devopsCiPipelineDTO) != 1) {
@@ -399,7 +401,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         checkUserPermission(devopsCiPipelineVO.getAppServiceId(), userId);
         // 校验自定义任务格式
-        checkCustomJobFormat(devopsCiPipelineVO);
         DevopsCiPipelineDTO devopsCiPipelineDTO = ConvertUtils.convertObject(devopsCiPipelineVO, DevopsCiPipelineDTO.class);
         devopsCiPipelineDTO.setId(ciPipelineId);
         if (devopsCiPipelineMapper.updateByPrimaryKeySelective(devopsCiPipelineDTO) != 1) {
@@ -460,42 +461,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return devopsCiPipelineMapper.selectByPrimaryKey(ciPipelineId);
     }
 
-    /**
-     * 校验自定义任务格式
-     */
-    private void checkCustomJobFormat(DevopsCiPipelineVO devopsCiPipelineVO) {
-        if (CollectionUtils.isEmpty(devopsCiPipelineVO.getStageList())) {
-            return;
-        }
-        devopsCiPipelineVO.getStageList().forEach(stage -> {
-            List<DevopsCiJobVO> ciJobVOS = stage.getJobList().stream().filter(job -> CiJobTypeEnum.CUSTOM.value().equalsIgnoreCase(job.getType()))
-                    .collect(Collectors.toList());
-
-            if (!CollectionUtils.isEmpty(ciJobVOS)) {
-                ciJobVOS.forEach(job -> {
-                    Yaml yaml = new Yaml();
-                    Object load = yaml.load(job.getMetadata());
-                    // 不是yaml格式报错
-                    if (!(load instanceof Map)) {
-                        throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
-                    }
-                    // 校验自定义yaml的 job name和stage name 是否匹配
-                    ((Map<String, Object>) load).forEach((key, value) -> {
-                        if (StringUtils.isBlank(key)) {
-                            throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
-                        }
-                        job.setName(key);
-                        JSONObject jsonObject = new JSONObject((Map<String, Object>) value);
-                        if (!stage.getName().equals(jsonObject.getString("stage"))) {
-                            throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
-                        }
-                    });
-                });
-            }
-        });
-
-
-    }
 
     private void saveCiContent(final Long projectId, Long pipelineId, DevopsCiPipelineVO devopsCiPipelineVO) {
         GitlabCi gitlabCi = buildGitLabCiObject(projectId, devopsCiPipelineVO);
