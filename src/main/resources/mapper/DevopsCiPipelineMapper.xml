@@ -34,7 +34,7 @@
     </select>
 
     <select id="queryByToken" resultType="io.choerodon.devops.infra.dto.DevopsCiPipelineDTO">
-        SELECT dcp.*
+        SELECT dcp.id, dcp.name, dcp.project_id, dcp.app_service_id, dcp.trigger_type, dcp.object_version_number, dcp.created_by, dcp.creation_date, dcp.last_updated_by, dcp.last_update_date, dcp.is_enabled as enabled, dcp.token, dcp.image
         FROM devops_ci_pipeline dcp
         WHERE dcp.token = #{token,jdbcType=VARCHAR}
     </select>
