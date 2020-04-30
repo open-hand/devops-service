@@ -563,10 +563,14 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     public DevopsClusterDTO baseCreateCluster(DevopsClusterDTO devopsClusterDTO) {
         List<DevopsClusterDTO> devopsClusterDTOS = devopsClusterMapper.selectAll();
-        String choerodonId = GenerateUUID.generateUUID().split("-")[0];
         if (!devopsClusterDTOS.isEmpty()) {
+            // 如果数据库有集群数据，就使用第一个集群的choerodonId作为新的集群的choerodonId
             devopsClusterDTO.setChoerodonId(devopsClusterDTOS.get(0).getChoerodonId());
         } else {
+            // 加上a前缀(前缀是字母即可)是为了解决随机UUID生成纯数字字符串的问题, 这样会导致agent的安装失败，
+            // 因为传入的参数会变为科学计数法，而这个值(转为科学计数法的值)又被用于chart中一个configMap的名称
+            // 就会因为configMap的名称不规范导致agent安装失败
+            String choerodonId = "a" + GenerateUUID.generateUUID().split("-")[0];
             devopsClusterDTO.setChoerodonId(choerodonId);
         }
         if (devopsClusterMapper.insert(devopsClusterDTO) != 1) {

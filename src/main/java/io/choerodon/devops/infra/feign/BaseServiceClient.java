@@ -231,9 +231,9 @@ public interface BaseServiceClient {
     /**
      * 校验用户是否是项目所有者
      *
-     * @param id
-     * @param projectId
-     * @return
+     * @param id        用户id
+     * @param projectId 项目id
+     * @return true表示是
      */
     @GetMapping("/v1/users/{id}/projects/{project_id}/check_is_owner")
     ResponseEntity<Boolean> checkIsProjectOwner(
