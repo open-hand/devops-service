@@ -268,7 +268,10 @@ public class GitlabCiUtil {
      */
     public static List<String> generateDockerScripts(Long projectId, String artifactFileName, String dockerBuildContextDir, String dockerFilePath) {
         List<String> scripts = new ArrayList<>();
-        scripts.add(GitlabCiUtil.generateDownloadTgzScripts(artifactFileName, projectId));
+        // 只有需要下载时才生成此步骤
+        if (!StringUtils.isEmpty(artifactFileName)) {
+            scripts.add(GitlabCiUtil.generateDownloadTgzScripts(artifactFileName, projectId));
+        }
         scripts.add(GitlabCiUtil.generateDockerScripts(Objects.requireNonNull(dockerBuildContextDir), Objects.requireNonNull(dockerFilePath)));
         return scripts;
     }
