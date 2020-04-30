@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -8,6 +10,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -41,6 +44,8 @@ import io.choerodon.devops.infra.util.*;
 @Service
 public class DevopsClusterServiceImpl implements DevopsClusterService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsClusterServiceImpl.class);
+    private static final String CLUSTER_ACTIVATE_COMMAND_TEMPLATE;
+
     /**
      * 存储集群基本信息的key: cluster-{clusterId}-info
      * 存储的结构为 {@link ClusterSummaryInfoVO}
@@ -88,6 +93,15 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Lazy
     private SendNotificationService sendNotificationService;
 
+    static {
+        InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/cluster.sh");
+        try {
+            CLUSTER_ACTIVATE_COMMAND_TEMPLATE = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new CommonException("error.load.cluster.sh");
+        }
+    }
+
 
     @Override
     public void saveClusterSummaryInfo(Long clusterId, ClusterSummaryInfoVO clusterSummaryInfoVO) {
@@ -124,7 +138,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         checkEnableCreateClusterOrThrowE(projectId);
         ProjectDTO iamProject = null;
         DevopsClusterDTO devopsClusterDTO = null;
-        InputStream inputStream = null;
         Map<String, String> params = new HashMap<>();
         try {
             iamProject = baseServiceClientOperator.queryIamProjectById(projectId);
@@ -140,7 +153,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
 
             // 渲染激活环境的命令参数
-            inputStream = this.getClass().getResourceAsStream("/shell/cluster.sh");
             params.put("{VERSION}", agentExpectVersion);
             params.put("{NAME}", "choerodon-cluster-agent-" + devopsClusterDTO.getCode());
             params.put("{SERVICEURL}", agentServiceUrl);
@@ -152,15 +164,15 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                     .getId().toString());
         } catch (Exception e) {
             //创建集群失败发送webhook json
-            sendNotificationService.sendWhenCreateClusterFail(devopsClusterDTO, iamProject,e.getMessage());
+            sendNotificationService.sendWhenCreateClusterFail(devopsClusterDTO, iamProject, e.getMessage());
             throw e;
         }
 
         //创建集群成功发送web_hook
         sendNotificationService.sendWhenCreateCluster(devopsClusterDTO, iamProject);
-        // TODO 能不能优化为只读一次，读入内存?
-        return FileUtil.replaceReturnString(inputStream, params);
+        return FileUtil.replaceReturnString(CLUSTER_ACTIVATE_COMMAND_TEMPLATE, params);
     }
+
     private void checkEnableCreateClusterOrThrowE(Long projectId) {
         if (Boolean.FALSE.equals(checkEnableCreateCluster(projectId))) {
             throw new CommonException(ERROR_ORGANIZATION_CLUSTER_NUM_MAX);
@@ -248,9 +260,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         Map<String, String> searchParamMap = new HashMap<>();
         List<String> paramList = new ArrayList<>();
         if (!StringUtils.isEmpty(params)) {
-            Map maps = gson.fromJson(params, Map.class);
-            searchParamMap = Optional.ofNullable((Map) TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM))).orElse(new HashMap<>());
-            paramList = Optional.ofNullable((List) TypeUtil.cast(maps.get(TypeUtil.PARAMS))).orElse(new ArrayList<String>());
+            Map<String, Object> maps = TypeUtil.castMapParams(params);
+            searchParamMap = org.apache.commons.lang3.ObjectUtils.defaultIfNull(TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), Collections.emptyMap());
+            paramList = org.apache.commons.lang3.ObjectUtils.defaultIfNull(TypeUtil.cast(maps.get(TypeUtil.PARAMS)), Collections.emptyList());
         }
 
         ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
@@ -466,29 +478,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             return PageInfoUtil.createPageFromList(allMatched, pageable);
         }
     }
-
-    private boolean isConnect(List<Long> connectedEnvList, List<Long> updatedEnvList, Long clusterId) {
-        if (connectedEnvList.contains(clusterId)) {
-            return updatedEnvList.contains(clusterId);
-        }
-        return false;
-    }
-
-    /**
-     * 集群是否需要升级
-     *
-     * @param connectedEnvList 已连接的集群id
-     * @param updatedEnvList   up-to-date的集群id
-     * @param clusterId        待判断的集群id
-     * @return true 如果需要升级
-     */
-    private boolean isToUpgrade(List<Long> connectedEnvList, List<Long> updatedEnvList, Long clusterId) {
-        if (connectedEnvList.contains(clusterId)) {
-            return !updatedEnvList.contains(clusterId);
-        }
-        return false;
-    }
-
 
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
