@@ -247,7 +247,7 @@ const TreeItem = observer(({ record, search }) => {
               </span>
             </Tooltip>
             <div style={{ flexShrink: '0' }}>
-              <Action data={actionData} onClick={eventStopProp} />
+              <Action data={enabled ? actionData : actionData.slice(1, 3)} onClick={eventStopProp} />
             </div>
           </div>
           <div className={`${prefixCls}-sidebar-header`}>
