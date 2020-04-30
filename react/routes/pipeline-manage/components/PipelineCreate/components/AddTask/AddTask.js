@@ -65,7 +65,7 @@ const AddTask = observer(() => {
       //   AddTaskFormDataSet.current.set('private', '');
       // }
     }
-  }, [steps.find(s => s.checked)]);
+  }, [steps]);
 
   useEffect(() => {
     const init = async () => {
