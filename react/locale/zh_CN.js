@@ -13,6 +13,7 @@ const commonField = {
   // 操作
   active: '启用',
   stop: '停用',
+  execute: '执行',
   return: '返回',
   submit: '确认',
   create: '创建',
@@ -68,6 +69,8 @@ const commonField = {
   member: '项目成员',
   all: '全部',
   not_installed: '未安装',
+  branch: '分支',
+  tag: '标记',
 
   // 状态描述
   null: '无',
@@ -81,6 +84,7 @@ const commonField = {
   stopped: '已停止',
   failed: '失败',
   deleted: '已删除',
+  canceled: '已取消',
   creating: '创建中',
   pendingcheck: '待审核',
   executing: '执行中',
@@ -433,6 +437,7 @@ const appService = {
   'c7ncd.appService.type.test': '测试服务',
   'c7ncd.appService.icon': '服务图标',
   'c7ncd.appService.create': '创建应用服务',
+  'c7ncd.appService.create.disabled': '项目内应用服务数量已达上限，无法创建更多',
   'c7ncd.appService.edit': '修改应用服务',
   'c7ncd.appService.detail': '服务详情',
   'c7ncd.appService.disable': '停用服务',
@@ -764,13 +769,41 @@ const codeManagement = {
   'code-management.tag.empty.des': '暂无任何标记，您可在此页面基于某一分支创建标记',
 };
 
+const pipelineManage = {
+  'c7ncd.pipelineManage.execute': '全新执行',
+  'c7ncd.pipelineManage.execute.cancel': '取消执行',
+  'c7ncd.pipelineManage.execute.retry': '重试',
+  'c7ncd.pipelineManage.delete.title': '删除流水线',
+  'c7ncd.pipelineManage.delete.des': '删除CI流水线后，之前上传至存储库的所有软件包也会随之清除；确定删除该条CI流水线吗？',
+  'c7ncd.pipelineManage.stop.title': '停用流水线',
+  'c7ncd.pipelineManage.stop.des': '确定停用该条流水线吗？',
+  'c7ncd.pipelineManage.record.detail': '流水线记录详情',
+  'c7ncd.pipelineManage.record.detail.title': '流水线记录"#{id}"的详情',
+  'c7ncd.pipelineManage.name': '流水线名称',
+  'c7ncd.pipelineManage.appService': '关联应用服务',
+  'c7ncd.pipelineManage.result': '执行结果',
+  'c7ncd.pipelineManage.trigger.user': '触发人员',
+  'c7ncd.pipelineManage.execute.date': '执行时间',
+  'c7ncd.pipelineManage.time': '流程耗时',
+  'c7ncd.pipelineManage.create': '创建流水线',
+  'c7ncd.pipelineManage.more': '加载更多',
+  'c7ncd.pipelineManage.status.success': '最近执行结果：成功',
+  'c7ncd.pipelineManage.status.failed': '最近执行结果：失败',
+  'c7ncd.pipelineManage.status.running': '最近执行结果：执行中',
+  'c7ncd.pipelineManage.status.pending': '最近执行结果：准备中',
+  'c7ncd.pipelineManage.status.skipped': '最近执行结果：已跳过',
+  'c7ncd.pipelineManage.status.canceled': '最近执行结果：已取消',
+};
+
 const emptyPage = {
   'empty.title.app': '暂无应用服务',
   'empty.title.env': '暂无环境',
+  'empty.title.pipeline': '暂无CI流水线',
   'empty.title.instance': '暂无实例',
   'empty.title.prohibited': '暂无权限',
   'empty.tips.app.owner': '当前项目下无应用服务，请创建',
   'empty.tips.env.owner': '当前项目下无可用环境，请创建',
+  'empty.tips.pipeline.owner': '当前项目下无CI流水线，请创建',
   'empty.tips.app.member':
     '您当前暂无此项目下任何应用服务的权限，若需查看某个应用服务的相关内容，请联系项目所有者添加权限',
   'empty.tips.env.member':
@@ -1240,6 +1273,7 @@ const cluster = {
   'c7ncd.cluster.node.cpu': 'CPU分配',
   'c7ncd.cluster.node.memory': '内存分配',
   'c7ncd.cluster.modal.create': '创建集群',
+  'c7ncd.cluster.modal.create.disabled': '组织集群数量已达上限，无法创建更多',
   'c7ncd.cluster.modal.edit': '修改集群',
   'c7ncd.cluster.modal.permission': '权限管理',
   'c7ncd.cluster.name': '集群名称',
@@ -1370,6 +1404,9 @@ const zhCN = {
   'ist.noIst': '暂无实例',
   'ist.y': '可用',
   'ist.n': '不可用',
+  'ist.ready.available': '可用',
+  'ist.ready.unavailable': '不可用',
+  'ist.ready.health': '健康检查中',
   'ist.noAdd': '未添加',
   'ist.noAddEnv': '未添加环境',
   'ist.run': '启用实例',
@@ -1973,15 +2010,19 @@ const zhCN = {
   'domain.column.port': '端口',
   'domain.form.domain': '域名地址',
   'domain.form.cert': '域名证书',
+  'domain.annotation': '子域名',
   'domain.name.check.exist': '名称已存在',
   'domain.name.check.failed':
     '由小写字母，数字和 - 组成，以字母、数字开始和结束',
   'domain.domain.check.failed':
-    '由小写字母，数字、和 . 组成，以字母、数字开始和结束',
+    '由小写字母，数字和 . 组成，以字母、数字开始和结束',
   'domain.path.check.exist': '域名地址与路径的组合已经存在',
   'domain.path.check.failed': '以 / 开始，且不能有空白字符',
+  'domain.annotation.check.failed': '输入内容格式有误',
+  'domain.annotation.check.repeat': '“子域名+名称”不能重复',
   'domain.path.check.notSet': '如不设置，请填写 /',
   'domain.path.add': '添加路径',
+  'domain.annotation.add': '添加Annotation',
   'domain.path.isnull': '请先填写正确路径',
   'domain.network.check.failed': '请移除不可用的网络',
   'domain.port.notExist': '请更新端口',
@@ -2551,7 +2592,7 @@ const zhCN = {
   'pipeline.deploy.mode': '选择部署模式',
   'pipeline.task.config.title': '配置信息',
   'pipeline.task.config.title.tip':
-    '根据您所选的应用与环境，下方会匹配出对应的部署配置，选择后，会出现对应的配置信息；若当前流水线内无部署配置，则需要去部属配置界面创建后才可选择。',
+    '根据您所选的应用与环境，下方会匹配出对应的部署配置，选择后，会出现对应的配置信息；若当前流水线内无部署配置，则需要去部署配置界面创建后才可选择。',
   'pipeline.task.config': '部署配置',
   'pipeline.task.add': '添加任务',
   'pipeline.task.delete': '删除阶段任务',
@@ -2719,6 +2760,7 @@ const zhCN = {
   ...codeManagement,
   ...emptyPage,
   ...pvManager,
+  ...pipelineManage,
 };
 
 export default zhCN;

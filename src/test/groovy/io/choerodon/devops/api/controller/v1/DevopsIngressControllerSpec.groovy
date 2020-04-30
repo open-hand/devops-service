@@ -361,7 +361,6 @@ class DevopsIngressControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedClusterList() >> envList
         envUtil.getUpdatedClusterList() >> envList
 
         when: '环境总览域名查询'

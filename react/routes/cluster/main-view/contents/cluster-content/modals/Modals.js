@@ -80,6 +80,7 @@ const ClusterModals = observer(() => {
   }
   function resreshTree() {
     treeDs.query();
+    mainStore.checkCreate(projectId);
   }
 
   function refreshPermission() {
@@ -123,6 +124,7 @@ const ClusterModals = observer(() => {
   }
 
   function getButtons() {
+    const { getCanCreate } = mainStore;
     return [{
       name: formatMessage({ id: `${intlPrefix}.modal.create` }),
       permissions: ['devops-service.devops-cluster.create'],
@@ -130,10 +132,15 @@ const ClusterModals = observer(() => {
       handler: openCreate,
       display: true,
       group: 1,
+      disabled: !getCanCreate,
+      disabledMessage: formatMessage({ id: `${intlPrefix}.modal.create.disabled` }),
     }, {
       name: formatMessage({ id: `${intlPrefix}.modal.permission` }),
-      permissions: ['devops-service.devops-cluster.assignPermission', 'devops-service.devops-cluster.checkName',
-        'devops-service.devops-cluster.checkCode'],
+      permissions: [
+        'devops-service.devops-cluster.assignPermission',
+        'devops-service.devops-cluster.checkName',
+        'devops-service.devops-cluster.checkCode',
+      ],
       icon: 'authority',
       handler: openPermission,
       display: true,

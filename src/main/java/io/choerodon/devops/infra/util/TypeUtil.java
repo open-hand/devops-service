@@ -5,14 +5,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by younger on 2018/3/29.
  */
 public class TypeUtil {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TypeUtil.class);
     public static final String SEARCH_PARAM = "searchParam";
     public static final String PARAMS = "params";
     private static final Gson gson = new Gson();
@@ -132,16 +137,24 @@ public class TypeUtil {
                 if (f.get(object) != null && StringUtils.isNotBlank(f.get(object).toString())) {
                     return false;
                 }
-
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.info("exception", e);
         }
-
         return true;
     }
 
     public static <T> List<T> getListWithType(Map<Class, List> map, Class<T> key) {
         return (List<T>) map.get(key);
+    }
+
+    /**
+     * 将Long转为long，null值转为0
+     *
+     * @param value 对象
+     * @return long值
+     */
+    public static long wrappedLongToPrimitive(@Nullable Long value) {
+        return value == null ? 0 : value;
     }
 }

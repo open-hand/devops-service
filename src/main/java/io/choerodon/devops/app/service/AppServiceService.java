@@ -1,5 +1,11 @@
 package io.choerodon.devops.app.service;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.Nullable;
+
 import com.github.pagehelper.PageInfo;
 import org.springframework.data.domain.Pageable;
 
@@ -11,11 +17,6 @@ import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by younger on 2018/3/28.
@@ -119,7 +120,7 @@ public interface AppServiceService {
      * @param token token
      * @return File
      */
-    String queryFile(String token, String type);
+    String queryFile(String token);
 
     /**
      * 根据环境id获取已部署正在运行实例的服务
@@ -439,10 +440,38 @@ public interface AppServiceService {
     /**
      * 批量查询应用服务
      *
-     * @param ids
-     * @return
+     * @param projectId    项目id
+     * @param ids          应用服务id
+     * @param doPage       是否分页
+     * @param withVersions 是否需要版本信息
+     * @param pageable     分页参数
+     * @param params       查询参数
+     * @return 应用服务信息
      */
-    PageInfo<AppServiceVO> listAppServiceByIds(Long projectId, Set<Long> ids, Boolean doPage, Pageable pageable, String params);
+    PageInfo<AppServiceVO> listAppServiceByIds(Long projectId, Set<Long> ids, Boolean doPage, boolean withVersions, Pageable pageable, String params);
+
+
+    /**
+     * 批量查询应用服务
+     *
+     * @param ids      应用服务id
+     * @param doPage   是否分页
+     * @param pageable 分页参数
+     * @param params   查询参数
+     * @return 应用服务信息
+     */
+    PageInfo<AppServiceRepVO> listAppServiceByIds(Set<Long> ids, Boolean doPage, Pageable pageable, String params);
+
+    /**
+     * 通过一组id分页查询或者不传id时进行分页查询
+     *
+     * @param projectId 项目id
+     * @param ids       应用服务Id
+     * @param doPage    是否分页
+     * @param pageable  分页参数
+     * @return 结果
+     */
+    PageInfo<AppServiceVO> listByIdsOrPage(Long projectId, @Nullable Set<Long> ids, @Nullable Boolean doPage, Pageable pageable);
 
     /**
      * 根据导入应用类型查询应用所属的项目集合
@@ -485,4 +514,35 @@ public interface AppServiceService {
     List<AppServiceSimpleVO> listAppServiceHavingVersions(Long projectId);
 
     Map<Long, Integer> countByProjectId(List<Long> longList);
+
+    /**
+     * 判断项目下是否还能创建应用服务
+     *
+     * @param projectId 项目id
+     */
+    Boolean checkEnableCreateAppSvc(Long projectId);
+
+    /**
+     * 校验用户是否拥有应用服务权限
+     *
+     * @param appSvcId 应用服务id
+     * @param userId   用户id
+     * @return
+     */
+    boolean checkAppServicePermissionForUser(Long appSvcId, Long userId);
+
+    /**
+     * 查询用于创建CI流水线的应用服务
+     * 1. 默认查询20条
+     * 2. 要用户有权限的
+     * 3. 要创建成功且启用的
+     * 4. 要能够模糊搜索
+     * 5. 不能查出已经有流水线的
+     * 6. 要有master分支的
+     *
+     * @param projectId 项目id
+     * @param params    查询参数，用于搜索
+     * @return 应用服务列表
+     */
+    List<AppServiceSimpleVO> listAppServiceToCreateCiPipeline(Long projectId, @Nullable String params);
 }

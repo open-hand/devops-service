@@ -1,0 +1,37 @@
+package io.choerodon.devops.infra.mapper;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
+import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
+import io.choerodon.mybatis.common.Mapper;
+
+/**
+ * 〈功能简述〉
+ * 〈〉
+ *
+ * @author wanghao
+ * @Date 2020/4/3 9:21
+ */
+public interface DevopsCiPipelineRecordMapper extends Mapper<DevopsCiPipelineRecordDTO> {
+
+    /**
+     * 查询流水线执行记录
+     *
+     * @param ciPipelineId
+     * @return
+     */
+    List<DevopsCiPipelineRecordVO> listByCiPipelineId(@Param("ciPipelineId") Long ciPipelineId);
+
+    /**
+     * 查询猪齿鱼流水线对应的所有流水线的纪录的gitlab流水线纪录id
+     *
+     * @param ciPipelineId 猪齿鱼流水线id
+     * @return gitlab流水线纪录id列表
+     */
+    List<Long> listGitlabPipelineIdsByPipelineId(@Param("ciPipelineId") Long ciPipelineId);
+
+    int updateStatusByGitlabPipelineId(@Param("gitlabPipelineId") Long gitlabPipelineId, @Param("status") String status);
+}

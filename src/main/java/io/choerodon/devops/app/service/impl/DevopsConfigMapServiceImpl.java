@@ -8,9 +8,11 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.choerodon.devops.infra.enums.SendSettingEnum;
 import io.kubernetes.client.models.V1ConfigMap;
 import io.kubernetes.client.models.V1ObjectMeta;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,6 +66,9 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    @Lazy
+    private SendNotificationService sendNotificationService;
 
 
     @Override
@@ -260,6 +265,8 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                     userAttrDTO.getGitlabUserId(),
                     devopsConfigMapDTO.getId(), CONFIGMAP, null, false, devopsEnvironmentDTO.getId(), path);
         }
+        //删除配置映射加上消息发送
+        sendNotificationService.sendWhenConfigMap(devopsConfigMapDTO, SendSettingEnum.DELETE_RESOURCE.value());
     }
 
     @Override

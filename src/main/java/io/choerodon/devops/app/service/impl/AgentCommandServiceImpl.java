@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import com.alibaba.fastjson.JSONArray;
+import com.google.gson.Gson;
 import io.codearte.props2yaml.Props2YAML;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -70,6 +71,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
 
     private Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     private ObjectMapper mapper = new ObjectMapper();
+    private static final Gson gson = new Gson();
 
 
     @Autowired
@@ -375,7 +377,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
 
     @Override
     public void getTestAppStatus(Map<Long, List<String>> testReleases) {
-        List<Long> connected = clusterConnectionHandler.getConnectedClusterList();
+        List<Long> connected = clusterConnectionHandler.getUpdatedClusterList();
         testReleases.forEach((key, value) -> {
             if (connected.contains(key)) {
                 AgentMsgVO msg = new AgentMsgVO();
@@ -433,7 +435,10 @@ public class AgentCommandServiceImpl implements AgentCommandService {
                 clusterId,
                 CertManagerConstants.CERT_MANAGER_REALASE_NAME));
         msg.setType(HelmType.CERT_MANAGER_UNINSTALL.toValue());
-        msg.setPayload("{" + "\"" + CertManagerConstants.RELEASE_NAME + "\"" + ":" + "\"" + CertManagerConstants.CERT_MANAGER_REALASE_NAME + "\"" + "}");
+        HashMap<String, String> payLoad = new HashMap<>();
+        payLoad.put(CertManagerConstants.RELEASE_NAME, CertManagerConstants.CERT_MANAGER_REALASE_NAME);
+        payLoad.put(CertManagerConstants.NAMESPACE, CertManagerConstants.CERT_MANAGER_REALASE_NAME_C7N);
+        msg.setPayload(gson.toJson(payLoad));
         sendToWebsocket(clusterId, msg);
     }
 

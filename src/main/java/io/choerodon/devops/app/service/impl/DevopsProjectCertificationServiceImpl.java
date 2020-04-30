@@ -11,15 +11,18 @@ import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsCertificationProRelationshipService;
 import io.choerodon.devops.app.service.DevopsProjectCertificationService;
+import io.choerodon.devops.app.service.SendNotificationService;
 import io.choerodon.devops.infra.dto.CertificationDTO;
 import io.choerodon.devops.infra.dto.CertificationFileDTO;
 import io.choerodon.devops.infra.dto.DevopsCertificationProRelationshipDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.SendSettingEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCertificationFileMapper;
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
 import io.choerodon.devops.infra.util.*;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -52,6 +55,8 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     private DevopsCertificationMapper devopsCertificationMapper;
     @Autowired
     private DevopsCertificationFileMapper devopsCertificationFileMapper;
+    @Autowired
+    private SendNotificationService sendNotificationService;
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
@@ -280,9 +285,11 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
 
     @Override
     public void deleteCert(Long certId) {
-        if (certificationService.baseQueryById(certId) == null) {
+        CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
+        if (certificationDTO == null) {
             return;
         }
+
 
         List<CertificationDTO> certificationDTOS = certificationService.baseListByOrgCertId(certId);
         if (certificationDTOS.isEmpty()) {
@@ -317,7 +324,12 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
             certificationDTOS.getList().forEach(certificationDTO -> {
                 List<String> stringList = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
                 }.getType());
-                ProjectCertificationVO orgCertificationVO = new ProjectCertificationVO(certificationDTO.getId(), certificationDTO.getName(), stringList.get(0), certificationDTO.getSkipCheckProjectPermission(), certificationDTO.getObjectVersionNumber());
+                ProjectCertificationVO orgCertificationVO = new ProjectCertificationVO();
+                orgCertificationVO.setId(certificationDTO.getId());
+                orgCertificationVO.setName(certificationDTO.getName());
+                orgCertificationVO.setDomain(stringList.get(0));
+                orgCertificationVO.setSkipCheckProjectPermission(certificationDTO.getSkipCheckProjectPermission());
+                orgCertificationVO.setObjectVersionNumber(certificationDTO.getObjectVersionNumber());
                 orgCertifications.add(orgCertificationVO);
             });
         }
@@ -330,6 +342,14 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         CertificationDTO certificationDTO = devopsCertificationMapper.queryById(certId);
         List<String> stringList = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
         }.getType());
-        return new ProjectCertificationVO(certificationDTO.getId(), certificationDTO.getName(), stringList.get(0), certificationDTO.getSkipCheckProjectPermission(), certificationDTO.getObjectVersionNumber(), certificationDTO.getKeyValue(), certificationDTO.getCertValue());
+        ProjectCertificationVO projectCertificationVO = new ProjectCertificationVO();
+        projectCertificationVO.setId(certificationDTO.getId());
+        projectCertificationVO.setName(certificationDTO.getName());
+        projectCertificationVO.setDomain(stringList.get(0));
+        projectCertificationVO.setSkipCheckProjectPermission(certificationDTO.getSkipCheckProjectPermission());
+        projectCertificationVO.setObjectVersionNumber(certificationDTO.getObjectVersionNumber());
+        projectCertificationVO.setKeyValue(certificationDTO.getKeyValue());
+        projectCertificationVO.setCertValue(certificationDTO.getCertValue());
+        return projectCertificationVO;
     }
 }

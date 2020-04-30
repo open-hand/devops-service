@@ -39,6 +39,7 @@
                di.status,
                di.is_usable                  isUsable,
                di.cert_id                    certId,
+               di.annotations                annotations,
                de.`name`                     envName,
                cmd.`status`                  commandStatus,
                cmd.command_type              commandType,

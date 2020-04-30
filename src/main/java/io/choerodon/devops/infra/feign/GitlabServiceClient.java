@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.devops.api.vo.FileCreationVO;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
 
 /**
@@ -250,13 +251,13 @@ public interface GitlabServiceClient {
                                                @RequestParam(value = "userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}/retry")
-    ResponseEntity<GitlabPipelineDTO> retryPipeline(
+    ResponseEntity<Pipeline> retryPipeline(
             @PathVariable("projectId") Integer projectId,
             @PathVariable("pipelineId") Integer pipelineId,
             @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}/cancel")
-    ResponseEntity<GitlabPipelineDTO> cancelPipeline(
+    ResponseEntity<Pipeline> cancelPipeline(
             @PathVariable("projectId") Integer projectId,
             @PathVariable("pipelineId") Integer pipelineId,
             @RequestParam("userId") Integer userId);
@@ -511,4 +512,44 @@ public interface GitlabServiceClient {
             @RequestParam(value = "user_id") Integer userId,
             @ApiParam(value = "操作文件相关的信息")
             @RequestBody CommitPayloadDTO commitPayloadDTO);
+
+    /**
+     * Create a new pipeline
+     *
+     * @param projectId 项目id
+     * @param ref       分支
+     * @return Pipeline
+     */
+    @ApiOperation(value = "Create a pipelines jobs ")
+    @PostMapping("/v1/projects/{projectId}/pipelines")
+    ResponseEntity<Pipeline> createPipeline(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "projectId") Integer projectId,
+            @ApiParam(value = "userId")
+            @RequestParam(value = "userId") Integer userId,
+            @ApiParam(value = "分支")
+            @RequestParam(value = "ref") String ref);
+
+    /**
+     * 查询job执行日志
+     */
+    @GetMapping(value = "/v1/projects/{projectId}/jobs/{jobId}/trace")
+    ResponseEntity<String> queryTrace(
+            @PathVariable(value = "projectId") Integer projectId,
+            @PathVariable(value = "jobId") Integer jobId,
+            @RequestParam(value = "userId") Integer userId);
+
+    @ApiOperation(value = "重试job")
+    @PutMapping(value = "/v1/projects/{projectId}/jobs/{jobId}/retry")
+    ResponseEntity<JobDTO> retryJob(
+            @PathVariable(value = "projectId") Integer projectId,
+            @PathVariable(value = "jobId") Integer jobId,
+            @RequestParam(value = "userId") Integer userId);
+
+    @GetMapping(value = "/v1/projects/{projectId}/repository/branches/{branchName}")
+    ResponseEntity<BranchDTO> queryBranchByName(
+            @ApiParam(value = "工程id", required = true)
+            @PathVariable("projectId") Integer projectId,
+            @ApiParam(value = "要查询的分支名", required = true)
+            @PathVariable("branchName") String branchName);
 }

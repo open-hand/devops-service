@@ -41,8 +41,6 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private SendNotificationService sendNotificationService;
-    @Autowired
-    private BaseServiceClientOperator baseServiceClientOperator;
 
 
     @Override

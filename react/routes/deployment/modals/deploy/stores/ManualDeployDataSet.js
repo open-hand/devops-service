@@ -3,6 +3,7 @@ import forEach from 'lodash/forEach';
 import map from 'lodash/map';
 import uuidV1 from 'uuid/v1';
 import { axios } from '@choerodon/boot';
+import isEmpty from 'lodash/isEmpty';
 
 function getRandomName(prefix = '') {
   const randomString = uuidV1();
@@ -11,6 +12,16 @@ function getRandomName(prefix = '') {
   return realPrefix
     ? `${realPrefix.substring(0, 24)}-${randomString.substring(0, 5)}`
     : randomString.substring(0, 30);
+}
+
+function formatAnnotation(postData, oldAnnotation = []) {
+  const annotations = {};
+  forEach(oldAnnotation, ({ domain, key, value }) => {
+    if (key && value) {
+      annotations[`${domain ? `${domain}/` : ''}${key}`] = value;
+    }
+  });
+  postData.annotations = isEmpty(annotations) ? null : annotations;
 }
 
 export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOptionsDs, versionOptionsDs, deployStore, networkDs, domainDs }) => {
@@ -132,6 +143,7 @@ export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOp
           res.devopsIngressVO = data.devopsIngressVO[0];
           res.devopsIngressVO.envId = data.environmentId;
           res.devopsIngressVO.appServiceId = appServiceId;
+          formatAnnotation(res.devopsIngressVO, data.devopsIngressVO[0].annotations);
         } else {
           res.devopsIngressVO = null;
         }

@@ -74,7 +74,7 @@ const IstModals = injectIntl(observer(() => {
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
         formatMessage={formatMessage}
-        refresh={refresh}
+        refresh={afterDeploy}
       />,
       afterClose: () => {
         istStore.setUpgradeValue({});
@@ -106,7 +106,7 @@ const IstModals = injectIntl(observer(() => {
         vo={deployVo}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
-        refresh={refresh}
+        refresh={afterDeploy}
       />,
       afterClose: () => {
         istStore.setUpgradeValue({});
@@ -173,11 +173,16 @@ const IstModals = injectIntl(observer(() => {
     try {
       const result = await istStore.redeploy(projectId, id);
       if (handlePromptError(result, false)) {
-        refresh();
+        afterDeploy();
       }
     } catch (e) {
       Choerodon.handleResponseError(e);
     }
+  }
+
+  function afterDeploy() {
+    detailsStore.setTargetCount({});
+    refresh();
   }
 
   function getHeader() {

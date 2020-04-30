@@ -40,13 +40,7 @@ const SourceTable = injectIntl(observer(({ tableDs, selectedDs, store, projectId
     selectedDs.push(...records);
   });
 
-  async function loadData(urlData = {}) {
-    let url = '';
-    forEach(urlData, (value, key) => {
-      value && (url = `${url}&${key}=${value}`);
-    });
-    tableDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/page_by_mode?share=${importRecord.get('platformType') === 'share'}${url}`;
-
+  async function loadData() {
     try {
       if (await tableDs.query() !== false) {
         forEach(selectedId, (id) => {
@@ -60,18 +54,16 @@ const SourceTable = injectIntl(observer(({ tableDs, selectedDs, store, projectId
 
   function handleSelectProject(value) {
     setSearchProjectId(value);
-    loadData({
-      search_project_id: value,
-      param,
-    });
+    tableDs.setQueryParameter('search_project_id', value);
+    tableDs.setQueryParameter('param', param);
+    loadData();
   }
 
   function handleChangeParam(value) {
     setParam(value);
-    loadData({
-      search_project_id: searchProjectId,
-      param: value,
-    });
+    tableDs.setQueryParameter('search_project_id', searchProjectId);
+    tableDs.setQueryParameter('param', value);
+    loadData();
   }
 
   return (
