@@ -148,7 +148,8 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
     }, {
       name: 'image',
       type: 'string',
-      label: '流水线Runner镜像',
+      label: '任务Runner镜像',
+      required: true,
       validator: checkImage,
       defaultValue: AddTaskUseStore.getDefaultImage,
     },

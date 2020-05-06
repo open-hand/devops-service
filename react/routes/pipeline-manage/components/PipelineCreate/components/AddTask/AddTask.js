@@ -755,6 +755,8 @@ const AddTask = observer(() => {
   const handleChangeImage = (data) => {
     if (data === '0') {
       AddTaskFormDataSet.current.set('image', useStore.getDefaultImage);
+    } else {
+      AddTaskFormDataSet.current.set('image', '');
     }
   };
 
@@ -780,7 +782,7 @@ const AddTask = observer(() => {
 
   return (
     <React.Fragment>
-      <Form dataSet={AddTaskFormDataSet} columns={2}>
+      <Form className="addTaskForm" dataSet={AddTaskFormDataSet} columns={2}>
         <Select name="type">
           <Option value="build">构建</Option>
           <Option value="sonar">代码检查</Option>

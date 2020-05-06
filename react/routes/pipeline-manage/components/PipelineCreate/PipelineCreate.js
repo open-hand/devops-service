@@ -64,6 +64,8 @@ const PipelineCreate = observer(() => {
   const handleChangeImage = (data) => {
     if (data === '0') {
       PipelineCreateFormDataSet.current.set('image', createUseStore.getDefaultImage);
+    } else {
+      PipelineCreateFormDataSet.current.set('image', '');
     }
   };
 
@@ -115,12 +117,12 @@ const PipelineCreate = observer(() => {
         {/*  <Option disabled value="F">手动触发</Option> */}
         {/* </SelectBox> */}
       </Form>
-      <p className="pipeline_createInfo"><Icon style={{ color: 'red', verticalAlign: 'text-bottom' }} type="error" />此页面定义了阶段与任务后，GitLab仓库中的.gitlab-ci.yml文件也会同步修改。</p>
       <StageEditBlock
         editBlockStore={editBlockStore}
         edit
         image={PipelineCreateFormDataSet.current.get('image')}
       />
+      <p className="pipeline_createInfo"><Icon style={{ color: 'red', verticalAlign: 'text-bottom' }} type="error" />此页面定义了阶段与任务后，GitLab仓库中的.gitlab-ci.yml文件也会同步修改。</p>
     </div>
   );
 });
