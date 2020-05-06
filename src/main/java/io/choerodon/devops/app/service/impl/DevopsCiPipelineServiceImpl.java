@@ -578,9 +578,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         }
 
                         switch (type) {
+                            // GO和NPM是一样处理
+                            case GO:
                             case NPM:
-                                // npm步骤数据暂时不需要校验
-                                result.addAll(buildNpmScripts(config));
+                                result.addAll(GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(config.getScript()), true, true));
                                 break;
                             case MAVEN:
                                 // 处理settings文件
@@ -621,17 +622,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
         return shells;
     }
-
-    /**
-     * 生成Npm构建过程的脚本
-     *
-     * @param ciConfigTemplateVO 配置信息
-     * @return npm构建的脚本
-     */
-    private List<String> buildNpmScripts(CiConfigTemplateVO ciConfigTemplateVO) {
-        return GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(ciConfigTemplateVO.getScript()), true, true);
-    }
-
 
     /**
      * 生成并存储maven settings到数据库
