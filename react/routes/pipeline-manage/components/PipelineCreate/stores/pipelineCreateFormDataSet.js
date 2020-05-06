@@ -43,6 +43,7 @@ export default (AppServiceOptionsDs, projectId, createUseStore) => {
       name: 'image',
       type: 'string',
       label: '流水线Runner镜像',
+      required: true,
       validator: checkImage,
       defaultValue: createUseStore.getDefaultImage,
     }, {
