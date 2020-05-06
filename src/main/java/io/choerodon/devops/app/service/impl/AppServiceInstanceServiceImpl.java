@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
@@ -217,12 +218,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         if (type.equals(UPDATE)) {
             AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
-            if (appServiceInstanceDTO.getValueId() != null) {
-                DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueService.baseQueryById(appServiceInstanceDTO.getValueId());
-                instanceValueVO.setName(devopsDeployValueDTO.getName());
-                instanceValueVO.setId(devopsDeployValueDTO.getId());
-                instanceValueVO.setObjectVersionNumber(devopsDeployValueDTO.getObjectVersionNumber());
-            }
+            fillDeployValueInfo(instanceValueVO, appServiceInstanceDTO.getValueId());
             instanceValueVO.setYaml(getReplaceResult(versionValue, baseQueryValueByInstanceId(instanceId)).getYaml());
         } else {
             // 如果是创建实例,直接返回版本values
@@ -234,17 +230,38 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public InstanceValueVO queryUpgradeValue(Long instanceId, Long appServiceVersionId) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
+        // 上次实例部署时的完整values
         String yaml = FileUtil.checkValueFormat(baseQueryValueByInstanceId(instanceId));
-        String versionValue = appServiceVersionService.baseQueryValue(appServiceVersionId);
+        String lastVersionValue = appServiceVersionService.baseQueryValue(appServiceInstanceDTO.getAppServiceVersionId());
+
+        // 上次实例部署时的values相较于上次版本的默认values的变化值
+        String lastDeltaValues = getReplaceResult(lastVersionValue, yaml).getDeltaYaml();
+
+        // 新的版本的values值, 如果新版本id和上个版本id一致，就用之前查询的
+        String newVersionValue = appServiceInstanceDTO.getAppServiceVersionId().equals(appServiceVersionId) ? lastVersionValue : appServiceVersionService.baseQueryValue(appServiceVersionId);
+
         InstanceValueVO instanceValueVO = new InstanceValueVO();
-        if (appServiceInstanceDTO.getValueId() != null) {
-            DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueService.baseQueryById(appServiceInstanceDTO.getValueId());
-            instanceValueVO.setName(devopsDeployValueDTO.getName());
-            instanceValueVO.setId(devopsDeployValueDTO.getId());
-            instanceValueVO.setObjectVersionNumber(devopsDeployValueDTO.getObjectVersionNumber());
-        }
-        instanceValueVO.setYaml(getReplaceResult(versionValue, yaml).getYaml());
+        fillDeployValueInfo(instanceValueVO, appServiceInstanceDTO.getValueId());
+
+        // 将新的版本的values和上次部署的变化值进行合并
+        instanceValueVO.setYaml(getReplaceResult(newVersionValue, lastDeltaValues).getYaml());
         return instanceValueVO;
+    }
+
+    /**
+     * 填充部署配置相关信息（如果有）
+     *
+     * @param instanceValueVO 实例values相关信息
+     * @param instanceValueId 实例纪录的valueId，部署配置id，可为空
+     */
+    private void fillDeployValueInfo(InstanceValueVO instanceValueVO, @Nullable Long instanceValueId) {
+        if (instanceValueId == null) {
+            return;
+        }
+        DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueService.baseQueryById(instanceValueId);
+        instanceValueVO.setName(devopsDeployValueDTO.getName());
+        instanceValueVO.setId(devopsDeployValueDTO.getId());
+        instanceValueVO.setObjectVersionNumber(devopsDeployValueDTO.getObjectVersionNumber());
     }
 
     @Override
