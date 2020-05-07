@@ -38,12 +38,19 @@ export default observer(() => {
   }
   
   function renderCommit({ value }) {
-    const { commitContent, commitSha, commitUrl, ref, userHeadUrl, userName } = value || {};
+    const { commitContent, commitSha, commitUrl, ref, userHeadUrl, userName, gitlabProjectUrl } = value || {};
     return (
       <div className={`${prefixCls}-commit`}>
         <div className={`${prefixCls}-commit-title`}>
           <Icon type="branch" className={`${prefixCls}-commit-title-branch`} />
-          <span className={`${prefixCls}-commit-title-ref`}>{ref}</span>
+          <a
+            href={`${gitlabProjectUrl}/commits/${ref}`}
+            target="_blank"
+            rel="nofollow me noopener noreferrer"
+            className={`${prefixCls}-commit-title-ref`}
+          >
+            <span>{ref}</span>
+          </a>
           <Icon type="point" className={`${prefixCls}-commit-title-point`} />
           <a
             href={commitUrl}
@@ -56,7 +63,14 @@ export default observer(() => {
         </div>
         <div className={`${prefixCls}-commit-content`}>
           <UserInfo name={userName || '?'} avatar={userHeadUrl} showName={false} />
-          <span className={`${prefixCls}-commit-content-text`}>{commitContent}</span>
+          <a
+            href={commitUrl}
+            target="_blank"
+            rel="nofollow me noopener noreferrer"
+            className={`${prefixCls}-commit-content-text`}
+          >
+            <span>{commitContent}</span>
+          </a>
         </div>
       </div>
     );
