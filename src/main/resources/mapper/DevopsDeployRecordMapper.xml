@@ -149,46 +149,48 @@
 				)
 			</foreach>
 		</if>
-        UNION ALL
-        SELECT batch.id,
-        batch.project_id,
-        batch.deploy_type,
-        batch.id AS deploy_id,
-        batch.deploy_time,
-        NULL AS deployStatus,
-        batch.created_by AS deployCreatedBy,
-        NULL AS pipelineName,
-        NULL AS pipelineTriggerType,
-        NULL AS pipelineId,
-        NULL AS instanceId,
-        batch.env AS envId,
-        NULL AS env,
-        NULL AS appServiceId
-        FROM devops_deploy_record batch
-        WHERE batch.project_id = #{projectId,jdbcType=BIGINT}
-        AND batch.deploy_type = 'batch'
-        <if test='searchParam != null'>
-                <if test='searchParam.deployType != null and searchParam.deployType.length > 0'>
-                    AND
-                    batch.deploy_type LIKE CONCAT(CONCAT('%', #{searchParam.deployType, jdbcType=VARCHAR}),'%')
-                </if>
-                <if test='searchParam.env != null'>
-                    AND
-                    batch.env =#{searchParam.env}
-                </if>
-                <if test='searchParam.deployId != null'>
-                    AND
-                    batch.deploy_id = #{searchParam.deployId}
-                </if>
-        </if>
-        <if test='params != null and params.size > 0'>
-            AND
-            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
-                (batch.deploy_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                OR batch.env LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                )
-            </foreach>
-        </if>
+        <if test="searchParam == null or searchParam.deployStatus == null or searchParam.deployStatus.length == 0">
+			UNION ALL
+			SELECT batch.id,
+			batch.project_id,
+			batch.deploy_type,
+			batch.id AS deploy_id,
+			batch.deploy_time,
+			NULL AS deployStatus,
+			batch.created_by AS deployCreatedBy,
+			NULL AS pipelineName,
+			NULL AS pipelineTriggerType,
+			NULL AS pipelineId,
+			NULL AS instanceId,
+			batch.env AS envId,
+			NULL AS env,
+			NULL AS appServiceId
+			FROM devops_deploy_record batch
+			WHERE batch.project_id = #{projectId,jdbcType=BIGINT}
+			AND batch.deploy_type = 'batch'
+			<if test='searchParam != null'>
+				<if test='searchParam.deployType != null and searchParam.deployType.length > 0'>
+					AND
+					batch.deploy_type LIKE CONCAT(CONCAT('%', #{searchParam.deployType, jdbcType=VARCHAR}),'%')
+				</if>
+				<if test='searchParam.env != null'>
+					AND
+					batch.env =#{searchParam.env}
+				</if>
+				<if test='searchParam.deployId != null'>
+					AND
+					batch.deploy_id = #{searchParam.deployId}
+				</if>
+			</if>
+			<if test='params != null and params.size > 0'>
+				AND
+				<foreach collection="params" item="param" open="(" separator=" OR " close=")">
+					(batch.deploy_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+					OR batch.env LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+					)
+				</foreach>
+			</if>
+		</if>
 			) t
 			where t.project_id=#{projectId}
 		    <if test="searchParam.pipelineId != null">
