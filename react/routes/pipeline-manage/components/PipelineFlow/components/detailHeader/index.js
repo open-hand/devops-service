@@ -8,7 +8,15 @@ const detailHeader = ({ gitlabPipelineId, parentName, status, triggerRef, appSer
   <div className="c7ncd-pipelineManage-optsDetail-header">
     <span>#{gitlabPipelineId}</span>
     <span>
-      (<Icon type="widgets_line" /><span>{appServiceName}</span>  -  <Icon type="branch" /><a href={aHref} target="blank">{triggerRef}</a>)
+      (<Icon type="widgets_line" /><span>{appServiceName}</span>  -
+      <Icon type="branch" />
+      <a
+        href={`${aHref}/commits/${triggerRef}`}
+        target="_blank"
+        rel="nofollow me noopener noreferrer"
+      >
+        <span>{triggerRef}</span>
+      </a>)
     </span>
     <StatusTag status={status} size={12} />
   </div>

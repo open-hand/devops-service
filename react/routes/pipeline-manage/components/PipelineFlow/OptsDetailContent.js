@@ -70,7 +70,7 @@ export default observer((props) => {
           gitlabPipelineId={gitlabPipelineId}
           parentName={devopsCiPipelineVO && devopsCiPipelineVO.name}
           appServiceName={devopsCiPipelineVO && devopsCiPipelineVO.appServiceName}
-          aHref={commit && commit.commitUrl}
+          aHref={commit && commit.gitlabProjectUrl}
           triggerRef={gitlabTriggerRef}
 
           status={status}
