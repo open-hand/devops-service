@@ -12,6 +12,7 @@ public class CustomCommitVO {
     private String userHeadUrl;
     private String commitSha;
     private String commitUrl;
+    private String gitlabProjectUrl;
     private String ref;
     private String commitContent;
 
@@ -61,5 +62,13 @@ public class CustomCommitVO {
 
     public void setCommitContent(String commitContent) {
         this.commitContent = commitContent;
+    }
+
+    public String getGitlabProjectUrl() {
+        return gitlabProjectUrl;
+    }
+
+    public void setGitlabProjectUrl(String gitlabProjectUrl) {
+        this.gitlabProjectUrl = gitlabProjectUrl;
     }
 }
