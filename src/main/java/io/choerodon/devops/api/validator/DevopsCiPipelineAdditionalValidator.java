@@ -17,6 +17,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.enums.CiJobScriptTypeEnum;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
+import io.choerodon.devops.infra.util.MavenSettingsUtil;
 
 /**
  * @author zmf
@@ -42,6 +43,8 @@ public class DevopsCiPipelineAdditionalValidator {
     private static final String ERROR_CUSTOM_JOB_FORMAT_INVALID = "error.custom.job.format.invalid";
     private static final String ERROR_JOB_NAME_NOT_UNIQUE = "error.job.name.not.unique";
     private static final String ERROR_STAGE_NAME_NOT_UNIQUE = "error.stage.name.not.unique";
+    private static final String ERROR_BOTH_REPOS_AND_SETTINGS_EXIST = "error.both.repos.and.settings.exist";
+    private static final String ERROR_MAVEN_SETTINGS_NOT_XML_FORMAT = "error.maven.settings.not.xml.format";
 
     private DevopsCiPipelineAdditionalValidator() {
     }
@@ -173,6 +176,19 @@ public class DevopsCiPipelineAdditionalValidator {
                     }
                 }
             });
+
+            // 两个字段只能填一个
+            if (!StringUtils.isEmpty(config.getMavenSettings())) {
+                throw new CommonException(ERROR_BOTH_REPOS_AND_SETTINGS_EXIST, config.getName());
+            }
+        }
+
+        // 校验用户直接粘贴的maven的settings文件的内容
+        if (!StringUtils.isEmpty(config.getMavenSettings())) {
+            // 如果不符合xml格式，抛异常
+            if (!MavenSettingsUtil.isXmlFormat(config.getMavenSettings())) {
+                throw new CommonException(ERROR_MAVEN_SETTINGS_NOT_XML_FORMAT, config.getName());
+            }
         }
     }
 

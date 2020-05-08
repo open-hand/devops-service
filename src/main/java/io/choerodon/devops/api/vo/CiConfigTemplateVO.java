@@ -31,8 +31,11 @@ public class CiConfigTemplateVO {
     @ApiModelProperty("执行脚本")
     private String script;
 
-    @ApiModelProperty("Maven的依赖仓库")
+    @ApiModelProperty("表单填写的Maven的依赖仓库")
     private List<MavenRepoVO> repos;
+
+    @ApiModelProperty("直接粘贴的maven的settings内容")
+    private String mavenSettings;
 
     @ApiModelProperty("Docker步骤的构建上下文")
     private String dockerContextDir;
@@ -116,5 +119,13 @@ public class CiConfigTemplateVO {
 
     public void setArtifactFileName(String artifactFileName) {
         this.artifactFileName = artifactFileName;
+    }
+
+    public String getMavenSettings() {
+        return mavenSettings;
+    }
+
+    public void setMavenSettings(String mavenSettings) {
+        this.mavenSettings = mavenSettings;
     }
 }

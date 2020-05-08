@@ -1,14 +1,19 @@
 package io.choerodon.devops.infra.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
+import org.xml.sax.helpers.DefaultHandler;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.dto.maven.*;
@@ -21,6 +26,9 @@ import io.choerodon.devops.infra.dto.maven.*;
  */
 public class MavenSettingsUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(MavenSettingsUtil.class);
+
+    private MavenSettingsUtil() {
+    }
 
     private static final String DEFAULT_PROFILE_ID = "default";
 
@@ -57,6 +65,26 @@ public class MavenSettingsUtil {
             LOGGER.warn("Maven util: internal errors: failed to generate settings: servers: {}, repositories: {}", servers, repositories);
             throw new CommonException("error.generate.maven.settings");
         }
+    }
+
+    /**
+     * 校验字符串内容是否符合xml文件
+     *
+     * @param xmlFormatContent xml格式的字符串内容
+     * @return true表示是, false表示不是
+     */
+    public static boolean isXmlFormat(String xmlFormatContent) {
+        Assert.hasLength(xmlFormatContent, "Xml content to be judged can not be null or empty");
+        try {
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            SAXParser parser = factory.newSAXParser();
+            DefaultHandler handler = new DefaultHandler();
+            parser.parse(new ByteArrayInputStream(xmlFormatContent.getBytes(StandardCharsets.UTF_8)), handler);
+        } catch (Exception e) {
+            // 如果解析出错，则不是xml格式的内容
+            return false;
+        }
+        return true;
     }
 
     private static Settings initSettings(List<Server> servers, List<Repository> repositories) {
