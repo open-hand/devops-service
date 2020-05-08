@@ -43,10 +43,7 @@ export default observer((props) => {
       const name = record.get('name');
       const getStatus = () => {
         const connect = record.get('connect');
-        const upgrade = record.get('upgrade');
-        if (upgrade) {
-          return ['disconnect'];
-        } else if (connect) {
+        if (connect) {
           return ['running', 'connect'];
         }
         return ['disconnect'];

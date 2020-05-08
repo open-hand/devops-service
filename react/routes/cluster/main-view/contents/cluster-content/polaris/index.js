@@ -39,6 +39,14 @@ const polaris = observer((props) => {
   const statusLoading = useMemo(() => polarisNumDS.current && polarisNumDS.current.get('status') === 'operating', [polarisNumDS.current]);
 
   useEffect(() => {
+    if (statusLoading) {
+      setDelay(5000);
+    } else {
+      setDelay(false);
+    }
+  }, [statusLoading]);
+
+  useEffect(() => {
     setLoading(false);
   }, [polarisNumDS.current]);
 

@@ -11,7 +11,15 @@ public class PersistentVolumeClaimPayload {
     private DevopsEnvironmentDTO devopsEnvironmentDTO;
     private DevopsPvcDTO devopsPvcDTO;
     private V1PersistentVolumeClaim v1PersistentVolumeClaim;
+    private String type;
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public PersistentVolumeClaimPayload() {
     }

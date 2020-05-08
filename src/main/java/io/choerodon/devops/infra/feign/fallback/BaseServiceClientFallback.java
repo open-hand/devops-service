@@ -46,6 +46,11 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
+    public ResponseEntity<List<OrganizationDTO>> queryOrgByIds(Set<Long> ids) {
+        throw new CommonException("error.organization.get");
+    }
+
+    @Override
     public ResponseEntity<PageInfo<OrganizationDTO>> listOrganizations(Integer page, Integer size) {
         throw new CommonException("error.organization.get");
     }
@@ -209,6 +214,11 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     @Override
     public ResponseEntity<List<IamUserDTO>> listProjectOwnerByProjectId(Long projectId) {
         throw new CommonException("error.check.is.project.owner");
+    }
+
+    @Override
+    public ResponseEntity<Boolean> checkOrganizationIsNew(Long organizationId) {
+        throw new CommonException("error.check.organization.is.new");
     }
 
     @Override

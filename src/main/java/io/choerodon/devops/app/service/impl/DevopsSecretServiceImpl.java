@@ -13,6 +13,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.SecretStatus;
+import io.choerodon.devops.infra.enums.SendSettingEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
@@ -72,6 +73,8 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private DevopsSecretMapper devopsSecretMapper;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private SendNotificationService sendNotificationService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -327,6 +330,8 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             resourceConvertToYamlHandler.operationEnvGitlabFile(null, projectId, DELETE, userAttrDTO.getGitlabUserId(), secretId,
                     SECRET, null, false, devopsEnvironmentDTO.getId(), path);
         }
+        //删除成功发送web hook json
+        sendNotificationService.sendWhenSecret(devopsSecretDTO, SendSettingEnum.DELETE_RESOURCE.value());
         return true;
     }
 

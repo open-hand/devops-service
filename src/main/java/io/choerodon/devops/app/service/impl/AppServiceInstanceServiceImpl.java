@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
@@ -16,7 +17,6 @@ import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1beta1Ingress;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -70,13 +70,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private static final String AUTHTYPE = "pull";
     private static final String APP_SERVICE = "appService";
     private static final String HELM_RELEASE = "C7NHelmRelease";
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AppServiceInstanceServiceImpl.class);
     private static final String MASTER = "master";
     private static final String YAML_SUFFIX = ".yaml";
     private static final String RELEASE_PREFIX = "release-";
     private static final String FILE_SEPARATOR = "file.separator";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
+    private static final String NAMESPACE = "namespace";
     private static Gson gson = new Gson();
 
     @Value("${services.helm.url}")
@@ -218,12 +218,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         if (type.equals(UPDATE)) {
             AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
-            if (appServiceInstanceDTO.getValueId() != null) {
-                DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueService.baseQueryById(appServiceInstanceDTO.getValueId());
-                instanceValueVO.setName(devopsDeployValueDTO.getName());
-                instanceValueVO.setId(devopsDeployValueDTO.getId());
-                instanceValueVO.setObjectVersionNumber(devopsDeployValueDTO.getObjectVersionNumber());
-            }
+            fillDeployValueInfo(instanceValueVO, appServiceInstanceDTO.getValueId());
             instanceValueVO.setYaml(getReplaceResult(versionValue, baseQueryValueByInstanceId(instanceId)).getYaml());
         } else {
             // 如果是创建实例,直接返回版本values
@@ -235,17 +230,38 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public InstanceValueVO queryUpgradeValue(Long instanceId, Long appServiceVersionId) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
+        // 上次实例部署时的完整values
         String yaml = FileUtil.checkValueFormat(baseQueryValueByInstanceId(instanceId));
-        String versionValue = appServiceVersionService.baseQueryValue(appServiceVersionId);
+        String lastVersionValue = appServiceVersionService.baseQueryValue(appServiceInstanceDTO.getAppServiceVersionId());
+
+        // 上次实例部署时的values相较于上次版本的默认values的变化值
+        String lastDeltaValues = getReplaceResult(lastVersionValue, yaml).getDeltaYaml();
+
+        // 新的版本的values值, 如果新版本id和上个版本id一致，就用之前查询的
+        String newVersionValue = appServiceInstanceDTO.getAppServiceVersionId().equals(appServiceVersionId) ? lastVersionValue : appServiceVersionService.baseQueryValue(appServiceVersionId);
+
         InstanceValueVO instanceValueVO = new InstanceValueVO();
-        if (appServiceInstanceDTO.getValueId() != null) {
-            DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueService.baseQueryById(appServiceInstanceDTO.getValueId());
-            instanceValueVO.setName(devopsDeployValueDTO.getName());
-            instanceValueVO.setId(devopsDeployValueDTO.getId());
-            instanceValueVO.setObjectVersionNumber(devopsDeployValueDTO.getObjectVersionNumber());
-        }
-        instanceValueVO.setYaml(getReplaceResult(versionValue, yaml).getYaml());
+        fillDeployValueInfo(instanceValueVO, appServiceInstanceDTO.getValueId());
+
+        // 将新的版本的values和上次部署的变化值进行合并
+        instanceValueVO.setYaml(getReplaceResult(newVersionValue, lastDeltaValues).getYaml());
         return instanceValueVO;
+    }
+
+    /**
+     * 填充部署配置相关信息（如果有）
+     *
+     * @param instanceValueVO 实例values相关信息
+     * @param instanceValueId 实例纪录的valueId，部署配置id，可为空
+     */
+    private void fillDeployValueInfo(InstanceValueVO instanceValueVO, @Nullable Long instanceValueId) {
+        if (instanceValueId == null) {
+            return;
+        }
+        DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueService.baseQueryById(instanceValueId);
+        instanceValueVO.setName(devopsDeployValueDTO.getName());
+        instanceValueVO.setId(devopsDeployValueDTO.getId());
+        instanceValueVO.setObjectVersionNumber(devopsDeployValueDTO.getObjectVersionNumber());
     }
 
     @Override
@@ -689,6 +705,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     instanceSagaPayload.getGitlabUserId(),
                     instanceSagaPayload.getAppServiceDeployVO().getInstanceId(), C7NHELM_RELEASE, null, false, instanceSagaPayload.getDevopsEnvironmentDTO().getId(), filePath);
 
+            //创建实例成功 发送web hook json
+            if (CREATE.equals(instanceSagaPayload.getAppServiceDeployVO().getType())) {
+                AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectByPrimaryKey(instanceSagaPayload.getAppServiceDeployVO().getInstanceId());
+                sendNotificationService.sendWhenInstanceSuccessOrDelete(appServiceInstanceDTO, SendSettingEnum.CREATE_RESOURCE.value());
+            }
         } catch (Exception e) {
             //有异常更新实例以及command的状态
             AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceSagaPayload.getAppServiceDeployVO().getInstanceId());
@@ -699,6 +720,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             if (!CREATE.equals(instanceSagaPayload.getAppServiceDeployVO().getType()) || !gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(instanceSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
                     filePath)) {
                 throw e;
+            }
+            if (CREATE.equals(instanceSagaPayload.getAppServiceDeployVO().getType())) {
+                //创建实例资源失败，发送webhook json
+                sendNotificationService.sendWhenInstanceCreationFailure(appServiceInstanceDTO, appServiceInstanceDTO.getCreatedBy(), null);
             }
             // 更新的超时情况暂未处理
         }
@@ -933,6 +958,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     userAttrDTO.getGitlabUserId(),
                     appServiceInstanceDTO.getId(), C7NHELM_RELEASE, null, false, devopsEnvironmentDTO.getId(), path);
         }
+        //删除实例发送web hook josn通知
+        sendNotificationService.sendWhenInstanceSuccessOrDelete(appServiceInstanceDTO, SendSettingEnum.DELETE_RESOURCE.value());
     }
 
 
@@ -1389,6 +1416,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         //发送重启或停止实例的command
         Map<String, String> stopMap = new HashMap<>();
         stopMap.put(RELEASE_NAME, appServiceInstanceDTO.getCode());
+        stopMap.put(NAMESPACE, devopsEnvironmentDTO.getCode());
         String payload = gson.toJson(stopMap);
         String instanceCommandType;
         if (CommandType.RESTART.getType().equals(type)) {
@@ -1614,7 +1642,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByClusterIdAndNamespace(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsConfigDTO.getId(), appServiceDTO.getProjectId());
                 if (devopsRegistrySecretDTO == null) {
                     //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
-                    secretCode = String.format("%s%s", "secret-",  GenerateUUID.generateUUID().substring(0,20));
+                    secretCode = String.format("%s%s", "secret-", GenerateUUID.generateUUID().substring(0, 20));
                     // 测试应用的secret是没有环境id的，此处环境id只是暂存，之后不使用，考虑后续版本删除此字段
                     devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), secretCode, gson.toJson(configVO), appServiceDTO.getProjectId());
                     devopsRegistrySecretService.baseCreate(devopsRegistrySecretDTO);

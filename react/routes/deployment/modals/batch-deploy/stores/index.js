@@ -8,6 +8,7 @@ import NetworkDataSet from './NetworkDataSet';
 import PortDataSet from './PortDataSet';
 import PathListDataSet from './PathListDataSet';
 import DomainDataSet from './DomainDataSet';
+import AnnotationDataSet from '../../deploy/stores/AnnotationDataSet';
 
 const Store = createContext();
 
@@ -30,7 +31,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const valueIdOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
 
     const pathListDs = useMemo(() => new DataSet(PathListDataSet({ formatMessage, projectId })), [projectId]);
-    const domainDs = useMemo(() => new DataSet(DomainDataSet({ formatMessage, projectId, pathListDs })), [projectId]);
+    const annotationDs = useMemo(() => new DataSet(AnnotationDataSet({ formatMessage })), []);
+    const domainDs = useMemo(() => new DataSet(DomainDataSet({ formatMessage, projectId, pathListDs, annotationDs })), [projectId]);
     const portsDs = useMemo(() => new DataSet(PortDataSet({ formatMessage, pathListDs })), []);
     const networkDs = useMemo(() => new DataSet(NetworkDataSet({ formatMessage, projectId, portsDs, pathListDs })), []);
     const batchDeployDs = useMemo(() => new DataSet(BatchDeployDataSet({ intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOptionsDs, deployStore, networkDs, domainDs })), [projectId]);
@@ -49,6 +51,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       networkDs,
       pathListDs,
       domainDs,
+      annotationDs,
     };
     return (
       <Store.Provider value={value}>

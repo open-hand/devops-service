@@ -1,13 +1,11 @@
 import React, { Fragment, useCallback, useState, useEffect, useMemo } from 'react';
-import { Action } from '@choerodon/boot';
 import { Table, Modal, Select } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Button, Icon, Tooltip } from 'choerodon-ui';
-import map from 'lodash/map';
-import classnames from 'classnames';
 import SourceTable from './SourceTable';
 import Tips from '../../../../../components/new-tips';
+import { useImportAppServiceStore } from './stores';
 
 const { Column } = Table;
 const { Option } = Select;
@@ -17,8 +15,18 @@ const modalStyle1 = {
   width: 740,
 };
 
-const Platform = injectIntl(observer((props) => {
-  const { tableDs, selectedDs, intl: { formatMessage }, intlPrefix, prefixCls, appServiceStore, projectId, record: importRecord, checkData } = props;
+const Platform = injectIntl(observer(({ checkData }) => {
+  const {
+    AppState: { currentMenuType: { projectId } },
+    intl: { formatMessage },
+    intlPrefix,
+    prefixCls,
+    importDs,
+    importTableDs,
+    selectedDs,
+    importStore,
+  } = useImportAppServiceStore();
+  const importRecord = useMemo(() => importDs.current || importDs.records[0], [importDs.current]);
 
   function openModal() {
     Modal.open({
@@ -29,19 +37,18 @@ const Platform = injectIntl(observer((props) => {
         title={formatMessage({ id: `${intlPrefix}.add` })}
       />,
       children: <SourceTable
-        tableDs={tableDs}
+        tableDs={importTableDs}
         selectedDs={selectedDs}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
-        store={appServiceStore}
+        store={importStore}
         projectId={projectId}
         importRecord={importRecord}
-        checkData={checkData}
       />,
       style: modalStyle1,
       okText: formatMessage({ id: 'add' }),
       afterClose: () => {
-        tableDs.removeAll();
+        importTableDs.removeAll();
         if (selectedDs.length) {
           checkData();
           selectedDs.forEach((record) => {
@@ -52,17 +59,7 @@ const Platform = injectIntl(observer((props) => {
     });
   }
 
-  function renderNameOrCode({ value, name, record }) {
-    const flag = name === 'name' ? record.get('nameFailed') : record.get('codeFailed');
-    const nameClass = classnames({
-      [`${prefixCls}-import-platform-input`]: true,
-      [`${prefixCls}-import-platform-input-failed`]: flag,
-      'c7n-pro-output-invalid': flag,
-    });
-    return <span className={nameClass}>{value}</span>;
-  }
-
-  function renderVersion({ value, record }) {
+  function renderVersion({ record }) {
     return (
       <Select
         record={record}
@@ -108,8 +105,8 @@ const Platform = injectIntl(observer((props) => {
         dataSet={selectedDs}
         queryBar="none"
       >
-        <Column name="name" editor renderer={renderNameOrCode} />
-        <Column name="code" editor renderer={renderNameOrCode} />
+        <Column name="name" editor />
+        <Column name="code" editor />
         <Column name="versionId" renderer={renderVersion} align="left" />
         <Column name="projectName" width="1.5rem" header={formatMessage({ id: `${intlPrefix}.belong.${importRecord.get('platformType')}` })} />
         <Column renderer={renderAction} width="0.7rem" />

@@ -12,6 +12,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.FileCreationVO;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 
 
@@ -318,12 +319,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<GitlabPipelineDTO> retryPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+    public ResponseEntity<Pipeline> retryPipeline(Integer projectId, Integer pipelineId, Integer userId) {
         throw new CommonException("error.pipeline.retry");
     }
 
     @Override
-    public ResponseEntity<GitlabPipelineDTO> cancelPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+    public ResponseEntity<Pipeline> cancelPipeline(Integer projectId, Integer pipelineId, Integer userId) {
         throw new CommonException("error.pipeline.cancel");
     }
 
@@ -415,6 +416,26 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity createCommit(Integer projectId, Integer userId, CommitPayloadDTO commitPayloadDTO) {
         throw new CommonException("error.manipulate.gitlab.files");
+    }
+
+    @Override
+    public ResponseEntity createPipeline(Integer projectId, Integer userId, String ref) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<String> queryTrace(Integer projectId, Integer jobId, Integer userId) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<JobDTO> retryJob(Integer projectId, Integer jobId, Integer userId) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<BranchDTO> queryBranchByName(Integer projectId, String branchName) {
+        throw new CommonException("error.gitlab.branch.query");
     }
 
     @Override

@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react/index';
+import React, { Fragment } from 'react';
 import { Form, TextField, Select, SelectBox, UrlField, Password, EmailField, Icon, Button } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';

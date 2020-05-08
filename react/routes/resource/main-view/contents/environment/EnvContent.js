@@ -51,7 +51,8 @@ const EnvContent = observer(() => {
       const name = record.get('name');
       const active = record.get('active');
       const connect = record.get('connect');
-      return { id, name, active, connect };
+      const clusterName = record.get('clusterName');
+      return { id, name, active, connect, clusterName };
     }
     return null;
   }
@@ -83,7 +84,7 @@ const EnvContent = observer(() => {
   function getTitle() {
     const current = getCurrent();
     if (current) {
-      return <EnvItem isTitle name={current.name} connect={current.connect} />;
+      return <EnvItem isTitle name={current.name} connect={current.connect} formatMessage={formatMessage} clusterName={current.clusterName} />;
     }
     return null;
   }

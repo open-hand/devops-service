@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,8 @@ import io.choerodon.devops.app.service.AppServiceVersionService;
 @RestController
 @RequestMapping(value = "/ci")
 public class CiController {
+    @Value("${devops.ci.default.image}")
+    private String defaultCiImage;
 
     private AppServiceService applicationService;
     private AppServiceVersionService appServiceVersionService;
@@ -33,7 +36,6 @@ public class CiController {
      * 服务查询ci脚本文件
      *
      * @param token token
-     * @param type  类型
      * @return File
      */
     @Permission(
@@ -42,10 +44,8 @@ public class CiController {
     @GetMapping
     public ResponseEntity<String> queryFile(
             @ApiParam(value = "token")
-            @RequestParam String token,
-            @ApiParam(value = "类型")
-            @RequestParam(required = false) String type) {
-        return Optional.ofNullable(applicationService.queryFile(token, type))
+            @RequestParam String token) {
+        return Optional.ofNullable(applicationService.queryFile(token))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK)).orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
@@ -78,5 +78,12 @@ public class CiController {
             @RequestParam MultipartFile file) {
         appServiceVersionService.create(image, harborConfigId, token, version, commit, file);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "查询CI流水线默认的镜像地址")
+    @GetMapping("/default_image")
+    public ResponseEntity queryDefaultCiImageUrl() {
+        return ResponseEntity.ok(defaultCiImage);
     }
 }

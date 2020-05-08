@@ -16,6 +16,12 @@ import './index.less';
 
 const { Column } = Table;
 
+const ICON_CODE = {
+  available: 'check_circle',
+  unavailable: 'cancel',
+  health: 'help',
+};
+
 const PodDetail = memo(() => {
   const {
     prefixCls,
@@ -29,14 +35,27 @@ const PodDetail = memo(() => {
   const [visible, setVisible] = useState(false);
   const [shellVisible, setShellVisible] = useState(false);
 
-  function renderName({ value, record }) {
+  function getStatusCode(record) {
     const ready = record.get('ready');
+    const status = record.get('status');
+    let statusCode = 'unavailable';
+    if (ready) {
+      statusCode = 'available';
+    } else if (status === 'Running') {
+      statusCode = 'health';
+    }
+    return statusCode;
+  }
+
+  function renderName({ value, record }) {
+    const statusCode = getStatusCode(record);
+
     return (
       <Fragment>
-        <Tooltip title={<FormattedMessage id={`ist.${ready ? 'y' : 'n'}`} />}>
+        <Tooltip title={<FormattedMessage id={`ist.ready.${statusCode}`} />}>
           <Icon
-            type={ready ? 'check_circle' : 'cancel'}
-            className={`${prefixCls}-pod-ready-${ready ? 'check' : 'cancel'}`}
+            type={ICON_CODE[statusCode]}
+            className={`${prefixCls}-pod-ready-${statusCode}`}
           />
         </Tooltip>
         <MouserOverWrapper text={value} width={0.2} style={{ display: 'inline' }}>
@@ -46,7 +65,7 @@ const PodDetail = memo(() => {
     );
   }
 
-  function renderStatus({ value }) {
+  function renderStatus({ value, record }) {
     const wrapStyle = {
       width: 54,
     };
@@ -59,11 +78,12 @@ const PodDetail = memo(() => {
     };
 
     const [wrap, color] = statusMap[value] || [true, 'rgba(0, 0, 0, 0.36)'];
+    const newColor = getStatusCode(record) === 'health' ? '#ffb100' : color;
 
     return (
       <StatusTags
         ellipsis={wrap}
-        color={color}
+        color={newColor}
         name={value}
         style={wrapStyle}
       />

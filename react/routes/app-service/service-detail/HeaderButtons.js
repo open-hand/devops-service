@@ -7,18 +7,15 @@ import { observer } from 'mobx-react-lite';
 import { useAppTopStore } from '../stores';
 import { useServiceDetailStore } from './stores';
 import Detail from './modals/detail';
-import CreateForm from '../modals/creat-form';
 import EditForm from '../modals/edit-form';
 import { handlePromptError } from '../../../utils';
 
 const modalKey1 = Modal.key();
-const modalKey2 = Modal.key();
 const modalKey3 = Modal.key();
 const editModalKey = Modal.key();
 const modalStyle = {
   width: 380,
 };
-
 
 const HeaderButtons = observer(({ children }) => {
   const {
@@ -28,33 +25,36 @@ const HeaderButtons = observer(({ children }) => {
   } = useAppTopStore();
   const {
     intl: { formatMessage },
-    AppState: { currentMenuType: { id: projectId } },
+    AppState: { currentMenuType: { projectId } },
     detailDs,
   } = useServiceDetailStore();
 
   const serviceActive = useMemo(() => detailDs.current && detailDs.current.get('active'), [detailDs.current]);
+  const detailCurrent = useMemo(() => detailDs.current, [detailDs.current]);
 
   function refresh() {
     detailDs.query();
   }
 
   function openDetail() {
-    const detailModal = Modal.open({
+    Modal.open({
       key: modalKey1,
       title: formatMessage({ id: `${intlPrefix}.detail` }),
-      children: <Detail record={detailDs.current} intlPrefix={intlPrefix} prefixCls={prefixCls} formatMessage={formatMessage} />,
+      children: <Detail
+        record={detailCurrent}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+        formatMessage={formatMessage}
+      />,
       drawer: true,
       style: modalStyle,
-      footer: (
-        <Button funcType="raised" type="primary" onClick={() => detailModal.close()}>
-          <FormattedMessage id="close" />
-        </Button>
-      ),
+      okText: formatMessage({ id: 'close' }),
+      okCancel: false,
     });
   }
 
   function openEdit() {
-    const appServiceId = detailDs.current.get('id');
+    const appServiceId = detailCurrent.get('id');
 
     Modal.open({
       key: editModalKey,
@@ -126,21 +126,6 @@ const HeaderButtons = observer(({ children }) => {
     });
   }
 
-  async function changeActive() {
-    const { current } = detailDs;
-    if (current.get('active')) {
-      Modal.open({
-        key: modalKey2,
-        title: formatMessage({ id: `${intlPrefix}.stop` }, { name: detailDs.current.get('name') }),
-        children: <FormattedMessage id={`${intlPrefix}.stop.tips`} />,
-        onOk: () => handleChangeActive(false),
-        okText: formatMessage({ id: 'stop' }),
-      });
-    } else {
-      handleChangeActive(true);
-    }
-  }
-
   async function handleChangeActive(active) {
     const { current } = detailDs;
     try {
@@ -154,7 +139,6 @@ const HeaderButtons = observer(({ children }) => {
       return false;
     }
   }
-
 
   return (
     <Header>
@@ -179,7 +163,7 @@ const HeaderButtons = observer(({ children }) => {
       >
         <Button
           icon={serviceActive ? 'remove_circle_outline' : 'finished'}
-          onClick={serviceActive ? openStop.bind(this, detailDs.current) : handleChangeActive.bind(this, true)}
+          onClick={serviceActive ? openStop.bind(this, detailCurrent) : handleChangeActive.bind(this, true)}
         >
           {getActiveText()}
         </Button>

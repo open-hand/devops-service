@@ -170,6 +170,10 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         if (PipelineStatus.FAILED.toValue().equals(pipelineWebHookVO.getObjectAttributes().getStatus())) {
             sendNotificationService.sendWhenCDFailure(pipelineWebHookVO.getObjectAttributes().getId(), applicationDTO, pipelineWebHookVO.getUser().getUsername());
         }
+        //成功以后也要发送webhook json
+        if (PipelineStatus.SUCCESS.toValue().equals(pipelineWebHookVO.getObjectAttributes().getStatus())) {
+            sendNotificationService.sendWhenCDSuccess(applicationDTO, pipelineWebHookVO.getUser().getUsername());
+        }
     }
 
 
@@ -327,7 +331,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             //找出每个分支最新的pipline
             DevopsGitlabPipelineDTO devopsGitlabPipelineDTO = devopsGitlabPipelineMapper.selectLatestPipline(appServiceId, key);
             List<Long> ids = value.stream().map(DevopsGitlabPipelineDTO::getPipelineId).collect(Collectors.toList());
-            if (ids.contains(devopsGitlabPipelineDTO.getPipelineId())){
+            if (ids.contains(devopsGitlabPipelineDTO.getPipelineId())) {
                 refWithPipelineIds.put(key, devopsGitlabPipelineDTO.getPipelineId());
             }
         });

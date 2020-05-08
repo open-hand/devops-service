@@ -1,7 +1,9 @@
 package io.choerodon.devops.infra.enums;
 
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 public enum AppServiceTemplate {
     MICROSERVICE_TEMPLATE("MicroService"),
@@ -33,9 +35,10 @@ public enum AppServiceTemplate {
         return templateName;
     }
 
-    public static HashMap<String, String> templatePath = new HashMap<>(8);
+    private static final Map<String, String> namePathMap;
 
     static {
+        Map<String, String> templatePath = new HashMap<>(8);
         templatePath.put(AppServiceTemplate.MICROSERVICE_TEMPLATE.templateName, String.format(FORMAT_MODAL, TEMPLATE_URL, MICROSERVICE_PATH));
         templatePath.put(AppServiceTemplate.MICROSERVICE_FRONT_TEMPLATE.templateName, String.format(FORMAT_MODAL, TEMPLATE_URL, MICROSERVICE_FRONT_PATH));
         templatePath.put(AppServiceTemplate.JAVALIB_TEMPLATE.templateName, String.format(FORMAT_MODAL, TEMPLATE_URL, JAVALIB_PATH));
@@ -44,5 +47,10 @@ public enum AppServiceTemplate {
         templatePath.put(AppServiceTemplate.CHOERODON_MOCHA_TEMPLATE.templateName, String.format(FORMAT_MODAL, TEMPLATE_URL, CHOERODON_MOCHA_PATH));
         templatePath.put(AppServiceTemplate.CHOERODON_TESTNG_TEMPLATE.templateName, String.format(FORMAT_MODAL, TEMPLATE_URL, CHOERODON_TESTNG_TEMPLATE_PATH));
         templatePath.put(AppServiceTemplate.CHOERODON_TESTNG_SELENIUM_TEMPLATE.templateName, String.format(FORMAT_MODAL, TEMPLATE_URL, CHOERODON_TESTNG_SELENIUM_TEMPLATE_PATH));
+        namePathMap = Collections.unmodifiableMap(templatePath);
+    }
+
+    public static Map<String, String> getTemplatePath() {
+        return namePathMap;
     }
 }

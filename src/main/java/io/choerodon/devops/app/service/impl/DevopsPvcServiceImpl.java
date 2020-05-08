@@ -6,6 +6,7 @@ import java.util.*;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.devops.api.vo.PersistentVolumeClaimVO;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1PersistentVolumeClaim;
@@ -77,6 +78,9 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     private TransactionalProducer producer;
     @Autowired
     private DevopsEnvFileResourceMapper devopsEnvFileResourceMapper;
+    @Autowired
+    private SendNotificationService sendNotificationService;
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -182,6 +186,8 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
                     pvcId, ResourceType.PERSISTENT_VOLUME_CLAIM.getType(),
                     null, false, devopsEnvironmentDTO.getId(), path);
         }
+        //删除成功发送webhook josn
+        sendNotificationService.sendWhenPVCResource(devopsPvcDTO, devopsEnvironmentDTO, SendSettingEnum.DELETE_RESOURCE.value());
         return true;
     }
 
@@ -346,6 +352,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         persistentVolumeClaimPayload.setCreated(true);
         persistentVolumeClaimPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
         persistentVolumeClaimPayload.setV1PersistentVolumeClaim(v1PersistentVolumeClaim);
+        persistentVolumeClaimPayload.setType(devopsEnvCommandDTO.getCommandType());
 
         producer.apply(
                 StartSagaBuilder
@@ -375,6 +382,8 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
                     CommandType.CREATE.getType(), persistentVolumeClaimPayload.getGitlabUserId(), persistentVolumeClaimPayload.getDevopsPvcDTO().getId(),
                     ResourceType.PERSISTENT_VOLUME_CLAIM.getType(), null, false,
                     persistentVolumeClaimPayload.getDevopsPvcDTO().getEnvId(), path);
+            //创建PVC资源成功发送webhook json
+            sendNotificationService.sendWhenPVCResource(persistentVolumeClaimPayload.getDevopsPvcDTO(), persistentVolumeClaimPayload.getDevopsEnvironmentDTO(), SendSettingEnum.CREATE_RESOURCE.value());
         } catch (Exception e) {
             LOGGER.info("create or update PersistentVolumeClaim failed! {}", e.getMessage());
             //有异常更新实例以及command的状态
@@ -391,6 +400,8 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
                 devopsEnvCommandDTO.setError("create or update PVC failed!");
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
             }
+            //创建PVC资源失败，发送webhook json
+            sendNotificationService.sendWhenPVCResource(persistentVolumeClaimPayload.getDevopsPvcDTO(), persistentVolumeClaimPayload.getDevopsEnvironmentDTO(), SendSettingEnum.CREATE_RESOURCE_FAILED.value());
         }
     }
 
@@ -426,7 +437,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         int level = ResourceUnitLevelEnum.valueOf(unit.toUpperCase()).ordinal();
 
         // 1024的一次方 对应ki 1024的2次方 对应Mi 以此类推
-        size = (long) (size * Math.pow(1024, level + 2));
+        size = (long) (size * Math.pow((double) 1024, (double) level + 2));
 
         BigDecimal bigDecimal = new BigDecimal(size);
         Quantity quantity = new Quantity(bigDecimal, Quantity.Format.BINARY_SI);
