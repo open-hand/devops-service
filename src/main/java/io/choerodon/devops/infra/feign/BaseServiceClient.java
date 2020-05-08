@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.validation.Valid;
+import javax.websocket.server.PathParam;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.domain.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -155,8 +155,8 @@ public interface BaseServiceClient {
      * @param clientVO       clientVO
      * @return 分配结果
      */
-    @PostMapping(value = "/choerodon/v1/organizations/{organization_id}/clients/wih_type")
-    ResponseEntity<ClientDTO> createClient(@PathVariable("organization_id") Long organizationId,
+    @PostMapping(value = "/choerodon/v1/{organizationId}/clients")
+    ResponseEntity<ClientDTO> createClient(@PathVariable("organizationId") Long organizationId,
                                            @RequestBody @Valid ClientVO clientVO);
 
     /**
@@ -246,6 +246,7 @@ public interface BaseServiceClient {
 
     /**
      * 判断组织是否是新组织
+     *
      * @param organizationId
      * @return
      */
@@ -257,4 +258,15 @@ public interface BaseServiceClient {
     ResponseEntity<Page<OrgAdministratorVO>> listOrgAdministrator(
             @PathVariable("organization_id") Long organizationId,
             @RequestParam("size") Integer size);
+
+    /**
+     * 查询组织下指定角色的id
+     * @param organizationId
+     * @param label
+     * @return
+     */
+    @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/roles")
+    ResponseEntity<Long> getRoleId(
+            @PathVariable("organization_id") Long organizationId,
+            @PathParam("label") String label);
 }

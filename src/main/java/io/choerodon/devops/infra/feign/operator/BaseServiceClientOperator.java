@@ -50,6 +50,20 @@ public class BaseServiceClientOperator {
     @Autowired
     private BaseServiceClient baseServiceClient;
 
+    /**
+     * @param organizationId 组织id
+     * @param label          角色标签
+     * @return 角色id
+     */
+    public Long getRoleId(Long organizationId, String label) {
+        ResponseEntity<Long> roleIdResponseEntity = baseServiceClient.getRoleId(organizationId, label);
+        if (roleIdResponseEntity.getStatusCode().is2xxSuccessful()) {
+            return roleIdResponseEntity.getBody();
+        } else {
+            throw new CommonException("error.organization.role.id.get", label);
+        }
+    }
+
     public ProjectDTO queryIamProjectById(Long projectId) {
         ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProject(projectId);
         ProjectDTO projectDTO = projectDTOResponseEntity.getBody();
