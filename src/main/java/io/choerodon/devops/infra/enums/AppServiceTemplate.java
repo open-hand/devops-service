@@ -16,7 +16,7 @@ public enum AppServiceTemplate {
     CHOERODON_TESTNG_SELENIUM_TEMPLATE("choerodonTestngSeleniumTemplate");
     private static final String TEMPLATE_URL = "https://github.com/choerodon/";
     private static final String FORMAT_MODAL = "%s%s";
-    private static final String MICROSERVICE_PATH = "choerodon-microservice-template.git?version=0.14.0";
+    private static final String MICROSERVICE_PATH = "choerodon-microservice-template.git?version=0.14.1";
     private static final String MICROSERVICE_FRONT_PATH = "choerodon-front-template.git?version=0.21.0";
     private static final String JAVALIB_PATH = "choerodon-javalib-template.git?version=0.21.0";
     private static final String SPRINGBOOT_PATH = "choerodon-springboot-template.git?version=0.14.0";
