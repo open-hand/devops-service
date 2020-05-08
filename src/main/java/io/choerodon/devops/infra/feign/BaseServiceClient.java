@@ -151,13 +151,11 @@ public interface BaseServiceClient {
     /**
      * 组织下创client
      *
-     * @param organizationId 组织id
      * @param clientVO       clientVO
      * @return 分配结果
      */
-    @PostMapping(value = "/choerodon/v1/{organizationId}/clients")
-    ResponseEntity<ClientDTO> createClient(@PathVariable("organizationId") Long organizationId,
-                                           @RequestBody @Valid ClientVO clientVO);
+    @PostMapping(value = "/choerodon/v1/clients")
+    ResponseEntity<ClientDTO> createClient(@RequestBody @Valid ClientVO clientVO);
 
     /**
      * 组织下删除client

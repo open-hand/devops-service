@@ -626,7 +626,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         Long roleId = baseServiceClientOperator.getRoleId(devopsClusterDTO.getOrganizationId(), "PROJECT_ADMIN");
         // 在client添加这个id
         clientVO.setAccessRoles(String.valueOf(roleId));
-        return baseServiceClientOperator.createClient(devopsClusterDTO.getOrganizationId(), clientVO);
+        return baseServiceClientOperator.createClient(clientVO);
     }
 
     private void updatePVForPromethues(DevopsPrometheusDTO newPrometheusDTO,
