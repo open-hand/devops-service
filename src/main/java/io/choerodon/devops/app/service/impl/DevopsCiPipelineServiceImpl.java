@@ -631,10 +631,18 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      * @return true表示有settings配置，false表示没有
      */
     private boolean buildAndSaveMavenSettings(Long jobId, CiConfigTemplateVO ciConfigTemplateVO) {
-        if (CollectionUtils.isEmpty(ciConfigTemplateVO.getRepos())) {
+        // settings文件内容
+        String settings;
+        if (!CollectionUtils.isEmpty(ciConfigTemplateVO.getRepos())) {
+            // 由用户填写的表单构建xml文件内容
+            settings = buildSettings(ciConfigTemplateVO.getRepos());
+        } else if (!StringUtils.isEmpty(ciConfigTemplateVO.getMavenSettings())) {
+            // 使用用户提供的xml内容，不进行内容的校验
+            settings = ciConfigTemplateVO.getMavenSettings();
+        } else {
+            // 用户没有提供settings文件配置
             return false;
         }
-        String settings = buildSettings(ciConfigTemplateVO.getRepos());
         DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, ciConfigTemplateVO.getSequence(), settings);
         MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
         return true;
