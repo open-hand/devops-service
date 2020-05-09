@@ -1,10 +1,13 @@
 package io.choerodon.devops.infra.dto;
 
 import java.util.Objects;
+import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Table(name = "devops_env_app_service")
 public class DevopsEnvAppServiceDTO {
+    // 这个表没有主键，这个@Id注解是防止启动报错
+    @Id
     private Long appServiceId;
     private Long envId;
 

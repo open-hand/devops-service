@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
@@ -42,7 +41,7 @@ public class DevopsOrganizationConfigController {
             @PathVariable("organization_id") Long organizationId,
             @ApiParam(value = "配置信息", required = true)
             @RequestBody DevopsConfigRepVO devopsConfigRepVO) {
-        devopsConfigService.operateConfig(organizationId, ResourceType.ORGANIZATION.value(), devopsConfigRepVO);
+        devopsConfigService.operateConfig(organizationId, ResourceLevel.ORGANIZATION.value(), devopsConfigRepVO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -59,7 +58,7 @@ public class DevopsOrganizationConfigController {
             @ApiParam(value = "组织Id", required = true)
             @PathVariable(value = "organization_id") Long organizationId) {
         return Optional.ofNullable(
-                devopsConfigService.queryConfig(organizationId, ResourceType.ORGANIZATION.value()))
+                devopsConfigService.queryConfig(organizationId, ResourceLevel.ORGANIZATION.value()))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.organization.config.get.type"));
     }
@@ -71,7 +70,7 @@ public class DevopsOrganizationConfigController {
             @ApiParam(value = "组织Id")
             @PathVariable(value = "organization_id") Long organizationId) {
         return Optional.ofNullable(
-                devopsConfigService.queryDefaultConfig(organizationId, ResourceType.ORGANIZATION.value()))
+                devopsConfigService.queryDefaultConfig(organizationId, ResourceLevel.ORGANIZATION.value()))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.organization.config.get"));
     }

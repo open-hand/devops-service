@@ -29,7 +29,7 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.notify.NoticeSendDTO;
+//import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.AppServiceInstanceVO;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
@@ -350,9 +350,9 @@ public class DevopsSagaHandler {
             pipelineStageRecordService.baseCreateOrUpdate(stageRecordDTO);
 
             pipelineService.updateStatus(pipelineRecordId, null, WorkFlowStatus.FAILED.toValue(), e.getMessage());
-            NoticeSendDTO.User user = new NoticeSendDTO.User();
-            user.setEmail(GitUserNameUtil.getEmail());
-            user.setId(GitUserNameUtil.getUserId().longValue());
+//            NoticeSendDTO.User user = new NoticeSendDTO.User();
+//            user.setEmail(GitUserNameUtil.getEmail());
+//            user.setId(GitUserNameUtil.getUserId().longValue());
             PipelineDTO pipelineDTO = pipelineService.baseQueryById(pipelineTaskRecordDTO.getStageRecordId());;
             JSONObject JSONObject = new JSONObject();
             JSONObject.put("pipelineId", pipelineDTO.getId());
@@ -361,12 +361,13 @@ public class DevopsSagaHandler {
             JSONObject.put("projectId", pipelineDTO.getProjectId());
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(pipelineDTO.getProjectId());
             JSONObject.put("projectName", projectDTO.getId());
-            pipelineService.sendSiteMessage(pipelineRecordId,
-                    PipelineNoticeType.PIPELINEFAILED.toValue(),
-                    Collections.singletonList(user), new HashMap<>(),
-                    sendNotificationService.getWebHookJsonSendDTO(JSONObject, SendSettingEnum.PIPELINE_FAILED.value(), pipelineDTO.getCreatedBy(), new Date())
-            );
-            LOGGER.info("send pipeline failed message to the user. The user id is {}", user.getId());
+            // TODO 发通知
+//            pipelineService.sendSiteMessage(pipelineRecordId,
+//                    PipelineNoticeType.PIPELINEFAILED.toValue(),
+//                    Collections.singletonList(user), new HashMap<>(),
+//                    sendNotificationService.getWebHookJsonSendDTO(JSONObject, SendSettingEnum.PIPELINE_FAILED.value(), pipelineDTO.getCreatedBy(), new Date())
+//            );
+//            LOGGER.info("send pipeline failed message to the user. The user id is {}", user.getId());
         }
     }
 

@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
@@ -48,7 +47,7 @@ public class DevopsProjectConfigController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "配置信息", required = true)
             @RequestBody DevopsConfigRepVO devopsConfigRepVO) {
-        devopsConfigService.operateConfig(projectId, ResourceType.PROJECT.value(), devopsConfigRepVO);
+        devopsConfigService.operateConfig(projectId, ResourceLevel.PROJECT.value(), devopsConfigRepVO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -66,7 +65,7 @@ public class DevopsProjectConfigController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(
-                devopsConfigService.queryConfig(projectId, ResourceType.PROJECT.value()))
+                devopsConfigService.queryConfig(projectId, ResourceLevel.PROJECT.value()))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.project.config.get.type"));
     }
@@ -85,7 +84,7 @@ public class DevopsProjectConfigController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(
-                devopsConfigService.queryDefaultConfig(projectId, ResourceType.PROJECT.value()))
+                devopsConfigService.queryDefaultConfig(projectId, ResourceLevel.PROJECT.value()))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.project.config.get"));
     }

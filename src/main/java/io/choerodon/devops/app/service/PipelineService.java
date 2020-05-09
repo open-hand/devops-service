@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.notify.NoticeSendDTO;
-import io.choerodon.core.notify.WebHookJsonSendDTO;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.PipelineDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -62,7 +60,7 @@ public interface PipelineService {
 
     void failed(Long projectId, Long recordId);
 
-    void sendSiteMessage(Long pipelineRecordId, String type, List<NoticeSendDTO.User> users, Map<String, Object> params, WebHookJsonSendDTO webHookJsonSendDTO);
+//    void sendSiteMessage(Long pipelineRecordId, String type, List<NoticeSendDTO.User> users, Map<String, Object> params, WebHookJsonSendDTO webHookJsonSendDTO);
 
     PipelineDTO baseCreate(Long projectId, PipelineDTO devopsPipelineDTO);
 

@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.feign;
 
-import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.vo.notify.MessageSettingVO;
 import io.choerodon.devops.api.vo.notify.SendSettingDTO;
 import io.choerodon.devops.infra.feign.fallback.NotifyServiceClientFallBack;
@@ -15,8 +14,8 @@ import org.springframework.web.bind.annotation.*;
 @FeignClient(value = "hzero-message", fallback = NotifyServiceClientFallBack.class)
 public interface NotifyClient {
 
-    @PostMapping("/v1/notices")
-    void sendMessage(@RequestBody NoticeSendDTO dto);
+//    @PostMapping("/v1/notices")
+//    void sendMessage(@RequestBody NoticeSendDTO dto);
 
     @GetMapping("/v1/notices/send_settings/codes/{code}")
     ResponseEntity<SendSettingDTO> queryByCode(@PathVariable("code") String code);

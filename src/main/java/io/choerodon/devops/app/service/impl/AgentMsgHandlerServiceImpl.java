@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
-import io.choerodon.core.notify.WebHookJsonSendDTO;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
 import org.codehaus.jackson.map.ObjectMapper;

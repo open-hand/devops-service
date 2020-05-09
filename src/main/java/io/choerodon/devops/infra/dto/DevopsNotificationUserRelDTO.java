@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**
@@ -9,7 +10,8 @@ import javax.persistence.Table;
  */
 @Table(name = "devops_notification_user_rel")
 public class DevopsNotificationUserRelDTO {
-
+    // 这个表没有主键，这个@Id注解是防止启动报错
+    @Id
     private Long userId;
     private Long notificationId;
 

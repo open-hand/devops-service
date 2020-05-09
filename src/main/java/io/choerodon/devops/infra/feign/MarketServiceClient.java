@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 
-import io.choerodon.devops.infra.config.FeignMultipartSupportConfig;
 import io.choerodon.devops.infra.feign.fallback.MarketServiceClientFallback;
 
 /**
@@ -17,7 +16,7 @@ import io.choerodon.devops.infra.feign.fallback.MarketServiceClientFallback;
  * Date:  11:31 2019/9/6
  * Description:
  */
-@FeignClient(value = "market-service", fallback = MarketServiceClientFallback.class, configuration = FeignMultipartSupportConfig.class)
+@FeignClient(value = "market-service", fallback = MarketServiceClientFallback.class)
 public interface MarketServiceClient {
 
     @PostMapping(value = "v1/market_applications/uploadWithin", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE},

@@ -3,15 +3,14 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.GitlabGroupMemberVO;
 import io.choerodon.devops.api.vo.kubernetes.MemberHelper;
 import io.choerodon.devops.app.service.*;
@@ -22,6 +21,7 @@ import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.EnvironmentType;
@@ -69,7 +69,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     @Override
     public void createGitlabGroupMemberRole(List<GitlabGroupMemberVO> gitlabGroupMemberVOList) {
         gitlabGroupMemberVOList.stream()
-                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceType.PROJECT.value()))
+                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceLevel.PROJECT.value()))
                 .forEach(gitlabGroupMemberVO -> {
                     try {
                         List<String> userMemberRoleList = gitlabGroupMemberVO.getRoleLabels();
@@ -94,7 +94,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 });
         //根据标签如果是组织管理员需要添加组织下所有项目的的三个组的owner权限
         gitlabGroupMemberVOList.stream()
-                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceType.ORGANIZATION.value()))
+                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceLevel.ORGANIZATION.value()))
                 .forEach(gitlabGroupMemberVO -> {
                     //还需要同步到devops_user表
                     //同步到gitlab
@@ -140,7 +140,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 });
         //组织root的标签，那么删除在组织下的root的权限
         gitlabGroupMemberVOList.stream()
-                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceType.ORGANIZATION.value()))
+                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceLevel.ORGANIZATION.value()))
                 .forEach(gitlabGroupMemberVO -> {
                     screenOrgLable(gitlabGroupMemberVO, Boolean.FALSE);
                 });

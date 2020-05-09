@@ -1,13 +1,8 @@
 package io.choerodon.devops.app.service;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nullable;
 
-import com.alibaba.fastjson.JSONObject;
-import io.choerodon.core.notify.NoticeSendDTO;
-import io.choerodon.core.notify.WebHookJsonSendDTO;
 import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
 import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
 import io.choerodon.devops.infra.dto.*;
@@ -29,7 +24,7 @@ public interface SendNotificationService {
      * @param targetUsers     目标用户
      * @param params          参数映射
      */
-    void sendNotices(String sendSettingCode, Long sourceId, List<NoticeSendDTO.User> targetUsers, Map<String, Object> params, WebHookJsonSendDTO webHookJsonSendDTO);
+//    void sendNotices(String sendSettingCode, Long sourceId, List<NoticeSendDTO.User> targetUsers, Map<String, Object> params, WebHookJsonSendDTO webHookJsonSendDTO);
 
     /**
      * 创建应用服务发送webhook通知
@@ -59,7 +54,7 @@ public interface SendNotificationService {
      */
     void sendWhenAppServiceDisabled(Long appServiceId);
 
-    WebHookJsonSendDTO getWebHookJsonSendDTO(JSONObject JSONObject, String code, Long createdBy, Date lastUpdateDate);
+//    WebHookJsonSendDTO getWebHookJsonSendDTO(JSONObject JSONObject, String code, Long createdBy, Date lastUpdateDate);
 
     /**
      * 删除应用服务通知

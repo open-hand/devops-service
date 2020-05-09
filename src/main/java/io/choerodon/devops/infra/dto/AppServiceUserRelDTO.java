@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -13,6 +14,8 @@ import io.choerodon.mybatis.domain.AuditDomain;
 
 @Table(name = "devops_app_service_user_rel")
 public class AppServiceUserRelDTO extends AuditDomain {
+    // 这个表没有主键，这个@Id注解是防止启动报错
+    @Id
     private Long iamUserId;
     private Long appServiceId;
 

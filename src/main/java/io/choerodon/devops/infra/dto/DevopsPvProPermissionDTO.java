@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -8,6 +9,8 @@ public class DevopsPvProPermissionDTO {
 
     private Long pvId;
 
+    // 这个表没有主键，这个@Id注解是防止启动报错
+    @Id
     private Long projectId;
 
     @Transient

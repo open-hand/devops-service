@@ -29,8 +29,6 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.notify.NoticeSendDTO;
-import io.choerodon.core.notify.WebHookJsonSendDTO;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
@@ -41,7 +39,10 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineTaskDTO;
-import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.CommandType;
+import io.choerodon.devops.infra.enums.DeployType;
+import io.choerodon.devops.infra.enums.PipelineStatus;
+import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
@@ -414,18 +415,19 @@ public class PipelineServiceImpl implements PipelineService {
                             break;
                         }
                     } else {
-                        JSONObject JSONObject = new JSONObject();
-                        JSONObject.put("pipelineId", pipelineRecordE.getPipelineId());
-                        JSONObject.put("pipelineName", pipelineRecordE.getPipelineName());
-                        JSONObject.put("projectId", pipelineRecordE.getProjectId());
-                        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(pipelineRecordE.getProjectId());
-                        JSONObject.put("projectName", projectDTO.getName());
-                        JSONObject.put("triggerType", pipelineRecordE.getTriggerType());
-                        JSONObject.put("stageId", stageRecordDTO.getStageId());
-                        JSONObject.put("stageName", stageRecordDTO.getStageName());
-                        sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(),
-                                auditUser, recordRelDTO.getPipelineRecordId(),
-                                stageRecordDTO.getStageName(), sendNotificationService.getWebHookJsonSendDTO(JSONObject, SendSettingEnum.PIPELINE_PASS.value(), pipelineRecordE.getCreatedBy(), new Date()));
+                        // TODO 发通知
+//                        JSONObject JSONObject = new JSONObject();
+//                        JSONObject.put("pipelineId", pipelineRecordE.getPipelineId());
+//                        JSONObject.put("pipelineName", pipelineRecordE.getPipelineName());
+//                        JSONObject.put("projectId", pipelineRecordE.getProjectId());
+//                        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(pipelineRecordE.getProjectId());
+//                        JSONObject.put("projectName", projectDTO.getName());
+//                        JSONObject.put("triggerType", pipelineRecordE.getTriggerType());
+//                        JSONObject.put("stageId", stageRecordDTO.getStageId());
+//                        JSONObject.put("stageName", stageRecordDTO.getStageName());
+//                        sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(),
+//                                auditUser, recordRelDTO.getPipelineRecordId(),
+//                                stageRecordDTO.getStageName(), sendNotificationService.getWebHookJsonSendDTO(JSONObject, SendSettingEnum.PIPELINE_PASS.value(), pipelineRecordE.getCreatedBy(), new Date()));
                     }
                     updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), WorkFlowStatus.RUNNING.toValue(), null);
                     startNextTask(taskRecordDTO.getId(), recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
@@ -454,19 +456,20 @@ public class PipelineServiceImpl implements PipelineService {
                     } else {
                         startEmptyStage(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
                     }
-                    JSONObject JSONObject = new JSONObject();
-                    JSONObject.put("pipelineId", pipelineRecordE.getPipelineId());
-                    JSONObject.put("pipelineName", pipelineRecordE.getPipelineName());
-                    JSONObject.put("projectId", pipelineRecordE.getProjectId());
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(pipelineRecordE.getProjectId());
-                    JSONObject.put("projectName", projectDTO.getName());
-                    JSONObject.put("triggerType", pipelineRecordE.getTriggerType());
-                    JSONObject.put("stageId", stageRecordDTO.getStageId());
-                    JSONObject.put("stageName", stageRecordDTO.getStageName());
-                    sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(),
-                            auditUser, recordRelDTO.getPipelineRecordId(),
-                            stageRecordDTO.getStageName(),
-                            sendNotificationService.getWebHookJsonSendDTO(JSONObject, SendSettingEnum.PIPELINE_PASS.value(), pipelineRecordE.getCreatedBy(), new Date()));
+                    // TODO 发通知
+//                    JSONObject JSONObject = new JSONObject();
+//                    JSONObject.put("pipelineId", pipelineRecordE.getPipelineId());
+//                    JSONObject.put("pipelineName", pipelineRecordE.getPipelineName());
+//                    JSONObject.put("projectId", pipelineRecordE.getProjectId());
+//                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(pipelineRecordE.getProjectId());
+//                    JSONObject.put("projectName", projectDTO.getName());
+//                    JSONObject.put("triggerType", pipelineRecordE.getTriggerType());
+//                    JSONObject.put("stageId", stageRecordDTO.getStageId());
+//                    JSONObject.put("stageName", stageRecordDTO.getStageName());
+//                    sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(),
+//                            auditUser, recordRelDTO.getPipelineRecordId(),
+//                            stageRecordDTO.getStageName(),
+//                            sendNotificationService.getWebHookJsonSendDTO(JSONObject, SendSettingEnum.PIPELINE_PASS.value(), pipelineRecordE.getCreatedBy(), new Date()));
                 } else {
                     updateStatus(recordRelDTO.getPipelineRecordId(), null, status, null);
                 }
@@ -878,69 +881,72 @@ public class PipelineServiceImpl implements PipelineService {
         sendFailedSiteMessage(recordId, recordE.getCreatedBy());
     }
 
-    @Override
-    public void sendSiteMessage(Long pipelineRecordId, String type, List<NoticeSendDTO.User> users, Map<String, Object> params, WebHookJsonSendDTO webHookJsonSendDTO) {
-        NotifyVO notifyVO = new NotifyVO();
-        notifyVO.setTargetUsers(users);
-        notifyVO.setCode(type);
-        PipelineRecordDTO record = pipelineRecordService.baseQueryById(pipelineRecordId);
-        notifyVO.setSourceId(record.getProjectId());
-        params.put("pipelineId", record.getPipelineId().toString());
-        params.put("pipelineName", record.getPipelineName());
-        params.put("pipelineRecordId", pipelineRecordId.toString());
-        params.put("projectId", record.getProjectId().toString());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(record.getProjectId());
-        params.put("projectName", projectDTO.getName());
-        params.put("organizationId", projectDTO.getOrganizationId().toString());
-        notifyVO.setParams(params);
-        notifyVO.setNotifyType(NONTIFY_TYPE);
-        notifyVO.setWebHookJsonSendDTO(webHookJsonSendDTO);
-        notifyClient.sendMessage(notifyVO);
-    }
+    // TODO 发通知
+//    @Override
+//    public void sendSiteMessage(Long pipelineRecordId, String type, List<NoticeSendDTO.User> users, Map<String, Object> params, WebHookJsonSendDTO webHookJsonSendDTO) {
+//        NotifyVO notifyVO = new NotifyVO();
+//        notifyVO.setTargetUsers(users);
+//        notifyVO.setCode(type);
+//        PipelineRecordDTO record = pipelineRecordService.baseQueryById(pipelineRecordId);
+//        notifyVO.setSourceId(record.getProjectId());
+//        params.put("pipelineId", record.getPipelineId().toString());
+//        params.put("pipelineName", record.getPipelineName());
+//        params.put("pipelineRecordId", pipelineRecordId.toString());
+//        params.put("projectId", record.getProjectId().toString());
+//        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(record.getProjectId());
+//        params.put("projectName", projectDTO.getName());
+//        params.put("organizationId", projectDTO.getOrganizationId().toString());
+//        notifyVO.setParams(params);
+//        notifyVO.setNotifyType(NONTIFY_TYPE);
+//        notifyVO.setWebHookJsonSendDTO(webHookJsonSendDTO);
+//        notifyClient.sendMessage(notifyVO);
+//    }
 
     private void sendFailedSiteMessage(Long pipelineRecordId, Long userId) {
-        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
-        NoticeSendDTO.User user = new NoticeSendDTO.User();
-        user.setEmail(iamUserDTO.getEmail());
-        user.setId(iamUserDTO.getId());
-        PipelineRecordDTO pipelineRecordDTO = pipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
-        JSONObject JSONObject = new JSONObject();
-        JSONObject.put("pipelineId", pipelineRecordDTO.getPipelineId());
-        JSONObject.put("pipelineName", pipelineRecordDTO.getPipelineName());
-        JSONObject.put("triggerType", pipelineRecordDTO.getTriggerType());
-        JSONObject.put("projectId", pipelineRecordDTO.getProjectId());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(pipelineRecordDTO.getProjectId());
-        JSONObject.put("projectName", projectDTO.getId());
-        PipelineDTO pipelineDTO = pipelineMapper.selectByPrimaryKey(pipelineRecordDTO.getPipelineId());
-        sendSiteMessage(pipelineRecordId,
-                PipelineNoticeType.PIPELINEFAILED.toValue(),
-                Collections.singletonList(user), new HashMap<>(),
-                sendNotificationService.getWebHookJsonSendDTO(JSONObject, SendSettingEnum.PIPELINE_FAILED.value(), pipelineDTO.getCreatedBy(), new Date()));
+        // TODO 发通知
+//        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
+//        NoticeSendDTO.User user = new NoticeSendDTO.User();
+//        user.setEmail(iamUserDTO.getEmail());
+//        user.setId(iamUserDTO.getId());
+//        PipelineRecordDTO pipelineRecordDTO = pipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
+//        JSONObject JSONObject = new JSONObject();
+//        JSONObject.put("pipelineId", pipelineRecordDTO.getPipelineId());
+//        JSONObject.put("pipelineName", pipelineRecordDTO.getPipelineName());
+//        JSONObject.put("triggerType", pipelineRecordDTO.getTriggerType());
+//        JSONObject.put("projectId", pipelineRecordDTO.getProjectId());
+//        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(pipelineRecordDTO.getProjectId());
+//        JSONObject.put("projectName", projectDTO.getId());
+//        PipelineDTO pipelineDTO = pipelineMapper.selectByPrimaryKey(pipelineRecordDTO.getPipelineId());
+//        sendSiteMessage(pipelineRecordId,
+//                PipelineNoticeType.PIPELINEFAILED.toValue(),
+//                Collections.singletonList(user), new HashMap<>(),
+//                sendNotificationService.getWebHookJsonSendDTO(JSONObject, SendSettingEnum.PIPELINE_FAILED.value(), pipelineDTO.getCreatedBy(), new Date()));
     }
 
-    private void sendAuditSiteMassage(String type, String auditUser, Long pipelineRecordId, String stageName, WebHookJsonSendDTO webHookJsonSendDTO) {
-        List<String> userIds = new ArrayList<>();
-        if (auditUser != null && !auditUser.isEmpty()) {
-            userIds = Arrays.asList(auditUser.split(","));
-            List<String> arrList = new ArrayList<>(userIds);
-            arrList.remove(TypeUtil.objToString(GitUserNameUtil.getUserId()));
-            userIds = arrList;
-        }
-        List<NoticeSendDTO.User> userList = new ArrayList<>();
-        userIds.forEach(t -> {
-            NoticeSendDTO.User user = new NoticeSendDTO.User();
-            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(TypeUtil.objToLong(t));
-            user.setEmail(iamUserDTO.getEmail());
-            user.setId(iamUserDTO.getId());
-            userList.add(user);
-        });
-        Map<String, Object> params = new HashMap<>();
-        params.put(STAGE_NAME, stageName);
-        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
-        params.put("auditName", iamUserDTO.getLoginName());
-        params.put("realName", iamUserDTO.getRealName());
-        sendSiteMessage(pipelineRecordId, type, userList, params, webHookJsonSendDTO);
-    }
+    // TODO 发通知
+//    private void sendAuditSiteMassage(String type, String auditUser, Long pipelineRecordId, String stageName, WebHookJsonSendDTO webHookJsonSendDTO) {
+//        List<String> userIds = new ArrayList<>();
+//        if (auditUser != null && !auditUser.isEmpty()) {
+//            userIds = Arrays.asList(auditUser.split(","));
+//            List<String> arrList = new ArrayList<>(userIds);
+//            arrList.remove(TypeUtil.objToString(GitUserNameUtil.getUserId()));
+//            userIds = arrList;
+//        }
+//        List<NoticeSendDTO.User> userList = new ArrayList<>();
+//        userIds.forEach(t -> {
+//            NoticeSendDTO.User user = new NoticeSendDTO.User();
+//            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(TypeUtil.objToLong(t));
+//            user.setEmail(iamUserDTO.getEmail());
+//            user.setId(iamUserDTO.getId());
+//            userList.add(user);
+//        });
+//        Map<String, Object> params = new HashMap<>();
+//        params.put(STAGE_NAME, stageName);
+//        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
+//        params.put("auditName", iamUserDTO.getLoginName());
+//        params.put("realName", iamUserDTO.getRealName());
+//        sendSiteMessage(pipelineRecordId, type, userList, params, webHookJsonSendDTO);
+//    }
 
     /**
      * 校验会签任务是否全部审核过
@@ -1238,9 +1244,9 @@ public class PipelineServiceImpl implements PipelineService {
                 recordE.setStatus(WorkFlowStatus.SUCCESS.toValue());
                 pipelineRecordService.baseUpdate(recordE);
                 IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(recordE.getCreatedBy());
-                NoticeSendDTO.User user = new NoticeSendDTO.User();
-                user.setEmail(iamUserDTO.getEmail());
-                user.setId(iamUserDTO.getId());
+//                NoticeSendDTO.User user = new NoticeSendDTO.User();
+//                user.setEmail(iamUserDTO.getEmail());
+//                user.setId(iamUserDTO.getId());
                 JSONObject JSONObject = new JSONObject();
                 JSONObject.put("pipelineId", recordE.getPipelineId());
                 JSONObject.put("pipelineName", recordE.getPipelineName());
@@ -1249,10 +1255,11 @@ public class PipelineServiceImpl implements PipelineService {
                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(recordE.getProjectId());
                 JSONObject.put("projectName", projectDTO.getId());
                 PipelineDTO pipelineDTO = pipelineMapper.selectByPrimaryKey(recordE.getPipelineId());
-                sendSiteMessage(recordE.getId(), PipelineNoticeType.PIPELINESUCCESS.toValue(),
-                        Collections.singletonList(user),
-                        new HashMap<>(),
-                        sendNotificationService.getWebHookJsonSendDTO(JSONObject, SendSettingEnum.PIPELINE_SUCCESS.value(), pipelineDTO.getCreatedBy(), pipelineDTO.getLastUpdateDate()));
+                // TODO 发通知
+//                sendSiteMessage(recordE.getId(), PipelineNoticeType.PIPELINESUCCESS.toValue(),
+//                        Collections.singletonList(user),
+//                        new HashMap<>(),
+//                        sendNotificationService.getWebHookJsonSendDTO(JSONObject, SendSettingEnum.PIPELINE_SUCCESS.value(), pipelineDTO.getCreatedBy(), pipelineDTO.getLastUpdateDate()));
             } else {
                 //更新下一个阶段状态
                 startNextStageRecord(stageRecordId, recordE);
@@ -1286,21 +1293,22 @@ public class PipelineServiceImpl implements PipelineService {
                     startEmptyStage(recordE.getId(), nextStageRecordDTO.getId());
                 }
             } else {
-                List<NoticeSendDTO.User> userList = new ArrayList<>();
-                String auditUser = pipelineStageRecordService.baseQueryById(stageRecordId).getAuditUser();
-                if (auditUser != null && !auditUser.isEmpty()) {
-                    List<String> userIds = Arrays.asList(auditUser.split(","));
-                    userIds.forEach(t -> {
-                        IamUserDTO userDTO = baseServiceClientOperator.queryUserByUserId(TypeUtil.objToLong(t));
-                        NoticeSendDTO.User user = new NoticeSendDTO.User();
-                        user.setEmail(userDTO.getEmail());
-                        user.setId(userDTO.getId());
-                        userList.add(user);
-                    });
-                }
+//                List<NoticeSendDTO.User> userList = new ArrayList<>();
+//                String auditUser = pipelineStageRecordService.baseQueryById(stageRecordId).getAuditUser();
+//                if (auditUser != null && !auditUser.isEmpty()) {
+//                    List<String> userIds = Arrays.asList(auditUser.split(","));
+//                    userIds.forEach(t -> {
+//                        IamUserDTO userDTO = baseServiceClientOperator.queryUserByUserId(TypeUtil.objToLong(t));
+//                        NoticeSendDTO.User user = new NoticeSendDTO.User();
+//                        user.setEmail(userDTO.getEmail());
+//                        user.setId(userDTO.getId());
+//                        userList.add(user);
+//                    });
+//                }
                 HashMap<String, Object> params = new HashMap<>();
                 params.put(STAGE_NAME, pipelineStageRecordService.baseQueryById(stageRecordId).getStageName());
-                sendSiteMessage(recordE.getId(), PipelineNoticeType.PIPELINEAUDIT.toValue(), userList, params, null);
+                // TODO 发通知
+//                sendSiteMessage(recordE.getId(), PipelineNoticeType.PIPELINEAUDIT.toValue(), userList, params, null);
                 updateStatus(recordE.getId(), null, WorkFlowStatus.PENDINGCHECK.toValue(), null);
             }
         } else {
@@ -1326,9 +1334,9 @@ public class PipelineServiceImpl implements PipelineService {
         } else {
             updateStatus(pipelineRecordId, null, WorkFlowStatus.SUCCESS.toValue(), null);
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(pipelineRecordDTO.getCreatedBy());
-            NoticeSendDTO.User user = new NoticeSendDTO.User();
-            user.setEmail(iamUserDTO.getEmail());
-            user.setId(iamUserDTO.getId());
+//            NoticeSendDTO.User user = new NoticeSendDTO.User();
+//            user.setEmail(iamUserDTO.getEmail());
+//            user.setId(iamUserDTO.getId());
             JSONObject JSONObject = new JSONObject();
             JSONObject.put("pipelineId", pipelineRecordDTO.getPipelineId());
             JSONObject.put("pipelineName", pipelineRecordDTO.getPipelineName());
@@ -1336,11 +1344,12 @@ public class PipelineServiceImpl implements PipelineService {
             JSONObject.put("projectId", pipelineRecordDTO.getProjectId());
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(pipelineRecordDTO.getProjectId());
             JSONObject.put("projectName", projectDTO.getId());
-            PipelineDTO pipelineDTO = pipelineMapper.selectByPrimaryKey(pipelineRecordDTO.getPipelineId());
-            sendSiteMessage(pipelineRecordId,
-                    PipelineNoticeType.PIPELINESUCCESS.toValue(),
-                    Collections.singletonList(user), new HashMap<>(),
-                    sendNotificationService.getWebHookJsonSendDTO(JSONObject, SendSettingEnum.PIPELINE_SUCCESS.value(), pipelineDTO.getCreatedBy(), pipelineDTO.getLastUpdateDate()));
+//            PipelineDTO pipelineDTO = pipelineMapper.selectByPrimaryKey(pipelineRecordDTO.getPipelineId());
+            // TODO 发通知
+//            sendSiteMessage(pipelineRecordId,
+//                    PipelineNoticeType.PIPELINESUCCESS.toValue(),
+//                    Collections.singletonList(user), new HashMap<>(),
+//                    sendNotificationService.getWebHookJsonSendDTO(JSONObject, SendSettingEnum.PIPELINE_SUCCESS.value(), pipelineDTO.getCreatedBy(), pipelineDTO.getLastUpdateDate()));
         }
     }
 
@@ -1349,21 +1358,22 @@ public class PipelineServiceImpl implements PipelineService {
             pipelineTaskRecordDTO.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
             pipelineTaskRecordService.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
             updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.PENDINGCHECK.toValue(), null);
-            List<NoticeSendDTO.User> userList = new ArrayList<>();
-            String auditUser = pipelineTaskRecordDTO.getAuditUser();
-            if (auditUser != null && !auditUser.isEmpty()) {
-                List<String> userIds = Arrays.asList(auditUser.split(","));
-                userIds.forEach(t -> {
-                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(TypeUtil.objToLong(t));
-                    NoticeSendDTO.User user = new NoticeSendDTO.User();
-                    user.setEmail(iamUserDTO.getEmail());
-                    user.setId(iamUserDTO.getId());
-                    userList.add(user);
-                });
-            }
-            HashMap<String, Object> params = new HashMap<>();
-            params.put(STAGE_NAME, pipelineStageRecordService.baseQueryById(stageRecordId).getStageName());
-            sendSiteMessage(pipelineRecordId, PipelineNoticeType.PIPELINEAUDIT.toValue(), userList, params, null);
+            // TODO 发通知
+//            List<NoticeSendDTO.User> userList = new ArrayList<>();
+//            String auditUser = pipelineTaskRecordDTO.getAuditUser();
+//            if (auditUser != null && !auditUser.isEmpty()) {
+//                List<String> userIds = Arrays.asList(auditUser.split(","));
+//                userIds.forEach(t -> {
+//                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(TypeUtil.objToLong(t));
+//                    NoticeSendDTO.User user = new NoticeSendDTO.User();
+//                    user.setEmail(iamUserDTO.getEmail());
+//                    user.setId(iamUserDTO.getId());
+//                    userList.add(user);
+//                });
+//            }
+//            HashMap<String, Object> params = new HashMap<>();
+//            params.put(STAGE_NAME, pipelineStageRecordService.baseQueryById(stageRecordId).getStageName());
+//            sendSiteMessage(pipelineRecordId, PipelineNoticeType.PIPELINEAUDIT.toValue(), userList, params, null);
         }
     }
 
@@ -1570,13 +1580,14 @@ public class PipelineServiceImpl implements PipelineService {
             JSONObject.put("stageId", pipelineStageRecordDTO.getStageId());
             JSONObject.put("stageName", pipelineStageRecordDTO.getStageName());
             PipelineDTO pipelineDTO = pipelineMapper.selectByPrimaryKey(pipelineRecordDTO.getPipelineId());
-            sendAuditSiteMassage(PipelineNoticeType.PIPELINESTOP.toValue(),
-                    auditUser,
-                    recordRelDTO.getPipelineRecordId(),
-                    pipelineStageRecordDTO.getStageName(),
-                    sendNotificationService.getWebHookJsonSendDTO(JSONObject, SendSettingEnum.PIPELINE_STOP.value(), pipelineDTO.getCreatedBy(), new Date()
-                    )
-            );
+            // TODO 发通知
+//            sendAuditSiteMassage(PipelineNoticeType.PIPELINESTOP.toValue(),
+//                    auditUser,
+//                    recordRelDTO.getPipelineRecordId(),
+//                    pipelineStageRecordDTO.getStageName(),
+//                    sendNotificationService.getWebHookJsonSendDTO(JSONObject, SendSettingEnum.PIPELINE_STOP.value(), pipelineDTO.getCreatedBy(), new Date()
+//                    )
+//            );
         }
         return status;
     }
