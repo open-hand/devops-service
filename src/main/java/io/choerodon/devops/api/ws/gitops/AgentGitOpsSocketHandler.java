@@ -1,44 +1,138 @@
 package io.choerodon.devops.api.ws.gitops;
 
-import io.choerodon.devops.api.vo.AgentMsgVO;
-import io.choerodon.devops.app.service.AgentMsgHandlerService;
-import io.choerodon.devops.infra.enums.CommandStatus;
-import io.choerodon.devops.infra.enums.HelmType;
-import io.choerodon.devops.infra.enums.InstanceStatus;
-import io.choerodon.devops.infra.util.KeyParseUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.websocket.receive.TextMessageHandler;
+import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.CLUSTER_ID;
+import static io.choerodon.devops.infra.handler.ClusterConnectionHandler.CLUSTER_SESSION;
+import static org.hzero.websocket.constant.WebSocketConstant.Attributes.GROUP;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
+import io.choerodon.devops.api.vo.AgentMsgVO;
+import io.choerodon.devops.api.vo.ClusterSessionVO;
+import io.choerodon.devops.api.ws.AbstractSocketHandler;
+import io.choerodon.devops.api.ws.WebSocketTool;
+import io.choerodon.devops.app.service.AgentCommandService;
+import io.choerodon.devops.app.service.AgentMsgHandlerService;
+import io.choerodon.devops.app.service.DevopsClusterService;
+import io.choerodon.devops.app.service.SendNotificationService;
+import io.choerodon.devops.infra.constant.DevOpsWebSocketConstants;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
+import io.choerodon.devops.infra.enums.CommandStatus;
+import io.choerodon.devops.infra.enums.HelmType;
+import io.choerodon.devops.infra.enums.InstanceStatus;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.util.JsonHelper;
+import io.choerodon.devops.infra.util.KeyParseUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
+
 /**
- * Created by Sheep on 2019/7/25.
+ * @author zmf
+ * @since 20-5-8
  */
-
 @Component
-public class AgentGitOpsMessageHandler implements TextMessageHandler<AgentMsgVO> {
+public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(AgentGitOpsMessageHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgentGitOpsSocketHandler.class);
+
+    private Set<WebSocketSession> webSocketSessions = Collections.synchronizedSet(new HashSet<>());
+
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
+    private DevopsClusterService devopsClusterService;
+
+    @Autowired
+    private ClusterConnectionHandler clusterConnectionHandler;
+
+    @Autowired
+    private AgentCommandService agentCommandService;
+
+    @Autowired
+    private SendNotificationService sendNotificationService;
 
     @Autowired
     private AgentMsgHandlerService agentMsgHandlerService;
 
     @Override
-    public void handle(WebSocketSession webSocketSession, String type, String key, AgentMsgVO msg) {
+    public String processor() {
+        return DevOpsWebSocketConstants.AGENT;
+    }
+
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) {
+        webSocketSessions.add(session);
+
+        // 就是agent连接时应该传入的group参数，形如  clusterId:21
+        String group = WebSocketTool.getGroup(session);
+
+        //将已连接的agent集群信息放到redis中,用于判断集群是否连接
+        ClusterSessionVO clusterSession = new ClusterSessionVO();
+        clusterSession.setWebSocketSessionId(session.getId());
+        Long clusterId = TypeUtil.objToLong(session.getAttributes().get(CLUSTER_ID));
+        clusterSession.setClusterId(clusterId);
+        clusterSession.setVersion(TypeUtil.objToString(session.getAttributes().get("version")));
+        clusterSession.setRegisterKey(group);
+        redisTemplate.opsForHash().put(CLUSTER_SESSION, clusterSession.getRegisterKey(), clusterSession);
+
+        //连接成功之后,如果agent版本不匹配则提示升级agent,匹配则返回集群下关联环境的ssh信息
+        List<Long> notUpgraded = clusterConnectionHandler.getUpdatedClusterList();
+        if (!notUpgraded.contains(clusterId)) {
+            DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+            LOGGER.info("Upgrade agent: upgrade agent with cluster id {} from version {}", clusterId, clusterSession.getVersion());
+            agentCommandService.upgradeCluster(devopsClusterDTO);
+        } else {
+            LOGGER.info("Init agent: init agent with cluster id {} and version {}", clusterId, clusterSession.getVersion());
+            agentCommandService.initCluster(clusterId);
+            //集群链接成功发送web hook
+            DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+            sendNotificationService.sendWhenActiviteCluster(devopsClusterDTO);
+        }
+    }
+
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        String registerKey = WebSocketTool.getGroup(session);
+
+        removeRedisValueByRegisterKeyAndSessionId(registerKey, session.getId(), TypeUtil.objToLong(TypeUtil.objToLong(session.getAttributes().get(CLUSTER_ID))));
+
+        LOGGER.info("After connection closed, the cluster session with key {} is to be closed.", registerKey);
+        try {
+            if (session.isOpen()) {
+                session.close();
+            }
+        } catch (IOException e) {
+            LOGGER.warn("close clean timeout session failed {}", e.getMessage());
+        }
+    }
+
+    @Override
+    public void handleTextMessage(WebSocketSession session, TextMessage message) {
+        String payload = message.getPayload();
+        AgentMsgVO msg = JsonHelper.unmarshalByJackson(payload, AgentMsgVO.class);
         HelmType helmType = HelmType.forValue(String.valueOf(msg.getType()));
-//        logger.info("===========================查看msg.type:{}", msg.getType());
-//        logger.info("===========================查看msg:{}",msg.toString());
+
         if (helmType == null) {
-            logger.info("找不到指令啊 {}", msg.getType());
+            LOGGER.info("找不到指令啊 {}", msg.getType());
             return;
         }
+
         //设置集群id
-        msg.setClusterId(key.split(":")[1]);
-        if (logger.isDebugEnabled()) {
-            logger.debug(msg.toString());
+        msg.setClusterId(TypeUtil.objToString(getClusterIdFromRegisterKey(TypeUtil.objToString(session.getAttributes().get(GROUP)))));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(msg.toString());
         }
         switch (helmType) {
             // JOB的相关信息
@@ -51,12 +145,12 @@ public class AgentGitOpsMessageHandler implements TextMessageHandler<AgentMsgVO>
             // helm release包中的相关资源(除去JOB)信息同步
             // 可能因为消息缓冲池大小太小而接收不到消息
             case HELM_INSTALL_RESOURCE_INFO:
-                logger.debug("helm_install_resource: {}", msg);
+                LOGGER.debug("helm_install_resource: {}", msg);
                 agentMsgHandlerService.helmInstallResourceInfo(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             // helm release更新时包中的相关资源(除去JOB)信息同步
             case HELM_UPGRADE_RESOURCE_INFO:
-                logger.debug("helm_update_resource: {}", msg);
+                LOGGER.debug("helm_update_resource: {}", msg);
                 agentMsgHandlerService.helmUpgradeResourceInfo(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 agentMsgHandlerService.updateInstanceStatus(
                         msg.getKey(),
@@ -206,7 +300,7 @@ public class AgentGitOpsMessageHandler implements TextMessageHandler<AgentMsgVO>
                 agentMsgHandlerService.handlePodMetricsSync(msg.getKey(),msg.getPayload(),TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case CLUSTER_INFO:
-                logger.info("Cluster info: {}", msg);
+                LOGGER.info("Cluster info: {}", msg);
                 agentMsgHandlerService.handleClusterInfo(msg);
                 break;
             default:
@@ -214,13 +308,53 @@ public class AgentGitOpsMessageHandler implements TextMessageHandler<AgentMsgVO>
         }
     }
 
-    @Override
-    public String matchType() {
-        return "agent";
+    private void removeRedisValueByRegisterKeyAndSessionId(String registerKey, String sessionId, Object clusterId) {
+        Object registerKeyValue = redisTemplate.opsForHash().get(CLUSTER_SESSION, registerKey);
+        if (registerKeyValue != null) {
+            if (registerKeyValue instanceof ClusterSessionVO) {
+                ClusterSessionVO clusterSessionVO = (ClusterSessionVO) registerKeyValue;
+                // 只有这个registerKey的值中webSocketSessionId和当前sessionId一致时才删除key，避免旧的超时的连接
+                // 误将新连接的key删掉（两者是同一个key）
+                if (Objects.equals(sessionId, clusterSessionVO.getWebSocketSessionId())) {
+                    //移除关联关系
+                    redisTemplate.opsForHash().delete(CLUSTER_SESSION, registerKey);
+                } else {
+                    LOGGER.info("This is an elder session whose registerKey value was updated by a new session. the session cluster id is {}", clusterId);
+                }
+            } else {
+                // 这个逻辑不应该进的
+                LOGGER.warn("Value of register key is not of Class 'io.choerodon.devops.api.vo.ClusterSessionVO', and its real class is {}", registerKeyValue.getClass());
+                redisTemplate.opsForHash().delete(CLUSTER_SESSION, registerKey);
+            }
+        }
     }
 
-    @Override
-    public Class<AgentMsgVO> payloadClass() {
-        return AgentMsgVO.class;
+
+    private void doRemoveRedisKeyOfThisMicroService() {
+        List<String> sessionIds = webSocketSessions.stream().map(WebSocketSession::getId).collect(Collectors.toList());
+        Map<Object, Object> entries = redisTemplate.opsForHash().entries(CLUSTER_SESSION);
+        entries.forEach((k, v) -> {
+            if (sessionIds.contains(((ClusterSessionVO) v).getWebSocketSessionId())) {
+                String registerKey = TypeUtil.objToString(k);
+                removeRedisValueByRegisterKeyAndSessionId(registerKey, ((ClusterSessionVO) v).getWebSocketSessionId(), getClusterIdFromRegisterKey(registerKey));
+            }
+        });
+
+        webSocketSessions.clear();
+    }
+
+    private Long getClusterIdFromRegisterKey(String registerKey) {
+        String[] pairs = registerKey.split("\\.");
+        String[] content = pairs[0].split(":");
+        return TypeUtil.objToLong(content[1]);
+    }
+
+    /**
+     * 释放这个微服务实例所持有的redis的键
+     */
+    public void removeRedisKeyOfThisMicroService() {
+        LOGGER.info("The agent connection information in redis of this devops-service instance is to be removed.");
+        doRemoveRedisKeyOfThisMicroService();
+        LOGGER.info("The agent connection information in redis of this devops-service instance was successfully removed.");
     }
 }

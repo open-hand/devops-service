@@ -24,15 +24,6 @@
     </properties>
 
 
-    <!--<pluginRepositories>-->
-        <!--<pluginRepository>-->
-            <!--<id>Choerodon Release</id>-->
-            <!--<name>Choerodon Release Repository</name>-->
-            <!--<url>https://nexus.choerodon.com.cn/repository/choerodon-release</url>-->
-        <!--</pluginRepository>-->
-    <!--</pluginRepositories>-->
-
-
     <dependencies>
         <dependency>
             <groupId>org.yaml</groupId>
@@ -53,15 +44,9 @@
             <artifactId>hzero-starter-mybatis-mapper</artifactId>
         </dependency>
 
-        <!--<dependency>-->
-            <!--<groupId>org.hzero.starter</groupId>-->
-            <!--<artifactId>hzero-starter-websocket</artifactId>-->
-        <!--</dependency>-->
-
         <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-websocket</artifactId>
-            <version>${choerodon.starter.version}</version>
+            <groupId>org.hzero.starter</groupId>
+            <artifactId>hzero-starter-websocket</artifactId>
         </dependency>
 
         <dependency>

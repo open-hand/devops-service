@@ -12,6 +12,15 @@ public class AgentMsgVO {
     private Long commandId;
     private String clusterId;
 
+    public AgentMsgVO() {
+    }
+
+    public AgentMsgVO(String key, String type, String payload) {
+        this.key = key;
+        this.type = type;
+        this.payload = payload;
+    }
+
     public String getKey() {
         return key;
     }
