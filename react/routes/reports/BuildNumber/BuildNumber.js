@@ -24,7 +24,6 @@ const BuildNumber = observer(() => {
     ReportsStore: {
       getProRole,
       changeIsRefresh,
-      getStartTime,
       setAllData,
       setBuildNumber,
       setStartTime,
@@ -38,12 +37,9 @@ const BuildNumber = observer(() => {
       pageInfo,
       getAllApps,
       appId,
-      getStartDate,
-      getEndDate,
       echartsLoading,
       isRefresh,
       getAppId,
-      getEndTime,
       loadBuildNumber,
       loadBuildTable,
     },
@@ -121,18 +117,18 @@ const BuildNumber = observer(() => {
     loadCharts();
   };
 
-  const loadCharts = useCallback((pageInfoCurrent) => {
+  const loadCharts = (pageInfoCurrent) => {
     const projectId = AppState.currentMenuType.id;
-    const startTime = getStartTime.format().split('T')[0].replace(/-/g, '/');
+    const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const appIdCurrent = ReportsStore.getAppId;
-    const endTime = getEndTime.format().split('T')[0].replace(/-/g, '/');
+    const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
     loadBuildNumber(projectId, appIdCurrent, startTime, endTime);
     if (pageInfoCurrent) {
       loadBuildTable(projectId, appIdCurrent, startTime, endTime, pageInfoCurrent.current, pageInfoCurrent.pageSize);
     } else {
       loadBuildTable(projectId, appIdCurrent, startTime, endTime);
     }
-  }, [appId]);
+  };
 
   const handleDateChoose = (type) => {
     setDateType(type);
@@ -174,8 +170,8 @@ const BuildNumber = observer(() => {
         </Select>
       </Form>
       <TimePicker
-        startTime={getStartDate}
-        endTime={getEndDate}
+        startTime={ReportsStore.getStartDate}
+        endTime={ReportsStore.getEndDate}
         func={loadCharts}
         type={dateType}
         onChange={handleDateChoose}

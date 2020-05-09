@@ -41,14 +41,10 @@ const Submission = observer(() => {
       getCommitsRecord,
       getCommitLoading,
       getIsRefresh,
-      getStartDate,
-      getEndDate,
       getHistoryLoad,
       loadAllApps,
       loadCommits,
       loadCommitsRecord,
-      getStartTime,
-      getEndTime,
       changeIsRefresh,
     },
     history,
@@ -127,11 +123,11 @@ const Submission = observer(() => {
       ReportsStore.setCommitsRecord([]);
     } else {
       const { id: projectId } = AppState.currentMenuType;
-      const startTime = getStartTime
+      const startTime = ReportsStore.getStartTime
         .format()
         .split('T')[0]
         .replace(/-/g, '/');
-      const endTime = getEndTime
+      const endTime = ReportsStore.getEndTime
         .format()
         .split('T')[0]
         .replace(/-/g, '/');
@@ -143,11 +139,11 @@ const Submission = observer(() => {
 
   const handlePageChange = (pageCurrent) => {
     const { id: projectId } = AppState.currentMenuType;
-    const startTime = getStartTime
+    const startTime = ReportsStore.getStartTime
       .format()
       .split('T')[0]
       .replace(/-/g, '/');
-    const endTime = getEndTime
+    const endTime = ReportsStore.getEndTime
       .format()
       .split('T')[0]
       .replace(/-/g, '/');
@@ -161,11 +157,11 @@ const Submission = observer(() => {
       repoAppId = state.appId;
     }
     const { id: projectId } = AppState.currentMenuType;
-    const startTime = getStartTime
+    const startTime = ReportsStore.getStartTime
       .format()
       .split('T')[0]
       .replace(/-/g, '/');
-    const endTime = getEndTime
+    const endTime = ReportsStore.getEndTime
       .format()
       .split('T')[0]
       .replace(/-/g, '/');
@@ -189,11 +185,11 @@ const Submission = observer(() => {
 
   function handleRefreshChartByTimePicker() {
     const { id: projectId } = AppState.currentMenuType;
-    const startTime = getStartTime
+    const startTime = ReportsStore.getStartTime
       .format()
       .split('T')[0]
       .replace(/-/g, '/');
-    const endTime = getEndTime
+    const endTime = ReportsStore.getEndTime
       .format()
       .split('T')[0]
       .replace(/-/g, '/');
@@ -206,7 +202,9 @@ const Submission = observer(() => {
    * 选择今天、近7天和近30天的选项，当使用DatePick的时候清空type
    * @param type 时间范围类型
    */
-  const handleDateChoose = (type) => setDateType(type);
+  const handleDateChoose = (type) => {
+    setDateType(type);
+  };
 
   const maxTagNode = (data, value) => (
     <MaxTagPopover dataSource={data} value={value} />
@@ -229,8 +227,8 @@ const Submission = observer(() => {
         color="#ff9915"
         style={{ width: '100%', height: 176 }}
         data={item}
-        start={getStartTime}
-        end={getEndTime}
+        start={ReportsStore.getStartTime}
+        end={ReportsStore.getEndTime}
         hasAvatar
       />
     </div>
@@ -259,8 +257,8 @@ const Submission = observer(() => {
         </Form>
         <TimePicker
           unlimit
-          startTime={getStartDate}
-          endTime={getEndDate}
+          startTime={ReportsStore.getStartDate}
+          endTime={ReportsStore.getEndDate}
           func={handleRefreshChartByTimePicker}
           store={ReportsStore}
           type={dateType}
@@ -278,8 +276,8 @@ const Submission = observer(() => {
             style={{ width: '100%', height: 276 }}
             data={total}
             hasAvatar={false}
-            start={getStartTime}
-            end={getEndTime}
+            start={ReportsStore.getStartTime}
+            end={ReportsStore.getEndTime}
           />
         </div>
         <div className="c7n-report-submission-history">
