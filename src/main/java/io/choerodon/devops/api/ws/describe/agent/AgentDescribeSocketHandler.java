@@ -34,8 +34,9 @@ public class AgentDescribeSocketHandler extends AbstractSocketHandler {
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
-        String registerKey = WebSocketTool.getGroup(session);
-        String rawKey = WebSocketTool.getRawKey(registerKey);
+        String agentSessionGroup = WebSocketTool.getGroup(session);
+        LOGGER.info("Agent Describe: receive describe message from agent of group: {}", agentSessionGroup);
+        String rawKey = WebSocketTool.getRawKey(agentSessionGroup);
         String frontSessionGroup = WebSocketTool.buildFrontGroup(rawKey);
 
         keySocketSendHelper.sendByGroup(frontSessionGroup, "Describe", message.getPayload());

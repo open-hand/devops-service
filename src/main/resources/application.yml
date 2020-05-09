@@ -31,6 +31,14 @@ services:
     url: "helm.example.com" # 存放helm chart包的仓库地址
   gateway:
     url: "http://api.example.com" # 网关地址
+hzero:
+  websocket:
+    # 用于连接websocket的路径
+    websocket: /websocket
+    # 与当前服务的redis数据库一致
+    redisDb: ${SPRING_REDIS_DATABASE:1}
+    # 后端长连通信密钥
+    secretKey: devops_ws
 choerodon:
   saga:
     consumer:
