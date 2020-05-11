@@ -4,7 +4,8 @@ import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.*;
 import static org.hzero.websocket.constant.WebSocketConstant.Attributes.GROUP;
 import static org.hzero.websocket.constant.WebSocketConstant.Attributes.PROCESSOR;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
@@ -15,6 +16,7 @@ import org.hzero.websocket.vo.ClientVO;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.server.HandshakeFailureException;
 
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -22,17 +24,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
  * Created by Sheep on 2019/7/25.
  */
 public class WebSocketTool {
-
     private WebSocketTool() {
-    }
-
-    public static Map<String, Object> getAttribute(WebSocketSession webSocketSession) {
-        Map<String, Object> attribute = new HashMap<>();
-        Arrays.asList(webSocketSession.getUri().getQuery().split("&")).forEach(s -> {
-            String[] result = s.split("=");
-            attribute.put(result[0], result[1]);
-        });
-        return attribute;
     }
 
     /**
@@ -143,6 +135,48 @@ public class WebSocketTool {
                 .map(ClientVO::getSessionId)
                 .map(GroupSessionRegistry::getSession)
                 .collect(Collectors.toList());
+    }
+
+    public static void checkGroup(HttpServletRequest request) {
+        checkParameter(request, GROUP);
+    }
+
+    public static void checkKey(HttpServletRequest request) {
+        checkParameter(request, KEY);
+    }
+
+    public static void checkEnv(HttpServletRequest request) {
+        checkParameter(request, ENV);
+    }
+
+    public static void checkKind(HttpServletRequest request) {
+        checkParameter(request, KIND);
+    }
+
+    public static void checkName(HttpServletRequest request) {
+        checkParameter(request, NAME);
+    }
+
+    public static void checkDescribeId(HttpServletRequest request) {
+        checkParameter(request, DESCRIBE_Id);
+    }
+
+    public static void checkPodName(HttpServletRequest request) {
+        checkParameter(request, POD_NAME);
+    }
+
+    public static void checkContainerName(HttpServletRequest request) {
+        checkParameter(request, CONTAINER_NAME);
+    }
+
+    public static void checkLogId(HttpServletRequest request) {
+        checkParameter(request, LOG_ID);
+    }
+
+    private static void checkParameter(HttpServletRequest request, String parameter) {
+        if (isEmptyOrTrimmedEmpty(request.getParameter(parameter))) {
+            throw new HandshakeFailureException(String.format(PARAMETER_NULL_TEMPLATE, parameter));
+        }
     }
 
     /**

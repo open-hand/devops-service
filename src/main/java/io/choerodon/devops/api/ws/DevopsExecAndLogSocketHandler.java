@@ -16,9 +16,7 @@ import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.server.HandshakeFailureException;
 
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.PipeRequestVO;
 import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -45,28 +43,11 @@ public class DevopsExecAndLogSocketHandler {
         HttpServletRequest request = servletRequest.getServletRequest();
 
         //校验ws连接参数是否正确
-        String group = WebSocketTool.getGroup(request);
-
-        String env = request.getParameter("env");
-        String podName = request.getParameter("podName");
-        String containerName = request.getParameter("containerName");
-        String logId = request.getParameter("logId");
-        //校验ws连接参数是否正确
-        if (WebSocketTool.isEmptyOrTrimmedEmpty(group)) {
-            throw new CommonException("group is unexpectedly null");
-        }
-        if (WebSocketTool.isEmptyOrTrimmedEmpty(env)) {
-            throw new HandshakeFailureException("Env is null!");
-        }
-        if (WebSocketTool.isEmptyOrTrimmedEmpty(podName)) {
-            throw new HandshakeFailureException("PodName is null!");
-        }
-        if (WebSocketTool.isEmptyOrTrimmedEmpty(containerName)) {
-            throw new HandshakeFailureException("ContainerName is null!");
-        }
-        if (WebSocketTool.isEmptyOrTrimmedEmpty(logId)) {
-            throw new HandshakeFailureException("LogId is null!");
-        }
+        WebSocketTool.checkGroup(request);
+        WebSocketTool.checkEnv(request);
+        WebSocketTool.checkPodName(request);
+        WebSocketTool.checkContainerName(request);
+        WebSocketTool.checkLogId(request);
 
         return true;
     }

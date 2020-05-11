@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.handler;
 
+import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.*;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -184,10 +186,11 @@ public class ClusterConnectionHandler {
      */
     public boolean validConnectionParameter(HttpServletRequest request) {
         //校验ws连接参数是否正确
-        String key = request.getParameter("key");
+        String key = request.getParameter(KEY);
         String clusterId = request.getParameter(CLUSTER_ID);
-        String token = request.getParameter("token");
-        String version = request.getParameter("version");
+        String token = request.getParameter(TOKEN);
+        String version = request.getParameter(VERSION);
+
         if (key == null || key.trim().isEmpty()) {
             LOGGER.warn("Agent Handshake : Key is null");
             return false;

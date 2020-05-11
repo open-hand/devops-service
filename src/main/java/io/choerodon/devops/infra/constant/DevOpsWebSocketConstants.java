@@ -28,6 +28,10 @@ public final class DevOpsWebSocketConstants {
      * 形如:  cluster:123
      */
     public static final String KEY = "key";
+
+    public static final String TOKEN = "token";
+
+    public static final String VERSION = "version";
     /**
      * 从agent的连接的group的前缀
      */
@@ -36,6 +40,8 @@ public final class DevOpsWebSocketConstants {
      * 从前端的连接的group的前缀
      */
     public static final String FROM_FRONT_GROUP_PREFIX = "from_front:";
+
+    public static final String PARAMETER_NULL_TEMPLATE = "The parameter %s is unexpectedly null";
 
     private DevOpsWebSocketConstants() {
     }

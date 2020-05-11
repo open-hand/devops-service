@@ -12,8 +12,6 @@ import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
-import io.choerodon.core.exception.CommonException;
-
 /**
  * Created by Sheep on 2019/8/19.
  */
@@ -29,10 +27,7 @@ public class AgentExecAndLogSocketHandler {
         HttpServletRequest request = servletRequest.getServletRequest();
 
         //校验ws连接参数是否正确
-        String group = WebSocketTool.getGroup(request);
-        if (WebSocketTool.isEmptyOrTrimmedEmpty(group)) {
-            throw new CommonException("group is unexpectedly null");
-        }
+        WebSocketTool.checkGroup(request);
 
         return true;
     }
