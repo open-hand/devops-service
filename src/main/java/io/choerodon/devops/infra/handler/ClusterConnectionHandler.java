@@ -224,4 +224,50 @@ public class ClusterConnectionHandler {
 
         return true;
     }
+
+    /**
+     * 对0.21.x版本的agent校验参数
+     *
+     * @param request 请求
+     * @return true表示校验通过
+     */
+    public boolean validElderAgentGitOpsParameters(HttpServletRequest request) {
+        //校验ws连接参数是否正确
+        String key = request.getParameter("key");
+        String clusterId = request.getParameter(CLUSTER_ID);
+        String token = request.getParameter("token");
+        String version = request.getParameter("version");
+        if (key == null || key.trim().isEmpty()) {
+            LOGGER.warn("Agent Handshake : Key is null");
+            return false;
+        }
+        if (!KeyParseUtil.matchPattern(key)) {
+            LOGGER.warn("Agent Handshake : Key not match the pattern");
+            return false;
+        }
+        if (clusterId == null || clusterId.trim().isEmpty()) {
+            LOGGER.warn("Agent Handshake : ClusterId is null");
+            return false;
+        }
+        if (token == null || token.trim().isEmpty()) {
+            LOGGER.warn("Agent Handshake : Token is null");
+            return false;
+        }
+        if (version == null || version.trim().isEmpty()) {
+            LOGGER.warn("Agent Handshake : Version is null");
+            return false;
+        }
+        //检验连接过来的agent和集群是否匹配
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(TypeUtil.objToLong(clusterId));
+        if (devopsClusterDTO == null) {
+            LogUtil.loggerWarnObjectNullWithId("Cluster", TypeUtil.objToLong(clusterId), LOGGER);
+            return false;
+        }
+        if (!token.equals(devopsClusterDTO.getToken())) {
+            LOGGER.warn("Cluster with id {} exists but its token doesn't match the token that agent offers as {}", clusterId, token);
+            return false;
+        }
+
+        return true;
+    }
 }

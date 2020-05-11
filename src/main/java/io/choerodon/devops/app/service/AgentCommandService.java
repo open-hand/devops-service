@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
+import org.springframework.web.socket.WebSocketSession;
+
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.DescribeResourceVO;
 import io.choerodon.devops.api.vo.PipeRequestVO;
@@ -35,6 +37,8 @@ public interface AgentCommandService {
     void getTestAppStatus(Map<Long, List<String>> testReleases);
 
     void upgradeCluster(DevopsClusterDTO devopsClusterDTO);
+
+    void upgradeCluster(DevopsClusterDTO devopsClusterDTO, WebSocketSession webSocketSession);
 
     void createCertManager(Long clusterId);
 

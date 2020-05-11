@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
@@ -176,6 +177,46 @@ public class AgentCommandServiceImpl implements AgentCommandService {
             throw new CommonException(e);
         }
     }
+
+    @Override
+    public void upgradeCluster(DevopsClusterDTO devopsClusterDTO, WebSocketSession webSocketSession) {
+        AgentMsgVO msg = new AgentMsgVO();
+        Map<String, String> configs = new HashMap<>();
+        configs.put("config.connect", agentServiceUrl);
+        configs.put("config.token", devopsClusterDTO.getToken());
+        configs.put("config.clusterId", devopsClusterDTO.getId().toString());
+        configs.put("config.choerodonId", devopsClusterDTO.getChoerodonId());
+        configs.put("rbac.create", "true");
+        Payload payload = new Payload(
+                "choerodon",
+                agentRepoUrl,
+                "choerodon-cluster-agent",
+                agentExpectVersion,
+                Props2YAML.fromContent(FileUtil.propertiesToString(configs))
+                        .convert(), "choerodon-cluster-agent-" + devopsClusterDTO.getCode(), null);
+        msg.setKey(String.format(KEY_FORMAT,
+                devopsClusterDTO.getId(),
+                "choerodon-cluster-agent-" + devopsClusterDTO.getCode()));
+        msg.setType(HELM_RELEASE_UPGRADE);
+        msg.setPayload(JsonHelper.marshalByJackson(payload));
+        String msgPayload = JsonHelper.marshalByJackson(msg);
+
+        // 暂时不使用新的WebSocket消息格式重写升级消息
+        // 一开始没有自动升级
+        //0.18.0到0.19.0 为了agent的平滑升级，所以不能以通用的新Msg方式发送，继续用以前的Msg格式发送
+        if (webSocketSession.isOpen()) {
+            synchronized (webSocketSession) {
+                try {
+                    webSocketSession.sendMessage(new TextMessage(msgPayload));
+                } catch (IOException e) {
+                    LOGGER.warn("error.messageOperator.sendWebSocket.IOException, message: {}", msgPayload, e);
+                }
+            }
+        } else {
+            LOGGER.warn("The session to send upgrade cluster message is unexpected closed. The cluster info: {}", devopsClusterDTO);
+        }
+    }
+
 
     @Override
     public void createCertManager(Long clusterId) {
