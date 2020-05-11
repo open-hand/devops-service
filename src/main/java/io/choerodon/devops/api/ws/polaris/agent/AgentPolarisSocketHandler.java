@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.ws.polaris.agent;
 
 import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.AGENT_POLARIS;
-import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.KEY;
 
 import java.io.IOException;
 
@@ -17,7 +16,6 @@ import io.choerodon.devops.api.ws.AbstractSocketHandler;
 import io.choerodon.devops.api.ws.WebSocketTool;
 import io.choerodon.devops.app.service.PolarisScanningService;
 import io.choerodon.devops.infra.util.JsonHelper;
-import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * @author zmf
@@ -40,7 +38,7 @@ public class AgentPolarisSocketHandler extends AbstractSocketHandler {
         LOGGER.info("Polaris: received message from agent...");
 
         // 获取集群id
-        Long clusterId = WebSocketTool.getClusterId(TypeUtil.objToString(session.getAttributes().get(KEY)));
+        Long clusterId = WebSocketTool.getClusterId(session);
         LOGGER.info("Polaris: the cluster id is {}", clusterId);
 
 

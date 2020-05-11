@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.ws.gitops;
 
-import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.CLUSTER_ID;
 import static io.choerodon.devops.infra.handler.ClusterConnectionHandler.CLUSTER_SESSION;
 import static org.hzero.websocket.constant.WebSocketConstant.Attributes.GROUP;
 
@@ -74,21 +73,21 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) {
         webSocketSessions.add(session);
 
-        // 就是agent连接时应该传入的group参数，形如  clusterId:21
+        // 就是agent连接时应该传入的group参数，形如  front_agent:clusterId:21
         String group = WebSocketTool.getGroup(session);
 
         //将已连接的agent集群信息放到redis中,用于判断集群是否连接
         ClusterSessionVO clusterSession = new ClusterSessionVO();
         clusterSession.setWebSocketSessionId(session.getId());
-        Long clusterId = TypeUtil.objToLong(session.getAttributes().get(CLUSTER_ID));
+        Long clusterId = WebSocketTool.getClusterId(session);
         clusterSession.setClusterId(clusterId);
-        clusterSession.setVersion(TypeUtil.objToString(session.getAttributes().get("version")));
+        clusterSession.setVersion(WebSocketTool.getVersion(session));
         clusterSession.setRegisterKey(group);
         redisTemplate.opsForHash().put(CLUSTER_SESSION, clusterSession.getRegisterKey(), clusterSession);
 
-        //连接成功之后,如果agent版本不匹配则提示升级agent,匹配则返回集群下关联环境的ssh信息
-        List<Long> notUpgraded = clusterConnectionHandler.getUpdatedClusterList();
-        if (!notUpgraded.contains(clusterId)) {
+        // 连接成功之后,如果agent版本不匹配则提示升级agent,匹配则返回集群下关联环境的ssh信息
+        List<Long> unnecessaryToUpgrade = clusterConnectionHandler.getUpdatedClusterList();
+        if (!unnecessaryToUpgrade.contains(clusterId)) {
             DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
             LOGGER.info("Upgrade agent: upgrade agent with cluster id {} from version {}", clusterId, clusterSession.getVersion());
             agentCommandService.upgradeCluster(devopsClusterDTO);
@@ -106,7 +105,7 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         String registerKey = WebSocketTool.getGroup(session);
 
-        removeRedisValueByRegisterKeyAndSessionId(registerKey, session.getId(), TypeUtil.objToLong(TypeUtil.objToLong(session.getAttributes().get(CLUSTER_ID))));
+        removeRedisValueByRegisterKeyAndSessionId(registerKey, session.getId(), WebSocketTool.getClusterId(session));
 
         LOGGER.info("After connection closed, the cluster session with key {} is to be closed.", registerKey);
         try {

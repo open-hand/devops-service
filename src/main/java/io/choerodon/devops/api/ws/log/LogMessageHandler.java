@@ -29,12 +29,9 @@ public class LogMessageHandler {
     private KeySocketSendHelper keySocketSendHelper;
 
     public void handle(WebSocketSession webSocketSession, BinaryMessage message) {
-        // Group格式： log:${rawKey}  形如 log:ab124ac
-        String sessionGroup = WebSocketTool.getGroup(webSocketSession);
-
         // 获取rawKey， 用于拼接转发的目的地group
-        String rawKey = WebSocketTool.getRawKey(sessionGroup);
-
+        String rawKey = WebSocketTool.getKey(webSocketSession);
+        String destinationGroup;
 
         ByteBuffer buffer = message.getPayload();
         byte[] bytesArray = new byte[buffer.remaining()];
@@ -44,13 +41,13 @@ public class LogMessageHandler {
 
         if (FRONT_LOG.equals(processor)) {
             LOGGER.info("Received message from front. The processor is {} and the byte array length is {}", processor, bytesArray.length);
-            sessionGroup = WebSocketTool.buildAgentGroup(rawKey);
+            destinationGroup = WebSocketTool.buildAgentGroup(rawKey);
         } else {
             LOGGER.info("Received message from agent. The processor is {} and the byte array length is {}", processor, bytesArray.length);
-            sessionGroup = WebSocketTool.buildFrontGroup(rawKey);
+            destinationGroup = WebSocketTool.buildFrontGroup(rawKey);
         }
 
-        keySocketSendHelper.sendByGroup(sessionGroup, AGENT_LOG, bytesArray);
+        keySocketSendHelper.sendByGroup(destinationGroup, AGENT_LOG, bytesArray);
     }
 
 }

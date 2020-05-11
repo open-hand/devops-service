@@ -36,6 +36,7 @@ public class FrontDescribeSocketInterceptor extends AbstractSocketInterceptor {
         WebSocketTool.checkKind(request);
         WebSocketTool.checkName(request);
         WebSocketTool.checkDescribeId(request);
+        WebSocketTool.checkClusterId(request);
 
         return true;
     }

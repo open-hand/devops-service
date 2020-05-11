@@ -19,7 +19,6 @@ import org.springframework.web.socket.WebSocketSession;
 
 import io.choerodon.devops.api.vo.PipeRequestVO;
 import io.choerodon.devops.app.service.AgentCommandService;
-import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * Created by Sheep on 2019/7/25.
@@ -43,11 +42,13 @@ public class DevopsExecAndLogSocketHandler {
         HttpServletRequest request = servletRequest.getServletRequest();
 
         //校验ws连接参数是否正确
+        WebSocketTool.checkKey(request);
         WebSocketTool.checkGroup(request);
         WebSocketTool.checkEnv(request);
         WebSocketTool.checkPodName(request);
         WebSocketTool.checkContainerName(request);
         WebSocketTool.checkLogId(request);
+        WebSocketTool.checkClusterId(request);
 
         return true;
     }
@@ -56,11 +57,11 @@ public class DevopsExecAndLogSocketHandler {
         //解析参数列表
         Map<String, Object> attribute = webSocketSession.getAttributes();
 
-        String registerKey = WebSocketTool.getGroup(webSocketSession);
+        String frontSessionGroup = WebSocketTool.getGroup(webSocketSession);
+        String key = WebSocketTool.getKey(webSocketSession);
         String processor = WebSocketTool.getProcessor(webSocketSession);
 
-        String path = webSocketSession.getUri() == null ? null : webSocketSession.getUri().getPath();
-        logger.info("Connection established from client. The registerKey is {} and the path is {}", registerKey, path);
+        logger.info("Connection established from client. The sessionGroup is {} and the processor is {}", frontSessionGroup, processor);
 
         // 通过GitOps的ws连接，通知agent建立与前端对应的ws连接
         PipeRequestVO pipeRequest = new PipeRequestVO(
@@ -69,11 +70,12 @@ public class DevopsExecAndLogSocketHandler {
                 attribute.get(LOG_ID).toString(),
                 attribute.get(ENV).toString());
 
-        Long clusterId = TypeUtil.objToLong(WebSocketTool.getLastValueInColonPair(TypeUtil.objToString(attribute.get(KEY))));
+        Long clusterId = WebSocketTool.getClusterId(webSocketSession);
+
         if (FRONT_LOG.equals(processor)) {
-            agentCommandService.startLogOrExecConnection(KUBERNETES_GET_LOGS, registerKey, pipeRequest, clusterId);
+            agentCommandService.startLogOrExecConnection(KUBERNETES_GET_LOGS, key, pipeRequest, clusterId);
         } else {
-            agentCommandService.startLogOrExecConnection(EXEC_COMMAND, registerKey, pipeRequest, clusterId);
+            agentCommandService.startLogOrExecConnection(EXEC_COMMAND, key, pipeRequest, clusterId);
         }
     }
 

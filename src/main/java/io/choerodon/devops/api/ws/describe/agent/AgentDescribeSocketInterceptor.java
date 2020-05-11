@@ -33,6 +33,7 @@ public class AgentDescribeSocketInterceptor extends AbstractSocketInterceptor {
         //校验ws连接参数是否正确
         WebSocketTool.checkKey(httpServletRequest);
         WebSocketTool.checkGroup(httpServletRequest);
+        WebSocketTool.checkClusterId(httpServletRequest);
 
         return true;
     }

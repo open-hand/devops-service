@@ -33,18 +33,16 @@ public class ExecMessageHandler {
 
         String msg = WebSocketTool.replaceR(new StringBuilder(new String(bytesArray, StandardCharsets.UTF_8)), 0);
 
-
-        String fromSessionGroup = WebSocketTool.getGroup(webSocketSession);
-        String rawKey = WebSocketTool.getRawKey(fromSessionGroup);
+        String key = WebSocketTool.getKey(webSocketSession);
         String processor = WebSocketTool.getProcessor(webSocketSession);
 
         String toSessionGroup;
         if (FRONT_EXEC.equals(processor)) {
             // 如果是前端来的消息就转发给agent
-            toSessionGroup = WebSocketTool.buildAgentGroup(rawKey);
+            toSessionGroup = WebSocketTool.buildAgentGroup(key);
         } else {
             // 如果是agent来的消息，就转发给前端
-            toSessionGroup = WebSocketTool.buildFrontGroup(rawKey);
+            toSessionGroup = WebSocketTool.buildFrontGroup(key);
         }
 
         //发送二进制消息

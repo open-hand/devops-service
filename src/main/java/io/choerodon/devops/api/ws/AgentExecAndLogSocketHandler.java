@@ -28,6 +28,8 @@ public class AgentExecAndLogSocketHandler {
 
         //校验ws连接参数是否正确
         WebSocketTool.checkGroup(request);
+        WebSocketTool.checkKey(request);
+        WebSocketTool.checkClusterId(request);
 
         return true;
     }

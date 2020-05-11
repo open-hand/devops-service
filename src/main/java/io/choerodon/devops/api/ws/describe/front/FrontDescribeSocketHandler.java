@@ -14,7 +14,6 @@ import io.choerodon.devops.api.vo.DescribeResourceVO;
 import io.choerodon.devops.api.ws.AbstractSocketHandler;
 import io.choerodon.devops.api.ws.WebSocketTool;
 import io.choerodon.devops.app.service.AgentCommandService;
-import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * @author zmf
@@ -38,10 +37,7 @@ public class FrontDescribeSocketHandler extends AbstractSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) {
         Map<String, Object> attribute = session.getAttributes();
 
-        String frontSessionGroup = WebSocketTool.getGroup(session);
-        String rawKey = WebSocketTool.getRawKey(frontSessionGroup);
-        String agentSessionGroup = WebSocketTool.buildAgentGroup(rawKey);
-
+        String key = WebSocketTool.getKey(session);
 
         DescribeResourceVO describeResourceVO = new DescribeResourceVO(
                 attribute.get(KIND).toString(),
@@ -49,9 +45,9 @@ public class FrontDescribeSocketHandler extends AbstractSocketHandler {
                 attribute.get(ENV).toString(),
                 attribute.get(DESCRIBE_Id).toString());
 
-        Long clusterId = WebSocketTool.getClusterId(TypeUtil.objToString(attribute.get(KEY)));
+        Long clusterId = WebSocketTool.getClusterId(session);
 
         // 通过GitOps长连接, 通知agent建立与前端对应的ws连接
-        agentCommandService.startDescribeConnection(agentSessionGroup, describeResourceVO, clusterId);
+        agentCommandService.startDescribeConnection(key, describeResourceVO, clusterId);
     }
 }

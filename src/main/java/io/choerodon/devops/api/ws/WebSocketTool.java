@@ -38,17 +38,6 @@ public class WebSocketTool {
     }
 
     /**
-     * 获取握手时的Group参数
-     *
-     * @param httpServletRequest 请求
-     * @return group值
-     */
-    public static String getGroup(HttpServletRequest httpServletRequest) {
-        return httpServletRequest.getParameter(GROUP);
-    }
-
-
-    /**
      * 获取session的processor
      *
      * @param webSocketSession 连接会话
@@ -58,15 +47,16 @@ public class WebSocketTool {
         return TypeUtil.objToString(webSocketSession.getAttributes().get(PROCESSOR));
     }
 
+    public static Long getClusterId(WebSocketSession session) {
+        return TypeUtil.objToLong(session.getAttributes().get(CLUSTER_ID));
+    }
 
-    /**
-     * 获取集群id
-     *
-     * @param key 从查询参数上的key
-     * @return 集群id
-     */
-    public static Long getClusterId(String key) {
-        return TypeUtil.objToLong(getLastValueInColonPair(key));
+    public static String getVersion(WebSocketSession session) {
+        return TypeUtil.objToString(session.getAttributes().get(VERSION));
+    }
+
+    public static String getKey(WebSocketSession session) {
+        return TypeUtil.objToString(session.getAttributes().get(KEY));
     }
 
     /**
@@ -90,26 +80,18 @@ public class WebSocketTool {
     }
 
     /**
-     * 从形如 a:b:c 的字符串中获取最后一截，
-     *
-     * @param colonPair 输入
-     * @return 最后一截
-     */
-    public static String getLastValueInColonPair(String colonPair) {
-        Assert.hasLength(colonPair, "ColonPair should be not null.");
-        String[] pairs = colonPair.split(COLON);
-        return pairs[pairs.length - 1];
-    }
-
-    /**
-     * Group格式： log:${rawKey}  形如 from_front:ab124ac
-     * 获取rawKey， 用于拼接转发的目的地group  返回 ab124ac
+     * Group 形如 from_front:cluster:12.log:q1a
+     * 获取rawKey， 用于拼接转发的目的地group  返回 cluster:12.log:q1a
      *
      * @param sessionGroup web socket连接提供的查询参数group
      * @return rawKey
      */
     public static String getRawKey(String sessionGroup) {
-        return getLastValueInColonPair(sessionGroup);
+        int colonIndex = sessionGroup.indexOf(COLON);
+        if (colonIndex == -1) {
+            return sessionGroup;
+        }
+        return sessionGroup.substring(colonIndex);
     }
 
     /**
@@ -171,6 +153,10 @@ public class WebSocketTool {
 
     public static void checkLogId(HttpServletRequest request) {
         checkParameter(request, LOG_ID);
+    }
+
+    public static void checkClusterId(HttpServletRequest request) {
+        checkParameter(request, CLUSTER_ID);
     }
 
     private static void checkParameter(HttpServletRequest request, String parameter) {
