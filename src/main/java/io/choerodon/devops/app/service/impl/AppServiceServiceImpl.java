@@ -141,6 +141,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Value("${choerodon.organization.resourceLimit.appSvcMaxNumber:100}")
     private Integer appSvcMaxNumber;
     @Autowired
+    private HarborConfigurationProperties harborConfigurationProperties;
+    @Autowired
     private GitUtil gitUtil;
     @Autowired
     private AppServiceMapper appServiceMapper;
@@ -1045,7 +1047,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         configurationProperties.setBaseUrl(url);
         configurationProperties.setUsername(userName);
         configurationProperties.setPassword(password);
-        configurationProperties.setInsecureSkipTlsVerify(false);
+        configurationProperties.setInsecureSkipTlsVerify(harborConfigurationProperties.getInsecureSkipTlsVerify());
         configurationProperties.setProject(project);
         configurationProperties.setType(HARBOR);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
