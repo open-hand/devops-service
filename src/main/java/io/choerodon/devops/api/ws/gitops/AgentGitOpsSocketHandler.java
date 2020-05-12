@@ -3,9 +3,14 @@ package io.choerodon.devops.api.ws.gitops;
 import static io.choerodon.devops.infra.handler.ClusterConnectionHandler.CLUSTER_SESSION;
 import static org.hzero.websocket.constant.WebSocketConstant.Attributes.GROUP;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.hzero.websocket.redis.BrokerServerSessionRedis;
+import org.hzero.websocket.registry.UserSessionRegistry;
+import org.hzero.websocket.vo.ClientVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +47,6 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AgentGitOpsSocketHandler.class);
 
-    private Set<WebSocketSession> webSocketSessions = Collections.synchronizedSet(new HashSet<>());
-
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -70,8 +73,6 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
-        webSocketSessions.add(session);
-
         // 就是agent连接时应该传入的group参数，形如  front_agent:clusterId:21
         String group = WebSocketTool.getGroup(session);
 
@@ -102,16 +103,12 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-        try {
-            String registerKey = WebSocketTool.getGroup(session);
+        String registerKey = WebSocketTool.getGroup(session);
 
-            removeRedisValueByRegisterKeyAndSessionId(registerKey, session.getId(), WebSocketTool.getClusterId(session));
+        removeRedisValueByRegisterKeyAndSessionId(registerKey, session.getId(), WebSocketTool.getClusterId(session));
 
-            LOGGER.info("After connection closed, the cluster session with key {} is to be closed.", registerKey);
-            WebSocketTool.closeSessionQuietly(session);
-        } finally {
-            webSocketSessions.remove(session);
-        }
+        LOGGER.info("After connection closed, the cluster session with key {} is to be closed.", registerKey);
+        WebSocketTool.closeSessionQuietly(session);
     }
 
     @Override
@@ -293,7 +290,7 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
                 break;
             // 接收Agent定时发送的Pod实时数据(按照环境(namespace)发送)
             case POD_METRICS_SYNC:
-                agentMsgHandlerService.handlePodMetricsSync(msg.getKey(),msg.getPayload(),TypeUtil.objToLong(msg.getClusterId()));
+                agentMsgHandlerService.handlePodMetricsSync(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case CLUSTER_INFO:
                 LOGGER.info("Cluster info: {}", msg);
@@ -306,6 +303,10 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
 
     private void removeRedisValueByRegisterKeyAndSessionId(String registerKey, String sessionId, Object clusterId) {
         Object registerKeyValue = redisTemplate.opsForHash().get(CLUSTER_SESSION, registerKey);
+        removeRedisValueByRegisterKeyAndSessionId(registerKey, sessionId, registerKeyValue, clusterId);
+    }
+
+    private void removeRedisValueByRegisterKeyAndSessionId(String registerKey, String sessionId, Object registerKeyValue, Object clusterId) {
         if (registerKeyValue != null) {
             if (registerKeyValue instanceof ClusterSessionVO) {
                 ClusterSessionVO clusterSessionVO = (ClusterSessionVO) registerKeyValue;
@@ -325,18 +326,22 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
         }
     }
 
-
     private void doRemoveRedisKeyOfThisMicroService() {
-        List<String> sessionIds = webSocketSessions.stream().map(WebSocketSession::getId).collect(Collectors.toList());
+        // 获取本实例所有的连接的web socket session 的 session id
+        // （这里获取的是包括所有通过group方式连接的，也就是包括前端以及agent的）
+        List<String> sessionIds = BrokerServerSessionRedis.getCache(UserSessionRegistry.getBrokerId()).stream().map(ClientVO::getSessionId).collect(Collectors.toList());
+
+        // 获取集群连接情况数据
         Map<Object, Object> entries = redisTemplate.opsForHash().entries(CLUSTER_SESSION);
         entries.forEach((k, v) -> {
             if (sessionIds.contains(((ClusterSessionVO) v).getWebSocketSessionId())) {
                 String registerKey = TypeUtil.objToString(k);
-                removeRedisValueByRegisterKeyAndSessionId(registerKey, ((ClusterSessionVO) v).getWebSocketSessionId(), getClusterIdFromRegisterKey(registerKey));
+                // 清除这个实例的集群连接数据
+                removeRedisValueByRegisterKeyAndSessionId(registerKey, ((ClusterSessionVO) v).getWebSocketSessionId(), v, getClusterIdFromRegisterKey(registerKey));
             }
         });
-
-        webSocketSessions.clear();
+        // 清除这个实例的redis key
+        BrokerServerSessionRedis.clearRedisCacheByBrokerId(UserSessionRegistry.getBrokerId());
     }
 
     private Long getClusterIdFromRegisterKey(String registerKey) {
