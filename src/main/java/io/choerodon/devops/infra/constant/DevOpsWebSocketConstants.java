@@ -44,6 +44,10 @@ public final class DevOpsWebSocketConstants {
 
     public static final String PARAMETER_NULL_TEMPLATE = "The parameter %s is unexpectedly null";
 
+    public static final String KUBERNETES_GET_LOGS = "kubernetes_get_logs";
+
+    public static final String EXEC_COMMAND = "kubernetes_exec";
+
     private DevOpsWebSocketConstants() {
     }
 }

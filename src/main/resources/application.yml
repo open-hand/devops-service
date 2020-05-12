@@ -7,6 +7,7 @@ spring:
       maximum-pool-size: 15 # 数据库连接池连接数
   redis:
     host: localhost
+    database: ${SPRING_REDIS_DATABASE:1}
   servlet:
     multipart:
       enabled: true

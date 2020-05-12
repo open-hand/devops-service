@@ -2,8 +2,6 @@ package io.choerodon.devops.api.ws.describe.agent;
 
 import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.AGENT_DESCRIBE;
 
-import java.io.IOException;
-
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,12 +38,6 @@ public class AgentDescribeSocketHandler extends AbstractSocketHandler {
         String frontSessionGroup = WebSocketTool.buildFrontGroup(key);
 
         keySocketSendHelper.sendByGroup(frontSessionGroup, "Describe", message.getPayload());
-        try {
-            if (session.isOpen()) {
-                session.close();
-            }
-        } catch (IOException e) {
-            LOGGER.error("Agent describe: close session failed!", e);
-        }
+        WebSocketTool.closeSessionQuietly(session);
     }
 }

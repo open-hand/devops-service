@@ -4,26 +4,32 @@ import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.*;
 import static org.hzero.websocket.constant.WebSocketConstant.Attributes.GROUP;
 import static org.hzero.websocket.constant.WebSocketConstant.Attributes.PROCESSOR;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
+import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.hzero.websocket.redis.BrokerServerSessionRedis;
 import org.hzero.websocket.registry.BaseSessionRegistry;
 import org.hzero.websocket.registry.GroupSessionRegistry;
 import org.hzero.websocket.vo.ClientVO;
-import org.springframework.util.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.server.HandshakeFailureException;
 
+import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * Created by Sheep on 2019/7/25.
  */
 public class WebSocketTool {
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketTool.class);
+
     private WebSocketTool() {
     }
 
@@ -118,6 +124,42 @@ public class WebSocketTool {
                 .map(GroupSessionRegistry::getSession)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * 安静的关闭web socket session
+     *
+     * @param session 会话
+     */
+    public static void closeSessionQuietly(WebSocketSession session) {
+        if (session != null && session.isOpen()) {
+            try {
+                session.close();
+            } catch (IOException e) {
+                LOGGER.warn("close web socket session failed {}", e);
+            }
+        }
+    }
+
+    /**
+     * 通过key关闭前端的session
+     *
+     * @param key key
+     */
+    public static void closeFrontSessionByKey(String key) {
+        KeySocketSendHelper keySocketSendHelper = ApplicationContextHelper.getContext().getBean(KeySocketSendHelper.class);
+        keySocketSendHelper.closeSessionByGroup(buildFrontGroup(key));
+    }
+
+    /**
+     * 通过key关闭agent的对应session
+     *
+     * @param key key
+     */
+    public static void closeAgentSessionByKey(String key) {
+        KeySocketSendHelper keySocketSendHelper = ApplicationContextHelper.getContext().getBean(KeySocketSendHelper.class);
+        keySocketSendHelper.closeSessionByGroup(buildAgentGroup(key));
+    }
+
 
     public static void checkGroup(HttpServletRequest request) {
         checkParameter(request, GROUP);

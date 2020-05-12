@@ -2,11 +2,9 @@ package io.choerodon.devops.api.ws;
 
 import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.*;
 
-import java.io.IOException;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
-import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,15 +23,10 @@ import io.choerodon.devops.app.service.AgentCommandService;
  */
 @Component
 public class DevopsExecAndLogSocketHandler {
-
     private static final Logger logger = LoggerFactory.getLogger(DevopsExecAndLogSocketHandler.class);
-    public static final String KUBERNETES_GET_LOGS = "kubernetes_get_logs";
-    public static final String EXEC_COMMAND = "kubernetes_exec";
 
     @Autowired
     private AgentCommandService agentCommandService;
-    @Autowired
-    private KeySocketSendHelper keySocketSendHelper;
 
 
     public boolean beforeHandshake(ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
@@ -80,21 +73,8 @@ public class DevopsExecAndLogSocketHandler {
     }
 
     public void afterConnectionClosed(WebSocketSession webSocketSession, CloseStatus closeStatus) {
-        String registerKey = WebSocketTool.getGroup(webSocketSession);
-        String rawKey = WebSocketTool.getRawKey(registerKey);
-
         // 关闭agent那边的web socket Session
-        keySocketSendHelper.closeSessionByGroup(WebSocketTool.buildAgentGroup(rawKey));
-
-        closeSession(webSocketSession);
-    }
-
-    private void closeSession(WebSocketSession session) {
-        try {
-            session.close();
-        } catch (IOException e) {
-            logger.error("session closed failed!", e);
-        }
-
+        WebSocketTool.closeAgentSessionByKey(WebSocketTool.getKey(webSocketSession));
+        WebSocketTool.closeSessionQuietly(webSocketSession);
     }
 }

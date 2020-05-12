@@ -4,10 +4,9 @@ import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.*;
 
 import java.util.Map;
 
-import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 
 import io.choerodon.devops.api.vo.DescribeResourceVO;
@@ -21,9 +20,6 @@ import io.choerodon.devops.app.service.AgentCommandService;
  */
 @Component
 public class FrontDescribeSocketHandler extends AbstractSocketHandler {
-    @Autowired
-    @Lazy
-    private KeySocketSendHelper webSocketHelper;
 
     @Autowired
     private AgentCommandService agentCommandService;
@@ -49,5 +45,10 @@ public class FrontDescribeSocketHandler extends AbstractSocketHandler {
 
         // 通过GitOps长连接, 通知agent建立与前端对应的ws连接
         agentCommandService.startDescribeConnection(key, describeResourceVO, clusterId);
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        WebSocketTool.closeAgentSessionByKey(WebSocketTool.getKey(session));
     }
 }

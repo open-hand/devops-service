@@ -2,8 +2,6 @@ package io.choerodon.devops.api.ws.polaris.agent;
 
 import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.AGENT_POLARIS;
 
-import java.io.IOException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,12 +42,6 @@ public class AgentPolarisSocketHandler extends AbstractSocketHandler {
 
         polarisScanningService.handleAgentPolarisMessage(JsonHelper.unmarshalByJackson(message.getPayload(), PolarisResponsePayloadVO.class));
 
-        try {
-            if (session.isOpen()) {
-                session.close();
-            }
-        } catch (IOException e) {
-            LOGGER.warn("Exception occurred when close webSocketSession for cluster with id {} and for type polaris. The ex is: {}", e);
-        }
+        WebSocketTool.closeSessionQuietly(session);
     }
 }

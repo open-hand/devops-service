@@ -26,7 +26,7 @@ public interface AgentCommandService {
                 String releaseName, DevopsEnvironmentDTO devopsEnvironmentDTO, String values,
                 Long commandId, String secretCode);
 
-    void initCluster(Long clusterId);
+    void initCluster(Long clusterId, WebSocketSession webSocketSession);
 
     void deleteEnv(Long envId, String code, Long clusterId);
 
@@ -35,8 +35,6 @@ public interface AgentCommandService {
     void deployTestApp(AppServiceDTO applicationDTO, AppServiceVersionDTO appServiceVersionDTO, String releaseName, String secretName, Long clusterId, String values);
 
     void getTestAppStatus(Map<Long, List<String>> testReleases);
-
-    void upgradeCluster(DevopsClusterDTO devopsClusterDTO);
 
     void upgradeCluster(DevopsClusterDTO devopsClusterDTO, WebSocketSession webSocketSession);
 

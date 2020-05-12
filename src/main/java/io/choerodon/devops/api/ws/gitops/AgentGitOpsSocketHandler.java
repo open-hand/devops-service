@@ -3,7 +3,6 @@ package io.choerodon.devops.api.ws.gitops;
 import static io.choerodon.devops.infra.handler.ClusterConnectionHandler.CLUSTER_SESSION;
 import static org.hzero.websocket.constant.WebSocketConstant.Attributes.GROUP;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -90,10 +89,10 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
         if (!unnecessaryToUpgrade.contains(clusterId)) {
             DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
             LOGGER.info("Upgrade agent: upgrade agent with cluster id {} from version {}", clusterId, clusterSession.getVersion());
-            agentCommandService.upgradeCluster(devopsClusterDTO);
+            agentCommandService.upgradeCluster(devopsClusterDTO, session);
         } else {
             LOGGER.info("Init agent: init agent with cluster id {} and version {}", clusterId, clusterSession.getVersion());
-            agentCommandService.initCluster(clusterId);
+            agentCommandService.initCluster(clusterId, session);
             //集群链接成功发送web hook
             DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
             sendNotificationService.sendWhenActiviteCluster(devopsClusterDTO);
@@ -103,17 +102,15 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-        String registerKey = WebSocketTool.getGroup(session);
-
-        removeRedisValueByRegisterKeyAndSessionId(registerKey, session.getId(), WebSocketTool.getClusterId(session));
-
-        LOGGER.info("After connection closed, the cluster session with key {} is to be closed.", registerKey);
         try {
-            if (session.isOpen()) {
-                session.close();
-            }
-        } catch (IOException e) {
-            LOGGER.warn("close clean timeout session failed {}", e.getMessage());
+            String registerKey = WebSocketTool.getGroup(session);
+
+            removeRedisValueByRegisterKeyAndSessionId(registerKey, session.getId(), WebSocketTool.getClusterId(session));
+
+            LOGGER.info("After connection closed, the cluster session with key {} is to be closed.", registerKey);
+            WebSocketTool.closeSessionQuietly(session);
+        } finally {
+            webSocketSessions.remove(session);
         }
     }
 
