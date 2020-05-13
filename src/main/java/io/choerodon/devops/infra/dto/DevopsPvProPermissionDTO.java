@@ -1,20 +1,27 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 @Table(name = "devops_pv_project_rel")
 public class DevopsPvProPermissionDTO {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private Long pvId;
 
-    // 这个表没有主键，这个@Id注解是防止启动报错
-    @Id
     private Long projectId;
 
     @Transient
     private Long clusterId;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public Long getClusterId() {
         return clusterId;

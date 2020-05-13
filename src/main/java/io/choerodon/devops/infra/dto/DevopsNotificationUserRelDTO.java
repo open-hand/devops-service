@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -10,8 +12,10 @@ import javax.persistence.Table;
  */
 @Table(name = "devops_notification_user_rel")
 public class DevopsNotificationUserRelDTO {
-    // 这个表没有主键，这个@Id注解是防止启动报错
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private Long userId;
     private Long notificationId;
 
@@ -21,6 +25,14 @@ public class DevopsNotificationUserRelDTO {
     public DevopsNotificationUserRelDTO(Long userId, Long notificationId) {
         this.userId = userId;
         this.notificationId = notificationId;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Long getUserId() {

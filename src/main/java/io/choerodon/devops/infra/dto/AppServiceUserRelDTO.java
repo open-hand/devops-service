@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -16,6 +18,9 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class AppServiceUserRelDTO extends AuditDomain {
     // 这个表没有主键，这个@Id注解是防止启动报错
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private Long iamUserId;
     private Long appServiceId;
 
@@ -25,6 +30,14 @@ public class AppServiceUserRelDTO extends AuditDomain {
     public AppServiceUserRelDTO(Long iamUserId, Long appServiceId) {
         this.iamUserId = iamUserId;
         this.appServiceId = appServiceId;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Long getIamUserId() {
