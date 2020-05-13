@@ -5,6 +5,7 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { Modal, Button, Select } from 'choerodon-ui';
 import { Content } from '@choerodon/boot';
 import ReactCodeMirror from 'react-codemirror';
+import uuidv1 from 'uuid/v1';
 
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/base16-dark.css';
@@ -151,7 +152,9 @@ export default class LogSidebar extends Component {
     const { logId, containerName, following } = this.state;
     const authToken = document.cookie.split('=')[1];
     const wsUrl = removeEndsChar(window._env_.DEVOPS_HOST, '/');
-    const url = `${wsUrl}/devops/log?key=cluster:${clusterId}.log:${logId}&env=${namespace}&podName=${podName}&containerName=${containerName}&logId=${logId}&token=${authToken}`;
+    const secretKey = window._env_.DEVOPS_WEBSOCKET_SECRET_KEY;
+    const key = `cluster:${clusterId}.log:${uuidv1()}`;
+    const url = `${wsUrl}/websocket?key=${key}&group=from_front:${key}&processor=front_log&secret_key=${secretKey}&env=${namespace}&podName=${podName}&containerName=${containerName}&logId=${logId}&clusterId=${clusterId}`;
     const logs = [];
     let oldLogs = [];
     let editor = null;
