@@ -288,7 +288,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public AppServiceRepVO query(Long projectId, Long appServiceId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         AppServiceRepVO appServiceRepVO = dtoToRepVo(appServiceDTO);
         List<DevopsConfigVO> devopsConfigVOS = devopsConfigService.queryByResourceId(appServiceId, APP_SERVICE);
@@ -304,7 +304,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         //url地址拼接
         if (appServiceDTO.getGitlabProjectId() != null) {
-            appServiceRepVO.setRepoUrl(concatRepoUrl(organizationDTO.getCode(), projectDTO.getCode(), appServiceDTO.getCode()));
+            appServiceRepVO.setRepoUrl(concatRepoUrl(organizationDTO.getTenantNum(), projectDTO.getCode(), appServiceDTO.getCode()));
         }
         return appServiceRepVO;
     }
@@ -537,7 +537,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Page<AppServiceDTO> applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params);
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOS.getContent(), urlSlash);
 
@@ -550,7 +550,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Boolean isProjectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userAttrDTO);
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         Map maps = gson.fromJson(params, Map.class);
         Page<AppServiceDTO> applicationServiceDTOPageInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper.listCodeRepository(projectId,
@@ -575,7 +575,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             applicationDTOServiceList = appServiceMapper.listProjectMembersAppServiceByActive(projectId, userId);
         }
 
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
 
         initApplicationParams(projectDTO, organizationDTO, applicationDTOServiceList, urlSlash);
@@ -660,9 +660,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(devOpsAppServicePayload.getUserId()));
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator
-                .queryProjectByName(organizationDTO.getCode() + "-" + projectDTO.getCode(), appServiceDTO.getCode(),
+                .queryProjectByName(organizationDTO.getTenantNum() + "-" + projectDTO.getCode(), appServiceDTO.getCode(),
                         devOpsAppServicePayload.getUserId());
         Integer gitlabProjectId = gitlabProjectDO.getId();
         if (gitlabProjectId == null) {
@@ -686,7 +686,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             LOGGER.info("The template app service id is not null: {}, start to clone template repository", devOpsAppServicePayload.getTemplateAppServiceId());
 
             String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
-            String newGroupName = organizationDTO.getCode() + "-" + projectDTO.getCode();
+            String newGroupName = organizationDTO.getTenantNum() + "-" + projectDTO.getCode();
             String repositoryUrl = repoUrl + newGroupName + "/" + appServiceDTO.getCode() + GIT;
             cloneAndPushCode(appServiceDTO, userAttrDTO, devOpsAppServicePayload.getTemplateAppServiceId(), devOpsAppServicePayload.getTemplateAppServiceVersionId(), repositoryUrl, newGroupName);
         }
@@ -703,10 +703,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceDTO appServiceDTO = baseQueryByCode(devOpsAppServiceImportPayload.getPath(),
                 devopsProjectDTO.getIamProjectId());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
-                organizationDTO.getCode() + "-" + projectDTO.getCode(),
+                organizationDTO.getTenantNum() + "-" + projectDTO.getCode(),
                 appServiceDTO.getCode(),
                 devOpsAppServiceImportPayload.getUserId());
         if (gitlabProjectDO.getId() == null) {
@@ -734,10 +734,10 @@ public class AppServiceServiceImpl implements AppServiceService {
             String repositoryUrl = tempUrl[0];
             gitUtil.cloneAppMarket(applicationDir, templateVersion, repositoryUrl, devOpsAppServiceImportPayload.getAccessToken());
             File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
-            replaceParams(appServiceDTO.getCode(), organizationDTO.getCode() + "-" + projectDTO.getCode(), applicationDir, null, null, true);
+            replaceParams(appServiceDTO.getCode(), organizationDTO.getTenantNum() + "-" + projectDTO.getCode(), applicationDir, null, null, true);
             Git newGit = gitUtil.initGit(applicationWorkDir);
             String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
-            appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getCode()
+            appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getTenantNum()
                     + "-" + projectDTO.getCode() + "/" + appServiceDTO.getCode() + ".git");
             String accessToken = getToken(devOpsAppServiceImportPayload.getGitlabProjectId(), applicationDir, userAttrDTO);
             try {
@@ -751,7 +751,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             Git repositoryGit = gitUtil.cloneRepository(applicationDir, devOpsAppServiceImportPayload.getRepositoryUrl(), devOpsAppServiceImportPayload.getAccessToken());
             // 设置Application对应的gitlab项目的仓库地址
             String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
-            appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getCode()
+            appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getTenantNum()
                     + "-" + projectDTO.getCode() + "/" + appServiceDTO.getCode() + ".git");
 
             File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
@@ -856,11 +856,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         try {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
-            OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             DevopsConfigDTO harborConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR, AUTHTYPE_PUSH);
             ConfigVO harborProjectConfig = gson.fromJson(harborConfigDTO.getConfig(), ConfigVO.class);
             Map<String, String> params = new HashMap<>();
-            String groupName = organizationDTO.getCode() + "-" + projectDTO.getCode();
+            String groupName = organizationDTO.getTenantNum() + "-" + projectDTO.getCode();
             if (harborProjectConfig.getProject() != null) {
                 groupName = harborProjectConfig.getProject();
             }
@@ -877,7 +877,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{ GROUP_NAME }}", groupName);
             params.put("{{ PROJECT_NAME }}", appServiceDTO.getCode());
             params.put("{{ PRO_CODE }}", projectDTO.getCode());
-            params.put("{{ ORG_CODE }}", organizationDTO.getCode());
+            params.put("{{ ORG_CODE }}", organizationDTO.getTenantNum());
             params.put("{{ DOCKER_REGISTRY }}", dockerUrl);
             params.put("{{ DOCKER_USERNAME }}", harborProjectConfig.getUserName());
             params.put("{{ DOCKER_PASSWORD }}", harborProjectConfig.getPassword());
@@ -1120,12 +1120,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<SonarContentVO> sonarContentVOS = new ArrayList<>();
         AppServiceDTO appServiceDTO = baseQuery(appServiceId);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
 
         //初始化sonarClient
         SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
-        String key = String.format(SONAR_KEY, organization.getCode(), projectDTO.getCode(), appServiceDTO.getCode());
+        String key = String.format(SONAR_KEY, organization.getTenantNum(), projectDTO.getCode(), appServiceDTO.getCode());
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
 
         //校验sonarqube地址是否正确
@@ -1432,9 +1432,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+0000");
         AppServiceDTO applicationDTO = baseQuery(appServiceId);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
-        String key = String.format(SONAR_KEY, organizationDTO.getCode(), projectDTO.getCode(), applicationDTO.getCode());
+        String key = String.format(SONAR_KEY, organizationDTO.getTenantNum(), projectDTO.getCode(), applicationDTO.getCode());
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
         Map<String, String> queryMap = new HashMap<>();
         queryMap.put("component", key);
@@ -1853,7 +1853,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         checkEnableCreateAppSvcOrThrowE(projectId, importInternalVOS.size());
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         List<AppServiceImportPayload> importPayloadList = new ArrayList<>();
         importInternalVOS.forEach(importInternalVO -> {
@@ -1911,7 +1911,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             appServiceImportPayload.setGitlabGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
             appServiceImportPayload.setIamUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             appServiceImportPayload.setVersionId(importInternalVO.getVersionId());
-            appServiceImportPayload.setOrgCode(organizationDTO.getCode());
+            appServiceImportPayload.setOrgCode(organizationDTO.getTenantNum());
             appServiceImportPayload.setProjectId(projectId);
             appServiceImportPayload.setProCode(projectDTO.getCode());
             appServiceImportPayload.setOldAppServiceId(importInternalVO.getAppServiceId());
@@ -1972,8 +1972,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         String oldGroup;
         if (oldAppServiceDTO.getMktAppId() == null) {
             ProjectDTO oldProjectDTO = baseServiceClientOperator.queryIamProjectById(oldAppServiceDTO.getProjectId());
-            OrganizationDTO oldOrganizationDTO = baseServiceClientOperator.queryOrganizationById(oldProjectDTO.getOrganizationId());
-            oldGroup = oldOrganizationDTO.getCode() + "-" + oldProjectDTO.getCode();
+            Tenant oldOrganizationDTO = baseServiceClientOperator.queryOrganizationById(oldProjectDTO.getOrganizationId());
+            oldGroup = oldOrganizationDTO.getTenantNum() + "-" + oldProjectDTO.getCode();
         } else {
             ApplicationDTO oldApplicationDTO = baseServiceClientOperator.queryAppById(oldAppServiceDTO.getMktAppId());
             oldGroup = String.format(SITE_APP_GROUP_NAME_FORMAT, oldApplicationDTO.getCode());
@@ -2177,10 +2177,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceDTO appServiceDTO = baseQuery(appServiceId);
         if (appServiceDTO.getGitlabProjectId() != null) {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-            OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
             return gitlabUrl + urlSlash
-                    + organizationDTO.getCode() + "-" + projectDTO.getCode() + "/"
+                    + organizationDTO.getTenantNum() + "-" + projectDTO.getCode() + "/"
                     + appServiceDTO.getCode();
         }
         return "";
@@ -2871,7 +2871,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
 
-    private void initApplicationParams(ProjectDTO projectDTO, OrganizationDTO
+    private void initApplicationParams(ProjectDTO projectDTO, Tenant
             organizationDTO, List<AppServiceDTO> applicationDTOS, String urlSlash) {
         List<String> projectKeys = new ArrayList<>();
         if (!sonarqubeUrl.equals("")) {
@@ -2898,11 +2898,11 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         for (AppServiceDTO t : applicationDTOS) {
             if (t.getGitlabProjectId() != null) {
-                t.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, organizationDTO.getCode(), projectDTO.getCode(), t.getCode()));
+                t.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), t.getCode()));
                 t.setRepoUrl(
-                        gitlabUrl + urlSlash + organizationDTO.getCode() + "-" + projectDTO.getCode() + "/"
+                        gitlabUrl + urlSlash + organizationDTO.getTenantNum() + "-" + projectDTO.getCode() + "/"
                                 + t.getCode() + ".git");
-                String key = String.format(SONAR_KEY, organizationDTO.getCode(), projectDTO.getCode(), t.getCode());
+                String key = String.format(SONAR_KEY, organizationDTO.getTenantNum(), projectDTO.getCode(), t.getCode());
                 if (!projectKeys.isEmpty() && projectKeys.contains(key)) {
                     t.setSonarUrl(sonarqubeUrl);
                 }

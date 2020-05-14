@@ -26,8 +26,8 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.ProjectConfigType;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -114,7 +114,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
         AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
-        OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceVersionDTO newApplicationVersion = baseQueryByAppServiceIdAndVersion(appServiceDTO.getId(), version);
         appServiceVersionDTO.setAppServiceId(appServiceDTO.getId());
         appServiceVersionDTO.setImage(image);
@@ -126,13 +126,13 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         String helmUrl = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class).getUrl();
         appServiceVersionDTO.setHelmConfigId(devopsConfigDTO.getId());
 
-        appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getCode() + "/" + projectDTO.getCode() + "/" : helmUrl + "/" + organization.getCode() + "/" + projectDTO.getCode() + "/");
+        appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getTenantNum() + "/" + projectDTO.getCode() + "/" : helmUrl + "/" + organization.getTenantNum() + "/" + projectDTO.getCode() + "/");
         String storeFilePath = STORE_PATH + version;
 
         String destFilePath = DESTINATION_PATH + version;
         String path = FileUtil.multipartFileToFile(storeFilePath, files);
         //上传chart包到chartmuseum
-        chartUtil.uploadChart(helmUrl, organization.getCode(), projectDTO.getCode(), new File(path));
+        chartUtil.uploadChart(helmUrl, organization.getTenantNum(), projectDTO.getCode(), new File(path));
 
         // 有需求让重新上传chart包，所以校验重复推后
         if (newApplicationVersion != null) {
@@ -387,7 +387,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         List<AppServiceVersionDTO> appServiceVersionDTOS = baseListByAppServiceIdAndBranch(appServiceId, branch);
         AppServiceDTO applicationDTO = applicationService.baseQuery(appServiceId);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(applicationDTO.getProjectId());
-        OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         List<AppServiceVersionAndCommitVO> appServiceVersionAndCommitVOS = new ArrayList<>();
 
         appServiceVersionDTOS.forEach(applicationVersionDTO -> {
@@ -402,7 +402,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             appServiceVersionAndCommitVO.setVersion(applicationVersionDTO.getVersion());
             appServiceVersionAndCommitVO.setCreateDate(applicationVersionDTO.getCreationDate());
             appServiceVersionAndCommitVO.setCommitUrl(gitlabUrl + "/"
-                    + organization.getCode() + "-" + projectDTO.getCode() + "/"
+                    + organization.getTenantNum() + "-" + projectDTO.getCode() + "/"
                     + applicationDTO.getCode() + ".git");
             appServiceVersionAndCommitVOS.add(appServiceVersionAndCommitVO);
 

@@ -31,8 +31,8 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitStatusDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -337,7 +337,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         });
         AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceId);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
-        OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         //获取pipeline记录
         Set<Long> userIds = new HashSet<>();
@@ -387,7 +387,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             }
             devopsGitlabPipelineDTO.setStages(stages);
             devopsGitlabPipelineDTO.setGitlabUrl(gitlabUrl + "/"
-                    + organization.getCode() + "-" + projectDTO.getCode() + "/"
+                    + organization.getTenantNum() + "-" + projectDTO.getCode() + "/"
                     + appServiceDTO.getCode() + ".git");
             devopsGiltabPipelineDTOS.add(devopsGitlabPipelineDTO);
         });

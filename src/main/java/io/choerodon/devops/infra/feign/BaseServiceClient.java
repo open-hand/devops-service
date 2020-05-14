@@ -6,12 +6,12 @@ import java.util.Set;
 import javax.validation.Valid;
 import javax.websocket.server.PathParam;
 
-import io.choerodon.core.domain.Page;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
@@ -33,11 +33,8 @@ public interface BaseServiceClient {
     @GetMapping(value = "/choerodon/v1/projects/{projectId}")
     ResponseEntity<ProjectDTO> queryIamProject(@PathVariable("projectId") Long projectId);
 
-    @GetMapping(value = "/choerodon/v1/organizations/self")
-    ResponseEntity<OrganizationDTO> queryOrganization();
-
-    @GetMapping(value = "/choerodon/v1/organizations/{organizationId}")
-    ResponseEntity<OrganizationDTO> queryOrganizationById(@PathVariable("organizationId") Long organizationId);
+    @GetMapping(value = "/v1/{organizationId}/tenants")
+    ResponseEntity<Tenant> queryOrganizationById(@PathVariable("organizationId") Long organizationId);
 
     /**
      * 根据id集合查询组织

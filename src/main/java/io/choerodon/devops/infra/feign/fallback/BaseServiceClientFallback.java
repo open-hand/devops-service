@@ -41,12 +41,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<OrganizationDTO> queryOrganization() {
-        throw new CommonException("error.organization.get");
-    }
-
-    @Override
-    public ResponseEntity<OrganizationDTO> queryOrganizationById(Long organizationId) {
+    public ResponseEntity<Tenant> queryOrganizationById(Long organizationId) {
         throw new CommonException("error.organization.get");
     }
 

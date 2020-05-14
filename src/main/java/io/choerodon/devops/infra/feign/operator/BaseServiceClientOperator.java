@@ -74,8 +74,8 @@ public class BaseServiceClientOperator {
         return projectDTOResponseEntity.getBody();
     }
 
-    public OrganizationDTO queryOrganizationById(Long organizationId) {
-        ResponseEntity<OrganizationDTO> organizationDTOResponseEntity = baseServiceClient.queryOrganizationById(organizationId);
+    public Tenant queryOrganizationById(Long organizationId) {
+        ResponseEntity<Tenant> organizationDTOResponseEntity = baseServiceClient.queryOrganizationById(organizationId);
         if (organizationDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
             return organizationDTOResponseEntity.getBody();
         } else {

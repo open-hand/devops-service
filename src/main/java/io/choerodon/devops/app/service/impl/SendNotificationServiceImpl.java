@@ -2,9 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -22,19 +19,14 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.NoticeCodeConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.CommandType;
-import io.choerodon.devops.infra.enums.EnvironmentType;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.ObjectType;
-import io.choerodon.devops.infra.enums.SendSettingEnum;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
-import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 发送DevOps相关通知的实现类
@@ -325,7 +317,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                         return;
                     }
 
-                    OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+                    Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                     if (organizationDTO == null) {
                         LogUtil.loggerInfoObjectNullWithId(ORGANIZATION, projectDTO.getOrganizationId(), LOGGER);
                         return;
@@ -333,7 +325,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     Map<String, Object> params = new HashMap<>();
                     params.put("gitlabUrl", gitlabUrl);
-                    params.put("organizationCode", organizationDTO.getCode());
+                    params.put("organizationCode", organizationDTO.getTenantNum());
                     params.put("projectCode", projectDTO.getCode());
                     params.put("projectName", projectDTO.getName());
                     params.put("appServiceCode", appServiceDTO.getCode());
@@ -376,7 +368,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 return;
             }
 
-            OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             if (organizationDTO == null) {
                 LogUtil.loggerInfoObjectNullWithId(ORGANIZATION, projectDTO.getOrganizationId(), LOGGER);
                 return;
@@ -519,13 +511,13 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                         return;
                     }
 
-                    OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+                    Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                     if (organizationDTO == null) {
                         LogUtil.loggerInfoObjectNullWithId(ORGANIZATION, projectDTO.getOrganizationId(), LOGGER);
                         return;
                     }
 
-                    Map<String, Object> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getCode(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), authorUser.getRealName(), mergeRequestId);
+                    Map<String, Object> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), authorUser.getRealName(), mergeRequestId);
 
                     // TODO 发通知
 //                    sendNotices(NoticeCodeConstants.AUDIT_MERGE_REQUEST, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params, null);
@@ -587,13 +579,13 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                         return;
                     }
 
-                    OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+                    Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                     if (organizationDTO == null) {
                         LogUtil.loggerInfoObjectNullWithId(ORGANIZATION, projectDTO.getOrganizationId(), LOGGER);
                         return;
                     }
 
-                    Map<String, Object> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getCode(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), authorUser.getRealName(), mergeRequestId);
+                    Map<String, Object> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), authorUser.getRealName(), mergeRequestId);
 
                     // TODO 发通知
 //                    sendNotices(sendSettingCode, projectDTO.getId(), ArrayUtil.singleAsList(constructTargetUser(iamUserDTO.getId())), params, null);

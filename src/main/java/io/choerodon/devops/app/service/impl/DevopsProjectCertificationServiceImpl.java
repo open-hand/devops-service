@@ -27,8 +27,8 @@ import io.choerodon.devops.app.service.SendNotificationService;
 import io.choerodon.devops.infra.dto.CertificationDTO;
 import io.choerodon.devops.infra.dto.CertificationFileDTO;
 import io.choerodon.devops.infra.dto.DevopsCertificationProRelationshipDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCertificationFileMapper;
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
@@ -171,8 +171,8 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     @Transactional(rollbackFor = Exception.class)
     public void createOrUpdate(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationVO projectCertificationVO) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, organizationDTO.getCode(), FILE_SEPARATOR, GenerateUUID.generateUUID().substring(0, 5));
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, organizationDTO.getTenantNum(), FILE_SEPARATOR, GenerateUUID.generateUUID().substring(0, 5));
         String certFileName;
         String keyFileName;
         //如果是选择上传文件方式
@@ -205,7 +205,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
             certificationDTO.setName(projectCertificationVO.getName());
             certificationDTO.setProjectId(projectId);
             // 创建项目层证书需要组织id
-            certificationDTO.setOrganizationId(organizationDTO.getId());
+            certificationDTO.setOrganizationId(organizationDTO.getTenantId());
             certificationDTO.setSkipCheckProjectPermission(true);
             certificationDTO.setDomains(gson.toJson(Collections.singletonList(projectCertificationVO.getDomain())));
             certificationDTO.setCertificationFileId(certificationService.baseStoreCertFile(new CertificationFileDTO(projectCertificationVO.getCertValue(), projectCertificationVO.getKeyValue())));
@@ -248,8 +248,8 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         }
         //查询出该项目所属组织下的所有项目
         ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(iamProjectDTO.getOrganizationId());
-        List<ProjectDTO> projectDTOList = baseServiceClientOperator.listIamProjectByOrgId(organizationDTO.getId(),
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(iamProjectDTO.getOrganizationId());
+        List<ProjectDTO> projectDTOList = baseServiceClientOperator.listIamProjectByOrgId(organizationDTO.getTenantId(),
                 searchParamMap.get("name"),
                 searchParamMap.get("code"),
                 CollectionUtils.isEmpty(paramList) ? null : paramList.get(0));

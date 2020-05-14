@@ -44,8 +44,8 @@ import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.gitlab.CompareResultDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.feign.operator.AgileServiceClientOperator;
@@ -290,7 +290,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public Page<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageable, Long appServiceId, String params) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
         if (applicationDTO == null) {
             return null;
@@ -309,7 +309,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
-                gitlabUrl, urlSlash, organizationDTO.getCode(), projectDTO.getCode(), applicationDTO.getCode());
+                gitlabUrl, urlSlash, organizationDTO.getTenantNum(), projectDTO.getCode(), applicationDTO.getCode());
         Page<DevopsBranchDTO> devopsBranchDTOPageInfo =
                 devopsBranchService.basePageBranch(appServiceId, pageable, params);
         Page<BranchVO> devopsBranchVOPageInfo = ConvertUtils.convertPage(devopsBranchDTOPageInfo, BranchVO.class);
@@ -317,7 +317,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         devopsBranchVOPageInfo.setContent(devopsBranchDTOPageInfo.getContent().stream().map(t -> {
             IssueDTO issueDTO = null;
             if (t.getIssueId() != null) {
-                issueDTO = agileServiceClientOperator.queryIssue(projectId, t.getIssueId(), organizationDTO.getId());
+                issueDTO = agileServiceClientOperator.queryIssue(projectId, t.getIssueId(), organizationDTO.getTenantId());
             }
             IamUserDTO userDTO = baseServiceClientOperator.queryUserByUserId(
                     userAttrService.queryUserIdByGitlabUserId(t.getUserId()));
@@ -419,10 +419,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public Page<TagVO> pageTagsByOptions(Long projectId, Long applicationId, String params, Integer page, Integer size) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         AppServiceDTO applicationDTO = appServiceService.baseQuery(applicationId);
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
-                gitlabUrl, urlSlash, organizationDTO.getCode(), projectDTO.getCode(), applicationDTO.getCode());
+                gitlabUrl, urlSlash, organizationDTO.getTenantNum(), projectDTO.getCode(), applicationDTO.getCode());
         return ConvertUtils.convertPage(gitlabServiceClientOperator.pageTag(projectDTO, applicationDTO.getGitlabProjectId(), path, page, params, size, getGitlabUserId()), TagVO.class);
     }
 
@@ -526,14 +526,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Map<String, String> objectPath;
         //从iam服务中查出项目和组织code
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         //本地路径
-        final String path = GitOpsUtil.getLocalPathToStoreEnv(organizationDTO.getCode(),
+        final String path = GitOpsUtil.getLocalPathToStoreEnv(organizationDTO.getTenantNum(),
                 projectDTO.getCode(), devopsEnvironmentDTO.getClusterCode(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId());
         //生成环境git仓库ssh地址
         final String url = GitUtil.getGitlabSshUrl(
-                pattern, gitlabSshUrl, organizationDTO.getCode(), projectDTO.getCode(),
+                pattern, gitlabSshUrl, organizationDTO.getTenantNum(), projectDTO.getCode(),
                 devopsEnvironmentDTO.getCode(),
                 EnvironmentType.forValue(devopsEnvironmentDTO.getType()),
                 devopsEnvironmentDTO.getClusterCode());

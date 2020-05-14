@@ -49,29 +49,11 @@
             <artifactId>hzero-starter-websocket</artifactId>
         </dependency>
 
-        <!--<dependency>-->
-            <!--<groupId>io.choerodon</groupId>-->
-            <!--<artifactId>choerodon-starter-core</artifactId>-->
-            <!--<version>${choerodon.starter.version}</version>-->
-        <!--</dependency>-->
-
         <dependency>
             <groupId>org.hzero.starter</groupId>
             <artifactId>hzero-starter-metric</artifactId>
             <version>${hzero.starter.version}</version>
         </dependency>
-
-        <!--<dependency>-->
-            <!--<groupId>io.choerodon</groupId>-->
-            <!--<artifactId>choerodon-starter-webmvc</artifactId>-->
-            <!--<version>0.16.1.RELEASE</version>-->
-            <!--<exclusions>-->
-                <!--<exclusion>-->
-                    <!--<groupId>org.springframework.data</groupId>-->
-                    <!--<artifactId>spring-data-commons</artifactId>-->
-                <!--</exclusion>-->
-            <!--</exclusions>-->
-        <!--</dependency>-->
 
         <dependency>
             <groupId>org.hzero.starter</groupId>

@@ -21,8 +21,8 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ClusterSessionVO;
 import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.EnvironmentType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.*;
@@ -155,11 +155,11 @@ public class ClusterConnectionHandler {
 
     public String handDevopsEnvGitRepository(Long projectId, String envCode, Long envId, String envRsa, String envType, String clusterCode) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         //本地路径
-        String path = GitOpsUtil.getLocalPathToStoreEnv(organizationDTO.getCode(), projectDTO.getCode(), clusterCode, envCode, envId);
+        String path = GitOpsUtil.getLocalPathToStoreEnv(organizationDTO.getTenantNum(), projectDTO.getCode(), clusterCode, envCode, envId);
         //生成环境git仓库ssh地址
-        String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organizationDTO.getCode(),
+        String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organizationDTO.getTenantNum(),
                 projectDTO.getCode(), envCode, EnvironmentType.forValue(envType), clusterCode);
 
         File file = new File(path);

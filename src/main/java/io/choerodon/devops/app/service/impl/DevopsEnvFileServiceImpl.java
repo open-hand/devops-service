@@ -20,8 +20,8 @@ import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.infra.dto.DevopsEnvFileDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileErrorDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -148,10 +148,10 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
             return "";
         }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         return String.format("%s%s%s-%s-gitops/%s/tree/",
-                gitlabUrl, urlSlash, organizationDTO.getCode(), projectDTO.getCode(), devopsEnvironmentDTO.getCode());
+                gitlabUrl, urlSlash, organizationDTO.getTenantNum(), projectDTO.getCode(), devopsEnvironmentDTO.getCode());
     }
 
     private void setCommitAndFileUrl(DevopsEnvFileErrorVO devopsEnvFileErrorVO, String gitlabProjectPath) {

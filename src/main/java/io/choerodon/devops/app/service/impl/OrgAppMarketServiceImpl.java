@@ -44,8 +44,8 @@ import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.harbor.User;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.UploadErrorEnum;
 import io.choerodon.devops.infra.feign.MarketServicePublicClient;
@@ -580,14 +580,14 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private void packageRepo(AppServiceUploadPayload appServiceMarketVO, String appFilePath) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceMarketVO.getAppServiceId());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         //1.创建目录 应用服务仓库
         String appServiceRepositoryPath = String.format("%s/%s_%s", appFilePath, appServiceDTO.getId(), appServiceDTO.getCode());
 
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
         String token = gitlabServiceClientOperator.getAdminToken();
-        appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getCode()
+        appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getTenantNum()
                 + "-" + projectDTO.getCode() + "/" + appServiceDTO.getCode() + GIT);
         appServiceMarketVO.getAppServiceVersionUploadPayloads().forEach(appServiceMarketVersionVO -> {
             AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceMarketVersionVO.getId());
@@ -613,7 +613,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private void packageChart(AppServiceUploadPayload appServiceMarketVO, String appFilePath) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceMarketVO.getAppServiceId());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         //1.创建目录 应用服务仓库
         FileUtil.createDirectory(appFilePath, String.format("%s_%s", appServiceDTO.getId(), appServiceDTO.getCode()));
