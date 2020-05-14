@@ -118,19 +118,6 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public List<ProjectWithRoleVO> listProjectWithRoleDTO(Long userId) {
-        List<ProjectWithRoleVO> returnList = new ArrayList<>();
-        int page = 0;
-        int size = 0;
-        ResponseEntity<Page<ProjectWithRoleVO>> pageResponseEntity =
-                baseServiceClient.listProjectWithRole(userId, page, size);
-        Page<ProjectWithRoleVO> projectWithRoleDTOPage = pageResponseEntity.getBody();
-        if (projectWithRoleDTOPage != null && !projectWithRoleDTOPage.getContent().isEmpty()) {
-            returnList.addAll(projectWithRoleDTOPage.getContent());
-        }
-        return returnList;
-    }
-
     public List<IamUserDTO> listUsersByIds(List<Long> ids) {
         List<IamUserDTO> userDTOS = new ArrayList<>();
         if (ids != null && !ids.isEmpty()) {
@@ -180,16 +167,6 @@ public class BaseServiceClientOperator {
             return userDOResponseEntity.getBody().getContent().get(0);
         } catch (FeignException e) {
             LOGGER.error("get user by email {} error", email);
-            return null;
-        }
-    }
-
-    public Long queryRoleIdByCode(String roleCode) {
-        try {
-
-            return baseServiceClient.queryRoleIdByCode(roleCode).getBody().getContent().get(0).getId();
-        } catch (FeignException e) {
-            LOGGER.error("get role id by code {} error", roleCode);
             return null;
         }
     }
@@ -270,18 +247,6 @@ public class BaseServiceClientOperator {
         }
         return isGitLabOrgOwner;
     }
-
-    public ProjectDTO createProject(Long organizationId, ProjectCreateDTO projectCreateDTO) {
-        try {
-            ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient
-                    .createProject(organizationId, projectCreateDTO);
-            return projectDTOResponseEntity.getBody();
-        } catch (FeignException e) {
-            LOGGER.error("error.create.iam.project");
-            return null;
-        }
-    }
-
 
     public ApplicationDTO queryAppById(Long id) {
         try {
@@ -389,16 +354,6 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public List<ProjectWithRoleVO> listProjectWithRole(Long userId, int page, int size) {
-        try {
-            ResponseEntity<Page<ProjectWithRoleVO>> pageInfoResponseEntity = baseServiceClient.listProjectWithRole(userId, page, size);
-            return (pageInfoResponseEntity.getBody() == null) ? Collections.emptyList() : pageInfoResponseEntity.getBody().getContent();
-        } catch (Exception ex) {
-            return Collections.emptyList();
-        }
-
-    }
-
     public ClientDTO createClient(ClientVO clientVO) {
         try {
             ClientDTO client = baseServiceClient.createClient(clientVO).getBody();
@@ -445,21 +400,6 @@ public class BaseServiceClientOperator {
         } catch (Exception ex) {
             throw new CommonException("error.query.user.by.login.name", loginName);
         }
-    }
-
-    public List<IamUserDTO> queryAllRootUsers() {
-        ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.queryAllAdminUsers();
-        return responseEntity == null ? Collections.emptyList() : responseEntity.getBody();
-    }
-
-    /**
-     * 查询所有的组织管理员
-     *
-     * @return
-     */
-    public List<IamUserDTO> queryAllOrgRoot() {
-        ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.queryAllOrgRoot();
-        return responseEntity == null ? Collections.emptyList() : responseEntity.getBody();
     }
 
     /**

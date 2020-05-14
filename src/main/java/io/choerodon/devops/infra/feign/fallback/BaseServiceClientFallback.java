@@ -14,11 +14,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
 import io.choerodon.devops.api.vo.iam.RemoteTokenAuthorizationVO;
-import io.choerodon.devops.api.vo.iam.RoleVO;
-import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
-import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 
@@ -51,16 +47,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<Page<OrganizationDTO>> listOrganizations(Integer page, Integer size) {
-        throw new CommonException("error.organization.get");
-    }
-
-    @Override
-    public ResponseEntity<MemberRoleVO> addMemberRole(Long projectId, MemberRoleVO memberRoleVo) {
-        throw new CommonException("error.memberRole.add");
-    }
-
-    @Override
     public ResponseEntity<IamUserDTO> queryByLoginName(String loginName) {
         throw new CommonException("error.user.get.byLoginName");
     }
@@ -68,11 +54,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     @Override
     public ResponseEntity<IamUserDTO> queryById(Long id) {
         throw new CommonException("error.user.get.byId");
-    }
-
-    @Override
-    public ResponseEntity<Page<IamUserDTO>> queryInProjectById(Long projectId, Long id) {
-        throw new CommonException("error.userInProject.get");
     }
 
     @Override
@@ -86,30 +67,8 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<RoleVO>> listRolesWithUserCountOnProjectLevel(
-            Long projectId, RoleAssignmentSearchVO roleAssignmentSearchVO) {
-        throw new CommonException("error.roles.get.byProjectId");
-    }
-
-    @Override
     public ResponseEntity<List<IamUserDTO>> listUsersWithGitlabLabel(Long projectId, RoleAssignmentSearchVO roleAssignmentSearchVO, String labelName) {
         throw new CommonException("error.user.get.byGitlabLabel");
-    }
-
-    @Override
-    public ResponseEntity<Page<ProjectWithRoleVO>> listProjectWithRole(Long id, int page, int size) {
-        throw new CommonException("error.project.role.get");
-    }
-
-    @Override
-    public ResponseEntity<Page<RoleVO>> queryRoleIdByCode(String code) {
-        throw new CommonException("error.roleId.get");
-    }
-
-
-    @Override
-    public ResponseEntity<ProjectDTO> createProject(Long organizationId, @Valid ProjectCreateDTO projectCreateDTO) {
-        throw new CommonException("error.iam.project.create");
     }
 
     @Override
@@ -187,16 +146,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<IamUserDTO>> queryAllAdminUsers() {
-        throw new CommonException("error.query.all.admins");
-    }
-
-    @Override
-    public ResponseEntity<List<IamUserDTO>> queryAllOrgRoot() {
-        throw new CommonException("error.query.all.org.admin");
-    }
-
-    @Override
     public ResponseEntity<Boolean> checkIsRoot(Long id) {
         throw new CommonException("error.check.is.root");
     }
@@ -219,11 +168,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     @Override
     public ResponseEntity<Boolean> checkOrganizationIsNew(Long organizationId) {
         throw new CommonException("error.check.organization.is.new");
-    }
-
-    @Override
-    public ResponseEntity<IamUserDTO> query(String loginName) {
-        throw new CommonException("error.query.user.by.login.name", loginName);
     }
 
     @Override

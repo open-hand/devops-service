@@ -15,11 +15,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
 import io.choerodon.devops.api.vo.iam.RemoteTokenAuthorizationVO;
-import io.choerodon.devops.api.vo.iam.RoleVO;
-import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
-import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
 
@@ -45,23 +41,11 @@ public interface BaseServiceClient {
     @PostMapping(value = "/choerodon/v1/organizations/ids")
     ResponseEntity<List<OrganizationDTO>> queryOrgByIds(@RequestBody Set<Long> ids);
 
-    @GetMapping(value = "/choerodon/v1/organizations")
-    ResponseEntity<Page<OrganizationDTO>> listOrganizations(@RequestParam("page") Integer page,
-                                                            @RequestParam("size") Integer size);
-
-
-    @PostMapping(value = "/choerodon/v1/project/{projectId}/memberRoles/single")
-    ResponseEntity<MemberRoleVO> addMemberRole(@PathVariable("projectId") Long projectId, @RequestBody @Valid MemberRoleVO memberRoleVo);
-
     @GetMapping(value = "/choerodon/v1/users")
     ResponseEntity<IamUserDTO> queryByLoginName(@RequestParam("login_name") String loginName);
 
     @GetMapping(value = "/choerodon/v1/users/{id}/info")
     ResponseEntity<IamUserDTO> queryById(@PathVariable("id") Long id);
-
-    @GetMapping(value = "/choerodon/v1/projects/{project_id}/users?id={id}")
-    ResponseEntity<Page<IamUserDTO>> queryInProjectById(@PathVariable("project_id") Long projectId, @PathVariable("id") Long id);
-
 
     @PostMapping(value = "/choerodon/v1/users/ids")
     ResponseEntity<List<IamUserDTO>> listUsersByIds(@RequestBody Long[] ids, @RequestParam(value = "only_enabled") Boolean onlyEnabled);
@@ -69,60 +53,48 @@ public interface BaseServiceClient {
     @GetMapping(value = "/choerodon/v1/projects/{project_id}/users")
     ResponseEntity<Page<IamUserDTO>> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);
 
-    @PostMapping(value = "/choerodon/v1/projects/{project_id}/role_members/users/count")
-    ResponseEntity<List<RoleVO>> listRolesWithUserCountOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
-                                                                      @RequestBody(required = false) @Valid RoleAssignmentSearchVO roleAssignmentSearchVO);
-
     @PostMapping(value = "/choerodon/v1/projects/{project_id}/gitlab_role/users")
     ResponseEntity<List<IamUserDTO>> listUsersWithGitlabLabel(
             @PathVariable(name = "project_id") Long projectId,
             @RequestBody RoleAssignmentSearchVO roleAssignmentSearchVO,
             @RequestParam(name = "label_name") String labelName);
 
-    @GetMapping(value = "/choerodon/v1/users/{id}/project_roles")
-    ResponseEntity<Page<ProjectWithRoleVO>> listProjectWithRole(@PathVariable("id") Long id,
-                                                                    @RequestParam("page") int page,
-                                                                    @RequestParam("size") int size);
-
-    @GetMapping(value = "/choerodon/v1/roles/search")
-    ResponseEntity<Page<RoleVO>> queryRoleIdByCode(@RequestParam(value = "code", required = false) String code);
-
-
-    @PostMapping(value = "/choerodon/v1/organizations/{organization_id}/projects")
-    ResponseEntity<ProjectDTO> createProject(@PathVariable(name = "organization_id") Long organizationId,
-                                             @RequestBody @Valid ProjectCreateDTO projectCreateDTO);
-
-
     @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/projects")
     ResponseEntity<Page<ProjectDTO>> pageProjectsByOrgId(@PathVariable(name = "organization_id") Long organizationId,
-                                                             @RequestParam Map<String, Object> pageable,
-                                                             @RequestParam(name = "name", required = false) String name,
-                                                             @RequestParam(name = "code", required = false) String code,
-                                                             @RequestParam(name = "enabled", required = false) Boolean enabled,
-                                                             @RequestParam(value = "params", required = false) String params);
+                                                         @RequestParam Map<String, Object> pageable,
+                                                         @RequestParam(name = "name", required = false) String name,
+                                                         @RequestParam(name = "code", required = false) String code,
+                                                         @RequestParam(name = "enabled", required = false) Boolean enabled,
+                                                         @RequestParam(value = "params", required = false) String params);
 
+    @Deprecated
     @GetMapping(value = "/choerodon/v1/applications/{id}")
     ResponseEntity<ApplicationDTO> queryAppById(@PathVariable(value = "id") Long id);
 
+    @Deprecated
     @PutMapping(value = "/choerodon/v1/projects/{project_id}/publish_version_infos/{id}/fail")
     ResponseEntity<Boolean> publishFail(@PathVariable("project_id") Long projectId,
                                         @PathVariable("id") Long id,
                                         @RequestParam("error_code") String errorCode,
                                         @RequestParam("fix_flag") Boolean fixFlag);
 
+    @Deprecated
     @PostMapping(value = "/choerodon/v1/applications/{app_download_recode_id}/complete_downloading")
     ResponseEntity<String> completeDownloadApplication(@PathVariable("app_download_recode_id") Long appDownloadRecordId,
                                                        @RequestParam("app_version_id") Long appVersionId,
                                                        @RequestParam("organization_id") Long organizationId,
                                                        @RequestBody List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS);
 
+    @Deprecated
     @PutMapping(value = "/choerodon/v1/applications/{app_download_record_id}/fail_downloading")
     ResponseEntity<String> failToDownloadApplication(@PathVariable("app_download_record_id") Long appDownloadRecordId,
                                                      @RequestParam("app_version_id") Long appVersionId,
                                                      @RequestParam("organization_id") Long organizationId);
 
+    @Deprecated
     @GetMapping(value = "/choerodon/v1/remote_token/authorization/check/latest")
     ResponseEntity<RemoteTokenAuthorizationVO> checkLatestToken();
+
 
     @PostMapping(value = "/choerodon/v1/projects/ids")
     ResponseEntity<List<ProjectDTO>> queryByIds(@RequestBody Set<Long> ids);
@@ -139,16 +111,18 @@ public interface BaseServiceClient {
     ResponseEntity<ProjectDTO> queryProjectByCodeAndOrgId(@PathVariable(name = "organization_id") Long organizationId,
                                                           @RequestParam(name = "code") String projectCode);
 
+    @Deprecated
     @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/services/{app_type}")
     ResponseEntity<Set<Long>> listService(@PathVariable("organization_id") Long organizationId, @PathVariable("app_type") String appType);
 
+    @Deprecated
     @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/services/{app_type}/versions")
     ResponseEntity<Set<Long>> listSvcVersion(@PathVariable("organization_id") Long organizationId, @PathVariable("app_type") String appType);
 
     /**
      * 组织下创client
      *
-     * @param clientVO       clientVO
+     * @param clientVO clientVO
      * @return 分配结果
      */
     @PostMapping(value = "/choerodon/v1/clients")
@@ -184,24 +158,6 @@ public interface BaseServiceClient {
     @GetMapping(value = "/choerodon/v1/users/{id}/projects/{project_id}/check_is_gitlab_org_owner")
     ResponseEntity<Boolean> checkIsGitlabOrgOwner(@PathVariable("id") Long id,
                                                   @PathVariable("project_id") Long projectId);
-
-    /**
-     * 根据用户名查询用户信息
-     *
-     * @param loginName 登录名
-     * @return 用户信息
-     */
-    @GetMapping(value = "/choerodon/v1/users")
-    ResponseEntity<IamUserDTO> query(@RequestParam(name = "login_name") String loginName);
-
-
-    @ApiOperation(value = "查询所有的Root用户 / DevOps服务迁移数据需要")
-    @GetMapping(value = "/choerodon/v1/users/admin_all")
-    ResponseEntity<List<IamUserDTO>> queryAllAdminUsers();
-
-    @ApiOperation(value = "查询所有的组织管理员 / 修复数据时用到")
-    @GetMapping(value = "/choerodon/v1/users/admin_org_all")
-    ResponseEntity<List<IamUserDTO>> queryAllOrgRoot();
 
 
     /**
@@ -242,11 +198,11 @@ public interface BaseServiceClient {
     /**
      * 判断组织是否是新组织
      *
-     * @param organizationId
-     * @return
+     * @param organizationId 组织id
+     * @return true表示是
      */
-    @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/check_is_new")
-    ResponseEntity<Boolean> checkOrganizationIsNew(@PathVariable(name = "organization_id") Long organizationId);
+    @GetMapping(value = "/choerodon/v1/organizations/{tenant_id}/check_is_new")
+    ResponseEntity<Boolean> checkOrganizationIsNew(@PathVariable(name = "tenant_id") Long organizationId);
 
 
     @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/org_administrator")
@@ -256,10 +212,8 @@ public interface BaseServiceClient {
 
     /**
      * 查询组织下指定角色的id
-     * @param organizationId
-     * @param label
-     * @return
      */
+    // TODO by lihao
     @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/roles")
     ResponseEntity<Long> getRoleId(
             @PathVariable("organization_id") Long organizationId,
