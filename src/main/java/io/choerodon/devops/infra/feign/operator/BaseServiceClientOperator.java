@@ -16,17 +16,11 @@ import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ExceptionResponse;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
-import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
-import io.choerodon.devops.api.vo.iam.RemoteTokenAuthorizationVO;
-import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.enums.LabelType;
-import io.choerodon.devops.infra.enums.OrgPublishMarketStatus;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.util.FeignParamUtils;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -248,63 +242,6 @@ public class BaseServiceClientOperator {
         return isGitLabOrgOwner;
     }
 
-    public ApplicationDTO queryAppById(Long id) {
-        try {
-            return baseServiceClient.queryAppById(id).getBody();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public void publishFail(Long projectId, Long mktAppVersionId, String code, Boolean fixFlag) {
-        try {
-            baseServiceClient.publishFail(projectId, mktAppVersionId, code, fixFlag).getBody();
-        } catch (Exception e) {
-            throw new CommonException("error.insert.failed.message", e.getMessage());
-        }
-    }
-
-
-    public void completeDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId, List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS) {
-        try {
-            ResponseEntity<String> responseEntity = baseServiceClient.completeDownloadApplication(publishAppVersionId, appVersionId, organizationId, appDownloadDevopsReqVOS);
-            if (responseEntity != null && responseEntity.getBody() != null) {
-                ExceptionResponse exceptionResponse = gson.fromJson(responseEntity.getBody(), ExceptionResponse.class);
-                if (exceptionResponse.getFailed()) {
-                    throw new CommonException("error.application.download.complete");
-                }
-            }
-        } catch (Exception e) {
-            throw new CommonException("error.application.download.complete", e.getMessage());
-        }
-    }
-
-    public void failToDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId) {
-        try {
-            ResponseEntity<String> responseEntity = baseServiceClient.failToDownloadApplication(publishAppVersionId, appVersionId, organizationId);
-            if (responseEntity != null && responseEntity.getBody() != null) {
-                ExceptionResponse exceptionResponse = gson.fromJson(responseEntity.getBody(), ExceptionResponse.class);
-                if (exceptionResponse.getFailed()) {
-                    throw new CommonException("error.application.download.failed");
-                }
-            }
-        } catch (Exception e) {
-            throw new CommonException("error.application.download.failed", e.getMessage());
-        }
-    }
-
-    public String checkLatestToken() {
-        try {
-            RemoteTokenAuthorizationVO remoteTokenAuthorizationVO = baseServiceClient.checkLatestToken().getBody();
-            if (remoteTokenAuthorizationVO != null) {
-                return remoteTokenAuthorizationVO.getRemoteToken();
-            }
-        } catch (Exception e) {
-            throw new CommonException("error.remote.token.authorization", e.getMessage());
-        }
-        return null;
-    }
-
     public List<ProjectDTO> queryProjectsByIds(Set<Long> ids) {
         try {
             return baseServiceClient.queryByIds(ids).getBody();
@@ -329,27 +266,6 @@ public class BaseServiceClientOperator {
             return resp == null ? null : resp.getBody();
         } catch (Exception ex) {
             LOGGER.info("Exception occurred when querying project by code {} and organization id {}", projectCode, organizationId);
-            return null;
-        }
-    }
-
-    public List<Long> listServicesForMarket(@Nonnull Long organizationId, Boolean deployOnly) {
-        String status = deployOnly != null && deployOnly ? OrgPublishMarketStatus.DEPLOY_ONLY.getType() : OrgPublishMarketStatus.DOWNLOAD_ONLY.getType();
-        try {
-            ResponseEntity<Set<Long>> resp = baseServiceClient.listService(organizationId, status);
-
-            return resp == null || resp.getBody() == null ? null : new ArrayList<>(resp.getBody());
-        } catch (Exception ex) {
-            return null;
-        }
-    }
-
-    public List<Long> listServiceVersionsForMarket(@Nonnull Long organizationId, Boolean deployOnly) {
-        String status = deployOnly != null && deployOnly ? OrgPublishMarketStatus.DEPLOY_ONLY.getType() : OrgPublishMarketStatus.DOWNLOAD_ONLY.getType();
-        try {
-            ResponseEntity<Set<Long>> resp = baseServiceClient.listSvcVersion(organizationId, status);
-            return resp == null || resp.getBody() == null ? null : new ArrayList<>(resp.getBody());
-        } catch (Exception ex) {
             return null;
         }
     }

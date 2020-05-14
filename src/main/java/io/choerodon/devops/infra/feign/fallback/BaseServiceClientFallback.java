@@ -14,7 +14,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
-import io.choerodon.devops.api.vo.iam.RemoteTokenAuthorizationVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 
@@ -76,28 +75,8 @@ public class BaseServiceClientFallback implements BaseServiceClient {
         return null;
     }
 
-    @Override
-    public ResponseEntity<ApplicationDTO> queryAppById(Long id) {
-        throw new CommonException("error.application.get");
-    }
-
-    @Override
-    public ResponseEntity<Boolean> publishFail(Long projectId, Long id, String errorCode, Boolean fixFlag) {
-        throw new CommonException("error.publishFail.status.get");
-    }
-
     public ResponseEntity<String> completeDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId, List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS) {
         throw new CommonException("error.application.download.complete");
-    }
-
-    @Override
-    public ResponseEntity<String> failToDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId) {
-        throw new CommonException("error.application.download.failed");
-    }
-
-    @Override
-    public ResponseEntity<RemoteTokenAuthorizationVO> checkLatestToken() {
-        throw new CommonException("error.remote.token.authorization");
     }
 
     @Override
@@ -108,16 +87,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     @Override
     public ResponseEntity<ProjectDTO> queryProjectByCodeAndOrgId(Long organizationId, String projectCode) {
         throw new CommonException(ERROR_PROJECT_GET);
-    }
-
-    @Override
-    public ResponseEntity<Set<Long>> listService(Long organizationId, String appType) {
-        throw new CommonException("error.app.service.market.list");
-    }
-
-    @Override
-    public ResponseEntity<Set<Long>> listSvcVersion(Long organizationId, String appType) {
-        throw new CommonException("error.app.service.version.market.list");
     }
 
     @Override

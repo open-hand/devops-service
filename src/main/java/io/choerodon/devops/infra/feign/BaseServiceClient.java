@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
-import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
-import io.choerodon.devops.api.vo.iam.RemoteTokenAuthorizationVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
 
@@ -67,34 +65,6 @@ public interface BaseServiceClient {
                                                          @RequestParam(name = "enabled", required = false) Boolean enabled,
                                                          @RequestParam(value = "params", required = false) String params);
 
-    @Deprecated
-    @GetMapping(value = "/choerodon/v1/applications/{id}")
-    ResponseEntity<ApplicationDTO> queryAppById(@PathVariable(value = "id") Long id);
-
-    @Deprecated
-    @PutMapping(value = "/choerodon/v1/projects/{project_id}/publish_version_infos/{id}/fail")
-    ResponseEntity<Boolean> publishFail(@PathVariable("project_id") Long projectId,
-                                        @PathVariable("id") Long id,
-                                        @RequestParam("error_code") String errorCode,
-                                        @RequestParam("fix_flag") Boolean fixFlag);
-
-    @Deprecated
-    @PostMapping(value = "/choerodon/v1/applications/{app_download_recode_id}/complete_downloading")
-    ResponseEntity<String> completeDownloadApplication(@PathVariable("app_download_recode_id") Long appDownloadRecordId,
-                                                       @RequestParam("app_version_id") Long appVersionId,
-                                                       @RequestParam("organization_id") Long organizationId,
-                                                       @RequestBody List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS);
-
-    @Deprecated
-    @PutMapping(value = "/choerodon/v1/applications/{app_download_record_id}/fail_downloading")
-    ResponseEntity<String> failToDownloadApplication(@PathVariable("app_download_record_id") Long appDownloadRecordId,
-                                                     @RequestParam("app_version_id") Long appVersionId,
-                                                     @RequestParam("organization_id") Long organizationId);
-
-    @Deprecated
-    @GetMapping(value = "/choerodon/v1/remote_token/authorization/check/latest")
-    ResponseEntity<RemoteTokenAuthorizationVO> checkLatestToken();
-
 
     @PostMapping(value = "/choerodon/v1/projects/ids")
     ResponseEntity<List<ProjectDTO>> queryByIds(@RequestBody Set<Long> ids);
@@ -110,14 +80,6 @@ public interface BaseServiceClient {
     @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/projects/by_code")
     ResponseEntity<ProjectDTO> queryProjectByCodeAndOrgId(@PathVariable(name = "organization_id") Long organizationId,
                                                           @RequestParam(name = "code") String projectCode);
-
-    @Deprecated
-    @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/services/{app_type}")
-    ResponseEntity<Set<Long>> listService(@PathVariable("organization_id") Long organizationId, @PathVariable("app_type") String appType);
-
-    @Deprecated
-    @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/services/{app_type}/versions")
-    ResponseEntity<Set<Long>> listSvcVersion(@PathVariable("organization_id") Long organizationId, @PathVariable("app_type") String appType);
 
     /**
      * 组织下创client

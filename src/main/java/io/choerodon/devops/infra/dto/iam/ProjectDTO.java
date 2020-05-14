@@ -45,9 +45,6 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty(value = "项目类型(非开源，一对多)")
     private List<ProjectCategoryDTO> categories;
 
-    @ApiModelProperty(value = "应用")
-    private ApplicationDTO applicationVO;
-
 
     private Long appServiceId;
     private String typeName;
@@ -208,13 +205,5 @@ public class ProjectDTO extends AuditDomain {
 
     public void setProgramName(String programName) {
         this.programName = programName;
-    }
-
-    public ApplicationDTO getApplicationVO() {
-        return applicationVO;
-    }
-
-    public void setApplicationVO(ApplicationDTO applicationVO) {
-        this.applicationVO = applicationVO;
     }
 }

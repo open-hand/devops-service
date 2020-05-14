@@ -21,6 +21,7 @@ application-localtest.yml
 *.iml
 *.ipr
 .vscode
+/*.log
 
 ### NetBeans ###
 /nbproject/private/

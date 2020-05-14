@@ -709,7 +709,7 @@ public class AppServiceController {
             @ApiParam(value = "查询条件", required = false)
             @RequestParam(required = false) String param) {
         return Optional.ofNullable(
-                applicationServiceService.pageAppServiceByMode(projectId, share, searchProjectId, param, pageable))
+                applicationServiceService.pageAppServiceByMode(projectId, Boolean.TRUE, searchProjectId, param, pageable))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.group.error"));
     }

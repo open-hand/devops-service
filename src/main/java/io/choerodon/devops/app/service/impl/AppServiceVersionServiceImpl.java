@@ -260,54 +260,28 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Override
     public Page<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, Long appServiceVersionId, Boolean deployOnly, Boolean doPage, String params, PageRequest pageable, String version) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-        Boolean market = appServiceDTO.getMktAppId() != null;
-        Page<AppServiceVersionDTO> applicationVersionDTOPageInfo = new Page<>();
+        Page<AppServiceVersionDTO> applicationVersionDTOPageInfo;
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
-        if (!market) {
-            Boolean share = !(appServiceDTO.getProjectId() == null || appServiceDTO.getProjectId().equals(projectId));
-            if (doPage != null && doPage) {
-                applicationVersionDTOPageInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceVersionMapper.listByAppServiceIdAndVersion(appServiceId,
-                        appServiceVersionId,
-                        projectId,
-                        share,
-                        deployOnly,
-                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
-                        PageRequestUtil.checkSortIsEmpty(pageable), version));
-            } else {
-                applicationVersionDTOPageInfo = new Page<>();
-                List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppServiceIdAndVersion(appServiceId, appServiceVersionId, projectId, share, deployOnly,
-                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
-                        PageRequestUtil.checkSortIsEmpty(pageable), version);
-                if (doPage == null) {
-                    applicationVersionDTOPageInfo.setContent(appServiceVersionDTOS.stream().limit(20).collect(Collectors.toList()));
-                } else {
-                    applicationVersionDTOPageInfo.setContent(appServiceVersionDTOS);
-                }
-            }
+        Boolean share = !(appServiceDTO.getProjectId() == null || appServiceDTO.getProjectId().equals(projectId));
+        if (doPage != null && doPage) {
+            applicationVersionDTOPageInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceVersionMapper.listByAppServiceIdAndVersion(appServiceId,
+                    appServiceVersionId,
+                    projectId,
+                    share,
+                    deployOnly,
+                    TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                    TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
+                    PageRequestUtil.checkSortIsEmpty(pageable), version));
         } else {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-            List<Long> appServiceVersionIds = baseServiceClientOperator.listServiceVersionsForMarket(projectDTO.getOrganizationId(), deployOnly);
-            if (appServiceVersionIds != null && !appServiceVersionIds.isEmpty()) {
-                if (doPage != null && doPage) {
-                    applicationVersionDTOPageInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceVersionMapper.listByAppServiceVersionIdForMarket(appServiceId,
-                            appServiceVersionIds,
-                            TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                            TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
-                            PageRequestUtil.checkSortIsEmpty(pageable), version));
-                } else {
-                    applicationVersionDTOPageInfo = new Page<>();
-                    List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppServiceVersionIdForMarket(appServiceId, appServiceVersionIds,
-                            TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                            TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
-                            PageRequestUtil.checkSortIsEmpty(pageable), version);
-                    if (doPage == null) {
-                        applicationVersionDTOPageInfo.setContent(appServiceVersionDTOS.stream().limit(20).collect(Collectors.toList()));
-                    } else {
-                        applicationVersionDTOPageInfo.setContent(appServiceVersionDTOS);
-                    }
-                }
+            applicationVersionDTOPageInfo = new Page<>();
+            List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppServiceIdAndVersion(appServiceId, appServiceVersionId, projectId, share, deployOnly,
+                    TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                    TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
+                    PageRequestUtil.checkSortIsEmpty(pageable), version);
+            if (doPage == null) {
+                applicationVersionDTOPageInfo.setContent(appServiceVersionDTOS.stream().limit(20).collect(Collectors.toList()));
+            } else {
+                applicationVersionDTOPageInfo.setContent(appServiceVersionDTOS);
             }
         }
         return ConvertUtils.convertPage(applicationVersionDTOPageInfo, AppServiceVersionVO.class);

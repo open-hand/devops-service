@@ -362,8 +362,6 @@ public interface AppServiceService {
 
     AppServiceDTO baseUpdate(AppServiceDTO appServiceDTO);
 
-    void updateApplicationStatus(AppServiceDTO appServiceDTO);
-
     AppServiceDTO baseQuery(Long appServiceId);
 
     Page<AppServiceDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean
@@ -376,15 +374,11 @@ public interface AppServiceService {
 
     AppServiceDTO baseQueryByCode(String code, Long projectId);
 
-    AppServiceDTO baseQueryByMktAppId(String code, Long mktAppId);
-
     AppServiceDTO baseQueryByCodeWithNullProject(String code);
 
     List<AppServiceDTO> baseListByEnvId(Long projectId, Long envId, String status);
 
     Page<AppServiceDTO> basePageByEnvId(Long projectId, Long envId, Long appServiceId, PageRequest pageable);
-
-    List<AppServiceDTO> baseListDeployedApp(Long projectId);
 
     Page<AppServiceDTO> basePageByActiveAndPubAndHasVersion(Long projectId, Boolean isActive,
                                                             PageRequest pageable, String params);
@@ -411,6 +405,7 @@ public interface AppServiceService {
 
     /**
      * 导入应用下根据组织共享或者市场下载的查询应用服务
+     * // 2020年05月14日19:20:34 更正： 市场逻辑去掉之后，应该mode只能是share了, 也就是share=true
      *
      * @return List<AppServiceGroupVO>
      */

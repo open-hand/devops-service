@@ -10,6 +10,8 @@ import javax.persistence.Table;
  * Date:  14:21 2019/6/28
  * Description:
  */
+// TODO to delete
+@Deprecated
 @Table(name = "devops_market_connect_info")
 public class DevopsMarketConnectInfoDTO {
     @Id
