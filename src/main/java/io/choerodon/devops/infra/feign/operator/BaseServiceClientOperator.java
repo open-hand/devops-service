@@ -65,16 +65,18 @@ public class BaseServiceClientOperator {
         if (projectDTO == null || projectDTO.getId() == null) {
             throw new CommonException("error.project.query.by.id", projectId);
         }
-        return projectDTOResponseEntity.getBody();
+        return projectDTO;
     }
 
     public Tenant queryOrganizationById(Long organizationId) {
         ResponseEntity<Tenant> organizationDTOResponseEntity = baseServiceClient.queryOrganizationById(organizationId);
         if (organizationDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
-            return organizationDTOResponseEntity.getBody();
-        } else {
-            throw new CommonException("error.organization.get");
+            Tenant tenant = organizationDTOResponseEntity.getBody();
+            if (tenant != null && tenant.getTenantId() == null) {
+                return tenant;
+            }
         }
+        throw new CommonException("error.organization.get");
     }
 
     public List<OrganizationDTO> listOrganizationByIds(Set<Long> organizationIds) {
