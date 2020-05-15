@@ -280,6 +280,13 @@ export default class Details extends Component {
               </Popover>}
             </Fragment>);
             break;
+          case 'hosts':
+            text = (
+              <Tooltip title={data[key]}>
+                <span>{data[key]}</span>
+              </Tooltip>
+            );
+            break;
           default:
             text = data[key];
             break;

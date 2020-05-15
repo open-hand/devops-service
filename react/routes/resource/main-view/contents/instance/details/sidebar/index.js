@@ -309,7 +309,7 @@ export default class DetailsSidebar extends Component {
       let capAdd = [];
       let capDrop = [];
 
-      if (capabilities) {
+      if (!_.isEmpty(capabilities)) {
         capAdd = capabilities.add;
         capDrop = capabilities.drop;
       }
