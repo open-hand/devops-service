@@ -96,7 +96,7 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
             agentCommandService.initCluster(clusterId, session);
             //集群链接成功发送web hook
             DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
-            sendNotificationService.sendWhenActiviteCluster(devopsClusterDTO);
+            sendNotificationService.sendWhenActivateCluster(devopsClusterDTO);
         }
     }
 

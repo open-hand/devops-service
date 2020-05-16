@@ -130,7 +130,7 @@ public class BaseServiceClientOperator {
 
     public IamUserDTO queryUserByUserId(Long id) {
         List<Long> ids = new ArrayList<>();
-        ids.add(id);
+        ids.add(Objects.requireNonNull(id));
         List<IamUserDTO> userES = this.listUsersByIds(ids);
         if (userES != null && !userES.isEmpty()) {
             return userES.get(0);

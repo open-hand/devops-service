@@ -6,8 +6,8 @@ package io.choerodon.devops.infra.constant;
  * @author zmf
  * @since 12/6/19
  */
-public class NoticeCodeConstants {
-    private NoticeCodeConstants() {
+public class MessageCodeConstants {
+    private MessageCodeConstants() {
     }
 
     public static final String APP_SERVICE_CREATION_FAILED = "appServiceCreationFailure";

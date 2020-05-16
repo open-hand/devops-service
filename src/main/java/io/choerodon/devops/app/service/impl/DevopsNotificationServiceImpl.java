@@ -1,29 +1,27 @@
 package io.choerodon.devops.app.service.impl;
 
 
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import com.google.gson.Gson;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.hzero.boot.message.MessageClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsNotificationTransferDataVO;
-import io.choerodon.devops.api.vo.NotifyVO;
 import io.choerodon.devops.api.vo.ResourceCheckVO;
 import io.choerodon.devops.api.vo.notify.MessageSettingVO;
 import io.choerodon.devops.api.vo.notify.TargetUserDTO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.TriggerObject;
-import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsNotificationMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
@@ -50,8 +48,6 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     @Autowired
     private RedisTemplate redisTemplate;
     @Autowired
-    private NotifyClient notifyClient;
-    @Autowired
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private DevopsServiceService devopsServiceService;
@@ -65,30 +61,32 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     private DevopsSecretService devopsSecretService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private MessageClient messageClient;
 
     @Override
     public ResourceCheckVO checkResourceDelete(Long envId, String objectType) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         ResourceCheckVO resourceCheckVO = new ResourceCheckVO();
-        MessageSettingVO messageSettingVO = notifyClient.queryByEnvIdAndEventNameAndProjectIdAndCode(NOTIFY_TYPE, devopsEnvironmentDTO.getProjectId(), CODE, envId, objectType);
-        if (Objects.isNull(messageSettingVO)) {
-            return resourceCheckVO;
-        }
+//        MessageSettingVO messageSettingVO = notifyClient.queryByEnvIdAndEventNameAndProjectIdAndCode(NOTIFY_TYPE, devopsEnvironmentDTO.getProjectId(), CODE, envId, objectType);
+//        if (Objects.isNull(messageSettingVO)) {
+//            return resourceCheckVO;
+//        }
         //返回删除对象时,获取验证码方式和所通知的目标人群
-        List<String> method = new ArrayList<>();
-        fillMetod(method, messageSettingVO);
-        if (CollectionUtils.isEmpty(method)) {
-            return new ResourceCheckVO();
-        }
-        resourceCheckVO.setMethod(method.stream().collect(Collectors.joining(",")));
-        resourceCheckVO.setNotificationId(messageSettingVO.getId());
-        List<TargetUserDTO> targetUserDTOS = messageSettingVO.getTargetUserDTOS();
-        if (CollectionUtils.isEmpty(targetUserDTOS)) {
-            return new ResourceCheckVO();
-        }
-        List<String> userList = new ArrayList<>();
-        fillTargetUser(userList, targetUserDTOS);
-        resourceCheckVO.setUser(userList.stream().collect(Collectors.joining(",")));
+//        List<String> method = new ArrayList<>();
+//        fillMetod(method, messageSettingVO);
+//        if (CollectionUtils.isEmpty(method)) {
+//            return new ResourceCheckVO();
+//        }
+//        resourceCheckVO.setMethod(method.stream().collect(Collectors.joining(",")));
+//        resourceCheckVO.setNotificationId(messageSettingVO.getId());
+//        List<TargetUserDTO> targetUserDTOS = messageSettingVO.getTargetUserDTOS();
+//        if (CollectionUtils.isEmpty(targetUserDTOS)) {
+//            return new ResourceCheckVO();
+//        }
+//        List<String> userList = new ArrayList<>();
+//        fillTargetUser(userList, targetUserDTOS);
+//        resourceCheckVO.setUser(userList.stream().collect(Collectors.joining(",")));
         return resourceCheckVO;
     }
 
@@ -131,7 +129,6 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
     @Override
     public void sendMessage(Long envId, Long notificationId, Long objectId, String objectType) {
-        // TODO 发通知
 //        //notificationId为messmageSettingVO 的ID
 //        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
 //        String objectCode = getObjectCode(objectId, objectType);

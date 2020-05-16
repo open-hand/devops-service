@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
-import java.util.Map;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
@@ -59,8 +58,6 @@ public interface PipelineService {
     void executeAutoDeploy(Long pipelineId);
 
     void failed(Long projectId, Long recordId);
-
-//    void sendSiteMessage(Long pipelineRecordId, String type, List<NoticeSendDTO.User> users, Map<String, Object> params, WebHookJsonSendDTO webHookJsonSendDTO);
 
     PipelineDTO baseCreate(Long projectId, PipelineDTO devopsPipelineDTO);
 
