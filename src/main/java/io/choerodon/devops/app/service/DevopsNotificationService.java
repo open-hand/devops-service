@@ -40,6 +40,4 @@ public interface DevopsNotificationService {
      * @return
      */
     void validateCaptcha(Long envId, Long objectId, String objectType, String captcha);
-
-    List<DevopsNotificationTransferDataVO> transferDate();
 }

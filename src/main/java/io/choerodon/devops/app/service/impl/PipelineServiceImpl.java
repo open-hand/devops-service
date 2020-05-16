@@ -39,7 +39,7 @@ import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineTaskDTO;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.feign.NotifyClient;
+import io.choerodon.devops.infra.feign.HzeroMessageClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -90,7 +90,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Autowired
     private AppServiceVersionService appServiceVersionService;
     @Autowired
-    private NotifyClient notifyClient;
+    private HzeroMessageClient hzeroMessageClient;
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
