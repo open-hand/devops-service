@@ -14,7 +14,7 @@ import io.choerodon.devops.infra.feign.fallback.HzeroMessageServiceClientFallBac
 
 @FeignClient(value = "hzero-message", fallback = HzeroMessageServiceClientFallBack.class)
 public interface HzeroMessageClient {
-    @GetMapping("/v1/projects/{project_id}/message_settings/type/{notify_type}/code/{code}")
+    @GetMapping("/choerodon/v1/projects/{project_id}/message_settings/type/{notify_type}/code/{code}")
     MessageSettingVO queryByEnvIdAndEventNameAndProjectIdAndCode(
             @PathVariable("notify_type") String notifyType,
             @PathVariable("project_id") Long projectId,
