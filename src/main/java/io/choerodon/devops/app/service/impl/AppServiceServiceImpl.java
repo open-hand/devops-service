@@ -95,7 +95,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String GIT = ".git";
     private static final String SONAR_KEY = "%s-%s:%s";
     private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*\\.git");
-    private static final String SITE_APP_GROUP_NAME_FORMAT = "choerodon-market-%s";
     private static final String ISSUE = "issue";
     private static final String COVERAGE = "coverage";
     private static final String SONAR = "sonar";
@@ -109,7 +108,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String DUPLICATE = "duplicate";
     private static final String NORMAL_SERVICE = "normal_service";
     private static final String SHARE_SERVICE = "share_service";
-    private static final String MARKET_SERVICE = "market_service";
     private static final String TEMP_MODAL = "\\?version=";
     private static final String LOGIN_NAME = "loginName";
     private static final String REAL_NAME = "realName";
@@ -427,7 +425,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             devopsConfigVOS.add(harbor);
         } else {
             harbor = appServiceUpdateDTO.getHarbor();
-            harbor.setHarborPrivate(harbor.getHarborPrivate() == null ? true : harbor.getHarborPrivate());
+            harbor.setHarborPrivate(harbor.getHarborPrivate() == null ? Boolean.TRUE : harbor.getHarborPrivate());
             devopsConfigVOS.add(harbor);
         }
 
@@ -1733,12 +1731,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
         }
 
-        Page<IamUserDTO> pageInfo;
-        if (pageable.getSize() == 0) {
-            pageInfo = PageInfoUtil.createPageFromList(members, pageable);
-        } else {
-            pageInfo = PageInfoUtil.createPageFromList(members, pageable);
-        }
+        Page<IamUserDTO> pageInfo = PageInfoUtil.createPageFromList(members, pageable);
 
         return ConvertUtils.convertPage(pageInfo, member -> new DevopsUserPermissionVO(member.getId(), member.getLdap() ? member.getLoginName() : member.getEmail(), member.getRealName(), member.getImageUrl()));
     }
@@ -2308,7 +2301,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 List<Long> appServiceIds = new ArrayList<>();
                 baseServiceClientOperator.listIamProjectByOrgId(organizationId)
                         .forEach(pro ->
-                                baseSelectAll(pro.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
+                                baseListByProjectId(pro.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
                         );
                 list.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, serviceType, params));
                 Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()
@@ -2336,12 +2329,6 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     private List<AppServiceDTO> baseListAll(Long projectId) {
         return appServiceMapper.listAll(projectId);
-    }
-
-    private List<AppServiceDTO> baseSelectAll(Long projectId) {
-        AppServiceDTO appServiceDTO = new AppServiceDTO();
-        appServiceDTO.setProjectId(projectId);
-        return appServiceMapper.select(appServiceDTO);
     }
 
     private AppServiceDTO fromImportVoToDto(AppServiceImportVO appServiceImportVO) {

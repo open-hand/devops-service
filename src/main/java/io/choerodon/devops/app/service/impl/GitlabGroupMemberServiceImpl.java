@@ -39,10 +39,8 @@ import io.choerodon.devops.infra.util.TypeUtil;
  */
 @Service
 public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
-    public static final String ERROR_GITLAB_GROUP_ID_SELECT = "error.gitlab.groupId.select";
+    private static final String ERROR_GITLAB_GROUP_ID_SELECT = "error.gitlab.groupId.select";
     private static final String PROJECT = "project";
-    private static final String TEMPLATE = "template";
-    private static final String SITE = "site";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabGroupMemberServiceImpl.class);
 
@@ -106,7 +104,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         List<String> roleLabels = gitlabGroupMemberVO.getRoleLabels();
         if (roleLabels.contains(LabelType.ORGANIZATION_GITLAB_OWNER.getValue())) {
             List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(gitlabGroupMemberVO.getResourceId());
-            if (projectDTOS != null && projectDTOS.size() > 0) {
+            if (!CollectionUtils.isEmpty(projectDTOS)) {
                 if (isCreate) {
                     projectDTOS.forEach(projectDTO -> assignGitLabGroupMemeberForOwner(projectDTO, gitlabGroupMemberVO.getUserId()));
                 } else {
@@ -141,9 +139,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         //组织root的标签，那么删除在组织下的root的权限
         gitlabGroupMemberVOList.stream()
                 .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceLevel.ORGANIZATION.value()))
-                .forEach(gitlabGroupMemberVO -> {
-                    screenOrgLable(gitlabGroupMemberVO, Boolean.FALSE);
-                });
+                .forEach(gitlabGroupMemberVO -> screenOrgLable(gitlabGroupMemberVO, Boolean.FALSE));
     }
 
 

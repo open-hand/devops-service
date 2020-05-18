@@ -2,8 +2,6 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;

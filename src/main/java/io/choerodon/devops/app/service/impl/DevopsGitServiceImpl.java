@@ -820,10 +820,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         return objectPath;
     }
 
-    private static String getPersistentVolumeClaimName(JSONObject JSONObject, String filePath) {
+    private static String getPersistentVolumeClaimName(JSONObject jsonObject, String filePath) {
         String name;
         try {
-            name = JSONObject.getJSONObject(METADATA).getString(NAME);
+            name = jsonObject.getJSONObject(METADATA).getString(NAME);
         } catch (Exception e) {
             throw new GitOpsExplainException(
                     GitOpsObjectError.PERSISTENT_VOLUME_CLAIM_NAME_NOT_FOUND.getError(), filePath);

@@ -383,8 +383,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
      * @return
      */
     private String calculateGitlabProjectUrl(String url) {
-        url = url.substring(0, url.lastIndexOf("/"));
-        return url.substring(0, url.lastIndexOf("/"));
+        url = url.substring(0, url.lastIndexOf('/'));
+        return url.substring(0, url.lastIndexOf('/'));
     }
 
     private Long calculateStageDuration(List<DevopsCiJobRecordVO> devopsCiJobRecordVOS) {

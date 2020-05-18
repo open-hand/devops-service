@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.vo.DevopsNotificationTransferDataVO;
 import io.choerodon.devops.api.vo.ResourceCheckVO;
-
-import java.util.List;
 
 /**
  * Creator: ChangpingShi0213@gmail.com

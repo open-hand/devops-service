@@ -826,7 +826,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
 
         Sort sort = pageable.getSort();
-        String sortResult = "";
         if (sort != null) {
             List<Sort.Order> newOrders = new ArrayList<>();
             sort.iterator().forEachRemaining(s -> {

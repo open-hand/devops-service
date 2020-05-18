@@ -83,8 +83,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private UserAttrService userAttrService;
     private AppServiceService appServiceService;
     private DevopsCiJobRecordService devopsCiJobRecordService;
-    private PermissionHelper permissionHelper;
-    private BaseServiceClientOperator baseServiceClientOperator;
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
     private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
     private DevopsProjectService devopsProjectService;
@@ -100,9 +98,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             UserAttrService userAttrService,
             AppServiceService appServiceService,
             DevopsCiJobRecordService devopsCiJobRecordService,
-            PermissionHelper permissionHelper,
             DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
-            BaseServiceClientOperator baseServiceClientOperator,
             DevopsProjectService devopsProjectService,
             DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper) {
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
@@ -114,10 +110,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.userAttrService = userAttrService;
         this.appServiceService = appServiceService;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
-        this.permissionHelper = permissionHelper;
         this.devopsCiMavenSettingsMapper = devopsCiMavenSettingsMapper;
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
-        this.baseServiceClientOperator = baseServiceClientOperator;
         this.devopsProjectService = devopsProjectService;
     }
 

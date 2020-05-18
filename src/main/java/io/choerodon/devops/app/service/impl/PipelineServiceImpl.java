@@ -1128,7 +1128,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     private IamUserDTO getTriggerUser(Long pipelineRecordId, Long stageRecordId) {
         List<PipelineUserRecordRelationshipDTO> taskUserRecordRelES = pipelineUserRecordRelationshipService.baseListByOptions(pipelineRecordId, stageRecordId, null);
-        if (taskUserRecordRelES != null && taskUserRecordRelES.size() > 0) {
+        if (!CollectionUtils.isEmpty(taskUserRecordRelES)) {
             Long triggerUserId = taskUserRecordRelES.get(0).getUserId();
             return baseServiceClientOperator.queryUserByUserId(triggerUserId);
         }

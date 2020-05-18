@@ -1035,18 +1035,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         return messageSender;
     }
 
-    private void sendNotices(String sendSettingCode, List<Receiver> receivers, Map<String, String> params, Map<String, Object> additionalArgs) {
-        messageClient.sendMessage(constructMessageSender(sendSettingCode, receivers, null, params, additionalArgs));
-    }
-
-    private static Map<String, Object> constructAdditionalArgs(Long projectId, Long envId, String eventType) {
-        Map<String, Object> additionalArgs = new HashMap<>();
-        additionalArgs.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(), projectId);
-        additionalArgs.put(MessageAdditionalType.PARAM_ENV_ID.getTypeName(), envId);
-        additionalArgs.put(MessageAdditionalType.PARAM_EVENT_NAME.getTypeName(), eventType);
-        return additionalArgs;
-    }
-
     @Override
     public void sendNotices(String sendSettingCode, List<Receiver> receivers, Map<String, String> params) {
         messageClient.async().sendMessage(constructMessageSender(sendSettingCode, receivers, null, params, null));

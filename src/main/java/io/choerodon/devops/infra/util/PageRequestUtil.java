@@ -18,8 +18,6 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
  * Description:
  */
 public class PageRequestUtil {
-    private static final String ONE_SPACE = " ";
-
     private PageRequestUtil() {
     }
 

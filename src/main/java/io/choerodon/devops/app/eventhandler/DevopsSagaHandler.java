@@ -382,7 +382,6 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String devopsCreateInstance(String data) {
-        ObjectMapper objectMapper = new ObjectMapper();
         InstanceSagaPayload instanceSagaPayload;
         try {
             instanceSagaPayload = objectMapper.readValue(data, InstanceSagaPayload.class);

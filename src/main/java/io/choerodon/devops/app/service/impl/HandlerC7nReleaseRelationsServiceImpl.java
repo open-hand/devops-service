@@ -7,8 +7,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import io.kubernetes.client.models.V1Endpoints;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,8 +31,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
 public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileRelationsService<C7nHelmRelease> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(HandlerC7nReleaseRelationsServiceImpl.class);
-
     private static final String C7N_HELM_RELEASE = "C7NHelmRelease";
     private static final String GIT_SUFFIX = "/.git";
     private static final String COMPARE_VALUES = "{}";

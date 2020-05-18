@@ -1087,12 +1087,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             }
         }
 
-        Page<IamUserDTO> pageInfo;
-        if (pageable.getSize() == 0) {
-            pageInfo = PageInfoUtil.createPageFromList(members, pageable);
-        } else {
-            pageInfo = PageInfoUtil.createPageFromList(members, pageable);
-        }
+        Page<IamUserDTO> pageInfo = PageInfoUtil.createPageFromList(members, pageable);
 
         return ConvertUtils.convertPage(pageInfo, member -> new DevopsEnvUserVO(member.getId(), member.getLdap() ? member.getLoginName() : member.getEmail(), member.getRealName(), member.getImageUrl()));
     }

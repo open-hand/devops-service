@@ -42,8 +42,6 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
     private final DevopsProjectService devopsProjectService;
     private final GitlabServiceClientOperator gitlabServiceClientOperator;
     private final BaseServiceClientOperator baseServiceClientOperator;
-    private AppServiceMapper appServiceMapper;
-    private DevopsEnvironmentMapper devopsEnvironmentMapper;
 
     @Autowired
     public UpdateEnvUserPermissionServiceImpl(DevopsEnvironmentService devopsEnvironmentService, DevopsEnvUserPermissionService devopsEnvUserPermissionService, UserAttrService userAttrService, DevopsProjectService devopsProjectService, GitlabServiceClientOperator gitlabServiceClientOperator, BaseServiceClientOperator baseServiceClientOperator, AppServiceMapper appServiceMapper, DevopsEnvironmentMapper devopsEnvironmentMapper) {
