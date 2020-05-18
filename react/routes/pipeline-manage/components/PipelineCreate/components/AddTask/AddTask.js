@@ -48,7 +48,7 @@ const AddTask = observer(() => {
   const [testConnect, setTestConnect] = useState('');
   const [ConnectLoading, setConnectLoading] = useState(false);
   const [customYaml, setCustomYaml] = useState(useStore.getYaml.custom);
-  const [expandIf, setExpandIf] = useState(false);
+  const [defaultImage, setDefaultImage] = useState('');
 
   useEffect(() => {
     if (steps.length > 0) {
@@ -118,8 +118,10 @@ const AddTask = observer(() => {
           AddTaskFormDataSet.current.set('selectImage', '0');
           if (!image) {
             AddTaskFormDataSet.current.set('image', useStore.getDefaultImage);
+            setDefaultImage(useStore.getDefaultImage);
           } else {
             AddTaskFormDataSet.current.set('image', image);
+            setDefaultImage(image);
           }
         } else {
           AddTaskFormDataSet.current.set('selectImage', '1');
@@ -133,6 +135,7 @@ const AddTask = observer(() => {
         if (image) {
           AddTaskFormDataSet.current.set('selectImage', '0');
           AddTaskFormDataSet.current.set('image', image);
+          setDefaultImage(image);
         }
         AddTaskFormDataSet.current.set('glyyfw', appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')));
       }
@@ -753,32 +756,27 @@ const AddTask = observer(() => {
   };
 
   const handleChangeImage = (data) => {
-    if (data === '0') {
-      AddTaskFormDataSet.current.set('image', useStore.getDefaultImage);
+    if (data === defaultImage) {
+      AddTaskFormDataSet.current.set('selectImage', '0');
     } else {
-      AddTaskFormDataSet.current.set('image', '');
+      AddTaskFormDataSet.current.set('selectImage', '1');
     }
   };
 
-  const getImageDom = () => [
-    <div colSpan={2} newLine style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
-      <Icon type={expandIf ? 'expand_less' : 'expand_more'} />高级设置
-    </div>,
-    expandIf ? [
-      <SelectBox onChange={handleChangeImage} colSpan={2} newLine name="selectImage">
-        <Option value="0">默认Runner镜像</Option>
-        <Option value="1">自定义Runner镜像</Option>
-      </SelectBox>,
-      <TextField
-        disabled={
-          !!(AddTaskFormDataSet.current && AddTaskFormDataSet.current.get('selectImage') === '0')
-        }
-        newLine
-        colSpan={2}
-        name="image"
-      />,
-    ] : '',
-  ];
+  const getImageDom = () => (
+    <Select
+      // disabled={
+      //     !!(AddTaskFormDataSet.current && AddTaskFormDataSet.current.get('selectImage') === '0')
+      //   }
+      onChange={handleChangeImage}
+      newLine
+      combo
+      colSpan={2}
+      name="image"
+    >
+      <Option value={defaultImage}>{defaultImage}</Option>
+    </Select>
+  );
 
   return (
     <React.Fragment>
