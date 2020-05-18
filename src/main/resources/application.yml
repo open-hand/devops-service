@@ -61,15 +61,6 @@ agent:
   serviceUrl: "agent.example.com" # 用于 choerodon-agent 连接 devops-service 的地址
   certManagerUrl: "agent.example.com" # 存放CertManager的地址，用于安装
   repoUrl: "helm.example.com" # 存放agent的地址，用于安装
-eureka:
-  instance:
-    preferIpAddress: true
-    leaseRenewalIntervalInSeconds: 1
-    leaseExpirationDurationInSeconds: 3
-  client:
-    serviceUrl:
-      defaultZone: http://localhost:8000/eureka/
-    registryFetchIntervalSeconds: 1
 mybatis:
   mapperLocations: classpath*:/mapper/*.xml
   configuration:
