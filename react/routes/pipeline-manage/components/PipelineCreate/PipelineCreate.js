@@ -25,8 +25,6 @@ const PipelineCreate = observer(() => {
     refreshTree,
   } = usePipelineCreateStore();
 
-  const [expandIf, setExpandIf] = useState(false);
-
   useEffect(() => {
     const init = async () => {
       const res = await createUseStore.axiosGetDefaultImage();
@@ -61,11 +59,19 @@ const PipelineCreate = observer(() => {
 
   modal.handleOk(handleCreate);
 
-  const handleChangeImage = (data) => {
-    if (data === '0') {
-      PipelineCreateFormDataSet.current.set('image', createUseStore.getDefaultImage);
+  // const handleChangeImage = (data) => {
+  //   if (data === '0') {
+  //     PipelineCreateFormDataSet.current.set('image', createUseStore.getDefaultImage);
+  //   } else {
+  //     PipelineCreateFormDataSet.current.set('image', '');
+  //   }
+  // };
+
+  const handleChangeSelectImage = (data) => {
+    if (data === createUseStore.getDefaultImage) {
+      PipelineCreateFormDataSet.current.set('selectImage', '0');
     } else {
-      PipelineCreateFormDataSet.current.set('image', '');
+      PipelineCreateFormDataSet.current.set('selectImage', '1');
     }
   };
 
@@ -93,25 +99,18 @@ const PipelineCreate = observer(() => {
           searchMatcher="appServiceName"
         />
         <TextField style={{ display: 'none' }} />
-        <div style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
-          <Icon type={expandIf ? 'expand_less' : 'expand_more'} />高级设置
-        </div>
-        {
-          expandIf ? [
-            <SelectBox onChange={handleChangeImage} colSpan={2} newLine name="selectImage">
-              <Option value="0">默认Runner镜像</Option>
-              <Option value="1">自定义Runner镜像</Option>
-            </SelectBox>,
-            <TextField
-              disabled={
-                !!(PipelineCreateFormDataSet.current && PipelineCreateFormDataSet.current.get('selectImage') === '0')
-              }
-              newLine
-              colSpan={2}
-              name="image"
-            />,
-          ] : ''
-        }
+        <Select
+          // disabled={
+          //   !!(PipelineCreateFormDataSet.current && PipelineCreateFormDataSet.current.get('selectImage') === '0')
+          // }
+          combo
+          newLine
+          colSpan={2}
+          name="image"
+          onChange={handleChangeSelectImage}
+        >
+          <Option value={createUseStore.getDefaultImage}>{createUseStore.getDefaultImage}</Option>
+        </Select>
         {/* <SelectBox name="triggerType"> */}
         {/*  <Option value="auto">自动触发</Option> */}
         {/*  <Option disabled value="F">手动触发</Option> */}
