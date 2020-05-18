@@ -59,7 +59,7 @@ public class BaseServiceClientOperator {
     }
 
     public ProjectDTO queryIamProjectById(Long projectId) {
-        ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProject(projectId);
+        ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProject(Objects.requireNonNull(projectId));
         ProjectDTO projectDTO = projectDTOResponseEntity.getBody();
         // 判断id是否为空是因为可能会返回 CommonException 但是也会被反序列化为  ProjectDTO
         if (projectDTO == null || projectDTO.getId() == null) {

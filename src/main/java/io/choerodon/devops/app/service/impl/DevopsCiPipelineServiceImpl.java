@@ -34,7 +34,6 @@ import io.choerodon.devops.infra.dto.maven.Repository;
 import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
 import io.choerodon.devops.infra.dto.maven.Server;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
@@ -306,7 +305,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCiJobRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
 
         // 删除pipeline之前执行过程上传的软件包数据
-        devopsCiJobService.deleteArtifactsByGitlabProjectId(devopsCiPipelineRecordMapper.listGitlabPipelineIdsByPipelineId(ciPipelineId));
+        devopsCiJobService.deleteArtifactsByGitlabProjectId(projectId, devopsCiPipelineRecordMapper.listGitlabPipelineIdsByPipelineId(ciPipelineId));
 
         // 删除pipeline记录
         devopsCiPipelineRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());

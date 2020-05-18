@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.hzero.boot.file.FileClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,10 +24,11 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.SonarAuthType;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
-import io.choerodon.devops.infra.feign.FileFeignClient;
 import io.choerodon.devops.infra.feign.SonarClient;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
@@ -67,24 +69,26 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     private UserAttrService userAttrService;
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
-    private FileFeignClient fileFeignClient;
     private AppServiceService appServiceService;
     private DevopsCiJobArtifactRecordMapper devopsCiJobArtifactRecordMapper;
     private DevopsCiPipelineMapper devopsCiPipelineMapper;
     private DevopsCiPipelineService devopsCiPipelineService;
     private DevopsCiJobRecordService devopsCiJobRecordService;
     private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
+    private FileClient fileClient;
+    private BaseServiceClientOperator baseServiceClientOperator;
 
     public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper,
                                   GitlabServiceClientOperator gitlabServiceClientOperator,
                                   UserAttrService userAttrService,
-                                  FileFeignClient fileFeignClient,
                                   DevopsCiJobArtifactRecordMapper devopsCiJobArtifactRecordMapper,
                                   AppServiceService appServiceService,
                                   DevopsCiPipelineMapper devopsCiPipelineMapper,
                                   DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
                                   @Lazy DevopsCiPipelineService devopsCiPipelineService,
                                   DevopsCiJobRecordService devopsCiJobRecordService,
+                                  FileClient fileClient,
+                                  BaseServiceClientOperator baseServiceClientOperator,
                                   DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper) {
         this.devopsCiJobMapper = devopsCiJobMapper;
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
@@ -93,10 +97,11 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         this.devopsCiJobArtifactRecordMapper = devopsCiJobArtifactRecordMapper;
         this.appServiceService = appServiceService;
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
-        this.fileFeignClient = fileFeignClient;
         this.devopsCiPipelineService = devopsCiPipelineService;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
+        this.fileClient = fileClient;
+        this.baseServiceClientOperator = baseServiceClientOperator;
     }
 
     @Override
@@ -277,14 +282,14 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void deleteArtifactsByGitlabProjectId(List<Long> gitlabPipelineIds) {
+    public void deleteArtifactsByGitlabProjectId(Long projectId, List<Long> gitlabPipelineIds) {
         if (CollectionUtils.isEmpty(gitlabPipelineIds)) {
             return;
         }
         List<DevopsCiJobArtifactRecordDTO> artifacts = devopsCiJobArtifactRecordMapper.listByGitlabPipelineIds(gitlabPipelineIds);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         if (!artifacts.isEmpty()) {
-            // TODO 要能够文件不存在删除也不报错的接口，融合之后实现
-            artifacts.forEach(artifact -> fileFeignClient.deleteFile(GitOpsConstants.DEV_OPS_CI_ARTIFACT_FILE_BUCKET, artifact.getFileUrl()));
+            fileClient.deleteFileByUrl(projectDTO.getOrganizationId(), GitOpsConstants.DEV_OPS_CI_ARTIFACT_FILE_BUCKET, artifacts.stream().map(DevopsCiJobArtifactRecordDTO::getFileUrl).collect(Collectors.toList()));
             devopsCiJobArtifactRecordMapper.deleteByGitlabPipelineIds(gitlabPipelineIds);
         }
     }

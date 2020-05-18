@@ -31,6 +31,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.hzero.boot</groupId>
+            <artifactId>hzero-boot-file</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-core</artifactId>
         </dependency>

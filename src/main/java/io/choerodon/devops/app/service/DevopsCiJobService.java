@@ -113,9 +113,10 @@ public interface DevopsCiJobService {
     /**
      * 删除和这些gitlab流水线纪录相关的软件包
      *
+     * @param projectId         项目id
      * @param gitlabPipelineIds gitlab流水线id列表
      */
-    void deleteArtifactsByGitlabProjectId(List<Long> gitlabPipelineIds);
+    void deleteArtifactsByGitlabProjectId(Long projectId, List<Long> gitlabPipelineIds);
 
     /**
      * CI过程上传软件包
