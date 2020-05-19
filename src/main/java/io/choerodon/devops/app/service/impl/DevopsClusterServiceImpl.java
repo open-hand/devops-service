@@ -183,11 +183,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public Boolean checkEnableCreateCluster(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Long organizationId = projectDTO.getOrganizationId();
-        if (baseServiceClientOperator.checkOrganizationIsNew(organizationId)) {
+        if (baseServiceClientOperator.checkOrganizationIsRegistered(organizationId)) {
+            ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit();
             DevopsClusterDTO example = new DevopsClusterDTO();
             example.setOrganizationId(organizationId);
             int num = devopsClusterMapper.selectCount(example);
-            return num < clusterMaxNumber;
+            return num < resourceLimitVO.getClusterMaxNumber();
         }
         return true;
     }

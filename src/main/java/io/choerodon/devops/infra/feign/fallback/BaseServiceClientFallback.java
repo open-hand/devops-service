@@ -1,25 +1,20 @@
 package io.choerodon.devops.infra.feign.fallback;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.validation.Valid;
 
-import com.github.pagehelper.PageInfo;
-import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.OrgAdministratorVO;
+import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
-import io.choerodon.devops.api.vo.iam.RemoteTokenAuthorizationVO;
-import io.choerodon.devops.api.vo.iam.RoleVO;
-import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
-import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 
@@ -37,33 +32,23 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<OrganizationDTO> queryOrganization() {
-        throw new CommonException("error.organization.get");
+    public ResponseEntity<Long> getRoleId(Long organizationId, String label) {
+        throw new CommonException("error.organization.role.id.get", label);
     }
 
     @Override
-<<<<<<< HEAD
-    public ResponseEntity<OrganizationDTO> queryOrganizationById(Long organizationId) {
-        throw new CommonException("error.organization.get");
-=======
+    public ResponseEntity<ResourceLimitVO> queryResourceLimit() {
+        throw new CommonException("error.query.resource.limit");
+    }
+
+    @Override
     public ResponseEntity<Tenant> queryOrganizationById(Long organizationId) {
         throw new CommonException("error.organization.get", organizationId);
->>>>>>> [ADD] make exception more detailed
     }
 
     @Override
     public ResponseEntity<List<OrganizationDTO>> queryOrgByIds(Set<Long> ids) {
         throw new CommonException("error.organization.get", ids == null ? "null" : ids.toString());
-    }
-
-    @Override
-    public ResponseEntity<PageInfo<OrganizationDTO>> listOrganizations(Integer page, Integer size) {
-        throw new CommonException("error.organization.get");
-    }
-
-    @Override
-    public ResponseEntity<MemberRoleVO> addMemberRole(Long projectId, MemberRoleVO memberRoleVo) {
-        throw new CommonException("error.memberRole.add");
     }
 
     @Override
@@ -77,24 +62,13 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<PageInfo<IamUserDTO>> queryInProjectById(Long projectId, Long id) {
-        throw new CommonException("error.userInProject.get");
-    }
-
-    @Override
     public ResponseEntity<List<IamUserDTO>> listUsersByIds(Long[] ids, Boolean onlyEnabled) {
         throw new CommonException("error.user.get.byIds");
     }
 
     @Override
-    public ResponseEntity<PageInfo<IamUserDTO>> listUsersByEmail(Long projectId, int page, int size, String email) {
+    public ResponseEntity<Page<IamUserDTO>> listUsersByEmail(Long projectId, int page, int size, String email) {
         return new ResponseEntity("error.user.get.byEmail", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @Override
-    public ResponseEntity<List<RoleVO>> listRolesWithUserCountOnProjectLevel(
-            Long projectId, RoleAssignmentSearchVO roleAssignmentSearchVO) {
-        throw new CommonException("error.roles.get.byProjectId");
     }
 
     @Override
@@ -103,48 +77,12 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<com.github.pagehelper.PageInfo<ProjectWithRoleVO>> listProjectWithRole(Long id, int page, int size) {
-        throw new CommonException("error.project.role.get");
-    }
-
-    @Override
-    public ResponseEntity<PageInfo<RoleVO>> queryRoleIdByCode(String code) {
-        throw new CommonException("error.roleId.get");
-    }
-
-
-    @Override
-    public ResponseEntity<ProjectDTO> createProject(Long organizationId, @Valid ProjectCreateDTO projectCreateDTO) {
-        throw new CommonException("error.iam.project.create");
-    }
-
-    @Override
-    public ResponseEntity<PageInfo<ProjectDTO>> pageProjectsByOrgId(Long organizationId, Map<String, Object> pageable, String name, String code, Boolean enabled, String params) {
+    public ResponseEntity<Page<ProjectDTO>> pageProjectsByOrgId(Long organizationId, Map<String, Object> pageable, String name, String code, Boolean enabled, String params) {
         return null;
-    }
-
-    @Override
-    public ResponseEntity<ApplicationDTO> queryAppById(Long id) {
-        throw new CommonException("error.application.get");
-    }
-
-    @Override
-    public ResponseEntity<Boolean> publishFail(Long projectId, Long id, String errorCode, Boolean fixFlag) {
-        throw new CommonException("error.publishFail.status.get");
     }
 
     public ResponseEntity<String> completeDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId, List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS) {
         throw new CommonException("error.application.download.complete");
-    }
-
-    @Override
-    public ResponseEntity<String> failToDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId) {
-        throw new CommonException("error.application.download.failed");
-    }
-
-    @Override
-    public ResponseEntity<RemoteTokenAuthorizationVO> checkLatestToken() {
-        throw new CommonException("error.remote.token.authorization");
     }
 
     @Override
@@ -158,17 +96,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<Set<Long>> listService(Long organizationId, String appType) {
-        throw new CommonException("error.app.service.market.list");
-    }
-
-    @Override
-    public ResponseEntity<Set<Long>> listSvcVersion(Long organizationId, String appType) {
-        throw new CommonException("error.app.service.version.market.list");
-    }
-
-    @Override
-    public ResponseEntity<ClientDTO> createClient(Long organizationId, @Valid ClientVO clientVO) {
+    public ResponseEntity<ClientDTO> createClient(@Valid ClientVO clientVO) {
         throw new CommonException("error.create.client");
     }
 
@@ -193,16 +121,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<IamUserDTO>> queryAllAdminUsers() {
-        throw new CommonException("error.query.all.admins");
-    }
-
-    @Override
-    public ResponseEntity<List<IamUserDTO>> queryAllOrgRoot() {
-        throw new CommonException("error.query.all.org.admin");
-    }
-
-    @Override
     public ResponseEntity<Boolean> checkIsRoot(Long id) {
         throw new CommonException("error.check.is.root");
     }
@@ -223,17 +141,12 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<Boolean> checkOrganizationIsNew(Long organizationId) {
+    public ResponseEntity<Boolean> checkOrganizationIsRegister(Long organizationId) {
         throw new CommonException("error.check.organization.is.new");
     }
 
     @Override
-    public ResponseEntity<IamUserDTO> query(String loginName) {
-        throw new CommonException("error.query.user.by.login.name", loginName);
-    }
-
-    @Override
-    public ResponseEntity<PageInfo<OrgAdministratorVO>> listOrgAdministrator(Long organizationId, Integer size) {
+    public ResponseEntity<Page<OrgAdministratorVO>> listOrgAdministrator(Long organizationId, Integer size) {
         throw new CommonException("error.query.org.by.id");
     }
 }

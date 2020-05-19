@@ -287,11 +287,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
      */
     private void checkEnableCreate(Long projectId, Long clusterId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        if (baseServiceClientOperator.checkOrganizationIsNew(projectDTO.getOrganizationId())) {
+        if (baseServiceClientOperator.checkOrganizationIsRegistered(projectDTO.getOrganizationId())) {
+            ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit();
             DevopsEnvironmentDTO example = new DevopsEnvironmentDTO();
             example.setClusterId(clusterId);
             int num = devopsEnvironmentMapper.selectCount(example);
-            if (num >= envMaxNumber) {
+            if (num >= resourceLimitVO.getEnvMaxNumber()) {
                 throw new CommonException(ERROR_CLUSTER_ENV_NUM_MAX);
             }
         }
