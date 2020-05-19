@@ -1027,6 +1027,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     private static MessageSender constructMessageSender(String sendSettingCode, List<Receiver> targetUsers, String receiveType, Map<String, String> params, Map<String, Object> additionalArgs) {
         MessageSender messageSender = new MessageSender();
+        messageSender.setTenantId(0L);
         messageSender.setReceiverAddressList(targetUsers);
         messageSender.setReceiverTypeCode(receiveType);
         messageSender.setArgs(params);

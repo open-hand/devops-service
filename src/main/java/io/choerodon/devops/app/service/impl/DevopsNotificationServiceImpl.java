@@ -216,6 +216,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         additionalParams.put(MessageAdditionalType.PARAM_EVENT_NAME.getTypeName(), objectType);
 
         MessageSender messageSender = new MessageSender();
+        messageSender.setTenantId(0L);
         messageSender.setMessageCode(RESOURCE_DELETE_CONFIRMATION);
         messageSender.setArgs(params.build());
         messageSender.setAdditionalInformation(additionalParams);
