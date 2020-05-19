@@ -6,33 +6,32 @@ import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
 import java.util.List;
 
 import feign.FeignException;
-import io.choerodon.devops.api.vo.OrgAdministratorVO;
-import io.choerodon.devops.app.service.GitlabGroupMemberService;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.app.service.DevopsProjectService;
+import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.app.service.GitlabGroupService;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.Visibility;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.GitOpsUtil;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.springframework.util.CollectionUtils;
 
 @Service
 public class GitlabGroupServiceImpl implements GitlabGroupService {
@@ -84,10 +83,10 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
      * @param userAttrDTO     当前用户
      */
     @Override
-    public void createClusterEnvGroup(ProjectDTO projectDTO, OrganizationDTO organizationDTO, UserAttrDTO userAttrDTO) {
+    public void createClusterEnvGroup(ProjectDTO projectDTO, Tenant organizationDTO, UserAttrDTO userAttrDTO) {
         GitlabGroupPayload payload = new GitlabGroupPayload();
-        payload.setOrganizationCode(organizationDTO.getCode());
-        payload.setOrganizationName(organizationDTO.getName());
+        payload.setOrganizationCode(organizationDTO.getTenantNum());
+        payload.setOrganizationName(organizationDTO.getTenantName());
         payload.setProjectCode(projectDTO.getCode());
         payload.setProjectName(projectDTO.getName());
         payload.setProjectId(projectDTO.getId());
@@ -96,11 +95,9 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
 
         List<Long> ownerIds = baseServiceClientOperator.getAllOwnerIds(projectDTO.getId());
         //创建完group后分配组织管理员权限
-        List<OrgAdministratorVO> list = baseServiceClientOperator.listOrgAdministrator(projectDTO.getOrganizationId()).getList();
+        List<OrgAdministratorVO> list = baseServiceClientOperator.listOrgAdministrator(projectDTO.getOrganizationId()).getContent();
         if (!CollectionUtils.isEmpty(list)) {
-            list.stream().forEach(orgAdministratorVO -> {
-                gitlabGroupMemberService.assignGitLabGroupMemeberForOwner(projectDTO, orgAdministratorVO.getId());
-            });
+            list.forEach(orgAdministratorVO -> gitlabGroupMemberService.assignGitLabGroupMemeberForOwner(projectDTO, orgAdministratorVO.getId()));
         }
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
         if (devopsProjectDTO.getDevopsClusterEnvGroupId() == null) {

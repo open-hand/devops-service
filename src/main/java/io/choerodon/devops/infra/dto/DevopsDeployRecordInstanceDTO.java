@@ -7,7 +7,7 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * 这个表是用于存储批量部署的部署纪录与实例的关联关系的
@@ -16,7 +16,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * @since 2/26/20
  */
 @Table(name = "devops_deploy_record_instance")
-public class DevopsDeployRecordInstanceDTO extends BaseDTO {
+public class DevopsDeployRecordInstanceDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @ApiModelProperty("自增id")

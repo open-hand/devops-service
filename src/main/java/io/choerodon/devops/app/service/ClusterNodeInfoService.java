@@ -1,12 +1,11 @@
 package io.choerodon.devops.app.service;
 
-import com.github.pagehelper.PageInfo;
-import org.springframework.data.domain.Pageable;
+import java.util.List;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.AgentNodeInfoVO;
 import io.choerodon.devops.api.vo.ClusterNodeInfoVO;
-
-import java.util.List;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author zmf
@@ -46,7 +45,7 @@ public interface ClusterNodeInfoService {
      * @param pageable  the page parameters
      * @return a page of nodes
      */
-    PageInfo<ClusterNodeInfoVO> pageClusterNodeInfo(Long clusterId, Long projectId, Pageable pageable);
+    Page<ClusterNodeInfoVO> pageClusterNodeInfo(Long clusterId, Long projectId, PageRequest pageable);
 
     /**
      * get cluster node information by cluster id and node name

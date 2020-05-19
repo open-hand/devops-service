@@ -1,7 +1,5 @@
 package io.choerodon.devops.infra.feign.operator;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -17,9 +15,6 @@ import io.choerodon.devops.infra.feign.WorkFlowServiceClient;
  */
 @Component
 public class WorkFlowServiceOperator {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(WorkFlowServiceOperator.class);
-
     @Autowired
     private WorkFlowServiceClient workFlowServiceClient;
 

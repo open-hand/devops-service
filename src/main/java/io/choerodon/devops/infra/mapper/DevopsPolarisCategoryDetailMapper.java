@@ -5,13 +5,13 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsPolarisCategoryDetailDTO;
-import io.choerodon.mybatis.common.Mapper;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * @author zmf
  * @since 2/17/20
  */
-public interface DevopsPolarisCategoryDetailMapper extends Mapper<DevopsPolarisCategoryDetailDTO> {
+public interface DevopsPolarisCategoryDetailMapper extends BaseMapper<DevopsPolarisCategoryDetailDTO> {
     /**
      * 根据id批量删除纪录
      *

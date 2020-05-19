@@ -1,28 +1,28 @@
 package io.choerodon.devops.api.controller.v1;
 
-import com.github.pagehelper.PageInfo;
-import io.choerodon.core.annotation.Permission;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import io.choerodon.core.enums.ResourceType;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsPvcReqVO;
-import io.choerodon.devops.api.vo.DevopsPvcRespVO;
-import io.choerodon.devops.app.service.DevopsPvcService;
+import java.util.Optional;
+import javax.validation.Valid;
 
-import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import javax.validation.Valid;
-import java.util.Optional;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.DevopsPvcReqVO;
+import io.choerodon.devops.api.vo.DevopsPvcRespVO;
+import io.choerodon.devops.app.service.DevopsPvcService;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/pvcs")
@@ -39,20 +39,20 @@ public class DevopsPvcController {
      * @param params    查询参数
      * @return CertificationDTO page
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询PVC")
     @CustomPageRequest
     @PostMapping("/page_by_options")
-    public ResponseEntity<PageInfo<DevopsPvcRespVO>> pageByOptions(
+    public ResponseEntity<Page<DevopsPvcRespVO>> pageByOptions(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境ID")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "分页参数")
             @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable pageable,
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsPvcService.pageByOptions(projectId, envId, pageable, params))
@@ -61,7 +61,7 @@ public class DevopsPvcController {
     }
 
     @PostMapping
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建PVC")
     public ResponseEntity<DevopsPvcRespVO> create(
@@ -81,7 +81,7 @@ public class DevopsPvcController {
      * @param pvcId PVC id
      * @return Boolean
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除PVC")
     @DeleteMapping("/{pvc_id}")
@@ -103,7 +103,7 @@ public class DevopsPvcController {
      * @param name  PVC名称
      * @param envId 环境id
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "检查PVC名称的唯一性")
     @GetMapping("/check_name")

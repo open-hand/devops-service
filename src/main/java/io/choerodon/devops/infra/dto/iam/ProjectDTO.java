@@ -4,13 +4,13 @@ import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author superlee
  * @since 2019-04-22
  */
-public class ProjectDTO extends BaseDTO {
+public class ProjectDTO extends AuditDomain {
 
     @ApiModelProperty(value = "主键ID/非必填")
     private Long id;
@@ -44,9 +44,6 @@ public class ProjectDTO extends BaseDTO {
 
     @ApiModelProperty(value = "项目类型(非开源，一对多)")
     private List<ProjectCategoryDTO> categories;
-
-    @ApiModelProperty(value = "应用")
-    private ApplicationDTO applicationVO;
 
 
     private Long appServiceId;
@@ -208,13 +205,5 @@ public class ProjectDTO extends BaseDTO {
 
     public void setProgramName(String programName) {
         this.programName = programName;
-    }
-
-    public ApplicationDTO getApplicationVO() {
-        return applicationVO;
-    }
-
-    public void setApplicationVO(ApplicationDTO applicationVO) {
-        this.applicationVO = applicationVO;
     }
 }

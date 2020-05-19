@@ -3,15 +3,14 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import com.github.pagehelper.PageInfo;
-import org.springframework.data.domain.Pageable;
-
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
 import io.choerodon.devops.api.vo.DevopsPvReqVO;
 import io.choerodon.devops.api.vo.DevopsPvVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.eventhandler.payload.PersistentVolumePayload;
 import io.choerodon.devops.infra.dto.DevopsPvDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 
 public interface DevopsPvService {
@@ -29,7 +28,7 @@ public interface DevopsPvService {
     /**
      * 根据条件分页查询PV
      */
-    PageInfo<DevopsPvDTO> basePagePvByOptions(Long projectId, Pageable pageable, String params);
+    Page<DevopsPvDTO> basePagePvByOptions(Long projectId, PageRequest pageable, String params);
 
     /**
      * 分页查询pv以及关联的集群和PVC
@@ -38,7 +37,7 @@ public interface DevopsPvService {
      * @param params
      * @return
      */
-    PageInfo<DevopsPvVO> pageByOptions(Long projectId, Pageable pageable, String params);
+    Page<DevopsPvVO> pageByOptions(Long projectId, PageRequest pageable, String params);
 
     /**
      * 创建PV
@@ -89,7 +88,7 @@ public interface DevopsPvService {
      * @param projectId
      * @return
      */
-    PageInfo<ProjectReqVO> listNonRelatedProjects(Long projectId, Long pvId, Long selectedProjectId, Pageable pageable, String params);
+    Page<ProjectReqVO> listNonRelatedProjects(Long projectId, Long pvId, Long selectedProjectId, PageRequest pageable, String params);
 
     /**
      * 根据项目id删除相对应的权限
@@ -130,7 +129,7 @@ public interface DevopsPvService {
      * @param params
      * @return
      */
-    PageInfo<ProjectReqVO> pageProjects(Long projectId, Long pvId, Pageable pageable, String params);
+    Page<ProjectReqVO> pageProjects(Long projectId, Long pvId, PageRequest pageable, String params);
 
     /**
      * PV不跳过权限校验，查询有关联的项目
@@ -141,7 +140,7 @@ public interface DevopsPvService {
      * @param params
      * @return
      */
-    PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long pvId, Pageable pageable, String params);
+    Page<ProjectReqVO> pageRelatedProjects(Long projectId, Long pvId, PageRequest pageable, String params);
 
     /**
      * 根据环境id查询所有的PV

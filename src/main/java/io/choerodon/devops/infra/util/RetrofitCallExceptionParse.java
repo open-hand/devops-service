@@ -117,7 +117,7 @@ public class RetrofitCallExceptionParse {
      */
     private static void parseCommonException(String responseStr, String exceptionMessage) {
         ExceptionResponse e = gson.fromJson(responseStr, ExceptionResponse.class);
-        if (e.getFailed() != null && Boolean.TRUE.equals(e.getFailed())) {
+        if (e.getFailed()) {
             logger.info("::Retrofit::The response is CommonException，code:{},message:{}", e.getCode(), e.getMessage());
         }
     }

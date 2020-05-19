@@ -116,7 +116,7 @@ export default function useStore() {
         resourceType: 'project',
       }];
       try {
-        const res = await axios.post('/base/v1/permissions/checkPermission', JSON.stringify(data));
+        const res = await axios.post('/iam/hzero/v1/menus/check-permissions', JSON.stringify(data));
         if (handlePromptError(res)) {
           const { approve } = res[0] || {};
           this.setProjectRole(approve);

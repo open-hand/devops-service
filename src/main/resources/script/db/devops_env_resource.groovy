@@ -41,4 +41,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_resource.groovy') {
     changeSet(author: 'sheep', id: '2019-08-05-rename-column') {
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'instance_id', oldColumnName: 'app_instance_id', tableName: 'devops_env_resource')
     }
+
+    changeSet(author: 'zmf', id: '2020-05-13-add-env-resource-uk', failOnError: false) {
+        addUniqueConstraint(tableName: 'devops_env_resource',
+                constraintName: 'uk_devops_env_resource_env_id_kind_name', columnNames: 'env_id,kind,name')
+    }
 }

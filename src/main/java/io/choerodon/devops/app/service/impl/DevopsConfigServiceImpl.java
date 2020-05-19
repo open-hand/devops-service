@@ -3,13 +3,9 @@ package io.choerodon.devops.app.service.impl;
 import java.io.IOException;
 import java.util.*;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -17,6 +13,7 @@ import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ConfigVO;
@@ -32,8 +29,8 @@ import io.choerodon.devops.infra.dto.DevopsConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.HarborUserDTO;
 import io.choerodon.devops.infra.dto.harbor.*;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
@@ -41,6 +38,8 @@ import io.choerodon.devops.infra.mapper.DevopsConfigMapper;
 import io.choerodon.devops.infra.mapper.HarborUserMapper;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author zongw.lee@gmail.com
@@ -48,9 +47,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
  */
 @Service
 public class DevopsConfigServiceImpl implements DevopsConfigService {
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(DevopsConfigServiceImpl.class);
-
-    public static final String APP_SERVICE = "appService";
+    private static final String APP_SERVICE = "appService";
     private static final String HARBOR = "harbor";
     private static final String AUTHTYPE_PULL = "pull";
     private static final String AUTHTYPE_PUSH = "push";
@@ -108,8 +105,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
                         HarborClient harborClient = retrofit.create(HarborClient.class);
 
-                        ProjectDTO projectDTO = null;
-                        OrganizationDTO organizationDTO = null;
+                        ProjectDTO projectDTO;
+                        Tenant organizationDTO;
                         if (resourceType.equals(ResourceLevel.PROJECT.value())) {
                             projectDTO = baseServiceClientOperator.queryIamProjectById(resourceId);
                             organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
@@ -118,7 +115,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                             projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                             organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                         }
-                        harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode(), false, devopsConfigVO.getHarborPrivate());
+                        harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getTenantNum() + "-" + projectDTO.getCode(), false, devopsConfigVO.getHarborPrivate());
                         devopsConfigVO.getConfig().setPrivate(devopsConfigVO.getHarborPrivate());
                     }
                 }
@@ -187,7 +184,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     private void operateHarborProject(Long projectId, Boolean harborPrivate) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
         configurationProperties.setType(HARBOR);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
@@ -228,9 +225,9 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         } else {
             //设置为公有后将harbor项目设置为公有,删除pull成员角色
             try {
-                Response<List<ProjectDetail>> projects = harborClient.listProject(organizationDTO.getCode() + "-" + projectDTO.getCode()).execute();
+                Response<List<ProjectDetail>> projects = harborClient.listProject(organizationDTO.getTenantNum() + "-" + projectDTO.getCode()).execute();
                 if (!CollectionUtils.isEmpty(projects.body())) {
-                    Integer harborProjectId = getHarborProjectId(projects.body(), organizationDTO.getCode() + "-" + projectDTO.getCode());
+                    Integer harborProjectId = getHarborProjectId(projects.body(), organizationDTO.getTenantNum() + "-" + projectDTO.getCode());
 
                     //1.更新harbor项目为公开
                     ProjectDetail projectDetail = new ProjectDetail();
@@ -248,7 +245,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                         throw new CommonException("error.get.harbor.info");
                     }
                     if (systemInfoResponse.body().getHarborVersion().equals("v1.4.0")) {
-                        Response<List<User>> users = harborClient.listUser(String.format(USER_PREFIX, organizationDTO.getId(), projectId)).execute();
+                        Response<List<User>> users = harborClient.listUser(String.format(USER_PREFIX, organizationDTO.getTenantId(), projectId)).execute();
                         if (users.raw().code() != 200) {
                             throw new CommonException("error.list.harbor.project.member");
                         }
@@ -264,7 +261,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                             }
                         }
                     } else {
-                        Response<List<ProjectMember>> projectMembers = harborClient.getProjectMembers(harborProjectId, String.format(USER_PREFIX, organizationDTO.getId(), projectId)).execute();
+                        Response<List<ProjectMember>> projectMembers = harborClient.getProjectMembers(harborProjectId, String.format(USER_PREFIX, organizationDTO.getTenantId(), projectId)).execute();
                         if (projectMembers.raw().code() != 200) {
                             throw new CommonException("error.list.harbor.project.member");
                         }
@@ -332,8 +329,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 return projectConfig;
             }
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
-            OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            DevopsConfigDTO organizationConfig = baseQueryByResourceAndType(organizationDTO.getId(), ResourceLevel.ORGANIZATION.value(), configType);
+            Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            DevopsConfigDTO organizationConfig = baseQueryByResourceAndType(organizationDTO.getTenantId(), ResourceLevel.ORGANIZATION.value(), configType);
             //如果组织层使用自定义设置，为了避免给组织层下所有项目都创一遍harborProject,则只在具体某个应用服务用到的时候，在去给应用服务所属的项目创建对应的harborProject
             if (organizationConfig != null) {
                 if (configType.equals(HARBOR)) {
@@ -347,7 +344,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     HarborClient harborClient = retrofit.create(HarborClient.class);
                     projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                     organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-                    harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode(), false, true);
+                    harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getTenantNum() + "-" + projectDTO.getCode(), false, true);
                 }
                 return organizationConfig;
             }
@@ -379,8 +376,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 return projectConfig;
             }
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(resourceId);
-            OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            DevopsConfigDTO organizationConfig = baseQueryByResourceAndType(organizationDTO.getId(), ResourceLevel.ORGANIZATION.value(), configType);
+            Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            DevopsConfigDTO organizationConfig = baseQueryByResourceAndType(organizationDTO.getTenantId(), ResourceLevel.ORGANIZATION.value(), configType);
             if (organizationConfig != null) {
                 return organizationConfig;
             }
@@ -439,11 +436,11 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     }
 
     @Override
-    public PageInfo<DevopsConfigDTO> basePageByOptions(Long projectId, Pageable pageable, String params) {
+    public Page<DevopsConfigDTO> basePageByOptions(Long projectId, PageRequest pageable, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
 
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable))
-                .doSelectPageInfo(() -> devopsConfigMapper.listByOptions(projectId,
+        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
+                () -> devopsConfigMapper.listByOptions(projectId,
                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable)));
     }
@@ -464,7 +461,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     }
 
 
-    public DevopsConfigDTO baseQueryDefaultConfig(String type) {
+    private DevopsConfigDTO baseQueryDefaultConfig(String type) {
         DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
         if (type.equals(HARBOR)) {
             devopsConfigDTO.setName(DevopsCommandRunner.HARBOR_NAME);
@@ -484,7 +481,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         }
     }
 
-    public List<DevopsConfigDTO> baseListByResource(Long resourceId, String resourceType) {
+    private List<DevopsConfigDTO> baseListByResource(Long resourceId, String resourceType) {
         DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
         setResourceId(resourceId, resourceType, devopsConfigDTO);
         return devopsConfigMapper.select(devopsConfigDTO);
@@ -541,7 +538,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             configVOS.add(harbor);
         } else {
             harbor = devopsConfigRepVO.getHarbor();
-            harbor.setHarborPrivate(harbor.getHarborPrivate() == null ? true : harbor.getHarborPrivate());
+            harbor.setHarborPrivate(harbor.getHarborPrivate() == null ? Boolean.TRUE : harbor.getHarborPrivate());
             configVOS.add(harbor);
         }
 
@@ -618,16 +615,16 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         }
     }
 
-    private void updateHarborProjectAndProjectMember(HarborClient harborClient, User user, List<Integer> roles, OrganizationDTO organizationDTO, ProjectDTO projectDTO) {
+    private void updateHarborProjectAndProjectMember(HarborClient harborClient, User user, List<Integer> roles, Tenant organizationDTO, ProjectDTO projectDTO) {
         Response<Void> result = null;
 
         //给项目绑定角色
         Response<List<ProjectDetail>> projects = null;
         try {
-            projects = harborClient.listProject(organizationDTO.getCode() + "-" + projectDTO.getCode()).execute();
+            projects = harborClient.listProject(organizationDTO.getTenantNum() + "-" + projectDTO.getCode()).execute();
 
             if (projects.body() != null && !projects.body().isEmpty()) {
-                Integer harborProjectId = getHarborProjectId(projects.body(), organizationDTO.getCode() + "-" + projectDTO.getCode());
+                Integer harborProjectId = getHarborProjectId(projects.body(), organizationDTO.getTenantNum() + "-" + projectDTO.getCode());
 
                 ProjectDetail projectDetail = new ProjectDetail();
                 Metadata metadata = new Metadata();

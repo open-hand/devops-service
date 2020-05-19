@@ -12,8 +12,8 @@ import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.app.service.ProjectConfigHarborService;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.dto.harbor.Project;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
@@ -38,9 +38,9 @@ public class ProjectConfigHarborServiceImpl implements ProjectConfigHarborServic
             Response<Void> result;
 
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-            OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             result = harborClient.insertProject(new Project(
-                    organizationDTO.getCode() + "-" + projectDTO.getCode(), 1)).execute();
+                    organizationDTO.getTenantNum() + "-" + projectDTO.getCode(), 1)).execute();
 
             if (result.raw().code() != 201) {
                 throw new CommonException(result.errorBody().string());

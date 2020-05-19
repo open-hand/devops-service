@@ -1,8 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
 import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
-import io.choerodon.mybatis.common.Mapper;
-import org.apache.ibatis.annotations.Param;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * 〈功能简述〉
@@ -11,6 +10,6 @@ import org.apache.ibatis.annotations.Param;
  * @author wanghao
  * @Date 2020/4/3 9:22
  */
-public interface DevopsCiJobRecordMapper extends Mapper<DevopsCiJobRecordDTO> {
+public interface DevopsCiJobRecordMapper extends BaseMapper<DevopsCiJobRecordDTO> {
 
 }

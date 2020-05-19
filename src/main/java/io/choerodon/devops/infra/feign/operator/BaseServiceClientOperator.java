@@ -5,33 +5,27 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.ExceptionResponse;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
-import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
-import io.choerodon.devops.api.vo.iam.RemoteTokenAuthorizationVO;
-import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.enums.LabelType;
-import io.choerodon.devops.infra.enums.OrgPublishMarketStatus;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.util.FeignParamUtils;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 /**
  * Created by Sheep on 2019/7/11.
@@ -50,23 +44,39 @@ public class BaseServiceClientOperator {
     @Autowired
     private BaseServiceClient baseServiceClient;
 
+    /**
+     * @param organizationId 组织id
+     * @param label          角色标签
+     * @return 角色id
+     */
+    public Long getRoleId(Long organizationId, String label) {
+        ResponseEntity<Long> roleIdResponseEntity = baseServiceClient.getRoleId(organizationId, label);
+        if (roleIdResponseEntity.getStatusCode().is2xxSuccessful()) {
+            return roleIdResponseEntity.getBody();
+        } else {
+            throw new CommonException("error.organization.role.id.get", label);
+        }
+    }
+
     public ProjectDTO queryIamProjectById(Long projectId) {
-        ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProject(projectId);
+        ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProject(Objects.requireNonNull(projectId));
         ProjectDTO projectDTO = projectDTOResponseEntity.getBody();
         // 判断id是否为空是因为可能会返回 CommonException 但是也会被反序列化为  ProjectDTO
         if (projectDTO == null || projectDTO.getId() == null) {
             throw new CommonException("error.project.query.by.id", projectId);
         }
-        return projectDTOResponseEntity.getBody();
+        return projectDTO;
     }
 
-    public OrganizationDTO queryOrganizationById(Long organizationId) {
-        ResponseEntity<OrganizationDTO> organizationDTOResponseEntity = baseServiceClient.queryOrganizationById(organizationId);
+    public Tenant queryOrganizationById(Long organizationId) {
+        ResponseEntity<Tenant> organizationDTOResponseEntity = baseServiceClient.queryOrganizationById(organizationId);
         if (organizationDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
-            return organizationDTOResponseEntity.getBody();
-        } else {
-            throw new CommonException("error.organization.get");
+            Tenant tenant = organizationDTOResponseEntity.getBody();
+            if (tenant != null && tenant.getTenantId() == null) {
+                return tenant;
+            }
         }
+        throw new CommonException("error.organization.get");
     }
 
     public List<OrganizationDTO> listOrganizationByIds(Set<Long> organizationIds) {
@@ -87,34 +97,21 @@ public class BaseServiceClientOperator {
 
 
     public List<ProjectDTO> listIamProjectByOrgId(Long organizationId, String name, String code, String params) {
-        CustomPageRequest customPageRequest = CustomPageRequest.of(0, 0);
-        ResponseEntity<PageInfo<ProjectDTO>> pageResponseEntity =
+        PageRequest customPageRequest = new PageRequest(0, 0);
+        ResponseEntity<Page<ProjectDTO>> pageResponseEntity =
                 baseServiceClient.pageProjectsByOrgId(organizationId, FeignParamUtils.encodePageRequest(customPageRequest), name, code, true, params);
-        return Objects.requireNonNull(pageResponseEntity.getBody()).getList();
+        return Objects.requireNonNull(pageResponseEntity.getBody()).getContent();
     }
 
-    public PageInfo<ProjectDTO> pageProjectByOrgId(Long organizationId, int page, int size, Sort sort, String name, String code, String params) {
-        CustomPageRequest pageable = CustomPageRequest.of(page, size, sort == null ? Sort.unsorted() : sort);
+    public Page<ProjectDTO> pageProjectByOrgId(Long organizationId, int page, int size, Sort sort, String name, String code, String params) {
+        PageRequest pageable = new PageRequest(page, size, sort);
         try {
-            ResponseEntity<PageInfo<ProjectDTO>> pageInfoResponseEntity = baseServiceClient.pageProjectsByOrgId(organizationId,
+            ResponseEntity<Page<ProjectDTO>> pageInfoResponseEntity = baseServiceClient.pageProjectsByOrgId(organizationId,
                     FeignParamUtils.encodePageRequest(pageable), name, code, true, params);
             return pageInfoResponseEntity.getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
         }
-    }
-
-    public List<ProjectWithRoleVO> listProjectWithRoleDTO(Long userId) {
-        List<ProjectWithRoleVO> returnList = new ArrayList<>();
-        int page = 0;
-        int size = 0;
-        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity =
-                baseServiceClient.listProjectWithRole(userId, page, size);
-        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = pageResponseEntity.getBody();
-        if (!projectWithRoleDTOPage.getList().isEmpty()) {
-            returnList.addAll(projectWithRoleDTOPage.getList());
-        }
-        return returnList;
     }
 
     public List<IamUserDTO> listUsersByIds(List<Long> ids) {
@@ -133,7 +130,7 @@ public class BaseServiceClientOperator {
 
     public IamUserDTO queryUserByUserId(Long id) {
         List<Long> ids = new ArrayList<>();
-        ids.add(id);
+        ids.add(Objects.requireNonNull(id));
         List<IamUserDTO> userES = this.listUsersByIds(ids);
         if (userES != null && !userES.isEmpty()) {
             return userES.get(0);
@@ -158,24 +155,14 @@ public class BaseServiceClientOperator {
 
     public IamUserDTO queryByEmail(Long projectId, String email) {
         try {
-            ResponseEntity<PageInfo<IamUserDTO>> userDOResponseEntity = baseServiceClient
+            ResponseEntity<Page<IamUserDTO>> userDOResponseEntity = baseServiceClient
                     .listUsersByEmail(projectId, 0, 0, email);
-            if (userDOResponseEntity.getBody().getList().isEmpty()) {
+            if (userDOResponseEntity.getBody().getContent().isEmpty()) {
                 return null;
             }
-            return userDOResponseEntity.getBody().getList().get(0);
+            return userDOResponseEntity.getBody().getContent().get(0);
         } catch (FeignException e) {
             LOGGER.error("get user by email {} error", email);
-            return null;
-        }
-    }
-
-    public Long queryRoleIdByCode(String roleCode) {
-        try {
-
-            return baseServiceClient.queryRoleIdByCode(roleCode).getBody().getList().get(0).getId();
-        } catch (FeignException e) {
-            LOGGER.error("get role id by code {} error", roleCode);
             return null;
         }
     }
@@ -257,75 +244,6 @@ public class BaseServiceClientOperator {
         return isGitLabOrgOwner;
     }
 
-    public ProjectDTO createProject(Long organizationId, ProjectCreateDTO projectCreateDTO) {
-        try {
-            ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient
-                    .createProject(organizationId, projectCreateDTO);
-            return projectDTOResponseEntity.getBody();
-        } catch (FeignException e) {
-            LOGGER.error("error.create.iam.project");
-            return null;
-        }
-    }
-
-
-    public ApplicationDTO queryAppById(Long id) {
-        try {
-            return baseServiceClient.queryAppById(id).getBody();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public void publishFail(Long projectId, Long mktAppVersionId, String code, Boolean fixFlag) {
-        try {
-            baseServiceClient.publishFail(projectId, mktAppVersionId, code, fixFlag).getBody();
-        } catch (Exception e) {
-            throw new CommonException("error.insert.failed.message", e.getMessage());
-        }
-    }
-
-
-    public void completeDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId, List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS) {
-        try {
-            ResponseEntity<String> responseEntity = baseServiceClient.completeDownloadApplication(publishAppVersionId, appVersionId, organizationId, appDownloadDevopsReqVOS);
-            if (responseEntity != null && responseEntity.getBody() != null) {
-                ExceptionResponse exceptionResponse = gson.fromJson(responseEntity.getBody(), ExceptionResponse.class);
-                if (exceptionResponse.getFailed()) {
-                    throw new CommonException("error.application.download.complete");
-                }
-            }
-        } catch (Exception e) {
-            throw new CommonException("error.application.download.complete", e.getMessage());
-        }
-    }
-
-    public void failToDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId) {
-        try {
-            ResponseEntity<String> responseEntity = baseServiceClient.failToDownloadApplication(publishAppVersionId, appVersionId, organizationId);
-            if (responseEntity != null && responseEntity.getBody() != null) {
-                ExceptionResponse exceptionResponse = gson.fromJson(responseEntity.getBody(), ExceptionResponse.class);
-                if (exceptionResponse.getFailed()) {
-                    throw new CommonException("error.application.download.failed");
-                }
-            }
-        } catch (Exception e) {
-            throw new CommonException("error.application.download.failed", e.getMessage());
-        }
-    }
-
-    public String checkLatestToken() {
-        try {
-            RemoteTokenAuthorizationVO remoteTokenAuthorizationVO = baseServiceClient.checkLatestToken().getBody();
-            if (remoteTokenAuthorizationVO != null) {
-                return remoteTokenAuthorizationVO.getRemoteToken();
-            }
-        } catch (Exception e) {
-            throw new CommonException("error.remote.token.authorization", e.getMessage());
-        }
-        return null;
-    }
-
     public List<ProjectDTO> queryProjectsByIds(Set<Long> ids) {
         try {
             return baseServiceClient.queryByIds(ids).getBody();
@@ -354,40 +272,9 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public List<Long> listServicesForMarket(@Nonnull Long organizationId, Boolean deployOnly) {
-        String status = deployOnly != null && deployOnly ? OrgPublishMarketStatus.DEPLOY_ONLY.getType() : OrgPublishMarketStatus.DOWNLOAD_ONLY.getType();
+    public ClientDTO createClient(ClientVO clientVO) {
         try {
-            ResponseEntity<Set<Long>> resp = baseServiceClient.listService(organizationId, status);
-
-            return resp == null || resp.getBody() == null ? null : new ArrayList<>(resp.getBody());
-        } catch (Exception ex) {
-            return null;
-        }
-    }
-
-    public List<Long> listServiceVersionsForMarket(@Nonnull Long organizationId, Boolean deployOnly) {
-        String status = deployOnly != null && deployOnly ? OrgPublishMarketStatus.DEPLOY_ONLY.getType() : OrgPublishMarketStatus.DOWNLOAD_ONLY.getType();
-        try {
-            ResponseEntity<Set<Long>> resp = baseServiceClient.listSvcVersion(organizationId, status);
-            return resp == null || resp.getBody() == null ? null : new ArrayList<>(resp.getBody());
-        } catch (Exception ex) {
-            return null;
-        }
-    }
-
-    public List<ProjectWithRoleVO> listProjectWithRole(Long userId, int page, int size) {
-        try {
-            ResponseEntity<PageInfo<ProjectWithRoleVO>> pageInfoResponseEntity = baseServiceClient.listProjectWithRole(userId, page, size);
-            return (pageInfoResponseEntity.getBody() == null) ? Collections.emptyList() : pageInfoResponseEntity.getBody().getList();
-        } catch (Exception ex) {
-            return Collections.emptyList();
-        }
-
-    }
-
-    public ClientDTO createClient(Long organizationId, ClientVO clientVO) {
-        try {
-            ClientDTO client = baseServiceClient.createClient(organizationId, clientVO).getBody();
+            ClientDTO client = baseServiceClient.createClient(clientVO).getBody();
             if (client == null) {
                 throw new CommonException("error.create.client");
             }
@@ -431,21 +318,6 @@ public class BaseServiceClientOperator {
         } catch (Exception ex) {
             throw new CommonException("error.query.user.by.login.name", loginName);
         }
-    }
-
-    public List<IamUserDTO> queryAllRootUsers() {
-        ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.queryAllAdminUsers();
-        return responseEntity == null ? Collections.emptyList() : responseEntity.getBody();
-    }
-
-    /**
-     * 查询所有的组织管理员
-     *
-     * @return
-     */
-    public List<IamUserDTO> queryAllOrgRoot() {
-        ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.queryAllOrgRoot();
-        return responseEntity == null ? Collections.emptyList() : responseEntity.getBody();
     }
 
     /**
@@ -505,9 +377,9 @@ public class BaseServiceClientOperator {
         return responseEntity.getBody();
     }
 
-    public PageInfo<OrgAdministratorVO> listOrgAdministrator(Long organizationId) {
-        ResponseEntity<PageInfo<OrgAdministratorVO>> pageInfoResponseEntity = baseServiceClient.listOrgAdministrator(organizationId, 0);
-        PageInfo<OrgAdministratorVO> body = pageInfoResponseEntity.getBody();
+    public Page<OrgAdministratorVO> listOrgAdministrator(Long organizationId) {
+        ResponseEntity<Page<OrgAdministratorVO>> pageInfoResponseEntity = baseServiceClient.listOrgAdministrator(organizationId, 0);
+        Page<OrgAdministratorVO> body = pageInfoResponseEntity.getBody();
         return body;
     }
 }

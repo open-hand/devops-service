@@ -4,6 +4,7 @@ import { Select, Modal } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Content } from '@choerodon/boot';
 import _ from 'lodash';
+import uuidv1 from 'uuid/v1';
 import { removeEndsChar } from '../../utils';
 import Term from '../term';
 
@@ -46,7 +47,9 @@ export default class TermSidebar extends Component {
     const wsUrl = removeEndsChar(window._env_.DEVOPS_HOST, '/');
 
     const authToken = document.cookie.split('=')[1];
-    const url = `${wsUrl}/devops/exec?key=cluster:${clusterId}.exec:${logId}&env=${namespace}&podName=${podName}&containerName=${containerName}&logId=${logId}&token=${authToken}`;
+    const key = `cluster:${clusterId}.exec:${uuidv1()}`;
+    const secretKey = window._env_.DEVOPS_WEBSOCKET_SECRET_KEY;
+    const url = `${wsUrl}/websocket?key=${key}&group=from_front:${key}&processor=front_exec&secret_key=${secretKey}&env=${namespace}&podName=${podName}&containerName=${containerName}&logId=${logId}&clusterId=${clusterId}`;
 
     const containerOptions = _.map(containers, (container) => {
       const { logId: id, name } = container;

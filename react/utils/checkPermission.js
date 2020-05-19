@@ -2,7 +2,7 @@ import { axios } from '@choerodon/boot';
 
 export default async function checkPermission({ projectId, organizationId, resourceType, code }) {
   try {
-    const res = await axios.post('/base/v1/permissions/checkPermission', JSON.stringify([{
+    const res = await axios.post('iam/hzero/v1/menus/check-permissions', JSON.stringify([{
       code,
       organizationId,
       projectId,

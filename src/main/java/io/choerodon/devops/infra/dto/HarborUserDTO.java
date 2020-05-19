@@ -6,7 +6,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author: 25499
@@ -14,7 +14,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * @description:
  */
 @Table(name = "devops_harbor_user")
-public class HarborUserDTO extends BaseDTO {
+public class HarborUserDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

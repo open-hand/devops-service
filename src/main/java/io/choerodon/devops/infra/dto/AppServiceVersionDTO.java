@@ -1,7 +1,7 @@
 package io.choerodon.devops.infra.dto;
 
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 import javax.persistence.*;
 
@@ -10,7 +10,7 @@ import javax.persistence.*;
  */
 
 @Table(name = "devops_app_service_version")
-public class AppServiceVersionDTO extends BaseDTO {
+public class AppServiceVersionDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

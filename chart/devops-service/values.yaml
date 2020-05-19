@@ -128,7 +128,7 @@ env:
     AGENT_CERTMANAGERURL: https://openchart.choerodon.com.cn/choerodon/c7n/
 
     # 忽略校验的接口路径
-    CHOERODON_RESOURCE_JWT_IGNORE: /workflow/**, /sonar/**, /ci, /sonar/info, /v2/api-docs, /agent/**, /ws/**, /gitlab/email, /webhook/**, /v2/choerodon/**, /choerodon/**, /actuator/**, /prometheus, /devops/**, /pre_stop
+    CHOERODON_RESOURCE_JWT_IGNORE: /workflow/**, /sonar/**, /ci, /sonar/info, /v2/api-docs, /agent/**, /ws/**, /gitlab/email, /webhook/**, /v2/choerodon/**, /choerodon/**, /actuator/**, /prometheus, /devops/**, /pre_stop, /websocket
 
     ## Skywalking 配置参数
     # SKYWALKING_OPTS: >-

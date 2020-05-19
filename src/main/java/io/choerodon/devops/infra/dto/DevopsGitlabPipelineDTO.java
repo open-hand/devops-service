@@ -3,11 +3,11 @@ package io.choerodon.devops.infra.dto;
 import java.util.Date;
 import javax.persistence.*;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 
 @Table(name = "devops_gitlab_pipeline")
-public class DevopsGitlabPipelineDTO extends BaseDTO {
+public class DevopsGitlabPipelineDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -12,7 +12,7 @@ export default function useStore() {
       return this.id;
     },
     async loadUser() {
-      axios.get('base/v1/users/self').then((data) => {
+      axios.get('iam/hzero/v1/users/self').then((data) => {
         this.setUserId(data.id);
       });
     },

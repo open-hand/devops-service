@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
-import io.choerodon.core.notify.WebHookJsonSendDTO;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -69,7 +68,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private static final String SECRET_KIND = "secret";
     private static final String PERSISTENT_VOLUME_KIND = "persistentvolume";
     private static final String PERSISTENT_VOLUME_CLAIM_KIND = "persistentvolumeclaim";
-    private static final String PUBLIC = "public";
     private static final Logger logger = LoggerFactory.getLogger(AgentMsgHandlerServiceImpl.class);
     private static final String RESOURCE_VERSION = "resourceVersion";
     private static final String ENV_NOT_EXIST = "env not exists: {}";
@@ -459,6 +457,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     handleUpdateServiceMsg(key, envId, msg, devopsEnvResourceDTO);
                     break;
                 case CONFIGMAP:
+                case SECRET:
                     oldDevopsEnvResourceDTO =
                             devopsEnvResourceService.baseQueryOptions(
                                     null,
@@ -468,12 +467,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                     KeyParseUtil.getResourceName(key));
                     saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO,
                             devopsEnvResourceDetailDTO, null);
-                    break;
-                case SECRET:
-                    oldDevopsEnvResourceDTO = devopsEnvResourceService
-                            .baseQueryOptions(null, null, envId, KeyParseUtil.getResourceType(key),
-                                    KeyParseUtil.getResourceName(key));
-                    saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO, devopsEnvResourceDetailDTO, null);
                     break;
                 case PERSISTENT_VOLUME_CLAIM:
                     handleUpdatePvcMsg(key, envId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO);

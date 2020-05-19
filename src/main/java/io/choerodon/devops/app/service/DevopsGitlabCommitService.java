@@ -4,13 +4,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import com.github.pagehelper.PageInfo;
-import org.springframework.data.domain.Pageable;
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
 import io.choerodon.devops.api.vo.DevopsGitlabCommitVO;
 import io.choerodon.devops.api.vo.PushWebHookVO;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsGitlabCommitService {
 
@@ -18,8 +18,8 @@ public interface DevopsGitlabCommitService {
 
     DevopsGitlabCommitVO queryCommits(Long projectId, String appServiceIds, Date startDate, Date endDate);
 
-    PageInfo<CommitFormRecordVO> pageRecordCommits(Long projectId, String appServiceIds, Pageable pageable,
-                                                   Date startDate, Date endDate);
+    Page<CommitFormRecordVO> pageRecordCommits(Long projectId, String appServiceIds, PageRequest pageable,
+                                               Date startDate, Date endDate);
 
     DevopsGitlabCommitDTO baseCreate(DevopsGitlabCommitDTO devopsGitlabCommitDTO);
 
@@ -27,9 +27,9 @@ public interface DevopsGitlabCommitService {
 
     List<DevopsGitlabCommitDTO> baseListByOptions(Long projectId, List<Long> appServiceIds, Date startDate, Date endDate);
 
-    PageInfo<CommitFormRecordVO> basePageByOptions(Long projectId, List<Long> appServiceId,
-                                                   Pageable pageable, Map<Long, IamUserDTO> userMap,
-                                                   Date startDate, Date endDate);
+    Page<CommitFormRecordVO> basePageByOptions(Long projectId, List<Long> appServiceId,
+                                               PageRequest pageable, Map<Long, IamUserDTO> userMap,
+                                               Date startDate, Date endDate);
 
     void baseUpdate(DevopsGitlabCommitDTO devopsGitlabCommitDTO);
 

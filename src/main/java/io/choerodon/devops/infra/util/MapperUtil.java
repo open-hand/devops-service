@@ -1,11 +1,10 @@
 package io.choerodon.devops.infra.util;
 
 import java.util.Objects;
-
 import javax.annotation.Nonnull;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.mybatis.common.Mapper;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * 封装一些Mapper操作
@@ -28,7 +27,7 @@ public class MapperUtil {
      * @return 插入纪录
      */
     @Nonnull
-    public static <T> T resultJudgedInsert(Mapper<T> mapper, T recordToInsert, String commonExceptionCode, Object... messageParameters) {
+    public static <T> T resultJudgedInsert(BaseMapper<T> mapper, T recordToInsert, String commonExceptionCode, Object... messageParameters) {
         if (mapper.insert(Objects.requireNonNull(recordToInsert)) != 1) {
             throw new CommonException(commonExceptionCode, messageParameters);
         }
@@ -46,7 +45,7 @@ public class MapperUtil {
      * @return 插入纪录
      */
     @Nonnull
-    public static <T> T resultJudgedInsertSelective(Mapper<T> mapper, T recordToInsert, String commonExceptionCode, Object... messageParameters) {
+    public static <T> T resultJudgedInsertSelective(BaseMapper<T> mapper, T recordToInsert, String commonExceptionCode, Object... messageParameters) {
         if (mapper.insertSelective(Objects.requireNonNull(recordToInsert)) != 1) {
             throw new CommonException(commonExceptionCode, messageParameters);
         }
@@ -62,7 +61,7 @@ public class MapperUtil {
      * @param messageParameters   渲染异常消息需要的参数
      * @param <T>                 纪录类型
      */
-    public static <T> void resultJudgedUpdateByPrimaryKey(Mapper<T> mapper, T recordToUpdate, String commonExceptionCode, Object... messageParameters) {
+    public static <T> void resultJudgedUpdateByPrimaryKey(BaseMapper<T> mapper, T recordToUpdate, String commonExceptionCode, Object... messageParameters) {
         if (mapper.updateByPrimaryKey(Objects.requireNonNull(recordToUpdate)) != 1) {
             throw new CommonException(commonExceptionCode, messageParameters);
         }
@@ -77,7 +76,7 @@ public class MapperUtil {
      * @param messageParameters   渲染异常消息需要的参数
      * @param <T>                 纪录类型
      */
-    public static <T> void resultJudgedUpdateByPrimaryKeySelective(Mapper<T> mapper, T recordToUpdate, String commonExceptionCode, Object... messageParameters) {
+    public static <T> void resultJudgedUpdateByPrimaryKeySelective(BaseMapper<T> mapper, T recordToUpdate, String commonExceptionCode, Object... messageParameters) {
         if (mapper.updateByPrimaryKeySelective(Objects.requireNonNull(recordToUpdate)) != 1) {
             throw new CommonException(commonExceptionCode, messageParameters);
         }

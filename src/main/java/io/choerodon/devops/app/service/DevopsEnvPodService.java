@@ -2,11 +2,11 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import com.github.pagehelper.PageInfo;
-import org.springframework.data.domain.Pageable;
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsEnvPodInfoVO;
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -22,7 +22,7 @@ public interface DevopsEnvPodService {
      * @param searchParam
      * @return PageInfp
      */
-    PageInfo<DevopsEnvPodVO> pageByOptions(Long projectId, Long envId, Long appServiceId, Long instanceId, Pageable pageable, String searchParam);
+    Page<DevopsEnvPodVO> pageByOptions(Long projectId, Long envId, Long appServiceId, Long instanceId, PageRequest pageable, String searchParam);
 
     void fillContainers(DevopsEnvPodVO devopsEnvPodVO);
 
@@ -36,7 +36,7 @@ public interface DevopsEnvPodService {
 
     void baseUpdate(DevopsEnvPodDTO devopsEnvPodDTO);
 
-    PageInfo<DevopsEnvPodDTO> basePageByIds(Long projectId, Long envId, Long appServiceId, Long instanceId, Pageable pageable, String searchParam);
+    Page<DevopsEnvPodDTO> basePageByIds(Long projectId, Long envId, Long appServiceId, Long instanceId, PageRequest pageable, String searchParam);
 
     void baseDeleteByName(String name, String namespace);
 
