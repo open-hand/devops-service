@@ -138,6 +138,10 @@ const AddTask = observer(() => {
           AddTaskFormDataSet.current.set('selectImage', '0');
           AddTaskFormDataSet.current.set('image', image);
           setDefaultImage(image);
+        } else {
+          AddTaskFormDataSet.current.set('selectImage', '0');
+          AddTaskFormDataSet.current.set('image', useStore.getDefaultImage);
+          setDefaultImage(useStore.getDefaultImage);
         }
         AddTaskFormDataSet.current.set('glyyfw', appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')));
       }
