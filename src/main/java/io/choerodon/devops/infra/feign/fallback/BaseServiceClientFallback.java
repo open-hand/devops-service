@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.feign.fallback;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,13 +42,18 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
+<<<<<<< HEAD
     public ResponseEntity<OrganizationDTO> queryOrganizationById(Long organizationId) {
         throw new CommonException("error.organization.get");
+=======
+    public ResponseEntity<Tenant> queryOrganizationById(Long organizationId) {
+        throw new CommonException("error.organization.get", organizationId);
+>>>>>>> [ADD] make exception more detailed
     }
 
     @Override
     public ResponseEntity<List<OrganizationDTO>> queryOrgByIds(Set<Long> ids) {
-        throw new CommonException("error.organization.get");
+        throw new CommonException("error.organization.get", ids == null ? "null" : ids.toString());
     }
 
     @Override
