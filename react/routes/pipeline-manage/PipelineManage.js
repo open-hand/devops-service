@@ -12,6 +12,7 @@ import PipelineCreate from './components/PipelineCreate';
 import RecordDetail from './components/record-detail';
 import EmptyPage from '../../components/empty-page';
 import { usePipelineManageStore } from './stores';
+import PipelineEdit from './components/PipelineFlow/StageEdit';
 
 import './index.less';
 
@@ -128,6 +129,19 @@ const PipelineManage = observer((props) => {
     }
   }
 
+  function openEditModal() {
+    Modal.open({
+      key: Modal.key(),
+      title: '修改流水线',
+      style: {
+        width: 'calc(100vw - 3.52rem)',
+      },
+      drawer: true,
+      children: <PipelineCreate refreshTree={handleRefresh} editBlockStore={editBlockStore} />,
+      okText: formatMessage({ id: 'save' }),
+    });
+  }
+
   function openRecordDetail() {
     const { gitlabPipelineId } = getSelectedMenu;
     Modal.open({
@@ -165,11 +179,11 @@ const PipelineManage = observer((props) => {
       return (
         <Permission service={['devops-service.devops-ci-pipeline.update']}>
           <Button
-            icon="save-o"
-            onClick={handleSaveEdit}
-            disabled={!getHasModify(false)}
+            icon="mode_edit"
+            onClick={openEditModal}
+            // disabled={!getHasModify(false)}
           >
-            {formatMessage({ id: 'save' })}
+            {formatMessage({ id: 'edit' })}
           </Button>
         </Permission>
       );

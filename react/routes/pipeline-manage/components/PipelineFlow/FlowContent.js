@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
 import OptsDetailContent from './OptsDetailContent';
-import PiplineEdit from './StageEdit';
+import PipelineDetail from './pipeline-detail';
 import { usePipelineFlowStore } from './stores';
 
 export default observer(() => {
@@ -27,7 +27,7 @@ export default observer(() => {
       treeDs={treeDs}
       projectId={projectId}
       detailStore={detailStore}
-    /> : <PiplineEdit {...getSelectedMenu} stepStore={stepStore} />
+    /> : <PipelineDetail />
   );
 
 
