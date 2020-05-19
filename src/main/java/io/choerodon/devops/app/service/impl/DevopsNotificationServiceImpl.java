@@ -26,7 +26,6 @@ import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.TriggerObject;
 import io.choerodon.devops.infra.feign.HzeroMessageClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsNotificationMapper;
 import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.StringMapBuilder;
@@ -47,11 +46,9 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     private static final String MOBILE = "mobile";
 
     @Autowired
-    private DevopsNotificationMapper devopsNotificationMapper;
-    @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String, String> redisTemplate;
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
@@ -187,25 +184,13 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 List<IamUserDTO> iamUserDTOS = baseServiceClientOperator
                         .listProjectOwnerByProjectId(devopsEnvironmentDTO.getProjectId());
                 if (!iamUserDTOS.isEmpty()) {
-                    iamUserDTOS.forEach(v -> {
-                        Receiver user = new Receiver();
-                        user.setEmail(v.getEmail());
-                        user.setUserId(v.getId());
-                        users.add(user);
-                        phones.add(v.getPhone());
-                    });
+                    iamUserDTOS.forEach(v -> processReceiver(v, users, phones));
                 }
             }
             if (TriggerObject.SPECIFIER.getObject().equals(e.getType())) {
                 List<Long> userIds = new ArrayList<>();
                 userIds.add(e.getUserId());
-                baseServiceClientOperator.listUsersByIds(userIds).stream().forEach(k -> {
-                    Receiver user = new Receiver();
-                    user.setEmail(k.getEmail());
-                    user.setUserId(k.getId());
-                    users.add(user);
-                    phones.add(k.getPhone());
-                });
+                baseServiceClientOperator.listUsersByIds(userIds).forEach(k -> processReceiver(k, users, phones));
             }
         });
         params.put(MOBILE, StringUtils.join(phones, ","));
@@ -229,6 +214,14 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             redisTemplate.delete(resendKey);
             throw new CommonException("error.msg.send.failed");
         }
+    }
+
+    private void processReceiver(IamUserDTO user, List<Receiver> receivers, List<String> phones) {
+        Receiver receiver = new Receiver();
+        receiver.setEmail(user.getEmail());
+        receiver.setUserId(user.getId());
+        receivers.add(receiver);
+        phones.add(user.getPhone());
     }
 
 
