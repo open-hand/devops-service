@@ -278,10 +278,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         PageRequest pageable = PageRequest.of(1, 5, Sort.by(Sort.Direction.DESC, "id"));
 
         devopsCiPipelineVOS.forEach(devopsCiPipelineVO -> {
-            PageInfo<DevopsCiPipelineRecordVO> pipelineRecordVOPageInfo = devopsCiPipelineRecordService.pagingPipelineRecord(projectId, devopsCiPipelineVO.getId(), pageable);
-            if (pipelineRecordVOPageInfo.getSize() > 0) {
-                devopsCiPipelineVO.setLatestExecuteDate(pipelineRecordVOPageInfo.getList().get(0).getCreatedDate());
-                devopsCiPipelineVO.setLatestExecuteStatus(pipelineRecordVOPageInfo.getList().get(0).getStatus());
+            Page<DevopsCiPipelineRecordVO> pipelineRecordVOPageInfo = devopsCiPipelineRecordService.pagingPipelineRecord(projectId, devopsCiPipelineVO.getId(), pageable);
+            if (!CollectionUtils.isEmpty(pipelineRecordVOPageInfo.getContent())) {
+                devopsCiPipelineVO.setLatestExecuteDate(pipelineRecordVOPageInfo.getContent().get(0).getCreatedDate());
+                devopsCiPipelineVO.setLatestExecuteStatus(pipelineRecordVOPageInfo.getContent().get(0).getStatus());
             }
             devopsCiPipelineVO.setPipelineRecordVOList(pipelineRecordVOPageInfo.getList());
             devopsCiPipelineVO.setHasMoreRecords(pipelineRecordVOPageInfo.isHasNextPage());
