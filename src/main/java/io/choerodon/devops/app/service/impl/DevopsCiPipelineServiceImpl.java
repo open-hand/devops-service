@@ -32,6 +32,7 @@ import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
 import io.choerodon.devops.infra.dto.gitlab.ci.OnlyExceptPolicy;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.maven.Repository;
 import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
 import io.choerodon.devops.infra.dto.maven.Server;
@@ -88,6 +89,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
     private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
     private DevopsProjectService devopsProjectService;
+    private BaseServiceClientOperator baseServiceClientOperator;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiPipelineMapper devopsCiPipelineMapper,
@@ -104,6 +106,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
             BaseServiceClientOperator baseServiceClientOperator,
             DevopsProjectService devopsProjectService,
+            BaseServiceClientOperator baseServiceClientOperator,
             DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper) {
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
@@ -605,7 +608,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                 result.addAll(buildMavenScripts(projectId, jobId, config, hasSettings));
                                 break;
                             case UPLOAD:
-                                result.add(GitlabCiUtil.generateUploadTgzScripts(projectId, config.getArtifactFileName(), config.getUploadFilePattern()));
+                                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+                                result.add(GitlabCiUtil.generateUploadTgzScripts(projectId, config.getArtifactFileName(), config.getUploadFilePattern(), Objects.requireNonNull(projectDTO.getOrganizationId())));
                                 break;
                             case DOCKER:
                                 result.addAll(GitlabCiUtil.generateDockerScripts(projectId, config.getArtifactFileName(), config.getDockerContextDir(), config.getDockerFilePath()));

@@ -230,11 +230,12 @@ public class GitlabCiUtil {
      * @param artifactFileName 软件包名称
      * @param directory        要打包的文件路径pattern
      * @param projectId        项目id
+     * @param organizationId   组织id
      * @return 上传软件包的shell脚本
      */
-    public static String generateUploadTgzScripts(Long projectId, String artifactFileName, String directory) {
-        String rawCommand = "compressAndUpload %s %s %s";
-        return String.format(rawCommand, artifactFileName, directory, projectId);
+    public static String generateUploadTgzScripts(Long projectId, String artifactFileName, String directory, Long organizationId) {
+        String rawCommand = "compressAndUpload %s %s %s %s";
+        return String.format(rawCommand, artifactFileName, directory, projectId, organizationId);
     }
 
     /**

@@ -7,11 +7,7 @@ spring:
       maximum-pool-size: 15 # 数据库连接池连接数
   redis:
     host: localhost
-  servlet:
-    multipart:
-      enabled: true
-      max-request-size: 200MB
-      max-file-size: 200MB
+    database: ${SPRING_REDIS_DATABASE:1}
   http:
     encoding:
       charset: UTF-8

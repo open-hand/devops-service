@@ -196,6 +196,7 @@ function downloadFile() {
 # $1 压缩包名称
 # $2 打包路径
 # $3 project_id
+# $4 组织id
 function compressAndUpload() {
   # 打包文件
   tar -zcvf "$1.tgz" "$2"
@@ -206,8 +207,8 @@ function compressAndUpload() {
     exit 1
   fi
 
-  # 上传压缩包
-  result_upload_to_devops=$(
+  # 上传压缩包到文件服务
+  result_upload_to_file_service=$(
     curl -X POST \
       -F "token=${Token}" \
       -F "commit=${CI_COMMIT_SHA}" \
@@ -215,17 +216,18 @@ function compressAndUpload() {
       -F "ci_job_id=${CI_JOB_ID}" \
       -F "artifact_name=$1" \
       -F "file=@$1.tgz" \
-      "${CHOERODON_URL}/devops/v1/projects/$3/ci_jobs/upload_artifact" \
+      -F "tenant_id=$4" \
+      "${CHOERODON_URL}/hfle/choerodon/v1/devops/files" \
       -o "${CI_COMMIT_SHA}-ci.response" \
       -w %{http_code}
   )
 
   # 判断本次上传到devops是否出错
-  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+  response_upload_to_file_service=$(cat "${CI_COMMIT_SHA}-ci.response")
   rm "${CI_COMMIT_SHA}-ci.response"
-  if [ "$result_upload_to_devops" != "200" ]; then
-    echo "$response_upload_to_devops"
-    echo "upload to devops error"
+  if [ "$result_upload_to_file_service" != "200" ]; then
+    echo "$response_upload_to_file_service"
+    echo "upload to file_service error"
     exit 1
   fi
 }
