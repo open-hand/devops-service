@@ -29,6 +29,7 @@ services:
     url: "http://api.example.com" # 网关地址
 choerodon:
   saga:
+    service: hzero-asgard
     consumer:
       core-thread-num: 20
       max-thread-num:  20 # 消费线程数
