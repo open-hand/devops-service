@@ -24,7 +24,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
 public class AppServiceDTO extends BaseDTO {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long projectId;
     private String name;
