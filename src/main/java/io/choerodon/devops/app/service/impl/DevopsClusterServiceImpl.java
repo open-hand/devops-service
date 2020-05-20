@@ -216,7 +216,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         InputStream inputStream = this.getClass().getResourceAsStream("/shell/cluster.sh");
 
         //初始化渲染脚本
-        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsClusterRepVO.getCreateBy());
+        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsClusterRepVO.getCreatedBy());
         Map<String, String> params = new HashMap<>();
         params.put("{VERSION}", agentExpectVersion);
         params.put("{NAME}", "choerodon-cluster-agent-" + devopsClusterRepVO.getCode());

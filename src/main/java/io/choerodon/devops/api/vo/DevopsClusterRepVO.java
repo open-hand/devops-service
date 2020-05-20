@@ -27,7 +27,7 @@ public class DevopsClusterRepVO {
     private String choerodonId;
 
     @ApiModelProperty("创建者id")
-    private Long createBy;
+    private Long createdBy;
 
     @ApiModelProperty("纪录版本字段")
     private Long objectVersionNumber;
@@ -81,14 +81,6 @@ public class DevopsClusterRepVO {
         this.connect = connect;
     }
 
-    public Long getCreateBy() {
-        return createBy;
-    }
-
-    public void setCreateBy(Long createBy) {
-        this.createBy = createBy;
-    }
-
     public String getToken() {
         return token;
     }
@@ -111,5 +103,14 @@ public class DevopsClusterRepVO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public DevopsClusterRepVO setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+        return this;
     }
 }
