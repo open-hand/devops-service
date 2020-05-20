@@ -5,10 +5,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 @Table(name = "devops_cluster_resource")
-public class DevopsClusterResourceDTO extends AuditDomain {
+public class DevopsClusterResourceDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

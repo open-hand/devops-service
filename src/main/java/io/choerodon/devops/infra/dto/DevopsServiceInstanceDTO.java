@@ -5,13 +5,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * Created by Zenger on 2018/4/14.
  */
 @Table(name = "devops_service_instance")
-public class DevopsServiceInstanceDTO extends AuditDomain {
+public class DevopsServiceInstanceDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

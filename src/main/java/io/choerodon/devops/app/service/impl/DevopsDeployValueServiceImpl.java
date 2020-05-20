@@ -2,11 +2,13 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsDeployValueVO;
@@ -20,8 +22,6 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -78,10 +78,10 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public Page<DevopsDeployValueVO> pageByOptions(Long projectId, Long appServiceId, Long envId, PageRequest pageable, String params) {
+    public PageInfo<DevopsDeployValueVO> pageByOptions(Long projectId, Long appServiceId, Long envId, Pageable pageable, String params) {
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        Page<DevopsDeployValueDTO> deployValueDTOPageInfo;
+        PageInfo<DevopsDeployValueDTO> deployValueDTOPageInfo;
         boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
 
         if (projectOwnerOrRoot) {
@@ -89,8 +89,8 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         } else {
             deployValueDTOPageInfo = basePageByOptionsWithMember(projectId, appServiceId, envId, userId, pageable, params);
         }
-        Page<DevopsDeployValueVO> page = ConvertUtils.convertPage(deployValueDTOPageInfo, DevopsDeployValueVO.class);
-        page.getContent().forEach(value -> {
+        PageInfo<DevopsDeployValueVO> page = ConvertUtils.convertPage(deployValueDTOPageInfo, DevopsDeployValueVO.class);
+        page.getList().forEach(value -> {
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(value.getCreatedBy());
             value.setCreateUserName(iamUserDTO.getLoginName());
             value.setCreateUserUrl(iamUserDTO.getImageUrl());
@@ -142,19 +142,21 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public Page<DevopsDeployValueDTO> basePageByOptionsWithOwner(Long projectId, Long appServiceId, Long envId, Long userId, PageRequest pageable, String params) {
+    public PageInfo<DevopsDeployValueDTO> basePageByOptionsWithOwner(Long projectId, Long appServiceId, Long envId, Long userId, Pageable pageable, String params) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-        return PageHelper.doPageAndSort(PageRequestUtil.getMappedPage(pageable, orderByFieldMap), () -> devopsDeployValueMapper.listByOptionsWithOwner(projectId, appServiceId, envId, userId, searchParamMap, paramList));
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderString(pageable.getSort(), orderByFieldMap))
+                .doSelectPageInfo(() -> devopsDeployValueMapper.listByOptionsWithOwner(projectId, appServiceId, envId, userId, searchParamMap, paramList));
     }
 
     @Override
-    public Page<DevopsDeployValueDTO> basePageByOptionsWithMember(Long projectId, Long appServiceId, Long envId, Long userId, PageRequest pageable, String params) {
+    public PageInfo<DevopsDeployValueDTO> basePageByOptionsWithMember(Long projectId, Long appServiceId, Long envId, Long userId, Pageable pageable, String params) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-        return PageHelper.doPageAndSort(PageRequestUtil.getMappedPage(pageable, orderByFieldMap), () -> devopsDeployValueMapper.listByOptionsWithMember(projectId, appServiceId, envId, userId, searchParamMap, paramList));
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderString(pageable.getSort(), orderByFieldMap))
+                .doSelectPageInfo(() -> devopsDeployValueMapper.listByOptionsWithMember(projectId, appServiceId, envId, userId, searchParamMap, paramList));
     }
 
     @Override

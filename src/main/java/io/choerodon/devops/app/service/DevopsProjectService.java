@@ -2,12 +2,13 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import org.springframework.data.domain.Pageable;
+
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by Sheep on 2019/7/15.
@@ -36,7 +37,7 @@ public interface DevopsProjectService {
          * @param searchParams 查询参数
          * @return 项目信息
          */
-        Page<ProjectReqVO> pageProjects(Long projectId, PageRequest pageable, String searchParams);
+    PageInfo<ProjectReqVO> pageProjects(Long projectId, Pageable pageable, String searchParams);
 
     /**
      * 分页查询组织下项目列表
@@ -46,7 +47,7 @@ public interface DevopsProjectService {
      * @param searchParams   查询参数
      * @return 项目信息
      */
-    Page<ProjectReqVO> pageProjectsByOrganizationId(Long organizationId, PageRequest pageable, String searchParams);
+    PageInfo<ProjectReqVO> pageProjectsByOrganizationId(Long organizationId, Pageable pageable, String searchParams);
 
     /**
      * 列出项目下的所有项目所有者和项目成员
@@ -54,7 +55,7 @@ public interface DevopsProjectService {
      * @param projectId 项目id
      * @return 项目所有者和项目成员
      */
-    Page<UserVO> listAllOwnerAndMembers(Long projectId, PageRequest pageable, String params);
+    PageInfo<UserVO> listAllOwnerAndMembers(Long projectId, Pageable pageable, String params);
 
     List<DevopsProjectDTO> listAll();
 }

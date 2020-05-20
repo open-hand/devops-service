@@ -7,14 +7,14 @@ import java.util.Set;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
 
 
 /**
  * @author zongw.lee@gmail.com
  * @since 2019/03/11
  */
-public interface DevopsConfigMapper extends BaseMapper<DevopsConfigDTO> {
+public interface DevopsConfigMapper extends Mapper<DevopsConfigDTO> {
     List<DevopsConfigDTO> listByOptions(@Param("projectId") Long projectId,
                                         @Param("searchParam") Map<String, Object> searchParam,
                                         @Param("params") List<String> params,

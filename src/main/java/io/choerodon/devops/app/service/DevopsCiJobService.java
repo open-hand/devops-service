@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
@@ -86,37 +88,24 @@ public interface DevopsCiJobService {
 
 
     /**
-     * 存储软件包信息
+     * CI过程上传软件包
+     * 如果有异常，会抛出{@link DevopsCiInvalidException}，目的是给客户端非2xx的状态码
      *
      * @param token        应用服务token
      * @param commit       ci的commit值
      * @param ciPipelineId 流水线id
      * @param ciJobId      流水线的job id
      * @param artifactName 软件包名称
-     * @param fileUrl      软件包文件地址
+     * @param file         软件包
      */
-    void saveArtifactInformation(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName, String fileUrl);
-
-    /**
-     * CI过程上传软件包校验软件包信息
-     *
-     * @param token        应用服务token
-     * @param commit       ci的commit值
-     * @param ciPipelineId 流水线id
-     * @param ciJobId      流水线的job id
-     * @param artifactName 软件包名称
-     * @param fileByteSize 软件包字节数
-     * @return true表示通过校验
-     */
-    Boolean checkJobArtifactInfo(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName, Long fileByteSize);
+    void uploadArtifact(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName, MultipartFile file);
 
     /**
      * 删除和这些gitlab流水线纪录相关的软件包
      *
-     * @param projectId         项目id
      * @param gitlabPipelineIds gitlab流水线id列表
      */
-    void deleteArtifactsByGitlabProjectId(Long projectId, List<Long> gitlabPipelineIds);
+    void deleteArtifactsByGitlabProjectId(List<Long> gitlabPipelineIds);
 
     /**
      * CI过程上传软件包

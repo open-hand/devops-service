@@ -6,7 +6,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.CertificationDTO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * Created by n!Ck
@@ -15,7 +15,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  * Description:
  */
 
-public interface DevopsCertificationMapper extends BaseMapper<CertificationDTO> {
+public interface DevopsCertificationMapper extends Mapper<CertificationDTO> {
     List<CertificationDTO> listCertificationByOptions(@Param("projectId") Long projectId,
                                                       @Param("envId") Long envId,
                                                       @Param("searchParam") Map<String, Object> searchParam,

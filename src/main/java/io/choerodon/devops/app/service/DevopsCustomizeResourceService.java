@@ -2,13 +2,13 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import org.springframework.web.multipart.MultipartFile;
-
-import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqVO;
+import com.github.pagehelper.PageInfo;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceVO;
+import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqVO;
 import io.choerodon.devops.infra.dto.DevopsCustomizeResourceDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Created by Sheep on 2019/6/26.
@@ -53,7 +53,7 @@ public interface DevopsCustomizeResourceService {
      * @param params   查询参数
      * @return 分页后资源
      */
-    Page<DevopsCustomizeResourceVO> pageResources(Long envId, PageRequest pageable, String params);
+    PageInfo<DevopsCustomizeResourceVO> pageResources(Long envId, Pageable pageable, String params);
 
     DevopsCustomizeResourceDTO baseCreate(DevopsCustomizeResourceDTO devopsCustomizeResourceDTO);
 
@@ -65,7 +65,7 @@ public interface DevopsCustomizeResourceService {
 
     DevopsCustomizeResourceDTO queryByEnvIdAndKindAndName(Long envId, String kind, String name);
 
-    Page<DevopsCustomizeResourceDTO> pageDevopsCustomizeResourceE(Long envId, PageRequest pageable, String params);
+    PageInfo<DevopsCustomizeResourceDTO> pageDevopsCustomizeResourceE(Long envId, Pageable pageable, String params);
 
     void checkExist(Long envId, String kind, String name);
 

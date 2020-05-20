@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * Created with IntelliJ IDEA.
@@ -14,7 +14,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  * Time: 14:31
  * Description:
  */
-public interface DevopsMergeRequestMapper extends BaseMapper<DevopsMergeRequestDTO> {
+public interface DevopsMergeRequestMapper extends Mapper<DevopsMergeRequestDTO> {
     List<DevopsMergeRequestDTO> getByProjectIdAndState(@Param("projectId") Integer gitLabProjectId,
                                                        @Param("state") String state);
 

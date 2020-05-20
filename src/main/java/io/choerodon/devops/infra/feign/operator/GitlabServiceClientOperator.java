@@ -3,12 +3,14 @@ package io.choerodon.devops.infra.feign.operator;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageInfo;
 import com.google.common.base.Functions;
 import feign.FeignException;
 import feign.RetryableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.FileCreationVO;
 import io.choerodon.devops.app.service.PermissionHelper;
@@ -31,7 +32,6 @@ import io.choerodon.devops.infra.util.FeignResponseStatusCodeParse;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.PageInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 
 /**
@@ -578,7 +578,7 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public Page<TagDTO> pageTag(ProjectDTO projectDTO, Integer gitlabProjectId, String path, Integer page, String params, Integer size, Integer userId) {
+    public PageInfo<TagDTO> pageTag(ProjectDTO projectDTO, Integer gitlabProjectId, String path, Integer page, String params, Integer size, Integer userId) {
         if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectDTO.getId())) {
             MemberDTO memberDTO = getProjectMember(
                     gitlabProjectId,
@@ -600,9 +600,9 @@ public class GitlabServiceClientOperator {
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        Page<TagDTO> resp = PageInfoUtil.createPageFromList(tagList, new PageRequest(page, size));
+        PageInfo<TagDTO> resp = PageInfoUtil.createPageFromList(tagList, PageRequest.of(page, size));
 
-        resp.getContent().stream()
+        resp.getList().stream()
                 .sorted(this::sortTag)
                 .forEach(t -> {
                     IamUserDTO userDTO = baseServiceClientOperator.queryByEmail(TypeUtil.objToLong(gitlabProjectId), t.getCommit().getAuthorEmail());

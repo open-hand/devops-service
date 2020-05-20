@@ -4,8 +4,7 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.domain.AuditDomain;
-
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  *
@@ -13,7 +12,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * @Date 2020/4/2 17:00
  */
 @Table(name = "devops_ci_pipeline")
-public class DevopsCiPipelineDTO extends AuditDomain {
+public class DevopsCiPipelineDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -3,7 +3,7 @@ package io.choerodon.devops.infra.mapper;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * Creator: Runge
@@ -11,7 +11,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  * Time: 15:42
  * Description:
  */
-public interface DevopsEnvFileResourceMapper extends BaseMapper<DevopsEnvFileResourceDTO> {
+public interface DevopsEnvFileResourceMapper extends Mapper<DevopsEnvFileResourceDTO> {
     /**
      * 统计解析纪录
      *

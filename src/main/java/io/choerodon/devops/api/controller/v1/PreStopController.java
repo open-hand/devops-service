@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.choerodon.devops.api.ws.gitops.AgentGitOpsSocketHandler;
-import io.choerodon.swagger.annotation.Permission;
+import io.choerodon.core.annotation.Permission;
+import io.choerodon.devops.api.ws.gitops.AgentGitOpsSocketHandlerRegistration;
 
 /**
  * 用于在Pod退出前的回调接口，用于清理这个pod所持有的一些资源
@@ -25,7 +25,7 @@ public class PreStopController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PreStopController.class);
 
     @Autowired
-    private AgentGitOpsSocketHandler agentGitOpsSocketHandler;
+    private AgentGitOpsSocketHandlerRegistration agentGitOpsSocketHandlerRegistration;
 
     /**
      * 释放这个微服务实例所持有的一些资源(比如redis的键)
@@ -36,7 +36,7 @@ public class PreStopController {
     @ApiOperation(value = "释放这个微服务实例所持有的一些资源(比如redis的键),一般由外部的容器根据生命周期调用")
     public ResponseEntity preStop() {
         LOGGER.info("PreStop API is being called...");
-        agentGitOpsSocketHandler.removeRedisKeyOfThisMicroService();
+        agentGitOpsSocketHandlerRegistration.removeRedisKeyOfThisMicroService();
         return new ResponseEntity(HttpStatus.OK);
     }
 }

@@ -1,11 +1,13 @@
 package io.choerodon.devops.app.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
-import org.hzero.boot.message.entity.Receiver;
-
+import com.alibaba.fastjson.JSONObject;
+import io.choerodon.core.notify.NoticeSendDTO;
+import io.choerodon.core.notify.WebHookJsonSendDTO;
 import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
 import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
 import io.choerodon.devops.infra.dto.*;
@@ -23,13 +25,16 @@ public interface SendNotificationService {
      * 发送通知
      *
      * @param sendSettingCode 通知code
-     * @param receivers       目标用户
+     * @param sourceId        projectId, organizationId, 0L
+     * @param targetUsers     目标用户
      * @param params          参数映射
      */
-    void sendNotices(String sendSettingCode, List<Receiver> receivers, Map<String, String> params);
+    void sendNotices(String sendSettingCode, Long sourceId, List<NoticeSendDTO.User> targetUsers, Map<String, Object> params, WebHookJsonSendDTO webHookJsonSendDTO);
 
     /**
      * 创建应用服务发送webhook通知
+     *
+     * @param appServiceDTO
      */
     void sendWhenAppServiceCreate(AppServiceDTO appServiceDTO);
 
@@ -54,7 +59,7 @@ public interface SendNotificationService {
      */
     void sendWhenAppServiceDisabled(Long appServiceId);
 
-//    WebHookJsonSendDTO getWebHookJsonSendDTO(JSONObject JSONObject, String code, Long createdBy, Date lastUpdateDate);
+    WebHookJsonSendDTO getWebHookJsonSendDTO(JSONObject JSONObject, String code, Long createdBy, Date lastUpdateDate);
 
     /**
      * 删除应用服务通知
@@ -103,6 +108,8 @@ public interface SendNotificationService {
     /**
      * 当创建实例失败后
      *
+     * @param envId             环境id
+     * @param resourceName      资源的名称
      * @param creatorId         资源创建者的id
      * @param resourceCommandId 资源的command id (不为null时校验command的commandType是不是create)
      */
@@ -111,6 +118,8 @@ public interface SendNotificationService {
     /**
      * 当创建网络失败后
      *
+     * @param envId             环境id
+     * @param resourceName      资源的名称
      * @param creatorId         资源创建者的id
      * @param resourceCommandId 资源的command id (不为null时校验command的commandType是不是create)
      */
@@ -119,6 +128,8 @@ public interface SendNotificationService {
     /**
      * 当创建域名失败后
      *
+     * @param envId             环境id
+     * @param resourceName      资源的名称
      * @param creatorId         资源创建者的id
      * @param resourceCommandId 资源的command id (不为null时校验command的commandType是不是create)
      */
@@ -127,6 +138,8 @@ public interface SendNotificationService {
     /**
      * 当创建证书失败后
      *
+     * @param envId             环境id
+     * @param resourceName      资源的名称
      * @param creatorId         资源创建者的id
      * @param resourceCommandId 资源的command id (不为null时校验command的commandType是不是create)
      */
@@ -142,11 +155,17 @@ public interface SendNotificationService {
 
     /**
      * 创建环境成功发送webhook
+     *
+     * @param devopsEnvironmentDTO
+     * @param organizationId
      */
     void sendWhenEnvCreate(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId);
 
     /**
      * 启用环境发送webhook
+     *
+     * @param devopsEnvironmentDTO
+     * @param organizationId
      */
     void sendWhenEnvEnable(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId);
 
@@ -154,16 +173,25 @@ public interface SendNotificationService {
 
     /**
      * 删除环境发送webhook
+     *
+     * @param devopsEnvironmentDTO
+     * @param organizationId
      */
     void sendWhenEnvDelete(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId);
 
     /**
      * 创建环境失败发送消息
+     *
+     * @param devopsEnvironmentDTO
+     * @param organizationId
      */
     void sendWhenCreateEnvFailed(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId);
 
     /**
      * 分配权限发送webhook json
+     *
+     * @param
+     * @param projectDTO
      */
     void sendWhenEnvUpdatePermissions(DevopsEnvUserPayload devopsEnvUserPayload, ProjectDTO projectDTO);
 
@@ -171,16 +199,25 @@ public interface SendNotificationService {
 
     /**
      * 激活集群发送webhook
+     *
+     * @param devopsClusterDTO
      */
-    void sendWhenActivateCluster(DevopsClusterDTO devopsClusterDTO);
+    void sendWhenActiviteCluster(DevopsClusterDTO devopsClusterDTO);
 
     /**
      * 删除集群
+     *
+     * @param devopsClusterDTO
      */
     void sendWhenDeleteCluster(DevopsClusterDTO devopsClusterDTO);
 
     /**
      * 组件安装失败发送webhook
+     *
+     * @param value
+     * @param type
+     * @param clusterId
+     * @param payload
      */
     void sendWhenResourceInstallFailed(DevopsClusterResourceDTO devopsClusterResourceDTO, String value, String type, Long clusterId, String payload);
 
@@ -192,6 +229,10 @@ public interface SendNotificationService {
 
     /**
      * 创建PVC资源成功或者失败webhook json 通知
+     *
+     * @param devopsPvcDTO
+     * @param devopsEnvironmentDTO
+     * @param code
      */
     void sendWhenPVCResource(DevopsPvcDTO devopsPvcDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, String code);
 
@@ -199,11 +240,17 @@ public interface SendNotificationService {
 
     /**
      * 实例创建成功 删除发送webhook json
+     *
+     * @param appServiceInstanceDTO
+     * @param value
      */
     void sendWhenInstanceSuccessOrDelete(AppServiceInstanceDTO appServiceInstanceDTO, String value);
 
     /**
      * 域名创建 删除 发送webhook 通知
+     *
+     * @param devopsIngressDTO
+     * @param code
      */
     void sendWhenIngressSuccessOrDelete(DevopsIngressDTO devopsIngressDTO, String code);
 
@@ -212,10 +259,4 @@ public interface SendNotificationService {
     void sendWhenConfigMap(DevopsConfigMapDTO devopsConfigMapDTO, String value);
 
     void sendWhenSecret(DevopsSecretDTO devopsSecretDTO, String code);
-
-    void sendPipelineNotice(Long pipelineRecordId, String type, Long userId, @Nullable String email, @Nullable Map<String, String> params);
-
-    void sendPipelineNotice(Long pipelineRecordId, String type, List<Receiver> receivers, @Nullable Map<String, String> params);
-
-    void sendPipelineAuditMassage(String type, String auditUser, Long pipelineRecordId, String stageName, Long stageId);
 }

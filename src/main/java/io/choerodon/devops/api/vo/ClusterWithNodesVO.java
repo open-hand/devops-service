@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.domain.PageInfo;
+import com.github.pagehelper.PageInfo;
 
 /**
  * 带有节点信息的集群信息
@@ -9,13 +8,13 @@ import io.choerodon.core.domain.PageInfo;
  * @author zmf
  */
 public class ClusterWithNodesVO extends DevopsClusterRepVO {
-    private Page<ClusterNodeInfoVO> nodes;
+    private PageInfo<ClusterNodeInfoVO> nodes;
 
-    public Page<ClusterNodeInfoVO> getNodes() {
+    public PageInfo<ClusterNodeInfoVO> getNodes() {
         return nodes;
     }
 
-    public void setNodes(Page<ClusterNodeInfoVO> nodes) {
+    public void setNodes(PageInfo<ClusterNodeInfoVO> nodes) {
         this.nodes = nodes;
     }
 }

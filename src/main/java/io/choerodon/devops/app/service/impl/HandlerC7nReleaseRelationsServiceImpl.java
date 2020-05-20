@@ -7,6 +7,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import io.kubernetes.client.models.V1Endpoints;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,20 +19,22 @@ import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.util.ComponentVersionUtil;
 import io.choerodon.devops.infra.util.GitOpsUtil;
+import io.choerodon.devops.infra.util.ComponentVersionUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 
 @Service
 public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileRelationsService<C7nHelmRelease> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HandlerC7nReleaseRelationsServiceImpl.class);
+
     private static final String C7N_HELM_RELEASE = "C7NHelmRelease";
     private static final String GIT_SUFFIX = "/.git";
     private static final String COMPARE_VALUES = "{}";
@@ -205,7 +209,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
     private AppServiceDeployVO getApplicationDeployDTO(C7nHelmRelease c7nHelmRelease,
                                                        Long projectId, Long envId, String filePath, String type) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         boolean isClusterComponent = GitOpsUtil.isClusterComponent(devopsEnvironmentDTO.getType(), c7nHelmRelease);
 
@@ -215,7 +219,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         // 根据不同的release情况处理release所属应用服务及其版本
         if (!isClusterComponent) {
 
-            List<AppServiceDTO> appServices = agentMsgHandlerService.getApplication(c7nHelmRelease.getSpec().getChartName(), projectId, organization.getTenantId());
+            List<AppServiceDTO> appServices = agentMsgHandlerService.getApplication(c7nHelmRelease.getSpec().getChartName(), projectId, organization.getId());
 
             if (appServices.isEmpty()) {
                 throw new GitOpsExplainException("app.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartName());

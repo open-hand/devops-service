@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
 
+import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,17 +13,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.core.domain.Page;
+import io.choerodon.core.annotation.Permission;
+
+import org.springframework.data.domain.Pageable;
+
+import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsDeployValueUpdateVO;
 import io.choerodon.devops.api.vo.DevopsDeployValueVO;
 import io.choerodon.devops.app.service.DevopsDeployValueService;
 import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -43,11 +45,11 @@ public class DevopsDeployValueController {
      * @param params    查询参数
      * @return 部署配置
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下分页查询部署配置")
     @CustomPageRequest
     @PostMapping("/page_by_options")
-    public ResponseEntity<Page<DevopsDeployValueVO>> pageByOptions(
+    public ResponseEntity<PageInfo<DevopsDeployValueVO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id")
@@ -55,7 +57,7 @@ public class DevopsDeployValueController {
             @ApiParam(value = "环境Id")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageable,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsDeployValueService.pageByOptions(projectId, appServiceId, envId, pageable, params))
@@ -70,7 +72,7 @@ public class DevopsDeployValueController {
      * @param devopsDeployValueVO 配置信息
      * @return 部署配置
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建部署配置")
     @PostMapping
     public ResponseEntity<DevopsDeployValueVO> create(
@@ -90,7 +92,7 @@ public class DevopsDeployValueController {
      * @param devopsDeployValueUpdateVO 配置信息
      * @return 部署配置
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下更新部署配置")
     @PutMapping
     public ResponseEntity<DevopsDeployValueVO> update(
@@ -110,7 +112,7 @@ public class DevopsDeployValueController {
      * @param valueId   配置Id
      * @return 配置信息
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询配置详情")
     @GetMapping
     public ResponseEntity<DevopsDeployValueVO> query(
@@ -129,7 +131,7 @@ public class DevopsDeployValueController {
      * @param projectId 项目Id
      * @param valueId   配置Id
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下删除配置")
     @DeleteMapping
     public ResponseEntity delete(
@@ -151,7 +153,7 @@ public class DevopsDeployValueController {
      * @param envId         环境id
      * @return 没有内容则名称合法
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验部署配置的名称在环境下唯一")
     @GetMapping("/check_name")
     public ResponseEntity checkName(
@@ -174,7 +176,7 @@ public class DevopsDeployValueController {
      * @param valueId   配置id
      * @return true则可以删除
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "检测能否删除")
     @GetMapping("/check_delete")
     public ResponseEntity<Boolean> checkDelete(
@@ -195,7 +197,7 @@ public class DevopsDeployValueController {
      * @param envId        环境id
      * @return 配置信息
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据应用服务Id和环境Id获取配置")
     @GetMapping("/list_by_env_and_app")
     public ResponseEntity<List<DevopsDeployValueVO>> listByEnvAndApp(

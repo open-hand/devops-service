@@ -1,13 +1,13 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.devops.api.vo.DevopsPvcReqVO;
 import io.choerodon.devops.api.vo.DevopsPvcRespVO;
 import io.choerodon.devops.app.eventhandler.payload.PersistentVolumeClaimPayload;
 import io.choerodon.devops.infra.dto.DevopsPvcDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 public interface DevopsPvcService {
     /**
@@ -28,7 +28,7 @@ public interface DevopsPvcService {
      */
     boolean delete(Long envId, Long pvcId);
 
-    Page<DevopsPvcRespVO> pageByOptions(Long projectId, Long envId, PageRequest pageable, String params);
+    PageInfo<DevopsPvcRespVO> pageByOptions(Long projectId, Long envId, Pageable pageable, String params);
 
     /**
      * 检查PVC名称唯一性
@@ -82,7 +82,6 @@ public interface DevopsPvcService {
 
     /**
      * 重试将PVC推向GitLab（pvc推向gitlab失败时可用，不失败时用了没有效果也不会报错）
-     *
      * @param pvcId pvcId
      */
     void retryPushPvcToGitLab(Long pvcId);

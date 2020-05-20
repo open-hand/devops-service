@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.choerodon.core.annotation.Permission;
 import io.choerodon.devops.app.service.DevopsCiContentService;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * 〈功能简述〉

@@ -11,14 +11,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.core.annotation.Permission;
+import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ClusterResourceVO;
 import io.choerodon.devops.api.vo.DevopsPrometheusVO;
 import io.choerodon.devops.api.vo.PrometheusStageVO;
 import io.choerodon.devops.app.service.DevopsClusterResourceService;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author zhaotianxin
@@ -30,7 +30,7 @@ public class DevopsClusterResourceController {
     @Autowired
     private DevopsClusterResourceService devopsClusterResourceService;
 
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建cert_manager")
     @PostMapping("/cert_manager/deploy")
     public ResponseEntity deployCertManager(
@@ -42,7 +42,7 @@ public class DevopsClusterResourceController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询组件")
     @GetMapping
     public ResponseEntity<List<ClusterResourceVO>> listClusterResource(
@@ -56,7 +56,7 @@ public class DevopsClusterResourceController {
     }
 
 
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下卸载cert_manager")
     @DeleteMapping("/cert_manager/unload")
     public ResponseEntity<Boolean> unloadCertManager(
@@ -67,7 +67,7 @@ public class DevopsClusterResourceController {
         return new ResponseEntity<>(devopsClusterResourceService.deleteCertManager(clusterId), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验集群下的环境中是否存在使用CertManager申请或上传的证书")
     @GetMapping("/cert_manager/check")
     public ResponseEntity<Boolean> checkCertManager(
@@ -78,7 +78,7 @@ public class DevopsClusterResourceController {
         return new ResponseEntity<>(devopsClusterResourceService.checkCertManager(clusterId), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "集群下安装prometheus")
     @PostMapping("/prometheus")
     public ResponseEntity<Boolean> createPrometheus(
@@ -94,7 +94,7 @@ public class DevopsClusterResourceController {
     }
 
 
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "升级prometheus")
     @PutMapping("/prometheus")
     public ResponseEntity<Boolean> updatePrometheus(
@@ -109,7 +109,7 @@ public class DevopsClusterResourceController {
                 .orElseThrow(() -> new CommonException("error.prometheus.update"));
     }
 
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询集群下prometheus")
     @GetMapping("/prometheus")
     public ResponseEntity<DevopsPrometheusVO> queryPrometheus(
@@ -121,7 +121,7 @@ public class DevopsClusterResourceController {
                 .orElseThrow(() -> new CommonException("error.cluster.prometheus.query"));
     }
 
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询prometheus部署状态")
     @GetMapping("/prometheus/deploy_status")
     public ResponseEntity<PrometheusStageVO> getPrometheusDeployStatus(
@@ -133,7 +133,7 @@ public class DevopsClusterResourceController {
                 .orElseThrow(() -> new CommonException("error.prometheus.deploy.status"));
     }
 
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "卸载prometheus")
     @DeleteMapping("/prometheus/unload")
     public ResponseEntity<Boolean> deletePrometheus(
@@ -144,7 +144,7 @@ public class DevopsClusterResourceController {
                 .orElseThrow(() -> new CommonException("error.prometheus.unload"));
     }
 
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "卸载prometheus")
     @DeleteMapping("/prometheus/retry")
     public ResponseEntity<Boolean> retryInstallPrometheus(
@@ -154,7 +154,7 @@ public class DevopsClusterResourceController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询grafana URL")
     @GetMapping("/grafana_url")
     public ResponseEntity<String> getGrafanaUrl(
@@ -167,7 +167,7 @@ public class DevopsClusterResourceController {
         return new ResponseEntity<>(devopsClusterResourceService.getGrafanaUrl(projectId, clusterId, type), HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询环境关联的集群是否安装cert-manager")
     @GetMapping("/cert_manager/check_by_env_id")
     public ResponseEntity<Boolean> queryCertManagerByEnvId(

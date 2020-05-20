@@ -6,13 +6,13 @@ import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * Created by zzy on 2018/3/26.
  */
 @Table(name = "devops_user")
-public class UserAttrDTO extends AuditDomain {
+public class UserAttrDTO extends BaseDTO {
 
     @Id
     private Long iamUserId;

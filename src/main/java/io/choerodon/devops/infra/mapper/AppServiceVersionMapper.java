@@ -8,12 +8,12 @@ import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.AppServiceLatestVersionDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * Created by younger on 2018/3/28.
  */
-public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO> {
+public interface AppServiceVersionMapper extends Mapper<AppServiceVersionDTO> {
 
     List<AppServiceVersionDTO> listApplicationVersion(
             @Param("projectId") Long projectId,

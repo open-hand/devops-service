@@ -1,11 +1,15 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Map;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+
+import io.choerodon.core.notify.WebHookJsonSendDTO;
+import org.springframework.data.domain.Pageable;
+import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.PipelineDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -13,7 +17,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * Description:
  */
 public interface PipelineService {
-    Page<PipelineVO> pageByOptions(Long projectId, PipelineSearchVO pipelineSearchVO, PageRequest pageable);
+    PageInfo<PipelineVO> pageByOptions(Long projectId, PipelineSearchVO pipelineSearchVO, Pageable pageable);
 
     PipelineReqVO create(Long projectId, PipelineReqVO pipelineReqVO);
 
@@ -58,6 +62,8 @@ public interface PipelineService {
     void executeAutoDeploy(Long pipelineId);
 
     void failed(Long projectId, Long recordId);
+
+    void sendSiteMessage(Long pipelineRecordId, String type, List<NoticeSendDTO.User> users, Map<String, Object> params, WebHookJsonSendDTO webHookJsonSendDTO);
 
     PipelineDTO baseCreate(Long projectId, PipelineDTO devopsPipelineDTO);
 

@@ -2,11 +2,11 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.vo.SecretReqVO;
+import com.github.pagehelper.PageInfo;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.SecretRespVO;
+import io.choerodon.devops.api.vo.SecretReqVO;
 import io.choerodon.devops.infra.dto.DevopsSecretDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by n!Ck
@@ -66,7 +66,7 @@ public interface DevopsSecretService {
      * @param toDecode     是否解码值
      * @return Page
      */
-    Page<SecretRespVO> pageByOption(Long envId, PageRequest pageable, String params, Long appServiceId, boolean toDecode);
+    PageInfo<SecretRespVO> pageByOption(Long envId, Pageable pageable, String params, Long appServiceId, boolean toDecode);
 
     /**
      * 根据密钥id查询密钥
@@ -103,7 +103,7 @@ public interface DevopsSecretService {
 
     DevopsSecretDTO baseQueryByEnvIdAndName(Long envId, String name);
 
-    Page<DevopsSecretDTO> basePageByOption(Long envId, PageRequest pageable, String params, Long appServiceId);
+    PageInfo<DevopsSecretDTO> basePageByOption(Long envId, Pageable pageable, String params, Long appServiceId);
 
     List<DevopsSecretDTO> baseListByEnv(Long envId);
 }

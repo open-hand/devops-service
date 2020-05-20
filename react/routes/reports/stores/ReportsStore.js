@@ -309,7 +309,7 @@ export default function useStore(AppState) {
         },
       ];
       axios
-        .post('/iam/hzero/v1/menus/check-permissions', JSON.stringify(datas))
+        .post('/base/v1/permissions/checkPermission', JSON.stringify(datas))
         .then((data) => {
           const res = handlePromptError(data);
           if (res && data && data.length) {

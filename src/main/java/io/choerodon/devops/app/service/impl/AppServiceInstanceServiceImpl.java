@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Service;
@@ -21,6 +23,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
@@ -54,8 +56,6 @@ import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 
 /**
@@ -176,13 +176,14 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public Page<AppServiceInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, PageRequest pageable, String params) {
+    public PageInfo<AppServiceInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, Pageable pageable, String params) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
-        Page<AppServiceInstanceInfoVO> pageInfo = ConvertUtils.convertPage(PageHelper.doPageAndSort(PageRequestUtil.getMappedPage(pageable, orderByFieldMap), () -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(
-                envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
+        PageInfo<AppServiceInstanceInfoVO> pageInfo = ConvertUtils.convertPage(PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderString(pageable.getSort(), orderByFieldMap))
+                        .doSelectPageInfo(() -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(
+                                envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
                 AppServiceInstanceInfoVO.class);
         List<Long> updatedEnv = clusterConnectionHandler.getUpdatedClusterList();
-        pageInfo.getContent().forEach(appServiceInstanceInfoVO -> {
+        pageInfo.getList().forEach(appServiceInstanceInfoVO -> {
                     AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceInstanceInfoVO.getAppServiceId());
                     appServiceInstanceInfoVO.setAppServiceType(applicationService.checkAppServiceType(projectId, appServiceDTO));
                     appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoVO.getClusterId()));
@@ -192,15 +193,15 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public Page<DevopsEnvPreviewInstanceVO> pageByOptions(Long projectId, PageRequest pageable,
-                                                          Long envId, Long appServiceVersionId, Long appServiceId, Long instanceId, String params) {
+    public PageInfo<DevopsEnvPreviewInstanceVO> pageByOptions(Long projectId, Pageable pageable,
+                                                              Long envId, Long appServiceVersionId, Long appServiceId, Long instanceId, String params) {
 
-        Page<DevopsEnvPreviewInstanceVO> devopsEnvPreviewInstanceDTOPageInfo = new Page<>();
+        PageInfo<DevopsEnvPreviewInstanceVO> devopsEnvPreviewInstanceDTOPageInfo = new PageInfo<>();
 
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-        Page<AppServiceInstanceDTO> applicationInstanceDTOPageInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () ->
+        PageInfo<AppServiceInstanceDTO> applicationInstanceDTOPageInfo = PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
                 appServiceInstanceMapper
                         .listApplicationInstance(projectId, envId, appServiceVersionId, appServiceId, instanceId, searchParamMap, paramList));
 
@@ -354,25 +355,25 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public Page<DeployDetailTableVO> pageDeployFrequencyTable(Long projectId, PageRequest pageable, Long[] envIds,
-                                                              Long appServiceId, Date startTime, Date endTime) {
+    public PageInfo<DeployDetailTableVO> pageDeployFrequencyTable(Long projectId, Pageable pageable, Long[] envIds,
+                                                                  Long appServiceId, Date startTime, Date endTime) {
         if (envIds.length == 0) {
-            return new Page<>();
+            return new PageInfo<>();
         }
-        Page<DeployDTO> deployDTOPageInfo = basePageDeployFrequencyTable(projectId, pageable,
+        PageInfo<DeployDTO> deployDTOPageInfo = basePageDeployFrequencyTable(projectId, pageable,
                 envIds, appServiceId, startTime, endTime);
         return getDeployDetailDTOS(deployDTOPageInfo);
     }
 
 
     @Override
-    public Page<DeployDetailTableVO> pageDeployTimeTable(Long projectId, PageRequest pageable,
-                                                         Long[] appServiceIds, Long envId,
-                                                         Date startTime, Date endTime) {
+    public PageInfo<DeployDetailTableVO> pageDeployTimeTable(Long projectId, Pageable pageable,
+                                                             Long[] appServiceIds, Long envId,
+                                                             Date startTime, Date endTime) {
         if (appServiceIds.length == 0) {
-            return new Page<>();
+            return new PageInfo<>();
         }
-        Page<DeployDTO> deployDTOS = basePageDeployTimeTable(projectId, pageable, envId,
+        PageInfo<DeployDTO> deployDTOS = basePageDeployTimeTable(projectId, pageable, envId,
                 appServiceIds, startTime, endTime);
         return getDeployDetailDTOS(deployDTOS);
     }
@@ -1134,18 +1135,18 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public Page<DeployDTO> basePageDeployFrequencyTable(Long projectId, PageRequest pageable, Long[] envIds, Long appServiceId,
-                                                        Date startTime, Date endTime) {
-        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () ->
+    public PageInfo<DeployDTO> basePageDeployFrequencyTable(Long projectId, Pageable pageable, Long[] envIds, Long appServiceId,
+                                                            Date startTime, Date endTime) {
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
                 appServiceInstanceMapper
                         .listDeployFrequency(projectId, envIds, appServiceId, new java.sql.Date(startTime.getTime()),
                                 new java.sql.Date(endTime.getTime())));
     }
 
     @Override
-    public Page<DeployDTO> basePageDeployTimeTable(Long projectId, PageRequest pageable, Long envId, Long[] appServiceIds,
-                                                   Date startTime, Date endTime) {
-        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () ->
+    public PageInfo<DeployDTO> basePageDeployTimeTable(Long projectId, Pageable pageable, Long envId, Long[] appServiceIds,
+                                                       Date startTime, Date endTime) {
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
                 appServiceInstanceMapper
                         .listDeployTime(projectId, envId, appServiceIds, new java.sql.Date(startTime.getTime()),
                                 new java.sql.Date(endTime.getTime())));
@@ -1428,6 +1429,88 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 devopsEnvironmentDTO.getCode(), devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getClusterId());
     }
 
+
+//    private void initInstanceOverView(AppServiceInstanceOverViewVO appServiceInstanceOverViewVO, AppServiceInstanceOverViewDTO appServiceInstanceOverViewDTO,
+//                                      Long latestVersionId) {
+//        EnvVersionVO envVersionVO = new EnvVersionVO(
+//                appServiceInstanceOverViewDTO.getVersionId(),
+//                appServiceInstanceOverViewDTO.getVersion(),
+//                appServiceInstanceOverViewDTO.getInstanceId(),
+//                appServiceInstanceOverViewDTO.getInstanceCode(),
+//                appServiceInstanceOverViewDTO.getInstanceStatus());
+//        EnvInstanceVO envInstanceVO = new EnvInstanceVO(appServiceInstanceOverViewDTO.getEnvId());
+//        if (appServiceInstanceOverViewDTO.getVersionId().equals(latestVersionId)) {
+//            envVersionVO.setLatest(true);
+//        }
+//        envInstanceVO.addEnvVersionDTOS(envVersionVO);
+//        appServiceInstanceOverViewVO.appendEnvInstanceVOS(envInstanceVO);
+//        if (appServiceInstanceOverViewVO.getLatestVersionId().equals(appServiceInstanceOverViewDTO.getVersionId())) {
+//            appServiceInstanceOverViewVO.appendInstances(new EnvInstancesVO(
+//                    appServiceInstanceOverViewDTO.getInstanceId(), appServiceInstanceOverViewDTO.getInstanceCode(), appServiceInstanceOverViewDTO.getInstanceStatus()));
+//        }
+//    }
+//
+//
+//    private void initInstanceOverViewIfNotExist(AppServiceInstanceOverViewVO appServiceInstanceOverViewVO,
+//                                                AppServiceInstanceOverViewDTO appServiceInstanceOverViewDTO) {
+//        EnvInstanceVO envInstanceVO = appServiceInstanceOverViewVO.queryLastEnvInstanceVO();
+//        if (appServiceInstanceOverViewVO.getLatestVersionId().equals(appServiceInstanceOverViewDTO.getVersionId())) {
+//            appServiceInstanceOverViewVO.appendInstances(new EnvInstancesVO(
+//                    appServiceInstanceOverViewDTO.getInstanceId(), appServiceInstanceOverViewDTO.getInstanceCode(), appServiceInstanceOverViewDTO.getInstanceStatus()));
+//        }
+//        if (envInstanceVO.getEnvId().equals(appServiceInstanceOverViewDTO.getEnvId())) {
+//            EnvVersionVO envVersionVO = envInstanceVO.queryLastEnvVersionVO();
+//            if (envVersionVO.getVersion().equals(appServiceInstanceOverViewDTO.getVersion())) {
+//                envVersionVO.appendInstanceList(
+//                        appServiceInstanceOverViewDTO.getInstanceId(),
+//                        appServiceInstanceOverViewDTO.getInstanceCode(),
+//                        appServiceInstanceOverViewDTO.getInstanceStatus());
+//            } else {
+//                envInstanceVO.addEnvVersionDTOS(new EnvVersionVO(
+//                        appServiceInstanceOverViewDTO.getVersionId(),
+//                        appServiceInstanceOverViewDTO.getVersion(),
+//                        appServiceInstanceOverViewDTO.getInstanceId(),
+//                        appServiceInstanceOverViewDTO.getInstanceCode(),
+//                        appServiceInstanceOverViewDTO.getInstanceStatus()));
+//            }
+//        } else {
+//            EnvVersionVO envVersionVO = new EnvVersionVO(
+//                    appServiceInstanceOverViewDTO.getVersionId(),
+//                    appServiceInstanceOverViewDTO.getVersion(),
+//                    appServiceInstanceOverViewDTO.getInstanceId(),
+//                    appServiceInstanceOverViewDTO.getInstanceCode(),
+//                    appServiceInstanceOverViewDTO.getInstanceStatus());
+//            envInstanceVO = new EnvInstanceVO(appServiceInstanceOverViewDTO.getEnvId());
+//            if (appServiceInstanceOverViewDTO.getVersionId().equals(appServiceInstanceOverViewVO.getLatestVersionId())) {
+//                envVersionVO.setLatest(true);
+//            }
+//            envInstanceVO.addEnvVersionDTOS(envVersionVO);
+//            appServiceInstanceOverViewVO.appendEnvInstanceVOS(envInstanceVO);
+//        }
+//    }
+//
+//    /**
+//     * 创建远程配置
+//     *
+//     * @param type
+//     * @param code
+//     * @param configVO
+//     * @return
+//     */
+//    private DevopsConfigDTO createConfig(String type, String code, ConfigVO configVO) {
+//        String name = code + "-" + type;
+//        DevopsConfigDTO devopsConfigDTO = devopsConfigService.baseCheckByName(name);
+//        if (devopsConfigDTO == null) {
+//            devopsConfigDTO = new DevopsConfigDTO();
+//            devopsConfigDTO.setConfig(gson.toJson(configVO));
+//            devopsConfigDTO.setName(name);
+//            devopsConfigDTO.setType(type);
+//            return devopsConfigService.baseCreate(devopsConfigDTO);
+//        }
+//        return devopsConfigDTO;
+//    }
+
+
     private void updateInstanceStatus(Long instanceId, Long commandId, String status) {
         AppServiceInstanceDTO instanceDTO = baseQuery(instanceId);
         instanceDTO.setStatus(status);
@@ -1611,13 +1694,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
 
-    private Page<DeployDetailTableVO> getDeployDetailDTOS(Page<DeployDTO> deployDTOPageInfo) {
+    private PageInfo<DeployDetailTableVO> getDeployDetailDTOS(PageInfo<DeployDTO> deployDTOPageInfo) {
 
-        Page<DeployDetailTableVO> pageDeployDetailDTOS = ConvertUtils.convertPage(deployDTOPageInfo, DeployDetailTableVO.class);
+        PageInfo<DeployDetailTableVO> pageDeployDetailDTOS = ConvertUtils.convertPage(deployDTOPageInfo, DeployDetailTableVO.class);
 
         List<DeployDetailTableVO> deployDetailTableVOS = new ArrayList<>();
 
-        deployDTOPageInfo.getContent().forEach(deployDTO -> {
+        deployDTOPageInfo.getList().forEach(deployDTO -> {
             DeployDetailTableVO deployDetailTableVO = ConvertUtils.convertObject(deployDTO, DeployDetailTableVO.class);
             deployDetailTableVO.setDeployTime(
                     getDeployTime(deployDTO.getLastUpdateDate().getTime() - deployDTO.getCreationDate().getTime()));
@@ -1629,7 +1712,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             }
             deployDetailTableVOS.add(deployDetailTableVO);
         });
-        pageDeployDetailDTOS.setContent(deployDetailTableVOS);
+        pageDeployDetailDTOS.setList(deployDetailTableVOS);
         return pageDeployDetailDTOS;
     }
 

@@ -10,13 +10,6 @@ import javax.annotation.PostConstruct;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StreamUtils;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.AppServiceRepVO;
@@ -34,14 +27,20 @@ import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.gitlab.MergeRequestDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 
 /**
  * 为搭建Demo环境初始化项目中的一些数据，包含应用，分支，提交，版本，应用市场等
@@ -134,7 +133,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         mergeBranch(gitlabProjectId);
 
         // 6. 创建标记，由于选择人工造版本数据而不是通过ci，此处tag-name不使用正确的。
-        Optional<TagVO> tagVO = devopsGitService.pageTagsByOptions(projectId, applicationRepDTO.getId(), null, 0, 100).getContent().stream().filter(tagVO1 -> tagVO1.getName().equals(demoDataVO.getTagInfo().getTag() + "-alpha.1")).findFirst();
+        Optional<TagVO> tagVO = devopsGitService.pageTagsByOptions(projectId, applicationRepDTO.getId(), null, 0, 100).getList().stream().filter(tagVO1 -> tagVO1.getName().equals(demoDataVO.getTagInfo().getTag() + "-alpha.1")).findFirst();
         if (!tagVO.isPresent()) {
             devopsGitService.createTag(projectId, applicationRepDTO.getId(), demoDataVO.getTagInfo().getTag() + "-alpha.1", demoDataVO.getTagInfo().getRef(), demoDataVO.getTagInfo().getMsg(), demoDataVO.getTagInfo().getReleaseNotes());
         }
@@ -159,7 +158,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplicationService(applicationReqDTO.getCode());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO applicationDTO = ConvertUtils.convertObject(applicationReqDTO, AppServiceDTO.class);
 
         applicationDTO.setProjectId(projectId);
@@ -193,7 +192,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
         devOpsAppServicePayload.setType("application");
         devOpsAppServicePayload.setPath(applicationReqDTO.getCode());
-        devOpsAppServicePayload.setOrganizationId(organization.getTenantId());
+        devOpsAppServicePayload.setOrganizationId(organization.getId());
         devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         devOpsAppServicePayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
         devOpsAppServicePayload.setUserIds(Collections.emptyList());
@@ -260,8 +259,8 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @return the version
      */
 //    private AppMarketVersionVO getApplicationVersion(Long projectId, Long applicationId) {
-//        PageRequest pageable = new PageRequest(0, 1);
-//        Page<ApplicationVersionRespVO> versions = applicationVersionService.pageByOptions(projectId, applicationId, pageable, null);
+//        Pageable pageable = new Pageable(0, 1);
+//        PageInfo<ApplicationVersionRespVO> versions = applicationVersionService.pageByOptions(projectId, applicationId, pageable, null);
 //        if (!versions.getList().isEmpty()) {
 //            AppMarketVersionVO appMarketVersionVO = new AppMarketVersionVO();
 //            BeanUtils.copyProperties(versions.getList().get(0), appMarketVersionVO);

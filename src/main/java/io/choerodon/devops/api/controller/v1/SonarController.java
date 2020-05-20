@@ -1,7 +1,9 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Optional;
-
+import io.choerodon.core.annotation.Permission;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.SonarInfoVO;
+import io.choerodon.devops.app.service.SonarService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,10 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.SonarInfoVO;
-import io.choerodon.devops.app.service.SonarService;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.Optional;
 
 /**
  * Creator: ChangpingShi0213@gmail.com

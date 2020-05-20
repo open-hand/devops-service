@@ -1,21 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
-
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
@@ -27,14 +15,27 @@ import io.choerodon.devops.app.service.SendNotificationService;
 import io.choerodon.devops.infra.dto.CertificationDTO;
 import io.choerodon.devops.infra.dto.CertificationFileDTO;
 import io.choerodon.devops.infra.dto.DevopsCertificationProRelationshipDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.iam.Tenant;
+import io.choerodon.devops.infra.enums.SendSettingEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCertificationFileMapper;
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
 import io.choerodon.devops.infra.util.*;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.checkerframework.checker.units.qual.A;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DevopsProjectCertificationServiceImpl implements DevopsProjectCertificationService {
@@ -103,7 +104,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     }
 
     @Override
-    public Page<ProjectReqVO> pageRelatedProjects(Long projectId, Long certId, PageRequest pageable, String params) {
+    public PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long certId, Pageable pageable, String params) {
         CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
         if (certificationDTO == null) {
             throw new CommonException(ERROR_CERTIFICATION_NOT_EXIST, certId);
@@ -120,7 +121,9 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         }
         if (CollectionUtils.isEmpty(paramList) && StringUtils.isEmpty(name) && StringUtils.isEmpty(code)) {
             // 如果不搜索，在数据库中进行分页
-            Page<DevopsCertificationProRelationshipDTO> relationPage = PageHelper.doPage(pageable, () -> devopsCertificationProRelationshipService.baseListByCertificationId(certId));
+            PageInfo<DevopsCertificationProRelationshipDTO> relationPage = PageHelper.startPage(
+                    pageable.getPageNumber(), pageable.getPageSize())
+                    .doSelectPageInfo(() -> devopsCertificationProRelationshipService.baseListByCertificationId(certId));
             return ConvertUtils.convertPage(relationPage, permission -> {
                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
                 return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
@@ -171,8 +174,8 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     @Transactional(rollbackFor = Exception.class)
     public void createOrUpdate(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationVO projectCertificationVO) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, organizationDTO.getTenantNum(), FILE_SEPARATOR, GenerateUUID.generateUUID().substring(0, 5));
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, organizationDTO.getCode(), FILE_SEPARATOR, GenerateUUID.generateUUID().substring(0, 5));
         String certFileName;
         String keyFileName;
         //如果是选择上传文件方式
@@ -205,7 +208,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
             certificationDTO.setName(projectCertificationVO.getName());
             certificationDTO.setProjectId(projectId);
             // 创建项目层证书需要组织id
-            certificationDTO.setOrganizationId(organizationDTO.getTenantId());
+            certificationDTO.setOrganizationId(organizationDTO.getId());
             certificationDTO.setSkipCheckProjectPermission(true);
             certificationDTO.setDomains(gson.toJson(Collections.singletonList(projectCertificationVO.getDomain())));
             certificationDTO.setCertificationFileId(certificationService.baseStoreCertFile(new CertificationFileDTO(projectCertificationVO.getCertValue(), projectCertificationVO.getKeyValue())));
@@ -233,7 +236,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     }
 
     @Override
-    public Page<ProjectReqVO> listNonRelatedMembers(Long projectId, Long certId, Long selectedProjectId, PageRequest pageable, String params) {
+    public PageInfo<ProjectReqVO> listNonRelatedMembers(Long projectId, Long certId, Long selectedProjectId, Pageable pageable, String params) {
         CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
         if (certificationDTO == null) {
             throw new CommonException(ERROR_CERTIFICATION_NOT_EXIST, certId);
@@ -248,8 +251,8 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         }
         //查询出该项目所属组织下的所有项目
         ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(iamProjectDTO.getOrganizationId());
-        List<ProjectDTO> projectDTOList = baseServiceClientOperator.listIamProjectByOrgId(organizationDTO.getTenantId(),
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(iamProjectDTO.getOrganizationId());
+        List<ProjectDTO> projectDTOList = baseServiceClientOperator.listIamProjectByOrgId(organizationDTO.getId(),
                 searchParamMap.get("name"),
                 searchParamMap.get("code"),
                 CollectionUtils.isEmpty(paramList) ? null : paramList.get(0));
@@ -309,16 +312,16 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     }
 
     @Override
-    public Page<ProjectCertificationVO> pageCerts(Long projectId, PageRequest pageable,
-                                                  String params) {
-        Page<CertificationDTO> certificationDTOS = certificationService
+    public PageInfo<ProjectCertificationVO> pageCerts(Long projectId, Pageable pageable,
+                                                      String params) {
+        PageInfo<CertificationDTO> certificationDTOS = certificationService
                 .basePage(projectId, null, pageable, params);
-        Page<ProjectCertificationVO> orgCertificationDTOS = new Page<>();
+        PageInfo<ProjectCertificationVO> orgCertificationDTOS = new PageInfo<>();
         BeanUtils.copyProperties(certificationDTOS, orgCertificationDTOS);
         List<ProjectCertificationVO> orgCertifications = new ArrayList<>();
 
-        if (!certificationDTOS.getContent().isEmpty()) {
-            certificationDTOS.getContent().forEach(certificationDTO -> {
+        if (!certificationDTOS.getList().isEmpty()) {
+            certificationDTOS.getList().forEach(certificationDTO -> {
                 List<String> stringList = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
                 }.getType());
                 ProjectCertificationVO orgCertificationVO = new ProjectCertificationVO();
@@ -330,7 +333,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
                 orgCertifications.add(orgCertificationVO);
             });
         }
-        orgCertificationDTOS.setContent(orgCertifications);
+        orgCertificationDTOS.setList(orgCertifications);
         return orgCertificationDTOS;
     }
 

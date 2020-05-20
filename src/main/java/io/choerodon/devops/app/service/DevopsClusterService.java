@@ -3,11 +3,12 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import javax.annotation.Nullable;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import org.springframework.data.domain.Pageable;
+
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsClusterService {
     /**
@@ -73,7 +74,7 @@ public interface DevopsClusterService {
      * @param params    查询参数
      * @return 集群列表
      */
-    Page<ClusterWithNodesVO> pageClusters(Long projectId, Boolean doPage, PageRequest pageable, String params);
+    PageInfo<ClusterWithNodesVO> pageClusters(Long projectId, Boolean doPage, Pageable pageable, String params);
 
 
     /**
@@ -84,7 +85,7 @@ public interface DevopsClusterService {
      * @param params    搜索参数
      * @return 组织下所有项目中在数据库中没有权限关联关系的项目
      */
-    Page<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, Long selectedProjectId, PageRequest pageable, String params);
+    PageInfo<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, Long selectedProjectId, Pageable pageable, String params);
 
     /**
      * 分配权限
@@ -118,7 +119,7 @@ public interface DevopsClusterService {
      * @param params    查询参数
      * @return List
      */
-    Page<ProjectReqVO> pageRelatedProjects(Long projectId, Long clusterId, PageRequest pageable, String params);
+    PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long clusterId, Pageable pageable, String params);
 
     /**
      * 删除集群
@@ -151,7 +152,7 @@ public interface DevopsClusterService {
      * @param searchParam 查询参数
      * @return pods
      */
-    Page<DevopsEnvPodVO> pagePodsByNodeName(Long clusterId, String nodeName, PageRequest pageable, String searchParam);
+    PageInfo<DevopsEnvPodVO> pagePodsByNodeName(Long clusterId, String nodeName, Pageable pageable, String searchParam);
 
 
     /**
@@ -176,7 +177,7 @@ public interface DevopsClusterService {
 
     void baseUpdate(DevopsClusterDTO devopsClusterDTO);
 
-    Page<DevopsClusterDTO> basePageClustersByOptions(Long organizationId, Boolean doPage, PageRequest pageable, String params);
+    PageInfo<DevopsClusterDTO> basePageClustersByOptions(Long organizationId, Boolean doPage, Pageable pageable, String params);
 
     void baseDelete(Long clusterId);
 
@@ -193,7 +194,7 @@ public interface DevopsClusterService {
      * @param searchParam 查询参数
      * @return pods
      */
-    Page<DevopsEnvPodDTO> basePageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageable, String searchParam);
+    PageInfo<DevopsEnvPodDTO> basePageQueryPodsByNodeName(Long clusterId, String nodeName, Pageable pageable, String searchParam);
 
     DevopsClusterDTO baseQueryByCode(Long organizationId, String code);
 

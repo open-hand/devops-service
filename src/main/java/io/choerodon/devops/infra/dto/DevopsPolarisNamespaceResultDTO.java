@@ -4,7 +4,7 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * polaris扫描结果的Namespace这一级别的数据
@@ -13,7 +13,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * @since 2/17/20
  */
 @Table(name = "devops_polaris_namespace_result")
-public class DevopsPolarisNamespaceResultDTO extends AuditDomain {
+public class DevopsPolarisNamespaceResultDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @ApiModelProperty("自增id")

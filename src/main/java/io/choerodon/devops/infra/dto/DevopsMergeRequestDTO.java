@@ -5,7 +5,7 @@ import java.util.Date;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 
 /**
@@ -17,7 +17,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
  */
 
 @Table(name = "devops_merge_request")
-public class DevopsMergeRequestDTO extends AuditDomain {
+public class DevopsMergeRequestDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

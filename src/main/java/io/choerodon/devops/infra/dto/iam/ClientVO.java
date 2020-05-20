@@ -22,7 +22,7 @@ public class ClientVO {
     @Size(min = 1, max = 12, message = "error.client.name.size")
     @NotNull(message = "error.clientName.null")
     @Pattern(regexp = REGEX, message = "error.client.name.regex")
-    private String tenantName;
+    private String name;
 
     @ApiModelProperty(value = "组织ID/必填")
     private Long organizationId;
@@ -66,16 +66,6 @@ public class ClientVO {
     @NotEmpty(message = "error.sourceType.null")
     private String sourceType;
 
-    @ApiModelProperty(value = "客户端可访问角色")
-    private String accessRoles;
-
-    public String getAccessRoles() {
-        return accessRoles;
-    }
-
-    public void setAccessRoles(String accessRoles) {
-        this.accessRoles = accessRoles;
-    }
 
     public Long getId() {
         return id;
@@ -85,12 +75,12 @@ public class ClientVO {
         this.id = id;
     }
 
-    public String getTenantName() {
-        return tenantName;
+    public String getName() {
+        return name;
     }
 
-    public void setTenantName(String tenantName) {
-        this.tenantName = tenantName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Long getOrganizationId() {
@@ -193,7 +183,7 @@ public class ClientVO {
     public String toString() {
         return "ClientVO{" +
                 "id=" + id +
-                ", name='" + tenantName + '\'' +
+                ", name='" + name + '\'' +
                 ", organizationId=" + organizationId +
                 ", resourceIds='" + resourceIds + '\'' +
                 ", secret='" + secret + '\'' +

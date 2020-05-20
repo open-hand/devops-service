@@ -111,8 +111,4 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
     changeSet(author: 'zmf', id: '2019-09-18-add-default-value-for-app-service-active') {
         addDefaultValue(tableName: "devops_app_service", columnName: "is_active", defaultValue: "1")
     }
-
-    changeSet(author: 'zmf', id: '2020-05-13-app-add-uk', failOnError: false) {
-        addUniqueConstraint(tableName: 'devops_app_service', constraintName: 'app-service-token-uk', columnNames: 'token')
-    }
 }

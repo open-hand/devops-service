@@ -3,9 +3,10 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.infra.dto.PipelineRecordDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -14,7 +15,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface PipelineRecordService {
 
-    Page<PipelineRecordDTO> basePageByOptions(Long projectId, Long pipelineId, PageRequest pageable, String params, Map<String, Object> classifyParam);
+    PageInfo<PipelineRecordDTO> basePageByOptions(Long projectId, Long pipelineId, Pageable pageable, String params, Map<String, Object> classifyParam);
 
     PipelineRecordDTO baseCreate(PipelineRecordDTO pipelineRecordDTO);
 

@@ -3,10 +3,12 @@ package io.choerodon.devops.app.service.impl;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.zaxxer.hikari.util.UtilityElf;
@@ -14,12 +16,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.kubernetes.CheckLog;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
+import io.choerodon.devops.app.service.GitlabGroupMemberService;
+import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.DevopsCheckLogDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
 import io.choerodon.devops.infra.mapper.PipelineTaskMapper;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 
 @Service
@@ -34,6 +45,14 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     @Autowired
     private DevopsCheckLogMapper devopsCheckLogMapper;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    private UserAttrService userAttrService;
+    @Autowired
+    private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
     private PipelineTaskMapper pipelineTaskMapper;
 
@@ -69,7 +88,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 DevopsCheckLogDTO devopsCheckLogDTO = new DevopsCheckLogDTO();
                 List<CheckLog> logs = new ArrayList<>();
                 devopsCheckLogDTO.setBeginCheckDate(new Date());
-                if("0.21.1".equals(version)){
+                if ("0.21.0".equals(version)) {
+                    LOGGER.info("修复数据开始");
+                    syncRoot();
+                    syncOrgRoot();
+                    LOGGER.info("修复数据完成");
+                } else if("0.21.1".equals(version)){
                     LOGGER.info("修复数据开始!");
                     pipelineTaskMapper.deletePipelineTask();
                     LOGGER.info("修复数据完成!!!!!!");
@@ -87,5 +111,69 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             }
         }
 
+        private void syncRoot() {
+            LOGGER.info("Start to sync root users to gitlab");
+            List<IamUserDTO> rootUsers = baseServiceClientOperator.queryAllRootUsers();
+
+            if (CollectionUtils.isEmpty(rootUsers)) {
+                LOGGER.warn("Root users got is null. Please check whether it is right later in cheorodon-front.");
+                LOGGER.info("Root user migration is Skipped...");
+                return;
+            }
+
+            rootUsers.forEach(user -> {
+                // 跳过停用的用户
+                if (!Boolean.TRUE.equals(user.getEnabled())) {
+                    LOGGER.info("Skip disabled user with id {} and name {}.", user.getId(), user.getRealName());
+                    return;
+                }
+
+                // 跳过创建时同步失败的用户
+                UserAttrDTO userAttrDTO = userAttrService.baseQueryById(user.getId());
+                if (userAttrDTO == null || userAttrDTO.getGitlabUserId() == null) {
+                    LOGGER.warn("User with iamUserId {} is not created successfully, therefore not sync", user.getId());
+                    return;
+                }
+
+                gitlabServiceClientOperator.assignAdmin(userAttrDTO.getIamUserId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                userAttrService.updateAdmin(user.getId(), Boolean.TRUE);
+                LOGGER.info("Successfully sync the user with id {} and name {} to the gitlab as an admin.", user.getId(), user.getRealName());
+            });
+
+            LOGGER.info("Finish syncing root users to gitlab");
+        }
+
+        //同步之前已经是组织管理员的用户的gitLab权限
+        private void syncOrgRoot() {
+            LOGGER.info("Start to sync organization root users to gitlab");
+            //所有组织管理员用户
+            List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryAllOrgRoot();
+            if (CollectionUtils.isEmpty(iamUserDTOS)) {
+                LOGGER.warn("Organization Root users got is null. Please check whether it is right later in cheorodon-front.");
+                LOGGER.info("Organization Root user migration is Skipped...");
+                return;
+            }
+
+            Map<Long, List<IamUserDTO>> listMap = iamUserDTOS.stream().collect(Collectors.groupingBy(IamUserDTO::getOrganizationId));
+            listMap.forEach((organizationId, iamUserDTOS1) -> {
+                LOGGER.info("Start synchronizing organization administrators for project with organization Id :{} ", organizationId);
+                synOrgRootByOrgId(organizationId, iamUserDTOS1);
+                //还要同步到devops_user表。
+                LOGGER.info("Finished synchronizing organization administrators for project with organization Id :{} ", organizationId);
+            });
+            LOGGER.info("Finish syncing organization root users to gitlab");
+        }
+
+        private void synOrgRootByOrgId(Long organizationId, List<IamUserDTO> iamUserDTOS1) {
+            List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(organizationId);
+            if (!CollectionUtils.isEmpty(projectDTOS)) {
+                projectDTOS.stream().forEach(projectDTO -> {
+                    iamUserDTOS1.stream().forEach(iamUserDTO -> {
+                        gitlabGroupMemberService.assignGitLabGroupMemeberForOwner(projectDTO, iamUserDTO.getId());
+                    });
+                    LOGGER.info("Finish synchronizing project Id :{}", projectDTO.getId());
+                });
+            }
+        }
     }
 }

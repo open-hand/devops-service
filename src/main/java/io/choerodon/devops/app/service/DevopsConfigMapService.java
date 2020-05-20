@@ -2,11 +2,12 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.vo.DevopsConfigMapRespVO;
+import com.github.pagehelper.PageInfo;
+
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.DevopsConfigMapVO;
+import io.choerodon.devops.api.vo.DevopsConfigMapRespVO;
 import io.choerodon.devops.infra.dto.DevopsConfigMapDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsConfigMapService {
 
@@ -22,7 +23,7 @@ public interface DevopsConfigMapService {
 
     DevopsConfigMapRespVO query(Long configMapId);
 
-    Page<DevopsConfigMapRespVO> pageByOptions(Long projectId, Long envId, PageRequest pageable, String searchParam, Long appServiceId);
+    PageInfo<DevopsConfigMapRespVO> pageByOptions(Long projectId, Long envId, Pageable pageable, String searchParam, Long appServiceId);
 
     DevopsConfigMapDTO baseQueryByEnvIdAndName(Long envId, String name);
 
@@ -34,7 +35,7 @@ public interface DevopsConfigMapService {
 
     void baseDelete(Long id);
 
-    Page<DevopsConfigMapDTO> basePageByEnv(Long envId, PageRequest pageable, String params, Long appServiceId);
+    PageInfo<DevopsConfigMapDTO> basePageByEnv(Long envId, Pageable pageable, String params, Long appServiceId);
 
     List<DevopsConfigMapDTO> baseListByEnv(Long envId);
 

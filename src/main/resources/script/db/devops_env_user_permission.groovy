@@ -27,12 +27,4 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_user_permission.groovy') {
         addUniqueConstraint(tableName: 'devops_env_user_permission',
                 constraintName: 'uk_iam_user_id_env_id', columnNames: 'iam_user_id,env_id')
     }
-
-    changeSet(author: 'zmf', id: '2020-05-13-devops_env_user_permission-add-pk') {
-        addColumn(tableName: 'devops_env_user_permission') {
-            column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true, beforeColumn: "login_name") {
-                constraints(primaryKey: true)
-            }
-        }
-    }
 }

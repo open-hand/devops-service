@@ -8,15 +8,16 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
@@ -31,7 +32,6 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.PageInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by Sheep on 2019/7/15.
@@ -141,13 +141,13 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     }
 
     @Override
-    public Page<ProjectReqVO> pageProjects(Long projectId, PageRequest pageable, String searchParams) {
+    public PageInfo<ProjectReqVO> pageProjects(Long projectId, Pageable pageable, String searchParams) {
         ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         return pageProjectsByOrganizationId(iamProjectDTO.getOrganizationId(), pageable, searchParams);
     }
 
     @Override
-    public Page<ProjectReqVO> pageProjectsByOrganizationId(Long organizationId, PageRequest pageable, String searchParams) {
+    public PageInfo<ProjectReqVO> pageProjectsByOrganizationId(Long organizationId, Pageable pageable, String searchParams) {
         Map<String, Object> searchMap = TypeUtil.castMapParams(searchParams);
         Map<String, Object> searchParamsMap = TypeUtil.cast(searchMap.get(TypeUtil.SEARCH_PARAM));
         String name = null;
@@ -159,15 +159,15 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         List<String> paramList = TypeUtil.cast(searchMap.get(TypeUtil.PARAMS));
 
 
-        Page<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator.pageProjectByOrgId(
+        PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator.pageProjectByOrgId(
                 Objects.requireNonNull(organizationId),
-                pageable.getPage(), pageable.getSize(), pageable.getSort(), name, code,
+                pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort(), name, code,
                 CollectionUtils.isEmpty(paramList) ? null : paramList.get(0));
         return ConvertUtils.convertPage(projectDTOPageInfo, ProjectReqVO.class);
     }
 
     @Override
-    public Page<UserVO> listAllOwnerAndMembers(Long projectId, PageRequest pageable, String params) {
+    public PageInfo<UserVO> listAllOwnerAndMembers(Long projectId, Pageable pageable, String params) {
         List<IamUserDTO> allMember = baseServiceClientOperator.getAllMember(projectId, params);
         List<Long> selectedIamUserIds = new ArrayList<>();
         if (!StringUtils.isEmpty(params)) {

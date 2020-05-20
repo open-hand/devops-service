@@ -4,7 +4,7 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * @author: 25499
@@ -12,7 +12,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * @description:
  */
 @Table(name = "devops_prometheus")
-public class DevopsPrometheusDTO extends AuditDomain {
+public class DevopsPrometheusDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -3,13 +3,13 @@ package io.choerodon.devops.infra.mapper;
 import java.sql.Date;
 import java.util.List;
 
-import org.apache.ibatis.annotations.Param;
-
 import io.choerodon.devops.api.vo.kubernetes.Command;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
 
-public interface DevopsEnvCommandMapper extends BaseMapper<DevopsEnvCommandDTO> {
+import org.apache.ibatis.annotations.Param;
+
+public interface DevopsEnvCommandMapper extends Mapper<DevopsEnvCommandDTO> {
 
     DevopsEnvCommandDTO queryByObject(@Param("objectType") String objectType, @Param("objectId") Long objectId);
 

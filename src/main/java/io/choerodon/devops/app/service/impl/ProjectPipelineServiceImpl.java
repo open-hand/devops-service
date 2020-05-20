@@ -1,17 +1,17 @@
 package io.choerodon.devops.app.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
 import io.choerodon.devops.app.service.ProjectPipelineService;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by Zenger on 2018/4/10.

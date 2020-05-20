@@ -4,9 +4,11 @@ import java.util.Objects;
 import java.util.Optional;
 import javax.validation.Valid;
 
+import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -14,17 +16,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.core.domain.Page;
+import io.choerodon.core.annotation.Permission;
+import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.DevopsProjectCertificationService;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * 泛域名证书
@@ -42,7 +42,7 @@ public class ProjectCertificationController {
      * @param projectId              项目Id
      * @param projectCertificationVO 证书信息
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建或更新证书")
     @PostMapping
     public ResponseEntity createOrUpdate(
@@ -68,7 +68,7 @@ public class ProjectCertificationController {
      * @param projectId 项目Id
      * @param certId    证书Id
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询单个证书信息")
     @GetMapping("/{cert_id}")
     public ResponseEntity<ProjectCertificationVO> query(
@@ -87,7 +87,7 @@ public class ProjectCertificationController {
      * @param projectId 项目id
      * @param name      证书name
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验证书名唯一性")
     @GetMapping(value = "/check_name")
     public void checkName(
@@ -108,16 +108,16 @@ public class ProjectCertificationController {
      * @param params    查询参数
      * @return page
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "分页查询证书下已有权限的项目列表")
     @PostMapping("/{cert_id}/permission/page_related")
-    public ResponseEntity<Page<ProjectReqVO>> pageRelatedProjects(
+    public ResponseEntity<PageInfo<ProjectReqVO>> pageRelatedProjects(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书Id")
             @PathVariable(value = "cert_id") Long certId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageable,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsProjectCertificationService.pageRelatedProjects(projectId, certId, pageable, params))
@@ -134,16 +134,16 @@ public class ProjectCertificationController {
      * @param params    搜索参数
      * @return 所有与该证书未分配权限的项目
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "列出组织下所有项目中没有分配权限的项目")
     @PostMapping(value = "/{cert_id}/permission/list_non_related")
-    public ResponseEntity<Page<ProjectReqVO>> listAllNonRelatedMembers(
+    public ResponseEntity<PageInfo<ProjectReqVO>> listAllNonRelatedMembers(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书id", required = true)
             @PathVariable(value = "cert_id") Long certId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageable,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "指定项目Id")
             @RequestParam(value = "id", required = false) Long selectedProjectId,
             @ApiParam(value = "查询参数")
@@ -160,7 +160,7 @@ public class ProjectCertificationController {
      * @param projectId 项目id
      * @param certId    证书id
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除项目在该证书下的权限")
     @DeleteMapping(value = "/{cert_id}/permission")
     public ResponseEntity deletePermissionOfProject(
@@ -180,16 +180,16 @@ public class ProjectCertificationController {
      * @param projectId 项目ID
      * @return Page
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目证书列表查询")
     @CustomPageRequest
     @PostMapping("/page_cert")
-    public ResponseEntity<Page<ProjectCertificationVO>> pageOrgCert(
+    public ResponseEntity<PageInfo<ProjectCertificationVO>> pageOrgCert(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageable,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsProjectCertificationService.pageCerts(projectId, pageable, params))
@@ -203,7 +203,7 @@ public class ProjectCertificationController {
      * @param certId             证书id
      * @param permissionUpdateVO 权限分配信息
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "证书下为项目分配权限")
     @PostMapping(value = "/{cert_id}/permission")
@@ -225,7 +225,7 @@ public class ProjectCertificationController {
      * @param certId    证书Id
      * @return String
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除证书")
     @CustomPageRequest

@@ -1,11 +1,8 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * Created by n!Ck
@@ -15,12 +12,8 @@ import io.choerodon.mybatis.domain.AuditDomain;
  */
 
 @Table(name = "devops_env_user_permission")
-public class DevopsEnvUserPermissionDTO extends AuditDomain {
+public class DevopsEnvUserPermissionDTO extends BaseDTO {
     private String loginName;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     private Long iamUserId;
     private String realName;
     private Long envId;
@@ -40,14 +33,6 @@ public class DevopsEnvUserPermissionDTO extends AuditDomain {
         this.realName = realName;
         this.envId = envId;
         this.isPermitted = isPermitted;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getLoginName() {

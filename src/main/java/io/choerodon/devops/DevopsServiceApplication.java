@@ -6,7 +6,6 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -18,7 +17,7 @@ import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
 @EnableFeignClients("io.choerodon")
 @EnableEurekaClient
 @EnableDiscoveryClient
-@SpringBootApplication()
+@SpringBootApplication
 @EnableChoerodonResourceServer
 @EnableAsync
 public class DevopsServiceApplication {
@@ -26,10 +25,9 @@ public class DevopsServiceApplication {
         SpringApplication.run(DevopsServiceApplication.class, args);
     }
 
-    // 初始化redisTemplate
-    @Primary
+    //初始化redisTemplate
     @Bean
-    public RedisTemplate<String, Object> devOpsRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
         template.setKeySerializer(stringRedisSerializer);
