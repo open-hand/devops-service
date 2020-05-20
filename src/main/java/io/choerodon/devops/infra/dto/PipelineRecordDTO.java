@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.*;
 
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -10,7 +10,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * Description:
  */
 @Table(name = "devops_pipeline_record")
-public class PipelineRecordDTO extends AuditDomain {
+public class PipelineRecordDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

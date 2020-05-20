@@ -1,17 +1,18 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+
 import javax.annotation.Nullable;
 
+import com.github.pagehelper.PageInfo;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.data.domain.Pageable;
 
-import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 
 /**
@@ -154,8 +155,8 @@ public interface DevopsEnvironmentService {
      * @param envId     环境id
      * @return page
      */
-    Page<DevopsUserPermissionVO> pageUserPermissionByEnvId(Long projectId, PageRequest pageable,
-                                                           String params, Long envId);
+    PageInfo<DevopsUserPermissionVO> pageUserPermissionByEnvId(Long projectId, Pageable pageable,
+                                                               String params, Long envId);
 
     /**
      * 查询项目下所有与该环境未分配权限的项目成员
@@ -165,7 +166,7 @@ public interface DevopsEnvironmentService {
      * @param params    搜索参数
      * @return 所有项目成员
      */
-    Page<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, Long selectedIamUserId, PageRequest pageable, String params);
+    PageInfo<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, Long selectedIamUserId, Pageable pageable, String params);
 
     /**
      * 删除环境下该用户的权限

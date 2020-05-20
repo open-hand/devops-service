@@ -5,14 +5,14 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * Created by Sheep on 2019/7/29.
  */
 
 @Table(name="devops_deploy_record")
-public class DevopsDeployRecordDTO extends AuditDomain {
+public class DevopsDeployRecordDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

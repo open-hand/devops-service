@@ -2,7 +2,9 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import org.springframework.data.domain.Pageable;
+
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.api.vo.DevopsServiceVO;
 import io.choerodon.devops.app.eventhandler.payload.ServiceSagaPayLoad;
@@ -10,7 +12,6 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsServiceQueryDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -124,7 +125,7 @@ public interface DevopsServiceService {
      * @param appServiceId 应用服务id（如果有就是查询应用下的网络域名）
      * @return Page of DevopsServiceVO
      */
-    Page<DevopsServiceVO> pageByEnv(Long projectId, Long envId, PageRequest pageable, String searchParam, Long appServiceId);
+    PageInfo<DevopsServiceVO> pageByEnv(Long projectId, Long envId, Pageable pageable, String searchParam, Long appServiceId);
 
 
     /**
@@ -147,7 +148,7 @@ public interface DevopsServiceService {
      * @param searchParam  查询参数
      * @return Page of DevopsServiceVO
      */
-    Page<DevopsServiceVO> pageByInstance(Long projectId, Long envId, Long instanceId, PageRequest pageable, Long appServiceId, String searchParam);
+    PageInfo<DevopsServiceVO> pageByInstance(Long projectId, Long envId, Long instanceId, Pageable pageable, Long appServiceId, String searchParam);
 
     /**
      * 查看网络信息时，展示网络对应实例的Pod实时数据
@@ -163,8 +164,8 @@ public interface DevopsServiceService {
 
     Boolean baseCheckName(Long envId, String name);
 
-    Page<DevopsServiceQueryDTO> basePageByOptions(Long projectId, Long envId, Long instanceId, PageRequest pageable,
-                                                  String searchParam, Long appServiceId);
+    PageInfo<DevopsServiceQueryDTO> basePageByOptions(Long projectId, Long envId, Long instanceId, Pageable pageable,
+                                                      String searchParam, Long appServiceId);
 
     List<DevopsServiceDTO> baseListByEnvId(Long envId);
 

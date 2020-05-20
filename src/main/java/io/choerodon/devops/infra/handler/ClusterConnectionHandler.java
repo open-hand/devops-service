@@ -1,7 +1,5 @@
 package io.choerodon.devops.infra.handler;
 
-import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.*;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +19,8 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ClusterSessionVO;
 import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.EnvironmentType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.*;
@@ -155,11 +153,11 @@ public class ClusterConnectionHandler {
 
     public String handDevopsEnvGitRepository(Long projectId, String envCode, Long envId, String envRsa, String envType, String clusterCode) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         //本地路径
-        String path = GitOpsUtil.getLocalPathToStoreEnv(organizationDTO.getTenantNum(), projectDTO.getCode(), clusterCode, envCode, envId);
+        String path = GitOpsUtil.getLocalPathToStoreEnv(organizationDTO.getCode(), projectDTO.getCode(), clusterCode, envCode, envId);
         //生成环境git仓库ssh地址
-        String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organizationDTO.getTenantNum(),
+        String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organizationDTO.getCode(),
                 projectDTO.getCode(), envCode, EnvironmentType.forValue(envType), clusterCode);
 
         File file = new File(path);
@@ -185,53 +183,6 @@ public class ClusterConnectionHandler {
      * @return true表示正确，false表示不正确
      */
     public boolean validConnectionParameter(HttpServletRequest request) {
-        //校验ws连接参数是否正确
-        String key = request.getParameter(KEY);
-        String clusterId = request.getParameter(CLUSTER_ID);
-        String token = request.getParameter(TOKEN);
-        String version = request.getParameter(VERSION);
-
-        if (key == null || key.trim().isEmpty()) {
-            LOGGER.warn("Agent Handshake : Key is null");
-            return false;
-        }
-        if (!KeyParseUtil.matchPattern(key)) {
-            LOGGER.warn("Agent Handshake : Key not match the pattern");
-            return false;
-        }
-        if (clusterId == null || clusterId.trim().isEmpty()) {
-            LOGGER.warn("Agent Handshake : ClusterId is null");
-            return false;
-        }
-        if (token == null || token.trim().isEmpty()) {
-            LOGGER.warn("Agent Handshake : Token is null");
-            return false;
-        }
-        if (version == null || version.trim().isEmpty()) {
-            LOGGER.warn("Agent Handshake : Version is null");
-            return false;
-        }
-        //检验连接过来的agent和集群是否匹配
-        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(TypeUtil.objToLong(clusterId));
-        if (devopsClusterDTO == null) {
-            LogUtil.loggerWarnObjectNullWithId("Cluster", TypeUtil.objToLong(clusterId), LOGGER);
-            return false;
-        }
-        if (!token.equals(devopsClusterDTO.getToken())) {
-            LOGGER.warn("Cluster with id {} exists but its token doesn't match the token that agent offers as {}", clusterId, token);
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * 对0.21.x版本的agent校验参数
-     *
-     * @param request 请求
-     * @return true表示校验通过
-     */
-    public boolean validElderAgentGitOpsParameters(HttpServletRequest request) {
         //校验ws连接参数是否正确
         String key = request.getParameter("key");
         String clusterId = request.getParameter(CLUSTER_ID);

@@ -2,10 +2,10 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.DevopsEnvFileErrorVO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: Runge
@@ -30,7 +30,7 @@ public interface DevopsEnvFileService {
      * @param pageable
      * @return
      */
-    Page<DevopsEnvFileErrorVO> pageByEnvId(Long envId, PageRequest pageable);
+    PageInfo<DevopsEnvFileErrorVO> pageByEnvId(Long envId, Pageable pageable);
 
     DevopsEnvFileDTO baseCreate(DevopsEnvFileDTO devopsEnvFileDTO);
 

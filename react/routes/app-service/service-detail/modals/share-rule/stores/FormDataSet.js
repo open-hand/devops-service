@@ -102,7 +102,7 @@ export default (({ intlPrefix, formatMessage, projectId, appServiceId, shareId }
         required: true,
         lookupAxiosConfig: ({ params }) => ({
           method: 'get',
-          url: `/iam/choerodon/v1/projects/${projectId}/except_self/with_limit`,
+          url: `/base/v1/projects/${projectId}/except_self/with_limit`,
           data: params,
           transformResponse(data) {
             try {

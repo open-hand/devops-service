@@ -6,11 +6,11 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Date;
 
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 
 @Table(name = "devops_check_log")
-public class DevopsCheckLogDTO extends AuditDomain {
+public class DevopsCheckLogDTO extends BaseDTO {
 
 
     @Id

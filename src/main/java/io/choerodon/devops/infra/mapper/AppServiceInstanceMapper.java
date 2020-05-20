@@ -10,13 +10,13 @@ import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.polaris.InstanceWithPolarisStorageVO;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
 
 
 /**
  * Created by Zenger on 2018/4/15.
  */
-public interface AppServiceInstanceMapper extends BaseMapper<AppServiceInstanceDTO> {
+public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> {
     AppServiceInstanceInfoDTO queryInfoById(@Param("instanceId") Long instanceId);
 
     List<AppServiceInstanceInfoDTO> listInstanceInfoByEnvAndOptions(@Param("envId") Long envId,

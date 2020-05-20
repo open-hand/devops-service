@@ -9,12 +9,12 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentInfoDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentViewDTO;
 import io.choerodon.devops.infra.dto.DevopsResourceEnvOverviewDTO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * Created by younger on 2018/4/9.
  */
-public interface DevopsEnvironmentMapper extends BaseMapper<DevopsEnvironmentDTO> {
+public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDTO> {
     List<DevopsEnvironmentDTO> listEnvWithInstancesByClusterIdForAgent(@Param("clusterId") Long clusterId);
 
     void updateDevopsEnvGroupIdNullByProjectIdAndGroupId(@Param("project_id") Long projectId,

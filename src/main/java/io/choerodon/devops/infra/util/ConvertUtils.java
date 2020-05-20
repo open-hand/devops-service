@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageInfo;
 import org.springframework.beans.BeanUtils;
 
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 
 /**
@@ -52,16 +52,16 @@ public class ConvertUtils {
      * @param <D>       the destination content type
      * @return destination page
      */
-    public static <S, D> Page<D> convertPage(Page<S> source, Function<S, D> converter) {
+    public static <S, D> PageInfo<D> convertPage(PageInfo<S> source, Function<S, D> converter) {
         if (source == null) {
             return null;
         }
-        Page<D> destination = new Page<>();
-        BeanUtils.copyProperties(source, destination, "content");
-        if (source.getContent() != null) {
-            destination.setContent(source.getContent().stream().map(converter).collect(Collectors.toList()));
+        PageInfo<D> destination = new PageInfo<>();
+        BeanUtils.copyProperties(source, destination, "list");
+        if (source.getList() != null) {
+            destination.setList(source.getList().stream().map(converter).collect(Collectors.toList()));
         } else {
-            destination.setContent(new ArrayList<>());
+            destination.setList(new ArrayList<>());
         }
         return destination;
     }
@@ -74,14 +74,14 @@ public class ConvertUtils {
      * @param <D>    the destination content type
      * @return destination page
      */
-    public static <S, D> Page<D> convertPage(Page<S> source, Class<D> destinationClass) {
+    public static <S, D> PageInfo<D> convertPage(PageInfo<S> source, Class<D> destinationClass) {
         if (source == null) {
             return null;
         }
-        Page<D> destination = new Page<>();
-        BeanUtils.copyProperties(source, destination, "content");
-        if (source.getContent() != null) {
-            destination.setContent(source.getContent().stream().map(s -> convertObject(s, destinationClass)).collect(Collectors.toList()));
+        PageInfo<D> destination = new PageInfo<>();
+        BeanUtils.copyProperties(source, destination, "list");
+        if (source.getList() != null) {
+            destination.setList(source.getList().stream().map(s -> convertObject(s, destinationClass)).collect(Collectors.toList()));
         }
         return destination;
     }

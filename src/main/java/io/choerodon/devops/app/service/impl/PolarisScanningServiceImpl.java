@@ -40,8 +40,6 @@ import io.choerodon.devops.infra.util.MapperUtil;
 public class PolarisScanningServiceImpl implements PolarisScanningService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PolarisScanningServiceImpl.class);
 
-    private static final String ERROR_ENV_ID_NOT_EXIST = "error.env.id.not.exist";
-
     /**
      * polaris扫描的超时时间
      */
@@ -97,7 +95,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         if (PolarisScopeType.ENV == scopeType) {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(scopeId);
             if (devopsEnvironmentDTO == null) {
-                throw new CommonException(ERROR_ENV_ID_NOT_EXIST, scopeId);
+                throw new CommonException("error.env.id.not.exist", scopeId);
             }
             devopsEnvUserPermissionService.checkEnvDeployPermission(DetailsHelper.getUserDetails().getUserId(), scopeId);
         } else {
@@ -172,7 +170,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     public String queryEnvPolarisResult(Long projectId, Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         if (devopsEnvironmentDTO == null) {
-            throw new CommonException(ERROR_ENV_ID_NOT_EXIST, envId);
+            throw new CommonException("error.env.id.not.exist", envId);
         }
 
         // 校验用户权限
@@ -193,7 +191,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         LOGGER.info("Scanning env {}", envId);
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         if (devopsEnvironmentDTO == null) {
-            throw new CommonException(ERROR_ENV_ID_NOT_EXIST, envId);
+            throw new CommonException("error.env.id.not.exist", envId);
         }
 
         Long clusterId = devopsEnvironmentDTO.getClusterId();

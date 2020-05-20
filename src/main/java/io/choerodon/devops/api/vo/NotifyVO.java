@@ -5,8 +5,7 @@ import javax.validation.constraints.NotEmpty;
 /**
  * Created by Sheep on 2019/5/14.
  */
-//public class NotifyVO extends io.choerodon.core.notify.NoticeSendDTO {
-public class NotifyVO {
+public class NotifyVO extends io.choerodon.core.notify.NoticeSendDTO {
 
     /**
      * 发送的业务类型code
@@ -14,10 +13,12 @@ public class NotifyVO {
     @NotEmpty(message = "error.postNotify.codeEmpty")
     private String code;
 
+    @Override
     public String getCode() {
         return code;
     }
 
+    @Override
     public void setCode(String code) {
         this.code = code;
     }

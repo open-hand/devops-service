@@ -8,11 +8,11 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 
 @Table(name = "devops_cluster")
-public class DevopsClusterDTO extends AuditDomain {
+public class DevopsClusterDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

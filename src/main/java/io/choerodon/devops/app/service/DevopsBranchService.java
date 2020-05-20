@@ -2,9 +2,9 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by Sheep on 2019/7/11.
@@ -24,7 +24,7 @@ public interface DevopsBranchService {
 
     void baseUpdateBranch(DevopsBranchDTO devopsBranchDTO);
 
-    Page<DevopsBranchDTO> basePageBranch(Long appServiceId, PageRequest pageable, String params);
+    PageInfo<DevopsBranchDTO> basePageBranch(Long appServiceId, Pageable pageable, String params);
 
     void baseDelete(Long appServiceId, String branchName);
 

@@ -1,8 +1,12 @@
 package io.choerodon.devops.api.controller.v1;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
+
+import io.choerodon.core.annotation.Permission;
+import io.choerodon.devops.app.service.AppServiceInstanceService;
+import io.choerodon.devops.app.service.GitlabWebHookService;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -13,10 +17,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import io.choerodon.devops.app.service.AppServiceInstanceService;
-import io.choerodon.devops.app.service.GitlabWebHookService;
-import io.choerodon.swagger.annotation.Permission;
 
 @RestController
 @RequestMapping(value = "/webhook")

@@ -7,13 +7,13 @@ import org.apache.ibatis.annotations.Param;
 import io.choerodon.devops.api.vo.DevopsEnvWithPolarisResultVO;
 import io.choerodon.devops.api.vo.polaris.InstanceWithPolarisStorageVO;
 import io.choerodon.devops.infra.dto.DevopsPolarisNamespaceResultDTO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * @author zmf
  * @since 2/17/20
  */
-public interface DevopsPolarisNamespaceResultMapper extends BaseMapper<DevopsPolarisNamespaceResultDTO> {
+public interface DevopsPolarisNamespaceResultMapper extends Mapper<DevopsPolarisNamespaceResultDTO> {
     void batchInsert(@Param("items") List<DevopsPolarisNamespaceResultDTO> items);
 
     /**

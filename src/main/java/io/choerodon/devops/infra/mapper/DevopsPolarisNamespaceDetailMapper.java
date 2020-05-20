@@ -5,13 +5,13 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsPolarisNamespaceDetailDTO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * @author zmf
  * @since 2/17/20
  */
-public interface DevopsPolarisNamespaceDetailMapper extends BaseMapper<DevopsPolarisNamespaceDetailDTO> {
+public interface DevopsPolarisNamespaceDetailMapper extends Mapper<DevopsPolarisNamespaceDetailDTO> {
     /**
      * 根据id批量删除纪录
      *

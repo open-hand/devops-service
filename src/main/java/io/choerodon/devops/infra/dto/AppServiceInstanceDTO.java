@@ -4,13 +4,13 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * Created by Zenger on 2018/4/14.
  */
 @Table(name = "devops_app_service_instance")
-public class AppServiceInstanceDTO extends AuditDomain {
+public class AppServiceInstanceDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

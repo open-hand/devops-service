@@ -6,7 +6,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * Creator: Runge
@@ -16,7 +16,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
  */
 
 @Table(name = "devops_ingress_path")
-public class DevopsIngressPathDTO extends AuditDomain {
+public class DevopsIngressPathDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

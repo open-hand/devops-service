@@ -3,11 +3,12 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.devops.api.vo.DevopsEnvPodInfoVO;
+
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.api.vo.DevopsEnvPodInfoVO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * Creator: Runge
@@ -15,7 +16,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  * Time: 11:53
  * Description:
  */
-public interface DevopsEnvPodMapper extends BaseMapper<DevopsEnvPodDTO> {
+public interface DevopsEnvPodMapper extends Mapper<DevopsEnvPodDTO> {
 
     List<DevopsEnvPodDTO> listAppServicePod(@Param("projectId") Long projectId,
                                             @Param("envId") Long envId,

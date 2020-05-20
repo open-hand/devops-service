@@ -2,12 +2,15 @@ package io.choerodon.devops.app.service;
 
 import java.util.Date;
 import java.util.List;
+
 import javax.annotation.Nullable;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+
+import org.springframework.data.domain.Pageable;
+
 import io.choerodon.devops.api.vo.kubernetes.Command;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -29,7 +32,7 @@ public interface DevopsEnvCommandService {
 
     List<DevopsEnvCommandDTO> baseListInstanceCommand(String objectType, Long objectId);
 
-    Page<DevopsEnvCommandDTO> basePageByObject(PageRequest pageable, String objectType, Long objectId, Date startTime, Date endTime);
+    PageInfo<DevopsEnvCommandDTO> basePageByObject(Pageable pageable, String objectType, Long objectId, Date startTime, Date endTime);
 
     void baseDelete(Long commandId);
 

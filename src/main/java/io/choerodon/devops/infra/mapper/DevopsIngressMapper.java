@@ -3,11 +3,11 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.devops.infra.dto.DevopsIngressDTO;
+
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dto.DevopsIngressDTO;
-import io.choerodon.mybatis.common.BaseMapper;
-
+import io.choerodon.mybatis.common.Mapper;
 
 
 /**
@@ -16,7 +16,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  * Time: 14:30
  * Description:
  */
-public interface DevopsIngressMapper extends BaseMapper<DevopsIngressDTO> {
+public interface DevopsIngressMapper extends Mapper<DevopsIngressDTO> {
     List<String> listInstanceNamesByIngressId(@Param("ingressId") Long ingressId);
 
     List<String> listIngressNameByServiceId(@Param("serviceId") Long serviceId);

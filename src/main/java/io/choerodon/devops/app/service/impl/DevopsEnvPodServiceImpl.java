@@ -4,16 +4,20 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Pod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.ContainerVO;
 import io.choerodon.devops.api.vo.DevopsEnvPodInfoVO;
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
@@ -24,9 +28,6 @@ import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper;
 import io.choerodon.devops.infra.util.*;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -57,12 +58,12 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     private UserAttrService userAttrService;
 
     @Override
-    public Page<DevopsEnvPodVO> pageByOptions(Long projectId, Long envId, Long appServiceId, Long instanceId, PageRequest pageable, String searchParam) {
+    public PageInfo<DevopsEnvPodVO> pageByOptions(Long projectId, Long envId, Long appServiceId, Long instanceId, Pageable pageable, String searchParam) {
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
-        Page<DevopsEnvPodDTO> devopsEnvPodDTOPageInfo = basePageByIds(projectId, envId, appServiceId, instanceId, pageable, searchParam);
-        Page<DevopsEnvPodVO> devopsEnvPodVOPageInfo = ConvertUtils.convertPage(devopsEnvPodDTOPageInfo, DevopsEnvPodVO.class);
+        PageInfo<DevopsEnvPodDTO> devopsEnvPodDTOPageInfo = basePageByIds(projectId, envId, appServiceId, instanceId, pageable, searchParam);
+        PageInfo<DevopsEnvPodVO> devopsEnvPodVOPageInfo = ConvertUtils.convertPage(devopsEnvPodDTOPageInfo, DevopsEnvPodVO.class);
 
-        devopsEnvPodVOPageInfo.setContent(devopsEnvPodDTOPageInfo.getContent().stream().map(devopsEnvPodDTO -> {
+        devopsEnvPodVOPageInfo.setList(devopsEnvPodDTOPageInfo.getList().stream().map(devopsEnvPodDTO -> {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsEnvPodDTO.getEnvId());
             DevopsEnvPodVO devopsEnvPodVO = ConvertUtils.convertObject(devopsEnvPodDTO, DevopsEnvPodVO.class);
             devopsEnvPodVO.setClusterId(devopsEnvironmentDTO.getClusterId());
@@ -151,27 +152,31 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     }
 
     @Override
-    public Page<DevopsEnvPodDTO> basePageByIds(Long projectId, Long envId, Long appServiceId, Long instanceId, PageRequest pageable, String searchParam) {
+    public PageInfo<DevopsEnvPodDTO> basePageByIds(Long projectId, Long envId, Long appServiceId, Long instanceId, Pageable pageable, String searchParam) {
+
         Sort sort = pageable.getSort();
+        String sortResult = "";
         if (sort != null) {
-            List<Sort.Order> newOrder = new ArrayList<>();
-            sort.iterator().forEachRemaining(s -> {
-                String property = s.getProperty();
-                if ("name".equals(property)) {
-                    property = "dp.`name`";
-                } else if ("ip".equals(property)) {
-                    property = "dp.ip";
-                } else if ("creationDate".equals(property)) {
-                    property = "dp.creation_date";
-                }
-                newOrder.add(new Sort.Order(s.getDirection(), property));
-            });
-            pageable.setSort(new Sort(newOrder));
+            sortResult = Lists.newArrayList(pageable.getSort().iterator()).stream()
+                    .map(t -> {
+                        String property = t.getProperty();
+                        if (property.equals("name")) {
+                            property = "dp.`name`";
+                        } else if (property.equals("ip")) {
+                            property = "dp.ip";
+                        } else if (property.equals("creationDate")) {
+                            property = "dp.creation_date";
+                        }
+
+                        return property + " " + t.getDirection();
+                    })
+                    .collect(Collectors.joining(","));
         }
-        Page<DevopsEnvPodDTO> devopsEnvPodDOPage;
-        if (!StringUtils.isEmpty(searchParam)) {
+        PageInfo<DevopsEnvPodDTO> devopsEnvPodDOPage;
+        if (!org.apache.commons.lang.StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
-            devopsEnvPodDOPage = PageHelper.doPageAndSort(pageable, () -> devopsEnvPodMapper.listAppServicePod(
+            devopsEnvPodDOPage = PageHelper.startPage(
+                    pageable.getPageNumber(), pageable.getPageSize(), sortResult).doSelectPageInfo(() -> devopsEnvPodMapper.listAppServicePod(
                     projectId,
                     envId,
                     appServiceId,
@@ -179,7 +184,8 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
                     TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                     TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
         } else {
-            devopsEnvPodDOPage = PageHelper.doPageAndSort(pageable, () -> devopsEnvPodMapper.listAppServicePod(projectId, envId, appServiceId, instanceId, null, null));
+            devopsEnvPodDOPage = PageHelper.startPage(
+                    pageable.getPageNumber(), pageable.getPageSize(), sortResult).doSelectPageInfo(() -> devopsEnvPodMapper.listAppServicePod(projectId, envId, appServiceId, instanceId, null, null));
         }
 
         return devopsEnvPodDOPage;

@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
+import tk.mybatis.mapper.common.Mapper;
 
 import io.choerodon.devops.infra.dto.DevopsPvDTO;
-import io.choerodon.mybatis.common.BaseMapper;
 
-public interface DevopsPvMapper extends BaseMapper<DevopsPvDTO> {
+public interface DevopsPvMapper extends Mapper<DevopsPvDTO> {
 
 
     List<DevopsPvDTO> listPvByOptions(@Param("organizationId") Long organizationId,

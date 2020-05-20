@@ -2,10 +2,9 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 
-import org.apache.ibatis.annotations.Param;
-
 import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 
 /**
@@ -15,7 +14,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 
 
-public interface PipelineStageRecordMapper extends BaseMapper<PipelineStageRecordDTO> {
+public interface PipelineStageRecordMapper extends Mapper<PipelineStageRecordDTO> {
     List<PipelineStageRecordDTO> listByOptions(@Param("projectId") Long projectId,
                                           @Param("pipelineRecordId") Long pipelineRecordId);
 

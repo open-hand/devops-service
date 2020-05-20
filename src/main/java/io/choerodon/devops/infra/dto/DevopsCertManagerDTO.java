@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -12,7 +12,7 @@ import javax.persistence.Table;
  * @since 2019/11/1
  */
 @Table(name = "devops_cert_manager")
-public class DevopsCertManagerDTO extends AuditDomain {
+public class DevopsCertManagerDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

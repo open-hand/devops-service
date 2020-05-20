@@ -4,7 +4,7 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * if (!isSynchro) {
@@ -21,7 +21,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
  */
 
 @Table(name = "devops_app_service")
-public class AppServiceDTO extends AuditDomain {
+public class AppServiceDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,8 +41,6 @@ public class AppServiceDTO extends AuditDomain {
     private String type;
     private Boolean isSkipCheckPermission;
     private String imgUrl;
-    // TODO delete the field
-    @Deprecated
     private Long mktAppId;
 
     @Transient

@@ -6,9 +6,9 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
 
-public interface DevopsBranchMapper extends BaseMapper<DevopsBranchDTO> {
+public interface DevopsBranchMapper extends Mapper<DevopsBranchDTO> {
 
     DevopsBranchDTO queryByAppAndBranchName(@Param("appServiceId") Long appServiceId, @Param("branchName") String name);
 

@@ -9,13 +9,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
@@ -33,8 +35,6 @@ import io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by Sheep on 2019/7/29.
@@ -57,20 +57,20 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     private DevopsDeployRecordInstanceMapper devopsDeployRecordInstanceMapper;
 
     @Override
-    public Page<DevopsDeployRecordVO> pageByProjectId(Long projectId, String params, PageRequest pageable) {
+    public PageInfo<DevopsDeployRecordVO> pageByProjectId(Long projectId, String params, Pageable pageable) {
         Boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId);
 
-        Page<DevopsDeployRecordDTO> devopsDeployRecordDTOPageInfo = basePageByProjectId(projectId, params, pageable);
+        PageInfo<DevopsDeployRecordDTO> devopsDeployRecordDTOPageInfo = basePageByProjectId(projectId, params, pageable);
 
-        Page<DevopsDeployRecordVO> devopsDeployRecordVOPageInfo = ConvertUtils.convertPage(devopsDeployRecordDTOPageInfo, DevopsDeployRecordVO.class);
+        PageInfo<DevopsDeployRecordVO> devopsDeployRecordVOPageInfo = ConvertUtils.convertPage(devopsDeployRecordDTOPageInfo, DevopsDeployRecordVO.class);
 
         //查询用户信息
-        List<Long> userIds = devopsDeployRecordVOPageInfo.getContent().stream().map(DevopsDeployRecordVO::getDeployCreatedBy).collect(Collectors.toList());
-        Map<Long, IamUserDTO> userMap = new HashMap<>(pageable.getSize());
+        List<Long> userIds = devopsDeployRecordVOPageInfo.getList().stream().map(DevopsDeployRecordVO::getDeployCreatedBy).collect(Collectors.toList());
+        Map<Long, IamUserDTO> userMap = new HashMap<>(pageable.getPageSize());
         baseServiceClientOperator.listUsersByIds(userIds).forEach(user -> userMap.put(user.getId(), user));
 
         //设置环境信息以及用户信息
-        devopsDeployRecordVOPageInfo.getContent().forEach(devopsDeployRecordVO -> {
+        devopsDeployRecordVOPageInfo.getList().forEach(devopsDeployRecordVO -> {
             if (devopsDeployRecordVO.getDeployType().equals("auto") && !devopsDeployRecordVO.getDeployStatus().equals("success")) {
                 pipelineService.setPipelineRecordDetail(projectOwnerOrRoot, devopsDeployRecordVO);
             }
@@ -90,7 +90,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
 
     @Override
-    public Page<DevopsDeployRecordDTO> basePageByProjectId(Long projectId, String params, PageRequest pageable) {
+    public PageInfo<DevopsDeployRecordDTO> basePageByProjectId(Long projectId, String params, Pageable pageable) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         Map<String, Object> cast = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         if (cast.get(DEPLOY_TYPE) != null && cast.get(DEPLOY_STATUS) != null) {
@@ -102,7 +102,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         }
         maps.put(TypeUtil.SEARCH_PARAM, cast);
 
-        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> devopsDeployRecordMapper.listByProjectId(projectId,
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> devopsDeployRecordMapper.listByProjectId(projectId,
                 TypeUtil.cast(maps.get(TypeUtil.PARAMS)),
                 TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM))
         ));

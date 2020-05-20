@@ -6,14 +6,14 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  9:33 2019/4/10
  * Description:
  */
-public interface DevopsDeployValueMapper extends BaseMapper<DevopsDeployValueDTO> {
+public interface DevopsDeployValueMapper extends Mapper<DevopsDeployValueDTO> {
     List<DevopsDeployValueDTO> listByOptions(@Param("projectId") Long projectId,
                                              @Param("appServiceId") Long appServiceId,
                                              @Param("envId") Long envId,

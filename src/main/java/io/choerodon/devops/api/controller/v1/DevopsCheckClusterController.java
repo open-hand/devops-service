@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.annotation.Permission;
+import io.choerodon.core.enums.ResourceType;
 import io.choerodon.devops.app.service.DevopsClusterService;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author zhaotianxin
@@ -24,7 +24,7 @@ public class DevopsCheckClusterController {
     @Autowired
     private DevopsClusterService devopsClusterService;
 
-    @Permission(level = ResourceLevel.SITE, permissionPublic = true)
+    @Permission(type = ResourceType.SITE, permissionPublic = true)
     @ApiOperation(value = "验证用户是否拥有操作集群的权限")
     @GetMapping(value = "/clusterCheck")
     public ResponseEntity<Boolean> checkUserClusterPermission(

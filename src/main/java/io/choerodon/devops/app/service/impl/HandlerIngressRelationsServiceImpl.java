@@ -33,7 +33,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
 public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRelationsService<V1beta1Ingress> {
     public static final String INGRESS = "Ingress";
     private static final String GIT_SUFFIX = "/.git";
-    private static final Pattern PATTERN = Pattern.compile("^[-+]?[\\d]*$");
+    private Pattern PATTERN = Pattern.compile("^[-+]?[\\d]*$");
     private Gson gson = new Gson();
     @Autowired
     private DevopsIngressService devopsIngressService;

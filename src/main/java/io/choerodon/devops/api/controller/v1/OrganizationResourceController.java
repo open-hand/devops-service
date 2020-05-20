@@ -1,14 +1,13 @@
 package io.choerodon.devops.api.controller.v1;
 
+import io.choerodon.core.annotation.Permission;
+import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import io.choerodon.devops.api.vo.ResourceLimitVO;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * 〈功能简述〉

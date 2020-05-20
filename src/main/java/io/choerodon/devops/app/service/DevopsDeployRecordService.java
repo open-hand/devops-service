@@ -4,23 +4,24 @@ package io.choerodon.devops.app.service;
 import java.util.Date;
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import org.springframework.data.domain.Pageable;
+
 import io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
 import io.choerodon.devops.api.vo.DevopsDeployRecordVO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordInstanceDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by Sheep on 2019/7/29.
  */
 public interface DevopsDeployRecordService {
 
-    Page<DevopsDeployRecordVO> pageByProjectId(Long projectId, String params, PageRequest pageable);
+    PageInfo<DevopsDeployRecordVO> pageByProjectId(Long projectId, String params, Pageable pageable);
 
 
-    Page<DevopsDeployRecordDTO> basePageByProjectId(Long projectId, String params, PageRequest pageable);
+    PageInfo<DevopsDeployRecordDTO> basePageByProjectId(Long projectId, String params, Pageable pageable);
 
     void baseCreate(DevopsDeployRecordDTO devopsDeployRecordDTO);
 

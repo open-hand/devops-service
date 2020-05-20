@@ -2,10 +2,16 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
 import javax.annotation.Nullable;
 
+import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.kubernetes.client.JSON;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.slf4j.Logger;
@@ -14,14 +20,17 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
@@ -42,10 +51,10 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsIngressMapper;
 import io.choerodon.devops.infra.mapper.DevopsIngressPathMapper;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
-import io.choerodon.devops.infra.util.*;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.ResourceCreatorInfoUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
 public class DevopsIngressServiceImpl implements DevopsIngressService {
@@ -418,11 +427,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
     @Override
 
-    public Page<DevopsIngressVO> pageByEnv(Long projectId, Long envId, PageRequest pageable, String params) {
-        Page<DevopsIngressVO> devopsIngressVOPage = basePageByOptions(projectId, envId, null, pageable, params);
+    public PageInfo<DevopsIngressVO> pageByEnv(Long projectId, Long envId, Pageable pageable, String params) {
+        PageInfo<DevopsIngressVO> devopsIngressVOPage = basePageByOptions(projectId, envId, null, pageable, params);
 
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
-        devopsIngressVOPage.getContent().forEach(devopsIngressVO -> {
+        devopsIngressVOPage.getList().forEach(devopsIngressVO -> {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressVO.getEnvId());
             devopsIngressVO.setEnvStatus(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
         });
@@ -820,30 +829,31 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     @Override
-    public Page<DevopsIngressVO> basePageByOptions(Long projectId, Long envId, Long serviceId, PageRequest pageable, String params) {
+    public PageInfo<DevopsIngressVO> basePageByOptions(Long projectId, Long envId, Long serviceId, Pageable pageable, String params) {
         List<DevopsIngressVO> devopsIngressVOS = new ArrayList<>();
 
         Map<String, Object> maps = TypeUtil.castMapParams(params);
 
         Sort sort = pageable.getSort();
+        String sortResult = "";
         if (sort != null) {
-            List<Sort.Order> newOrders = new ArrayList<>();
-            sort.iterator().forEachRemaining(s -> {
-                String property = s.getProperty();
-                if (property.equals("envName")) {
-                    property = "de.name";
-                } else if (property.equals("path")) {
-                    property = "dip.path";
-                }
-                newOrders.add(new Sort.Order(s.getDirection(), property));
-            });
-            pageable.setSort(new Sort(newOrders));
+            sortResult = Lists.newArrayList(pageable.getSort().iterator()).stream()
+                    .map(t -> {
+                        String property = t.getProperty();
+                        if (property.equals("envName")) {
+                            property = "de.name";
+                        } else if (property.equals("path")) {
+                            property = "dip.path";
+                        }
+                        return property + " " + t.getDirection();
+                    })
+                    .collect(Collectors.joining(","));
         }
 
-        Page<DevopsIngressDTO> devopsIngressDTOPageInfo =
-                PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
+        PageInfo<DevopsIngressDTO> devopsIngressDTOPageInfo =
+                PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), sortResult).doSelectPageInfo(
                         () -> devopsIngressMapper.listIngressByOptions(projectId, envId, serviceId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
-        devopsIngressDTOPageInfo.getContent().forEach(t -> {
+        devopsIngressDTOPageInfo.getList().forEach(t -> {
             DevopsIngressVO devopsIngressVO =
                     new DevopsIngressVO(t.getId(), t.getDomain(), t.getName(),
                             t.getEnvId(), t.getUsable(), t.getEnvName());
@@ -860,9 +870,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             devopsIngressPathMapper.select(devopsIngressPathDTO).forEach(e -> setDevopsIngressDTO(devopsIngressVO, e));
             devopsIngressVOS.add(devopsIngressVO);
         });
-        Page<DevopsIngressVO> ingressVOPageInfo = new Page<>();
+        PageInfo<DevopsIngressVO> ingressVOPageInfo = new PageInfo<>();
         BeanUtils.copyProperties(devopsIngressDTOPageInfo, ingressVOPageInfo);
-        ingressVOPageInfo.setContent(devopsIngressVOS);
+        ingressVOPageInfo.setList(devopsIngressVOS);
         return ingressVOPageInfo;
     }
 

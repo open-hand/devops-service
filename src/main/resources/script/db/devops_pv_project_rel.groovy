@@ -12,17 +12,4 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pv_project_rel.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
-
-    changeSet(author: 'zmf', id: '2020-05-13-devops_pv_project_rel-add-pk') {
-        addColumn(tableName: 'devops_pv_project_rel') {
-            column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true, beforeColumn: "pv_id") {
-                constraints(primaryKey: true)
-            }
-        }
-    }
-
-    changeSet(author: 'zmf', id: '2020-05-13-devops_pv_project_rel-add-uk', failOnError: false) {
-        addUniqueConstraint(tableName: 'devops_pv_project_rel',
-                constraintName: 'uk_devops_pv_project_rel_project_id_pv_id', columnNames: 'project_id,pv_id')
-    }
 }
