@@ -13,6 +13,20 @@ import javax.annotation.PostConstruct;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import io.kubernetes.client.models.V1Endpoints;
+import org.eclipse.jgit.api.Git;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.yaml.snakeyaml.Yaml;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -40,19 +54,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
 import io.choerodon.devops.infra.util.*;
-import io.kubernetes.client.models.V1Endpoints;
-import org.eclipse.jgit.api.Git;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.MessageSource;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
-import org.yaml.snakeyaml.Yaml;
 
 /**
  * Creator: Runge
@@ -320,8 +321,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             }
             IamUserDTO userDTO = baseServiceClientOperator.queryUserByUserId(
                     userAttrService.queryUserIdByGitlabUserId(t.getUserId()));
-            IamUserDTO commitUserDTO = baseServiceClientOperator.queryUserByUserId(
-                    userAttrService.queryUserIdByGitlabUserId(t.getLastCommitUser()));
+            Long userId = userAttrService.queryUserIdByGitlabUserId(t.getLastCommitUser());
+            IamUserDTO commitUserDTO = null;
+            if ((userId != null)) {
+                commitUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
+            }
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
             return getBranchVO(t, commitUrl, commitUserDTO, userDTO, issueDTO);
         }).collect(Collectors.toList()));
@@ -617,7 +621,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 }
                 error = messageSource.getMessage(e.getMessage(), e.getParameters(), GitOpsUtil.locale());
             } catch (Exception e1) {
-                LOGGER.debug("Exception occurred when read message from message source. The original message is {}. The exception is : {}",e.getMessage(), e1);
+                LOGGER.debug("Exception occurred when read message from message source. The original message is {}. The exception is : {}", e.getMessage(), e1);
                 error = e.getMessage();
             }
             devopsEnvFileErrorDTO.setError(error + ":" + errorCode);
