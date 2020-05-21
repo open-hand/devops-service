@@ -321,11 +321,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             }
             IamUserDTO userDTO = baseServiceClientOperator.queryUserByUserId(
                     userAttrService.queryUserIdByGitlabUserId(t.getUserId()));
-            Long userId = userAttrService.queryUserIdByGitlabUserId(t.getLastCommitUser());
-            IamUserDTO commitUserDTO = null;
-            if ((userId != null)) {
-                commitUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
-            }
+            IamUserDTO commitUserDTO = baseServiceClientOperator.queryUserByUserId(
+                    userAttrService.queryUserIdByGitlabUserId(t.getLastCommitUser()));
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
             return getBranchVO(t, commitUrl, commitUserDTO, userDTO, issueDTO);
         }).collect(Collectors.toList()));
