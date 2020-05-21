@@ -233,8 +233,8 @@ const BuildDuration = observer(() => {
   const loadCharts = (pageInfo) => {
     const projectId = AppState.currentMenuType.id;
     const appId = ReportsStore.getAppId;
-    const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
-    const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
+    const startTime = ReportsStore.getStartTime.format('YYYY-MM-DD HH:mm:ss');
+    const endTime = ReportsStore.getEndTime.format('YYYY-MM-DD HH:mm:ss');
     ReportsStore.loadBuildDuration(projectId, appId, startTime, endTime);
     if (pageInfo) {
       ReportsStore.loadBuildTable(projectId, appId, startTime, endTime, pageInfo.current, pageInfo.pageSize);

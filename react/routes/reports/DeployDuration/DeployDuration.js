@@ -108,8 +108,8 @@ const DeployDuration = observer(() => {
    * 加载数据
    */
   function loadData() {
-    const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
-    const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
+    const startTime = ReportsStore.getStartTime.format('YYYY-MM-DD HH:mm:ss');
+    const endTime = ReportsStore.getEndTime.format('YYYY-MM-DD HH:mm:ss');
     chartsDs.setQueryParameter('startTime', startTime);
     chartsDs.setQueryParameter('endTime', endTime);
     tableDs.setQueryParameter('startTime', startTime);

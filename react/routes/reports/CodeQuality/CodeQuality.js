@@ -72,8 +72,8 @@ const CodeQuality = withRouter(observer(() => {
 
   function loadCharts() {
     const { getStartTime, getEndTime, getAppId } = ReportsStore;
-    const startTime = getStartTime.format().split('T')[0].replace(/-/g, '/');
-    const endTime = getEndTime.format().split('T')[0].replace(/-/g, '/');
+    const startTime = getStartTime.format('YYYY-MM-DD HH:mm:ss');
+    const endTime = getEndTime.format('YYYY-MM-DD HH:mm:ss');
     chartsDs.setQueryParameter('startTime', startTime);
     chartsDs.setQueryParameter('endTime', endTime);
     chartsDs.query();
