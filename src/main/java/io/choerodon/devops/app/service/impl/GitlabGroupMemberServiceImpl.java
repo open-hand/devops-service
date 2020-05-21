@@ -104,11 +104,11 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     private void screenOrgLable(GitlabGroupMemberVO gitlabGroupMemberVO, Boolean isCreate) {
         List<String> roleLabels = gitlabGroupMemberVO.getRoleLabels();
-        if (roleLabels.contains(LabelType.ORGANIZATION_GITLAB_OWNER.getValue())) {
+        if (roleLabels.contains(LabelType.TENANT_ADMIN.getValue())) {
             List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(gitlabGroupMemberVO.getResourceId());
             if (projectDTOS != null && projectDTOS.size() > 0) {
                 if (isCreate) {
-                    projectDTOS.forEach(projectDTO -> assignGitLabGroupMemeberForOwner(projectDTO, gitlabGroupMemberVO.getUserId()));
+                    projectDTOS.forEach(projectDTO -> assignGitLabGroupMemberForOwner(projectDTO, gitlabGroupMemberVO.getUserId()));
                 } else {
                     deleteGitLabPermissions(projectDTOS, gitlabGroupMemberVO);
                 }
@@ -117,7 +117,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     }
 
     private void deleteGitLabPermissions(List<ProjectDTO> projectDTOS, GitlabGroupMemberVO gitlabGroupMemberVO) {
-        projectDTOS.stream().forEach(projectDTO -> {
+        projectDTOS.forEach(projectDTO -> {
             LOGGER.info("start delete project id is {} for gitlab org owner", projectDTO.getId());
             //如果删除的成员为该项目下的项目所有者，则不删除gitlab相应的权限
             if (!baseServiceClientOperator.isProjectOwner(gitlabGroupMemberVO.getUserId(), projectDTO.getId())) {
@@ -591,7 +591,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         }
     }
 
-    public void assignGitLabGroupMemeberForOwner(ProjectDTO projectDTO, Long userId) {
+    public void assignGitLabGroupMemberForOwner(ProjectDTO projectDTO, Long userId) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
         DevopsProjectDTO search = new DevopsProjectDTO();
         search.setIamProjectId(projectDTO.getId());

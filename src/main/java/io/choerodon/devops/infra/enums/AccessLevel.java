@@ -46,13 +46,13 @@ public enum AccessLevel {
      * @param value String
      */
     public static AccessLevel forString(String value, MemberHelper memberHelper) {
-        GitlabRoleLabel gitlabRoleLabel = GitlabRoleLabel.forValue(value);
+        LabelType gitlabRoleLabel = LabelType.forValue(value);
         if (gitlabRoleLabel != null) {
             switch (gitlabRoleLabel) {
-                case OWNER:
+                case GITLAB_PROJECT_OWNER:
                     memberHelper.setProjectOwnerAccessLevel(AccessLevel.OWNER);
                     return AccessLevel.OWNER;
-                case DEVELOPER:
+                case GITLAB_PROJECT_DEVELOPER:
                     memberHelper.setProjectDevelopAccessLevel(AccessLevel.DEVELOPER);
                     return AccessLevel.DEVELOPER;
                 default:

@@ -87,9 +87,13 @@ public class SagaHandler {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectPayload.getProjectId());
         List<OrgAdministratorVO> orgAdministratorVOS = baseServiceClientOperator.listOrgAdministrator(projectDTO.getOrganizationId()).getList();
         if (!CollectionUtils.isEmpty(orgAdministratorVOS)) {
+<<<<<<< HEAD
             orgAdministratorVOS.stream().forEach(orgAdministratorVO -> {
                 gitlabGroupMemberService.assignGitLabGroupMemeberForOwner(projectDTO, orgAdministratorVO.getId());
             });
+=======
+            orgAdministratorVOS.forEach(orgAdministratorVO -> gitlabGroupMemberService.assignGitLabGroupMemberForOwner(projectDTO, orgAdministratorVO.getId()));
+>>>>>>> [FIX] fix gitlab label
         }
         return msg;
     }

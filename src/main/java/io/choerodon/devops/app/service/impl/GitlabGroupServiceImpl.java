@@ -98,9 +98,13 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         //创建完group后分配组织管理员权限
         List<OrgAdministratorVO> list = baseServiceClientOperator.listOrgAdministrator(projectDTO.getOrganizationId()).getList();
         if (!CollectionUtils.isEmpty(list)) {
+<<<<<<< HEAD
             list.stream().forEach(orgAdministratorVO -> {
                 gitlabGroupMemberService.assignGitLabGroupMemeberForOwner(projectDTO, orgAdministratorVO.getId());
             });
+=======
+            list.forEach(orgAdministratorVO -> gitlabGroupMemberService.assignGitLabGroupMemberForOwner(projectDTO, orgAdministratorVO.getId()));
+>>>>>>> [FIX] fix gitlab label
         }
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
         if (devopsProjectDTO.getDevopsClusterEnvGroupId() == null) {
