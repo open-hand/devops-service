@@ -6,13 +6,21 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+<<<<<<< HEAD
 import io.choerodon.mybatis.entity.BaseDTO;
+=======
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+>>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 
 /**
  * @author: 25499
  * @date: 2019/10/23 11:45
  * @description:
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_harbor_user")
 public class HarborUserDTO extends BaseDTO {
     @Id

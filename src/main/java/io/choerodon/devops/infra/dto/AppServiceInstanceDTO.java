@@ -4,11 +4,19 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
+<<<<<<< HEAD
 import io.choerodon.mybatis.entity.BaseDTO;
+=======
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+>>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 
 /**
  * Created by Zenger on 2018/4/14.
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_app_service_instance")
 public class AppServiceInstanceDTO extends BaseDTO {
 

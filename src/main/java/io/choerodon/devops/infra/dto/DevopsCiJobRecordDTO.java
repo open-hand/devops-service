@@ -1,13 +1,22 @@
 package io.choerodon.devops.infra.dto;
 
+<<<<<<< HEAD
 import io.choerodon.mybatis.entity.BaseDTO;
 import io.swagger.annotations.ApiModelProperty;
 
+=======
+import java.util.Date;
+>>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.util.Date;
+
+import io.swagger.annotations.ApiModelProperty;
+
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * 〈功能简述〉
@@ -16,6 +25,8 @@ import java.util.Date;
  * @author wanghao
  * @Date 2020/4/2 17:25
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_ci_job_record")
 public class DevopsCiJobRecordDTO extends BaseDTO {
 

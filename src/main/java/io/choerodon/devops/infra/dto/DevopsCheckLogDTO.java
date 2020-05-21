@@ -1,14 +1,21 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.Date;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.util.Date;
 
+<<<<<<< HEAD
 import io.choerodon.mybatis.entity.BaseDTO;
+=======
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+>>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 
-
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_check_log")
 public class DevopsCheckLogDTO extends BaseDTO {
 

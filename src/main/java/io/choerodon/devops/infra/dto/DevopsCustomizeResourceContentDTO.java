@@ -9,7 +9,6 @@ import javax.persistence.Table;
  * Created by Sheep on 2019/6/26.
  */
 
-
 @Table(name = "devops_customize_resource_content")
 public class DevopsCustomizeResourceContentDTO {
 

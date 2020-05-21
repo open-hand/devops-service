@@ -1,16 +1,25 @@
 package io.choerodon.devops.infra.dto;
 
+<<<<<<< HEAD
 import io.choerodon.mybatis.entity.BaseDTO;
 
+=======
+>>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+
 /**
  * @author zhaotianxin
  * @since 2019/10/30
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_cert_manager_record")
 public class DevopsCertManagerRecordDTO extends BaseDTO {
     @Id

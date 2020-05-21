@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.dto;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+
 @Table(name = "devops_pv_project_rel")
 public class DevopsPvProPermissionDTO {
 

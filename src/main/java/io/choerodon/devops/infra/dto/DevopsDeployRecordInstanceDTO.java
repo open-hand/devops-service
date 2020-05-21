@@ -7,7 +7,13 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
+<<<<<<< HEAD
 import io.choerodon.mybatis.entity.BaseDTO;
+=======
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+>>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 
 /**
  * 这个表是用于存储批量部署的部署纪录与实例的关联关系的
@@ -15,6 +21,8 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * @author zmf
  * @since 2/26/20
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_deploy_record_instance")
 public class DevopsDeployRecordInstanceDTO extends BaseDTO {
     @Id

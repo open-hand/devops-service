@@ -2,13 +2,21 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.*;
 
+<<<<<<< HEAD
 import io.choerodon.mybatis.entity.BaseDTO;
+=======
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+>>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  19:08 2019/4/3
  * Description:
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_pipeline")
 public class PipelineDTO extends BaseDTO {
     @Id

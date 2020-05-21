@@ -5,11 +5,19 @@ import java.util.List;
 import javax.persistence.*;
 
 import io.choerodon.devops.api.vo.ContainerVO;
+<<<<<<< HEAD
 import io.choerodon.mybatis.entity.BaseDTO;
+=======
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+>>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 
 /**
  * Created by Zenger on 2018/4/14.
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_env_pod")
 public class DevopsEnvPodDTO extends BaseDTO {
 

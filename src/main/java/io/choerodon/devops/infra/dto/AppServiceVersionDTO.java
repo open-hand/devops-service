@@ -1,14 +1,22 @@
 package io.choerodon.devops.infra.dto;
 
 
+<<<<<<< HEAD
 import io.choerodon.mybatis.entity.BaseDTO;
 
+=======
+>>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 import javax.persistence.*;
+
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by Zenger on 2018/4/3.
  */
-
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_app_service_version")
 public class AppServiceVersionDTO extends BaseDTO {
 

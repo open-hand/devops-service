@@ -1,11 +1,17 @@
 package io.choerodon.devops.infra.dto;
 
 import java.util.List;
+import javax.persistence.*;
 
+<<<<<<< HEAD
 import io.choerodon.mybatis.entity.BaseDTO;
+=======
+>>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 import io.swagger.annotations.ApiModelProperty;
 
-import javax.persistence.*;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * if (!isSynchro) {
@@ -20,6 +26,8 @@ import javax.persistence.*;
  * <p>
  * Created by younger on 2018/4/9.
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_env")
 public class DevopsEnvironmentDTO extends BaseDTO {
     @Id

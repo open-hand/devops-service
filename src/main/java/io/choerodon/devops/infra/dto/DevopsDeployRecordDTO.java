@@ -5,12 +5,19 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
+<<<<<<< HEAD
 import io.choerodon.mybatis.entity.BaseDTO;
+=======
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+>>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 
 /**
  * Created by Sheep on 2019/7/29.
  */
-
+@ModifyAudit
+@VersionAudit
 @Table(name="devops_deploy_record")
 public class DevopsDeployRecordDTO extends BaseDTO {
 

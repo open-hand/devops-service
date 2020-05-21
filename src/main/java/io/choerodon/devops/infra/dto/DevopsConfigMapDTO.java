@@ -4,8 +4,16 @@ package io.choerodon.devops.infra.dto;
 import java.util.List;
 import javax.persistence.*;
 
+<<<<<<< HEAD
 import io.choerodon.mybatis.entity.BaseDTO;
+=======
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+>>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_config_map")
 public class DevopsConfigMapDTO extends BaseDTO {
 

@@ -6,7 +6,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+<<<<<<< HEAD
 import io.choerodon.mybatis.entity.BaseDTO;
+=======
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+>>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 
 /**
  * Creator: Runge
@@ -14,7 +20,8 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Time: 14:30
  * Description:
  */
-
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_ingress_path")
 public class DevopsIngressPathDTO extends BaseDTO {
 

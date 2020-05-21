@@ -3,7 +3,13 @@ package io.choerodon.devops.infra.dto;
 import java.util.Map;
 import javax.persistence.*;
 
+<<<<<<< HEAD
 import io.choerodon.mybatis.entity.BaseDTO;
+=======
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+>>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 
 /**
  * Created by n!Ck
@@ -11,7 +17,8 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Time: 上午10:08
  * Description:
  */
-
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_secret")
 public class DevopsSecretDTO extends BaseDTO {
 

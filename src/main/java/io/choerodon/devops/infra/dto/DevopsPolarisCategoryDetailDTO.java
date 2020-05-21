@@ -7,7 +7,13 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
+<<<<<<< HEAD
 import io.choerodon.mybatis.entity.BaseDTO;
+=======
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+>>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 
 /**
  * 按类别分的资源详细扫描结果
@@ -15,6 +21,8 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * @author zmf
  * @since 2/17/20
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_polaris_category_detail")
 public class DevopsPolarisCategoryDetailDTO extends BaseDTO {
     @Id
