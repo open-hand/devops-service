@@ -360,7 +360,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
      */
     private void addCommitInfo(DevopsCiPipelineRecordVO devopsCiPipelineRecordVO, DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO) {
         DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.baseQueryByShaAndRef(devopsCiPipelineRecordDTO.getCommitSha(), devopsCiPipelineRecordDTO.getGitlabTriggerRef());
-        IamUserDTO commitUser = baseServiceClientOperator.queryUserByUserId(devopsGitlabCommitDTO.getUserId());
+        IamUserDTO commitUser = null;
+        if (devopsGitlabCommitDTO.getUserId() != null) {
+            commitUser = baseServiceClientOperator.queryUserByUserId(devopsGitlabCommitDTO.getUserId());
+        }
 
         CustomCommitVO customCommitVO = new CustomCommitVO();
         customCommitVO.setRef(devopsCiPipelineRecordDTO.getGitlabTriggerRef());
