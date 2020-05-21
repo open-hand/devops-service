@@ -40,7 +40,7 @@ public class DevopsGitlabPipelineController {
      * @param endTime      结束时间
      * @return List
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取pipeline时长报表")
@@ -69,7 +69,7 @@ public class DevopsGitlabPipelineController {
      * @param endTime      结束时间
      * @return 次数报表
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取pipeline次数报表")
@@ -98,7 +98,7 @@ public class DevopsGitlabPipelineController {
      * @param endTime      结束时间
      * @return List
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页获取pipeline")

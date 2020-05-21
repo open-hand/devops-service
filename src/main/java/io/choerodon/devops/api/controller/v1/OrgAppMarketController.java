@@ -32,7 +32,6 @@ public class OrgAppMarketController {
     @Autowired
     private OrgAppMarketService orgAppMarketService;
 
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据应用Id，获取应用服务和应用服务版本")
     @CustomPageRequest
     @PostMapping("/page_app_services")
@@ -49,7 +48,6 @@ public class OrgAppMarketController {
                 .orElseThrow(() -> new CommonException("error.app.services.page"));
     }
 
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据应用服务ID查询所对应的应用版本")
     @GetMapping("/list_versions/{app_service_id}")
     public ResponseEntity<List<AppServiceVersionUploadPayload>> listVersionsByAppServiceId(
@@ -62,7 +60,6 @@ public class OrgAppMarketController {
     }
 
 
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "应用上传")
     @PostMapping("/upload")
     public ResponseEntity uploadAPP(
@@ -72,7 +69,6 @@ public class OrgAppMarketController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "应用上传 版本修复")
     @PostMapping("/upload_fix_version")
     public ResponseEntity uploadAPPFixVersion(
@@ -82,7 +78,6 @@ public class OrgAppMarketController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "应用下载")
     @PostMapping("/download")
     public ResponseEntity downLoadApp(
@@ -92,7 +87,6 @@ public class OrgAppMarketController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "查询应用服务版本")
     @PostMapping("/list_versions")
     public ResponseEntity<List<AppServiceAndVersionVO>> listVersions(

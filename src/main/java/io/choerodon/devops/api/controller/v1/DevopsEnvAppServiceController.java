@@ -39,7 +39,7 @@ public class DevopsEnvAppServiceController {
      * @param devopsEnvAppServiceVO 环境和服务的关联关系
      * @return ApplicationRepDTO
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建环境下的服务关联")
     @PostMapping("/batch_create")
     public ResponseEntity<List<DevopsEnvApplicationVO>> batchCreate(
@@ -52,7 +52,7 @@ public class DevopsEnvAppServiceController {
                 .orElseThrow(() -> new CommonException("error.env.service.create"));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除指定环境-服务关联关系")
     @DeleteMapping
     public ResponseEntity delete(
@@ -71,7 +71,7 @@ public class DevopsEnvAppServiceController {
      * @param envId 环境id
      * @return List
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询环境下的所有服务")
     @GetMapping("/list_by_env")
     public ResponseEntity<List<AppServiceRepVO>> listAppByEnvId(
@@ -89,7 +89,7 @@ public class DevopsEnvAppServiceController {
      * @param appServiceId 服务id
      * @return List
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询服务在环境下的所有label")
     @GetMapping("/list_label")
     public ResponseEntity<List<Map<String, String>>> listLabelByAppAndEnvId(
@@ -110,7 +110,7 @@ public class DevopsEnvAppServiceController {
      * @param appServiceId 服务id
      * @return List
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询服务在环境下的所有port")
     @GetMapping("/list_port")
     public ResponseEntity<List<DevopsEnvPortVO>> listPortByAppAndEnvId(
@@ -131,7 +131,7 @@ public class DevopsEnvAppServiceController {
      * @param envId     环境id
      * @return 服务列表
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目下可用的且没有与该环境关联的服务")
     @GetMapping("/non_related_app_service")
     public ResponseEntity<List<BaseApplicationServiceVO>> listNonRelatedAppService(

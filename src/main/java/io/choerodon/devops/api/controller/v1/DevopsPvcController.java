@@ -39,7 +39,7 @@ public class DevopsPvcController {
      * @param params    查询参数
      * @return CertificationDTO page
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询PVC")
@@ -61,7 +61,7 @@ public class DevopsPvcController {
     }
 
     @PostMapping
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建PVC")
     public ResponseEntity<DevopsPvcRespVO> create(
@@ -81,7 +81,7 @@ public class DevopsPvcController {
      * @param pvcId PVC id
      * @return Boolean
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除PVC")
     @DeleteMapping("/{pvc_id}")
@@ -103,7 +103,7 @@ public class DevopsPvcController {
      * @param name  PVC名称
      * @param envId 环境id
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "检查PVC名称的唯一性")
     @GetMapping("/check_name")

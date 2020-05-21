@@ -45,7 +45,7 @@ public class DevopsCustomizeResourceController {
      * @param contentFile 内容文件
      * @return 201状态码
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建其他k8s资源")
     @PostMapping
@@ -68,7 +68,7 @@ public class DevopsCustomizeResourceController {
      * @param resourceId 资源的id
      * @return 204
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除其他k8s资源")
     @DeleteMapping
@@ -86,7 +86,7 @@ public class DevopsCustomizeResourceController {
      * @return 资源
      */
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取资源详情")
     @GetMapping("/{resource_id}")
@@ -107,7 +107,7 @@ public class DevopsCustomizeResourceController {
      * @param searchParam 查询参数
      * @return Page of DevopsCustomizeResourceDTO
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "其他K8S资源分页查询")

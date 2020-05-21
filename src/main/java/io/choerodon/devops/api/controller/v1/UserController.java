@@ -30,7 +30,6 @@ public class UserController {
      * @param userId 猪齿鱼用户id
      * @return 重置后的密码
      */
-    @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation(value = "重置用户的gitlab密码")
     @PutMapping("/{user_id}/git_password")
     public ResponseEntity<String> resetUserGitlabPassword(

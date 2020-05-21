@@ -46,7 +46,7 @@ public class DevopsGitController {
      * @param appServiceId 服务ID
      * @return url
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取应用服务的GitLab地址")
     @GetMapping("/url")
@@ -70,7 +70,7 @@ public class DevopsGitController {
      * @param releaseNotes 发布日志
      * @return null
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建标签")
     @PostMapping("/tags")
@@ -100,7 +100,7 @@ public class DevopsGitController {
      * @param releaseNotes 发布日志
      * @return null
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "更新标签")
     @PutMapping("/tags")
@@ -125,7 +125,7 @@ public class DevopsGitController {
      * @param params       查询参数
      * @return PageInfo
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页获取标签列表")
     @PostMapping("/page_tags_by_options")
@@ -151,7 +151,7 @@ public class DevopsGitController {
      * @param appServiceId 服务ID
      * @return null
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取标签列表")
     @GetMapping("/list_tags")
@@ -172,7 +172,7 @@ public class DevopsGitController {
      * @param appServiceId 服务ID
      * @return Boolean
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "检查标签")
     @GetMapping("/check_tag")
@@ -195,7 +195,7 @@ public class DevopsGitController {
      * @param appServiceId 服务Id
      * @param tag          标签名
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除标签")
     @DeleteMapping("/tags")
@@ -217,7 +217,7 @@ public class DevopsGitController {
      * @param appServiceId   服务ID
      * @param devopsBranchVO 分支
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建分支")
     @PostMapping("/branch")
@@ -240,7 +240,7 @@ public class DevopsGitController {
      * @param params       查询参数
      * @return PageInfo
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询服务下的分支")
     @CustomPageRequest
@@ -267,7 +267,7 @@ public class DevopsGitController {
      * @param branchName   分支名
      * @return BranchDTO
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询单个分支")
     @GetMapping("/branch")
@@ -290,7 +290,7 @@ public class DevopsGitController {
      * @param appServiceId         服务ID
      * @param devopsBranchUpdateVO 分支更新信息
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "更新分支关联的问题")
     @PutMapping("/update_branch_issue")
@@ -311,7 +311,7 @@ public class DevopsGitController {
      * @param appServiceId 服务ID
      * @param branchName   分支名
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除分支")
     @DeleteMapping("/branch")
@@ -333,7 +333,7 @@ public class DevopsGitController {
      * @param appServiceId 服务id
      * @return mergeRequest列表
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查看所有合并请求")
     @GetMapping(value = "/list_merge_request")
@@ -360,7 +360,7 @@ public class DevopsGitController {
      * @param appServiceId 服务id
      * @param branchName   分支名
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验分支名唯一性")
     @GetMapping(value = "/check_branch_name")

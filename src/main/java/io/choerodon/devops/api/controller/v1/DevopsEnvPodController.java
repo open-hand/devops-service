@@ -38,7 +38,7 @@ public class DevopsEnvPodController {
      * @param searchParam 查询参数
      * @return page of DevopsEnvironmentPodVO
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询环境下pod")
@@ -70,7 +70,7 @@ public class DevopsEnvPodController {
 //     * @param sort  排序条件
 //     * @return 环境下相关资源的数量
 //     */
-//    @Permission(type = ResourceType.PROJECT,
+//    @Permission(level = ResourceLevel.ORGANIZATION,
 //            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
 //    @ApiOperation(value = "按资源用量列出环境下Pod信息")
 //    @GetMapping("/pod_ranking")
@@ -93,7 +93,7 @@ public class DevopsEnvPodController {
      * @param podId pod id
      * @return void
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除环境下的pod")
     @DeleteMapping("/{pod_id}")

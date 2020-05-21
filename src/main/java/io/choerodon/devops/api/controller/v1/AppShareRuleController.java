@@ -3,7 +3,6 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.Optional;
 import javax.validation.Valid;
 
-import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -11,16 +10,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.core.annotation.Permission;
 import org.springframework.data.domain.Pageable;
-import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.AppServiceShareRuleUpdateVO;
 import io.choerodon.devops.api.vo.AppServiceShareRuleVO;
 import io.choerodon.devops.app.service.AppServiceShareRuleService;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * Created by ernst on 2018/5/12.
@@ -42,7 +41,7 @@ public class AppShareRuleController {
      * @param appServiceShareRuleVO 服务共享规则
      * @return Long
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建服务共享规则")
     @PostMapping
     public ResponseEntity<AppServiceShareRuleVO> create(
@@ -63,7 +62,7 @@ public class AppShareRuleController {
      * @param appServiceShareRuleUpdateVO 服务共享规则
      * @return Long
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "更新服务共享规则")
     @PutMapping
     public ResponseEntity<AppServiceShareRuleVO> update(
@@ -77,7 +76,7 @@ public class AppShareRuleController {
                 .orElseThrow(() -> new CommonException("error.share.rule.update"));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "分页查询服务共享规则")
     @PostMapping(value = "/page_by_options")
     @CustomPageRequest
@@ -96,7 +95,7 @@ public class AppShareRuleController {
                 .orElseThrow(() -> new CommonException("error.share.rule.page"));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询单个共享规则详情")
     @GetMapping(value = "/{rule_id}")
     public ResponseEntity<AppServiceShareRuleVO> query(
@@ -110,7 +109,7 @@ public class AppShareRuleController {
                 .orElseThrow(() -> new CommonException("error.share.rule.query"));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除单个服务共享规则")
     @DeleteMapping(value = "/{rule_id}")
     public ResponseEntity delete(@ApiParam(value = "项目Id", required = true)

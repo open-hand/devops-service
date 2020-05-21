@@ -37,7 +37,6 @@ public class DevopsOrganizationController {
     @Autowired
     private DevopsClusterService devopsClusterService;
 
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "批量查询应用服务")
     @PostMapping(value = "/app_service/list_app_service_ids")
     public ResponseEntity<PageInfo<AppServiceVO>> batchQueryAppService(
@@ -64,7 +63,6 @@ public class DevopsOrganizationController {
         devopsCheckLogService.checkLog("0.21.0");
     }
 
-    @Permission(type = ResourceType.ORGANIZATION, roles = InitRoleCode.ORGANIZATION_ADMINISTRATOR)
     @GetMapping("/cluster/overview")
     @ApiOperation("组织层概览，返回集群的概览")
     public ResponseEntity<ClusterOverViewVO> clusterOverview(

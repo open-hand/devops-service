@@ -29,7 +29,7 @@ public class DevopsCiJobController {
         this.devopsCiJobService = devopsCiJobService;
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @PostMapping("/sonar/connect")
     @ApiOperation("sonar的连接测试")
     public ResponseEntity<Boolean> sonarConnect(
@@ -38,7 +38,7 @@ public class DevopsCiJobController {
         return ResponseEntity.ok(devopsCiJobService.sonarConnect(projectId, sonarQubeConfigVO));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询job日志")
     @GetMapping("/gitlab_projects/{gitlab_project_id}/gitlab_jobs/{job_id}/trace")
     public ResponseEntity<String> queryTrace(
@@ -48,7 +48,7 @@ public class DevopsCiJobController {
         return ResponseEntity.ok(devopsCiJobService.queryTrace(gitlabProjectId, jobId));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "重试job")
     @GetMapping("/gitlab_projects/{gitlab_project_id}/gitlab_jobs/{job_id}/retry")
     public ResponseEntity<Void> retryJob(

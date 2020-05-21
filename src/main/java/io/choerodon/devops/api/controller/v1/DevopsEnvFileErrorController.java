@@ -46,7 +46,7 @@ public class DevopsEnvFileErrorController {
      * @param envId     环境 ID
      * @return baseList of DevopsEnvFileErrorDTO
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询环境文件错误列表")
     @GetMapping(value = "/list_by_env")
@@ -67,7 +67,7 @@ public class DevopsEnvFileErrorController {
      * @param envId     环境 ID
      * @return baseList of DevopsEnvFileErrorDTO
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下分页查询环境文件错误列表")
     @CustomPageRequest

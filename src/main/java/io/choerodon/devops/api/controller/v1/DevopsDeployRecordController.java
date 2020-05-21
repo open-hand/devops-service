@@ -39,7 +39,7 @@ public class DevopsDeployRecordController {
      * @param params    查询参数
      * @return 部署纪录页
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下分页查询部署记录")
     @CustomPageRequest
     @PostMapping("/page_by_options")
@@ -55,7 +55,7 @@ public class DevopsDeployRecordController {
                 .orElseThrow(() -> new CommonException("error.pipeline.value.list"));
     }
 
-    @Permission(type = ResourceType.PROJECT, permissionWithin = true)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
     @ApiOperation(value = "统计项目下指定时间段内每日部署次数")
     @CustomPageRequest
     @GetMapping("/count_by_date")

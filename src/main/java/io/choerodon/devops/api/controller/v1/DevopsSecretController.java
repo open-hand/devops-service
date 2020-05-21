@@ -48,7 +48,7 @@ public class DevopsSecretController {
      * @param secretReqVO 请求体
      * @return SecretRespVO
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建密钥")
     @PostMapping
@@ -69,7 +69,7 @@ public class DevopsSecretController {
      * @param secretUpdateVO 请求体
      * @return SecretRespVO
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "更新密钥")
     @PutMapping
@@ -91,7 +91,7 @@ public class DevopsSecretController {
      * @param secretId 密钥id
      * @return Boolean
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除密钥")
     @DeleteMapping("/{env_id}/{secret_id}")
@@ -116,7 +116,7 @@ public class DevopsSecretController {
      * @param appServiceId 服务id
      * @return Page
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest
     @ApiOperation(value = "分页查询secret")
@@ -146,7 +146,7 @@ public class DevopsSecretController {
      * @param secretId 密钥id
      * @return SecretRespVO
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据密钥id查询密钥")
     @GetMapping("/{secret_id}")
@@ -168,7 +168,7 @@ public class DevopsSecretController {
      * @param envId      环境id
      * @param secretName 密钥名
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验名字唯一性")
     @GetMapping("/{env_id}/check_name")

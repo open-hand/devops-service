@@ -40,7 +40,7 @@ public class DevopsEnvGroupController {
      * @param name      环境组名称
      * @return DevopsEnvGroupVO
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建环境组")
     @PostMapping
     public ResponseEntity<DevopsEnvGroupVO> create(
@@ -61,7 +61,7 @@ public class DevopsEnvGroupController {
      * @param devopsEnvGroupVO 环境组信息
      * @return DevopsEnvGroupVO
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下更新环境组")
     @PutMapping
     public ResponseEntity<DevopsEnvGroupVO> update(
@@ -81,7 +81,7 @@ public class DevopsEnvGroupController {
      * @param projectId 项目id
      * @return DevopsEnvGroupVO
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询环境组")
     @GetMapping("/list_by_project")
     public ResponseEntity<List<DevopsEnvGroupVO>> listByProject(
@@ -98,7 +98,7 @@ public class DevopsEnvGroupController {
      * @param projectId 项目id
      * @return boolean
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验环境组名唯一性")
     @GetMapping(value = "/check_name")
     public ResponseEntity<Boolean> checkName(
@@ -121,7 +121,7 @@ public class DevopsEnvGroupController {
      * @param groupId   实例id
      * @return responseEntity
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "环境组删除")
     @DeleteMapping(value = "/{group_id}")
     public ResponseEntity delete(
@@ -136,7 +136,7 @@ public class DevopsEnvGroupController {
     /**
      * 检查环境组是否存在
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "环境组存在检查")
     @GetMapping(value = "/{group_id}/check")
     public ResponseEntity checkExist(

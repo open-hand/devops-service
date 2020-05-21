@@ -35,7 +35,7 @@ public class DevopsNotificationController {
      * @param objectType 资源对象类型
      * @return 校验结果
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/check_delete_resource")
     @ApiOperation(value = "校验删除对象是否需要发送验证码")
@@ -61,7 +61,7 @@ public class DevopsNotificationController {
      * @param notificationId 通知Id
      * @param objectType     对象类型
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/send_message")
     @ApiOperation(value = "发送验证码")
@@ -89,7 +89,7 @@ public class DevopsNotificationController {
      * @param captcha    验证码
      * @param objectType 对象类型
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/validate_captcha")
     @ApiOperation(value = "校验验证码")
@@ -107,7 +107,7 @@ public class DevopsNotificationController {
         notificationService.validateCaptcha(envId, objectId, objectType, captcha);
     }
 
-//    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+//    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
 //    @GetMapping(value = "/transfer/data")
 //    public ResponseEntity<List<DevopsNotificationTransferDataVO>> transferDate(
 //            @ApiParam(value = "项目ID")

@@ -37,7 +37,7 @@ public class DevopsProjectController {
      *
      * @param projectId 项目id
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目Gitlab Group是否创建成功")
     @GetMapping("/check_gitlab_group")
@@ -54,7 +54,7 @@ public class DevopsProjectController {
      * @param projectId 项目id
      * @return Page
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "分页查询与该项目在同一组织的项目列表（包含自身）")
     @CustomPageRequest
     @PostMapping("/page_projects")
@@ -78,7 +78,7 @@ public class DevopsProjectController {
      * @param params    查询参数
      * @return 项目所有者和项目成员
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取所有项目成员和项目所有者")
     @PostMapping(value = "/users/list_users")
     public ResponseEntity<PageInfo<UserVO>> getAllUsers(

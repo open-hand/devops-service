@@ -39,7 +39,6 @@ public class DevOpsSiteLevelResourceController {
     @Autowired
     private AppServiceService appServiceService;
 
-    @Permission(type = ResourceType.SITE, roles = InitRoleCode.SITE_ADMINISTRATOR)
     @GetMapping("/clusters/overview")
     @ApiOperation("查询平台层的集群概览信息")
     public ResponseEntity<ClusterOverViewVO> getSiteClusterOverview() {
@@ -49,7 +48,6 @@ public class DevOpsSiteLevelResourceController {
     /**
      * 根据多个用户Id查询存在的多个用户信息
      */
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据多个用户Id查询存在的多个用户信息")
     @PostMapping("/users/list_by_ids")
     public ResponseEntity<List<UserAttrVO>> listByUserIds(
@@ -59,7 +57,6 @@ public class DevOpsSiteLevelResourceController {
     }
 
 
-    @Permission(type = ResourceType.SITE, permissionLogin = true)
     @ApiOperation(value = "批量查询应用服务")
     @PostMapping(value = "/app_service/list_app_service_by_ids")
     public ResponseEntity<PageInfo<AppServiceRepVO>> batchQueryAppService(

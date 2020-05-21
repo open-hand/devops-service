@@ -33,7 +33,7 @@ public class DevopsPvController {
     @Autowired
     DevopsPvService devopsPvService;
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "分页带参数查询项目下所有pv")
     @PostMapping("/page_by_options")
     public ResponseEntity<PageInfo<DevopsPvVO>> queryAll(
@@ -48,7 +48,7 @@ public class DevopsPvController {
                 .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建pv")
     @PostMapping
     public ResponseEntity createPv(
@@ -62,7 +62,7 @@ public class DevopsPvController {
     /**
      * 校验pv的名称是否满足所选集群下唯一
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验pv的名称是否满足所选集群下唯一")
     @GetMapping("check_name")
     public ResponseEntity checkPvName(
@@ -76,7 +76,7 @@ public class DevopsPvController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "根据pvId删除Pv")
     @DeleteMapping("/{pv_id}")
     public ResponseEntity deletePv(
@@ -88,7 +88,7 @@ public class DevopsPvController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "根据pvId查询相应pv")
     @GetMapping("/{pv_id}")
     public ResponseEntity<DevopsPvVO> queryById(
@@ -109,7 +109,7 @@ public class DevopsPvController {
      * @param params    搜索参数
      * @return 所有与该证书未分配权限的项目
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "列出组织下所有项目中没有分配权限的项目")
     @PostMapping(value = "/{pv_id}/permission/list_non_related")
     public ResponseEntity<PageInfo<ProjectReqVO>> listAllNonRelatedMembers(
@@ -128,7 +128,7 @@ public class DevopsPvController {
                 .orElseThrow(() -> new CommonException("error.get.pv.non.related.project"));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "根据projectId删除和Pv关联的权限记录")
     @DeleteMapping(value = "/{pv_id}/permission")
     public ResponseEntity deleteRelateProjectById(
@@ -142,7 +142,7 @@ public class DevopsPvController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "给当前pv分配项目权限")
     @PostMapping(value = "/{pv_id}/permission")
     public ResponseEntity assignPermission(
@@ -156,7 +156,7 @@ public class DevopsPvController {
     }
 
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "PV跳过权限校验，查询所属集群下的所有项目")
     @PostMapping("/{pv_id}/page_projects")
     public ResponseEntity<PageInfo<ProjectReqVO>> pageProjects(
@@ -173,7 +173,7 @@ public class DevopsPvController {
                 .orElseThrow(() -> new CommonException(ERROR_PROJECT_QUERY));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "PV不跳过权限校验，查询有关联的项目")
     @PostMapping("/{pv_id}/page_related")
     public ResponseEntity<PageInfo<ProjectReqVO>> pageRelatedProjects(
@@ -190,7 +190,7 @@ public class DevopsPvController {
                 .orElseThrow(() -> new CommonException(ERROR_PROJECT_QUERY));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据pvc的条件筛选查询可用的pv")
     @PostMapping("/pv_available")
     public ResponseEntity<List<DevopsPvVO>> queryPvcRelatedPv(

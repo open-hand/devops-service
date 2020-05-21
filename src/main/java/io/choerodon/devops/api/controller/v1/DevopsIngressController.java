@@ -43,7 +43,7 @@ public class DevopsIngressController {
      * @param devopsIngressVO 域名信息
      * @return ResponseEntity
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建域名")
     @PostMapping
@@ -64,7 +64,7 @@ public class DevopsIngressController {
      * @param devopsIngressVO 域名信息
      * @return ResponseEntity
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下更新域名")
     @PutMapping(value = "/{id}")
@@ -87,7 +87,7 @@ public class DevopsIngressController {
      * @param id        域名ID
      * @return DevopsIngressVO
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询域名")
@@ -110,7 +110,7 @@ public class DevopsIngressController {
      * @param id        域名ID
      * @return DevopsIngressVO
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询域名详情")
@@ -132,7 +132,7 @@ public class DevopsIngressController {
      * @param id        域名ID
      * @return ResponseEntity
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下删除域名")
@@ -149,7 +149,7 @@ public class DevopsIngressController {
     /**
      * 检查域名唯一性
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "检查域名唯一性")
     @GetMapping(value = "/check_name")
@@ -174,7 +174,7 @@ public class DevopsIngressController {
      * @param id        ingress ID
      * @return Boolean
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "检查域名名称唯一性")
     @GetMapping(value = "/check_domain")
@@ -204,7 +204,7 @@ public class DevopsIngressController {
      * @param params    搜索参数
      * @return Page
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest

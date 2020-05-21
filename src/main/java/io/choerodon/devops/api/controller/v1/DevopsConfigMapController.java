@@ -42,7 +42,7 @@ public class DevopsConfigMapController {
      * @param devopsConfigMapVO 配置映射信息
      * @return ResponseEntity
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建配置映射")
     @PostMapping
@@ -63,7 +63,7 @@ public class DevopsConfigMapController {
      * @param devopsConfigMapUpdateVO 配置映射信息
      * @return ResponseEntity
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下更新配置映射")
     @PutMapping
@@ -84,7 +84,7 @@ public class DevopsConfigMapController {
      * @param configMapId 实例id
      * @return responseEntity
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "配置映射删除")
     @DeleteMapping(value = "/{configMap_id}")
@@ -103,7 +103,7 @@ public class DevopsConfigMapController {
      * @param projectId 项目id
      * @param name      配置映射名
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验配置映射名唯一性")
     @GetMapping(value = "/check_name")
@@ -125,7 +125,7 @@ public class DevopsConfigMapController {
      * @param configMapId 配置映射Id
      * @return DevopsConfigMapRespVO
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询单个配置映射")
     @GetMapping("/{config_map_id}")
@@ -150,7 +150,7 @@ public class DevopsConfigMapController {
      * @param appServiceId 应用id
      * @return Page of DevopsServiceVO
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分而查询配置映射")

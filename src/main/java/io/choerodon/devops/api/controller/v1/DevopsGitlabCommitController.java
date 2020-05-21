@@ -43,7 +43,7 @@ public class DevopsGitlabCommitController {
      * @param appServiceIds 服务id
      * @return DevopsGitlabCommitDTO
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取服务下的代码提交")
     @PostMapping
@@ -69,7 +69,7 @@ public class DevopsGitlabCommitController {
      * @param pageable      分页参数
      * @return List
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest
     @ApiOperation(value = "获取服务下的代码提交历史记录")

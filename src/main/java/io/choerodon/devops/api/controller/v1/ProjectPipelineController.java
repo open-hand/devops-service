@@ -35,7 +35,7 @@ public class ProjectPipelineController {
      * @param pipelineId      流水线id
      * @return Boolean
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "重试GitLab流水线")
     @PostMapping(value = "/gitlab_projects/{gitlab_project_id}/pipelines/{pipeline_id}/retry")
     public ResponseEntity<Boolean> retry(
@@ -58,7 +58,7 @@ public class ProjectPipelineController {
      * @param pipelineId      流水线id
      * @return Boolean
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "取消GitLab流水线")
     @PostMapping(value = "/gitlab_projects/{gitlabProjectId}/pipelines/{pipeline_id}/cancel")
     public ResponseEntity<Boolean> cancel(
@@ -81,7 +81,7 @@ public class ProjectPipelineController {
      * @param ref      分支
      * @return Boolean
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建GitLab流水线")
     @PostMapping(value = "/gitlab_projects/{gitlab_project_id}/pipelines")
     public ResponseEntity<Boolean> create(

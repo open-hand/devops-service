@@ -33,7 +33,6 @@ public class DevopsOrganizationConfigController {
     private AppServiceService appServiceService;
 
 
-    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织下创建配置")
     @PostMapping
     public ResponseEntity create(
@@ -51,7 +50,6 @@ public class DevopsOrganizationConfigController {
      * @param organizationId 组织Id
      * @return List<DevopsConfigVO> 配置详情
      */
-    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织下查询配置详情")
     @GetMapping
     public ResponseEntity<DevopsConfigRepVO> query(
@@ -63,7 +61,6 @@ public class DevopsOrganizationConfigController {
                 .orElseThrow(() -> new CommonException("error.devops.organization.config.get.type"));
     }
 
-    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织下查询默认配置")
     @GetMapping("/default_config")
     public ResponseEntity<DefaultConfigVO> queryOrganizationDefaultConfig(
@@ -84,7 +81,6 @@ public class DevopsOrganizationConfigController {
      * @param project  harbor项目
      * @param email    harbor邮箱
      */
-    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "校验harbor配置信息是否正确")
     @GetMapping(value = "/check_harbor")
     public void checkHarbor(
@@ -109,7 +105,6 @@ public class DevopsOrganizationConfigController {
      *
      * @param url chartmusume地址
      */
-    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "校验chart配置信息是否正确")
     @GetMapping(value = "/check_chart")
     public void checkChart(

@@ -41,7 +41,7 @@ public class DevopsEnvironmentController {
      * @param projectId              项目id
      * @param devopsEnvironmentReqVO 环境信息
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建环境")
     @PostMapping
     public ResponseEntity create(
@@ -60,7 +60,7 @@ public class DevopsEnvironmentController {
      * @param projectId 项目id
      * @return 实例视图树形目录所需的数据
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "实例视图查询环境及其下服务及实例")
     @GetMapping(value = "/ins_tree_menu")
@@ -76,7 +76,7 @@ public class DevopsEnvironmentController {
      * @param projectId 项目id
      * @return 资源视图树形目录所需目录
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "资源视图查询项目下环境及其下各种资源的基本信息")
     @GetMapping(value = "/resource_tree_menu")
@@ -93,7 +93,7 @@ public class DevopsEnvironmentController {
      * @param active    是否启用
      * @return List
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询环境")
@@ -115,7 +115,7 @@ public class DevopsEnvironmentController {
      * @param active    是否启用
      * @return List
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下环境流水线查询环境")
     @GetMapping("/list_by_groups")
@@ -137,7 +137,7 @@ public class DevopsEnvironmentController {
      * @param active        是否可用
      * @return Boolean
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下启用停用环境")
     @PutMapping("/{environment_id}/active")
     public ResponseEntity<Boolean> updateActive(
@@ -159,7 +159,7 @@ public class DevopsEnvironmentController {
      * @param environmentId 环境id
      * @return DevopsEnvironmentUpdateDTO
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询单个环境")
     @GetMapping("/{environment_id}")
@@ -179,7 +179,7 @@ public class DevopsEnvironmentController {
      * @param environmentId 环境id
      * @return 单个环境信息及其集群和GitOps处理情况
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "实例视图查询单个环境信息")
     @GetMapping("/{environment_id}/info")
@@ -199,7 +199,7 @@ public class DevopsEnvironmentController {
      * @param envId     环境id
      * @return 环境下相关资源的数量
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询环境下相关资源的数量")
     @GetMapping("/{env_id}/resource_count")
@@ -221,7 +221,7 @@ public class DevopsEnvironmentController {
      * @param devopsEnvironmentUpdateDTO 环境信息
      * @return DevopsEnvironmentUpdateDTO
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下更新环境")
     @PutMapping
     public ResponseEntity<DevopsEnvironmentUpdateVO> update(
@@ -241,7 +241,7 @@ public class DevopsEnvironmentController {
      * @param projectId 项目ID
      * @param code      服务code
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建环境校验编码是否存在")
     @GetMapping(value = "/check_code")
     public void checkCode(
@@ -260,7 +260,7 @@ public class DevopsEnvironmentController {
      * @param projectId 项目id
      * @return List
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询有正在运行实例的环境")
     @GetMapping(value = "/list_by_instance")
     public ResponseEntity<List<DevopsEnvironmentRepVO>> listByProjectId(
@@ -281,7 +281,7 @@ public class DevopsEnvironmentController {
      * @param envId     环境id
      * @return EnvSyncStatusDTO
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询环境同步状态")
@@ -306,7 +306,7 @@ public class DevopsEnvironmentController {
      * @param params    搜索参数
      * @return page
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER})
     @CustomPageRequest
     @ApiOperation(value = "分页查询环境下用户权限")
@@ -335,7 +335,7 @@ public class DevopsEnvironmentController {
      * @param params    搜索参数
      * @return 所有与该环境未分配权限的项目成员
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "列出项目下所有与该环境未分配权限的项目成员")
     @PostMapping(value = "/{env_id}/permission/list_non_related")
     public ResponseEntity<PageInfo<DevopsEnvUserVO>> listAllNonRelatedMembers(
@@ -361,7 +361,7 @@ public class DevopsEnvironmentController {
      * @param envId     环境id
      * @param userId    用户id
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除该用户在该环境下的权限")
     @DeleteMapping(value = "/{env_id}/permission")
     public ResponseEntity deletePermissionOfUser(
@@ -383,7 +383,7 @@ public class DevopsEnvironmentController {
      * @param envId     环境id
      * @return baseList
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "获取环境下所有用户权限")
     @GetMapping(value = "/{env_id}/list_all")
@@ -403,7 +403,7 @@ public class DevopsEnvironmentController {
      * @param envId                       环境id
      * @param devopsEnvPermissionUpdateVO 权限分配信息
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "环境下为用户分配权限")
     @PostMapping(value = "/{env_id}/permission")
@@ -425,7 +425,7 @@ public class DevopsEnvironmentController {
      * @param envId     环境id
      * @return Boolean
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除未连接/已停用/失败的环境")
     @DeleteMapping(value = "/{env_id}")
@@ -444,7 +444,7 @@ public class DevopsEnvironmentController {
      * @param projectId 项目id
      * @return List
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询集群信息")
@@ -464,7 +464,7 @@ public class DevopsEnvironmentController {
      * @param projectId 项目ID
      * @param code      环境code
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "根据环境编码查询环境")
     @GetMapping(value = "/query_by_code")
     public ResponseEntity<DevopsEnvironmentRepVO> queryByCode(
@@ -484,7 +484,7 @@ public class DevopsEnvironmentController {
      * @param projectId 项目ID
      * @param envId     环境Id
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "重试gitOps解析流程")
     @GetMapping(value = "/{env_id}/retry")
     public void retryByGitOps(
@@ -501,7 +501,7 @@ public class DevopsEnvironmentController {
      * @param projectId 项目id
      * @return List
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "环境树形目录")
     @GetMapping(value = "/env_tree_menu")
@@ -520,7 +520,7 @@ public class DevopsEnvironmentController {
      * @param groupId   分组id
      * @return List
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询环境")
     @GetMapping(value = "/list_by_group")
@@ -541,7 +541,7 @@ public class DevopsEnvironmentController {
      * @param envId     环境id
      * @return true表示可以删除
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询指定环境是否可删除")
     @GetMapping(value = "/{env_id}/delete_check")
@@ -562,7 +562,7 @@ public class DevopsEnvironmentController {
      * @param envId     环境id
      * @return true表示可以停用
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询指定环境是否可停用")
     @GetMapping(value = "/{env_id}/disable_check")
@@ -585,7 +585,7 @@ public class DevopsEnvironmentController {
      * @param type      其他对象类型
      * @return boolean
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "检查资源是否存在")
     @GetMapping(value = "/{env_id}/check")
@@ -611,7 +611,7 @@ public class DevopsEnvironmentController {
      * @return 环境数量
      */
     @ApiOperation("查询环境的数量")
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER}, type = ResourceType.PROJECT)
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER}, level = ResourceLevel.ORGANIZATION)
     @GetMapping("/count_by_options")
     public ResponseEntity<Long> countEnvByOptions(
             @ApiParam("项目id")

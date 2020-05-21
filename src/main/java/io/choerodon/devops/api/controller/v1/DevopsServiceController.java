@@ -45,7 +45,7 @@ public class DevopsServiceController {
      * @param name      网络名
      * @return Boolean
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "检查网络名称唯一性")
     @GetMapping(value = "/check_name")
@@ -68,7 +68,7 @@ public class DevopsServiceController {
      * @param devopsServiceReqVO 部署网络参数
      * @return Boolean
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "部署网络")
     @PostMapping
@@ -90,7 +90,7 @@ public class DevopsServiceController {
      * @param devopsServiceReqVO 部署网络参数
      * @return Boolean
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "更新网络")
     @PutMapping(value = "/{id}")
@@ -113,7 +113,7 @@ public class DevopsServiceController {
      * @param id        网络ID
      * @return ResponseEntity
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除网络")
     @DeleteMapping(value = "/{id}")
@@ -133,7 +133,7 @@ public class DevopsServiceController {
      * @param envId     参数
      * @return List of DevopsServiceVO
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据环境查询网络列表")
@@ -157,7 +157,7 @@ public class DevopsServiceController {
      * @param id        网络id
      * @return DevopsServiceVO
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询单个网络")
     @GetMapping(value = "/{id}")
@@ -180,7 +180,7 @@ public class DevopsServiceController {
      * @param name      网络名
      * @return DevopsServiceVO
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据网络名查询网络")
     @GetMapping(value = "/query_by_name")
@@ -205,7 +205,7 @@ public class DevopsServiceController {
      * @param searchParam 查询参数
      * @return Page of DevopsServiceVO
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询网络")
@@ -237,7 +237,7 @@ public class DevopsServiceController {
      * @param pageable   分页参数
      * @return Page of DevopsServiceVO
      */
-    @Permission(type = ResourceType.PROJECT,
+    @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询实例下关联的网络域名（不包含chart）")

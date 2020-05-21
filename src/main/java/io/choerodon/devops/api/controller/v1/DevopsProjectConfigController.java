@@ -39,7 +39,7 @@ public class DevopsProjectConfigController {
      * @param devopsConfigRepVO 配置信息
      * @return void
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建配置")
     @PostMapping
     public ResponseEntity create(
@@ -58,7 +58,7 @@ public class DevopsProjectConfigController {
      * @param projectId 项目id
      * @return 配置详情
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询配置详情")
     @GetMapping
     public ResponseEntity<DevopsConfigRepVO> query(
@@ -77,7 +77,7 @@ public class DevopsProjectConfigController {
      * @param projectId 项目id
      * @return ProjectDefaultConfigDTO
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "获取项目默认的配置")
     @GetMapping("/default_config")
     public ResponseEntity<DefaultConfigVO> queryProjectDefaultConfig(
@@ -99,7 +99,7 @@ public class DevopsProjectConfigController {
      * @param project  harbor项目
      * @param email    harbor邮箱
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验harbor配置信息是否正确")
     @GetMapping(value = "/check_harbor")
     public void checkHarbor(
@@ -124,7 +124,7 @@ public class DevopsProjectConfigController {
      *
      * @param url chartmusume地址
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验chart配置信息是否正确")
     @GetMapping(value = "/check_chart")
     public void checkChart(

@@ -31,7 +31,8 @@ public class DevopsCiPipelineRecordController {
     public DevopsCiPipelineRecordController(DevopsCiPipelineRecordService devopsCiPipelineRecordService) {
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
     }
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询ci流水线执行记录")
     @GetMapping("/{ci_pipeline_id}")
     public ResponseEntity<PageInfo<DevopsCiPipelineRecordVO>> pagingPipelineRecord(
@@ -44,7 +45,7 @@ public class DevopsCiPipelineRecordController {
         return ResponseEntity.ok(devopsCiPipelineRecordService.pagingPipelineRecord(projectId, ciPipelineId, pageable));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询指定流水线记录详情")
     @GetMapping("/{gitlab_pipeline_id}/details")
     public ResponseEntity<DevopsCiPipelineRecordVO> queryPipelineRecordDetails(
@@ -55,7 +56,7 @@ public class DevopsCiPipelineRecordController {
         return ResponseEntity.ok(devopsCiPipelineRecordService.queryPipelineRecordDetails(projectId, gitlabPipelineId));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "重试GitLab流水线")
     @PostMapping(value = "/{gitlab_pipeline_id}/retry")
     public ResponseEntity<Boolean> retry(
@@ -72,7 +73,7 @@ public class DevopsCiPipelineRecordController {
      * Cancel jobs in a pipeline
      *
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "取消GitLab流水线")
     @PostMapping(value = "/{gitlab_pipeline_id}/cancel")
     public ResponseEntity<Boolean> cancel(

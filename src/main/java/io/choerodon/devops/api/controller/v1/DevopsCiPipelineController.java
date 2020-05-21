@@ -33,7 +33,7 @@ public class DevopsCiPipelineController {
         this.devopsCiPipelineService = devopsCiPipelineService;
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建ci流水线")
     @PostMapping
     public ResponseEntity<DevopsCiPipelineDTO> create(
@@ -44,7 +44,7 @@ public class DevopsCiPipelineController {
         return ResponseEntity.ok(devopsCiPipelineService.create(projectId, devopsCiPipelineVO));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下更新ci流水线")
     @PutMapping("/{ci_pipeline_id}")
     public ResponseEntity<DevopsCiPipelineDTO> update(
@@ -57,7 +57,7 @@ public class DevopsCiPipelineController {
         return ResponseEntity.ok(devopsCiPipelineService.update(projectId, ciPipelineId, devopsCiPipelineVO));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询ci流水线配置")
     @GetMapping("/{ci_pipeline_id}")
     public ResponseEntity<DevopsCiPipelineVO> query(
@@ -68,7 +68,7 @@ public class DevopsCiPipelineController {
         return ResponseEntity.ok(devopsCiPipelineService.query(projectId, ciPipelineId));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目下流水线")
     @GetMapping
     public ResponseEntity<List<DevopsCiPipelineVO>> listByProjectIdAndAppName(
@@ -78,7 +78,7 @@ public class DevopsCiPipelineController {
         return ResponseEntity.ok(devopsCiPipelineService.listByProjectIdAndAppName(projectId, name));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "停用流水线")
     @PutMapping("/{ci_pipeline_id}/disable")
     public ResponseEntity<DevopsCiPipelineDTO> disablePipeline(
@@ -87,7 +87,8 @@ public class DevopsCiPipelineController {
             @PathVariable(value = "ci_pipeline_id") Long ciPipelineId) {
         return ResponseEntity.ok(devopsCiPipelineService.disablePipeline(projectId, ciPipelineId));
     }
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "启用流水线")
     @PutMapping("/{ci_pipeline_id}/enable")
     public ResponseEntity<DevopsCiPipelineDTO> enablePipeline(
@@ -97,7 +98,7 @@ public class DevopsCiPipelineController {
         return ResponseEntity.ok(devopsCiPipelineService.enablePipeline(projectId, ciPipelineId));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除流水线")
     @DeleteMapping("/{ci_pipeline_id}")
     public ResponseEntity<Void> deletePipeline(
@@ -108,7 +109,7 @@ public class DevopsCiPipelineController {
         return ResponseEntity.noContent().build();
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "全新执行GitLab流水线")
     @PostMapping(value = "/{ci_pipeline_id}/execute")
     public ResponseEntity<Boolean> executeNew(

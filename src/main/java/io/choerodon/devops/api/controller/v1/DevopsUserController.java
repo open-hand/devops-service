@@ -31,7 +31,7 @@ public class DevopsUserController {
      *
      * @return UserAttrDTO
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据用户Id查询gitlab用户Id")
     @GetMapping("/{user_id}")
     public ResponseEntity<UserAttrVO> queryByUserId(
