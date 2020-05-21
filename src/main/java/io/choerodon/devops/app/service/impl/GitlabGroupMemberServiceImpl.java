@@ -314,24 +314,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
      */
     private MemberHelper getGitlabGroupMemberRole(List<String> userMemberRoleList) {
         MemberHelper memberHelper = new MemberHelper();
-        List<Integer> accessLevelList = new ArrayList<>();
-        accessLevelList.add(0);
-        userMemberRoleList.forEach(level -> {
-            AccessLevel levels = AccessLevel.forString(level.toUpperCase(), memberHelper);
-            switch (levels) {
-                case OWNER:
-                    accessLevelList.add(levels.toValue());
-                    break;
-                case MASTER:
-                    accessLevelList.add(levels.toValue());
-                    break;
-                case DEVELOPER:
-                    accessLevelList.add(levels.toValue());
-                    break;
-                default:
-                    break;
-            }
-        });
+        // 目前只支持 Owner 和 Developer
+        userMemberRoleList.forEach(level -> AccessLevel.forString(level.toUpperCase(), memberHelper));
         return memberHelper;
     }
 
@@ -353,8 +337,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         MemberDTO memberDTO;
         Integer[] roles = {
                 memberHelper.getProjectDevelopAccessLevel().toValue(),
-                memberHelper.getProjectOwnerAccessLevel().toValue(),
-                memberHelper.getOrganizationAccessLevel().toValue()};
+                memberHelper.getProjectOwnerAccessLevel().toValue()};
         AccessLevel accessLevel = AccessLevel.forValue(Collections.max(Arrays.asList(roles)));
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrDTO.getIamUserId());
         if (Objects.isNull(iamUserDTO)) {
