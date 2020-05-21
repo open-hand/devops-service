@@ -1105,7 +1105,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         try {
             getHealth.execute();
         } catch (IOException e) {
-            throw new CommonException(e);
+            throw new CommonException("error.chart.check");
         }
         return true;
     }
