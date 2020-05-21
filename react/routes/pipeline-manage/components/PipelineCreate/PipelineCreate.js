@@ -1,3 +1,4 @@
+import { axios } from '@choerodon/boot';
 import React, { useEffect, useState } from 'react';
 import { Form, TextField, Select, SelectBox, Modal, Button, DataSet } from 'choerodon-ui/pro';
 import { message, Icon } from 'choerodon-ui';
@@ -20,12 +21,24 @@ const PipelineCreate = observer(() => {
     AppState: {
       currentMenuType: {
         id,
+        projectId,
       },
     },
     refreshTree,
+    dataSource,
   } = usePipelineCreateStore();
 
   useEffect(() => {
+    if (dataSource) {
+      const { name, appServiceId, image, stageList } = dataSource;
+      PipelineCreateFormDataSet.loadData([{
+        name,
+        appServiceId,
+        image,
+        selectImage: '1',
+      }]);
+      editBlockStore.setStepData(stageList, true);
+    }
     const init = async () => {
       const res = await createUseStore.axiosGetDefaultImage();
       createUseStore.setDefaultImage(res);
@@ -39,19 +52,26 @@ const PipelineCreate = observer(() => {
     if (result) {
       const origin = PipelineCreateFormDataSet.toData()[0];
       const data = {
+        ...dataSource,
         ...origin,
         image: origin.selectImage === '1' ? origin.image : null,
         stageList: editBlockStore.getStepData2,
       };
-      return createUseStore.axiosCreatePipeline(data, id).then((res) => {
-        if (res.failed) {
-          message.error(res.message);
-          return false;
-        } else {
-          refreshTree();
-          return true;
-        }
-      });
+      if (dataSource) {
+        await axios.put(`/devops/v1/projects/${projectId}/ci_pipelines/${dataSource.id}`, data);
+        editBlockStore.loadData(projectId, dataSource.id);
+        refreshTree();
+      } else {
+        return createUseStore.axiosCreatePipeline(data, id).then((res) => {
+          if (res.failed) {
+            message.error(res.message);
+            return false;
+          } else {
+            refreshTree();
+            return true;
+          }
+        });
+      }
     } else {
       return false;
     }

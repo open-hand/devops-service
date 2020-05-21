@@ -137,7 +137,7 @@ const PipelineManage = observer((props) => {
         width: 'calc(100vw - 3.52rem)',
       },
       drawer: true,
-      children: <PipelineCreate refreshTree={handleRefresh} editBlockStore={editBlockStore} />,
+      children: <PipelineCreate dataSource={editBlockStore.getMainData} refreshTree={handleRefresh} editBlockStore={editBlockStore} />,
       okText: formatMessage({ id: 'save' }),
     });
   }
