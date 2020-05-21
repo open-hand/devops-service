@@ -69,8 +69,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private static final String OPERATE_DOCKER_REGISTRY_SECRET = "operate_docker_registry_secret";
 
 
-    private Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
-    private ObjectMapper mapper = new ObjectMapper();
+    private static Pattern pattern = Pattern.compile("^[-+]?[\\d]*$");
     private static final Gson gson = new Gson();
 
 
@@ -406,12 +405,20 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         sendToWebsocket(clusterId, msg);
     }
 
+<<<<<<< HEAD
     private void sendToWebsocket(Long clusterId, AgentMsgVO msg) {
         SendMessagePayload<AgentMsgVO> webSocketSendPayload = new SendMessagePayload<>();
         webSocketSendPayload.setKey(CLUSTER + clusterId);
         webSocketSendPayload.setType("agent");
         webSocketSendPayload.setData(msg);
         webSocketHelper.sendMessageByKey(CLUSTER + clusterId, webSocketSendPayload);
+=======
+    private void sendToWebSocket(Long clusterId, String key, String textMessage) {
+        webSocketHelper.sendByGroup(CLUSTER + clusterId, key, textMessage);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Send to webSocket: cluster: {}, key: {}, textMessage: {}", LogUtil.cutOutString(textMessage, 200));
+        }
+>>>>>>> [ADD] add log about ws
     }
 
     @Override
