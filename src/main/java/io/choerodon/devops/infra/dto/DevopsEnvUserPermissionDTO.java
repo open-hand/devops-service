@@ -21,6 +21,13 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_env_user_permission")
 public class DevopsEnvUserPermissionDTO extends BaseDTO {
     private String loginName;
+<<<<<<< HEAD
+=======
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+>>>>>>> [UPD] update strategy of @GeneratedValue to GenerationType.AUTO
     private Long iamUserId;
     private String realName;
     private Long envId;

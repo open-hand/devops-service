@@ -24,7 +24,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class DevopsRegistrySecretDTO extends BaseDTO {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @ApiModelProperty("环境id，在0.21版本修复数据之后，0.22版本可以删除此字段")
     private Long envId;

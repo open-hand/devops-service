@@ -12,7 +12,7 @@ import javax.persistence.Table;
 public class DevopsEnvCommandLogDTO {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long commandId;
     private String log;

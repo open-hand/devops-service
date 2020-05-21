@@ -22,7 +22,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class DevopsClusterDTO extends BaseDTO {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     /**
      * 这个集群所属项目的组织id， 不能为空

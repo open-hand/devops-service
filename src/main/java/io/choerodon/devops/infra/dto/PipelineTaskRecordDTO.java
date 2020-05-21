@@ -20,7 +20,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_pipeline_task_record")
 public class PipelineTaskRecordDTO extends BaseDTO {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long stageRecordId;
     private String taskType;

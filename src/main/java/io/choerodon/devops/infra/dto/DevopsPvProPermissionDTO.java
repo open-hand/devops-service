@@ -6,6 +6,12 @@ import javax.persistence.Transient;
 
 @Table(name = "devops_pv_project_rel")
 public class DevopsPvProPermissionDTO {
+<<<<<<< HEAD
+=======
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+>>>>>>> [UPD] update strategy of @GeneratedValue to GenerationType.AUTO
 
     private Long pvId;
 

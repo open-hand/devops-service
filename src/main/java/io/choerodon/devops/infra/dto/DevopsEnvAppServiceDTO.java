@@ -5,6 +5,13 @@ import javax.persistence.Table;
 
 @Table(name = "devops_env_app_service")
 public class DevopsEnvAppServiceDTO {
+<<<<<<< HEAD
+=======
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+>>>>>>> [UPD] update strategy of @GeneratedValue to GenerationType.AUTO
     private Long appServiceId;
     private Long envId;
 

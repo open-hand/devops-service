@@ -13,7 +13,7 @@ import javax.persistence.Table;
 @Table(name = "devops_market_connect_info")
 public class DevopsMarketConnectInfoDTO {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String saasMarketUrl;
     private String accessToken;

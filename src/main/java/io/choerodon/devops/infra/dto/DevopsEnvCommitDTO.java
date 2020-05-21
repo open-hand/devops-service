@@ -21,7 +21,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class DevopsEnvCommitDTO extends BaseDTO {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long envId;
     private String commitSha;

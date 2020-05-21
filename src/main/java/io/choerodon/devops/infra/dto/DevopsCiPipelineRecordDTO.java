@@ -29,7 +29,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class DevopsCiPipelineRecordDTO extends BaseDTO {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @ApiModelProperty("gitlab流水线记录id")
     private Long gitlabPipelineId;

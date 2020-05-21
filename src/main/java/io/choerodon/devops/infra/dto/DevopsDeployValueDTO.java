@@ -20,7 +20,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_deploy_value")
 public class DevopsDeployValueDTO extends BaseDTO {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String value;
     private Long projectId;

@@ -22,7 +22,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class AppServiceShareRuleDTO extends BaseDTO {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long appServiceId;
     private String shareLevel;

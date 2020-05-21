@@ -16,7 +16,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class DevopsEnvCommandDTO extends BaseDTO {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String object;
     private Long objectId;

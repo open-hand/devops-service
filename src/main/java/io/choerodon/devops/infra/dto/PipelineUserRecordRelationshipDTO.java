@@ -23,7 +23,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_pipeline_user_record_rel")
 public class PipelineUserRecordRelationshipDTO extends BaseDTO {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long userId;
     private Long pipelineRecordId;

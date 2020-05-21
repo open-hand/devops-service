@@ -9,6 +9,12 @@ import javax.persistence.Table;
  */
 @Table(name = "devops_notification_user_rel")
 public class DevopsNotificationUserRelDTO {
+<<<<<<< HEAD
+=======
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+>>>>>>> [UPD] update strategy of @GeneratedValue to GenerationType.AUTO
 
     private Long userId;
     private Long notificationId;

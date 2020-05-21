@@ -24,7 +24,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_ci_maven_settings")
 public class DevopsCiMavenSettingsDTO extends BaseDTO {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @ApiModelProperty("自增主键")
     private Long id;
 

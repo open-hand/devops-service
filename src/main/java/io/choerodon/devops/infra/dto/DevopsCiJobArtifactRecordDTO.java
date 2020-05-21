@@ -24,7 +24,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_ci_job_artifact_record")
 public class DevopsCiJobArtifactRecordDTO extends BaseDTO {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @ApiModelProperty("gitlab流水线记录id")

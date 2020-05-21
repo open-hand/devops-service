@@ -20,7 +20,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_pipeline_app_service_deploy")
 public class PipelineAppServiceDeployDTO extends BaseDTO {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long appServiceId;
     private Long envId;

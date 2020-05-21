@@ -13,7 +13,7 @@ import javax.persistence.Table;
 @Table(name = "devops_app_service_share_resource")
 public class AppServiceShareResourceDTO {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long shareId;
     private Long projectId;

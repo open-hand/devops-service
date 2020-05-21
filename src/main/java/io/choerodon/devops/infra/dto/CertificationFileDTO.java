@@ -25,7 +25,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_certification_file")
 public class CertificationFileDTO extends BaseDTO {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     private String certFile;

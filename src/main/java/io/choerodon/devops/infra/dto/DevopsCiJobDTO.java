@@ -26,7 +26,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class DevopsCiJobDTO extends BaseDTO {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @ApiModelProperty("任务名称")
     private String name;

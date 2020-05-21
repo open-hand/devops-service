@@ -23,7 +23,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_pipeline_stage")
 public class PipelineStageDTO extends BaseDTO {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String stageName;
     private String triggerType;

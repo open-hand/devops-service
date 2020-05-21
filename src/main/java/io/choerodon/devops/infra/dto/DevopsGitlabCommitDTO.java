@@ -17,7 +17,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class DevopsGitlabCommitDTO extends BaseDTO {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long appServiceId;
     private Long userId;

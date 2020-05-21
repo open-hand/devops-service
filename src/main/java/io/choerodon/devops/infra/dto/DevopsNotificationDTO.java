@@ -22,7 +22,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_notification")
 public class DevopsNotificationDTO extends BaseDTO {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long envId;
     private Long projectId;

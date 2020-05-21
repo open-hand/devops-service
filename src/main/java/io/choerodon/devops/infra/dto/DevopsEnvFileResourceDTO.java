@@ -24,7 +24,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_env_file_resource")
 public class DevopsEnvFileResourceDTO extends BaseDTO {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long envId;
     private String filePath;

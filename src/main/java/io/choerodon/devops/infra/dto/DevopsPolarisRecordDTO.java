@@ -27,7 +27,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_polaris_record")
 public class DevopsPolarisRecordDTO extends BaseDTO {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @ApiModelProperty("自增id")
     private Long id;
 

@@ -18,7 +18,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_cluster_pro_rel")
 public class DevopsClusterProPermissionDTO extends BaseDTO {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     private Long clusterId;

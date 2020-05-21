@@ -18,7 +18,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_pv")
 public class DevopsPvDTO extends BaseDTO {
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Id
     private Long id;
 
