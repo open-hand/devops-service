@@ -548,13 +548,15 @@ const AddTask = observer(() => {
 
   const handleAddRepo = (data, privateIf) => {
     const old = AddTaskFormDataSet.current.get('private');
+    let flag = false;
     if (data.length === 0) {
+      flag = true;
       const newData = old.filter(o => o !== 'custom');
       AddTaskFormDataSet.current.set('private', newData);
     }
     const data2 = steps.map(s => {
       if (s.checked) {
-        const newRepo = {
+        const newRepo = flag ? undefined : {
           privateRepo: [],
           publicRepo: [],
         };
@@ -606,7 +608,7 @@ const AddTask = observer(() => {
     function initRepo() {
       Modal.open({
         key: Modal.key(),
-        title: '添加依赖仓库',
+        title: '配置依赖仓库',
         style: {
           width: 380,
         },
@@ -673,6 +675,11 @@ const AddTask = observer(() => {
             />
           </div>
         ),
+        onOk: () => {
+          if (!steps.find(s => s.checked).mavenSettings) {
+            AddTaskFormDataSet.current.set('private', AddTaskFormDataSet.current.get('private').filter(o => o !== 'copy'));
+          }
+        },
         onCancel: () => {
           setSteps(steps.map(s => {
             if (s.checked) {
@@ -757,7 +764,7 @@ const AddTask = observer(() => {
         <Select onChange={handleChangeBuildTemple} name="gjmb">
           <Option value="Maven">Maven模板</Option>
           <Option value="npm">Npm模板</Option>
-          <Option value="go">Go语言构建模板</Option>
+          <Option value="go">Go模板</Option>
         </Select>,
         <div newLine colSpan={2} style={{ display: 'flex', flexDirection: 'column' }} className="AddTask_stepContent">
           {generateSteps()}
@@ -808,7 +815,7 @@ const AddTask = observer(() => {
                           marginLeft: 8,
                           display: (function () {
                             const repo = steps.find(s => s.checked).repo;
-                            if (JSON.stringify(repo)) {
+                            if (JSON.stringify(repo) && JSON.stringify(repo) !== '{}') {
                               return 'inline-block';
                             }
                             return 'none';
