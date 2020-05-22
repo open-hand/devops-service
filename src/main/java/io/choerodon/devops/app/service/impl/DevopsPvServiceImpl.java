@@ -99,6 +99,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         // params 是遍历字段模糊查询
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
         String orderBy = PageRequestUtil.getOrderBy(pageable);
+<<<<<<< HEAD
         PageInfo<DevopsPvDTO> pvDTOPageInfo = PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize())
                 .doSelectPageInfo(() -> devopsPvMapper.listPvByOptions(
                         projectDTO.getOrganizationId(),
@@ -108,6 +109,16 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                         TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))
                 ));
+=======
+        Page<DevopsPvDTO> pvDTOPageInfo = PageHelper.doPage(pageable, () -> devopsPvMapper.listPvByOptions(
+                projectDTO.getOrganizationId(),
+                projectId,
+                null,
+                orderBy,
+                TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))
+        ));
+>>>>>>> [FIX] 设置objectVersionNumber
 
         List<Long> updatedClusterList = clusterConnectionHandler.getUpdatedClusterList();
         pvDTOPageInfo.getList().forEach(i -> i.setClusterConnect(updatedClusterList.contains(i.getClusterId())));
@@ -331,6 +342,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         if (oldDevopsPvDTO == null) {
             throw new CommonException("error.pv.not.exists");
         }
+
+        devopsPvDTO.setObjectVersionNumber(oldDevopsPvDTO.getObjectVersionNumber());
 
         if (devopsPvMapper.updateByPrimaryKeySelective(devopsPvDTO) != 1) {
             throw new CommonException("error.pv.update.error");
