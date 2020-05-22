@@ -18,6 +18,7 @@ const obj = {
   upload: '上传软件包至存储库',
   docker: 'Docker构建',
   chart: 'Chart构建',
+  go: 'Go语言构建',
 };
 
 const checkField = {
@@ -52,9 +53,13 @@ const AddTask = observer(() => {
 
   useEffect(() => {
     if (steps.length > 0) {
+      const old = AddTaskFormDataSet.current.get('private');
       if (steps.find(s => s.checked).repo) {
         const item = [...(steps.find(s => s.checked).repo.publicRepo || []), ...(steps.find(s => s.checked).repo.privateRepo || [])];
-        AddTaskFormDataSet.current.set('private', item.map(i => String(i.privateIf)));
+        AddTaskFormDataSet.current.set('private', item.length > 0 ? Array.from(new Set([...old, 'custom'])) : old.filter(o => o !== 'custom'));
+      }
+      if (steps.find(s => s.checked).mavenSettings) {
+        AddTaskFormDataSet.current.set('private', Array.from(new Set([...old, 'copy'])));
       }
       AddTaskFormDataSet.getField('uploadFilePattern').set('required', steps.some(s => s.type === 'upload'));
       AddTaskFormDataSet.getField('dockerContextDir').set('required', steps.some(s => s.type === 'docker'));
@@ -105,7 +110,7 @@ const AddTask = observer(() => {
             token,
             password,
             sonarUrl,
-            private: newSteps.length > 0 && newSteps.find(s => s.checked).repos ? newSteps.find(s => s.checked).repos.map(r => String(r.privateIf)) : '',
+            private: newSteps.length > 0 && newSteps.find(s => s.checked).repos ? ['custom'] : '',
           };
           AddTaskFormDataSet.loadData([data]);
 
@@ -301,6 +306,7 @@ const AddTask = observer(() => {
           >
             <Option value="Maven">Maven构建</Option>
             <Option value="npm">Npm构建</Option>
+            <Option value="go">Go语言构建</Option>
             <Option value="upload">上传软件包至存储库</Option>
             <Option value="docker">Docker构建</Option>
             <Option value="chart">Chart构建</Option>
@@ -460,6 +466,16 @@ const AddTask = observer(() => {
           type: 'chart',
           checked: false,
         }];
+      } else if (value === 'go') {
+        extra = [{
+          name: 'Docker构建',
+          type: 'docker',
+          checked: false,
+        }, {
+          name: 'Chart构建',
+          type: 'chart',
+          checked: false,
+        }];
       }
       setSteps([...origin, ...extra]);
     } else {
@@ -531,49 +547,142 @@ const AddTask = observer(() => {
   };
 
   const handleAddRepo = (data, privateIf) => {
+    const old = AddTaskFormDataSet.current.get('private');
     if (data.length === 0) {
-      const old = AddTaskFormDataSet.current.get('private');
-      const newData = old.filter(o => o !== (privateIf ? 'true' : 'false'));
+      const newData = old.filter(o => o !== 'custom');
       AddTaskFormDataSet.current.set('private', newData);
     }
-    setSteps(steps.map(s => {
+    const data2 = steps.map(s => {
       if (s.checked) {
-        let newRepo = {};
-        if (privateIf) {
-          newRepo = {
-            privateRepo: data,
-          };
-        } else {
-          newRepo = {
-            publicRepo: data,
-          };
-        }
+        const newRepo = {
+          privateRepo: [],
+          publicRepo: [],
+        };
+        data.forEach(d => {
+          if (d.privateIf) {
+            newRepo.privateRepo = [
+              ...newRepo.privateRepo,
+              d,
+            ];
+          } else {
+            newRepo.publicRepo = [
+              ...newRepo.publicRepo,
+              d,
+            ];
+          }
+        });
         s.repo = {
           ...s.repo,
           ...newRepo,
         };
       }
       return s;
-    }));
+    });
+    setSteps(data2);
   };
 
-  const handleOpenRepo = (privateIf) => {
-    Modal.open({
-      key: Modal.key(),
-      title: `修改${privateIf === 'privateRepo' ? '私有' : '公有'}依赖仓库`,
-      style: {
-        width: 380,
-      },
-      children: <DependRepo handleParentCancel={handleCancel} dsData={steps.find(s => s.checked).repo[privateIf]} handleAdd={handleAddRepo} ds={DependRepoDataSet} privateIf={privateIf === 'privateRepo'} />,
-      drawer: true,
-      okText: '添加',
-    });
+  const handleOpenRepo = () => {
+    if (AddTaskFormDataSet.current.get('private').includes('copy')) {
+      Modal.confirm({
+        title: '清空配置',
+        children: '确定清空已有的Setting配置吗?',
+      }).then(button => {
+        if (button === 'ok') {
+          setSteps(steps.map(s => {
+            if (s.checked) {
+              s.mavenSettings = '';
+            }
+            return s;
+          }));
+          AddTaskFormDataSet.current.set('private', ['custom']);
+          initRepo();
+        } else {
+          AddTaskFormDataSet.current.set('private', ['copy']);
+        }
+      });
+    } else {
+      initRepo();
+    }
+    function initRepo() {
+      Modal.open({
+        key: Modal.key(),
+        title: '添加依赖仓库',
+        style: {
+          width: 380,
+        },
+        children: <DependRepo handleParentCancel={handleCancel} dsData={steps.find(s => s.checked).repo} handleAdd={handleAddRepo} ds={DependRepoDataSet} />,
+        drawer: true,
+        okText: '添加',
+      });
+    }
   };
 
   const handleCancel = (privateIf) => {
     const old = AddTaskFormDataSet.current.get('private');
     const newData = old.filter(o => o !== (privateIf ? 'true' : 'false'));
     AddTaskFormDataSet.current.set('private', newData);
+  };
+
+  const handleOpenXML = () => {
+    if (AddTaskFormDataSet.current.get('private').includes('custom')) {
+      Modal.confirm({
+        title: '清空配置',
+        children: '确定清空已有的Setting配置吗?',
+      }).then(button => {
+        if (button === 'ok') {
+          setSteps(steps.map(s => {
+            if (s.checked) {
+              s.repo = undefined;
+            }
+            return s;
+          }));
+          AddTaskFormDataSet.current.set('private', ['copy']);
+          initXml();
+        } else {
+          AddTaskFormDataSet.current.set('private', ['custom']);
+        }
+      });
+    } else {
+      initXml();
+    }
+    function initXml() {
+      const originMavenSetting = steps.find(s => s.checked).mavenSettings || '';
+      Modal.open({
+        key: Modal.key(),
+        title: '配置依赖仓库',
+        style: {
+          width: 380,
+        },
+        drawer: true,
+        children: (
+          <div>
+            <p>Setting文件内容</p>
+            <YamlEditor
+              readOnly={false}
+              colSpan={2}
+              newLine
+              value={steps.length > 0 ? steps.find(s => s.checked).mavenSettings || '' : ''}
+              onValueChange={(valueYaml) => setSteps(steps.map(s => {
+                if (s.checked) {
+                  s.mavenSettings = valueYaml;
+                }
+                return s;
+              }))}
+              modeChange={false}
+              showError={false}
+            />
+          </div>
+        ),
+        onCancel: () => {
+          setSteps(steps.map(s => {
+            if (s.checked) {
+              s.mavenSettings = originMavenSetting;
+            }
+            return s;
+          }));
+        },
+      });
+    }
   };
 
   const handleChangePrivate = (newV, oldV) => {
@@ -584,34 +693,59 @@ const AddTask = observer(() => {
     }
     const extra = minus(newV, oldV)[0];
     if (newV.length > oldV.length) {
-      //  打钩
-      Modal.open({
-        key: Modal.key(),
-        title: `修改${extra === 'true' ? '私有' : '公有'}依赖仓库`,
-        style: {
-          width: 380,
-        },
-        children: <DependRepo handleParentCancel={handleCancel} handleAdd={handleAddRepo} ds={DependRepoDataSet} privateIf={extra === 'true'} />,
-        drawer: true,
-        okText: '添加',
-      });
-    } else {
+      // 打钩
+      if (extra === 'custom') {
+        handleOpenRepo();
+      } else {
+        handleOpenXML();
+      }
+    } else if (extra === 'custom') {
       Modal.confirm({
-        title: `禁用${extra === 'true' ? '私有' : '公有'}依赖库`,
-        children: `确定禁用并清空已有的${extra === 'true' ? '私有' : '公有'}依赖库吗？`,
+        title: '清空配置',
+        children: '确定清空已有的Setting配置吗?',
       }).then(button => {
         if (button === 'ok') {
           setSteps(steps.map(s => {
             if (s.checked) {
-              s.repo[`${extra === 'true' ? 'privateRepo' : 'publicRepo'}`] = [];
+              s.repo = undefined;
             }
             return s;
           }));
         } else {
-          AddTaskFormDataSet.current.set('private', extra === 'true' ? 'true' : 'false');
+          AddTaskFormDataSet.current.set('private', extra);
+        }
+      });
+    } else {
+      Modal.confirm({
+        title: '清空配置',
+        children: '确定清空已有的Setting配置吗?',
+      }).then(button => {
+        if (button === 'ok') {
+          setSteps(steps.map(s => {
+            if (s.checked) {
+              s.mavenSettings = '';
+            }
+            return s;
+          }));
+        } else {
+          AddTaskFormDataSet.current.set('private', ['copy']);
         }
       });
     }
+    // if (newV.length > oldV.length) {
+    //   //  打钩
+    //   Modal.open({
+    //     key: Modal.key(),
+    //     title: `修改${extra === 'true' ? '私有' : '公有'}依赖仓库`,
+    //     style: {
+    //       width: 380,
+    //     },
+    //     children: <DependRepo handleParentCancel={handleCancel} handleAdd={handleAddRepo} ds={DependRepoDataSet} privateIf={extra === 'true'} />,
+    //     drawer: true,
+    //     okText: '添加',
+    //   });
+    // } else {
+    // }
   };
 
   const getMissionOther = () => {
@@ -623,6 +757,7 @@ const AddTask = observer(() => {
         <Select onChange={handleChangeBuildTemple} name="gjmb">
           <Option value="Maven">Maven模板</Option>
           <Option value="npm">Npm模板</Option>
+          <Option value="go">Go语言构建模板</Option>
         </Select>,
         <div newLine colSpan={2} style={{ display: 'flex', flexDirection: 'column' }} className="AddTask_stepContent">
           {generateSteps()}
@@ -664,13 +799,24 @@ const AddTask = observer(() => {
                     </span>
                   )}
                 >
-                  <Option value="false">
+                  <Option value="custom">
                     <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-                      公有依赖库
-                      <Button onClick={() => handleOpenRepo('publicRepo')} style={{ marginLeft: 8 }}>
+                      界面可视化定义
+                      <Button
+                        onClick={handleOpenRepo}
+                        style={{
+                          marginLeft: 8,
+                          display: (function () {
+                            const repo = steps.find(s => s.checked).repo;
+                            if (JSON.stringify(repo)) {
+                              return 'inline-block';
+                            }
+                            return 'none';
+                          }()),
+                        }}
+                      >
                         <Icon
                           style={{
-                            display: steps.find(s => s.checked).repo && steps.find(s => s.checked).repo.publicRepo && steps.find(s => s.checked).repo.publicRepo.length > 0 ? 'inline-block' : 'none',
                             color: '#3F51B5',
                           }}
                           type="mode_edit"
@@ -678,13 +824,18 @@ const AddTask = observer(() => {
                       </Button>
                     </span>
                   </Option>
-                  <Option value="true">
+                  <Option value="copy">
                     <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-                      私有依赖库
-                      <Button onClick={() => handleOpenRepo('privateRepo')} style={{ marginLeft: 8 }}>
+                      粘贴XML内容
+                      <Button
+                        onClick={handleOpenXML}
+                        style={{
+                          marginLeft: 8,
+                          display: steps.find(s => s.checked).mavenSettings ? 'inline-block' : 'none',
+                        }}
+                      >
                         <Icon
                           style={{
-                            display: steps.find(s => s.checked).repo && steps.find(s => s.checked).repo.privateRepo && steps.find(s => s.checked).repo.privateRepo.length > 0 ? 'inline-block' : 'none',
                             color: '#3F51B5',
                           }}
                           type="mode_edit"
@@ -700,7 +851,7 @@ const AddTask = observer(() => {
             (function () {
               if (steps.length > 0) {
                 const type = steps.find(s => s.checked).type;
-                if (type && ['Maven', 'npm'].includes(type)) {
+                if (type && ['Maven', 'npm', 'go'].includes(type)) {
                   return (
                     <div>
                       <YamlEditor

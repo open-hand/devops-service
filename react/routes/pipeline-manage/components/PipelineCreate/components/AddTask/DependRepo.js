@@ -5,18 +5,20 @@ import { observer } from 'mobx-react-lite';
 
 const { Option } = Select;
 
-const DependRepo = observer(({ ds, privateIf, modal, handleAdd, dsData, handleParentCancel }) => {
+const DependRepo = observer(({ ds, modal, handleAdd, dsData, handleParentCancel }) => {
   const [hasData, setHasData] = useState(false);
   useEffect(() => {
     if (dsData) {
-      dsData.forEach(d => {
-        ds.create(d);
+      Object.keys(dsData).forEach(k => {
+        dsData[k].forEach(v => {
+          ds.create(v);
+        });
       });
       setHasData(true);
     }
   }, []);
 
-  const handleCreateDependRepo = () => {
+  const handleCreateDependRepo = (privateIf) => {
     ds.create({
       privateIf,
     });
@@ -25,7 +27,7 @@ const DependRepo = observer(({ ds, privateIf, modal, handleAdd, dsData, handlePa
   const handleOk = async () => {
     const result = await ds.validate();
     if (result) {
-      handleAdd(ds.toData(), privateIf);
+      handleAdd(ds.toData());
       handleCancel(false);
       return true;
     }
@@ -35,7 +37,7 @@ const DependRepo = observer(({ ds, privateIf, modal, handleAdd, dsData, handlePa
   const handleCancel = (ParentCancel) => {
     ds.reset();
     if (ParentCancel) {
-      handleParentCancel(privateIf);
+      handleParentCancel();
     }
   };
 
@@ -49,7 +51,7 @@ const DependRepo = observer(({ ds, privateIf, modal, handleAdd, dsData, handlePa
   return (
     <div className="dependRepo">
       {
-        ds.records.map((r, rIndex) => (
+        ds.records.filter(d => !d.data.privateIf).map((r, rIndex) => (
           <div className="dependRepo_form_container">
             <Form columns={2} record={r}>
               <TextField name="name" />
@@ -57,12 +59,6 @@ const DependRepo = observer(({ ds, privateIf, modal, handleAdd, dsData, handlePa
                 <Option value="snapshot">snapshot仓库</Option>
                 <Option value="release">relase仓库</Option>
               </Select>
-              {
-                privateIf ? [
-                  <TextField name="username" />,
-                  <Password name="password" />,
-                ] : ''
-              }
               <TextArea colSpan={2} name="url" />
               <div className="dependRepo_form_borderline" />
             </Form>
@@ -80,7 +76,41 @@ const DependRepo = observer(({ ds, privateIf, modal, handleAdd, dsData, handlePa
           </div>
         ))
       }
-      <Button funcType="flat" onClick={handleCreateDependRepo} className="depandRepo_addRepo">{`+添加${privateIf ? '私有' : '公有'}依赖仓库`}</Button>
+      <div>
+        <Button funcType="flat" onClick={() => handleCreateDependRepo(false)} className="depandRepo_addRepo">+添加公有依赖仓库</Button>
+      </div>
+      <div className="dependRepo_form_borderline" style={{ marginTop: 10 }} />
+      {
+        ds.records.filter(d => d.data.privateIf).map((r, rIndex) => (
+          <div className="dependRepo_form_container" style={{ marginTop: 10 }}>
+            <Form columns={2} record={r}>
+              <TextField name="name" />
+              <Select name="type">
+                <Option value="snapshot">snapshot仓库</Option>
+                <Option value="release">relase仓库</Option>
+              </Select>
+              <TextField name="username" />
+              <Password name="password" />
+              <TextArea colSpan={2} name="url" />
+              <div className="dependRepo_form_borderline" />
+            </Form>
+            <Icon
+              onClick={() => handleDeleteItem(r)}
+              style={{
+                position: 'relative',
+                left: '10px',
+                bottom: '10px',
+                fontSize: '18px',
+                cursor: 'pointer',
+              }}
+              type="delete"
+            />
+          </div>
+        ))
+      }
+      <div style={{ marginTop: 10 }}>
+        <Button funcType="flat" onClick={() => handleCreateDependRepo(true)} className="depandRepo_addRepo">+添加私有依赖仓库</Button>
+      </div>
     </div>
   );
 });
