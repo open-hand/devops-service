@@ -230,6 +230,19 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         }
     }
 
+<<<<<<< HEAD
+=======
+    private void processReceiver(IamUserDTO user, List<Receiver> receivers, List<String> phones) {
+        Receiver receiver = new Receiver();
+        receiver.setEmail(user.getEmail());
+        receiver.setUserId(user.getId());
+        receiver.setPhone(user.getPhone());
+        receiver.setTargetUserTenantId(user.getOrganizationId());
+        receivers.add(receiver);
+        phones.add(user.getPhone());
+    }
+
+>>>>>>> [REF] add params when sending notices
 
     @Override
     public void validateCaptcha(Long envId, Long objectId, String objectType, String captcha) {
