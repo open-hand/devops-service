@@ -61,17 +61,15 @@ mvn package -Dmaven.test.skip=true -U -e -X -B
 #       如果有执行，建议执行前将pom文件保存一份，到此处再将原始pom.xml恢复
 #mvn deploy -Dmaven.test.skip=true -U -e -X -B -s settings.xml -DaltDeploymentRepository=用户认证信息id::default::仓库url`,
       npm: `
-export PATH=$PATH:/root/.npm-global/bin
-#设置Devcloud镜像仓加速构建
-npm config set registry https://mirrors.huaweicloud.com/repository/npm/
-npm config set prefix ~/.npm-global
-#如需安装node-sass
-#npm config set sass_binary_site https://repo.huaweicloud.com/node-sass/
-#npm install node-sass
-#加载依赖
-npm install
-#默认构建
-npm run build`,
+# 安装依赖
+npm install --registry \${NPM_REPO} --sass-binary-site=http://npm.taobao.org/mirrors/node-sass
+# 权限
+chmod -R 755 node_modules
+# 编译
+npm run compile
+echo "//\${NPM_REGISTRY}:_authToken=\${NPM_TOKEN}">.npmrc
+# 发布
+npm publish --registry \${NPM_PUBLISH_REGISTRY}`,
       custom: `
 # job模板，使用时根据需求替换
 # job名称（与任务名称保持一致）
@@ -91,6 +89,23 @@ job_1:
       - tags
 # 详细定义，请参考：https://docs.gitlab.com/ee/ci/yaml/README.html
       `,
+      go: `
+# 指定目标操作系统为linux
+GOOS=linux
+
+# 指定目标处理器架构为amd64
+GOARCH=amd64
+
+# 更多变量设置及可选值参考go env
+
+# 编译源文件生成可执行文件
+# -x                 打印编译时会用到的所有命令
+# -i                 安装依赖
+# -o ./docker/app    指定生成的可执行文件, 此处直接将生成的二进制文件输出到docker的上下文目录中
+# -v                 打印编译时的包名
+# ./path/to/main.go  填上mian.go的路径
+# 更多用法请在本地执行\`go help build\`查看
+go build -x -i -o ./docker/app -v ./path/to/main.go`,
     },
 
     get getYaml() {
