@@ -30,7 +30,12 @@ import org.springframework.util.CollectionUtils;
 =======
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
+<<<<<<< HEAD
 >>>>>>> [FIX] 修改Gson为FastJson
+=======
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+>>>>>>> [FIX] 使saga生产端与消费端json解析保持一致
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.exception.CommonException;
@@ -76,6 +81,7 @@ import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConsta
 public class DevopsSagaHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsSagaHandler.class);
 
+    private final Gson gson = new Gson();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
@@ -124,7 +130,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String devopsCreateEnv(String data) {
-        EnvGitlabProjectPayload gitlabProjectPayload = JSONObject.parseObject(data, EnvGitlabProjectPayload.class);
+        EnvGitlabProjectPayload gitlabProjectPayload = gson.fromJson(data, EnvGitlabProjectPayload.class);
         try {
             devopsEnvironmentService.handleCreateEnvSaga(gitlabProjectPayload);
         } catch (Exception e) {
@@ -155,7 +161,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String setEnvErr(String data) {
-        GitlabProjectPayload gitlabProjectPayload = JSONObject.parseObject(data, GitlabProjectPayload.class);
+        GitlabProjectPayload gitlabProjectPayload = gson.fromJson(data, GitlabProjectPayload.class);
         LOGGER.info("To set error status for environment with code: {}", gitlabProjectPayload.getPath());
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService
                 .baseQueryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
@@ -198,7 +204,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String createAppService(String data) {
-        DevOpsAppServicePayload devOpsAppServicePayload = JSONObject.parseObject(data, DevOpsAppServicePayload.class);
+        DevOpsAppServicePayload devOpsAppServicePayload = gson.fromJson(data, DevOpsAppServicePayload.class);
         try {
             appServiceService.operationApplication(devOpsAppServicePayload);
         } catch (Exception e) {
@@ -219,7 +225,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String importApp(String data) {
-        DevOpsAppImportServicePayload devOpsAppImportPayload = JSONObject.parseObject(data, DevOpsAppImportServicePayload.class);
+        DevOpsAppImportServicePayload devOpsAppImportPayload = gson.fromJson(data, DevOpsAppImportServicePayload.class);
         try {
             appServiceService.operationAppServiceImport(devOpsAppImportPayload);
         } catch (Exception e) {
@@ -239,7 +245,7 @@ public class DevopsSagaHandler {
             seq = 1)
     public String updateGitlabUser(String data) {
         LOGGER.info("DevopsSagaHandler.DEVOPS_UPDATE_GITLAB_USERS:{}", data);
-        DevOpsUserPayload devOpsUserPayload = JSONObject.parseObject(data, DevOpsUserPayload.class);
+        DevOpsUserPayload devOpsUserPayload = gson.fromJson(data, DevOpsUserPayload.class);
         try {
             UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
             //如果是用户是组织层的root，则跳过权限跟新
@@ -269,7 +275,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String operateEnvPermissionInGitlab(String payload) {
-        DevopsEnvUserPayload devopsEnvUserPayload = JSONObject.parseObject(payload, DevopsEnvUserPayload.class);
+        DevopsEnvUserPayload devopsEnvUserPayload = gson.fromJson(payload, DevopsEnvUserPayload.class);
         try {
             updateUserEnvPermissionService.updateUserPermission(devopsEnvUserPayload);
         } catch (Exception e) {
@@ -337,7 +343,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public void pipelineAutoDeployInstance(String data) {
-        AppServiceDeployVO appServiceDeployVO = JSONObject.parseObject(data, AppServiceDeployVO.class);
+        AppServiceDeployVO appServiceDeployVO = gson.fromJson(data, AppServiceDeployVO.class);
         Long taskRecordId = appServiceDeployVO.getRecordId();
         Long stageRecordId = pipelineTaskRecordService.baseQueryRecordById(taskRecordId).getStageRecordId();
         PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);
@@ -397,7 +403,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String devopsCreateBranch(String data) {
-        BranchSagaPayLoad branchSagaDTO = JSONObject.parseObject(data, BranchSagaPayLoad.class);
+        BranchSagaPayLoad branchSagaDTO = gson.fromJson(data, BranchSagaPayLoad.class);
         devopsGitService.createBranchBySaga(branchSagaDTO);
         return data;
     }
@@ -433,7 +439,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String devopsCreateService(String data) {
-        ServiceSagaPayLoad serviceSagaPayLoad = JSONObject.parseObject(data, ServiceSagaPayLoad.class);
+        ServiceSagaPayLoad serviceSagaPayLoad = gson.fromJson(data, ServiceSagaPayLoad.class);
         devopsServiceService.createServiceBySaga(serviceSagaPayLoad);
         return data;
     }
@@ -448,7 +454,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String devopsCreateIngress(String data) {
-        IngressSagaPayload ingressSagaPayload = JSONObject.parseObject(data, IngressSagaPayload.class);
+        IngressSagaPayload ingressSagaPayload = gson.fromJson(data, IngressSagaPayload.class);
         devopsIngressService.operateIngressBySaga(ingressSagaPayload);
         return data;
     }
@@ -462,7 +468,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String devopsCreatePVC(String data) {
-        PersistentVolumeClaimPayload persistentVolumeClaimPayload = JSONObject.parseObject(data, PersistentVolumeClaimPayload.class);
+        PersistentVolumeClaimPayload persistentVolumeClaimPayload = gson.fromJson(data, PersistentVolumeClaimPayload.class);
         devopsPvcService.operatePvcBySaga(persistentVolumeClaimPayload);
         return data;
     }
@@ -476,7 +482,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String devopsCreatePV(String data) {
-        PersistentVolumePayload persistentVolumePayload = JSONObject.parseObject(data, PersistentVolumePayload.class);
+        PersistentVolumePayload persistentVolumePayload = gson.fromJson(data, PersistentVolumePayload.class);
         devopsPvService.operatePvBySaga(persistentVolumePayload);
         return data;
     }
@@ -490,13 +496,13 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String importAppServiceGitlab(String data) {
-        AppServiceImportPayload appServiceImportPayload = JSONObject.parseObject(data, AppServiceImportPayload.class);
+        AppServiceImportPayload appServiceImportPayload = gson.fromJson(data, AppServiceImportPayload.class);
         try {
             appServiceService.importAppServiceGitlab(appServiceImportPayload);
         } catch (Exception e) {
             DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
             devOpsAppServicePayload.setAppServiceId(appServiceImportPayload.getAppServiceId());
-            appServiceService.setAppErrStatus(JSONObject.toJSONString(devOpsAppServicePayload), appServiceImportPayload.getProjectId(), appServiceImportPayload.getAppServiceId());
+            appServiceService.setAppErrStatus(gson.toJson(devOpsAppServicePayload), appServiceImportPayload.getProjectId(), appServiceImportPayload.getAppServiceId());
             throw e;
         }
         return data;
@@ -511,7 +517,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String setAppErr(String data) {
-        DevOpsAppServicePayload devOpsAppServicePayload = JSONObject.parseObject(data, DevOpsAppServicePayload.class);
+        DevOpsAppServicePayload devOpsAppServicePayload = gson.fromJson(data, DevOpsAppServicePayload.class);
         AppServiceDTO applicationDTO = appServiceService.baseQuery(devOpsAppServicePayload.getAppServiceId());
 
         // 考虑应用被删除的情况
@@ -536,8 +542,8 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public void deleteEnv(String data) {
-        JSONObject jsonObject = JSONObject.parseObject(data);
-        Long envId = jsonObject.getLong("envId");
+        JsonObject JSONObject = gson.fromJson(data, JsonObject.class);
+        Long envId = JSONObject.get("envId").getAsLong();
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         devopsEnvironmentService.deleteEnvSaga(envId);
         LOGGER.info("================删除环境成功，envId：{}", envId);
