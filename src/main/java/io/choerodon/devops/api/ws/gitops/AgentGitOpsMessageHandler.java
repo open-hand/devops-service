@@ -35,6 +35,12 @@ public class AgentGitOpsMessageHandler implements TextMessageHandler<AgentMsgVO>
             logger.info("找不到指令啊 {}", msg.getType());
             return;
         }
+<<<<<<< HEAD:src/main/java/io/choerodon/devops/api/ws/gitops/AgentGitOpsMessageHandler.java
+=======
+
+        LOGGER.debug("AgentGitOps: helm type: {}, message: {}", helmType.value, message.getPayload());
+
+>>>>>>> [ADD] add debug log:src/main/java/io/choerodon/devops/api/ws/gitops/AgentGitOpsSocketHandler.java
         //设置集群id
         msg.setClusterId(key.split(":")[1]);
         if (logger.isDebugEnabled()) {
