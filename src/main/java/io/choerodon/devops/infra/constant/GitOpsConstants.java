@@ -81,7 +81,7 @@ public class GitOpsConstants {
 
     public static final String GITLAB_CI_FILE_NAME = ".gitlab-ci.yml";
 
-    public static final String CI_FILE_COMMIT_MESSAGE = "[UPD] update .gitlab-ci.yml";
+    public static final String CI_FILE_COMMIT_MESSAGE = "[ci skip] update .gitlab-ci.yml";
 
     /**
      * 换行符
