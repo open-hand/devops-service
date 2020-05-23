@@ -142,6 +142,7 @@ function clean_cache() {
   rm -rf /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}
 }
 
+################################ 上传生成的chart包到猪齿鱼平台的devops-service ##################################
 # 此项为上传构建并上传chart包到Choerodon中，只有通过此函数Choerodon才会有相应版本记录。
 function chart_build() {
   #判断chart主目录名是否与应用编码保持一致
@@ -179,6 +180,7 @@ function chart_build() {
   fi
 }
 
+#################################### 下载文件 ####################################
 # $1 fileName
 # $2 project_id
 # $3 ciJobId
@@ -193,6 +195,7 @@ function downloadFile() {
   fi
 }
 
+#################################### 压缩生成软件包并推送到文件服务器 ####################################
 # $1 压缩包名称
 # $2 打包路径
 # $3 project_id
@@ -232,6 +235,7 @@ function compressAndUpload() {
   fi
 }
 
+#################################### 下载软件包并解压 ####################################
 # $1 文件名称
 # $2 project_id
 function downloadAndUncompress() {
