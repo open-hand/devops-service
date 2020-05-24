@@ -252,7 +252,7 @@ const DetailItem = (props) => {
         <Tooltip title="重试">
           <Button
             funcType="flat"
-            disabled={!(itemStatus === 'success' || itemStatus === 'failed' || itemStatus === 'skipped')}
+            disabled={!(itemStatus === 'success' || itemStatus === 'failed' || itemStatus === 'canceled')}
             shape="circle"
             size="small"
             icon="refresh"
