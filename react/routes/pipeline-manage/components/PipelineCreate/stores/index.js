@@ -15,6 +15,7 @@ export function usePipelineCreateStore() {
 export const StoreProvider = injectIntl(inject('AppState')((props) => {
   const {
     children,
+    dataSource,
     AppState: {
       menuType: {
         projectId,
@@ -24,7 +25,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
 
   const createUseStore = useStore();
   const AppServiceOptionsDs = useMemo(() => new DataSet(appServiceOptionsDs(projectId)), []);
-  const PipelineCreateFormDataSet = useMemo(() => new DataSet(pipelineCreateFormDataSet(AppServiceOptionsDs, projectId, createUseStore)), []);
+  const PipelineCreateFormDataSet = useMemo(() => new DataSet(pipelineCreateFormDataSet(AppServiceOptionsDs, projectId, createUseStore, dataSource)), [dataSource]);
 
   const value = {
     ...props,

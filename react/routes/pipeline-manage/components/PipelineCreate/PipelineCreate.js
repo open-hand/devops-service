@@ -111,9 +111,13 @@ const PipelineCreate = observer(() => {
   return (
     <div>
       <Form columns={3} dataSet={PipelineCreateFormDataSet}>
-        <TextField name="name" />
+        <TextField
+          name="name"
+          disabled={dataSource}
+        />
         {/* 应用服务只能选择目前没有关联流水线的应用服务 */}
         <Select
+          disabled={dataSource}
           name="appServiceId"
           searchable
           searchMatcher="appServiceName"
