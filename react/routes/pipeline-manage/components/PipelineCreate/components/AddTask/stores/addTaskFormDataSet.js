@@ -149,7 +149,6 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       name: 'image',
       type: 'string',
       label: '任务Runner镜像',
-      required: true,
       dynamicProps: ({ record, name }) => ({
         required: record.get('type') !== 'custom',
       }),
