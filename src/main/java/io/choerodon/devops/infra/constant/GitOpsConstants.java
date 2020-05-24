@@ -158,4 +158,6 @@ public class GitOpsConstants {
      * 如： registry.gitlab.com/gitlab-org/gitlab-docs:11.6
      */
     public static final Pattern IMAGE_REGISTRY = Pattern.compile("^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}(/.+)*:.+$");
+
+    public static final String STAGE = "stage";
 }
