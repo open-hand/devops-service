@@ -1,9 +1,6 @@
 package io.choerodon.devops.api.validator;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
@@ -78,7 +75,7 @@ public class DevopsCiPipelineAdditionalValidator {
 
                     stage.getJobList().forEach(job -> {
                         validateImage(job.getImage());
-                        validateCustomJobFormat(job);
+                        validateCustomJobFormat(Objects.requireNonNull(stage.getName()), job);
                         validateJobNameUniqueInPipeline(job.getName(), jobNames);
 
                         if (CiJobTypeEnum.BUILD.value().equals(job.getType())) {
@@ -210,7 +207,7 @@ public class DevopsCiPipelineAdditionalValidator {
      * 校验自定义任务格式
      */
     @SuppressWarnings("unchecked")
-    private static void validateCustomJobFormat(DevopsCiJobVO devopsCiJobVO) {
+    private static void validateCustomJobFormat(String stageName, DevopsCiJobVO devopsCiJobVO) {
         if (!CiJobTypeEnum.CUSTOM.value().equalsIgnoreCase(devopsCiJobVO.getType())) {
             return;
         }
@@ -227,7 +224,7 @@ public class DevopsCiPipelineAdditionalValidator {
             }
             devopsCiJobVO.setName(key);
             JSONObject jsonObject = new JSONObject((Map<String, Object>) value);
-            if (!devopsCiJobVO.getName().equals(jsonObject.getString("stage"))) {
+            if (!stageName.equals(jsonObject.getString(GitOpsConstants.STAGE))) {
                 throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
             }
         });
