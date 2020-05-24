@@ -321,7 +321,7 @@ public class GitlabServiceClientOperator {
             fileCreationVO.setUserId(userId);
             gitlabServiceClient.deleteFile(projectId, fileCreationVO);
         } catch (FeignException e) {
-            throw new CommonException("error.file.delete", e);
+            throw new CommonException("error.file.delete", e, path);
         }
     }
 
