@@ -198,7 +198,7 @@ const AddTask = observer(() => {
                 }
                 return s;
               }),
-            }).replace(/"/g, "'");
+            }).replace(/"/g, "'").replace(/\//g, '\\/');
           } else if (data.type === 'sonar') {
             return JSON.stringify({
               ...data,
