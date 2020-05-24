@@ -1,4 +1,4 @@
-export default (AppServiceOptionsDs, projectId, createUseStore) => {
+export default (AppServiceOptionsDs, projectId, createUseStore, dataSource) => {
   function checkImage(value, name, record) {
     const pa = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}(\/.+)*:.+$/;
     if (value && pa.test(value)) {
@@ -23,7 +23,17 @@ export default (AppServiceOptionsDs, projectId, createUseStore) => {
       required: true,
       textField: 'appServiceName',
       valueField: 'appServiceId',
-      lookupAxiosConfig: (data) => ({
+      lookupAxiosConfig: (data) => (dataSource ? ({
+        method: 'get',
+        url: `/devops/v1/projects/${projectId}/app_service/${dataSource.appServiceId}`,
+        transformResponse: (res) => {
+          const newRes = JSON.parse(res);
+          return [{
+            appServiceId: newRes.id,
+            appServiceName: newRes.name,
+          }];
+        },
+      }) : ({
         method: 'post',
         url: `/devops/v1/projects/${projectId}/app_service/list_app_services_without_ci`,
         data: {
@@ -32,8 +42,7 @@ export default (AppServiceOptionsDs, projectId, createUseStore) => {
             name: data.params.appServiceName || '',
           },
         },
-
-      }),
+      })),
     }, {
       name: 'selectImage',
       type: 'string',
