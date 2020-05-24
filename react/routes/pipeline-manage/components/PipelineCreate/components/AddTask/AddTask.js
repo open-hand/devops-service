@@ -965,7 +965,6 @@ const AddTask = observer(() => {
             getImageDom(),
             getMissionOther(),
           ] : [
-            getImageDom(),
             <YamlEditor
               readOnly={false}
               colSpan={2}
