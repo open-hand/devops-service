@@ -92,36 +92,66 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         throw new CommonException(e);
                     }
                 });
-        //根据标签如果是组织管理员需要添加组织下所有项目的的三个组的owner权限
+        // 根据标签如果是组织管理员需要添加组织下所有项目的的三个组的owner权限
+        // 同步到gitlab
         gitlabGroupMemberVOList.stream()
+<<<<<<< HEAD
                 .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceType.ORGANIZATION.value()))
                 .forEach(gitlabGroupMemberVO -> {
                     //还需要同步到devops_user表
                     //同步到gitlab
                     screenOrgLable(gitlabGroupMemberVO, Boolean.TRUE);
                 });
+=======
+                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceLevel.ORGANIZATION.value()))
+                .forEach(this::doCreateOrUpdateWithOrgLabel);
+>>>>>>> [FIX] delete gitlab role members when user lost organiztion admin by upadting the organization user
     }
 
-    private void screenOrgLable(GitlabGroupMemberVO gitlabGroupMemberVO, Boolean isCreate) {
+    /**
+     * 处理用户的组织相关权限的创建或更新
+     *
+     * @param gitlabGroupMemberVO 用户信息
+     */
+    private void doCreateOrUpdateWithOrgLabel(GitlabGroupMemberVO gitlabGroupMemberVO) {
         List<String> roleLabels = gitlabGroupMemberVO.getRoleLabels();
-        if (roleLabels.contains(LabelType.TENANT_ADMIN.getValue())) {
+        // 如果是组织管理员
+        if (!CollectionUtils.isEmpty(roleLabels) && roleLabels.contains(LabelType.TENANT_ADMIN.getValue())) {
             List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(gitlabGroupMemberVO.getResourceId());
+<<<<<<< HEAD
             if (projectDTOS != null && projectDTOS.size() > 0) {
                 if (isCreate) {
                     projectDTOS.forEach(projectDTO -> assignGitLabGroupMemberForOwner(projectDTO, gitlabGroupMemberVO.getUserId()));
                 } else {
                     deleteGitLabPermissions(projectDTOS, gitlabGroupMemberVO);
                 }
+=======
+            if (!CollectionUtils.isEmpty(projectDTOS)) {
+                projectDTOS.forEach(projectDTO -> assignGitLabGroupMemberForOwner(projectDTO, gitlabGroupMemberVO.getUserId()));
+>>>>>>> [FIX] delete gitlab role members when user lost organiztion admin by upadting the organization user
             }
+        } else {
+            // 原本的此用户可能是组织管理员,需要将此组织下所有的项目的group的权限判断一遍
+            // 如果这里过慢,可以考虑让hzero-iam发送更新用户前的标签数据
+            deleteGitLabPermissionsForOrgAdmin(gitlabGroupMemberVO);
         }
     }
 
-    private void deleteGitLabPermissions(List<ProjectDTO> projectDTOS, GitlabGroupMemberVO gitlabGroupMemberVO) {
+
+    private void deleteGitLabPermissionsForOrgAdmin(GitlabGroupMemberVO gitlabGroupMemberVO) {
+        List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(gitlabGroupMemberVO.getResourceId());
+        deleteGitLabPermissionsForOrgAdmin(projectDTOS, gitlabGroupMemberVO);
+    }
+
+    private void deleteGitLabPermissionsForOrgAdmin(List<ProjectDTO> projectDTOS, GitlabGroupMemberVO gitlabGroupMemberVO) {
+        if (CollectionUtils.isEmpty(projectDTOS)) {
+            return;
+        }
         projectDTOS.forEach(projectDTO -> {
             LOGGER.info("start delete project id is {} for gitlab org owner", projectDTO.getId());
-            //如果删除的成员为该项目下的项目所有者，则不删除gitlab相应的权限
+            // 如果删除的成员为该项目下的项目所有者，则不删除gitlab相应的权限
             if (!baseServiceClientOperator.isProjectOwner(gitlabGroupMemberVO.getUserId(), projectDTO.getId())) {
-                deleteProcess(gitlabGroupMemberVO, projectDTO.getId());
+                deleteAllPermissionInProjectOfUser(gitlabGroupMemberVO, projectDTO.getId());
             }
         });
     }
@@ -135,19 +165,35 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     //删除用户的项目所有者权限，如果是组织root,则不删除该项目下gitlab相应的权限
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(gitlabGroupMemberVO.getResourceId());
                     if (!baseServiceClientOperator.isOrganzationRoot(gitlabGroupMemberVO.getUserId(), projectDTO.getOrganizationId())) {
-                        deleteProcess(gitlabGroupMemberVO, projectDTO.getId());
+                        deleteAllPermissionInProjectOfUser(gitlabGroupMemberVO, projectDTO.getId());
                     }
                 });
+
         //组织root的标签，那么删除在组织下的root的权限
+<<<<<<< HEAD
         gitlabGroupMemberVOList.stream()
                 .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceType.ORGANIZATION.value()))
                 .forEach(gitlabGroupMemberVO -> {
                     screenOrgLable(gitlabGroupMemberVO, Boolean.FALSE);
                 });
+=======
+        // 列表中所有用户应该都是同一个组织的
+        List<ProjectDTO> projectDTOS = null;
+        for (GitlabGroupMemberVO gitlabGroupMemberVO : gitlabGroupMemberVOList) {
+            // 项目层上面已经处理了,这里只处理组织层的
+            if (gitlabGroupMemberVO.getResourceType().equals(ResourceLevel.ORGANIZATION.value())) {
+                // 这里是避免多次查询
+                if (projectDTOS == null) {
+                    projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(gitlabGroupMemberVO.getResourceId());
+                }
+                deleteGitLabPermissionsForOrgAdmin(projectDTOS, gitlabGroupMemberVO);
+            }
+        }
+>>>>>>> [FIX] delete gitlab role members when user lost organiztion admin by upadting the organization user
     }
 
 
-    private void deleteProcess(GitlabGroupMemberVO gitlabGroupMemberVO, Long projectId) {
+    private void deleteAllPermissionInProjectOfUser(GitlabGroupMemberVO gitlabGroupMemberVO, Long projectId) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupMemberVO.getUserId());
         userAttrService.checkUserSync(userAttrDTO, gitlabGroupMemberVO.getUserId());
         Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
