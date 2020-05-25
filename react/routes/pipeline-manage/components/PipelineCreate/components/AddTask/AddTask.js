@@ -938,7 +938,7 @@ const AddTask = observer(() => {
       colSpan={2}
       name="image"
     >
-      <Option value={defaultImage}>{`${defaultImage}(默认)`}</Option>
+      <Option value={defaultImage}>{`${defaultImage}${defaultImage === useStore.getDefaultImage ? '(默认)' : ''}`}</Option>
     </Select>
   );
 
