@@ -26,6 +26,7 @@ const PipelineCreate = observer(() => {
     },
     refreshTree,
     dataSource,
+    mainStore,
   } = usePipelineCreateStore();
 
   useEffect(() => {
@@ -67,6 +68,7 @@ const PipelineCreate = observer(() => {
             message.error(res.message);
             return false;
           } else {
+            res.id && mainStore.setSelectedMenu({ key: String(res.id) });
             refreshTree();
             return true;
           }

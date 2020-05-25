@@ -30,7 +30,7 @@ export default observer((props) => {
   } = stepStore || {};
 
   useEffect(() => {
-    loadData(projectId, id);
+    id && loadData(projectId, id);
   }, [id, projectId]);
 
   useEffect(() => {
