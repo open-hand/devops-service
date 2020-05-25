@@ -102,7 +102,7 @@ const AddTask = observer(() => {
             dockerFilePath,
             uploadArtifactFileName,
             dockerArtifactFileName,
-            triggerRefs: jobDetail.triggerRefs.split(','),
+            triggerRefs: jobDetail.triggerRefs ? jobDetail.triggerRefs.split(',') : [],
             glyyfw: appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')),
             bzmc: newSteps.find(s => s.checked) ? newSteps.find(s => s.checked).name : '',
             authType,
