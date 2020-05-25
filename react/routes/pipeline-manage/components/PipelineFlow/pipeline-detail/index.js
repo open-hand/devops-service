@@ -2,8 +2,7 @@ import React, { useEffect, Fragment, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 import forEach from 'lodash/forEach';
-import reduce from 'lodash/reduce';
-import { Spin } from 'choerodon-ui';
+import { Spin, Icon } from 'choerodon-ui';
 import { usePipelineFlowStore } from '../stores';
 
 import './index.less';
@@ -98,7 +97,13 @@ export default observer((props) => {
           <div className="c7ncd-pipeline-detail-stage" key={stageId}>
             <div className="c7ncd-pipeline-detail-stage-title">{stageName}</div>
             <div className="c7ncd-pipeline-detail-stage-line" />
-            {stageIndex !== getStepData.length - 1 ? <div className="c7ncd-pipeline-detail-stage-arrow">→</div> : null}
+            {stageIndex !== getStepData.length - 1 ? (
+              <div className="c7ncd-pipeline-detail-stage-arrow">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="9" viewBox="0 0 28 9">
+                  <path fill="#6887E8" d="M511.5,131 L520.5,135.5 L511.5,140 L511.5,136 L493,136 L493,135 L511.5,135 L511.5,131 Z" transform="translate(-493 -131)" />
+                </svg>
+              </div>
+            ) : null}
             {map(jobList, ({ id: jobId, type: jobType, name: jobName, metadata }, index) => (
               <div key={`${stageId}-${jobId}`}>
                 {index && leftLineDom[stageIndex] ? leftLineDom[stageIndex][index] : null}
