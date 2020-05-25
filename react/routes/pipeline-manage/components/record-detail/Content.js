@@ -91,7 +91,7 @@ export default observer(() => {
       <Output name="appServiceName" renderer={appServiceName} />
       <Output name="status" renderer={({ value }) => <StatusTag status={value} size={12} />} />
       <Output name="userDTO" renderer={renderUser} />
-      <Output name="finishedDate" />
+      <Output name="createdDate" />
       <Output name="durationSeconds" renderer={renderDuration} />
       <Output name="commit" renderer={renderCommit} />
     </Form>
