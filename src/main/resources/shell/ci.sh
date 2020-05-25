@@ -180,27 +180,27 @@ function chart_build() {
   fi
 }
 
-#################################### 下载文件 ####################################
-# $1 fileName
-# $2 project_id
-# $3 ciJobId
-# $4 sequence
-function downloadFile() {
+#################################### 下载settings文件 ####################################
+# $1 fileName   下载settings文件后保存为的文件名称
+# $2 project_id 项目id
+# $3 ciJobId    猪齿鱼的CI的JOB纪录的id
+# $4 sequence   猪齿鱼的CI流水线的步骤的序列号
+function downloadSettingsFile() {
   rm -rf "$1"
   http_status_code=$(curl -o "$1" -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/v1/projects/$2/ci_jobs/maven_settings?job_id=$3&sequence=$4&token=${Token}")
 
   if [ "$http_status_code" != "200" ]; then
-    echo "failed to downloadFile: $1"
+    echo "failed to downloadSettingsFile: $1"
     exit 1
   fi
 }
 
 #################################### 压缩生成软件包并推送到文件服务器 ####################################
-# $1 压缩包名称
+# $1 压缩包名称 在猪齿鱼CI流水线定义的软件包名称
 # $2 打包路径
-# $3 project_id
+# $3 project_id 项目id
 # $4 组织id
-function compressAndUpload() {
+function c7nCompressAndUploadArtifact() {
   # 打包文件
   tar -zcvf "$1.tgz" "$2"
   # 压缩后的包大于200M，退出ci执行
@@ -236,9 +236,9 @@ function compressAndUpload() {
 }
 
 #################################### 下载软件包并解压 ####################################
-# $1 文件名称
-# $2 project_id
-function downloadAndUncompress() {
+# $1 文件名称, 在猪齿鱼CI流水线定义中填写的名称
+# $2 project_id, 项目id
+function c7nDownloadArtifactAndUnCompress() {
 
   if [ -e "$1.tgz" ]; then
     echo "file $1.tgz exists"
