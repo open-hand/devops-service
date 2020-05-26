@@ -6,6 +6,9 @@ import isEqual from 'lodash/isEqual';
 import DetailHeader from './components/detailHeader';
 import DetailColumn from './components/detailColumn';
 import Loading from '../../../../components/loading';
+import EmptyPage from '../../../../components/empty-page';
+import { usePipelineFlowStore } from './stores';
+import { usePipelineManageStore } from '../../stores';
 
 export default observer((props) => {
   const {
@@ -16,6 +19,11 @@ export default observer((props) => {
     treeDs,
     stageRecordVOList: treeStageRecordVOList,
   } = props;
+
+  const {
+    intl: { formatMessage },
+    intlPrefix,
+  } = usePipelineManageStore();
 
   const {
     loadDetailData,
@@ -60,7 +68,13 @@ export default observer((props) => {
           {...props}
         />
       );
-    }) : '暂无数据....'
+    }) : (
+      <EmptyPage
+        title={formatMessage({ id: `${intlPrefix}.record.empty.title` })}
+        describe={formatMessage({ id: `${intlPrefix}.record.empty.des` })}
+        access
+      />
+    )
   );
 
   return (
