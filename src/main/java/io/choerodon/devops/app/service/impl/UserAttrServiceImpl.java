@@ -7,11 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
+import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
 
@@ -53,9 +53,7 @@ public class UserAttrServiceImpl implements UserAttrService {
 
     @Override
     public UserAttrDTO checkUserSync(UserAttrDTO userAttrDTO, Long iamUserId) {
-        if (userAttrDTO == null || userAttrDTO.getGitlabUserId() == null) {
-            throw new CommonException("error.iam.user.sync.to.gitlab", iamUserId);
-        }
+        CommonExAssertUtil.assertTrue(userAttrDTO != null && userAttrDTO.getGitlabUserId() != null, "error.iam.user.sync.to.gitlab", iamUserId);
         return userAttrDTO;
     }
 

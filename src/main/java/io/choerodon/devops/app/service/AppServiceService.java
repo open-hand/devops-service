@@ -371,8 +371,13 @@ public interface AppServiceService {
             appMarket,
                                               String type, Boolean doPage, Pageable pageable, String params);
 
+<<<<<<< HEAD
     PageInfo<AppServiceDTO> basePageCodeRepository(Long projectId, Pageable pageable, String params,
                                                    Boolean isProjectOwner, Long userId);
+=======
+    Page<AppServiceDTO> basePageCodeRepository(Long projectId, PageRequest pageable, String params,
+                                               Boolean isProjectOwner, Long userId);
+>>>>>>> [IMP] refactor API list_app_services_without_ci to page_app_services_without_ci
 
 
     AppServiceDTO baseQueryByCode(String code, Long projectId);
@@ -532,7 +537,7 @@ public interface AppServiceService {
     boolean checkAppServicePermissionForUser(Long appSvcId, Long userId);
 
     /**
-     * 查询用于创建CI流水线的应用服务
+     * 分页查询用于创建CI流水线的应用服务
      * 1. 默认查询20条
      * 2. 要用户有权限的
      * 3. 要创建成功且启用的
@@ -540,9 +545,10 @@ public interface AppServiceService {
      * 5. 不能查出已经有流水线的
      * 6. 要有master分支的
      *
-     * @param projectId 项目id
-     * @param params    查询参数，用于搜索
+     * @param projectId   项目id
+     * @param pageRequest 分页参数
+     * @param params      查询参数，用于搜索
      * @return 应用服务列表
      */
-    List<AppServiceSimpleVO> listAppServiceToCreateCiPipeline(Long projectId, @Nullable String params);
+    List<AppServiceSimpleVO> pageAppServiceToCreateCiPipeline(Long projectId, PageRequest pageRequest, @Nullable String params);
 }

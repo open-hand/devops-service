@@ -142,13 +142,11 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
      * 作为所有者，查询能够用于创建CI流水线的应用服务列表，限制20条
      *
      * @param projectId   项目id
-     * @param limitSize   条数
      * @param searchParam 字段模糊搜索参数
      * @param params      整体模糊搜索参数
      * @return 列表
      */
     List<AppServiceDTO> listAppServiceToCreatePipelineForOwner(@Param("projectId") Long projectId,
-                                                               @Param("limitSize") Long limitSize,
                                                                @Param("searchParam") Map<String, Object> searchParam,
                                                                @Param("params") List<String> params);
 
@@ -157,14 +155,12 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
      *
      * @param projectId   项目id
      * @param iamUserId   用户id
-     * @param limitSize   条数
      * @param searchParam 字段模糊搜索参数
      * @param params      整体模糊搜索参数
      * @return 列表
      */
     List<AppServiceDTO> listAppServiceToCreatePipelineForMember(@Param("projectId") Long projectId,
                                                                 @Param("iamUserId") Long iamUserId,
-                                                                @Param("limitSize") Long limitSize,
                                                                 @Param("searchParam") Map<String, Object> searchParam,
                                                                 @Param("params") List<String> params);
 }

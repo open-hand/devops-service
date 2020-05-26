@@ -19,6 +19,13 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.infra.enums.GitPlatformType;
+<<<<<<< HEAD
+=======
+import io.choerodon.mybatis.pagehelper.annotation.PageableDefault;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
+>>>>>>> [IMP] refactor API list_app_services_without_ci to page_app_services_without_ci
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -867,14 +874,16 @@ public class AppServiceController {
      * @return 应用服务列表
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "查询没有CI流水线的应用服务")
-    @PostMapping("/list_app_services_without_ci")
-    public ResponseEntity<List<AppServiceSimpleVO>> listAppServiceWithoutCiPipeline(
+    @ApiOperation(value = "分页查询没有CI流水线的应用服务")
+    @CustomPageRequest
+    @PostMapping("/page_app_services_without_ci")
+    public ResponseEntity<List<AppServiceSimpleVO>> pageAppServiceWithoutCiPipeline(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(name = "project_id") Long projectId,
+            @ApiIgnore @PageableDefault() PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return ResponseEntity.ok(applicationServiceService.listAppServiceToCreateCiPipeline(projectId, params));
+        return ResponseEntity.ok(applicationServiceService.pageAppServiceToCreateCiPipeline(projectId, pageRequest, params));
     }
 }
 

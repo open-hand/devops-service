@@ -2757,14 +2757,12 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public List<AppServiceSimpleVO> listAppServiceToCreateCiPipeline(Long projectId, @Nullable String params) {
+    public List<AppServiceSimpleVO> pageAppServiceToCreateCiPipeline(Long projectId, PageRequest pageRequest, @Nullable String params) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
         // 校验用户是否同步
         userAttrService.checkUserSync(userAttrDTO, userId);
 
-        // 默认查询的列表数量，出于界面展示的目的
-        Long defaultLimitSize = 20L;
         // 查询参数
         Map<String, Object> paramsMap = TypeUtil.castMapParams(params);
         Map<String, Object> searchParamMap = TypeUtil.cast(paramsMap.get(TypeUtil.SEARCH_PARAM));
@@ -2772,10 +2770,14 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         // 判断权限
         if (permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId)) {
-            return ConvertUtils.convertList(appServiceMapper.listAppServiceToCreatePipelineForOwner(projectId, defaultLimitSize, searchParamMap, paramList), app -> new AppServiceSimpleVO(app.getId(), app.getName(), app.getCode()));
+            return ConvertUtils.convertPage(PageHelper.doPageAndSort(pageRequest, () -> appServiceMapper.listAppServiceToCreatePipelineForOwner(projectId, searchParamMap, paramList)), AppServiceServiceImpl::dto2SimpleVo);
         } else {
-            return ConvertUtils.convertList(appServiceMapper.listAppServiceToCreatePipelineForMember(projectId, userId, defaultLimitSize, searchParamMap, paramList), app -> new AppServiceSimpleVO(app.getId(), app.getName(), app.getCode()));
+            return ConvertUtils.convertPage(PageHelper.doPageAndSort(pageRequest, () -> appServiceMapper.listAppServiceToCreatePipelineForMember(projectId, userId, searchParamMap, paramList)), AppServiceServiceImpl::dto2SimpleVo);
         }
+    }
+
+    private static AppServiceSimpleVO dto2SimpleVo(AppServiceDTO app) {
+        return new AppServiceSimpleVO(app.getId(), app.getName(), app.getCode());
     }
 
     /**

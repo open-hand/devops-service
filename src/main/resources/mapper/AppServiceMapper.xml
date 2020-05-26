@@ -777,7 +777,6 @@
           AND dcp.id IS NULL
           AND db.branch_name = 'master'
         <include refid="appServiceCiSqlparams"/>
-        LIMIT #{limitSize,jdbcType=BIGINT}
     </select>
 
     <select id="listAppServiceToCreatePipelineForMember"
@@ -812,7 +811,6 @@
                AND db.branch_name = 'master'
              <include refid="appServiceCiSqlparams"/>
              ) tmp
-        LIMIT #{limitSize,jdbcType=BIGINT}
     </select>
 
     <sql id="appServiceCiSqlparams">

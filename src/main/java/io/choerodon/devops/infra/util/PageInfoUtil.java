@@ -20,9 +20,15 @@ public class PageInfoUtil {
      * @param pageable 分页参数
      * @return 根据分页参数所得分页内容
      */
+<<<<<<< HEAD
     public static <T> PageInfo<T> createPageFromList(List<T> all, Pageable pageable) {
         PageInfo<T> result = new PageInfo<>();
         boolean queryAll = pageable.getPageNumber() == 0 || pageable.getPageSize() == 0;
+=======
+    public static <T> Page<T> createPageFromList(List<T> all, PageRequest pageable) {
+        Page<T> result = new Page<>();
+        boolean queryAll = pageable.getSize() == 0;
+>>>>>>> [IMP] refactor API list_app_services_without_ci to page_app_services_without_ci
         //当前页大小
         result.setPageSize(queryAll ? all.size() : pageable.getPageSize());
         //当前页
