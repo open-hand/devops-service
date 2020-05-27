@@ -50,7 +50,8 @@ public class PageInfoUtil {
         //总页数
         result.setTotalPages(queryAll ? 1 : (int) (Math.ceil(all.size() / (pageable.getSize() * 1.0))));
         //元素起始索引
-        int fromIndex = pageable.getSize() * (pageable.getPage() - 1);
+        // 第一页从0开始
+        int fromIndex = pageable.getSize() * pageable.getPage();
         int size;
         if (all.size() >= fromIndex) {
             if (all.size() <= fromIndex + pageable.getSize()) {
