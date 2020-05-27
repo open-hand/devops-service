@@ -24,6 +24,7 @@ import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.Stage;
 import io.choerodon.devops.app.service.*;
@@ -37,6 +38,7 @@ import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper;
+import io.choerodon.devops.infra.util.CustomContextUtil;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -85,6 +87,8 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                             .withRefType("app")
                             .withRefId(applicationDTO.getId().toString())
                             .withSagaCode(DEVOPS_GITLAB_PIPELINE)
+                            .withLevel(ResourceLevel.PROJECT)
+                            .withSourceId(applicationDTO.getProjectId())
                             .withJson(input),
                     builder -> {
                     });
@@ -104,6 +108,8 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserName(pipelineWebHookVO.getUser().getUsername());
         if (userAttrE != null) {
             gitlabUserId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
+            // 这里不设置用户上下文会报错
+            CustomContextUtil.setUserContext(userAttrE.getIamUserId());
         }
         //查询pipeline最新阶段信息
         List<Stage> stages = new ArrayList<>();
