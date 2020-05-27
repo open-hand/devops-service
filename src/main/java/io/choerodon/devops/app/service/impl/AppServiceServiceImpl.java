@@ -65,7 +65,10 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
 import io.choerodon.devops.infra.dto.harbor.User;
-import io.choerodon.devops.infra.dto.iam.*;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.RoleDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HarborClient;
@@ -2486,18 +2489,18 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         // 查询相关的组织和项目数据
         List<ProjectDTO> projectDTOS = baseServiceClientOperator.queryProjectsByIds(appServiceDTOList.stream().map(AppServiceDTO::getProjectId).collect(toSet()));
-        List<OrganizationDTO> organizationDTOS = baseServiceClientOperator.listOrganizationByIds(projectDTOS.stream().map(ProjectDTO::getOrganizationId).collect(toSet()));
+        List<Tenant> organizationDTOS = baseServiceClientOperator.listOrganizationByIds(projectDTOS.stream().map(ProjectDTO::getOrganizationId).collect(toSet()));
         Map<Long, ProjectDTO> projectDTOMap = projectDTOS.stream().collect(Collectors.toMap(ProjectDTO::getId, Functions.identity()));
-        Map<Long, OrganizationDTO> orgMap = organizationDTOS.stream().collect(Collectors.toMap(OrganizationDTO::getId, Functions.identity()));
+        Map<Long, Tenant> orgMap = organizationDTOS.stream().collect(Collectors.toMap(Tenant::getTenantId, Functions.identity()));
 
         // 设置仓库地址和ssh地址
         List<AppServiceRepVO> collect = appServiceDTOList.stream().map(app -> {
             AppServiceRepVO rep = ConvertUtils.convertObject(app, AppServiceRepVO.class);
             rep.setGitlabProjectId(TypeUtil.objToLong(app.getGitlabProjectId()));
             ProjectDTO project = projectDTOMap.get(rep.getProjectId());
-            OrganizationDTO org = orgMap.get(project.getOrganizationId());
-            rep.setRepoUrl(concatRepoUrl(org.getCode(), project.getCode(), rep.getCode()));
-            rep.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, org.getCode(), project.getCode(), rep.getCode()));
+            Tenant org = orgMap.get(project.getOrganizationId());
+            rep.setRepoUrl(concatRepoUrl(org.getTenantNum(), project.getCode(), rep.getCode()));
+            rep.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, org.getTenantNum(), project.getCode(), rep.getCode()));
             return rep;
         }).collect(toList());
 

@@ -1,7 +1,20 @@
 package io.choerodon.devops.infra.feign.operator;
 
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
@@ -15,18 +28,6 @@ import io.choerodon.devops.infra.util.FeignParamUtils;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by Sheep on 2019/7/11.
@@ -83,11 +84,11 @@ public class BaseServiceClientOperator {
         throw new CommonException("error.organization.get", organizationId);
     }
 
-    public List<OrganizationDTO> listOrganizationByIds(Set<Long> organizationIds) {
+    public List<Tenant> listOrganizationByIds(Set<Long> organizationIds) {
         if (CollectionUtils.isEmpty(organizationIds)) {
             return Collections.emptyList();
         }
-        ResponseEntity<List<OrganizationDTO>> organizationDTOResponseEntity = baseServiceClient.queryOrgByIds(organizationIds);
+        ResponseEntity<List<Tenant>> organizationDTOResponseEntity = baseServiceClient.queryOrgByIds(organizationIds);
         if (organizationDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
             return organizationDTOResponseEntity.getBody();
         } else {
