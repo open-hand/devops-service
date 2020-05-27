@@ -56,6 +56,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCiPipelineServiceImpl.class);
 
+    private static final int DEFAULT_PIPELINE_RECORD_SIZE = 5;
     private static final String CREATE_PIPELINE_FAILED = "create.pipeline.failed";
     private static final String UPDATE_PIPELINE_FAILED = "update.pipeline.failed";
     private static final String DISABLE_PIPELINE_FAILED = "disable.pipeline.failed";
@@ -271,7 +272,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             throw new CommonException(ERROR_PROJECT_ID_IS_NULL);
         }
         List<DevopsCiPipelineVO> devopsCiPipelineVOS = devopsCiPipelineMapper.queryByProjectIdAndName(projectId, name);
-        PageRequest pageable = new PageRequest(1, 5, new Sort(new Sort.Order(Sort.Direction.DESC, "id")));
+        PageRequest pageable = new PageRequest(GitOpsConstants.FIRST_PAGE_INDEX, DEFAULT_PIPELINE_RECORD_SIZE, new Sort(new Sort.Order(Sort.Direction.DESC, "id")));
 
         devopsCiPipelineVOS.forEach(devopsCiPipelineVO -> {
             Page<DevopsCiPipelineRecordVO> pipelineRecordVOPageInfo = devopsCiPipelineRecordService.pagingPipelineRecord(projectId, devopsCiPipelineVO.getId(), pageable);
