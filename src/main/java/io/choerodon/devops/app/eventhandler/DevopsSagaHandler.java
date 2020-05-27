@@ -1,35 +1,12 @@
 package io.choerodon.devops.app.eventhandler;
 
-import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Objects;
-
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.SendSettingEnum;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.kubernetes.client.JSON;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.AppServiceInstanceVO;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
@@ -41,10 +18,33 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.app.service.impl.UpdateAppUserPermissionServiceImpl;
 import io.choerodon.devops.app.service.impl.UpdateEnvUserPermissionServiceImpl;
 import io.choerodon.devops.app.service.impl.UpdateUserPermissionService;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
+import io.choerodon.devops.infra.dto.PipelineTaskRecordDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.PipelineNoticeType;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.kubernetes.client.JSON;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Objects;
+
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
+
+//import io.choerodon.core.notify.NoticeSendDTO;
 
 
 /**
@@ -350,23 +350,11 @@ public class DevopsSagaHandler {
             pipelineStageRecordService.baseCreateOrUpdate(stageRecordDTO);
 
             pipelineService.updateStatus(pipelineRecordId, null, WorkFlowStatus.FAILED.toValue(), e.getMessage());
-            NoticeSendDTO.User user = new NoticeSendDTO.User();
-            user.setEmail(GitUserNameUtil.getEmail());
-            user.setId(GitUserNameUtil.getUserId().longValue());
-            PipelineDTO pipelineDTO = pipelineService.baseQueryById(pipelineTaskRecordDTO.getStageRecordId());;
-            JSONObject JSONObject = new JSONObject();
-            JSONObject.put("pipelineId", pipelineDTO.getId());
-            JSONObject.put("pipelineName", pipelineDTO.getName());
-            JSONObject.put("triggerType", pipelineDTO.getTriggerType());
-            JSONObject.put("projectId", pipelineDTO.getProjectId());
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(pipelineDTO.getProjectId());
-            JSONObject.put("projectName", projectDTO.getId());
-            pipelineService.sendSiteMessage(pipelineRecordId,
+            Long userId = GitUserNameUtil.getUserId().longValue();
+            sendNotificationService.sendPipelineNotice(pipelineRecordId,
                     PipelineNoticeType.PIPELINEFAILED.toValue(),
-                    Collections.singletonList(user), new HashMap<>(),
-                    sendNotificationService.getWebHookJsonSendDTO(JSONObject, SendSettingEnum.PIPELINE_FAILED.value(), pipelineDTO.getCreatedBy(), new Date())
-            );
-            LOGGER.info("send pipeline failed message to the user. The user id is {}", user.getId());
+                    userId, GitUserNameUtil.getEmail(), new HashMap<>());
+            LOGGER.info("send pipeline failed message to the user. The user id is {}", userId);
         }
     }
 
@@ -394,7 +382,6 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String devopsCreateInstance(String data) {
-        ObjectMapper objectMapper = new ObjectMapper();
         InstanceSagaPayload instanceSagaPayload;
         try {
             instanceSagaPayload = objectMapper.readValue(data, InstanceSagaPayload.class);
@@ -541,7 +528,7 @@ public class DevopsSagaHandler {
             description = "Devops删除应用服务", maxRetryCount = 3,
             seq = 1)
     public void deleteAppService(String data) {
-        DevOpsAppServicePayload devOpsAppServicePayload = gson.fromJson(data, DevOpsAppServicePayload.class);
+        DevOpsAppServicePayload devOpsAppServicePayload = JSONObject.parseObject(data, DevOpsAppServicePayload.class);
         appServiceService.deleteAppServiceSage(devOpsAppServicePayload.getIamProjectId(), devOpsAppServicePayload.getAppServiceId());
         //删除应用服务成功之后，发送消息
         if (!CollectionUtils.isEmpty(devOpsAppServicePayload.getDevopsUserPermissionVOS())) {

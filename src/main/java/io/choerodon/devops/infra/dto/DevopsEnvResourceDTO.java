@@ -2,16 +2,20 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.*;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by younger on 2018/4/24.
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_env_resource")
-public class DevopsEnvResourceDTO extends BaseDTO {
+public class DevopsEnvResourceDTO extends AuditDomain {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long instanceId;
     private Long resourceDetailId;

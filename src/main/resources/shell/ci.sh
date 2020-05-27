@@ -142,6 +142,7 @@ function clean_cache() {
   rm -rf /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}
 }
 
+################################ 上传生成的chart包到猪齿鱼平台的devops-service ##################################
 # 此项为上传构建并上传chart包到Choerodon中，只有通过此函数Choerodon才会有相应版本记录。
 function chart_build() {
   #判断chart主目录名是否与应用编码保持一致
@@ -179,24 +180,27 @@ function chart_build() {
   fi
 }
 
-# $1 fileName
-# $2 project_id
-# $3 ciJobId
-# $4 sequence
-function downloadFile() {
+#################################### 下载settings文件 ####################################
+# $1 fileName   下载settings文件后保存为的文件名称
+# $2 project_id 项目id
+# $3 ciJobId    猪齿鱼的CI的JOB纪录的id
+# $4 sequence   猪齿鱼的CI流水线的步骤的序列号
+function downloadSettingsFile() {
   rm -rf "$1"
   http_status_code=$(curl -o "$1" -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/v1/projects/$2/ci_jobs/maven_settings?job_id=$3&sequence=$4&token=${Token}")
 
   if [ "$http_status_code" != "200" ]; then
-    echo "failed to downloadFile: $1"
+    echo "failed to downloadSettingsFile: $1"
     exit 1
   fi
 }
 
-# $1 压缩包名称
+#################################### 压缩生成软件包并推送到文件服务器 ####################################
+# $1 压缩包名称 在猪齿鱼CI流水线定义的软件包名称
 # $2 打包路径
-# $3 project_id
-function compressAndUpload() {
+# $3 project_id 项目id
+# $4 组织id
+function c7nCompressAndUploadArtifact() {
   # 打包文件
   tar -zcvf "$1.tgz" "$2"
   # 压缩后的包大于200M，退出ci执行
@@ -206,8 +210,8 @@ function compressAndUpload() {
     exit 1
   fi
 
-  # 上传压缩包
-  result_upload_to_devops=$(
+  # 上传压缩包到文件服务
+  result_upload_to_file_service=$(
     curl -X POST \
       -F "token=${Token}" \
       -F "commit=${CI_COMMIT_SHA}" \
@@ -215,24 +219,26 @@ function compressAndUpload() {
       -F "ci_job_id=${CI_JOB_ID}" \
       -F "artifact_name=$1" \
       -F "file=@$1.tgz" \
-      "${CHOERODON_URL}/devops/v1/projects/$3/ci_jobs/upload_artifact" \
+      -F "tenant_id=$4" \
+      "${CHOERODON_URL}/hfle/choerodon/v1/devops/files" \
       -o "${CI_COMMIT_SHA}-ci.response" \
       -w %{http_code}
   )
 
   # 判断本次上传到devops是否出错
-  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+  response_upload_to_file_service=$(cat "${CI_COMMIT_SHA}-ci.response")
   rm "${CI_COMMIT_SHA}-ci.response"
-  if [ "$result_upload_to_devops" != "200" ]; then
-    echo "$response_upload_to_devops"
-    echo "upload to devops error"
+  if [ "$result_upload_to_file_service" != "200" ]; then
+    echo "$response_upload_to_file_service"
+    echo "upload to file_service error"
     exit 1
   fi
 }
 
-# $1 文件名称
-# $2 project_id
-function downloadAndUncompress() {
+#################################### 下载软件包并解压 ####################################
+# $1 文件名称, 在猪齿鱼CI流水线定义中填写的名称
+# $2 project_id, 项目id
+function c7nDownloadArtifactAndUnCompress() {
 
   if [ -e "$1.tgz" ]; then
     echo "file $1.tgz exists"

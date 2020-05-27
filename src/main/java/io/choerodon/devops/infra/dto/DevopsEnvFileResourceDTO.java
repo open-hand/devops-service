@@ -5,7 +5,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Creator: Runge
@@ -13,10 +15,12 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Time: 15:34
  * Description:
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_env_file_resource")
-public class DevopsEnvFileResourceDTO extends BaseDTO {
+public class DevopsEnvFileResourceDTO extends AuditDomain {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long envId;
     private String filePath;

@@ -14,7 +14,7 @@ import javax.persistence.Table;
 @Table(name = "devops_app_service_version_readme")
 public class AppServiceVersionReadmeDTO {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String readme;
 

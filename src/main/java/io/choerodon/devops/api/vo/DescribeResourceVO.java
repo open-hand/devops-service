@@ -1,13 +1,18 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Created by Sheep on 2019/8/22.
  */
 public class DescribeResourceVO {
-
+    @ApiModelProperty("资源所在环境code")
     private String namespace;
+    @ApiModelProperty("资源类型")
     private String kind;
+    @ApiModelProperty("资源名称")
     private String name;
+    @ApiModelProperty("资源的数据库id")
     private String describeId;
 
 

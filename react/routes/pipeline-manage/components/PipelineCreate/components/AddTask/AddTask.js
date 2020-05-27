@@ -586,8 +586,8 @@ const AddTask = observer(() => {
   const handleOpenRepo = () => {
     if (AddTaskFormDataSet.current.get('private').includes('copy')) {
       Modal.confirm({
-        title: '清空配置',
-        children: '确定清空已有的Setting配置吗?',
+        title: '切换配置方式',
+        children: '确定要切换为"界面可视化定义/粘贴XML内容"的方式吗，切换后，将会清空已有的Setting配置。',
       }).then(button => {
         if (button === 'ok') {
           setSteps(steps.map(s => {
@@ -628,8 +628,8 @@ const AddTask = observer(() => {
   const handleOpenXML = () => {
     if (AddTaskFormDataSet.current.get('private').includes('custom')) {
       Modal.confirm({
-        title: '清空配置',
-        children: '确定清空已有的Setting配置吗?',
+        title: '切换配置方式',
+        children: '确定要切换为"界面可视化定义/粘贴XML内容"的方式吗，切换后，将会清空已有的Setting配置。',
       }).then(button => {
         if (button === 'ok') {
           setSteps(steps.map(s => {
@@ -798,7 +798,7 @@ const AddTask = observer(() => {
                   label={(
                     <span>Setting配置
                       <Tooltip
-                        title=""
+                        title="123"
                         theme="light"
                       >
                         <Icon type="help" />
@@ -938,7 +938,7 @@ const AddTask = observer(() => {
       colSpan={2}
       name="image"
     >
-      <Option value={defaultImage}>{`${defaultImage}(默认)`}</Option>
+      <Option value={defaultImage}>{`${defaultImage}${defaultImage === useStore.getDefaultImage ? '(默认)' : ''}`}</Option>
     </Select>
   );
 

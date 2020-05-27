@@ -4,14 +4,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import org.springframework.data.domain.Pageable;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceShareRuleVO;
 import io.choerodon.devops.app.service.AppServiceShareRuleService;
@@ -22,6 +20,8 @@ import io.choerodon.devops.infra.mapper.AppServiceShareRuleMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 
 /**
@@ -67,23 +67,20 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     }
 
     @Override
-    public PageInfo<AppServiceShareRuleVO> pageByOptions(Long projectId, Long appServiceId, Pageable pageable, String params) {
+    public Page<AppServiceShareRuleVO> pageByOptions(Long projectId, Long appServiceId, PageRequest pageable, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
-        PageInfo<AppServiceShareRuleDTO> devopsProjectConfigDTOPageInfo = PageHelper.startPage(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(
+        Page<AppServiceShareRuleDTO> devopsProjectConfigDTOPageInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                 () -> appServiceShareRuleMapper.listByOptions(appServiceId,
                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(mapParams.get(TypeUtil.PARAMS))));
-        PageInfo<AppServiceShareRuleVO> shareRuleVOPageInfo = ConvertUtils.convertPage(devopsProjectConfigDTOPageInfo, AppServiceShareRuleVO.class);
-        List<AppServiceShareRuleVO> appServiceShareRuleVOS = shareRuleVOPageInfo.getList().stream().peek(t -> {
+        Page<AppServiceShareRuleVO> shareRuleVOPageInfo = ConvertUtils.convertPage(devopsProjectConfigDTOPageInfo, AppServiceShareRuleVO.class);
+        List<AppServiceShareRuleVO> appServiceShareRuleVOS = shareRuleVOPageInfo.getContent().stream().peek(t -> {
             if (t.getProjectId() != null) {
                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(t.getProjectId());
                 t.setProjectName(projectDTO.getName());
             }
         }).collect(Collectors.toList());
-        shareRuleVOPageInfo.setList(appServiceShareRuleVOS);
+        shareRuleVOPageInfo.setContent(appServiceShareRuleVOS);
         return shareRuleVOPageInfo;
     }
 

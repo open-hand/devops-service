@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
-import io.choerodon.mybatis.common.Mapper;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * 〈功能简述〉
@@ -15,7 +15,7 @@ import io.choerodon.mybatis.common.Mapper;
  * @author wanghao
  * @Date 2020/4/3 9:21
  */
-public interface DevopsCiPipelineRecordMapper extends Mapper<DevopsCiPipelineRecordDTO> {
+public interface DevopsCiPipelineRecordMapper extends BaseMapper<DevopsCiPipelineRecordDTO> {
 
     /**
      * 查询流水线执行记录

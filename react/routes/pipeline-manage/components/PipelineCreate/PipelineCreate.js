@@ -58,6 +58,10 @@ const PipelineCreate = observer(() => {
         image: origin.selectImage === '1' ? origin.image : null,
         stageList: editBlockStore.getStepData2,
       };
+      if (data.stageList.length === 1 && data.stageList[0].jobList.length === 0) {
+        message.error(`CI流水线中存在空阶段，无法${modal.props.title.includes('创建') ? '创建' : '保存'}`);
+        return false;
+      }
       if (dataSource) {
         await axios.put(`/devops/v1/projects/${projectId}/ci_pipelines/${dataSource.id}`, data);
         editBlockStore.loadData(projectId, dataSource.id);
@@ -110,6 +114,26 @@ const PipelineCreate = observer(() => {
   //   });
   // };
 
+  const handleClickMore = async (e) => {
+    e.stopPropagation();
+    const pageSize = PipelineCreateFormDataSet.current.get('pageSize') + 20;
+    const result = await axios.post(`/devops/v1/projects/${projectId}/app_service/page_app_services_without_ci?page=0&size=${pageSize}`);
+    if (result.length % 20 === 0) {
+      result.push({
+        appServiceId: 'more',
+        appServiceName: '加载更多',
+      });
+    }
+    PipelineCreateFormDataSet.current.set('pageSize', pageSize);
+    PipelineCreateFormDataSet.getField('appServiceId').props.lookup = result;
+  };
+
+  const renderer = ({ text }) => (text === '加载更多' ? (
+    <a onClick={handleClickMore}>{text}</a>
+  ) : text);
+
+  const optionRenderer = ({ text }) => renderer({ text });
+
   return (
     <div>
       <Form columns={3} dataSet={PipelineCreateFormDataSet}>
@@ -123,6 +147,10 @@ const PipelineCreate = observer(() => {
           name="appServiceId"
           searchable
           searchMatcher="appServiceName"
+          showHelp="tooltip"
+          optionRenderer={optionRenderer}
+          renderer={renderer}
+          help="此处仅能看到您有开发权限的启用状态的应用服务，并要求该应用服务必须有master分支，且尚未有关联的CI流水线"
         />
         <TextField style={{ display: 'none' }} />
         <Select

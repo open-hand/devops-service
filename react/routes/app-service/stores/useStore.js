@@ -109,14 +109,9 @@ export default function useStore() {
     },
 
     async judgeRole(organizationId, projectId) {
-      const data = [{
-        code: 'devops-service.app-service.create',
-        organizationId,
-        projectId,
-        resourceType: 'project',
-      }];
+      const data = ['devops-service.app-service.create'];
       try {
-        const res = await axios.post('/base/v1/permissions/checkPermission', JSON.stringify(data));
+        const res = await axios.post(`/iam/hzero/v1/menus/check-permissions?projectId=${projectId}`, JSON.stringify(data));
         if (handlePromptError(res)) {
           const { approve } = res[0] || {};
           this.setProjectRole(approve);

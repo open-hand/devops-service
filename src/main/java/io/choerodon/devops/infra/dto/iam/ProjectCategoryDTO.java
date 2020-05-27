@@ -3,16 +3,15 @@ package io.choerodon.devops.infra.dto.iam;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Table;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author jiameng.cao
  * @date 2019/6/4
  */
-@Table(name = "fd_project_category")
-public class ProjectCategoryDTO extends BaseDTO {
+//@Table(name = "fd_project_category")
+public class ProjectCategoryDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

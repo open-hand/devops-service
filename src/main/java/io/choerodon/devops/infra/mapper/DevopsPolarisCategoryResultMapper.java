@@ -6,13 +6,13 @@ import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.ClusterPolarisSummaryItemVO;
 import io.choerodon.devops.infra.dto.DevopsPolarisCategoryResultDTO;
-import io.choerodon.mybatis.common.Mapper;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * @author zmf
  * @since 2/17/20
  */
-public interface DevopsPolarisCategoryResultMapper extends Mapper<DevopsPolarisCategoryResultDTO> {
+public interface DevopsPolarisCategoryResultMapper extends BaseMapper<DevopsPolarisCategoryResultDTO> {
     void batchInsert(@Param("items") List<DevopsPolarisCategoryResultDTO> items);
 
     List<ClusterPolarisSummaryItemVO> queryPolarisSummary(@Param("recordId") Long recordId);

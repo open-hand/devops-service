@@ -227,6 +227,7 @@ public class DevopsCiPipelineAdditionalValidator {
             if (!stageName.equals(jsonObject.getString(GitOpsConstants.STAGE))) {
                 throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
             }
+
         });
     }
 

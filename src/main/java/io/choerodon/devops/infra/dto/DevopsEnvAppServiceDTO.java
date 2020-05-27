@@ -1,10 +1,17 @@
 package io.choerodon.devops.infra.dto;
 
 import java.util.Objects;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Table(name = "devops_env_app_service")
 public class DevopsEnvAppServiceDTO {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
     private Long appServiceId;
     private Long envId;
 
@@ -14,6 +21,14 @@ public class DevopsEnvAppServiceDTO {
     public DevopsEnvAppServiceDTO(Long appServiceId, Long envId) {
         this.appServiceId = appServiceId;
         this.envId = envId;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Long getAppServiceId() {

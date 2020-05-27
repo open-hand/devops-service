@@ -201,17 +201,6 @@ public class GitlabCiUtil {
     }
 
     /**
-     * 下载文件并打印http_status_code
-     *
-     * @param url      文件下载地址
-     * @param fileName 文件保存名称
-     */
-    public static String downloadFile(String url, String fileName) {
-        String rawCommand = "downloadFile %s %s";
-        return String.format(rawCommand, url, fileName);
-    }
-
-    /**
      * 根据参数生成获取相应maven settings文件到本地的命令
      *
      * @param projectId 项目id
@@ -220,7 +209,7 @@ public class GitlabCiUtil {
      * @return String  shell命令
      */
     public static String downloadMavenSettings(Long projectId, Long ciJobId, Long sequence) {
-        String rawCommand = "downloadFile %s %s %s %s";
+        String rawCommand = "downloadSettingsFile %s %s %s %s";
         return String.format(rawCommand, "settings.xml", projectId, ciJobId, sequence);
     }
 
@@ -230,11 +219,12 @@ public class GitlabCiUtil {
      * @param artifactFileName 软件包名称
      * @param directory        要打包的文件路径pattern
      * @param projectId        项目id
+     * @param organizationId   组织id
      * @return 上传软件包的shell脚本
      */
-    public static String generateUploadTgzScripts(Long projectId, String artifactFileName, String directory) {
-        String rawCommand = "compressAndUpload %s %s %s";
-        return String.format(rawCommand, artifactFileName, directory, projectId);
+    public static String generateUploadTgzScripts(Long projectId, String artifactFileName, String directory, Long organizationId) {
+        String rawCommand = "c7nCompressAndUploadArtifact %s %s %s %s";
+        return String.format(rawCommand, artifactFileName, directory, projectId, organizationId);
     }
 
     /**
@@ -243,7 +233,7 @@ public class GitlabCiUtil {
      * @param artifactFileName 需要下载的包名称
      */
     private static String generateDownloadTgzScripts(String artifactFileName, Long projectId) {
-        String rawCommand = "downloadAndUncompress %s %s";
+        String rawCommand = "c7nDownloadArtifactAndUnCompress %s %s";
         return String.format(rawCommand, artifactFileName, projectId);
     }
 

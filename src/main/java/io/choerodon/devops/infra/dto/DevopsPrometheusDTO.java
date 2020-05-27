@@ -4,18 +4,22 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author: 25499
  * @date: 2019/10/28 13:56
  * @description:
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_prometheus")
-public class DevopsPrometheusDTO extends BaseDTO {
+public class DevopsPrometheusDTO extends AuditDomain {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @ApiModelProperty("grafana.adminPassword")

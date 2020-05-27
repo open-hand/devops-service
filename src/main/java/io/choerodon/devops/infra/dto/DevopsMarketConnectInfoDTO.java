@@ -9,11 +9,14 @@ import javax.persistence.Table;
  * Creator: ChangpingShi0213@gmail.com
  * Date:  14:21 2019/6/28
  * Description:
+ * @deprecated 待删除
  */
+// TODO to delete
+@Deprecated
 @Table(name = "devops_market_connect_info")
 public class DevopsMarketConnectInfoDTO {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String saasMarketUrl;
     private String accessToken;

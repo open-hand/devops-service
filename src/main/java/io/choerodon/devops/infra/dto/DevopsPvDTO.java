@@ -1,15 +1,20 @@
 package io.choerodon.devops.infra.dto;
 
 
-import io.choerodon.mybatis.entity.BaseDTO;
-import io.swagger.annotations.ApiModelProperty;
-
 import javax.persistence.*;
 
-@Table(name = "devops_pv")
-public class DevopsPvDTO extends BaseDTO {
+import io.swagger.annotations.ApiModelProperty;
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+
+@ModifyAudit
+@VersionAudit
+@Table(name = "devops_pv")
+public class DevopsPvDTO extends AuditDomain {
+
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Id
     private Long id;
 

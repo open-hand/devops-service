@@ -3,7 +3,9 @@ package io.choerodon.devops.infra.dto;
 import java.util.Map;
 import javax.persistence.*;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by n!Ck
@@ -11,12 +13,13 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Time: 上午10:08
  * Description:
  */
-
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_secret")
-public class DevopsSecretDTO extends BaseDTO {
+public class DevopsSecretDTO extends AuditDomain {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long envId;
     private String name;

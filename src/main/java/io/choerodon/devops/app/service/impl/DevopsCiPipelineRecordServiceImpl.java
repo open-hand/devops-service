@@ -7,12 +7,9 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -21,6 +18,7 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
@@ -41,6 +39,8 @@ import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 〈功能简述〉
@@ -217,11 +217,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     }
 
     @Override
-    public PageInfo<DevopsCiPipelineRecordVO> pagingPipelineRecord(Long projectId, Long ciPipelineId, Pageable pageable) {
-        PageInfo<DevopsCiPipelineRecordVO> pipelineRecordInfo = PageHelper
-                .startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable))
-                .doSelectPageInfo(() -> devopsCiPipelineRecordMapper.listByCiPipelineId(ciPipelineId));
-        List<DevopsCiPipelineRecordVO> pipelineRecordVOList = pipelineRecordInfo.getList();
+    public Page<DevopsCiPipelineRecordVO> pagingPipelineRecord(Long projectId, Long ciPipelineId, PageRequest pageable) {
+        Page<DevopsCiPipelineRecordVO> pipelineRecordInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> devopsCiPipelineRecordMapper.listByCiPipelineId(ciPipelineId));
+        List<DevopsCiPipelineRecordVO> pipelineRecordVOList = pipelineRecordInfo.getContent();
         if (CollectionUtils.isEmpty(pipelineRecordVOList)) {
             return pipelineRecordInfo;
         }
@@ -360,7 +358,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
      */
     private void addCommitInfo(DevopsCiPipelineRecordVO devopsCiPipelineRecordVO, DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO) {
         DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.baseQueryByShaAndRef(devopsCiPipelineRecordDTO.getCommitSha(), devopsCiPipelineRecordDTO.getGitlabTriggerRef());
-        IamUserDTO commitUser = baseServiceClientOperator.queryUserByUserId(devopsGitlabCommitDTO.getUserId());
+        IamUserDTO commitUser = null;
+        if (devopsGitlabCommitDTO.getUserId() != null) {
+            commitUser = baseServiceClientOperator.queryUserByUserId(devopsGitlabCommitDTO.getUserId());
+        }
 
         CustomCommitVO customCommitVO = new CustomCommitVO();
         customCommitVO.setRef(devopsCiPipelineRecordDTO.getGitlabTriggerRef());
@@ -385,8 +386,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
      * @return
      */
     private String calculateGitlabProjectUrl(String url) {
-        url = url.substring(0, url.lastIndexOf("/"));
-        return url.substring(0, url.lastIndexOf("/"));
+        url = url.substring(0, url.lastIndexOf('/'));
+        return url.substring(0, url.lastIndexOf('/'));
     }
 
     private Long calculateStageDuration(List<DevopsCiJobRecordVO> devopsCiJobRecordVOS) {

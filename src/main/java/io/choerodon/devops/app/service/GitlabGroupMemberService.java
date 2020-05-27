@@ -29,5 +29,5 @@ public interface GitlabGroupMemberService {
 
     void assignGitLabGroupOwner(Long groupId, MemberDTO groupMemberDTO, MemberDTO memberDTO);
 
-    void assignGitLabGroupMemeberForOwner(ProjectDTO projectDTO, Long userId);
+    void assignGitLabGroupMemberForOwner(ProjectDTO projectDTO, Long userId);
 }

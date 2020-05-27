@@ -7,17 +7,20 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by Sheep on 2019/3/14.
  */
-
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_registry_secret")
-public class DevopsRegistrySecretDTO extends BaseDTO {
+public class DevopsRegistrySecretDTO extends AuditDomain {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @ApiModelProperty("环境id，在0.21版本修复数据之后，0.22版本可以删除此字段")
     private Long envId;

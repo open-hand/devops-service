@@ -2,12 +2,12 @@ package io.choerodon.devops.infra.dto;
 
 import java.util.List;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by Zenger on 2018/4/19.
  */
-public class DevopsServiceQueryDTO extends BaseDTO {
+public class DevopsServiceQueryDTO extends AuditDomain {
 
     private Long id;
     private String name;

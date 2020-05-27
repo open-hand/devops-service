@@ -1,11 +1,13 @@
 package io.choerodon.devops.infra.dto;
 
 import java.util.List;
+import javax.persistence.*;
 
-import io.choerodon.mybatis.entity.BaseDTO;
 import io.swagger.annotations.ApiModelProperty;
 
-import javax.persistence.*;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * if (!isSynchro) {
@@ -20,10 +22,12 @@ import javax.persistence.*;
  * <p>
  * Created by younger on 2018/4/9.
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_env")
-public class DevopsEnvironmentDTO extends BaseDTO {
+public class DevopsEnvironmentDTO extends AuditDomain {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long projectId;
     private Long clusterId;

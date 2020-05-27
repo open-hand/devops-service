@@ -5,7 +5,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by n!Ck
@@ -13,10 +15,13 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Time: 19:51
  * Description:
  */
+
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_certification_file")
-public class CertificationFileDTO extends BaseDTO {
+public class CertificationFileDTO extends AuditDomain {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     private String certFile;

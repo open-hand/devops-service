@@ -1,7 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.google.gson.Gson;
 import org.slf4j.Logger;
@@ -27,8 +30,8 @@ import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.HarborUserDTO;
 import io.choerodon.devops.infra.dto.harbor.*;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
@@ -91,7 +94,7 @@ public class HarborServiceImpl implements HarborService {
             }
             if (createUser) {
                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-                OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+                Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                 DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
                 User user = convertHarborUser(projectDTO, true, null);
                 User pullUser = convertHarborUser(projectDTO, false, null);
@@ -119,7 +122,7 @@ public class HarborServiceImpl implements HarborService {
     @Override
     public void createHarborUserByClient(HarborPayload harborPayload, User user, ProjectDTO projectDTO, List<Integer> roles) {
         HarborClient harborClient = initHarborClient(harborPayload);
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         createHarborUser(harborClient, user, roles, organizationDTO, projectDTO);
     }
 
@@ -140,7 +143,7 @@ public class HarborServiceImpl implements HarborService {
         return new User(userName, userEmail, pwd, userName);
     }
 
-    private void createHarborUser(HarborClient harborClient, User user, List<Integer> roles, OrganizationDTO organizationDTO, ProjectDTO projectDTO) {
+    private void createHarborUser(HarborClient harborClient, User user, List<Integer> roles, Tenant organizationDTO, ProjectDTO projectDTO) {
         Response<Void> result = null;
         try {
             result = harborClient.insertUser(user).execute();
@@ -148,9 +151,9 @@ public class HarborServiceImpl implements HarborService {
                 throw new CommonException(result.errorBody().string());
             }
             //给项目绑定角色
-            Response<List<ProjectDetail>> projects = harborClient.listProject(organizationDTO.getCode() + "-" + projectDTO.getCode()).execute();
+            Response<List<ProjectDetail>> projects = harborClient.listProject(organizationDTO.getTenantNum() + "-" + projectDTO.getCode()).execute();
             if (!CollectionUtils.isEmpty(projects.body())) {
-                Integer harborProjectId = devopsConfigService.getHarborProjectId(projects.body(), organizationDTO.getCode() + "-" + projectDTO.getCode());
+                Integer harborProjectId = devopsConfigService.getHarborProjectId(projects.body(), organizationDTO.getTenantNum() + "-" + projectDTO.getCode());
 
                 Response<SystemInfo> systemInfoResponse = harborClient.getSystemInfo().execute();
                 if (systemInfoResponse.raw().code() != 200) {

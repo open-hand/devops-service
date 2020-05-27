@@ -37,8 +37,8 @@ import io.choerodon.devops.api.vo.GitEnvConfigVO;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.EnvironmentType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
@@ -741,8 +741,8 @@ public class GitUtil {
         List<GitEnvConfigVO> gitEnvConfigDTOS = new ArrayList<>();
         devopsEnvironments.forEach(devopsEnvironmentDTO -> {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
-            OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            String repoUrl = GitUtil.getGitlabSshUrl(PATTERN, gitlabSshUrl, organizationDTO.getCode(), projectDTO.getCode(), devopsEnvironmentDTO.getCode(), EnvironmentType.forValue(devopsEnvironmentDTO.getType()), devopsClusterDTO.getCode());
+            Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            String repoUrl = GitUtil.getGitlabSshUrl(PATTERN, gitlabSshUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), devopsEnvironmentDTO.getCode(), EnvironmentType.forValue(devopsEnvironmentDTO.getType()), devopsClusterDTO.getCode());
 
             GitEnvConfigVO gitEnvConfigVO = new GitEnvConfigVO();
             gitEnvConfigVO.setEnvId(devopsEnvironmentDTO.getId());

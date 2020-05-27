@@ -1,9 +1,11 @@
 package io.choerodon.devops.api.ws.log;
 
 
-import java.nio.ByteBuffer;
-import java.util.Map;
+import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.FRONT_LOG;
 
+import java.nio.ByteBuffer;
+
+import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +15,6 @@ import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import io.choerodon.devops.api.ws.WebSocketTool;
-import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.websocket.helper.WebSocketHelper;
-import io.choerodon.websocket.send.SendBinaryMessagePayload;
 
 /**
  * Created by Sheep on 2019/7/26.
@@ -23,42 +22,32 @@ import io.choerodon.websocket.send.SendBinaryMessagePayload;
 @Component
 public class LogMessageHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(LogMessageHandler.class);
-    public static final String AGENT_LOG = "AgentLog";
+    private static final String AGENT_LOG = "AgentLog";
 
     @Autowired
     @Lazy
-    private WebSocketHelper webSocketHelper;
+    private KeySocketSendHelper keySocketSendHelper;
 
     public void handle(WebSocketSession webSocketSession, BinaryMessage message) {
-
-        Map<String, Object> attribute = WebSocketTool.getAttribute(webSocketSession);
-
-        String registerKey = TypeUtil.objToString(attribute.get("key"));
-
+        // 获取rawKey， 用于拼接转发的目的地group
+        String rawKey = WebSocketTool.getKey(webSocketSession);
+        String destinationGroup;
 
         ByteBuffer buffer = message.getPayload();
         byte[] bytesArray = new byte[buffer.remaining()];
         buffer.get(bytesArray, 0, bytesArray.length);
 
-        if (webSocketSession.getUri().getPath().equals("/devops/log")) {
-            if (bytesArray.length % 1024 != 0) {
-                LOGGER.info("Received message from devops. The path is {} and the byte array length is {}", webSocketSession.getUri().getPath(), bytesArray.length);
-            }
-            registerKey = "from_agent:" + registerKey;
+        String processor = WebSocketTool.getProcessor(webSocketSession);
+
+        if (FRONT_LOG.equals(processor)) {
+            LOGGER.info("Received message from front. The processor is {} and the byte array length is {}", processor, bytesArray.length);
+            destinationGroup = WebSocketTool.buildAgentGroup(rawKey);
         } else {
-            if (bytesArray.length % 1024 != 0) {
-                LOGGER.info("Received message from agent. The path is {} and the byte array length is {}", webSocketSession.getUri().getPath(), bytesArray.length);
-            }
-            registerKey = "from_devops:" + registerKey;
+            LOGGER.info("Received message from agent. The processor is {} and the byte array length is {}", processor, bytesArray.length);
+            destinationGroup = WebSocketTool.buildFrontGroup(rawKey);
         }
 
-        SendBinaryMessagePayload binaryMessageWebSocketSendPayload = new SendBinaryMessagePayload();
-        binaryMessageWebSocketSendPayload.setKey(registerKey);
-        binaryMessageWebSocketSendPayload.setData(bytesArray);
-        binaryMessageWebSocketSendPayload.setType(AGENT_LOG);
-
-        webSocketHelper.sendMessageByKey(registerKey, binaryMessageWebSocketSendPayload);
-
+        keySocketSendHelper.sendByGroup(destinationGroup, AGENT_LOG, bytesArray);
     }
 
 }

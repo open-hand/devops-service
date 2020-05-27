@@ -7,11 +7,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.choerodon.core.annotation.Permission;
-import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.app.service.DevopsCiJobService;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * 〈功能简述〉
@@ -29,7 +29,7 @@ public class DevopsCiJobController {
         this.devopsCiJobService = devopsCiJobService;
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @PostMapping("/sonar/connect")
     @ApiOperation("sonar的连接测试")
     public ResponseEntity<Boolean> sonarConnect(
@@ -38,7 +38,7 @@ public class DevopsCiJobController {
         return ResponseEntity.ok(devopsCiJobService.sonarConnect(projectId, sonarQubeConfigVO));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询job日志")
     @GetMapping("/gitlab_projects/{gitlab_project_id}/gitlab_jobs/{job_id}/trace")
     public ResponseEntity<String> queryTrace(
@@ -48,7 +48,7 @@ public class DevopsCiJobController {
         return ResponseEntity.ok(devopsCiJobService.queryTrace(gitlabProjectId, jobId));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "重试job")
     @GetMapping("/gitlab_projects/{gitlab_project_id}/gitlab_jobs/{job_id}/retry")
     public ResponseEntity<Void> retryJob(
@@ -75,38 +75,6 @@ public class DevopsCiJobController {
         return response == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(response);
     }
 
-    /**
-     * CI过程上传软件包
-     *
-     * @param token        应用服务token
-     * @param commit       ci的commit值
-     * @param ciPipelineId 流水线id
-     * @param ciJobId      流水线的job id
-     * @param artifactName 软件包名称
-     * @param file         软件包
-     * @return 200 表示ok， 400表示错误
-     */
-    @Permission(permissionPublic = true)
-    @ApiOperation("CI过程上传软件包, 大小不得大于200Mi")
-    @PostMapping("/upload_artifact")
-    public ResponseEntity uploadJobArtifact(
-            @ApiParam("猪齿鱼项目id")
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用服务token", required = true)
-            @RequestParam(value = "token") String token,
-            @ApiParam(value = "此次ci的commit", required = true)
-            @RequestParam(value = "commit") String commit,
-            @ApiParam(value = "gitlab内置的流水线id", required = true)
-            @RequestParam(value = "ci_pipeline_id") Long ciPipelineId,
-            @ApiParam(value = "gitlab内置的jobId", required = true)
-            @RequestParam(value = "ci_job_id") Long ciJobId,
-            @ApiParam(value = "ci流水线定义的软件包名称", required = true)
-            @RequestParam(value = "artifact_name") String artifactName,
-            @ApiParam(value = "taz包", required = true)
-            @RequestParam MultipartFile file) {
-        devopsCiJobService.uploadArtifact(token, commit, ciPipelineId, ciJobId, artifactName, file);
-        return new ResponseEntity(HttpStatus.OK);
-    }
 
     /**
      * 查询上传的软件包的url

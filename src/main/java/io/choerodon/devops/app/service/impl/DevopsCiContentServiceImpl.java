@@ -1,11 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StreamUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCiContentService;
@@ -29,8 +30,22 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
     private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
 
     private static final String DEFAULT_EMPTY_GITLAB_CI_FILE_PATH = "/component/empty-gitlabci-config.yml";
+    /**
+     * 默认的空gitlab-ci文件内容
+     */
+    private static final String DEFAULT_EMPTY_GITLAB_CI_FILE_CONTENT;
     private DevopsCiContentMapper devopsCiContentMapper;
     private DevopsCiPipelineMapper devopsCiPipelineMapper;
+
+
+    static {
+        InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream(DEFAULT_EMPTY_GITLAB_CI_FILE_PATH);
+        try {
+            DEFAULT_EMPTY_GITLAB_CI_FILE_CONTENT = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new CommonException("error.load.default.empty.gitlab.ci.file");
+        }
+    }
 
     public DevopsCiContentServiceImpl(DevopsCiContentMapper devopsCiContentMapper, DevopsCiPipelineMapper devopsCiPipelineMapper) {
         this.devopsCiContentMapper = devopsCiContentMapper;
@@ -44,13 +59,7 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
             throw new DevopsCiInvalidException(ERROR_PIPELINE_TOKEN_MISMATCH);
         }
         if (Boolean.FALSE.equals(devopsCiPipelineDTO.getEnabled())) {
-            String content = "";
-            try {
-                content = StreamUtils.copyToString(this.getClass().getClassLoader().getResourceAsStream(DEFAULT_EMPTY_GITLAB_CI_FILE_PATH), StandardCharsets.UTF_8);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return content;
+            return DEFAULT_EMPTY_GITLAB_CI_FILE_CONTENT;
         }
         return devopsCiContentMapper.queryLatestContent(devopsCiPipelineDTO.getId());
     }

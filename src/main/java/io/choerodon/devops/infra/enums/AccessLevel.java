@@ -46,29 +46,20 @@ public enum AccessLevel {
      * @param value String
      */
     public static AccessLevel forString(String value, MemberHelper memberHelper) {
-        switch (value) {
-            case "ORGANIZATION.GITLAB.OWNER":
-                memberHelper.setOrganizationAccessLevel(AccessLevel.OWNER);
-                return AccessLevel.OWNER;
-            case "PROJECT.GITLAB.OWNER":
-                memberHelper.setProjectOwnerAccessLevel(AccessLevel.OWNER);
-                return AccessLevel.OWNER;
-            case "GITLAB.MASTER":
-                return AccessLevel.MASTER;
-            case "PROJECT.GITLAB.DEVELOPER":
-                memberHelper.setProjectDevelopAccessLevel(AccessLevel.DEVELOPER);
-                return AccessLevel.DEVELOPER;
-            case "PROJECT.DEPLOY.ADMIN":
-                return AccessLevel.OWNER;
-            case "GITLAB.REPORTER":
-                return AccessLevel.REPORTER;
-            case "GITLAB.GUEST":
-                return AccessLevel.GUEST;
-            case "GITLAB.NONE":
-                return AccessLevel.NONE;
-            default:
-                return AccessLevel.NONE;
+        LabelType gitlabRoleLabel = LabelType.forValue(value);
+        if (gitlabRoleLabel != null) {
+            switch (gitlabRoleLabel) {
+                case GITLAB_PROJECT_OWNER:
+                    memberHelper.setProjectOwnerAccessLevel(AccessLevel.OWNER);
+                    return AccessLevel.OWNER;
+                case GITLAB_PROJECT_DEVELOPER:
+                    memberHelper.setProjectDevelopAccessLevel(AccessLevel.DEVELOPER);
+                    return AccessLevel.DEVELOPER;
+                default:
+                    return AccessLevel.NONE;
+            }
         }
+        return AccessLevel.NONE;
     }
 
     @JsonValue

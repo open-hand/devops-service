@@ -793,6 +793,8 @@ const pipelineManage = {
   'c7ncd.pipelineManage.status.pending': '最近执行结果：准备中',
   'c7ncd.pipelineManage.status.skipped': '最近执行结果：已跳过',
   'c7ncd.pipelineManage.status.canceled': '最近执行结果：已取消',
+  'c7ncd.pipelineManage.record.empty.title': '流水线已跳过',
+  'c7ncd.pipelineManage.record.empty.des': '已跳过该流水线的首次执行。您可直接点击全新执行来重跑流水线',
 };
 
 const emptyPage = {

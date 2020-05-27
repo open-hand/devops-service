@@ -123,9 +123,9 @@ const BuildNumber = observer(() => {
 
   const loadCharts = useCallback((pageInfoCurrent) => {
     const projectId = AppState.currentMenuType.id;
-    const startTime = getStartTime.format().split('T')[0].replace(/-/g, '/');
+    const startTime = getStartTime.format('YYYY-MM-DD HH:mm:ss');
     const appIdCurrent = ReportsStore.getAppId;
-    const endTime = getEndTime.format().split('T')[0].replace(/-/g, '/');
+    const endTime = getEndTime.format('YYYY-MM-DD HH:mm:ss');
     loadBuildNumber(projectId, appIdCurrent, startTime, endTime);
     if (pageInfoCurrent) {
       loadBuildTable(projectId, appIdCurrent, startTime, endTime, pageInfoCurrent.current, pageInfoCurrent.pageSize);

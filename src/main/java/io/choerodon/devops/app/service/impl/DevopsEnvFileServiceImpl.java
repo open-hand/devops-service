@@ -4,9 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import com.github.pagehelper.PageInfo;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import org.springframework.data.domain.Pageable;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsEnvFileErrorVO;
 import io.choerodon.devops.app.service.DevopsEnvFileErrorService;
@@ -15,18 +20,12 @@ import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.infra.dto.DevopsEnvFileDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileErrorDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
-
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: Runge
@@ -62,14 +61,14 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
     }
 
     @Override
-    public PageInfo<DevopsEnvFileErrorVO> pageByEnvId(Long envId, Pageable pageable) {
+    public Page<DevopsEnvFileErrorVO> pageByEnvId(Long envId, PageRequest pageable) {
         String gitlabProjectPath = getGitlabUrl(envId);
         if ("".equals(gitlabProjectPath)) {
-            return new PageInfo<>();
+            return new Page<>();
         }
-        PageInfo<DevopsEnvFileErrorDTO> devopsEnvFileErrorDTOPageInfo = devopsEnvFileErrorService.basePageByEnvId(envId, pageable);
-        PageInfo<DevopsEnvFileErrorVO> devopsEnvFileErrorVOPageInfo = ConvertUtils.convertPage(devopsEnvFileErrorDTOPageInfo, this::dtoToVo);
-        devopsEnvFileErrorVOPageInfo.getList().forEach(devopsEnvFileErrorVO -> setCommitAndFileUrl(devopsEnvFileErrorVO, gitlabProjectPath));
+        Page<DevopsEnvFileErrorDTO> devopsEnvFileErrorDTOPageInfo = devopsEnvFileErrorService.basePageByEnvId(envId, pageable);
+        Page<DevopsEnvFileErrorVO> devopsEnvFileErrorVOPageInfo = ConvertUtils.convertPage(devopsEnvFileErrorDTOPageInfo, this::dtoToVo);
+        devopsEnvFileErrorVOPageInfo.getContent().forEach(devopsEnvFileErrorVO -> setCommitAndFileUrl(devopsEnvFileErrorVO, gitlabProjectPath));
         return devopsEnvFileErrorVOPageInfo;
     }
 
@@ -149,10 +148,10 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
             return "";
         }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         return String.format("%s%s%s-%s-gitops/%s/tree/",
-                gitlabUrl, urlSlash, organizationDTO.getCode(), projectDTO.getCode(), devopsEnvironmentDTO.getCode());
+                gitlabUrl, urlSlash, organizationDTO.getTenantNum(), projectDTO.getCode(), devopsEnvironmentDTO.getCode());
     }
 
     private void setCommitAndFileUrl(DevopsEnvFileErrorVO devopsEnvFileErrorVO, String gitlabProjectPath) {

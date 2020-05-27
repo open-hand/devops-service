@@ -7,16 +7,20 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by Zenger on 2018/4/14.
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_service")
-public class DevopsServiceDTO extends BaseDTO {
+public class DevopsServiceDTO extends AuditDomain {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long envId;
     private Long appServiceId;

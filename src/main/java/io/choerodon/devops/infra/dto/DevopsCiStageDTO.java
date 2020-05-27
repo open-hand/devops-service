@@ -1,22 +1,27 @@
 package io.choerodon.devops.infra.dto;
 
-import io.choerodon.mybatis.entity.BaseDTO;
-import io.swagger.annotations.ApiModelProperty;
-
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import io.swagger.annotations.ApiModelProperty;
+
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  *
  * @author wanghao
  * @Date 2020/4/2 17:00
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_ci_stage")
-public class DevopsCiStageDTO extends BaseDTO {
+public class DevopsCiStageDTO extends AuditDomain {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @ApiModelProperty("阶段名称")
     private String name;

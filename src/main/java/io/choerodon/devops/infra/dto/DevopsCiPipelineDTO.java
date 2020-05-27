@@ -4,17 +4,22 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+
 
 /**
  *
  * @author wanghao
  * @Date 2020/4/2 17:00
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_ci_pipeline")
-public class DevopsCiPipelineDTO extends BaseDTO {
+public class DevopsCiPipelineDTO extends AuditDomain {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @ApiModelProperty("流水线名称")
     private String name;

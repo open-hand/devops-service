@@ -223,11 +223,6 @@ public class SagaTaskCodeConstants {
     public static final String DEVOPS_APP_DELETE = "devops-delete-app-service";
 
     /**
-     * 应用市场下载失败删除gitlab相关项目
-     */
-    public static final String DEVOPS_MARKET_DELETE_GITLAB_PRO = "devops-market-failed-delete-gitlab-pro";
-
-    /**
      * DevOps消费添加admin用户事件
      */
     public static final String DEVOPS_ADD_ADMIN = "devops-add-admin";

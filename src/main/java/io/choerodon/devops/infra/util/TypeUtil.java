@@ -1,10 +1,7 @@
 package io.choerodon.devops.infra.util;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
 import javax.annotation.Nullable;
 
 import com.google.gson.Gson;
@@ -156,5 +153,16 @@ public class TypeUtil {
      */
     public static long wrappedLongToPrimitive(@Nullable Long value) {
         return value == null ? 0 : value;
+    }
+
+    public static List<Long> stringArrayToLong(String[] objects) {
+        if (objects == null || objects.length == 0) {
+            return Collections.emptyList();
+        }
+        List<Long> list = new ArrayList<>();
+        for (String object : objects) {
+            list.add(Long.valueOf(object));
+        }
+        return list;
     }
 }

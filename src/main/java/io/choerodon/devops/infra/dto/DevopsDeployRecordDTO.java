@@ -5,17 +5,20 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by Sheep on 2019/7/29.
  */
-
+@ModifyAudit
+@VersionAudit
 @Table(name="devops_deploy_record")
-public class DevopsDeployRecordDTO extends BaseDTO {
+public class DevopsDeployRecordDTO extends AuditDomain {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @ApiModelProperty("项目id")
     private Long projectId;

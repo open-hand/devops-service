@@ -3,18 +3,15 @@ package io.choerodon.devops.app.service.impl;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-
 import javax.annotation.Nullable;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.kubernetes.Command;
 import io.choerodon.devops.app.service.DevopsCommandEventService;
@@ -26,6 +23,8 @@ import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PageRequestUtil;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -73,7 +72,7 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
 
     @Override
     public void baseUpdateSha(Long commandId, String sha) {
-         devopsEnvCommandMapper.updateSha(commandId, sha);
+        devopsEnvCommandMapper.updateSha(commandId, sha);
     }
 
     @Override
@@ -94,8 +93,8 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
     }
 
     @Override
-    public PageInfo<DevopsEnvCommandDTO> basePageByObject(Pageable pageable, String objectType, Long objectId, Date startTime, Date endTime) {
-        return PageHelper.startPage(pageable.getPageNumber(),pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
+    public Page<DevopsEnvCommandDTO> basePageByObject(PageRequest pageable, String objectType, Long objectId, Date startTime, Date endTime) {
+        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () ->
                 devopsEnvCommandMapper.listByObject(objectType, objectId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
     }
 

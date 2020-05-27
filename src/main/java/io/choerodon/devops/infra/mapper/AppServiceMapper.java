@@ -7,12 +7,12 @@ import java.util.Set;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.mybatis.common.Mapper;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * Created by younger on 2018/3/28.
  */
-public interface AppServiceMapper extends Mapper<AppServiceDTO> {
+public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
     void updateByIdSelectiveWithoutAudit(@Param("appService") AppServiceDTO appService);
 
     List<AppServiceDTO> list(@Param("projectId") Long projectId,
@@ -88,10 +88,6 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
                                                    @Param("param") String param,
                                                    @Param("projectId") Long projectId);
 
-    List<AppServiceDTO> queryMarketDownloadApps(@Param("type") String type,
-                                                @Param("param") String param,
-                                                @Param("appServiceIds") List<Long> appServiceIds,
-                                                @Param("searchProjectId") Long searchProjectId);
 
     List<AppServiceDTO> listProjectMembersAppService(@Param("projectId") Long projectId,
                                                      @Param("isActive") Boolean isActive,
@@ -142,13 +138,11 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
      * 作为所有者，查询能够用于创建CI流水线的应用服务列表，限制20条
      *
      * @param projectId   项目id
-     * @param limitSize   条数
      * @param searchParam 字段模糊搜索参数
      * @param params      整体模糊搜索参数
      * @return 列表
      */
     List<AppServiceDTO> listAppServiceToCreatePipelineForOwner(@Param("projectId") Long projectId,
-                                                               @Param("limitSize") Long limitSize,
                                                                @Param("searchParam") Map<String, Object> searchParam,
                                                                @Param("params") List<String> params);
 
@@ -157,14 +151,12 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
      *
      * @param projectId   项目id
      * @param iamUserId   用户id
-     * @param limitSize   条数
      * @param searchParam 字段模糊搜索参数
      * @param params      整体模糊搜索参数
      * @return 列表
      */
     List<AppServiceDTO> listAppServiceToCreatePipelineForMember(@Param("projectId") Long projectId,
                                                                 @Param("iamUserId") Long iamUserId,
-                                                                @Param("limitSize") Long limitSize,
                                                                 @Param("searchParam") Map<String, Object> searchParam,
                                                                 @Param("params") List<String> params);
 }

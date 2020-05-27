@@ -6,7 +6,9 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Creator: Runge
@@ -14,10 +16,12 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Time: 14:30
  * Description:
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_ingress")
-public class DevopsIngressDTO extends BaseDTO {
+public class DevopsIngressDTO extends AuditDomain {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long projectId;
     private Long envId;

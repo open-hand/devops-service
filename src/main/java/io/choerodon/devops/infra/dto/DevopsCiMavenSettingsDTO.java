@@ -7,16 +7,20 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author zmf
  * @since 20-4-16
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_ci_maven_settings")
-public class DevopsCiMavenSettingsDTO extends BaseDTO {
+public class DevopsCiMavenSettingsDTO extends AuditDomain {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @ApiModelProperty("自增主键")
     private Long id;
 
