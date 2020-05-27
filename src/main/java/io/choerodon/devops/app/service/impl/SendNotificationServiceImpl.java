@@ -734,10 +734,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     @Override
     public void sendPipelineNotice(Long pipelineRecordId, String type, Long userId, @Nullable String email, @Nullable Map<String, String> params) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> [FIX] add try-catch for messages
         doWithTryCatchAndLog(
                 () -> {
                     String actualEmail = email;
@@ -748,31 +744,11 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     }
                     if (actualEmail == null) {
                         actualEmail = iamUserDTO.getEmail();
-<<<<<<< HEAD
 
                     }
                     sendPipelineMessage(pipelineRecordId, type, ArrayUtil.singleAsList(constructReceiver(userId, actualEmail, iamUserDTO.getPhone(), iamUserDTO.getOrganizationId())), params, null, null);
                 },
                 ex -> LOGGER.info("Failed to sendPipelineNotice  with email", ex));
-=======
-        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
-        if (iamUserDTO == null) {
-            LogUtil.loggerInfoObjectNullWithId("User", userId, LOGGER);
-            return;
-        }
-        if (email == null) {
-            email = iamUserDTO.getEmail();
-
-        }
-        sendPipelineMessage(pipelineRecordId, type, ArrayUtil.singleAsList(constructReceiver(userId, email, iamUserDTO.getPhone(), iamUserDTO.getOrganizationId())), params, null, null);
->>>>>>> [REF] add params when sending notices
-=======
-
-                    }
-                    sendPipelineMessage(pipelineRecordId, type, ArrayUtil.singleAsList(constructReceiver(userId, actualEmail, iamUserDTO.getPhone(), iamUserDTO.getOrganizationId())), params, null, null);
-                },
-                ex -> LOGGER.info("Failed to sendPipelineNotice  with email", ex));
->>>>>>> [FIX] add try-catch for messages
     }
 
     private void sendPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
@@ -1054,10 +1030,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     @Override
     public void sendPipelineAuditMassage(String type, String auditUser, Long pipelineRecordId, String stageName, Long stageId) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> [FIX] add try-catch for messages
         doWithTryCatchAndLog(
                 () -> {
                     List<Long> userIds = new ArrayList<>();
@@ -1077,25 +1049,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 },
                 ex -> LOGGER.info("Failed to sendPipelineAuditMassage.", ex)
         );
-<<<<<<< HEAD
-=======
-        List<Long> userIds = new ArrayList<>();
-        if (auditUser != null && !auditUser.isEmpty()) {
-            userIds = TypeUtil.stringArrayToLong(auditUser.split(COMMA));
-            userIds.remove(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        }
-        List<Receiver> userList = new ArrayList<>();
-        List<IamUserDTO> users = baseServiceClientOperator.queryUsersByUserIds(userIds);
-        users.forEach(t -> userList.add(constructReceiver(t.getId(), t.getEmail(), t.getPhone(), t.getOrganizationId())));
-        Map<String, String> params = new HashMap<>();
-        params.put(STAGE_NAME, stageName);
-        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
-        params.put("auditName", iamUserDTO.getLoginName());
-        params.put("realName", iamUserDTO.getRealName());
-        sendPipelineMessage(pipelineRecordId, type, userList, params, stageId, stageName);
->>>>>>> [REF] add params when sending notices
-=======
->>>>>>> [FIX] add try-catch for messages
     }
 
     private Receiver constructReceiver(Long userId) {

@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
-import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -17,9 +16,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +25,7 @@ import org.springframework.util.StringUtils;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
@@ -50,6 +47,8 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.ResourceCreatorInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 
 /**
@@ -117,20 +116,20 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
 
     @Override
-    public PageInfo<DevopsServiceVO> pageByEnv(Long projectId, Long envId, Pageable pageable, String searchParam, Long appServiceId) {
+    public Page<DevopsServiceVO> pageByEnv(Long projectId, Long envId, PageRequest pageable, String searchParam, Long appServiceId) {
         return ConvertUtils.convertPage(basePageByOptions(
                 projectId, envId, null, pageable, searchParam, appServiceId), this::queryDtoToVo);
     }
 
     @Override
-    public PageInfo<DevopsServiceVO> pageByInstance(Long projectId, Long envId, Long instanceId, Pageable pageable, Long appServiceId, String searchParam) {
-        PageInfo<DevopsServiceVO> devopsServiceByPage = ConvertUtils.convertPage(basePageByOptions(
+    public Page<DevopsServiceVO> pageByInstance(Long projectId, Long envId, Long instanceId, PageRequest pageable, Long appServiceId, String searchParam) {
+        Page<DevopsServiceVO> devopsServiceByPage = ConvertUtils.convertPage(basePageByOptions(
                 projectId, envId, instanceId, pageable, null, appServiceId), this::queryDtoToVo);
-        if (!devopsServiceByPage.getList().isEmpty()) {
-            devopsServiceByPage.getList().forEach(devopsServiceVO -> {
-                PageInfo<DevopsIngressVO> devopsIngressVOPageInfo = devopsIngressService
-                        .basePageByOptions(projectId, null, devopsServiceVO.getId(), PageRequest.of(0, 100), null);
-                devopsServiceVO.setDevopsIngressVOS(devopsIngressVOPageInfo.getList());
+        if (!devopsServiceByPage.getContent().isEmpty()) {
+            devopsServiceByPage.getContent().forEach(devopsServiceVO -> {
+                Page<DevopsIngressVO> devopsIngressVOPageInfo = devopsIngressService
+                        .basePageByOptions(projectId, null, devopsServiceVO.getId(), new PageRequest(0, 100), null);
+                devopsServiceVO.setDevopsIngressVOS(devopsIngressVOPageInfo.getContent());
             });
         }
         return devopsServiceByPage;
@@ -450,8 +449,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
     @Override
-    public PageInfo<DevopsServiceQueryDTO> basePageByOptions(Long projectId, Long envId, Long instanceId, Pageable pageable,
-                                                             String searchParam, Long appServiceId) {
+    public Page<DevopsServiceQueryDTO> basePageByOptions(Long projectId, Long envId, Long instanceId, PageRequest pageable,
+                                                         String searchParam, Long appServiceId) {
 
         Sort sort = pageable.getSort();
         String sortResult = "";
@@ -479,12 +478,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     .collect(Collectors.joining(","));
         }
 
-        int start = getBegin(pageable.getPageNumber(), pageable.getPageSize());
-        int stop = start + pageable.getPageSize();
+        int start = getBegin(pageable.getPage(), pageable.getSize());
+        int stop = start + pageable.getSize();
         //分页组件暂不支持级联查询，只能手写分页
-        PageInfo<DevopsServiceQueryDTO> result = new PageInfo<>();
-        result.setPageSize(pageable.getPageSize());
-        result.setPageNum(pageable.getPageNumber());
+        Page<DevopsServiceQueryDTO> result = new Page<>();
+        result.setNumber(pageable.getPage());
+        result.setSize(pageable.getSize());
         int count;
         List<DevopsServiceQueryDTO> devopsServiceQueryDTOS;
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParam);
@@ -492,16 +491,16 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS)), appServiceId);
 
-        result.setTotal(count);
+        result.setTotalElements(count);
         List<String> paramList = TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS));
         devopsServiceQueryDTOS = devopsServiceMapper.listDevopsServiceByPage(
                 projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                 paramList, sortResult, appServiceId);
-        result.setList(devopsServiceQueryDTOS.subList(start, stop > devopsServiceQueryDTOS.size() ? devopsServiceQueryDTOS.size() : stop));
-        if (devopsServiceQueryDTOS.size() < pageable.getPageSize() * pageable.getPageNumber()) {
-            result.setSize(TypeUtil.objToInt(devopsServiceQueryDTOS.size()) - (pageable.getPageSize() * (pageable.getPageNumber() - 1)));
+        result.setContent(devopsServiceQueryDTOS.subList(start, stop > devopsServiceQueryDTOS.size() ? devopsServiceQueryDTOS.size() : stop));
+        if (devopsServiceQueryDTOS.size() < pageable.getSize() * pageable.getPage()) {
+            result.setSize(TypeUtil.objToInt(devopsServiceQueryDTOS.size()) - (pageable.getSize() * (pageable.getPage() - 1)));
         } else {
-            result.setSize(pageable.getPageSize());
+            result.setSize(pageable.getSize());
         }
         return result;
     }

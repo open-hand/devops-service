@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.util
 
-import org.mockito.ArgumentMatchers
 import org.powermock.api.mockito.PowerMockito
 import spock.lang.Specification
 import spock.lang.Stepwise

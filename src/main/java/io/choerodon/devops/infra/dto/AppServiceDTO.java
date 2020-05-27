@@ -44,6 +44,8 @@ public class AppServiceDTO extends AuditDomain {
     private String type;
     private Boolean isSkipCheckPermission;
     private String imgUrl;
+    // TODO delete the field
+    @Deprecated
     private Long mktAppId;
 
     @Transient

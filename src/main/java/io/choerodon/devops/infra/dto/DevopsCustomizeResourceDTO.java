@@ -4,13 +4,9 @@ package io.choerodon.devops.infra.dto;
 import java.util.Objects;
 import javax.persistence.*;
 
-<<<<<<< HEAD
-import io.choerodon.mybatis.entity.BaseDTO;
-=======
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
->>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 
 /**
  * Created by Sheep on 2019/6/26.
@@ -18,7 +14,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @ModifyAudit
 @VersionAudit
 @Table(name = "devops_customize_resource")
-public class DevopsCustomizeResourceDTO extends BaseDTO {
+public class DevopsCustomizeResourceDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

@@ -7,13 +7,9 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
-<<<<<<< HEAD
-import io.choerodon.mybatis.entity.BaseDTO;
-=======
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
->>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 
 /**
  * 资源详细扫描结果
@@ -24,7 +20,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @ModifyAudit
 @VersionAudit
 @Table(name = "devops_polaris_namespace_detail")
-public class DevopsPolarisNamespaceDetailDTO extends BaseDTO {
+public class DevopsPolarisNamespaceDetailDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @ApiModelProperty("自增id")

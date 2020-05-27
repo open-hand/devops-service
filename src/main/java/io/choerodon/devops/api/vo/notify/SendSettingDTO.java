@@ -1,11 +1,12 @@
 package io.choerodon.devops.api.vo.notify;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * 消息业务类型
  */
-public class SendSettingDTO extends BaseDTO {
+public class SendSettingDTO extends AuditDomain {
 
     private Long id;
 

@@ -3,16 +3,17 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.infra.dto.PipelineRecordDTO;
-import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.infra.dto.PipelineRecordDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  16:41 2019/4/4
  * Description:
  */
-public interface PipelineRecordMapper extends Mapper<PipelineRecordDTO> {
+public interface PipelineRecordMapper extends BaseMapper<PipelineRecordDTO> {
     List<PipelineRecordDTO> listByOptions(@Param("projectId") Long projectId,
                                           @Param("pipelineId") Long pipelineId,
                                           @Param("searchParam") Map<String, Object> searchParam,

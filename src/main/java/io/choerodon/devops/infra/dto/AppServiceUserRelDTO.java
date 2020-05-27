@@ -35,6 +35,14 @@ public class AppServiceUserRelDTO extends AuditDomain {
         this.appServiceId = appServiceId;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public Long getIamUserId() {
         return iamUserId;
     }

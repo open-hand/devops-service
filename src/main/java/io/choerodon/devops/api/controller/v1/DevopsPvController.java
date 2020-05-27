@@ -1,26 +1,30 @@
 package io.choerodon.devops.api.controller.v1;
 
-import com.github.pagehelper.PageInfo;
-import io.choerodon.core.annotation.Permission;
-import io.choerodon.core.enums.ResourceType;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.DevopsPvService;
+import java.util.List;
+import java.util.Optional;
+import javax.validation.Valid;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Optional;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
+import io.choerodon.devops.api.vo.DevopsPvReqVO;
+import io.choerodon.devops.api.vo.DevopsPvVO;
+import io.choerodon.devops.api.vo.ProjectReqVO;
+import io.choerodon.devops.app.service.DevopsPvService;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.swagger.annotation.Permission;
 
 
 @RestController
@@ -36,11 +40,11 @@ public class DevopsPvController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "分页带参数查询项目下所有pv")
     @PostMapping("/page_by_options")
-    public ResponseEntity<PageInfo<DevopsPvVO>> queryAll(
+    public ResponseEntity<Page<DevopsPvVO>> queryAll(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable pageable,
+            @ApiIgnore @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsPvService.pageByOptions(projectId, pageable, params))
@@ -112,13 +116,13 @@ public class DevopsPvController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "列出组织下所有项目中没有分配权限的项目")
     @PostMapping(value = "/{pv_id}/permission/list_non_related")
-    public ResponseEntity<PageInfo<ProjectReqVO>> listAllNonRelatedMembers(
+    public ResponseEntity<Page<ProjectReqVO>> listAllNonRelatedMembers(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "PvId", required = true)
             @PathVariable(value = "pv_id") Long pvId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore Pageable pageable,
+            @ApiIgnore PageRequest pageable,
             @ApiParam(value = "指定项目id")
             @RequestParam(value = "id", required = false) Long selectedProjectId,
             @ApiParam(value = "查询参数")
@@ -159,13 +163,13 @@ public class DevopsPvController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "PV跳过权限校验，查询所属集群下的所有项目")
     @PostMapping("/{pv_id}/page_projects")
-    public ResponseEntity<PageInfo<ProjectReqVO>> pageProjects(
+    public ResponseEntity<Page<ProjectReqVO>> pageProjects(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "PvId")
             @PathVariable(value = "pv_id") Long pvId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore Pageable pageable,
+            @ApiIgnore PageRequest pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsPvService.pageProjects(projectId, pvId, pageable, params))
@@ -176,13 +180,13 @@ public class DevopsPvController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "PV不跳过权限校验，查询有关联的项目")
     @PostMapping("/{pv_id}/page_related")
-    public ResponseEntity<PageInfo<ProjectReqVO>> pageRelatedProjects(
+    public ResponseEntity<Page<ProjectReqVO>> pageRelatedProjects(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "PvId")
             @PathVariable(value = "pv_id") Long pvId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore Pageable pageable,
+            @ApiIgnore PageRequest pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsPvService.pageRelatedProjects(projectId, pvId, pageable, params))

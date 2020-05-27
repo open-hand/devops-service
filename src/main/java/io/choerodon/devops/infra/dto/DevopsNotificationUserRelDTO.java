@@ -1,5 +1,8 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**
@@ -9,12 +12,9 @@ import javax.persistence.Table;
  */
 @Table(name = "devops_notification_user_rel")
 public class DevopsNotificationUserRelDTO {
-<<<<<<< HEAD
-=======
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
->>>>>>> [UPD] update strategy of @GeneratedValue to GenerationType.AUTO
 
     private Long userId;
     private Long notificationId;
@@ -25,6 +25,14 @@ public class DevopsNotificationUserRelDTO {
     public DevopsNotificationUserRelDTO(Long userId, Long notificationId) {
         this.userId = userId;
         this.notificationId = notificationId;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Long getUserId() {

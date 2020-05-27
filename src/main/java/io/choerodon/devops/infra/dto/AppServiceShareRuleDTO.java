@@ -5,13 +5,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-<<<<<<< HEAD
-import io.choerodon.mybatis.entity.BaseDTO;
-=======
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
->>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 
 /**
  * Created by ernst on 2018/5/12.
@@ -19,7 +15,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @ModifyAudit
 @VersionAudit
 @Table(name = "devops_app_service_share_rule")
-public class AppServiceShareRuleDTO extends BaseDTO {
+public class AppServiceShareRuleDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

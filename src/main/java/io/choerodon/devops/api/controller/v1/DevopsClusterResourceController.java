@@ -11,14 +11,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.core.annotation.Permission;
-import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ClusterResourceVO;
 import io.choerodon.devops.api.vo.DevopsPrometheusVO;
 import io.choerodon.devops.api.vo.PrometheusStageVO;
 import io.choerodon.devops.app.service.DevopsClusterResourceService;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author zhaotianxin

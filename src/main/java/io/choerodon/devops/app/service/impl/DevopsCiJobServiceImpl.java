@@ -7,28 +7,28 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.hzero.boot.file.FileClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.SonarAuthType;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
-import io.choerodon.devops.infra.feign.FileFeignClient;
 import io.choerodon.devops.infra.feign.SonarClient;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
@@ -52,7 +52,6 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
     private static final String ERROR_GITLAB_PROJECT_ID_IS_NULL = "error.gitlab.project.id.is.null";
     private static final String ERROR_GITLAB_JOB_ID_IS_NULL = "error.gitlab.job.id.is.null";
-    private static final String ERROR_UPLOAD_ARTIFACT_TO_MINIO = "error.upload.file.to.minio";
     private static final String ERROR_TOKEN_MISMATCH = "error.app.service.token.mismatch";
     private static final String ERROR_CI_JOB_NON_EXIST = "error.ci.job.non.exist";
     private static final String ERROR_TOKEN_PIPELINE_MISMATCH = "error.app.service.token.pipeline.mismatch";
@@ -70,24 +69,26 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     private UserAttrService userAttrService;
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
-    private FileFeignClient fileFeignClient;
     private AppServiceService appServiceService;
     private DevopsCiJobArtifactRecordMapper devopsCiJobArtifactRecordMapper;
     private DevopsCiPipelineMapper devopsCiPipelineMapper;
     private DevopsCiPipelineService devopsCiPipelineService;
     private DevopsCiJobRecordService devopsCiJobRecordService;
     private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
+    private FileClient fileClient;
+    private BaseServiceClientOperator baseServiceClientOperator;
 
     public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper,
                                   GitlabServiceClientOperator gitlabServiceClientOperator,
                                   UserAttrService userAttrService,
-                                  FileFeignClient fileFeignClient,
                                   DevopsCiJobArtifactRecordMapper devopsCiJobArtifactRecordMapper,
                                   AppServiceService appServiceService,
                                   DevopsCiPipelineMapper devopsCiPipelineMapper,
                                   DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
                                   @Lazy DevopsCiPipelineService devopsCiPipelineService,
                                   DevopsCiJobRecordService devopsCiJobRecordService,
+                                  FileClient fileClient,
+                                  BaseServiceClientOperator baseServiceClientOperator,
                                   DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper) {
         this.devopsCiJobMapper = devopsCiJobMapper;
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
@@ -96,10 +97,11 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         this.devopsCiJobArtifactRecordMapper = devopsCiJobArtifactRecordMapper;
         this.appServiceService = appServiceService;
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
-        this.fileFeignClient = fileFeignClient;
         this.devopsCiPipelineService = devopsCiPipelineService;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
+        this.fileClient = fileClient;
+        this.baseServiceClientOperator = baseServiceClientOperator;
     }
 
     @Override
@@ -239,72 +241,55 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         devopsCiMavenSettingsMapper.deleteByJobIds(jobIds);
     }
 
-    @Transactional(rollbackFor = Exception.class)
+
     @Override
-    public void uploadArtifact(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName, MultipartFile file) {
-        // 这个方法暂时用不到的字段留待后用
-        AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
-        if (appServiceDTO == null) {
-            throw new DevopsCiInvalidException(ERROR_TOKEN_MISMATCH);
-        }
-
-        if (!ARTIFACT_NAME_PATTERN.matcher(artifactName).matches()) {
-            throw new DevopsCiInvalidException("error.artifact.name.invalid", artifactName);
-        }
-        if (file.getSize() > maxFileSize) {
-            throw new DevopsCiInvalidException("error.artifact.too.big", file.getSize(), maxFileSize);
-        }
+    public void saveArtifactInformation(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName, String fileUrl) {
         try {
-            // 存到文件服务器的文件名
-            String fileName = String.format(GitOpsConstants.CI_JOB_ARTIFACT_NAME_TEMPLATE, ciPipelineId, artifactName);
-
             DevopsCiJobArtifactRecordDTO recordDTO = devopsCiJobArtifactRecordMapper.queryByPipelineIdAndName(ciPipelineId, artifactName);
             if (recordDTO == null) {
-                ResponseEntity<String> response = fileFeignClient.uploadFile(GitOpsConstants.DEV_OPS_CI_ARTIFACT_FILE_BUCKET, fileName, file);
-                String artifactUrl;
-                if (response == null || StringUtils.isEmpty((artifactUrl = response.getBody()))) {
-                    throw new DevopsCiInvalidException(ERROR_UPLOAD_ARTIFACT_TO_MINIO);
-                }
-
                 // 插入纪录到数据库
-                DevopsCiJobArtifactRecordDTO devopsCiJobArtifactRecordDTO = new DevopsCiJobArtifactRecordDTO(ciPipelineId, ciJobId, artifactName, artifactUrl);
+                DevopsCiJobArtifactRecordDTO devopsCiJobArtifactRecordDTO = new DevopsCiJobArtifactRecordDTO(ciPipelineId, ciJobId, artifactName, fileUrl);
                 MapperUtil.resultJudgedInsert(devopsCiJobArtifactRecordMapper, devopsCiJobArtifactRecordDTO, "error.insert.artifact.record");
             } else {
-                // 先删除旧的
-                fileFeignClient.deleteFile(GitOpsConstants.DEV_OPS_CI_ARTIFACT_FILE_BUCKET, recordDTO.getFileUrl());
-                // 上传新的
-                ResponseEntity<String> response = fileFeignClient.uploadFile(GitOpsConstants.DEV_OPS_CI_ARTIFACT_FILE_BUCKET, fileName, file);
-                String artifactUrl;
-                if (response == null || StringUtils.isEmpty((artifactUrl = response.getBody()))) {
-                    throw new DevopsCiInvalidException(ERROR_UPLOAD_ARTIFACT_TO_MINIO);
-                }
-
                 // 更新数据库纪录
-                recordDTO.setFileUrl(artifactUrl);
+                recordDTO.setFileUrl(fileUrl);
                 recordDTO.setGitlabPipelineId(ciPipelineId);
                 recordDTO.setGitlabJobId(ciJobId);
                 recordDTO.setName(artifactName);
                 devopsCiJobArtifactRecordMapper.updateByPrimaryKeySelective(recordDTO);
             }
-        } catch (CommonException e) {
-            throw new DevopsCiInvalidException(e.getCode(), e.getCause());
-        } catch (DevopsCiInvalidException e) {
-            throw e;
         } catch (Exception e) {
-            throw new DevopsCiInvalidException(ERROR_UPLOAD_ARTIFACT_TO_MINIO, e);
+            throw new FeignException(e.getMessage(), e.getCause());
         }
+    }
+
+    @Override
+    public Boolean checkJobArtifactInfo(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName, Long fileByteSize) {
+        // 这个方法暂时用不到的字段留待后用
+        AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
+        if (appServiceDTO == null) {
+            throw new FeignException(ERROR_TOKEN_MISMATCH);
+        }
+
+        if (!ARTIFACT_NAME_PATTERN.matcher(artifactName).matches()) {
+            throw new FeignException("error.artifact.name.invalid", artifactName);
+        }
+        if (fileByteSize > maxFileSize) {
+            throw new FeignException("error.artifact.too.big", fileByteSize, maxFileSize);
+        }
+        return Boolean.TRUE;
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void deleteArtifactsByGitlabProjectId(List<Long> gitlabPipelineIds) {
+    public void deleteArtifactsByGitlabProjectId(Long projectId, List<Long> gitlabPipelineIds) {
         if (CollectionUtils.isEmpty(gitlabPipelineIds)) {
             return;
         }
         List<DevopsCiJobArtifactRecordDTO> artifacts = devopsCiJobArtifactRecordMapper.listByGitlabPipelineIds(gitlabPipelineIds);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         if (!artifacts.isEmpty()) {
-            // TODO 要能够文件不存在删除也不报错的接口，融合之后实现
-            artifacts.forEach(artifact -> fileFeignClient.deleteFile(GitOpsConstants.DEV_OPS_CI_ARTIFACT_FILE_BUCKET, artifact.getFileUrl()));
+            fileClient.deleteFileByUrl(projectDTO.getOrganizationId(), GitOpsConstants.DEV_OPS_CI_ARTIFACT_FILE_BUCKET, artifacts.stream().map(DevopsCiJobArtifactRecordDTO::getFileUrl).collect(Collectors.toList()));
             devopsCiJobArtifactRecordMapper.deleteByGitlabPipelineIds(gitlabPipelineIds);
         }
     }

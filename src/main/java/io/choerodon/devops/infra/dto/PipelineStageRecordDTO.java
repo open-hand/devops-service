@@ -5,13 +5,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-<<<<<<< HEAD
-import io.choerodon.mybatis.entity.BaseDTO;
-=======
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
->>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -21,7 +17,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @ModifyAudit
 @VersionAudit
 @Table(name = "devops_pipeline_stage_record")
-public class PipelineStageRecordDTO extends BaseDTO {
+public class PipelineStageRecordDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

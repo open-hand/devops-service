@@ -7,12 +7,12 @@ import java.util.Set;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.mybatis.common.Mapper;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * Created by younger on 2018/3/28.
  */
-public interface AppServiceMapper extends Mapper<AppServiceDTO> {
+public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
     void updateByIdSelectiveWithoutAudit(@Param("appService") AppServiceDTO appService);
 
     List<AppServiceDTO> list(@Param("projectId") Long projectId,
@@ -88,10 +88,6 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
                                                    @Param("param") String param,
                                                    @Param("projectId") Long projectId);
 
-    List<AppServiceDTO> queryMarketDownloadApps(@Param("type") String type,
-                                                @Param("param") String param,
-                                                @Param("appServiceIds") List<Long> appServiceIds,
-                                                @Param("searchProjectId") Long searchProjectId);
 
     List<AppServiceDTO> listProjectMembersAppService(@Param("projectId") Long projectId,
                                                      @Param("isActive") Boolean isActive,

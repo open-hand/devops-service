@@ -1,27 +1,27 @@
 package io.choerodon.devops.api.controller.v1;
 
-import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.core.annotation.Permission;
-import io.choerodon.core.enums.ResourceType;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
 import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * 〈功能简述〉
  * 〈〉
  *
  * @author wanghao
- * @Date 2020/4/3 9:31
+ * @since 2020/4/3 9:31
  */
 @RestController
 @RequestMapping("/v1/projects/{project_id}/ci_pipeline_records")
@@ -35,13 +35,13 @@ public class DevopsCiPipelineRecordController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询ci流水线执行记录")
     @GetMapping("/{ci_pipeline_id}")
-    public ResponseEntity<PageInfo<DevopsCiPipelineRecordVO>> pagingPipelineRecord(
+    public ResponseEntity<Page<DevopsCiPipelineRecordVO>> pagingPipelineRecord(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "ci_pipeline_id") Long ciPipelineId,
             @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable) {
         return ResponseEntity.ok(devopsCiPipelineRecordService.pagingPipelineRecord(projectId, ciPipelineId, pageable));
     }
 
@@ -71,7 +71,6 @@ public class DevopsCiPipelineRecordController {
 
     /**
      * Cancel jobs in a pipeline
-     *
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "取消GitLab流水线")

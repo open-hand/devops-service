@@ -3,7 +3,6 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
-import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,16 +10,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.core.annotation.Permission;
-
-import org.springframework.data.domain.Pageable;
-
-import io.choerodon.core.enums.ResourceType;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.PipelineService;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -147,11 +145,11 @@ public class PipelineController {
     @ApiOperation(value = "项目下分页流水线")
     @CustomPageRequest
     @PostMapping("/page_by_options")
-    public ResponseEntity<PageInfo<PipelineVO>> pageByOptions(
+    public ResponseEntity<Page<PipelineVO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
-                    Pageable pageable,
+                    PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) PipelineSearchVO pipelineSearchVO) {
         return Optional.ofNullable(pipelineService.pageByOptions(projectId, pipelineSearchVO, pageable))

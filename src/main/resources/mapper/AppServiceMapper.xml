@@ -592,37 +592,6 @@
     <!--</if>-->
     <!--</select>-->
 
-    <select id="queryMarketDownloadApps" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
-        SELECT DISTINCT
-        das.id,
-        das.project_id,
-        das.`name`,
-        das.CODE,
-        das.type,
-        das.mkt_app_id
-        FROM
-        devops_app_service das
-        WHERE
-        das.project_id IS NULL
-        <if test="appServiceIds!=null and appServiceIds.size>0">
-            AND
-            das.id in
-            <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
-                #{appServiceId}
-            </foreach>
-        </if>
-        <if test="type != null and type != ''">
-            AND das.type = #{type}
-        </if>
-        <if test="searchProjectId != null and searchProjectId != ''">
-            AND das.mkt_app_id=#{searchProjectId}
-        </if>
-        <if test="param != null and param != ''">
-            AND (das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
-        </if>
-    </select>
-
     <select id="listAppServiceByIds" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         select * from devops_app_service
         <where>

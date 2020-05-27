@@ -3,27 +3,27 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.Optional;
 import javax.validation.Valid;
 
-import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.core.annotation.Permission;
-import io.choerodon.core.enums.ResourceType;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.SecretReqVO;
 import io.choerodon.devops.api.vo.SecretRespVO;
 import io.choerodon.devops.api.vo.SecretUpdateVO;
 import io.choerodon.devops.app.service.DevopsSecretService;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * Created by n!Ck
@@ -121,7 +121,7 @@ public class DevopsSecretController {
     @CustomPageRequest
     @ApiOperation(value = "分页查询secret")
     @PostMapping("/page_by_options")
-    public ResponseEntity<PageInfo<SecretRespVO>> pageByOption(
+    public ResponseEntity<Page<SecretRespVO>> pageByOption(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id")
@@ -130,7 +130,7 @@ public class DevopsSecretController {
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
-            @ApiIgnore Pageable pageable,
+            @ApiIgnore PageRequest pageable,
             @ApiParam(value = "是否解码值")
             @RequestParam(value = "to_decode", required = false, defaultValue = "false") boolean toDecode,
             @ApiParam(value = "查询参数")

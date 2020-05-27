@@ -1,20 +1,18 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.api.vo.DevopsNotificationTransferDataVO;
-import io.choerodon.devops.api.vo.DevopsNotificationVO;
-import io.choerodon.devops.api.vo.NotificationEventVO;
-import io.choerodon.devops.infra.dto.DevopsNotificationDTO;
-import io.choerodon.mybatis.common.Mapper;
-import org.apache.ibatis.annotations.Param;
-
 import java.util.List;
-import java.util.Map;
+
+import io.choerodon.devops.api.vo.DevopsNotificationTransferDataVO;
+import io.choerodon.devops.infra.dto.DevopsNotificationDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  19:47 2019/5/13
  * Description:
+ * @deprecated 迁移数据到notify-service(hzero-message)了
  */
-public interface DevopsNotificationMapper extends Mapper<DevopsNotificationDTO> {
+@Deprecated
+public interface DevopsNotificationMapper extends BaseMapper<DevopsNotificationDTO> {
     List<DevopsNotificationTransferDataVO> transferData();
 }

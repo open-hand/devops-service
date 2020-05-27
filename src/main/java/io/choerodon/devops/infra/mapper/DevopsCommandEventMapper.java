@@ -1,17 +1,17 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.mybatis.common.Mapper;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsCommandEventDTO;
-
-import java.util.List;
-import java.util.Set;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * @author crcokitwood
  */
-public interface DevopsCommandEventMapper extends Mapper<DevopsCommandEventDTO> {
+public interface DevopsCommandEventMapper extends BaseMapper<DevopsCommandEventDTO> {
 
     /**
      * 删除实例Command Event记录

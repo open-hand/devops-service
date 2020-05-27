@@ -7,13 +7,9 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
-<<<<<<< HEAD
-import io.choerodon.mybatis.entity.BaseDTO;
-=======
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
->>>>>>> [ADD] add ModifyAudit VersionAudit for table dto
 
 /**
  * Created by Sheep on 2019/3/14.
@@ -21,7 +17,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @ModifyAudit
 @VersionAudit
 @Table(name = "devops_registry_secret")
-public class DevopsRegistrySecretDTO extends BaseDTO {
+public class DevopsRegistrySecretDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

@@ -8,10 +8,10 @@ import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
-import io.choerodon.mybatis.common.Mapper;
+import io.choerodon.mybatis.common.BaseMapper;
 
 
-public interface DevopsClusterMapper extends Mapper<DevopsClusterDTO> {
+public interface DevopsClusterMapper extends BaseMapper<DevopsClusterDTO> {
 
     List<DevopsClusterDTO> listByProjectId(@Param("projectId") Long projectId, @Param("organizationId") Long organizationId);
 

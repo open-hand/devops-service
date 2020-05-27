@@ -3,33 +3,32 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.message.entity.MessageSender;
+import org.hzero.boot.message.entity.Receiver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.notify.NoticeSendDTO;
-import io.choerodon.devops.api.vo.DevopsNotificationTransferDataVO;
-import io.choerodon.devops.api.vo.NotifyVO;
 import io.choerodon.devops.api.vo.ResourceCheckVO;
-import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.notify.MessageSettingVO;
 import io.choerodon.devops.api.vo.notify.TargetUserDTO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.enums.LabelType;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.TriggerObject;
-import io.choerodon.devops.infra.feign.NotifyClient;
+import io.choerodon.devops.infra.feign.HzeroMessageClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsNotificationMapper;
+import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.StringMapBuilder;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -47,13 +46,9 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     private static final String MOBILE = "mobile";
 
     @Autowired
-    private DevopsNotificationMapper devopsNotificationMapper;
-    @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
-    private RedisTemplate redisTemplate;
-    @Autowired
-    private NotifyClient notifyClient;
+    private RedisTemplate<String, String> redisTemplate;
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
@@ -68,22 +63,26 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     private DevopsSecretService devopsSecretService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private HzeroMessageClient hzeroMessageClient;
+    @Autowired
+    private MessageClient messageClient;
 
     @Override
     public ResourceCheckVO checkResourceDelete(Long envId, String objectType) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         ResourceCheckVO resourceCheckVO = new ResourceCheckVO();
-        MessageSettingVO messageSettingVO = notifyClient.queryByEnvIdAndEventNameAndProjectIdAndCode(NOTIFY_TYPE, devopsEnvironmentDTO.getProjectId(), CODE, envId, objectType);
+        MessageSettingVO messageSettingVO = hzeroMessageClient.queryByEnvIdAndEventNameAndProjectIdAndCode(NOTIFY_TYPE, devopsEnvironmentDTO.getProjectId(), CODE, envId, objectType);
         if (Objects.isNull(messageSettingVO)) {
             return resourceCheckVO;
         }
-        //返回删除对象时,获取验证码方式和所通知的目标人群
+        // 返回删除对象时,获取验证码方式和所通知的目标人群
         List<String> method = new ArrayList<>();
-        fillMetod(method, messageSettingVO);
+        fillMethod(method, messageSettingVO);
         if (CollectionUtils.isEmpty(method)) {
             return new ResourceCheckVO();
         }
-        resourceCheckVO.setMethod(method.stream().collect(Collectors.joining(",")));
+        resourceCheckVO.setMethod(String.join(",", method));
         resourceCheckVO.setNotificationId(messageSettingVO.getId());
         List<TargetUserDTO> targetUserDTOS = messageSettingVO.getTargetUserDTOS();
         if (CollectionUtils.isEmpty(targetUserDTOS)) {
@@ -91,7 +90,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         }
         List<String> userList = new ArrayList<>();
         fillTargetUser(userList, targetUserDTOS);
-        resourceCheckVO.setUser(userList.stream().collect(Collectors.joining(",")));
+        resourceCheckVO.setUser(String.join(",", userList));
         return resourceCheckVO;
     }
 
@@ -119,7 +118,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         }).toArray(), ","));
     }
 
-    private void fillMetod(List<String> method, MessageSettingVO messageSettingVO) {
+    private void fillMethod(List<String> method, MessageSettingVO messageSettingVO) {
         if (messageSettingVO.getPmEnable()) {
             method.add("站内信");
         }
@@ -134,31 +133,21 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
     @Override
     public void sendMessage(Long envId, Long notificationId, Long objectId, String objectType) {
-        //notificationId为messmageSettingVO 的ID
+        // notificationId为messageSettingVO 的ID
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         String objectCode = getObjectCode(objectId, objectType);
 
-        //生成验证码，存放在redis
+        // 生成验证码，存放在redis
         String resendKey = String.format("choerodon:devops:env:%s:%s:%s", devopsEnvironmentDTO.getCode(), objectType, objectCode);
         String captcha = String.valueOf(new Random().nextInt(899999) + 100000);
         redisTemplate.opsForValue().set(resendKey, captcha, TIMEOUT, TimeUnit.SECONDS);
 
 
         //生成发送消息需要的模板对象
-        MessageSettingVO messageSettingVO = notifyClient.queryByEnvIdAndEventNameAndProjectIdAndCode(NOTIFY_TYPE, devopsEnvironmentDTO.getProjectId(), CODE, envId, objectType);
-        List<String> triggerTypes = new ArrayList<>();
-        if (messageSettingVO.getSmsEnable()) {
-            triggerTypes.add("sms");
-        }
-        if (messageSettingVO.getEmailEnable()) {
-            triggerTypes.add("email");
-        }
-        if (messageSettingVO.getPmEnable()) {
-            triggerTypes.add("pm");
-        }
-        NotifyVO notifyVO = new NotifyVO();
-        Map<String, Object> params = new HashMap<>();
-        List<IamUserDTO> userES = baseServiceClientOperator.listUsersByIds(Arrays.asList(GitUserNameUtil.getUserId().longValue()));
+        MessageSettingVO messageSettingVO = hzeroMessageClient.queryByEnvIdAndEventNameAndProjectIdAndCode(NOTIFY_TYPE, devopsEnvironmentDTO.getProjectId(), CODE, envId, objectType);
+
+        StringMapBuilder params = StringMapBuilder.newBuilder();
+        List<IamUserDTO> userES = baseServiceClientOperator.listUsersByIds(ArrayUtil.singleAsList(GitUserNameUtil.getUserId().longValue()));
         if (!userES.isEmpty()) {
             if (userES.get(0).getRealName() != null) {
                 params.put("user", userES.get(0).getRealName());
@@ -173,65 +162,60 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         params.put("timeout", "10");
         //由于短信模板内容的问题，暂时需要传入此instance,后续统一改成object和objectType
         params.put("instance", objectCode);
-        notifyVO.setEnvId(envId);
-        notifyVO.setEventName(objectType);
-        notifyVO.setNotifyType(NOTIFY_TYPE);
+
         List<TargetUserDTO> targetUserDTOS = messageSettingVO.getTargetUserDTOS();
         //通知对象为null，则不发消息
         if (CollectionUtils.isEmpty(targetUserDTOS)) {
             return;
         }
-        List<NoticeSendDTO.User> users = new ArrayList<>();
+
+        List<Receiver> users = new ArrayList<>();
+
         List<String> phones = new ArrayList<>();
-        targetUserDTOS.stream().forEach(e -> {
+        targetUserDTOS.forEach(e -> {
             if (TriggerObject.HANDLER.getObject().equals(e.getType())) {
-                NoticeSendDTO.User user = new NoticeSendDTO.User();
+                Receiver user = new Receiver();
                 phones.add(userES.get(0).getPhone());
                 user.setEmail(GitUserNameUtil.getEmail());
-                user.setId(GitUserNameUtil.getUserId().longValue());
+                user.setUserId(GitUserNameUtil.getUserId().longValue());
                 users.add(user);
             }
             if (TriggerObject.PROJECT_OWNER.getObject().equals(e.getType())) {
                 List<IamUserDTO> iamUserDTOS = baseServiceClientOperator
                         .listProjectOwnerByProjectId(devopsEnvironmentDTO.getProjectId());
                 if (!iamUserDTOS.isEmpty()) {
-                    iamUserDTOS.stream().forEach(v -> {
-                        NoticeSendDTO.User user = new NoticeSendDTO.User();
-                        user.setEmail(v.getEmail());
-                        user.setId(v.getId());
-                        users.add(user);
-                        phones.add(v.getPhone());
-                    });
+                    iamUserDTOS.forEach(v -> processReceiver(v, users, phones));
                 }
             }
             if (TriggerObject.SPECIFIER.getObject().equals(e.getType())) {
                 List<Long> userIds = new ArrayList<>();
                 userIds.add(e.getUserId());
-                baseServiceClientOperator.listUsersByIds(userIds).stream().forEach(k -> {
-                    NoticeSendDTO.User user = new NoticeSendDTO.User();
-                    user.setEmail(k.getEmail());
-                    user.setId(k.getId());
-                    users.add(user);
-                    phones.add(k.getPhone());
-                });
+                baseServiceClientOperator.listUsersByIds(userIds).forEach(k -> processReceiver(k, users, phones));
             }
         });
         params.put(MOBILE, StringUtils.join(phones, ","));
-        notifyVO.setTargetUsers(users);
-        notifyVO.setParams(params);
+
+        Map<String, Object> additionalParams = new HashMap<>();
+        additionalParams.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(), devopsEnvironmentDTO.getProjectId());
+        additionalParams.put(MessageAdditionalType.PARAM_ENV_ID.getTypeName(), devopsEnvironmentDTO.getId());
+        additionalParams.put(MessageAdditionalType.PARAM_EVENT_NAME.getTypeName(), objectType);
+
+        MessageSender messageSender = new MessageSender();
+        messageSender.setTenantId(0L);
+        messageSender.setMessageCode(RESOURCE_DELETE_CONFIRMATION);
+        messageSender.setArgs(params.build());
+        messageSender.setAdditionalInformation(additionalParams);
+        messageSender.setReceiverAddressList(users);
+
         try {
             //根据不同的通知方式发送验证码
-            notifyVO.setSourceId(devopsEnvironmentDTO.getProjectId());
-            notifyVO.setCode(RESOURCE_DELETE_CONFIRMATION);
-            notifyClient.sendMessage(notifyVO);
+            messageClient.sendMessage(messageSender);
         } catch (Exception e) {
             redisTemplate.delete(resendKey);
             throw new CommonException("error.msg.send.failed");
         }
     }
 
-<<<<<<< HEAD
-=======
     private void processReceiver(IamUserDTO user, List<Receiver> receivers, List<String> phones) {
         Receiver receiver = new Receiver();
         receiver.setEmail(user.getEmail());
@@ -242,7 +226,6 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         phones.add(user.getPhone());
     }
 
->>>>>>> [REF] add params when sending notices
 
     @Override
     public void validateCaptcha(Long envId, Long objectId, String objectType, String captcha) {
@@ -253,11 +236,6 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             throw new CommonException("error.captcha");
         }
         redisTemplate.delete(resendKey);
-    }
-
-    @Override
-    public List<DevopsNotificationTransferDataVO> transferDate() {
-        return devopsNotificationMapper.transferData();
     }
 
     private String getObjectCode(Long objectId, String type) {

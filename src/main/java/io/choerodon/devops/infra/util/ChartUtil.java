@@ -23,8 +23,8 @@ import io.choerodon.devops.app.eventhandler.payload.AppServiceVersionDownloadPay
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 
@@ -60,13 +60,13 @@ public class ChartUtil {
         }
     }
 
-    public void downloadChart(AppServiceVersionDTO appServiceVersionDTO, OrganizationDTO organizationDTO, ProjectDTO projectDTO, AppServiceDTO applicationDTO, String destpath) {
+    public void downloadChart(AppServiceVersionDTO appServiceVersionDTO, Tenant organizationDTO, ProjectDTO projectDTO, AppServiceDTO applicationDTO, String destpath) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setType(CHART);
-        configurationProperties.setBaseUrl(appServiceVersionDTO.getRepository().split(organizationDTO.getCode() + "/" + projectDTO.getCode())[0]);
+        configurationProperties.setBaseUrl(appServiceVersionDTO.getRepository().split(organizationDTO.getTenantNum() + "/" + projectDTO.getCode())[0]);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         ChartClient chartClient = retrofit.create(ChartClient.class);
-        Call<ResponseBody> getTaz = chartClient.downloadTaz(organizationDTO.getCode(), projectDTO.getCode(), applicationDTO.getCode(), appServiceVersionDTO.getVersion());
+        Call<ResponseBody> getTaz = chartClient.downloadTaz(organizationDTO.getTenantNum(), projectDTO.getCode(), applicationDTO.getCode(), appServiceVersionDTO.getVersion());
         FileOutputStream fos = null;
         try {
             Response<ResponseBody> response = getTaz.execute();

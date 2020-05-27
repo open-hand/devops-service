@@ -5,19 +5,17 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.PageInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
@@ -43,6 +41,8 @@ import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
 import io.choerodon.devops.infra.util.*;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 /**
  * 〈功能简述〉
@@ -84,8 +84,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private UserAttrService userAttrService;
     private AppServiceService appServiceService;
     private DevopsCiJobRecordService devopsCiJobRecordService;
-    private PermissionHelper permissionHelper;
-    private BaseServiceClientOperator baseServiceClientOperator;
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
     private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
     private DevopsProjectService devopsProjectService;
@@ -102,9 +100,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             UserAttrService userAttrService,
             AppServiceService appServiceService,
             DevopsCiJobRecordService devopsCiJobRecordService,
-            PermissionHelper permissionHelper,
             DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
-            BaseServiceClientOperator baseServiceClientOperator,
             DevopsProjectService devopsProjectService,
             BaseServiceClientOperator baseServiceClientOperator,
             DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper) {
@@ -117,7 +113,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.userAttrService = userAttrService;
         this.appServiceService = appServiceService;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
-        this.permissionHelper = permissionHelper;
         this.devopsCiMavenSettingsMapper = devopsCiMavenSettingsMapper;
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.baseServiceClientOperator = baseServiceClientOperator;
@@ -158,35 +153,25 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (repositoryFile == null) {
             // 说明项目下还没有CI文件
             // 创建文件
-            try {
-                LOGGER.info("initGitlabCiFile: create .gitlab-ci.yaml for gitlab project with id {}",gitlabProjectId );
-                gitlabServiceClientOperator.createFile(
-                        gitlabProjectId,
-                        GitOpsConstants.GITLAB_CI_FILE_NAME,
-                        buildIncludeYaml(ciFileIncludeUrl),
-                        GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
-                        GitUserNameUtil.getAdminId(),
-                        GitOpsConstants.MASTER);
-            } catch (Exception ex) {
-                throw new CommonException("error.create.or.update.gitlab.ci", ex);
-            }
+            gitlabServiceClientOperator.createFile(
+                    gitlabProjectId,
+                    GitOpsConstants.GITLAB_CI_FILE_NAME,
+                    buildIncludeYaml(ciFileIncludeUrl),
+                    GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
+                    GitUserNameUtil.getAdminId(),
+                    GitOpsConstants.MASTER);
         } else {
             // 将原先的配置文件内容注释并放在原本文件中
             String originFileContent = new String(Base64.getDecoder().decode(repositoryFile.getContent().getBytes()), StandardCharsets.UTF_8);
             // 注释后的内容
             String commentedLines = GitlabCiUtil.commentLines(originFileContent);
-            try {
-                // 更新文件
-                LOGGER.info("initGitlabCiFile: update .gitlab-ci.yaml for gitlab project with id {}",gitlabProjectId );
-                gitlabServiceClientOperator.updateFile(
-                        gitlabProjectId,
-                        GitOpsConstants.GITLAB_CI_FILE_NAME,
-                        buildIncludeYaml(ciFileIncludeUrl) + GitOpsConstants.NEW_LINE + commentedLines,
-                        GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
-                        GitUserNameUtil.getAdminId());
-            } catch (Exception ex) {
-                throw new CommonException("error.create.or.update.gitlab.ci", ex);
-            }
+            // 更新文件
+            gitlabServiceClientOperator.updateFile(
+                    gitlabProjectId,
+                    GitOpsConstants.GITLAB_CI_FILE_NAME,
+                    buildIncludeYaml(ciFileIncludeUrl) + GitOpsConstants.NEW_LINE + commentedLines,
+                    GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
+                    GitUserNameUtil.getAdminId());
         }
     }
 
@@ -275,7 +260,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             throw new CommonException(ERROR_PROJECT_ID_IS_NULL);
         }
         List<DevopsCiPipelineVO> devopsCiPipelineVOS = devopsCiPipelineMapper.queryByProjectIdAndName(projectId, name);
-        PageRequest pageable = PageRequest.of(1, 5, Sort.by(Sort.Direction.DESC, "id"));
+        PageRequest pageable = new PageRequest(1, 5, new Sort(new Sort.Order(Sort.Direction.DESC, "id")));
 
         devopsCiPipelineVOS.forEach(devopsCiPipelineVO -> {
             Page<DevopsCiPipelineRecordVO> pipelineRecordVOPageInfo = devopsCiPipelineRecordService.pagingPipelineRecord(projectId, devopsCiPipelineVO.getId(), pageable);
@@ -283,8 +268,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 devopsCiPipelineVO.setLatestExecuteDate(pipelineRecordVOPageInfo.getContent().get(0).getCreatedDate());
                 devopsCiPipelineVO.setLatestExecuteStatus(pipelineRecordVOPageInfo.getContent().get(0).getStatus());
             }
-            devopsCiPipelineVO.setPipelineRecordVOList(pipelineRecordVOPageInfo.getList());
-            devopsCiPipelineVO.setHasMoreRecords(pipelineRecordVOPageInfo.isHasNextPage());
+            devopsCiPipelineVO.setPipelineRecordVOList(pipelineRecordVOPageInfo.getContent());
         });
 
         return devopsCiPipelineVOS;
@@ -326,7 +310,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCiJobRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
 
         // 删除pipeline之前执行过程上传的软件包数据
-        devopsCiJobService.deleteArtifactsByGitlabProjectId(devopsCiPipelineRecordMapper.listGitlabPipelineIdsByPipelineId(ciPipelineId));
+        devopsCiJobService.deleteArtifactsByGitlabProjectId(projectId, devopsCiPipelineRecordMapper.listGitlabPipelineIdsByPipelineId(ciPipelineId));
 
         // 删除pipeline记录
         devopsCiPipelineRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
@@ -381,16 +365,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private void deleteGitlabCiFile(Integer gitlabProjectId) {
         RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(gitlabProjectId, GitOpsConstants.MASTER, GitOpsConstants.GITLAB_CI_FILE_NAME);
         if (repositoryFile != null) {
-            try {
-                LOGGER.info("deleteGitlabCiFile: delete .gitlab-ci.yaml for gitlab project with id {}",gitlabProjectId );
-                gitlabServiceClientOperator.deleteFile(
-                        gitlabProjectId,
-                        GitOpsConstants.GITLAB_CI_FILE_NAME,
-                        GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
-                        GitUserNameUtil.getAdminId());
-            } catch (Exception e) {
-                throw new CommonException("error.delete.gitlab-ci.file", e);
-            }
+            gitlabServiceClientOperator.deleteFile(
+                    gitlabProjectId,
+                    GitOpsConstants.GITLAB_CI_FILE_NAME,
+                    GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
+                    GitUserNameUtil.getAdminId());
         }
     }
 

@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import org.springframework.data.domain.Pageable;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
@@ -18,6 +18,7 @@ import io.choerodon.devops.api.vo.AppServiceShareRuleUpdateVO;
 import io.choerodon.devops.api.vo.AppServiceShareRuleVO;
 import io.choerodon.devops.app.service.AppServiceShareRuleService;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -80,13 +81,13 @@ public class AppShareRuleController {
     @ApiOperation(value = "分页查询服务共享规则")
     @PostMapping(value = "/page_by_options")
     @CustomPageRequest
-    public ResponseEntity<PageInfo<AppServiceShareRuleVO>> pageByOptions(
+    public ResponseEntity<Page<AppServiceShareRuleVO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam
             @RequestParam(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore Pageable pageable,
+            @ApiIgnore PageRequest pageable,
             @ApiParam(value = "过滤参数")
             @RequestBody(required = false) String param) {
         return Optional.ofNullable(

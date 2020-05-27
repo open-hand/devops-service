@@ -3,37 +3,37 @@ package io.choerodon.devops.app.eventhandler;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.choerodon.devops.api.vo.OrgAdministratorVO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
-import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.vo.GitlabGroupMemberVO;
 import io.choerodon.devops.api.vo.GitlabUserRequestVO;
 import io.choerodon.devops.api.vo.GitlabUserVO;
+import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.iam.AssignAdminVO;
 import io.choerodon.devops.api.vo.iam.DeleteAdminVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.*;
-import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.app.eventhandler.payload.CreateAndUpdateUserEventPayload;
+import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
+import io.choerodon.devops.app.eventhandler.payload.HarborPayload;
+import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
+import io.choerodon.devops.app.service.GitlabGroupMemberService;
+import io.choerodon.devops.app.service.GitlabGroupService;
+import io.choerodon.devops.app.service.GitlabUserService;
+import io.choerodon.devops.app.service.HarborService;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.springframework.util.CollectionUtils;
 
 
 /**
@@ -57,8 +57,6 @@ public class SagaHandler {
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
     private GitlabUserService gitlabUserService;
-    @Autowired
-    private OrgAppMarketService orgAppMarketService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
 
@@ -85,15 +83,9 @@ public class SagaHandler {
         gitlabGroupService.createGroups(gitlabGroupPayload);
         //为新项目的三个组添加组织下管理员角色
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectPayload.getProjectId());
-        List<OrgAdministratorVO> orgAdministratorVOS = baseServiceClientOperator.listOrgAdministrator(projectDTO.getOrganizationId()).getList();
+        List<OrgAdministratorVO> orgAdministratorVOS = baseServiceClientOperator.listOrgAdministrator(projectDTO.getOrganizationId()).getContent();
         if (!CollectionUtils.isEmpty(orgAdministratorVOS)) {
-<<<<<<< HEAD
-            orgAdministratorVOS.stream().forEach(orgAdministratorVO -> {
-                gitlabGroupMemberService.assignGitLabGroupMemeberForOwner(projectDTO, orgAdministratorVO.getId());
-            });
-=======
             orgAdministratorVOS.forEach(orgAdministratorVO -> gitlabGroupMemberService.assignGitLabGroupMemberForOwner(projectDTO, orgAdministratorVO.getId()));
->>>>>>> [FIX] fix gitlab label
         }
         return msg;
     }
@@ -279,63 +271,6 @@ public class SagaHandler {
         return payload;
     }
 
-    /**
-     * 应用上传
-     */
-    @SagaTask(code = SagaTaskCodeConstants.APIM_UPLOAD_APP,
-            description = "应用上传",
-            sagaCode = SagaTopicCodeConstants.APIM_UPLOAD_APP,
-            maxRetryCount = 0, seq = 1)
-    public String uploadApp(String payload) {
-        AppMarketUploadPayload appMarketUploadVO = gson.fromJson(payload, AppMarketUploadPayload.class);
-        loggerInfo(appMarketUploadVO);
-        orgAppMarketService.uploadAPP(appMarketUploadVO);
-        return payload;
-    }
-
-    /**
-     * 应用上传,修复版本
-     */
-    @SagaTask(code = SagaTaskCodeConstants.APIM_UPLOAD_APP_FIX_VERSION,
-            description = "应用上传,修复版本",
-            sagaCode = SagaTopicCodeConstants.APIM_UPLOAD_APP_FIX_VERSION,
-            maxRetryCount = 0, seq = 1)
-    public String uploadAppFixVersion(String payload) {
-        AppMarketFixVersionPayload fixVersionPayload = gson.fromJson(payload, AppMarketFixVersionPayload.class);
-        loggerInfo(fixVersionPayload);
-        orgAppMarketService.uploadAPPFixVersion(fixVersionPayload);
-        return payload;
-    }
-
-    /**
-     * 应用下载
-     */
-    @SagaTask(code = SagaTaskCodeConstants.APIM_DOWNLOAD_APP,
-            description = "应用下载",
-            sagaCode = SagaTopicCodeConstants.APIM_DOWNLOAD_APP,
-            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            maxRetryCount = 0, seq = 10)
-    public String downloadApp(String payload) {
-        AppMarketDownloadPayload appMarketDownloadPayload = gson.fromJson(payload, AppMarketDownloadPayload.class);
-        loggerInfo(appMarketDownloadPayload);
-        orgAppMarketService.downLoadApp(appMarketDownloadPayload);
-        return payload;
-    }
-
-    /**
-     * 应用下载失败 删除gitlab相关项目
-     */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_MARKET_DELETE_GITLAB_PRO,
-            description = "应用市场下载失败删除gitlab相关项目",
-            sagaCode = SagaTopicCodeConstants.DEVOPS_MARKET_DELETE_GITLAB_PRO,
-            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            maxRetryCount = 0, seq = 20)
-    public String downloadAppFailed(String payload) {
-        MarketDelGitlabProPayload marketDelGitlabProPayload = gson.fromJson(payload, MarketDelGitlabProPayload.class);
-        loggerInfo(marketDelGitlabProPayload);
-        orgAppMarketService.deleteGitlabProject(marketDelGitlabProPayload);
-        return payload;
-    }
 
     /**
      * 处理组织层创建用户
