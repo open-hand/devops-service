@@ -47,7 +47,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<OrganizationDTO>> queryOrgByIds(Set<Long> ids) {
+    public ResponseEntity<List<Tenant>> queryOrgByIds(Set<Long> ids) {
         throw new CommonException("error.organization.get", ids == null ? "null" : ids.toString());
     }
 

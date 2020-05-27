@@ -38,7 +38,7 @@ public interface BaseServiceClient {
      * @return 组织集合
      */
     @PostMapping(value = "/choerodon/v1/organizations/ids")
-    ResponseEntity<List<OrganizationDTO>> queryOrgByIds(@RequestBody Set<Long> ids);
+    ResponseEntity<List<Tenant>> queryOrgByIds(@RequestBody Set<Long> ids);
 
     @GetMapping(value = "/choerodon/v1/users")
     ResponseEntity<IamUserDTO> queryByLoginName(@RequestParam("login_name") String loginName);
