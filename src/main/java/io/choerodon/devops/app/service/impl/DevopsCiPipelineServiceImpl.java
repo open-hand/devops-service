@@ -153,25 +153,36 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (repositoryFile == null) {
             // 说明项目下还没有CI文件
             // 创建文件
-            gitlabServiceClientOperator.createFile(
-                    gitlabProjectId,
-                    GitOpsConstants.GITLAB_CI_FILE_NAME,
-                    buildIncludeYaml(ciFileIncludeUrl),
-                    GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
-                    GitUserNameUtil.getAdminId(),
-                    GitOpsConstants.MASTER);
+            try {
+                LOGGER.info("initGitlabCiFile: create .gitlab-ci.yaml for gitlab project with id {}",gitlabProjectId );
+                gitlabServiceClientOperator.createFile(
+                        gitlabProjectId,
+                        GitOpsConstants.GITLAB_CI_FILE_NAME,
+                        buildIncludeYaml(ciFileIncludeUrl),
+                        GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
+                        GitUserNameUtil.getAdminId(),
+                        GitOpsConstants.MASTER);
+            } catch (Exception ex) {
+                throw new CommonException("error.create.or.update.gitlab.ci", ex);
+            }
+
         } else {
             // 将原先的配置文件内容注释并放在原本文件中
             String originFileContent = new String(Base64.getDecoder().decode(repositoryFile.getContent().getBytes()), StandardCharsets.UTF_8);
             // 注释后的内容
             String commentedLines = GitlabCiUtil.commentLines(originFileContent);
-            // 更新文件
-            gitlabServiceClientOperator.updateFile(
-                    gitlabProjectId,
-                    GitOpsConstants.GITLAB_CI_FILE_NAME,
-                    buildIncludeYaml(ciFileIncludeUrl) + GitOpsConstants.NEW_LINE + commentedLines,
-                    GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
-                    GitUserNameUtil.getAdminId());
+            try {
+                // 更新文件
+                LOGGER.info("initGitlabCiFile: update .gitlab-ci.yaml for gitlab project with id {}",gitlabProjectId );
+                gitlabServiceClientOperator.updateFile(
+                        gitlabProjectId,
+                        GitOpsConstants.GITLAB_CI_FILE_NAME,
+                        buildIncludeYaml(ciFileIncludeUrl) + GitOpsConstants.NEW_LINE + commentedLines,
+                        GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
+                        GitUserNameUtil.getAdminId());
+            } catch (Exception ex) {
+                throw new CommonException("error.create.or.update.gitlab.ci", ex);
+            }
         }
     }
 
@@ -365,11 +376,17 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private void deleteGitlabCiFile(Integer gitlabProjectId) {
         RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(gitlabProjectId, GitOpsConstants.MASTER, GitOpsConstants.GITLAB_CI_FILE_NAME);
         if (repositoryFile != null) {
-            gitlabServiceClientOperator.deleteFile(
-                    gitlabProjectId,
-                    GitOpsConstants.GITLAB_CI_FILE_NAME,
-                    GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
-                    GitUserNameUtil.getAdminId());
+            try {
+                LOGGER.info("deleteGitlabCiFile: delete .gitlab-ci.yaml for gitlab project with id {}",gitlabProjectId );
+                gitlabServiceClientOperator.deleteFile(
+                        gitlabProjectId,
+                        GitOpsConstants.GITLAB_CI_FILE_NAME,
+                        GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
+                        GitUserNameUtil.getAdminId());
+            } catch (Exception e) {
+                throw new CommonException("error.delete.gitlab-ci.file", e);
+            }
+
         }
     }
 
