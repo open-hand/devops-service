@@ -160,4 +160,9 @@ public class GitOpsConstants {
     public static final Pattern IMAGE_REGISTRY = Pattern.compile("^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}(/.+)*:.+$");
 
     public static final String STAGE = "stage";
+
+    /**
+     * 分页插件的第一页的页码
+     */
+    public static final int FIRST_PAGE_INDEX = 0;
 }
