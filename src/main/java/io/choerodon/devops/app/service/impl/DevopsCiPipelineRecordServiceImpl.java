@@ -20,6 +20,7 @@ import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
@@ -37,6 +38,7 @@ import io.choerodon.devops.infra.mapper.DevopsCiJobArtifactRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.CustomContextUtil;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -138,6 +140,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                             .withRefType("app")
                             .withRefId(appServiceDTO.getId().toString())
                             .withSagaCode(DEVOPS_GITLAB_CI_PIPELINE)
+                            .withLevel(ResourceLevel.PROJECT)
+                            .withSourceId(appServiceDTO.getProjectId())
                             .withJson(input),
                     builder -> {
                     });
@@ -155,6 +159,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         record.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectOne(record);
         Long iamUserId = getIamUserIdByGitlabUserName(pipelineWebHookVO.getUser().getUsername());
+        CustomContextUtil.setUserContext(iamUserId);
 
         //pipeline不存在则创建,存在则更新状态和阶段信息
         if (devopsCiPipelineRecordDTO == null) {
