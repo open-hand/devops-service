@@ -41,7 +41,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Component
 public class GitlabServiceClientOperator {
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabServiceClientOperator.class);
-    private static final String ERROR_CREATE_PIPELINE_FILED = "error.create.pipeline.filed";
+    private static final String ERROR_CREATE_PIPELINE_FILED = "error.create.pipeline.failed";
     private static final String ERROR_RETRY_PIPELINE_FILED = "error.retry.pipeline.filed";
     private static final String ERROR_CANCEL_PIPELINE_FILED = "error.cancel.pipeline.filed";
     @Autowired
