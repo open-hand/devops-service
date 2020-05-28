@@ -49,9 +49,9 @@
     </update>
 
 
-    <select id="checkNameExist" resultType="java.lang.Boolean">
+    <select id="checkNameExist" resultType="boolean">
         SELECT
-        count( 1 ) >0  exist
+        count( 1 ) >0 exist
         FROM
         devops_pipeline_app_service_deploy dpasd
         WHERE

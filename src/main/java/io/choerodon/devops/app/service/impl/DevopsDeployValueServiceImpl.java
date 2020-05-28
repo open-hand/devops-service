@@ -16,10 +16,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeployValueMapper;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.FileUtil;
-import io.choerodon.devops.infra.util.PageRequestUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -111,19 +108,19 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public void checkName(Long projectId, String name, Long deployValueId, Long envId) {
+    public void checkName(Long projectId, String name, Long envId) {
+        // 当查询结果不为空且不是更新部署配置时抛出异常
+        if (!isNameUnique(projectId, name, envId)) {
+            throw new CommonException("error.devops.pipeline.value.name.exit");
+        }
+    }
+
+    @Override
+    public boolean isNameUnique(Long projectId, String name, Long envId) {
         DevopsDeployValueDTO devopsDeployValueDTO = new DevopsDeployValueDTO();
         devopsDeployValueDTO.setEnvId(Objects.requireNonNull(envId));
         devopsDeployValueDTO.setName(Objects.requireNonNull(name));
-        List<DevopsDeployValueDTO> devopsDeployValueDTOS = devopsDeployValueMapper.select(devopsDeployValueDTO);
-        boolean updateCheck = false;
-        if (deployValueId != null) {
-            updateCheck = devopsDeployValueDTOS.size() == 1 && devopsDeployValueDTOS.get(0).getId().equals(deployValueId);
-        }
-        // 当查询结果不为空且不是更新部署配置时抛出异常
-        if (!devopsDeployValueDTOS.isEmpty() && !updateCheck) {
-            throw new CommonException("error.devops.pipeline.value.name.exit");
-        }
+        return devopsDeployValueMapper.selectCount(devopsDeployValueDTO) == 0;
     }
 
     @Override
@@ -160,38 +157,23 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     @Override
     public DevopsDeployValueDTO baseCreateOrUpdate(DevopsDeployValueDTO devopsDeployValueDTO) {
         if (devopsDeployValueDTO.getId() == null) {
-            checkNameUniqueForInsert(devopsDeployValueDTO);
+            checkName(devopsDeployValueDTO.getProjectId(), devopsDeployValueDTO.getName(), devopsDeployValueDTO.getEnvId());
+
             checkAppServiceAndEnvInProject(devopsDeployValueDTO.getProjectId(), devopsDeployValueDTO.getEnvId(), devopsDeployValueDTO.getAppServiceId());
-            if (devopsDeployValueMapper.insert(devopsDeployValueDTO) != 1) {
-                throw new CommonException("error.insert.pipeline.value");
-            }
+            MapperUtil.resultJudgedInsert(devopsDeployValueMapper, devopsDeployValueDTO, "error.insert.pipeline.value");
         } else {
+            DevopsDeployValueDTO original = devopsDeployValueMapper.selectByPrimaryKey(devopsDeployValueDTO.getId());
+            // 更新了名字就校验名称的唯一性
+            if (!Objects.equals(original.getName(), devopsDeployValueDTO.getName())) {
+                checkName(devopsDeployValueDTO.getProjectId(), devopsDeployValueDTO.getName(), devopsDeployValueDTO.getEnvId());
+            }
+
             devopsDeployValueDTO.setEnvId(null);
             devopsDeployValueDTO.setAppServiceId(null);
-            devopsDeployValueDTO.setObjectVersionNumber(devopsDeployValueMapper.selectByPrimaryKey(devopsDeployValueDTO).getObjectVersionNumber());
-            if (devopsDeployValueMapper.updateByPrimaryKeySelective(devopsDeployValueDTO) != 1) {
-                throw new CommonException("error.update.pipeline.value");
-            }
-            devopsDeployValueDTO.setObjectVersionNumber(null);
+            devopsDeployValueDTO.setObjectVersionNumber(original.getObjectVersionNumber());
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployValueMapper, devopsDeployValueDTO, "error.update.pipeline.value");
         }
-        return devopsDeployValueMapper.selectByPrimaryKey(devopsDeployValueDTO);
-    }
-
-    /**
-     * 校验配置的name环境下唯一
-     *
-     * @param devopsDeployValueDTO 相关信息
-     */
-    private void checkNameUniqueForInsert(DevopsDeployValueDTO devopsDeployValueDTO) {
-        // 插入前校验名称是否存在
-        DevopsDeployValueDTO condition = new DevopsDeployValueDTO();
-        condition.setProjectId(Objects.requireNonNull(devopsDeployValueDTO.getProjectId()));
-        condition.setName(Objects.requireNonNull(devopsDeployValueDTO.getName()));
-        condition.setEnvId(Objects.requireNonNull(devopsDeployValueDTO.getEnvId()));
-        List<DevopsDeployValueDTO> devopsDeployValueDTOS = devopsDeployValueMapper.select(condition);
-        if (!devopsDeployValueDTOS.isEmpty()) {
-            throw new CommonException("error.devops.pipeline.value.name.exit");
-        }
+        return devopsDeployValueMapper.selectByPrimaryKey(devopsDeployValueDTO.getId());
     }
 
     /**

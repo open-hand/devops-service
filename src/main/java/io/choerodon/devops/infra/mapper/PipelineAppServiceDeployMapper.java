@@ -17,6 +17,6 @@ public interface PipelineAppServiceDeployMapper extends BaseMapper<PipelineAppSe
 
     void updateInstanceId(@Param("instanceId") Long instanceId);
 
-    Boolean checkNameExist(@Param("name") String name, @Param("envIds") List<Long> envIds);
+    boolean checkNameExist(@Param("name") String name, @Param("envIds") List<Long> envIds);
 
 }

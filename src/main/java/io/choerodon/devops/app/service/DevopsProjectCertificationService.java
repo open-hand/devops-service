@@ -29,7 +29,7 @@ public interface DevopsProjectCertificationService {
 
     void createOrUpdate(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationVO projectCertificationVO);
 
-    void checkName(Long projectId, String name);
+    boolean isNameUnique(Long projectId, String name);
 
     /**
      * 列出组织下所有项目中在数据库中没有权限关联关系的项目(不论当前数据库中是否跳过权限检查)

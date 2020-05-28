@@ -754,6 +754,14 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
+    public boolean isNameUnique(Long projectId, String name) {
+        PipelineDTO pipelineDO = new PipelineDTO();
+        pipelineDO.setProjectId(projectId);
+        pipelineDO.setName(name);
+        return pipelineMapper.selectCount(pipelineDO) == 0;
+    }
+
+    @Override
     public List<PipelineVO> listPipelineDTO(Long projectId) {
         return ConvertUtils.convertList(baseQueryByProjectId(projectId), PipelineVO.class);
     }
@@ -1497,10 +1505,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     public void baseCheckName(Long projectId, String name) {
-        PipelineDTO pipelineDO = new PipelineDTO();
-        pipelineDO.setProjectId(projectId);
-        pipelineDO.setName(name);
-        if (!pipelineMapper.select(pipelineDO).isEmpty()) {
+        if (!isNameUnique(projectId, name)) {
             throw new CommonException("error.pipeline.name.exit");
         }
     }

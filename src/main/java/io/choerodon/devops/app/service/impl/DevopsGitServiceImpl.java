@@ -639,15 +639,19 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public void checkBranchName(Long projectId, Long applicationId, String branchName) {
+        if (!isBranchNameUnique(projectId, applicationId, branchName)) {
+            throw new CommonException("error.branch.exist");
+        }
+    }
+
+    @Override
+    public Boolean isBranchNameUnique(Long projectId, Long applicationId, String branchName) {
         AppServiceDTO applicationDTO = appServiceService.baseQuery(applicationId);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listBranch(applicationDTO.getGitlabProjectId(),
-                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listBranch(applicationDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         Optional<BranchDTO> branchEOptional = branchDTOS
                 .stream().filter(e -> branchName.equals(e.getName())).findFirst();
-        branchEOptional.ifPresent(e -> {
-            throw new CommonException("error.branch.exist");
-        });
+        return branchEOptional.isPresent();
     }
 
     private void handleFiles(List<String> operationFiles, List<String> deletedFiles,

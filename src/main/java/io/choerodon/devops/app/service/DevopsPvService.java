@@ -41,22 +41,13 @@ public interface DevopsPvService {
 
     /**
      * 创建PV
-     *
-     * @param devopsPvReqVo
      */
     void createPv(Long projectId, DevopsPvReqVO devopsPvReqVo);
 
     /**
-     * 校验唯一性
-     *
-     * @param devopsPvDTO
-     */
-    void baseCheckPv(DevopsPvDTO devopsPvDTO);
-
-    /**
      * 根据Pv名称和集群的Id校验唯一性
      */
-    void checkName(Long clusterId, String pvName);
+    boolean isNameUnique(Long clusterId, String pvName);
 
     /**
      * 创建组织与PV的权限关联关系
@@ -67,8 +58,6 @@ public interface DevopsPvService {
 
     /**
      * 更新PV表中的权限校验字段
-     *
-     * @param update
      */
     void updateCheckPermission(DevopsPvPermissionUpdateVO update);
 

@@ -36,7 +36,7 @@ import io.choerodon.swagger.annotation.Permission;
 @RequestMapping(value = "/v1/projects/{project_id}/secret")
 public class DevopsSecretController {
 
-    private DevopsSecretService devopsSecretService;
+    private final DevopsSecretService devopsSecretService;
 
     public DevopsSecretController(DevopsSecretService devopsSecretService) {
         this.devopsSecretService = devopsSecretService;
@@ -172,13 +172,13 @@ public class DevopsSecretController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验名字唯一性")
     @GetMapping("/{env_id}/check_name")
-    public void checkName(
+    public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "密钥名")
             @RequestParam(value = "secret_name") String secretName) {
-        devopsSecretService.checkName(envId, secretName);
+        return ResponseEntity.ok(devopsSecretService.checkName(envId, secretName));
     }
 }

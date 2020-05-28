@@ -43,7 +43,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
     private static final String ERROR_CERTIFICATION_NOT_EXIST = "error.certification.not.exist";
 
-    private Gson gson = new Gson();
+    private final Gson gson = new Gson();
     @Autowired
     private DevopsCertificationProRelationshipService devopsCertificationProRelationshipService;
     @Autowired
@@ -224,12 +224,12 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         }
     }
 
-
     @Override
-    public void checkName(Long projectId, String name) {
-        if (certificationService.baseQueryByProjectAndName(projectId, name) != null) {
-            throw new CommonException("error.cert.name.exist");
-        }
+    public boolean isNameUnique(Long projectId, String name) {
+        CertificationDTO certificationDTO = new CertificationDTO();
+        certificationDTO.setName(name);
+        certificationDTO.setProjectId(projectId);
+        return devopsCertificationMapper.selectCount(certificationDTO) == 0;
     }
 
     @Override

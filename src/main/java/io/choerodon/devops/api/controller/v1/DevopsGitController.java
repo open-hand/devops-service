@@ -360,17 +360,16 @@ public class DevopsGitController {
      * @param appServiceId 服务id
      * @param branchName   分支名
      */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "校验分支名唯一性")
     @GetMapping(value = "/check_branch_name")
-    public void checkName(
+    public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务ID")
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分支名")
             @RequestParam(value = "branch_name") String branchName) {
-        devopsGitService.checkBranchName(projectId, appServiceId, branchName);
+        return ResponseEntity.ok(devopsGitService.isBranchNameUnique(projectId, appServiceId, branchName));
     }
 }

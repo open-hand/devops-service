@@ -20,7 +20,9 @@ public interface PipelineAppDeployService {
 
     List<PipelineAppServiceDeployDTO> baseQueryByAppId(Long appServiceId);
 
-    void baseCheckName(String name, Long envId);
+    void baseCheckInstanceNameInPipeline(String name, Long envId);
+
+    boolean doesInstanceNameExistInPipeline(String name, Long envId);
 
     List<PipelineAppServiceDeployDTO> baseQueryByValueId(Long valueId);
 

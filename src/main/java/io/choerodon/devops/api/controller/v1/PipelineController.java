@@ -297,13 +297,12 @@ public class PipelineController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "名称校验")
     @GetMapping(value = "/check_name")
-    public ResponseEntity checkName(
+    public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线名称", required = true)
             @RequestParam(value = "name") String name) {
-        pipelineService.checkName(projectId, name);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.ok(pipelineService.isNameUnique(projectId, name));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})

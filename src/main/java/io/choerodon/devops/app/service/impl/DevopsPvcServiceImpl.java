@@ -52,7 +52,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     private static final String PERSISTENTVOLUMECLAIM_PREFIX = "pvc-";
     private static final String YAML_SUFFIX = ".yaml";
     private static final String MASTER = "master";
-    private Gson gson = new Gson();
+    private final Gson gson = new Gson();
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
@@ -201,9 +201,17 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
 
     @Override
     public void baseCheckName(String pvcName, Long envId) {
-        if (queryByEnvIdAndName(envId, pvcName) != null) {
+        if (!isNameUnique(pvcName, envId)) {
             throw new CommonException("error.pvc.name.already.exists");
         }
+    }
+
+    @Override
+    public boolean isNameUnique(String pvcName, Long envId) {
+        DevopsPvcDTO devopsPvcDTO = new DevopsPvcDTO();
+        devopsPvcDTO.setName(pvcName);
+        devopsPvcDTO.setEnvId(envId);
+        return devopsPvcMapper.selectCount(devopsPvcDTO) == 0;
     }
 
     @Override
@@ -435,7 +443,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         int level = ResourceUnitLevelEnum.valueOf(unit.toUpperCase()).ordinal();
 
         // 1024的一次方 对应ki 1024的2次方 对应Mi 以此类推
-        size = (long) (size * Math.pow((double) 1024, (double) level + 2));
+        size = (long) (size * Math.pow(1024, (double) level + 2));
 
         BigDecimal bigDecimal = new BigDecimal(size);
         Quantity quantity = new Quantity(bigDecimal, Quantity.Format.BINARY_SI);

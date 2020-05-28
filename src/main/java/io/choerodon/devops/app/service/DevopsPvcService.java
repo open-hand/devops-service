@@ -39,6 +39,15 @@ public interface DevopsPvcService {
     void baseCheckName(String pvcName, Long envId);
 
     /**
+     * 判断PVC名称唯一性
+     *
+     * @param pvcName pvc名称
+     * @param envId   环境id
+     * @return true表示唯一
+     */
+    boolean isNameUnique(String pvcName, Long envId);
+
+    /**
      * 通过环境id和名称查找pvc
      *
      * @param envId 环境id

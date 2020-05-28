@@ -107,13 +107,13 @@ public class DevopsPvcController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "检查PVC名称的唯一性")
     @GetMapping("/check_name")
-    public void checkName(
+    public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "PVC名称", required = true)
             @RequestParam(value = "name") String name) {
-        devopsPvcService.baseCheckName(name, envId);
+        return ResponseEntity.ok(devopsPvcService.isNameUnique(name, envId));
     }
 }
