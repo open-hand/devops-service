@@ -26,7 +26,7 @@ public final class JsonHelper {
      * @return 对象
      */
     public static <T> T unmarshalByJackson(String json, Class<T> type) {
-        Assert.hasLength(json, "JSON to be unmarshaled should not be empty");
+        Assert.hasLength(json, "JSON to be unmarshalled should not be empty");
         Assert.notNull(type, "Type should not be null");
         try {
             return OBJECT_MAPPER.readValue(json, type);

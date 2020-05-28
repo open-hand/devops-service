@@ -3,7 +3,9 @@ package io.choerodon.devops.infra.util;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.Callable;
+import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +18,7 @@ import io.choerodon.asgard.saga.consumer.MockHttpServletRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -23,11 +26,25 @@ import io.choerodon.core.oauth.DetailsHelper;
  * Description:
  */
 public class CustomContextUtil {
+    private static final Long DEFAULT_USER_ID = 0L;
+
     private CustomContextUtil() {
     }
 
     public static void setUserContext(Long userId) {
         setUserContext("unknown", userId, 1L);
+    }
+
+    public static void setDefaultIfNull(@Nullable Long userId) {
+        setUserContext(ObjectUtils.defaultIfNull(userId, DEFAULT_USER_ID));
+    }
+
+    public static void setDefaultIfNull(@Nullable IamUserDTO user) {
+        if (user == null) {
+            setUserContext(DEFAULT_USER_ID);
+        } else {
+            setUserContext(user.getLoginName(), user.getId(), user.getOrganizationId());
+        }
     }
 
     /**

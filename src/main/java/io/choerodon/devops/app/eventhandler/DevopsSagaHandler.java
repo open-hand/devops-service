@@ -1,12 +1,24 @@
 package io.choerodon.devops.app.eventhandler;
 
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Objects;
+
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import io.kubernetes.client.JSON;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.AppServiceInstanceVO;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
@@ -28,21 +40,8 @@ import io.choerodon.devops.infra.enums.PipelineNoticeType;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.kubernetes.client.JSON;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Objects;
-
-import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
 
 //import io.choerodon.core.notify.NoticeSendDTO;
 
@@ -58,7 +57,6 @@ public class DevopsSagaHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsSagaHandler.class);
 
     private final Gson gson = new Gson();
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
@@ -161,13 +159,7 @@ public class DevopsSagaHandler {
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 1)
     public String gitops(String data) {
-        PushWebHookVO pushWebHookVO = null;
-        try {
-            pushWebHookVO = objectMapper.readValue(data, PushWebHookVO.class);
-        } catch (IOException e) {
-            LOGGER.info(e.getMessage());
-        }
-        devopsGitService.fileResourceSync(pushWebHookVO);
+        devopsGitService.fileResourceSync(JsonHelper.unmarshalByJackson(data, PushWebHookVO.class));
         return data;
     }
 
@@ -279,13 +271,7 @@ public class DevopsSagaHandler {
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 1)
     public String gitlabPipeline(String data) {
-        PipelineWebHookVO pipelineWebHookVO = null;
-        try {
-            pipelineWebHookVO = objectMapper.readValue(data, PipelineWebHookVO.class);
-        } catch (IOException e) {
-            LOGGER.info(e.getMessage());
-        }
-        devopsGitlabPipelineService.handleCreate(pipelineWebHookVO);
+        devopsGitlabPipelineService.handleCreate(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
         return data;
     }
 
@@ -299,13 +285,7 @@ public class DevopsSagaHandler {
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 1)
     public String gitlabCiPipeline(String data) {
-        PipelineWebHookVO pipelineWebHookVO = null;
-        try {
-            pipelineWebHookVO = objectMapper.readValue(data, PipelineWebHookVO.class);
-        } catch (IOException e) {
-            LOGGER.info(e.getMessage());
-        }
-        devopsCiPipelineRecordService.handleCreate(pipelineWebHookVO);
+        devopsCiPipelineRecordService.handleCreate(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
         return data;
     }
 
@@ -382,13 +362,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String devopsCreateInstance(String data) {
-        InstanceSagaPayload instanceSagaPayload;
-        try {
-            instanceSagaPayload = objectMapper.readValue(data, InstanceSagaPayload.class);
-        } catch (IOException e) {
-            throw new CommonException("Error deserializing the data of instance when consuming create instance event");
-        }
-        appServiceInstanceService.createInstanceBySaga(instanceSagaPayload);
+        appServiceInstanceService.createInstanceBySaga(JsonHelper.unmarshalByJackson(data, InstanceSagaPayload.class));
         return data;
     }
 

@@ -12,7 +12,7 @@ import org.springframework.util.CollectionUtils;
  * @since 20-5-15
  */
 public class StringMapBuilder {
-    private Map<String, String> content;
+    private final Map<String, String> content;
 
     private StringMapBuilder() {
         content = new HashMap<>();

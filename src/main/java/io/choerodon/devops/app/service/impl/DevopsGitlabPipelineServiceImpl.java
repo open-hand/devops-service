@@ -9,8 +9,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONArray;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -39,6 +37,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper;
 import io.choerodon.devops.infra.util.CustomContextUtil;
+import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -50,7 +49,6 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
 
     private static final Integer ADMIN = 1;
     private static final String SONARQUBE = "sonarqube";
-    private ObjectMapper objectMapper = new ObjectMapper();
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
 
@@ -80,21 +78,17 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     public void create(PipelineWebHookVO pipelineWebHookVO, String token) {
         pipelineWebHookVO.setToken(token);
         AppServiceDTO applicationDTO = applicationService.baseQueryByToken(token);
-        try {
-            String input = objectMapper.writeValueAsString(pipelineWebHookVO);
-            transactionalProducer.apply(
-                    StartSagaBuilder.newBuilder()
-                            .withRefType("app")
-                            .withRefId(applicationDTO.getId().toString())
-                            .withSagaCode(DEVOPS_GITLAB_PIPELINE)
-                            .withLevel(ResourceLevel.PROJECT)
-                            .withSourceId(applicationDTO.getProjectId())
-                            .withJson(input),
-                    builder -> {
-                    });
-        } catch (JsonProcessingException e) {
-            throw new CommonException(e.getMessage(), e);
-        }
+        String input = JsonHelper.marshalByJackson(pipelineWebHookVO);
+        transactionalProducer.apply(
+                StartSagaBuilder.newBuilder()
+                        .withRefType("app")
+                        .withRefId(applicationDTO.getId().toString())
+                        .withSagaCode(DEVOPS_GITLAB_PIPELINE)
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(applicationDTO.getProjectId())
+                        .withJson(input),
+                builder -> {
+                });
     }
 
     @Override
@@ -109,7 +103,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         if (userAttrE != null) {
             gitlabUserId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
             // 这里不设置用户上下文会报错
-            CustomContextUtil.setUserContext(userAttrE.getIamUserId());
+            CustomContextUtil.setDefaultIfNull(userAttrE.getIamUserId());
         }
         //查询pipeline最新阶段信息
         List<Stage> stages = new ArrayList<>();

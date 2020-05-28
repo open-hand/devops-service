@@ -61,21 +61,21 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private static final String ERROR_GITLAB_PIPELINE_ID_IS_NULL = "error.gitlab.pipeline.id.is.null";
     private static final String ERROR_GITLAB_PROJECT_ID_IS_NULL = "error.gitlab.project.id.is.null";
 
-    private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
-    private DevopsCiJobRecordService devopsCiJobRecordService;
-    private DevopsCiStageService devopsCiStageService;
-    private DevopsCiJobService devopsCiJobService;
-    private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
-    private DevopsCiPipelineService devopsCiPipelineService;
-    private AppServiceService applicationService;
-    private TransactionalProducer transactionalProducer;
-    private UserAttrService userAttrService;
-    private BaseServiceClientOperator baseServiceClientOperator;
-    private GitlabServiceClientOperator gitlabServiceClientOperator;
-    private DevopsGitlabCommitService devopsGitlabCommitService;
-    private DevopsCiJobArtifactRecordMapper devopsCiJobArtifactRecordMapper;
+    private final DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
+    private final DevopsCiJobRecordService devopsCiJobRecordService;
+    private final DevopsCiStageService devopsCiStageService;
+    private final DevopsCiJobService devopsCiJobService;
+    private final DevopsCiJobRecordMapper devopsCiJobRecordMapper;
+    private final DevopsCiPipelineService devopsCiPipelineService;
+    private final AppServiceService applicationService;
+    private final TransactionalProducer transactionalProducer;
+    private final UserAttrService userAttrService;
+    private final BaseServiceClientOperator baseServiceClientOperator;
+    private final GitlabServiceClientOperator gitlabServiceClientOperator;
+    private final DevopsGitlabCommitService devopsGitlabCommitService;
+    private final DevopsCiJobArtifactRecordMapper devopsCiJobArtifactRecordMapper;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     // @lazy解决循环依赖
     public DevopsCiPipelineRecordServiceImpl(DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
@@ -159,7 +159,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         record.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectOne(record);
         Long iamUserId = getIamUserIdByGitlabUserName(pipelineWebHookVO.getUser().getUsername());
-        CustomContextUtil.setUserContext(iamUserId);
+        CustomContextUtil.setDefaultIfNull(iamUserId);
 
         //pipeline不存在则创建,存在则更新状态和阶段信息
         if (devopsCiPipelineRecordDTO == null) {

@@ -1,6 +1,30 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
+import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
+
 import com.alibaba.fastjson.JSONObject;
+import io.kubernetes.client.models.V1Endpoints;
+import org.eclipse.jgit.api.Git;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.yaml.snakeyaml.Yaml;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -30,29 +54,6 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.kubernetes.client.models.V1Endpoints;
-import org.eclipse.jgit.api.Git;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.MessageSource;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
-import org.yaml.snakeyaml.Yaml;
-
-import javax.annotation.PostConstruct;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
-import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
 
 /**
  * Creator: Runge
@@ -66,11 +67,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private static final String GIT_SUFFIX = "/.git";
     private static final String ERROR_GITLAB_USER_SYNC_FAILED = "error.gitlab.user.sync.failed";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
-    private Pattern pattern = Pattern.compile("^[-+]?[\\d]*$");
+    private final Pattern pattern = Pattern.compile("^[-+]?[\\d]*$");
 
-    private Map<String, ConvertK8sObjectService> userEnvSupportedResourceConverters = new HashMap<>();
-    private Map<String, ConvertK8sObjectService> systemEnvSupportedResourceConverters = new HashMap<>();
-    private Map<Class, HandlerObjectFileRelationsService> objectFileRelationHandlers = new HashMap<>();
+    private final Map<String, ConvertK8sObjectService> userEnvSupportedResourceConverters = new HashMap<>();
+    private final Map<String, ConvertK8sObjectService> systemEnvSupportedResourceConverters = new HashMap<>();
+    private final Map<Class, HandlerObjectFileRelationsService> objectFileRelationHandlers = new HashMap<>();
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -462,9 +463,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Long userId = userAttrService.baseQueryUserIdByGitlabUserId(TypeUtil.objToLong(pushWebHookVO.getUserId()));
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
 
-        if (iamUserDTO != null) {
-            CustomContextUtil.setUserContext(iamUserDTO.getLoginName(), userId, iamUserDTO.getOrganizationId());
-        }
+        // 设置用户上下文
+        CustomContextUtil.setDefaultIfNull(iamUserDTO);
 
         pushWebHookVO.setToken(token);
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByToken(pushWebHookVO.getToken());
@@ -507,16 +507,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public void fileResourceSync(PushWebHookVO pushWebHookVO) {
         final Integer gitLabProjectId = pushWebHookVO.getProjectId();
-        Integer gitLabUserId = pushWebHookVO.getUserId();
-        Long userId = userAttrService.baseQueryUserIdByGitlabUserId(TypeUtil.objToLong(gitLabUserId));
-        if (userId == null) {
-            gitLabUserId = 1;
-        }
+        final Integer gitLabUserId = pushWebHookVO.getUserId();
+        final Long userId = userAttrService.baseQueryUserIdByGitlabUserId(TypeUtil.objToLong(gitLabUserId));
 
-        List<String> operationFiles = new ArrayList<>();
-        List<String> deletedFiles = new ArrayList<>();
-        Set<DevopsEnvFileResourceDTO> beforeSync = new HashSet<>();
-        Set<DevopsEnvFileResourceDTO> beforeSyncDelete = new HashSet<>();
+        final List<String> operationFiles = new ArrayList<>();
+        final List<String> deletedFiles = new ArrayList<>();
+        final Set<DevopsEnvFileResourceDTO> beforeSync = new HashSet<>();
+        final Set<DevopsEnvFileResourceDTO> beforeSyncDelete = new HashSet<>();
         //根据token查出环境
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.queryByTokenWithClusterCode(pushWebHookVO.getToken());
@@ -600,7 +597,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             devopsEnvironmentService.baseUpdateDevopsSyncEnvCommit(devopsEnvironmentDTO);
             //向agent发送同步指令
             agentCommandService.sendCommand(devopsEnvironmentDTO);
-            LOGGER.info("发送gitops同步成功指令成功");
+            LOGGER.info("发送GitOps同步成功指令成功");
         } catch (CommonException e) {
             String filePath = "";
             String errorCode = "";
