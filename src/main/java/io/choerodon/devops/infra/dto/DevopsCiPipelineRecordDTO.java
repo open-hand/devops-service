@@ -13,7 +13,6 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
- *
  * @author wanghao
  * @Date 2020/4/2 17:04
  */
@@ -21,6 +20,17 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 @Table(name = "devops_ci_pipeline_record")
 public class DevopsCiPipelineRecordDTO extends AuditDomain {
+    public static final String FIELD_ID = "id";
+    public static final String FIELD_GITLAB_PIPELINE_ID = "gitlab_pipeline_id";
+    public static final String FIELD_CI_PIPELINE_ID = "ci_pipeline_id";
+    public static final String FIELD_GITLAB_PROJECT_ID = "gitlab_project_id";
+    public static final String FIELD_COMMIT_SHA = "commit_sha";
+    public static final String FIELD_GITLAB_TRIGGER_REF = "gitlab_trigger_ref";
+    public static final String FIELD_STATUS = "status";
+    public static final String FIELD_TRIGGER_USER_ID = "trigger_user_id";
+    public static final String FIELD_CREATED_DATE = "created_date";
+    public static final String FIELD_FINISHED_DATE = "finished_date";
+    public static final String FIELD_DURATION_SECONDS = "duration_seconds";
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
