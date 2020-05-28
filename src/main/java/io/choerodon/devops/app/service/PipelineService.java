@@ -49,6 +49,8 @@ public interface PipelineService {
 
     void checkName(Long projectId, String name);
 
+    boolean isNameUnique(Long projectId, String name);
+
     List<PipelineVO> listPipelineDTO(Long projectId);
 
     void updateStatus(Long pipelineRecordId, Long stageRecordId, String status, String errorInfo);

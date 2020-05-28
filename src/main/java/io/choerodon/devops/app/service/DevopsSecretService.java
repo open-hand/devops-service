@@ -60,7 +60,7 @@ public interface DevopsSecretService {
      * 分页查询secret
      *
      * @param envId        环境id
-     * @param pageable  分页参数
+     * @param pageable     分页参数
      * @param params       查询参数
      * @param appServiceId 服务id
      * @param toDecode     是否解码值
@@ -78,12 +78,22 @@ public interface DevopsSecretService {
     SecretRespVO querySecret(Long secretId, boolean toDecode);
 
     /**
-     * 校验名字唯一性
+     * 校验名字合法性
      *
      * @param envId 环境id
      * @param name  密钥名
+     * @return true表示通过
      */
-    void checkName(Long envId, String name);
+    boolean checkName(Long envId, String name);
+
+    /**
+     * 判断名字唯一性
+     *
+     * @param envId 环境id
+     * @param name  密钥名
+     * @return true表示通过
+     */
+    boolean isNameUnique(Long envId, String name);
 
     SecretReqVO dtoToReqVo(DevopsSecretDTO devopsSecretDTO);
 

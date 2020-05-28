@@ -32,7 +32,7 @@ import io.choerodon.swagger.annotation.Permission;
 public class AppServiceController {
 
     private static final String ERROR_APPLICATION_GET = "error.app.service.get";
-    private AppServiceService applicationServiceService;
+    private final AppServiceService applicationServiceService;
 
     public AppServiceController(AppServiceService applicationServiceService) {
         this.applicationServiceService = applicationServiceService;
@@ -329,12 +329,12 @@ public class AppServiceController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建服务时校验名称是否存在")
     @GetMapping(value = "/check_name")
-    public void checkName(
+    public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境名", required = true)
             @RequestParam String name) {
-        applicationServiceService.checkName(projectId, name);
+        return ResponseEntity.ok(applicationServiceService.isNameUnique(projectId, name));
     }
 
     /**
@@ -346,12 +346,12 @@ public class AppServiceController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建服务时校验编码是否存在")
     @GetMapping(value = "/check_code")
-    public void checkCode(
+    public ResponseEntity<Boolean> checkCode(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务编码", required = true)
             @RequestParam String code) {
-        applicationServiceService.checkCode(projectId, code);
+        return ResponseEntity.ok(applicationServiceService.isCodeUnique(projectId, code));
     }
 
     /**

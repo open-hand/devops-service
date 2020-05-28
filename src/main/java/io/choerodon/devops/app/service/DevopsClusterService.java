@@ -45,23 +45,25 @@ public interface DevopsClusterService {
     void updateCluster(Long clusterId, DevopsClusterUpdateVO devopsClusterUpdateVO);
 
     /**
-     * 校验集群名唯一性
+     * 判断集群名唯一性
      *
      * @param projectId 项目id
      * @param name      集群名称
+     * @return true表示是
      */
-    void checkName(Long projectId, String name);
+    boolean isNameUnique(Long projectId, String name);
 
 
     String queryShell(Long clusterId);
 
     /**
-     * 校验集群编码唯一性
+     * 判断集群编码唯一性
      *
      * @param projectId 项目id
      * @param code      集群code
+     * @return true表示唯一
      */
-    void checkCode(Long projectId, String code);
+    boolean isCodeUnique(Long projectId, String code);
 
 
     /**
@@ -166,10 +168,6 @@ public interface DevopsClusterService {
 
     DevopsClusterDTO baseCreateCluster(DevopsClusterDTO devopsClusterDTO);
 
-    void baseCheckName(DevopsClusterDTO devopsClusterDTO);
-
-    void baseCheckCode(DevopsClusterDTO devopsClusterDTO);
-
     List<DevopsClusterDTO> baseListByProjectId(Long projectId, Long organizationId);
 
     DevopsClusterDTO baseQuery(Long clusterId);
@@ -212,6 +210,7 @@ public interface DevopsClusterService {
 
     /**
      * 检查是否还能创建集群
+     *
      * @param projectId
      * @return
      */

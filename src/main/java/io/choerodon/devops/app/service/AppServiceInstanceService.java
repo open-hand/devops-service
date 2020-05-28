@@ -169,6 +169,15 @@ public interface AppServiceInstanceService {
     void checkName(String instanceName, Long envId);
 
     /**
+     * 判断实例名唯一性
+     *
+     * @param instanceName 实例名
+     * @param envId        环境Id
+     * @return true表示通过
+     */
+    boolean isNameValid(String instanceName, Long envId);
+
+    /**
      * @param versionValue
      * @param deployValue
      * @return

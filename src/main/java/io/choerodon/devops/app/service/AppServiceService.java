@@ -180,6 +180,24 @@ public interface AppServiceService {
     void checkCode(Long projectId, String code);
 
     /**
+     * 创建服务判断名称是否存在
+     *
+     * @param projectId 项目Id
+     * @param name      服务name
+     * @return true表示通过
+     */
+    boolean isNameUnique(Long projectId, String name);
+
+    /**
+     * 创建服务判断编码是否存在
+     *
+     * @param projectId 项目id
+     * @param code      服务code
+     * @return true表示通过
+     */
+    boolean isCodeUnique(Long projectId, String code);
+
+    /**
      * 批量校验应用服务code和name
      *
      * @param projectId

@@ -81,7 +81,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
     private static final String NAMESPACE = "namespace";
-    private static Gson gson = new Gson();
+    private static final Gson gson = new Gson();
 
     @Value("${services.helm.url}")
     private String helmUrl;
@@ -1015,6 +1015,14 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         checkNameInternal(code, envId, false);
     }
 
+    @Override
+    public boolean isNameValid(String code, Long envId) {
+        // 这里校验集群下code唯一而不是环境下code唯一是因为helm的release是需要集群下唯一的
+        return AppServiceInstanceValidator.isNameValid(code)
+                && !appServiceInstanceMapper.checkCodeExist(code, envId)
+                && !pipelineAppDeployService.doesInstanceNameExistInPipeline(code, envId);
+    }
+
     /**
      * 校验实例名称格式是否符合，且是否重名
      *
@@ -1031,7 +1039,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         if (!isFromPipeline) {
-            pipelineAppDeployService.baseCheckName(code, envId);
+            pipelineAppDeployService.baseCheckInstanceNameInPipeline(code, envId);
         }
     }
 

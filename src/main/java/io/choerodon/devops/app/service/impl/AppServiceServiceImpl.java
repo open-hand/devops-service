@@ -123,8 +123,8 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Autowired
     DevopsSagaHandler devopsSagaHandler;
-    private Gson gson = new Gson();
-    private JSON json = new JSON();
+    private final Gson gson = new Gson();
+    private final JSON json = new JSON();
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
     @Value("${services.gitlab.sshUrl}")
@@ -612,22 +612,32 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public void checkName(Long projectId, String name) {
-        AppServiceDTO appServiceDTO = new AppServiceDTO();
-        appServiceDTO.setProjectId(projectId);
-        appServiceDTO.setName(name);
-        if (appServiceMapper.selectOne(appServiceDTO) != null) {
+        if (isNameUnique(projectId, name)) {
             throw new CommonException("error.name.exist");
         }
     }
 
     @Override
     public void checkCode(Long projectId, String code) {
+        if (!isCodeUnique(projectId, code)) {
+            throw new CommonException("error.code.exist");
+        }
+    }
+
+    @Override
+    public boolean isCodeUnique(Long projectId, String code) {
         AppServiceDTO appServiceDTO = new AppServiceDTO();
         appServiceDTO.setProjectId(projectId);
         appServiceDTO.setCode(code);
-        if (appServiceMapper.selectOne(appServiceDTO) != null) {
-            throw new CommonException("error.code.exist");
-        }
+        return appServiceMapper.selectCount(appServiceDTO) == 0;
+    }
+
+    @Override
+    public boolean isNameUnique(Long projectId, String name) {
+        AppServiceDTO appServiceDTO = new AppServiceDTO();
+        appServiceDTO.setProjectId(projectId);
+        appServiceDTO.setName(name);
+        return appServiceMapper.selectCount(appServiceDTO) == 0;
     }
 
     @Override

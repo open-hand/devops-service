@@ -15,15 +15,19 @@ public class DevopsSecretValidator {
     // secret name
     private static final String NAME_PATTERN = "[a-z]([-a-z0-9]*[a-z0-9])?";
     // secret key name
-    private static final String KEY_NAME_PATTERN = "/[^0-9A-Za-z\\.\\-\\_]/";
+    private static final String KEY_NAME_PATTERN = "/[^0-9A-Za-z.\\-_]/";
 
     private DevopsSecretValidator() {
     }
 
     public static void checkName(String name) {
-        if (!Pattern.matches(NAME_PATTERN, name)) {
+        if (!isNameValid(name)) {
             throw new CommonException("error.secret.name.notMatch");
         }
+    }
+
+    public static boolean isNameValid(String name) {
+        return Pattern.matches(NAME_PATTERN, name);
     }
 
     // 此处的正则是反向筛选的，如果匹配正则，表示是非法的keyname

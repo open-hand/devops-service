@@ -125,9 +125,18 @@ public interface DevopsEnvironmentService {
      * 创建环境校验编码是否存在
      *
      * @param projectId 项目ID
-     * @param code      应用code
+     * @param code      环境code
      */
     void checkCode(Long projectId, Long clusterId, String code);
+
+    /**
+     * 判断环境校验编码是否合法
+     *
+     * @param projectId 项目ID
+     * @param clusterId 集群id
+     * @param code      环境code
+     */
+    boolean isCodeValid(Long projectId, Long clusterId, String code);
 
     /**
      * 项目下查询有正在运行实例的环境
@@ -282,7 +291,7 @@ public interface DevopsEnvironmentService {
 
     DevopsEnvironmentDTO baseUpdate(DevopsEnvironmentDTO devopsEnvironmentDTO);
 
-    void baseCheckCode(DevopsEnvironmentDTO devopsEnvironmentDTO);
+    void baseCheckCode(Long projectId, Long clusterId, String code);
 
     List<DevopsEnvironmentDTO> baseListByProjectId(Long projectId);
 

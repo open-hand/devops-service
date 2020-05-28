@@ -615,14 +615,14 @@ public class AppServiceInstanceController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验实例名唯一性")
     @GetMapping(value = "/check_name")
-    public void checkName(
+    public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @RequestParam(value = "instance_name") String instanceName,
             @ApiParam(value = "环境ID", required = true)
             @RequestParam(value = "env_id") Long envId) {
-        appServiceInstanceService.checkName(instanceName, envId);
+        return ResponseEntity.ok(appServiceInstanceService.isNameValid(instanceName, envId));
     }
 
 

@@ -244,14 +244,14 @@ public class DevopsEnvironmentController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建环境校验编码是否存在")
     @GetMapping(value = "/check_code")
-    public void checkCode(
+    public ResponseEntity<Boolean> checkCode(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群Id", required = true)
             @RequestParam(value = "cluster_id") Long clusterId,
             @ApiParam(value = "环境编码", required = true)
             @RequestParam(value = "code") String code) {
-        devopsEnvironmentService.checkCode(projectId, clusterId, code);
+        return ResponseEntity.ok(devopsEnvironmentService.isCodeValid(projectId, clusterId, code));
     }
 
     /**

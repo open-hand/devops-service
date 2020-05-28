@@ -90,12 +90,12 @@ public class ProjectCertificationController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验证书名唯一性")
     @GetMapping(value = "/check_name")
-    public void checkName(
+    public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书name", required = true)
             @RequestParam String name) {
-        devopsProjectCertificationService.checkName(projectId, name);
+        return ResponseEntity.ok(devopsProjectCertificationService.isNameUnique(projectId, name));
     }
 
 

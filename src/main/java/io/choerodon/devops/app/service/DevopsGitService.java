@@ -72,7 +72,7 @@ public interface DevopsGitService {
      *
      * @param projectId    项目 ID
      * @param appServiceId 应用服务ID
-     * @param pageable  分页参数
+     * @param pageable     分页参数
      * @param params       search param
      * @return Page
      */
@@ -113,6 +113,16 @@ public interface DevopsGitService {
      * @param branchName    分支名
      */
     void checkBranchName(Long projectId, Long applicationId, String branchName);
+
+    /**
+     * 判断分支名唯一性
+     *
+     * @param projectId     项目id
+     * @param applicationId 应用id
+     * @param branchName    分支名
+     * @return true表示通过
+     */
+    Boolean isBranchNameUnique(Long projectId, Long applicationId, String branchName);
 
     /**
      * 查看所有合并请求

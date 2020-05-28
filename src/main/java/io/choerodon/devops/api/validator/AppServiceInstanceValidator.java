@@ -42,9 +42,13 @@ public class AppServiceInstanceValidator {
 
 
     public static void checkName(String name) {
-        if (!Pattern.matches(NAME_PATTERN, name)) {
+        if (!isNameValid(name)) {
             throw new CommonException("error.app.instance.name.notMatch");
         }
+    }
+
+    public static boolean isNameValid(String name) {
+        return Pattern.matches(NAME_PATTERN, name);
     }
 
     /**

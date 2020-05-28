@@ -88,7 +88,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     @Autowired
     DevopsPrometheusMapper devopsPrometheusMapper;
 
-    private Gson gson = new Gson();
+    private final Gson gson = new Gson();
 
     @Override
     public Page<DevopsPvDTO> basePagePvByOptions(Long projectId, PageRequest pageable, String params) {
@@ -262,18 +262,11 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     }
 
     @Override
-    public void checkName(Long clusterId, String pvName) {
+    public boolean isNameUnique(Long clusterId, String pvName) {
         DevopsPvDTO devopsPvDTO = new DevopsPvDTO();
         devopsPvDTO.setClusterId(clusterId);
         devopsPvDTO.setName(pvName);
-        baseCheckPv(devopsPvDTO);
-    }
-
-    @Override
-    public void baseCheckPv(DevopsPvDTO devopsPvDTO) {
-        if (devopsPvMapper.selectOne(devopsPvDTO) != null) {
-            throw new CommonException("error.pv.name.exists");
-        }
+        return devopsPvMapper.selectCount(devopsPvDTO) == 0;
     }
 
     @Override
@@ -607,7 +600,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         int level = ResourceUnitLevelEnum.valueOf(unit.toUpperCase()).ordinal();
 
         // 1024的一次方 对应ki 1024的2次方 对应Mi 以此类推
-        size = (long) (size * Math.pow((double) 1024, (double) level + 2));
+        size = (long) (size * Math.pow(1024, (double) level + 2));
 
         return new BigDecimal(size);
     }

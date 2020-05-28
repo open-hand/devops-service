@@ -118,12 +118,12 @@ public class DevopsClusterController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验集群名唯一性")
     @GetMapping(value = "/check_name")
-    public void checkName(
+    public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群name", required = true)
             @RequestParam String name) {
-        devopsClusterService.checkName(projectId, name);
+        return ResponseEntity.ok(devopsClusterService.isNameUnique(projectId, name));
     }
 
     /**
@@ -135,12 +135,12 @@ public class DevopsClusterController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验集群code唯一性")
     @GetMapping(value = "/check_code")
-    public void checkCode(
+    public ResponseEntity<Boolean> checkCode(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群code", required = true)
             @RequestParam String code) {
-        devopsClusterService.checkCode(projectId, code);
+        return ResponseEntity.ok(devopsClusterService.isCodeUnique(projectId, code));
     }
 
     /**

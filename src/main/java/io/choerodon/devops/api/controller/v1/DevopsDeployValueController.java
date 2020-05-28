@@ -154,17 +154,14 @@ public class DevopsDeployValueController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验部署配置的名称在环境下唯一")
     @GetMapping("/check_name")
-    public ResponseEntity checkName(
+    public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "名称", required = true)
             @RequestParam(value = "name") String name,
             @ApiParam(value = "环境id", required = true)
-            @RequestParam(value = "env_id") Long envId,
-            @ApiParam(value = "配置id")
-            @RequestParam(value = "deploy_value_id", required = false) Long deployValueId) {
-        devopsDeployValueService.checkName(projectId, name, deployValueId, envId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+            @RequestParam(value = "env_id") Long envId) {
+        return ResponseEntity.ok(devopsDeployValueService.isNameUnique(projectId, name, envId));
     }
 
     /**

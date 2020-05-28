@@ -69,15 +69,14 @@ public class DevopsPvController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验pv的名称是否满足所选集群下唯一")
     @GetMapping("check_name")
-    public ResponseEntity checkPvName(
+    public ResponseEntity<Boolean> checkPvName(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群Id", required = true)
             @RequestParam Long clusterId,
             @ApiParam(value = "pv名称", required = true)
             @RequestParam String pvName) {
-        devopsPvService.checkName(clusterId, pvName);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.ok(devopsPvService.isNameUnique(clusterId, pvName));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})

@@ -279,23 +279,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentReqVO.getClusterId());
     }
 
-    /**
-     * 判断是否还能创建环境
-     * @param clusterId
-     * @param projectId
-     */
-    private void checkEnableCreate(Long projectId, Long clusterId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        if (baseServiceClientOperator.checkOrganizationIsRegistered(projectDTO.getOrganizationId())) {
-            ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit();
-            DevopsEnvironmentDTO example = new DevopsEnvironmentDTO();
-            example.setClusterId(clusterId);
-            int num = devopsEnvironmentMapper.selectCount(example);
-            if (num >= resourceLimitVO.getEnvMaxNumber()) {
-                throw new CommonException(ERROR_CLUSTER_ENV_NUM_MAX);
-            }
-        }
-
+    private static boolean isCodePatternValid(String code) {
+        return CODE.matcher(code).matches();
     }
 
     @Override
@@ -779,28 +764,54 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return false;
     }
 
+    /**
+     * 判断是否还能创建环境
+     *
+     * @param clusterId
+     * @param projectId
+     */
+    private void checkEnableCreate(Long projectId, Long clusterId) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        if (baseServiceClientOperator.checkOrganizationIsRegistered(projectDTO.getOrganizationId())) {
+            ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit();
+            DevopsEnvironmentDTO example = new DevopsEnvironmentDTO();
+            example.setClusterId(clusterId);
+            int num = devopsEnvironmentMapper.selectCount(example);
+            if (num >= resourceLimitVO.getEnvMaxNumber()) {
+                throw new CommonException(ERROR_CLUSTER_ENV_NUM_MAX);
+            }
+        }
+
+    }
+
     @Override
     public void checkCode(Long projectId, Long clusterId, String code) {
-        if (!CODE.matcher(code).matches()) {
+        if (!isCodePatternValid(code)) {
             throw new CommonException("error.env.code.notMatch");
         }
-        DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
+        if (doesNamespaceExistInCluster(clusterId, code)) {
+            throw new CommonException(ERROR_CODE_EXIST);
+        }
+        baseCheckCode(projectId, clusterId, code);
+    }
+
+    private boolean doesNamespaceExistInCluster(Long clusterId, String code) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         // 考虑创建环境时,集群已删除的情况
         if (devopsClusterDTO == null) {
             throw new CommonException("error.cluster.not.exist", clusterId);
         }
-        devopsEnvironmentDTO.setProjectId(projectId);
-        devopsEnvironmentDTO.setClusterId(clusterId);
-        devopsEnvironmentDTO.setCode(code);
         if (devopsClusterDTO.getNamespaces() != null) {
-            JSONArray.parseArray(devopsClusterDTO.getNamespaces(), String.class).forEach(namespace -> {
-                if (namespace.equals(code)) {
-                    throw new CommonException(ERROR_CODE_EXIST);
-                }
-            });
+            return JSONArray.parseArray(devopsClusterDTO.getNamespaces(), String.class).stream().anyMatch(namespace -> namespace.equals(code));
         }
-        baseCheckCode(devopsEnvironmentDTO);
+        return false;
+    }
+
+    @Override
+    public boolean isCodeValid(Long projectId, Long clusterId, String code) {
+        return isCodePatternValid(code)
+                && !doesNamespaceExistInCluster(clusterId, code)
+                && isCodeUniqueInClusterAndProject(projectId, clusterId, code);
     }
 
     @Override
@@ -1266,11 +1277,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         } else {
             returnUserDTOList = iamUserDTOS.stream()
                     .peek(e -> {
-                        if (!allProjectOwners.contains(e)) {
-                            e.setProjectOwner(false);
-                        } else {
-                            e.setProjectOwner(true);
-                        }
+                        e.setProjectOwner(allProjectOwners.contains(e));
                     }).collect(Collectors.toList());
         }
         List<UserVO> iamUserVOS = ConvertUtils.convertList(returnUserDTOList, UserVO.class);
@@ -1281,11 +1288,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                                Boolean isProjectOwner) {
         if (devopsEnvironmentDTO.getSkipCheckPermission()) {
             devopsEnvironmentDTO.setPermission(true);
-        } else if (permissionEnvIds.contains(devopsEnvironmentDTO.getId()) || isProjectOwner) {
-            devopsEnvironmentDTO.setPermission(true);
-        } else {
-            devopsEnvironmentDTO.setPermission(false);
-        }
+        } else
+            devopsEnvironmentDTO.setPermission(permissionEnvIds.contains(devopsEnvironmentDTO.getId()) || isProjectOwner);
     }
 
     @Saga(code = SagaTopicCodeConstants.DEVOPS_DELETE_ENV,
@@ -1656,23 +1660,26 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     /**
      * 校验了集群下code唯一和校验了项目下code唯一
-     *
-     * @param devopsEnvironmentDTO 带有 clusterId, code, projectId的对象
      */
     @Override
-    public void baseCheckCode(DevopsEnvironmentDTO devopsEnvironmentDTO) {
+    public void baseCheckCode(Long projectId, Long clusterId, String code) {
+        if (!isCodeUniqueInClusterAndProject(projectId, clusterId, code)) {
+            throw new CommonException(ERROR_CODE_EXIST);
+        }
+    }
+
+    private boolean isCodeUniqueInClusterAndProject(Long projectId, Long clusterId, String code) {
         DevopsEnvironmentDTO environmentDTO = new DevopsEnvironmentDTO();
-        environmentDTO.setClusterId(devopsEnvironmentDTO.getClusterId());
-        environmentDTO.setCode(devopsEnvironmentDTO.getCode());
-        if (!devopsEnvironmentMapper.select(environmentDTO).isEmpty()) {
-            throw new CommonException(ERROR_CODE_EXIST);
+        environmentDTO.setClusterId(Objects.requireNonNull(clusterId));
+        environmentDTO.setCode(Objects.requireNonNull(code));
+        if (devopsEnvironmentMapper.selectCount(environmentDTO) != 0) {
+            return false;
         }
+
         environmentDTO.setClusterId(null);
-        environmentDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
+        environmentDTO.setProjectId(Objects.requireNonNull(projectId));
         environmentDTO.setType(EnvironmentType.USER.getValue());
-        if (!devopsEnvironmentMapper.select(environmentDTO).isEmpty()) {
-            throw new CommonException(ERROR_CODE_EXIST);
-        }
+        return devopsEnvironmentMapper.selectCount(environmentDTO) == 0;
     }
 
     @Override

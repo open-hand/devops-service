@@ -61,7 +61,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private String agentRepoUrl;
     @Value("${choerodon.organization.resourceLimit.clusterMaxNumber:10}")
     private Integer clusterMaxNumber;
-    private Gson gson = new Gson();
+    private final Gson gson = new Gson();
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
@@ -200,11 +200,11 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public void checkName(Long projectId, String name) {
+    public boolean isNameUnique(Long projectId, String name) {
         DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
-        devopsClusterDTO.setProjectId(projectId);
-        devopsClusterDTO.setName(name);
-        baseCheckName(devopsClusterDTO);
+        devopsClusterDTO.setProjectId(Objects.requireNonNull(projectId));
+        devopsClusterDTO.setName(Objects.requireNonNull(name));
+        return devopsClusterMapper.selectCount(devopsClusterDTO) == 0;
     }
 
     @Override
@@ -228,12 +228,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public void checkCode(Long projectId, String code) {
+    public boolean isCodeUnique(Long projectId, String code) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
         devopsClusterDTO.setOrganizationId(projectDTO.getOrganizationId());
         devopsClusterDTO.setCode(code);
-        baseCheckCode(devopsClusterDTO);
+        return devopsClusterMapper.selectCount(devopsClusterDTO) == 0;
     }
 
     @Override
@@ -562,20 +562,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             throw new CommonException("error.devops.cluster.insert");
         }
         return devopsClusterDTO;
-    }
-
-    @Override
-    public void baseCheckName(DevopsClusterDTO devopsClusterDTO) {
-        if (devopsClusterMapper.selectOne(devopsClusterDTO) != null) {
-            throw new CommonException("error.cluster.name.exist");
-        }
-    }
-
-    @Override
-    public void baseCheckCode(DevopsClusterDTO devopsClusterDTO) {
-        if (devopsClusterMapper.selectOne(devopsClusterDTO) != null) {
-            throw new CommonException("error.cluster.code.exist");
-        }
     }
 
     @Override

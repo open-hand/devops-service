@@ -3,14 +3,14 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.PipelineAppServiceDeployDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.PipelineAppDeployService;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.PipelineAppServiceDeployDTO;
 import io.choerodon.devops.infra.mapper.PipelineAppServiceDeployMapper;
 
 /**
@@ -60,12 +60,16 @@ public class PipelineAppDeployServiceImpl implements PipelineAppDeployService {
     }
 
     @Override
-    public void baseCheckName(String name, Long envId) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-        List<Long> envIds = devopsEnvironmentService.baseListUserEnvByClusterId(devopsEnvironmentDTO.getClusterId()).stream().map(DevopsEnvironmentDTO::getId).collect(Collectors.toList());
-        if(appDeployMapper.checkNameExist(name,envIds)) {
+    public void baseCheckInstanceNameInPipeline(String name, Long envId) {
+        if (doesInstanceNameExistInPipeline(name, envId)) {
             throw new CommonException("error.app.instance.name.already.exist");
         }
+    }
+
+    public boolean doesInstanceNameExistInPipeline(String name, Long envId) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        List<Long> envIds = devopsEnvironmentService.baseListUserEnvByClusterId(devopsEnvironmentDTO.getClusterId()).stream().map(DevopsEnvironmentDTO::getId).collect(Collectors.toList());
+        return appDeployMapper.checkNameExist(name, envIds);
     }
 
     @Override

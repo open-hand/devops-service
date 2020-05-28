@@ -55,12 +55,21 @@ public interface DevopsDeployValueService {
     /**
      * 校验部署配置的名称在环境下唯一
      *
-     * @param projectId     项目id
-     * @param name          待校验的名称
-     * @param deployValueId 部署配置id, 用于在更新部署配置时的校验排除自身
-     * @param envId         环境id
+     * @param projectId 项目id
+     * @param name      待校验的名称
+     * @param envId     环境id
      */
-    void checkName(Long projectId, String name, Long deployValueId, Long envId);
+    void checkName(Long projectId, String name, Long envId);
+
+    /**
+     * 判断部署配置的名称在环境下唯一
+     *
+     * @param projectId 项目id
+     * @param name      待校验的名称
+     * @param envId     环境id
+     * @return true表示唯一, 通过
+     */
+    boolean isNameUnique(Long projectId, String name, Long envId);
 
     /**
      * 根据应用服务Id和环境Id获取配置

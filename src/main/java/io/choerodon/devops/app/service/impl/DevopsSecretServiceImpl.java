@@ -54,7 +54,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private static final String DOCKER_CONFIG_JSON = ".dockerconfigjson";
     private static final String MASTER = "master";
 
-    private Gson gson = new Gson();
+    private final Gson gson = new Gson();
 
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
@@ -433,9 +433,16 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
     @Override
-    public void checkName(Long envId, String name) {
-        DevopsSecretValidator.checkName(name);
-        baseCheckName(name, envId);
+    public boolean checkName(Long envId, String name) {
+        return DevopsSecretValidator.isNameValid(name) && isNameUnique(envId, name);
+    }
+
+    @Override
+    public boolean isNameUnique(Long envId, String name) {
+        DevopsSecretDTO devopsSecretDTO = new DevopsSecretDTO();
+        devopsSecretDTO.setName(name);
+        devopsSecretDTO.setEnvId(envId);
+        return devopsSecretMapper.selectCount(devopsSecretDTO) == 0;
     }
 
     @Override
@@ -465,10 +472,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
     @Override
     public void baseCheckName(String name, Long envId) {
-        DevopsSecretDTO devopsSecretDTO = new DevopsSecretDTO();
-        devopsSecretDTO.setName(name);
-        devopsSecretDTO.setEnvId(envId);
-        if (devopsSecretMapper.selectOne(devopsSecretDTO) != null) {
+        if (!isNameUnique(envId, name)) {
             throw new CommonException("error.secret.name.already.exists");
         }
     }
