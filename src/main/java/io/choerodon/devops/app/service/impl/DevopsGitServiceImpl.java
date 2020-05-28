@@ -651,7 +651,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listBranch(applicationDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         Optional<BranchDTO> branchEOptional = branchDTOS
                 .stream().filter(e -> branchName.equals(e.getName())).findFirst();
-        return branchEOptional.isPresent();
+        return !branchEOptional.isPresent();
     }
 
     private void handleFiles(List<String> operationFiles, List<String> deletedFiles,
