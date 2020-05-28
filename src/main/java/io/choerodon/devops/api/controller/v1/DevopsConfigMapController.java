@@ -107,14 +107,14 @@ public class DevopsConfigMapController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验配置映射名唯一性")
     @GetMapping(value = "/check_name")
-    public void checkName(
+    public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境ID", required = true)
             @RequestParam Long envId,
             @ApiParam(value = "实例ID", required = true)
             @RequestParam String name) {
-        devopsConfigMapService.checkName(envId, name);
+        return ResponseEntity.ok(devopsConfigMapService.isNameUnique(envId, name));
     }
 
 
@@ -145,7 +145,7 @@ public class DevopsConfigMapController {
      *
      * @param projectId    项目id
      * @param envId        环境id
-     * @param pageable  分页参数
+     * @param pageable     分页参数
      * @param searchParam  查询参数
      * @param appServiceId 应用id
      * @return Page of DevopsServiceVO
