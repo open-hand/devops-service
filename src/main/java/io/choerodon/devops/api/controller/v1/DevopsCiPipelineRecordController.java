@@ -11,6 +11,7 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
 import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
+import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -41,7 +42,7 @@ public class DevopsCiPipelineRecordController {
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "ci_pipeline_id") Long ciPipelineId,
             @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable) {
+            @SortDefault(value = DevopsCiPipelineRecordDTO.FIELD_GITLAB_PIPELINE_ID, direction = Sort.Direction.DESC) PageRequest pageable) {
         return ResponseEntity.ok(devopsCiPipelineRecordService.pagingPipelineRecord(projectId, ciPipelineId, pageable));
     }
 

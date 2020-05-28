@@ -155,7 +155,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 说明项目下还没有CI文件
             // 创建文件
             try {
-                LOGGER.info("initGitlabCiFile: create .gitlab-ci.yaml for gitlab project with id {}",gitlabProjectId );
+                LOGGER.info("initGitlabCiFile: create .gitlab-ci.yaml for gitlab project with id {}", gitlabProjectId);
                 gitlabServiceClientOperator.createFile(
                         gitlabProjectId,
                         GitOpsConstants.GITLAB_CI_FILE_NAME,
@@ -174,7 +174,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             String commentedLines = GitlabCiUtil.commentLines(originFileContent);
             try {
                 // 更新文件
-                LOGGER.info("initGitlabCiFile: update .gitlab-ci.yaml for gitlab project with id {}",gitlabProjectId );
+                LOGGER.info("initGitlabCiFile: update .gitlab-ci.yaml for gitlab project with id {}", gitlabProjectId);
                 gitlabServiceClientOperator.updateFile(
                         gitlabProjectId,
                         GitOpsConstants.GITLAB_CI_FILE_NAME,
@@ -272,7 +272,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             throw new CommonException(ERROR_PROJECT_ID_IS_NULL);
         }
         List<DevopsCiPipelineVO> devopsCiPipelineVOS = devopsCiPipelineMapper.queryByProjectIdAndName(projectId, name);
-        PageRequest pageable = new PageRequest(GitOpsConstants.FIRST_PAGE_INDEX, DEFAULT_PIPELINE_RECORD_SIZE, new Sort(new Sort.Order(Sort.Direction.DESC, "id")));
+        PageRequest pageable = new PageRequest(GitOpsConstants.FIRST_PAGE_INDEX, DEFAULT_PIPELINE_RECORD_SIZE, new Sort(new Sort.Order(Sort.Direction.DESC, DevopsCiPipelineRecordDTO.FIELD_GITLAB_PIPELINE_ID)));
 
         devopsCiPipelineVOS.forEach(devopsCiPipelineVO -> {
             Page<DevopsCiPipelineRecordVO> pipelineRecordVOPageInfo = devopsCiPipelineRecordService.pagingPipelineRecord(projectId, devopsCiPipelineVO.getId(), pageable);
@@ -378,7 +378,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(gitlabProjectId, GitOpsConstants.MASTER, GitOpsConstants.GITLAB_CI_FILE_NAME);
         if (repositoryFile != null) {
             try {
-                LOGGER.info("deleteGitlabCiFile: delete .gitlab-ci.yaml for gitlab project with id {}",gitlabProjectId );
+                LOGGER.info("deleteGitlabCiFile: delete .gitlab-ci.yaml for gitlab project with id {}", gitlabProjectId);
                 gitlabServiceClientOperator.deleteFile(
                         gitlabProjectId,
                         GitOpsConstants.GITLAB_CI_FILE_NAME,
