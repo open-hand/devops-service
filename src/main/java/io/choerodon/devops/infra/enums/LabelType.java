@@ -1,9 +1,12 @@
 package io.choerodon.devops.infra.enums;
 
+/**
+ * 参考 io.choerodon.iam.infra.enums.RoleLabelEnum (在iam项目中)
+ */
 public enum LabelType {
-    GITLAB_PROJECT_OWNER("project.gitlab.owner"),
-    GITLAB_PROJECT_DEVELOPER("project.gitlab.developer"),
-    ORGANIZATION_GITLAB_OWNER("organization.gitlab.owner");
+    TENANT_ADMIN("TENANT_ADMIN"),
+    GITLAB_PROJECT_OWNER("GITLAB_OWNER"),
+    GITLAB_PROJECT_DEVELOPER("GITLAB_DEVELOPER");
 
     private String value;
 
@@ -13,5 +16,14 @@ public enum LabelType {
 
     public String getValue() {
         return value;
+    }
+
+    public static LabelType forValue(String value) {
+        for (int i = 0; i < values().length; i++) {
+            if (values()[i].getValue().equals(value)) {
+                return values()[i];
+            }
+        }
+        return null;
     }
 }

@@ -3,14 +3,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>devops-service</artifactId>
-    <version>0.8.0.RELEASE</version>
+    <version>0.22.0-SNAPSHOT</version>
     <packaging>jar</packaging>
+    <url>https://github.com/choerodon/devops-service</url>
 
     <!--加parent-->
     <parent>
         <groupId>io.choerodon</groupId>
         <artifactId>choerodon-framework-parent</artifactId>
-        <version>0.14.0.RELEASE</version>
+        <version>0.16.2-SNAPSHOT</version>
     </parent>
 
 
@@ -19,75 +20,71 @@
         <powermock.version>2.0.0-beta.5</powermock.version>
         <choerodon.serviceBuild>true</choerodon.serviceBuild>
         <choerodon.mainClass>io.choerodon.devops.DevopsServiceApplication</choerodon.mainClass>
+        <choerodon.starter.version>0.16.2-SNAPSHOT</choerodon.starter.version>
     </properties>
 
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>Choerodon Release</id>
-            <name>Choerodon Release Repository</name>
-            <url>https://nexus.choerodon.com.cn/repository/choerodon-release</url>
-        </pluginRepository>
-    </pluginRepositories>
-
-
     <dependencies>
+        <dependency>
+            <groupId>org.hzero.boot</groupId>
+            <artifactId>hzero-boot-message</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hzero.boot</groupId>
+            <artifactId>hzero-boot-file</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.choerodon</groupId>
+            <artifactId>choerodon-starter-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.23</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
         <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-oauth-resource</artifactId>
+            <groupId>org.hzero.starter</groupId>
+            <artifactId>hzero-starter-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-swagger</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-mybatis</artifactId>
+            <groupId>org.hzero.starter</groupId>
+            <artifactId>hzero-starter-mybatis-mapper</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-websocket</artifactId>
+            <groupId>org.hzero.starter</groupId>
+            <artifactId>hzero-starter-websocket</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-actuator</artifactId>
+            <groupId>org.hzero.starter</groupId>
+            <artifactId>hzero-starter-metric</artifactId>
+            <version>${hzero.starter.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-metric</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-webmvc</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-feign-replay</artifactId>
+            <groupId>org.hzero.starter</groupId>
+            <artifactId>hzero-starter-feign-replay</artifactId>
         </dependency>
 
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-liquibase</artifactId>
+            <version>0.16.1.RELEASE</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-asgard</artifactId>
+            <groupId>org.hzero.starter</groupId>
+            <artifactId>hzero-starter-asgard</artifactId>
+            <version>${hzero.starter.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -130,8 +127,18 @@
         </dependency>
 
         <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-commons</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
         <dependency>
@@ -200,11 +207,17 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.47</version>
+            <version>1.2.67</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.data</groupId>
+                    <artifactId>spring-data-commons</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -297,7 +310,7 @@
         </dependency>
 
     </dependencies>
-        <build>
+    <build>
         <finalName>app</finalName>
-        </build>
+    </build>
 </project>

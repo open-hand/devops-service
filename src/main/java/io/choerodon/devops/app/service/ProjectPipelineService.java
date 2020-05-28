@@ -22,4 +22,7 @@ public interface ProjectPipelineService {
      * @return Boolean
      */
     Boolean cancel(Long gitlabProjectId, Long pipelineId);
+
+
+    Boolean create(Long gitlabProjectId, String ref);
 }

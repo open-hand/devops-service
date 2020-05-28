@@ -300,8 +300,8 @@ const BuildTable = withRouter(observer((props) => {
   const tableChange = (pagination) => {
     const projectId = AppState.currentMenuType.id;
     const appId = ReportsStore.getAppId;
-    const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
-    const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
+    const startTime = ReportsStore.getStartTime.format('YYYY-MM-DD HH:mm:ss');
+    const endTime = ReportsStore.getEndTime.format('YYYY-MM-DD HH:mm:ss');
     ReportsStore.loadBuildTable(projectId, appId, startTime, endTime, pagination.current, pagination.pageSize);
   };
 

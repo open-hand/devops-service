@@ -1,4 +1,4 @@
-import React from 'react/index';
+import React from 'react';
 import { StoreProvider } from './stores';
 import Content from './Content';
 

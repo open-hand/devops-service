@@ -5,7 +5,9 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by n!Ck
@@ -13,10 +15,12 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Time: 19:51
  * Description:
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_certification")
-public class CertificationDTO extends BaseDTO {
+public class CertificationDTO extends AuditDomain {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long certificationFileId;
     /**

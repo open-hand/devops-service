@@ -23,13 +23,14 @@ import io.choerodon.devops.infra.dto.DevopsConfigMapDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.infra.util.GitOpsUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
 public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRelationsService<V1ConfigMap> {
 
-    public static final String CONFIG_MAP = "ConfigMap";
+    private static final String CONFIG_MAP = "ConfigMap";
     private static final String GIT_SUFFIX = "/.git";
     private Gson gson = new Gson();
 
@@ -61,14 +62,7 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
         //比较已存在configMap和新增要处理的configMap,获取新增configMap，更新configMap，删除configMap
         List<V1ConfigMap> addConfigMaps = new ArrayList<>();
         List<V1ConfigMap> updateConfigMaps = new ArrayList<>();
-        v1ConfigMaps.stream().forEach(configMap -> {
-            if (beforeConfigMaps.contains(configMap.getMetadata().getName())) {
-                updateConfigMaps.add(configMap);
-                beforeConfigMaps.remove(configMap.getMetadata().getName());
-            } else {
-                addConfigMaps.add(configMap);
-            }
-        });
+        GitOpsUtil.pickCUDResource(beforeConfigMaps, v1ConfigMaps, addConfigMaps, updateConfigMaps, configMap -> configMap.getMetadata().getName());
 
         //新增configMap
         addConfigMap(objectPath, envId, addConfigMaps, path, userId);
@@ -92,7 +86,7 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
 
 
     private void updateConfigMap(Map<String, String> objectPath, Long envId, List<V1ConfigMap> updateConfigMap, String path, Long userId) {
-        updateConfigMap.stream()
+        updateConfigMap
                 .forEach(configMap -> {
                     String filePath = "";
                     try {
@@ -103,7 +97,7 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
                         DevopsConfigMapVO devopsConfigMapVO = getDevospConfigMapDTO(
                                 configMap,
                                 envId, "update");
-                        Boolean isNotChange = devopsConfigMapVO.getValue().equals(gson.fromJson(devopsConfigMapService.baseQueryById(devopsConfigMapDTO.getId()).getValue(), Map.class));
+                        boolean isNotChange = devopsConfigMapVO.getValue().equals(gson.fromJson(devopsConfigMapService.baseQueryById(devopsConfigMapDTO.getId()).getValue(), Map.class));
                         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsConfigMapDTO.getCommandId());
                         devopsConfigMapVO.setId(devopsConfigMapDTO.getId());
                         if (!isNotChange) {
@@ -132,14 +126,14 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
     }
 
     private void addConfigMap(Map<String, String> objectPath, Long envId, List<V1ConfigMap> addConfigMap, String path, Long userId) {
-        addConfigMap.stream()
+        addConfigMap
                 .forEach(configMap -> {
                     String filePath = "";
                     try {
                         filePath = objectPath.get(TypeUtil.objToString(configMap.hashCode()));
                         DevopsConfigMapDTO devopsConfigMapDTO = devopsConfigMapService
                                 .baseQueryByEnvIdAndName(envId, configMap.getMetadata().getName());
-                        DevopsConfigMapVO devopsConfigMapVO = new DevopsConfigMapVO();
+                        DevopsConfigMapVO devopsConfigMapVO;
 
                         DevopsConfigMapRespVO devopsConfigMapRespVO = new DevopsConfigMapRespVO();
                         //初始化configMap参数,创建时判断configMap是否存在，存在则直接创建文件对象关联关系

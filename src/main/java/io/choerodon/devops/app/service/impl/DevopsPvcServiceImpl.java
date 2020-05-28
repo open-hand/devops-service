@@ -3,8 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.math.BigDecimal;
 import java.util.*;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.models.V1ObjectMeta;
@@ -15,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +21,7 @@ import org.springframework.util.StringUtils;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsPvcReqVO;
@@ -44,6 +42,8 @@ import io.choerodon.devops.infra.mapper.DevopsEnvFileResourceMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvcMapper;
 import io.choerodon.devops.infra.util.*;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
 public class DevopsPvcServiceImpl implements DevopsPvcService {
@@ -77,6 +77,9 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     private TransactionalProducer producer;
     @Autowired
     private DevopsEnvFileResourceMapper devopsEnvFileResourceMapper;
+    @Autowired
+    private SendNotificationService sendNotificationService;
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -182,16 +185,17 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
                     pvcId, ResourceType.PERSISTENT_VOLUME_CLAIM.getType(),
                     null, false, devopsEnvironmentDTO.getId(), path);
         }
+        //删除成功发送webhook josn
+        sendNotificationService.sendWhenPVCResource(devopsPvcDTO, devopsEnvironmentDTO, SendSettingEnum.DELETE_RESOURCE.value());
         return true;
     }
 
     @Override
-    public PageInfo<DevopsPvcRespVO> pageByOptions(Long projectId, Long envId, Pageable pageable, String params) {
+    public Page<DevopsPvcRespVO> pageByOptions(Long projectId, Long envId, PageRequest pageable, String params) {
         Map maps = gson.fromJson(params, Map.class);
-        return ConvertUtils.convertPage(PageHelper
-                .startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> devopsPvcMapper.listByOption(envId,
-                        TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(maps.get(TypeUtil.PARAMS)))), DevopsPvcRespVO.class);
+        return ConvertUtils.convertPage(PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> devopsPvcMapper.listByOption(envId,
+                TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                TypeUtil.cast(maps.get(TypeUtil.PARAMS)))), DevopsPvcRespVO.class);
 
     }
 
@@ -346,6 +350,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         persistentVolumeClaimPayload.setCreated(true);
         persistentVolumeClaimPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
         persistentVolumeClaimPayload.setV1PersistentVolumeClaim(v1PersistentVolumeClaim);
+        persistentVolumeClaimPayload.setType(devopsEnvCommandDTO.getCommandType());
 
         producer.apply(
                 StartSagaBuilder
@@ -375,6 +380,8 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
                     CommandType.CREATE.getType(), persistentVolumeClaimPayload.getGitlabUserId(), persistentVolumeClaimPayload.getDevopsPvcDTO().getId(),
                     ResourceType.PERSISTENT_VOLUME_CLAIM.getType(), null, false,
                     persistentVolumeClaimPayload.getDevopsPvcDTO().getEnvId(), path);
+            //创建PVC资源成功发送webhook json
+            sendNotificationService.sendWhenPVCResource(persistentVolumeClaimPayload.getDevopsPvcDTO(), persistentVolumeClaimPayload.getDevopsEnvironmentDTO(), SendSettingEnum.CREATE_RESOURCE.value());
         } catch (Exception e) {
             LOGGER.info("create or update PersistentVolumeClaim failed! {}", e.getMessage());
             //有异常更新实例以及command的状态
@@ -391,6 +398,8 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
                 devopsEnvCommandDTO.setError("create or update PVC failed!");
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
             }
+            //创建PVC资源失败，发送webhook json
+            sendNotificationService.sendWhenPVCResource(persistentVolumeClaimPayload.getDevopsPvcDTO(), persistentVolumeClaimPayload.getDevopsEnvironmentDTO(), SendSettingEnum.CREATE_RESOURCE_FAILED.value());
         }
     }
 
@@ -426,7 +435,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         int level = ResourceUnitLevelEnum.valueOf(unit.toUpperCase()).ordinal();
 
         // 1024的一次方 对应ki 1024的2次方 对应Mi 以此类推
-        size = (long) (size * Math.pow(1024, level + 2));
+        size = (long) (size * Math.pow((double) 1024, (double) level + 2));
 
         BigDecimal bigDecimal = new BigDecimal(size);
         Quantity quantity = new Quantity(bigDecimal, Quantity.Format.BINARY_SI);

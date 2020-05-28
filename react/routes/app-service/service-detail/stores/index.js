@@ -25,13 +25,10 @@ export const StoreProvider = injectIntl(inject('AppState')(
       match: { params: { id } },
       children,
     } = props;
-    const emptyDataSetConfig = { transport: { read: { method: 'get' } }, paging: false };
     const { appServiceStore, intlPrefix } = useAppTopStore();
-    const shareVersionsDs = useMemo(() => new DataSet(emptyDataSetConfig), []);
-    const shareLevelDs = useMemo(() => new DataSet(emptyDataSetConfig), []);
     const versionDs = useMemo(() => new DataSet(VersionDataSet(formatMessage, projectId, id)), [formatMessage, id, projectId]);
     const permissionDs = useMemo(() => new DataSet(AllocationDataSet(formatMessage, intlPrefix, projectId, id)), [formatMessage, id, projectId]);
-    const shareDs = useMemo(() => new DataSet(ShareDataSet(intlPrefix, formatMessage, projectId, id)), [formatMessage, id, projectId]);
+    const shareDs = useMemo(() => new DataSet(ShareDataSet(intlPrefix, formatMessage, projectId, id, organizationId)), [formatMessage, id, projectId]);
     const detailDs = useMemo(() => new DataSet(DetailDataSet(intlPrefix, formatMessage)), []);
     const nonePermissionDs = useMemo(() => new DataSet(OptionsDataSet()), []);
     const permissionStore = usePermissionStore();
@@ -46,7 +43,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
     }, [projectId, id]);
 
     useEffect(() => {
-      shareLevelDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/${organizationId}/list_projects`;
       appServiceStore.judgeRole(organizationId, projectId);
     }, [organizationId, projectId]);
 
@@ -58,8 +54,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
       detailDs,
       nonePermissionDs,
       permissionStore,
-      shareVersionsDs,
-      shareLevelDs,
       params: {
         projectId,
         id,

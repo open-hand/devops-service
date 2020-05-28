@@ -1,20 +1,24 @@
 package io.choerodon.devops.infra.dto;
 
-import io.choerodon.mybatis.entity.BaseDTO;
-
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+
 /**
  * @author zhaotianxin
  * @since 2019/11/1
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_cert_manager")
-public class DevopsCertManagerDTO extends BaseDTO {
+public class DevopsCertManagerDTO extends AuditDomain {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String email;
     private String chartVersion;

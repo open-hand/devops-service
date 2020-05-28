@@ -592,37 +592,6 @@
     <!--</if>-->
     <!--</select>-->
 
-    <select id="queryMarketDownloadApps" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
-        SELECT DISTINCT
-        das.id,
-        das.project_id,
-        das.`name`,
-        das.CODE,
-        das.type,
-        das.mkt_app_id
-        FROM
-        devops_app_service das
-        WHERE
-        das.project_id IS NULL
-        <if test="appServiceIds!=null and appServiceIds.size>0">
-            AND
-            das.id in
-            <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
-                #{appServiceId}
-            </foreach>
-        </if>
-        <if test="type != null and type != ''">
-            AND das.type = #{type}
-        </if>
-        <if test="searchProjectId != null and searchProjectId != ''">
-            AND das.mkt_app_id=#{searchProjectId}
-        </if>
-        <if test="param != null and param != ''">
-            AND (das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
-        </if>
-    </select>
-
     <select id="listAppServiceByIds" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         select * from devops_app_service
         <where>
@@ -763,4 +732,90 @@
         AND das.is_active = TRUE
         AND das.type = 'normal'
     </select>
+
+    <select id="listAppServiceToCreatePipelineForOwner"
+            resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        SELECT das.id, das.name, das.code
+        FROM devops_app_service das
+                 LEFT JOIN devops_ci_pipeline dcp ON das.id = dcp.app_service_id
+                 INNER JOIN devops_branch db ON das.id = db.app_service_id
+        WHERE das.project_id = #{projectId,jdbcType=BIGINT}
+          AND das.is_failed = FALSE
+          AND das.is_synchro = TRUE
+          AND das.is_active = TRUE
+          AND dcp.id IS NULL
+          AND db.branch_name = 'master'
+        <include refid="appServiceCiSqlparams"/>
+    </select>
+
+    <select id="listAppServiceToCreatePipelineForMember"
+            resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        SELECT tmp.id, tmp.name, tmp.code
+        FROM (
+             SELECT das.id, das.name, das.code
+             FROM devops_app_service das
+                      LEFT JOIN devops_ci_pipeline dcp ON das.id = dcp.app_service_id
+                      INNER JOIN devops_branch db ON das.id = db.app_service_id
+             WHERE das.project_id = #{projectId,jdbcType=BIGINT}
+               AND das.is_failed = FALSE
+               AND das.is_synchro = TRUE
+               AND das.is_active = TRUE
+               AND das.is_skip_check_permission = TRUE
+               AND dcp.id IS NULL
+               AND db.branch_name = 'master'
+             <include refid="appServiceCiSqlparams"/>
+             UNION ALL
+             SELECT das.id, das.name, das.code
+             FROM devops_app_service das
+                      LEFT JOIN devops_ci_pipeline dcp ON das.id = dcp.app_service_id
+                      INNER JOIN devops_branch db ON das.id = db.app_service_id
+                      INNER JOIN devops_app_service_user_rel dasur
+                          ON dasur.app_service_id = das.id AND dasur.iam_user_id = #{iamUserId,jdbcType=BIGINT}
+             WHERE das.project_id = #{iamUserId,jdbcType=BIGINT}
+               AND das.is_failed = FALSE
+               AND das.is_synchro = TRUE
+               AND das.is_active = TRUE
+               AND das.is_skip_check_permission = FALSE
+               AND dcp.id IS NULL
+               AND db.branch_name = 'master'
+             <include refid="appServiceCiSqlparams"/>
+             ) tmp
+    </select>
+
+    <sql id="appServiceCiSqlparams">
+        <if test="searchParam != null">
+            <if test="searchParam.name != null and searchParam.name != ''">
+                AND das.name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test="searchParam.code != null and searchParam.code != ''">
+                AND das.code LIKE CONCAT(CONCAT('%', #{searchParam.code, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test='searchParam.status != null'>
+                AND
+                <if test='searchParam.status == "失败"'>
+                    das.is_failed = 1
+                </if>
+                <if test="searchParam.status == '停用'">
+                    das.is_active = 0
+                </if>
+                <if test="searchParam.status == '启用'">
+                    das.is_active = 1
+                    AND das.is_synchro = 1
+                    AND das.is_failed = 0
+                </if>
+                <if test="searchParam.status == '创建中'">
+                    das.is_synchro = 0
+                    AND das.is_failed = 0
+                </if>
+            </if>
+        </if>
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                das.type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            </foreach>
+        </if>
+    </sql>
 </mapper>

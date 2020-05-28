@@ -2,7 +2,7 @@ import { axios } from '@choerodon/boot';
 import forEach from 'lodash/forEach';
 import some from 'lodash/some';
 
-export default ({ formatMessage, intlPrefix, projectId, pathListDs }) => {
+export default ({ formatMessage, intlPrefix, projectId, pathListDs, annotationDs }) => {
   async function checkName(value, name, record) {
     const parentRecord = record.cascadeParent;
     if (!parentRecord) {
@@ -68,8 +68,9 @@ export default ({ formatMessage, intlPrefix, projectId, pathListDs }) => {
 
   function isRequired({ record }) {
     const hasValue = record.get('name') || record.get('domain') || record.get('certId');
-    const dirty = some(record.getCascadeRecords('pathList'), (pathRecord) => pathRecord.dirty);
-    return !!hasValue || dirty;
+    const pathDirty = some(record.getCascadeRecords('pathList'), (pathRecord) => pathRecord.dirty);
+    const annotationDirty = some(record.getCascadeRecords('annotations'), (annotationRecord) => annotationRecord.dirty);
+    return !!hasValue || pathDirty || annotationDirty;
   }
 
   return ({
@@ -78,6 +79,7 @@ export default ({ formatMessage, intlPrefix, projectId, pathListDs }) => {
     selection: false,
     children: {
       pathList: pathListDs,
+      annotations: annotationDs,
     },
     fields: [
       {

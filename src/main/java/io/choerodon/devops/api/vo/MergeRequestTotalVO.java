@@ -1,7 +1,8 @@
 package io.choerodon.devops.api.vo;
 
-import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiModelProperty;
+
+import io.choerodon.core.domain.Page;
 
 /**
  * Created by Sheep on 2019/7/18.
@@ -14,7 +15,7 @@ public class MergeRequestTotalVO {
     private Long totalCount;
     @ApiModelProperty("待这个用户审核的merge request的数量")
     private Long auditCount;
-    private PageInfo<MergeRequestVO> mergeRequestVOPageInfo;
+    private Page<MergeRequestVO> mergeRequestVOPageInfo;
 
 
     public Long getMergeCount() {
@@ -49,11 +50,11 @@ public class MergeRequestTotalVO {
         this.totalCount = totalCount;
     }
 
-    public PageInfo<MergeRequestVO> getMergeRequestVOPageInfo() {
+    public Page<MergeRequestVO> getMergeRequestVOPageInfo() {
         return mergeRequestVOPageInfo;
     }
 
-    public void setMergeRequestVOPageInfo(PageInfo<MergeRequestVO> mergeRequestVOPageInfo) {
+    public void setMergeRequestVOPageInfo(Page<MergeRequestVO> mergeRequestVOPageInfo) {
         this.mergeRequestVOPageInfo = mergeRequestVOPageInfo;
     }
 

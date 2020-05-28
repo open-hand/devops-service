@@ -48,8 +48,8 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
       if (envList && envList.length) {
         const { id } = envList[0];
         const { getStartTime, getEndTime } = ReportsStore;
-        const startTime = getStartTime.format().split('T')[0].replace(/-/g, '/');
-        const endTime = getEndTime.format().split('T')[0].replace(/-/g, '/');
+        const startTime = getStartTime.format('YYYY-MM-DD HH:mm:ss');
+        const endTime = getEndTime.format('YYYY-MM-DD HH:mm:ss');
         forEach([chartsDs, tableDs], (ds) => {
           ds.setQueryParameter('envId', id);
           ds.setQueryParameter('startTime', startTime);

@@ -39,4 +39,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ingress.groovy') {
                     column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: 'command id', afterColumn: 'env_id')
                 }
             }
+
+    changeSet(author: 'zmf', id: '2020-03-17-add-column-annotations') {
+        addColumn(tableName: 'devops_ingress') {
+            column(name: 'annotations', type: 'VARCHAR(2000)', remarks: 'ingress对象的Annotations字段的JSON格式字符串', afterColumn: 'domain')
+        }
+    }
 }

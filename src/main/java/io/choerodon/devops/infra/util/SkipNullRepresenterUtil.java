@@ -10,7 +10,7 @@ import org.yaml.snakeyaml.representer.Representer;
 
 public class SkipNullRepresenterUtil extends Representer {
 
-    Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
+    private Pattern pattern = Pattern.compile("^[-+]?[\\d]*$");
 
     @Override
     protected NodeTuple representJavaBeanProperty(Object javaBean, Property property,

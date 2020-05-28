@@ -123,14 +123,8 @@ const Submission = observer(() => {
       ReportsStore.setCommitsRecord([]);
     } else {
       const { id: projectId } = AppState.currentMenuType;
-      const startTime = ReportsStore.getStartTime
-        .format()
-        .split('T')[0]
-        .replace(/-/g, '/');
-      const endTime = ReportsStore.getEndTime
-        .format()
-        .split('T')[0]
-        .replace(/-/g, '/');
+      const startTime = getStartTime.format('YYYY-MM-DD HH:mm:ss');
+      const endTime = getEndTime.format('YYYY-MM-DD HH:mm:ss');
       setAppId(e);
       loadCommits(projectId, startTime, endTime, e);
       loadCommitsRecord(projectId, startTime, endTime, e, 1);
@@ -139,14 +133,8 @@ const Submission = observer(() => {
 
   const handlePageChange = (pageCurrent) => {
     const { id: projectId } = AppState.currentMenuType;
-    const startTime = ReportsStore.getStartTime
-      .format()
-      .split('T')[0]
-      .replace(/-/g, '/');
-    const endTime = ReportsStore.getEndTime
-      .format()
-      .split('T')[0]
-      .replace(/-/g, '/');
+    const startTime = getStartTime.format('YYYY-MM-DD HH:mm:ss');
+    const endTime = getEndTime.format('YYYY-MM-DD HH:mm:ss');
     setPage(pageCurrent);
     loadCommitsRecord(projectId, startTime, endTime, appId, pageCurrent);
   };
@@ -157,14 +145,8 @@ const Submission = observer(() => {
       repoAppId = state.appId;
     }
     const { id: projectId } = AppState.currentMenuType;
-    const startTime = ReportsStore.getStartTime
-      .format()
-      .split('T')[0]
-      .replace(/-/g, '/');
-    const endTime = ReportsStore.getEndTime
-      .format()
-      .split('T')[0]
-      .replace(/-/g, '/');
+    const startTime = getStartTime.format('YYYY-MM-DD HH:mm:ss');
+    const endTime = getEndTime.format('YYYY-MM-DD HH:mm:ss');
     changeIsRefresh(true);
     loadAllApps(projectId).then((data) => {
       changeIsRefresh(false);
@@ -185,14 +167,8 @@ const Submission = observer(() => {
 
   function handleRefreshChartByTimePicker() {
     const { id: projectId } = AppState.currentMenuType;
-    const startTime = ReportsStore.getStartTime
-      .format()
-      .split('T')[0]
-      .replace(/-/g, '/');
-    const endTime = ReportsStore.getEndTime
-      .format()
-      .split('T')[0]
-      .replace(/-/g, '/');
+    const startTime = getStartTime.format('YYYY-MM-DD HH:mm:ss');
+    const endTime = getEndTime.format('YYYY-MM-DD HH:mm:ss');
     loadCommits(projectId, startTime, endTime, appId);
     loadCommitsRecord(projectId, startTime, endTime, appId, index);
   }

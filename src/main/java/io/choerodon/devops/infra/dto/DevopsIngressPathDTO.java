@@ -6,7 +6,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Creator: Runge
@@ -14,12 +16,13 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Time: 14:30
  * Description:
  */
-
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_ingress_path")
-public class DevopsIngressPathDTO extends BaseDTO {
+public class DevopsIngressPathDTO extends AuditDomain {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long ingressId;
     private String path;

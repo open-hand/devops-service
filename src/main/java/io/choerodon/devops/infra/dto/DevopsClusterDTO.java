@@ -8,14 +8,17 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
-
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_cluster")
-public class DevopsClusterDTO extends BaseDTO {
+public class DevopsClusterDTO extends AuditDomain {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     /**
      * 这个集群所属项目的组织id， 不能为空

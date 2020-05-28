@@ -4,6 +4,8 @@ import java.util.*;
 
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -11,6 +13,7 @@ import org.springframework.util.StringUtils;
  * Created by younger on 2018/4/25.
  */
 public class K8sUtil {
+    private static final Logger LOGGER = LoggerFactory.getLogger(K8sUtil.class);
 
     private static final String INIT = "Init:";
     private static final String SIGNAL = "Signal:";
@@ -65,17 +68,21 @@ public class K8sUtil {
 
 
     private static String getPodStatus(V1ContainerStateTerminated containerStateTerminated) {
+        LOGGER.info("Get pod status: {}", containerStateTerminated);
+        String podStatus;
         if (containerStateTerminated.getReason() != null) {
             if (containerStateTerminated.getReason().length() == 0) {
-                return containerStateTerminated.getSignal() != 0
+                podStatus = containerStateTerminated.getSignal() != 0
                         ? INIT + SIGNAL + containerStateTerminated.getSignal()
                         : INIT + EXIT_CODE + containerStateTerminated.getExitCode();
             } else {
-                return INIT + containerStateTerminated.getReason();
+                podStatus = INIT + containerStateTerminated.getReason();
             }
         } else {
-            return "";
+            podStatus = "";
         }
+        LOGGER.info("Got pod status : {}", podStatus);
+        return podStatus;
     }
 
     /**

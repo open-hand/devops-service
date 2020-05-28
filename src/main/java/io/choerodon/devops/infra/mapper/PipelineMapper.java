@@ -6,14 +6,14 @@ import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.PipelineSearchVO;
 import io.choerodon.devops.infra.dto.PipelineDTO;
-import io.choerodon.mybatis.common.Mapper;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  14:26 2019/4/4
  * Description:
  */
-public interface PipelineMapper extends Mapper<PipelineDTO> {
+public interface PipelineMapper extends BaseMapper<PipelineDTO> {
     List<PipelineDTO> listByOptions(@Param("projectId") Long projectId,
                                     @Param("pipelineSearchVO") PipelineSearchVO pipelineSearchVO,
                                     @Param("userId") Long userId,
@@ -23,6 +23,7 @@ public interface PipelineMapper extends Mapper<PipelineDTO> {
 
     /**
      * 通过流水线id,查询该流水线中的部署任务属于哪个环境
+     *
      * @param pipelineId
      * @return
      */

@@ -2,14 +2,18 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 import java.util.Map;
-
 import javax.annotation.Nullable;
+
+import org.springframework.web.socket.WebSocketSession;
 
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.DescribeResourceVO;
 import io.choerodon.devops.api.vo.PipeRequestVO;
 import io.choerodon.devops.api.vo.kubernetes.Command;
-import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 
 
 /**
@@ -22,7 +26,7 @@ public interface AgentCommandService {
                 String releaseName, DevopsEnvironmentDTO devopsEnvironmentDTO, String values,
                 Long commandId, String secretCode);
 
-    void initCluster(Long clusterId);
+    void initCluster(Long clusterId, WebSocketSession webSocketSession);
 
     void deleteEnv(Long envId, String code, Long clusterId);
 
@@ -32,7 +36,7 @@ public interface AgentCommandService {
 
     void getTestAppStatus(Map<Long, List<String>> testReleases);
 
-    void upgradeCluster(DevopsClusterDTO devopsClusterDTO);
+    void upgradeCluster(DevopsClusterDTO devopsClusterDTO, WebSocketSession webSocketSession);
 
     void createCertManager(Long clusterId);
 
@@ -47,8 +51,23 @@ public interface AgentCommandService {
                              Long commandId, Long envId,
                              Long clusterId);
 
+    /**
+     * 通过GitOps连接通知agent发起一个新的ws连接用于日志或者exec命令
+     *
+     * @param type        这个消息的类型
+     * @param key         形如: cluster:123.log:ad122451ea
+     * @param pipeRequest 参数
+     * @param clusterId   集群id
+     */
     void startLogOrExecConnection(String type, String key, PipeRequestVO pipeRequest, Long clusterId);
 
+    /**
+     * 通过GitOps连接通知agent发起一个新的ws连接用于describe命令
+     *
+     * @param key                形如: cluster:123.log:ad122451ea
+     * @param describeResourceVO 参数
+     * @param clusterId          集群id
+     */
     void startDescribeConnection(String key, DescribeResourceVO describeResourceVO, Long clusterId);
 
     void deletePod(String podName, String namespace, Long clusterId);

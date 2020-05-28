@@ -5,17 +5,21 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  19:43 2019/4/3
  * Description:
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_pipeline_user_rel")
-public class PipelineUserRelationshipDTO extends BaseDTO {
+public class PipelineUserRelationshipDTO extends AuditDomain {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long userId;
     private Long pipelineId;

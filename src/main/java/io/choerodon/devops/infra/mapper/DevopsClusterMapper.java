@@ -2,15 +2,16 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
-import io.choerodon.mybatis.common.Mapper;
+import io.choerodon.mybatis.common.BaseMapper;
 
 
-public interface DevopsClusterMapper extends Mapper<DevopsClusterDTO> {
+public interface DevopsClusterMapper extends BaseMapper<DevopsClusterDTO> {
 
     List<DevopsClusterDTO> listByProjectId(@Param("projectId") Long projectId, @Param("organizationId") Long organizationId);
 
@@ -44,4 +45,14 @@ public interface DevopsClusterMapper extends Mapper<DevopsClusterDTO> {
     Long queryClusterIdBySystemEnvId(@Param("systemEnvId") Long systemEnvId);
 
     List<DevopsClusterDTO> listByOrganizationId(@Param("organizationId") Long organizationId);
+
+    /**
+     * 根据条件统计集群的个数
+     *
+     * @param organizationId 组织id，可为空
+     * @param projectId      项目id，可为空
+     * @return 个数
+     */
+    int countByOptions(@Nullable @Param("organizationId") Long organizationId,
+                       @Nullable @Param("projectId") Long projectId);
 }

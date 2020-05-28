@@ -1,15 +1,13 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
-
 import javax.annotation.Nullable;
 
-import com.github.pagehelper.PageInfo;
-import org.springframework.data.domain.Pageable;
-
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsClusterService {
     /**
@@ -75,7 +73,7 @@ public interface DevopsClusterService {
      * @param params    查询参数
      * @return 集群列表
      */
-    PageInfo<ClusterWithNodesVO> pageClusters(Long projectId, Boolean doPage, Pageable pageable, String params);
+    Page<ClusterWithNodesVO> pageClusters(Long projectId, Boolean doPage, PageRequest pageable, String params);
 
 
     /**
@@ -86,7 +84,7 @@ public interface DevopsClusterService {
      * @param params    搜索参数
      * @return 组织下所有项目中在数据库中没有权限关联关系的项目
      */
-    PageInfo<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, Long selectedProjectId, Pageable pageable, String params);
+    Page<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, Long selectedProjectId, PageRequest pageable, String params);
 
     /**
      * 分配权限
@@ -120,7 +118,7 @@ public interface DevopsClusterService {
      * @param params    查询参数
      * @return List
      */
-    PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long clusterId, Pageable pageable, String params);
+    Page<ProjectReqVO> pageRelatedProjects(Long projectId, Long clusterId, PageRequest pageable, String params);
 
     /**
      * 删除集群
@@ -153,7 +151,7 @@ public interface DevopsClusterService {
      * @param searchParam 查询参数
      * @return pods
      */
-    PageInfo<DevopsEnvPodVO> pagePodsByNodeName(Long clusterId, String nodeName, Pageable pageable, String searchParam);
+    Page<DevopsEnvPodVO> pagePodsByNodeName(Long clusterId, String nodeName, PageRequest pageable, String searchParam);
 
 
     /**
@@ -178,7 +176,7 @@ public interface DevopsClusterService {
 
     void baseUpdate(DevopsClusterDTO devopsClusterDTO);
 
-    PageInfo<DevopsClusterDTO> basePageClustersByOptions(Long organizationId, Boolean doPage, Pageable pageable, String params);
+    Page<DevopsClusterDTO> basePageClustersByOptions(Long organizationId, Boolean doPage, PageRequest pageable, String params);
 
     void baseDelete(Long clusterId);
 
@@ -195,7 +193,7 @@ public interface DevopsClusterService {
      * @param searchParam 查询参数
      * @return pods
      */
-    PageInfo<DevopsEnvPodDTO> basePageQueryPodsByNodeName(Long clusterId, String nodeName, Pageable pageable, String searchParam);
+    Page<DevopsEnvPodDTO> basePageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageable, String searchParam);
 
     DevopsClusterDTO baseQueryByCode(Long organizationId, String code);
 
@@ -203,5 +201,19 @@ public interface DevopsClusterService {
 
     Boolean checkUserClusterPermission(Long clusterId, Long userId);
 
-    ClusterOverViewVO getClusterOverview(Long organizationId);
+    ClusterOverViewVO getOrganizationClusterOverview(Long organizationId);
+
+    /**
+     * 获取平台级别的集群概览数据
+     *
+     * @return 平台的集群概览数据
+     */
+    ClusterOverViewVO getSiteClusterOverview();
+
+    /**
+     * 检查是否还能创建集群
+     * @param projectId
+     * @return
+     */
+    Boolean checkEnableCreateCluster(Long projectId);
 }

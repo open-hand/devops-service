@@ -4,18 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.kubernetes.client.models.V1ConfigMap;
 import io.kubernetes.client.models.V1ObjectMeta;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import org.springframework.data.domain.Pageable;
-
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsConfigMapRespVO;
 import io.choerodon.devops.api.vo.DevopsConfigMapVO;
@@ -24,6 +22,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.ObjectType;
+import io.choerodon.devops.infra.enums.SendSettingEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
@@ -31,6 +30,8 @@ import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsConfigMapMapper;
 import io.choerodon.devops.infra.util.*;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
 public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
@@ -64,6 +65,9 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    @Lazy
+    private SendNotificationService sendNotificationService;
 
 
     @Override
@@ -159,11 +163,11 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     }
 
     @Override
-    public PageInfo<DevopsConfigMapRespVO> pageByOptions(Long projectId, Long envId, Pageable pageable, String searchParam, Long appServiceId) {
+    public Page<DevopsConfigMapRespVO> pageByOptions(Long projectId, Long envId, PageRequest pageable, String searchParam, Long appServiceId) {
 
-        PageInfo<DevopsConfigMapDTO> devopsConfigMapDTOPageInfo = basePageByEnv(
+        Page<DevopsConfigMapDTO> devopsConfigMapDTOPageInfo = basePageByEnv(
                 envId, pageable, searchParam, appServiceId);
-        devopsConfigMapDTOPageInfo.getList().forEach(devopsConfigMapRepDTO -> {
+        devopsConfigMapDTOPageInfo.getContent().forEach(devopsConfigMapRepDTO -> {
             List<String> keys = new ArrayList<>();
             gson.fromJson(devopsConfigMapRepDTO.getValue(), Map.class).forEach((key, value) ->
                     keys.add(key.toString()));
@@ -260,6 +264,8 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                     userAttrDTO.getGitlabUserId(),
                     devopsConfigMapDTO.getId(), CONFIGMAP, null, false, devopsEnvironmentDTO.getId(), path);
         }
+        //删除配置映射加上消息发送
+        sendNotificationService.sendWhenConfigMap(devopsConfigMapDTO, SendSettingEnum.DELETE_RESOURCE.value());
     }
 
     @Override
@@ -307,10 +313,9 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     }
 
     @Override
-    public PageInfo<DevopsConfigMapDTO> basePageByEnv(Long envId, Pageable pageable, String params, Long appServiceId) {
+    public Page<DevopsConfigMapDTO> basePageByEnv(Long envId, PageRequest pageable, String params, Long appServiceId) {
         Map maps = gson.fromJson(params, Map.class);
-        return PageHelper
-                .startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> devopsConfigMapMapper.listByEnv(envId,
+        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> devopsConfigMapMapper.listByEnv(envId,
                         TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(maps.get(TypeUtil.PARAMS)),
                         appServiceId));

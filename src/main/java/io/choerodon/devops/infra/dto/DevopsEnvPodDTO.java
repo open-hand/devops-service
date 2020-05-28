@@ -5,16 +5,20 @@ import java.util.List;
 import javax.persistence.*;
 
 import io.choerodon.devops.api.vo.ContainerVO;
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by Zenger on 2018/4/14.
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_env_pod")
-public class DevopsEnvPodDTO extends BaseDTO {
+public class DevopsEnvPodDTO extends AuditDomain {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long instanceId;
     private String name;

@@ -9,8 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.GitlabGroupMemberVO;
 import io.choerodon.devops.api.vo.kubernetes.MemberHelper;
 import io.choerodon.devops.app.service.*;
@@ -39,10 +39,8 @@ import io.choerodon.devops.infra.util.TypeUtil;
  */
 @Service
 public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
-    public static final String ERROR_GITLAB_GROUP_ID_SELECT = "error.gitlab.groupId.select";
+    private static final String ERROR_GITLAB_GROUP_ID_SELECT = "error.gitlab.groupId.select";
     private static final String PROJECT = "project";
-    private static final String TEMPLATE = "template";
-    private static final String SITE = "site";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabGroupMemberServiceImpl.class);
 
@@ -69,7 +67,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     @Override
     public void createGitlabGroupMemberRole(List<GitlabGroupMemberVO> gitlabGroupMemberVOList) {
         gitlabGroupMemberVOList.stream()
-                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceType.PROJECT.value()))
+                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceLevel.PROJECT.value()))
                 .forEach(gitlabGroupMemberVO -> {
                     try {
                         List<String> userMemberRoleList = gitlabGroupMemberVO.getRoleLabels();
@@ -92,38 +90,48 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         throw new CommonException(e);
                     }
                 });
-        //根据标签如果是组织管理员需要添加组织下所有项目的的三个组的owner权限
+        // 根据标签如果是组织管理员需要添加组织下所有项目的的三个组的owner权限
+        // 同步到gitlab
         gitlabGroupMemberVOList.stream()
-                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceType.ORGANIZATION.value()))
-                .forEach(gitlabGroupMemberVO -> {
-                    //还需要同步到devops_user表
-                    //同步到gitlab
-                    screenOrgLable(gitlabGroupMemberVO, Boolean.TRUE);
-                });
+                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceLevel.ORGANIZATION.value()))
+                .forEach(this::doCreateOrUpdateWithOrgLabel);
     }
 
-    private void screenOrgLable(GitlabGroupMemberVO gitlabGroupMemberVO, Boolean isCreate) {
+    /**
+     * 处理用户的组织相关权限的创建或更新
+     *
+     * @param gitlabGroupMemberVO 用户信息
+     */
+    private void doCreateOrUpdateWithOrgLabel(GitlabGroupMemberVO gitlabGroupMemberVO) {
         List<String> roleLabels = gitlabGroupMemberVO.getRoleLabels();
-        List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(gitlabGroupMemberVO.getResourceId());
-        if (!CollectionUtils.isEmpty(roleLabels) && roleLabels.contains(LabelType.ORGANIZATION_GITLAB_OWNER.getValue())) {
-            if (projectDTOS != null && projectDTOS.size() > 0) {
-                if (isCreate) {
-                    projectDTOS.forEach(projectDTO -> assignGitLabGroupMemeberForOwner(projectDTO, gitlabGroupMemberVO.getUserId()));
-                } else {
-                    deleteGitLabPermissions(projectDTOS, gitlabGroupMemberVO);
-                }
+        // 如果是组织管理员
+        if (!CollectionUtils.isEmpty(roleLabels) && roleLabels.contains(LabelType.TENANT_ADMIN.getValue())) {
+            List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(gitlabGroupMemberVO.getResourceId());
+            if (!CollectionUtils.isEmpty(projectDTOS)) {
+                projectDTOS.forEach(projectDTO -> assignGitLabGroupMemberForOwner(projectDTO, gitlabGroupMemberVO.getUserId()));
             }
-        } else if (Boolean.FALSE.equals(isCreate)) {
-            deleteGitLabPermissions(projectDTOS, gitlabGroupMemberVO);
+        } else {
+            // 原本的此用户可能是组织管理员,需要将此组织下所有的项目的group的权限判断一遍
+            // 如果这里过慢,可以考虑让hzero-iam发送更新用户前的标签数据
+            deleteGitLabPermissionsForOrgAdmin(gitlabGroupMemberVO);
         }
     }
 
-    private void deleteGitLabPermissions(List<ProjectDTO> projectDTOS, GitlabGroupMemberVO gitlabGroupMemberVO) {
-        projectDTOS.stream().forEach(projectDTO -> {
+
+    private void deleteGitLabPermissionsForOrgAdmin(GitlabGroupMemberVO gitlabGroupMemberVO) {
+        List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(gitlabGroupMemberVO.getResourceId());
+        deleteGitLabPermissionsForOrgAdmin(projectDTOS, gitlabGroupMemberVO);
+    }
+
+    private void deleteGitLabPermissionsForOrgAdmin(List<ProjectDTO> projectDTOS, GitlabGroupMemberVO gitlabGroupMemberVO) {
+        if (CollectionUtils.isEmpty(projectDTOS)) {
+            return;
+        }
+        projectDTOS.forEach(projectDTO -> {
             LOGGER.info("start delete project id is {} for gitlab org owner", projectDTO.getId());
-            //如果删除的成员为该项目下的项目所有者，则不删除gitlab相应的权限
+            // 如果删除的成员为该项目下的项目所有者，则不删除gitlab相应的权限
             if (!baseServiceClientOperator.isProjectOwner(gitlabGroupMemberVO.getUserId(), projectDTO.getId())) {
-                deleteProcess(gitlabGroupMemberVO, projectDTO.getId());
+                deleteAllPermissionInProjectOfUser(gitlabGroupMemberVO, projectDTO.getId());
             }
         });
     }
@@ -137,19 +145,27 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     //删除用户的项目所有者权限，如果是组织root,则不删除该项目下gitlab相应的权限
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(gitlabGroupMemberVO.getResourceId());
                     if (!baseServiceClientOperator.isOrganzationRoot(gitlabGroupMemberVO.getUserId(), projectDTO.getOrganizationId())) {
-                        deleteProcess(gitlabGroupMemberVO, projectDTO.getId());
+                        deleteAllPermissionInProjectOfUser(gitlabGroupMemberVO, projectDTO.getId());
                     }
                 });
+
         //组织root的标签，那么删除在组织下的root的权限
-        gitlabGroupMemberVOList.stream()
-                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceType.ORGANIZATION.value()))
-                .forEach(gitlabGroupMemberVO -> {
-                    screenOrgLable(gitlabGroupMemberVO, Boolean.FALSE);
-                });
+        // 列表中所有用户应该都是同一个组织的
+        List<ProjectDTO> projectDTOS = null;
+        for (GitlabGroupMemberVO gitlabGroupMemberVO : gitlabGroupMemberVOList) {
+            // 项目层上面已经处理了,这里只处理组织层的
+            if (gitlabGroupMemberVO.getResourceType().equals(ResourceLevel.ORGANIZATION.value())) {
+                // 这里是避免多次查询
+                if (projectDTOS == null) {
+                    projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(gitlabGroupMemberVO.getResourceId());
+                }
+                deleteGitLabPermissionsForOrgAdmin(projectDTOS, gitlabGroupMemberVO);
+            }
+        }
     }
 
 
-    private void deleteProcess(GitlabGroupMemberVO gitlabGroupMemberVO, Long projectId) {
+    private void deleteAllPermissionInProjectOfUser(GitlabGroupMemberVO gitlabGroupMemberVO, Long projectId) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupMemberVO.getUserId());
         userAttrService.checkUserSync(userAttrDTO, gitlabGroupMemberVO.getUserId());
         Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
@@ -316,24 +332,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
      */
     private MemberHelper getGitlabGroupMemberRole(List<String> userMemberRoleList) {
         MemberHelper memberHelper = new MemberHelper();
-        List<Integer> accessLevelList = new ArrayList<>();
-        accessLevelList.add(0);
-        userMemberRoleList.forEach(level -> {
-            AccessLevel levels = AccessLevel.forString(level.toUpperCase(), memberHelper);
-            switch (levels) {
-                case OWNER:
-                    accessLevelList.add(levels.toValue());
-                    break;
-                case MASTER:
-                    accessLevelList.add(levels.toValue());
-                    break;
-                case DEVELOPER:
-                    accessLevelList.add(levels.toValue());
-                    break;
-                default:
-                    break;
-            }
-        });
+        // 目前只支持 Owner 和 Developer
+        userMemberRoleList.forEach(level -> AccessLevel.forString(level.toUpperCase(), memberHelper));
         return memberHelper;
     }
 
@@ -355,8 +355,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         MemberDTO memberDTO;
         Integer[] roles = {
                 memberHelper.getProjectDevelopAccessLevel().toValue(),
-                memberHelper.getProjectOwnerAccessLevel().toValue(),
-                memberHelper.getOrganizationAccessLevel().toValue()};
+                memberHelper.getProjectOwnerAccessLevel().toValue()};
         AccessLevel accessLevel = AccessLevel.forValue(Collections.max(Arrays.asList(roles)));
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrDTO.getIamUserId());
         if (Objects.isNull(iamUserDTO)) {
@@ -610,7 +609,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         }
     }
 
-    public void assignGitLabGroupMemeberForOwner(ProjectDTO projectDTO, Long userId) {
+    public void assignGitLabGroupMemberForOwner(ProjectDTO projectDTO, Long userId) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
         DevopsProjectDTO search = new DevopsProjectDTO();
         search.setIamProjectId(projectDTO.getId());

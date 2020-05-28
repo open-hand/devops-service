@@ -6,17 +6,16 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import io.choerodon.devops.infra.util.JacksonJsonEnumHelper;
 
 public enum JobStatus {
+    CREATED,
     RUNNING,
     PENDING,
     SUCCESS,
     FAILED,
     CANCELED,
-    SKIPPED;
+    SKIPPED,
+    MANUAL;
 
-    private static JacksonJsonEnumHelper<JobStatus> enumHelper = new JacksonJsonEnumHelper(JobStatus.class);
-
-    JobStatus() {
-    }
+    private static JacksonJsonEnumHelper<JobStatus> enumHelper = new JacksonJsonEnumHelper<>(JobStatus.class);
 
     @JsonCreator
     public static JobStatus forValue(String value) {
@@ -25,12 +24,12 @@ public enum JobStatus {
 
     @JsonValue
     public String toValue() {
-        return enumHelper.toString(this);
+        return (enumHelper.toString(this));
     }
 
     @Override
     public String toString() {
-        return enumHelper.toString(this);
+        return (enumHelper.toString(this));
     }
 }
 

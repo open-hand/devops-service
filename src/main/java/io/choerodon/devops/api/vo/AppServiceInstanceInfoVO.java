@@ -27,7 +27,7 @@ public class AppServiceInstanceInfoVO {
     /**
      * {@link io.choerodon.devops.infra.enums.AppServiceType}
      */
-    @ApiModelProperty("实例所属应用服务的类型/normal_service,share_service,market_service")
+    @ApiModelProperty("实例所属应用服务的类型/normal_service,share_service")
     private String appServiceType;
     private Long appServiceVersionId;
     private String versionName;

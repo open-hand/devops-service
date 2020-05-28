@@ -3,14 +3,12 @@ package io.choerodon.devops.infra.feign.operator;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.github.pagehelper.PageInfo;
 import com.google.common.base.Functions;
 import feign.FeignException;
 import feign.RetryableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
@@ -18,12 +16,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.FileCreationVO;
 import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
@@ -31,6 +31,7 @@ import io.choerodon.devops.infra.util.FeignResponseStatusCodeParse;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.PageInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 
 /**
@@ -40,7 +41,9 @@ import io.choerodon.devops.infra.util.TypeUtil;
 @Component
 public class GitlabServiceClientOperator {
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabServiceClientOperator.class);
-
+    private static final String ERROR_CREATE_PIPELINE_FILED = "error.create.pipeline.failed";
+    private static final String ERROR_RETRY_PIPELINE_FILED = "error.retry.pipeline.filed";
+    private static final String ERROR_CANCEL_PIPELINE_FILED = "error.cancel.pipeline.filed";
     @Autowired
     private GitlabServiceClient gitlabServiceClient;
     @Autowired
@@ -284,6 +287,15 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    /**
+     * 这里是更新master分支上的文件内容
+     *
+     * @param projectId     项目id
+     * @param path          文件路径
+     * @param content       文件内容
+     * @param commitMessage 提交信息
+     * @param userId        gitlab用户id
+     */
     public void updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
         try {
             FileCreationVO fileCreationVO = new FileCreationVO();
@@ -309,7 +321,7 @@ public class GitlabServiceClientOperator {
             fileCreationVO.setUserId(userId);
             gitlabServiceClient.deleteFile(projectId, fileCreationVO);
         } catch (FeignException e) {
-            throw new CommonException("error.file.delete", e);
+            throw new CommonException("error.file.delete", e, path);
         }
     }
 
@@ -566,7 +578,7 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public PageInfo<TagDTO> pageTag(ProjectDTO projectDTO, Integer gitlabProjectId, String path, Integer page, String params, Integer size, Integer userId) {
+    public Page<TagDTO> pageTag(ProjectDTO projectDTO, Integer gitlabProjectId, String path, Integer page, String params, Integer size, Integer userId) {
         if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectDTO.getId())) {
             MemberDTO memberDTO = getProjectMember(
                     gitlabProjectId,
@@ -588,9 +600,9 @@ public class GitlabServiceClientOperator {
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        PageInfo<TagDTO> resp = PageInfoUtil.createPageFromList(tagList, PageRequest.of(page, size));
+        Page<TagDTO> resp = PageInfoUtil.createPageFromList(tagList, new PageRequest(page, size));
 
-        resp.getList().stream()
+        resp.getContent().stream()
                 .sorted(this::sortTag)
                 .forEach(t -> {
                     IamUserDTO userDTO = baseServiceClientOperator.queryByEmail(TypeUtil.objToLong(gitlabProjectId), t.getCommit().getAuthorEmail());
@@ -792,23 +804,25 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public Boolean retryPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+    public Pipeline retryPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+        ResponseEntity<Pipeline> pipeline;
         try {
-            gitlabServiceClient.retryPipeline(projectId, pipelineId, userId);
+            pipeline = gitlabServiceClient.retryPipeline(projectId, pipelineId, userId);
         } catch (FeignException e) {
-            return false;
+            throw new CommonException(ERROR_RETRY_PIPELINE_FILED);
         }
-        return true;
+        return pipeline.getBody();
     }
 
 
-    public Boolean cancelPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+    public Pipeline cancelPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+        ResponseEntity<Pipeline> pipeline;
         try {
-            gitlabServiceClient.cancelPipeline(projectId, pipelineId, userId);
+            pipeline = gitlabServiceClient.cancelPipeline(projectId, pipelineId, userId);
         } catch (FeignException e) {
-            return false;
+            throw new CommonException(ERROR_CANCEL_PIPELINE_FILED);
         }
-        return true;
+        return pipeline.getBody();
     }
 
 
@@ -1038,5 +1052,39 @@ public class GitlabServiceClientOperator {
         } catch (FeignException ex) {
             throw new CommonException("error.manipulate.gitlab.files");
         }
+    }
+
+    public RepositoryFileDTO getWholeFile(Integer projectId, String branch, String filePath) {
+        try {
+            return gitlabServiceClient.getFile(projectId, branch, filePath).getBody();
+        } catch (FeignException e) {
+            return null;
+        }
+    }
+
+    public Pipeline createPipeline(int projectId, int gitlabUserid, String ref) {
+        ResponseEntity<Pipeline> pipeline;
+        try {
+            pipeline = gitlabServiceClient.createPipeline(projectId, gitlabUserid, ref);
+        } catch (FeignException e) {
+           throw new CommonException(ERROR_CREATE_PIPELINE_FILED);
+        }
+        return pipeline.getBody();
+    }
+
+    public String queryTrace(int gitlabProjectId, int jobId, int gitlabUserid) {
+        return gitlabServiceClient.queryTrace(gitlabProjectId, jobId, gitlabUserid).getBody();
+    }
+
+    public JobDTO retryJob(int gitlabProjectId, int jobId, int gitlabUserId) {
+        return gitlabServiceClient.retryJob(gitlabProjectId, jobId, gitlabUserId).getBody();
+    }
+
+    public BranchDTO getBranch(int gitlabProjectId, String ref) {
+        return gitlabServiceClient.queryBranchByName(gitlabProjectId, ref).getBody();
+    }
+
+    public MemberDTO getMember(Long gitlabProjectId, Long gitlabUserId) {
+        return gitlabServiceClient.getProjectMember(gitlabProjectId.intValue(), gitlabUserId.intValue()).getBody();
     }
 }

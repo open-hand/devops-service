@@ -3,13 +3,17 @@ package io.choerodon.devops.infra.dto;
 import java.util.Date;
 import javax.persistence.*;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_gitlab_commit")
-public class DevopsGitlabCommitDTO extends BaseDTO {
+public class DevopsGitlabCommitDTO extends AuditDomain {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long appServiceId;
     private Long userId;

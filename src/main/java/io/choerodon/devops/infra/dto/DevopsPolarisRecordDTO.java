@@ -8,7 +8,9 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * polaris扫描纪录
@@ -16,10 +18,12 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * @author zmf
  * @since 2/17/20
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_polaris_record")
-public class DevopsPolarisRecordDTO extends BaseDTO {
+public class DevopsPolarisRecordDTO extends AuditDomain {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @ApiModelProperty("自增id")
     private Long id;
 

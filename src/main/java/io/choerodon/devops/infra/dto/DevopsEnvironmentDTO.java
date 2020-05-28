@@ -1,9 +1,13 @@
 package io.choerodon.devops.infra.dto;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import java.util.List;
+import javax.persistence.*;
+
 import io.swagger.annotations.ApiModelProperty;
 
-import javax.persistence.*;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * if (!isSynchro) {
@@ -18,10 +22,12 @@ import javax.persistence.*;
  * <p>
  * Created by younger on 2018/4/9.
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_env")
-public class DevopsEnvironmentDTO extends BaseDTO {
+public class DevopsEnvironmentDTO extends AuditDomain {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long projectId;
     private Long clusterId;
@@ -53,6 +59,10 @@ public class DevopsEnvironmentDTO extends BaseDTO {
     private String clusterName;
     @Transient
     private String clusterCode;
+
+    @ApiModelProperty("环境下实例的code")
+    @Transient
+    private List<String> instances;
 
     public String getClusterName() {
         return clusterName;
@@ -248,6 +258,14 @@ public class DevopsEnvironmentDTO extends BaseDTO {
         this.clusterCode = clusterCode;
     }
 
+    public List<String> getInstances() {
+        return instances;
+    }
+
+    public void setInstances(List<String> instances) {
+        this.instances = instances;
+    }
+
     @Override
     public String toString() {
         return "DevopsEnvironmentDTO{" +
@@ -275,6 +293,7 @@ public class DevopsEnvironmentDTO extends BaseDTO {
                 ", permission=" + permission +
                 ", clusterName='" + clusterName + '\'' +
                 ", clusterCode='" + clusterCode + '\'' +
+                ", instances=" + instances +
                 '}';
     }
 }

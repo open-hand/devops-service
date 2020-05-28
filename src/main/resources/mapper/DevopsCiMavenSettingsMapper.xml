@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper">
+
+    <select id="queryMavenSettings" resultType="java.lang.String">
+        SELECT dcms.maven_settings
+        FROM devops_ci_maven_settings dcms
+        WHERE dcms.ci_job_id = #{jobId,jdbcType=BIGINT}
+        AND dcms.sequence = #{sequence,jdbcType=BIGINT}
+    </select>
+
+    <delete id="deleteByJobIds">
+        DELETE dcms.*
+        FROM devops_ci_maven_settings dcms
+        WHERE dcms.ci_job_id IN
+        <foreach collection="jobIds" item="jobId" open="(" separator="," close=")">
+            #{jobId,jdbcType=BIGINT}
+        </foreach>
+    </delete>
+</mapper>

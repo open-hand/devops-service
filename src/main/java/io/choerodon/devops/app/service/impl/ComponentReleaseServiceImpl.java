@@ -126,7 +126,12 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
             appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
         }
 
-        AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO(null, systemEnvId, values, null, commandType.getType(), appServiceInstanceDTO.getId(), code, null, null);
+        AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
+        appServiceDeployVO.setEnvironmentId(systemEnvId);
+        appServiceDeployVO.setValues(values);
+        appServiceDeployVO.setType(commandType.getType());
+        appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
+        appServiceDeployVO.setInstanceName(code);
         AppServiceDTO fakeAppService = new AppServiceDTO();
         fakeAppService.setCode(appServiceVersionDTO.getChartName());
 
@@ -217,7 +222,12 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
         // 准备构造saga的payload
         AppServiceVersionDTO appServiceVersionDTO = ComponentVersionUtil.getComponentVersion(clusterResourceType);
 
-        AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO(null, devopsEnvironmentDTO.getId(), appServiceInstanceService.baseQueryValueByInstanceId(instanceId), null, devopsEnvCommandDTO.getCommandType(), appServiceInstanceDTO.getId(), appServiceInstanceDTO.getCode(), null, null);
+        AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
+        appServiceDeployVO.setEnvironmentId(devopsEnvironmentDTO.getId());
+        appServiceDeployVO.setValues(appServiceInstanceService.baseQueryValueByInstanceId(instanceId));
+        appServiceDeployVO.setType(devopsEnvCommandDTO.getCommandType());
+        appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
+        appServiceDeployVO.setInstanceName(appServiceInstanceDTO.getCode());
         AppServiceDTO fakeAppService = new AppServiceDTO();
         fakeAppService.setCode(appServiceInstanceDTO.getComponentChartName());
 
@@ -284,8 +294,12 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
         appServiceInstanceDTO.setCommandId(devopsEnvCommandDTO.getId());
         appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
 
-        AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO(null, devopsEnvironmentDTO.getId(), appServiceInstanceService.baseQueryValueByInstanceId(instanceId), null, devopsEnvCommandDTO.getCommandType(), appServiceInstanceDTO.getId(), appServiceInstanceDTO.getCode(), null, null);
-
+        AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
+        appServiceDeployVO.setEnvironmentId(devopsEnvironmentDTO.getId());
+        appServiceDeployVO.setValues(appServiceInstanceService.baseQueryValueByInstanceId(instanceId));
+        appServiceDeployVO.setType(devopsEnvCommandDTO.getCommandType());
+        appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
+        appServiceDeployVO.setInstanceName(appServiceInstanceDTO.getCode());
         InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), null, devopsEnvCommandDTO.getId().intValue());
         instanceSagaPayload.setApplicationDTO(fakeAppService);
         instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);

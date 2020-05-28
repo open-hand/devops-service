@@ -37,8 +37,8 @@ import io.choerodon.devops.api.vo.GitEnvConfigVO;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.EnvironmentType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
@@ -734,19 +734,23 @@ public class GitUtil {
 
     public GitConfigVO getGitConfig(Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
-        List<DevopsEnvironmentDTO> devopsEnvironments = devopsEnvironmentService.listAllEnvByClusterId(clusterId);
+        List<DevopsEnvironmentDTO> devopsEnvironments = devopsEnvironmentService.listEnvWithInstancesByClusterIdForAgent(clusterId);
         GitConfigVO gitConfigVO = new GitConfigVO();
+        gitConfigVO.setAgentName("choerodon-cluster-agent-" + devopsClusterDTO.getCode());
+        LOGGER.info("Get git config to init cluster: agent name: {}", gitConfigVO.getAgentName());
         List<GitEnvConfigVO> gitEnvConfigDTOS = new ArrayList<>();
-        devopsEnvironments.stream().filter(devopsEnvironmentE -> devopsEnvironmentE.getGitlabEnvProjectId() != null).forEach(devopsEnvironmentE -> {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentE.getProjectId());
-            OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            String repoUrl = GitUtil.getGitlabSshUrl(PATTERN, gitlabSshUrl, organizationDTO.getCode(), projectDTO.getCode(), devopsEnvironmentE.getCode(), EnvironmentType.forValue(devopsEnvironmentE.getType()), devopsClusterDTO.getCode());
+        devopsEnvironments.forEach(devopsEnvironmentDTO -> {
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+            Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            String repoUrl = GitUtil.getGitlabSshUrl(PATTERN, gitlabSshUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), devopsEnvironmentDTO.getCode(), EnvironmentType.forValue(devopsEnvironmentDTO.getType()), devopsClusterDTO.getCode());
 
             GitEnvConfigVO gitEnvConfigVO = new GitEnvConfigVO();
-            gitEnvConfigVO.setEnvId(devopsEnvironmentE.getId());
-            gitEnvConfigVO.setGitRsaKey(devopsEnvironmentE.getEnvIdRsa());
+            gitEnvConfigVO.setEnvId(devopsEnvironmentDTO.getId());
+            gitEnvConfigVO.setGitRsaKey(devopsEnvironmentDTO.getEnvIdRsa());
             gitEnvConfigVO.setGitUrl(repoUrl);
-            gitEnvConfigVO.setNamespace(GitOpsUtil.getEnvNamespace(devopsEnvironmentE.getCode(), devopsEnvironmentE.getType()));
+            gitEnvConfigVO.setInstances(devopsEnvironmentDTO.getInstances());
+            gitEnvConfigVO.setNamespace(GitOpsUtil.getEnvNamespace(devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getType()));
+            LOGGER.info("Agent Init: instances for env with id {} is {}", devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getInstances());
             gitEnvConfigDTOS.add(gitEnvConfigVO);
         });
         gitConfigVO.setEnvs(gitEnvConfigDTOS);

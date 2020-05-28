@@ -58,6 +58,11 @@ public class SagaTaskCodeConstants {
     public static final String DEVOPS_GITLAB_PIPELINE = "devopsGitlabPipeline";
 
     /**
+     * gitlab pipeline事件
+     */
+    public static final String DEVOPS_GITLAB_CI_PIPELINE = "devopsGitlabCiPipeline";
+
+    /**
      * 创建流水线自动部署实例
      */
     public static final String DEVOPS_PIPELINE_CREATE_INSTANCE = "devops-pipeline-create-instance";
@@ -216,11 +221,6 @@ public class SagaTaskCodeConstants {
      * devops删除应用服务
      */
     public static final String DEVOPS_APP_DELETE = "devops-delete-app-service";
-
-    /**
-     * 应用市场下载失败删除gitlab相关项目
-     */
-    public static final String DEVOPS_MARKET_DELETE_GITLAB_PRO = "devops-market-failed-delete-gitlab-pro";
 
     /**
      * DevOps消费添加admin用户事件

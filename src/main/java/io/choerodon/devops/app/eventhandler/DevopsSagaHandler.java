@@ -2,16 +2,13 @@ package io.choerodon.devops.app.eventhandler;
 
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
 
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.Objects;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.kubernetes.client.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,8 +19,6 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.AppServiceInstanceVO;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
@@ -39,10 +34,16 @@ import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
 import io.choerodon.devops.infra.dto.PipelineTaskRecordDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.PipelineNoticeType;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.TypeUtil;
+
+//import io.choerodon.core.notify.NoticeSendDTO;
 
 
 /**
@@ -56,7 +57,6 @@ public class DevopsSagaHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsSagaHandler.class);
 
     private final Gson gson = new Gson();
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
@@ -91,6 +91,8 @@ public class DevopsSagaHandler {
     private SendNotificationService sendNotificationService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
 
 
     /**
@@ -118,6 +120,9 @@ public class DevopsSagaHandler {
             devopsEnvironmentDTO.setFailed(false);
             devopsEnvironmentService.baseUpdate(devopsEnvironmentDTO);
         }
+
+        //既然环境创建成功，那就发webhook吧
+        sendNotificationService.sendWhenEnvCreate(devopsEnvironmentDTO, gitlabProjectPayload.getOrganizationId());
         return data;
     }
 
@@ -137,6 +142,8 @@ public class DevopsSagaHandler {
         devopsEnvironmentDTO.setSynchro(true);
         devopsEnvironmentDTO.setFailed(true);
         devopsEnvironmentService.baseUpdate(devopsEnvironmentDTO);
+        //环境创建失败发送web_hook
+        sendNotificationService.sendWhenCreateEnvFailed(devopsEnvironmentDTO, gitlabProjectPayload.getOrganizationId());
         return data;
     }
 
@@ -152,13 +159,7 @@ public class DevopsSagaHandler {
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 1)
     public String gitops(String data) {
-        PushWebHookVO pushWebHookVO = null;
-        try {
-            pushWebHookVO = objectMapper.readValue(data, PushWebHookVO.class);
-        } catch (IOException e) {
-            LOGGER.info(e.getMessage());
-        }
-        devopsGitService.fileResourceSync(pushWebHookVO);
+        devopsGitService.fileResourceSync(JsonHelper.unmarshalByJackson(data, PushWebHookVO.class));
         return data;
     }
 
@@ -178,6 +179,8 @@ public class DevopsSagaHandler {
             appServiceService.setAppErrStatus(data, devOpsAppServicePayload.getIamProjectId(), devOpsAppServicePayload.getAppServiceId());
             throw e;
         }
+        //创建成功发送webhook
+        sendNotificationService.sendWhenAppServiceCreate(devOpsAppServicePayload.getAppServiceDTO());
         return data;
     }
 
@@ -214,7 +217,7 @@ public class DevopsSagaHandler {
         try {
             UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
             //如果是用户是组织层的root，则跳过权限跟新
-            devOpsUserPayload.getIamUserIds().stream().forEach(userId -> {
+            devOpsUserPayload.getIamUserIds().forEach(userId -> {
                 IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
                 if (!baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), iamUserDTO.getOrganizationId())) {
                     updateUserPermissionService
@@ -247,6 +250,13 @@ public class DevopsSagaHandler {
             LOGGER.error("update environment gitlab permission for iam users {} error", devopsEnvUserPayload.getIamUserIds());
             throw e;
         }
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvUserPayload.getDevopsEnvironmentDTO();
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        if (Objects.isNull(projectDTO)) {
+            return payload;
+        }
+        //
+        sendNotificationService.sendWhenEnvUpdatePermissions(devopsEnvUserPayload, projectDTO);
         return payload;
     }
 
@@ -261,13 +271,21 @@ public class DevopsSagaHandler {
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 1)
     public String gitlabPipeline(String data) {
-        PipelineWebHookVO pipelineWebHookVO = null;
-        try {
-            pipelineWebHookVO = objectMapper.readValue(data, PipelineWebHookVO.class);
-        } catch (IOException e) {
-            LOGGER.info(e.getMessage());
-        }
-        devopsGitlabPipelineService.handleCreate(pipelineWebHookVO);
+        devopsGitlabPipelineService.handleCreate(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
+        return data;
+    }
+
+    /**
+     * gitlab ci pipeline事件
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_GITLAB_CI_PIPELINE,
+            description = "gitlab pipeline事件",
+            sagaCode = DEVOPS_GITLAB_CI_PIPELINE,
+            maxRetryCount = 3,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            seq = 1)
+    public String gitlabCiPipeline(String data) {
+        devopsCiPipelineRecordService.handleCreate(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
         return data;
     }
 
@@ -312,11 +330,11 @@ public class DevopsSagaHandler {
             pipelineStageRecordService.baseCreateOrUpdate(stageRecordDTO);
 
             pipelineService.updateStatus(pipelineRecordId, null, WorkFlowStatus.FAILED.toValue(), e.getMessage());
-            NoticeSendDTO.User user = new NoticeSendDTO.User();
-            user.setEmail(GitUserNameUtil.getEmail());
-            user.setId(GitUserNameUtil.getUserId().longValue());
-            pipelineService.sendSiteMessage(pipelineRecordId, PipelineNoticeType.PIPELINEFAILED.toValue(), Collections.singletonList(user), new HashMap<>());
-            LOGGER.info("send pipeline failed message to the user. The user id is {}", user.getId());
+            Long userId = GitUserNameUtil.getUserId().longValue();
+            sendNotificationService.sendPipelineNotice(pipelineRecordId,
+                    PipelineNoticeType.PIPELINEFAILED.toValue(),
+                    userId, GitUserNameUtil.getEmail(), new HashMap<>());
+            LOGGER.info("send pipeline failed message to the user. The user id is {}", userId);
         }
     }
 
@@ -344,14 +362,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String devopsCreateInstance(String data) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        InstanceSagaPayload instanceSagaPayload;
-        try {
-            instanceSagaPayload = objectMapper.readValue(data, InstanceSagaPayload.class);
-        } catch (IOException e) {
-            throw new CommonException("Error deserializing the data of instance when consuming create instance event");
-        }
-        appServiceInstanceService.createInstanceBySaga(instanceSagaPayload);
+        appServiceInstanceService.createInstanceBySaga(JsonHelper.unmarshalByJackson(data, InstanceSagaPayload.class));
         return data;
     }
 
@@ -468,11 +479,17 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public void deleteEnv(String data) {
-        JsonObject jsonObject = gson.fromJson(data, JsonObject.class);
-        Long envId = jsonObject.get("envId").getAsLong();
+        JsonObject JSONObject = gson.fromJson(data, JsonObject.class);
+        Long envId = JSONObject.get("envId").getAsLong();
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         devopsEnvironmentService.deleteEnvSaga(envId);
         LOGGER.info("================删除环境成功，envId：{}", envId);
-
+        //删除环境成功，发送webhook
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        if (Objects.isNull(projectDTO)) {
+            return;
+        }
+        sendNotificationService.sendWhenEnvDelete(devopsEnvironmentDTO, projectDTO.getOrganizationId());
     }
 
     /**
@@ -485,7 +502,7 @@ public class DevopsSagaHandler {
             description = "Devops删除应用服务", maxRetryCount = 3,
             seq = 1)
     public void deleteAppService(String data) {
-        DevOpsAppServicePayload devOpsAppServicePayload = gson.fromJson(data, DevOpsAppServicePayload.class);
+        DevOpsAppServicePayload devOpsAppServicePayload = JSONObject.parseObject(data, DevOpsAppServicePayload.class);
         appServiceService.deleteAppServiceSage(devOpsAppServicePayload.getIamProjectId(), devOpsAppServicePayload.getAppServiceId());
         //删除应用服务成功之后，发送消息
         if (!CollectionUtils.isEmpty(devOpsAppServicePayload.getDevopsUserPermissionVOS())) {

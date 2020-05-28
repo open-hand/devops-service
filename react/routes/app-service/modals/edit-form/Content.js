@@ -69,7 +69,7 @@ const CreateForm = injectIntl(observer((props) => {
     formdata.append('file', e.target.files[0]);
     try {
       const data = await axios.post(
-        `/file/v1/files?bucket_name=devops-service&file_name=${img.name.split('.')[0]}`,
+        `/hfle/v1/files?bucket_name=devops-service&file_name=${img.name.split('.')[0]}`,
         formdata,
         {
           header: { 'Content-Type': 'multipart/form-data' },

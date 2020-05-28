@@ -3,6 +3,7 @@ package io.choerodon.devops.app.eventhandler.payload;
 import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -22,6 +23,7 @@ public class DevOpsAppServicePayload {
     private Long iamProjectId;
     private Long templateAppServiceId;
     private Long templateAppServiceVersionId;
+    private Date date;
 
     private AppServiceDTO appServiceDTO;
     private List<DevopsUserPermissionVO> devopsUserPermissionVOS;
@@ -137,5 +139,14 @@ public class DevOpsAppServicePayload {
 
     public void setTemplateAppServiceVersionId(Long templateAppServiceVersionId) {
         this.templateAppServiceVersionId = templateAppServiceVersionId;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public DevOpsAppServicePayload setDate(Date date) {
+        this.date = date;
+        return this;
     }
 }

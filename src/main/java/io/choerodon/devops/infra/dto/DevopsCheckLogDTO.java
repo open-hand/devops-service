@@ -1,20 +1,23 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.Date;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.util.Date;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
-
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_check_log")
-public class DevopsCheckLogDTO extends BaseDTO {
+public class DevopsCheckLogDTO extends AuditDomain {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Date beginCheckDate;
     private Date endCheckDate;

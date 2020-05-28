@@ -1,11 +1,13 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.*;
 import java.util.Date;
+import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 
 /**
@@ -15,12 +17,13 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Time: 14:23
  * Description:
  */
-
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_merge_request")
-public class DevopsMergeRequestDTO extends BaseDTO {
+public class DevopsMergeRequestDTO extends AuditDomain {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     private Long gitlabProjectId;

@@ -97,6 +97,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
           permissionsDs.query();
           break;
         case tabs.POLARIS_TAB:
+          polarisNumDS.removeAll();
+          istSummaryDs.removeAll();
           istSummaryDs.transport.read.url = `/devops/v1/projects/${projectId}/polaris/envs/${id}`;
           polarisNumDS.transport.read.url = `devops/v1/projects/${projectId}/polaris/records?scope=env&scope_id=${id}`;
           loadPolaris();

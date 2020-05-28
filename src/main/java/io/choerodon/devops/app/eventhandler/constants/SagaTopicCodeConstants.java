@@ -96,6 +96,11 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_GITLAB_PIPELINE = "devops-gitlab-pipeline";
 
     /**
+     * gitlab ci pipeline创建到数据库
+     */
+    public static final String DEVOPS_GITLAB_CI_PIPELINE = "devops-gitlab-ci-pipeline";
+
+    /**
      * 创建分支
      */
     public static final String DEVOPS_CREATE_BRANCH = "devops-create-branch";
@@ -198,21 +203,6 @@ public class SagaTopicCodeConstants {
     public static final String IAM_DISABLE_USER = "iam-disable-user";
 
     /**
-     * 应用上传
-     */
-    public static final String APIM_UPLOAD_APP = "base-publish-market-app";
-
-    /**
-     * 应用上传，修复版本
-     */
-    public static final String APIM_UPLOAD_APP_FIX_VERSION = "base-publish-market-app-fix-version";
-
-    /**
-     * 应用下载
-     */
-    public static final String APIM_DOWNLOAD_APP = "base-download-application";
-
-    /**
      * 更新环境的权限
      */
     public static final String DEVOPS_UPDATE_ENV_PERMISSION = "devops-update-env-permission";
@@ -220,11 +210,6 @@ public class SagaTopicCodeConstants {
      * 删除环境
      */
     public static final String DEVOPS_DELETE_ENV = "devops-delete-env";
-
-    /**
-     * 应用市场删除gitlab中的项目
-     */
-    public static final String DEVOPS_MARKET_DELETE_GITLAB_PRO = "devops-market-failed-delete-gitlab-pro";
 
 
     /**

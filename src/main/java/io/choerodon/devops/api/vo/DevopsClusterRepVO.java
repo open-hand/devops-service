@@ -18,12 +18,6 @@ public class DevopsClusterRepVO {
     @ApiModelProperty("是否连接")
     private Boolean connect;
 
-    @ApiModelProperty(value = "是否需要升级")
-    private Boolean upgrade;
-
-    @ApiModelProperty("升级信息")
-    private String upgradeMessage;
-
     @ApiModelProperty("集群描述")
     private String description;
 
@@ -33,7 +27,7 @@ public class DevopsClusterRepVO {
     private String choerodonId;
 
     @ApiModelProperty("创建者id")
-    private Long createBy;
+    private Long createdBy;
 
     @ApiModelProperty("纪录版本字段")
     private Long objectVersionNumber;
@@ -87,31 +81,6 @@ public class DevopsClusterRepVO {
         this.connect = connect;
     }
 
-    public Boolean getUpgrade() {
-        return upgrade;
-    }
-
-    public void setUpgrade(Boolean upgrade) {
-        this.upgrade = upgrade;
-    }
-
-    public String getUpgradeMessage() {
-        return upgradeMessage;
-    }
-
-    public void setUpgradeMessage(String upgradeMessage) {
-        this.upgradeMessage = upgradeMessage;
-    }
-
-
-    public Long getCreateBy() {
-        return createBy;
-    }
-
-    public void setCreateBy(Long createBy) {
-        this.createBy = createBy;
-    }
-
     public String getToken() {
         return token;
     }
@@ -134,5 +103,14 @@ public class DevopsClusterRepVO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public DevopsClusterRepVO setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+        return this;
     }
 }
