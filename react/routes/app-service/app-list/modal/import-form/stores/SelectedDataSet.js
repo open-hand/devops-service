@@ -27,7 +27,7 @@ export default ({ intlPrefix, formatMessage, projectId, importStore }) => {
       if (!importStore.getSkipCheck) {
         try {
           const res = await axios.get(`/devops/v1/projects/${projectId}/app_service/check_code?code=${value}`);
-          if (res && res.failed) {
+          if ((res && res.failed) || !res) {
             return formatMessage({ id: 'checkCodeExist' });
           }
         } catch (err) {
@@ -54,7 +54,7 @@ export default ({ intlPrefix, formatMessage, projectId, importStore }) => {
       if (!importStore.getSkipCheck) {
         try {
           const res = await axios.get(`/devops/v1/projects/${projectId}/app_service/check_name?name=${encodeURIComponent(value)}`);
-          if (res && res.failed) {
+          if ((res && res.failed) || !res) {
             return formatMessage({ id: 'checkNameExist' });
           }
         } catch (err) {

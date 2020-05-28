@@ -38,7 +38,7 @@ const CreateForm = ({ certId, intl: { formatMessage }, form, store, projectId, m
       if (value && value !== name) {
         try {
           const res = await store.checkCertName(projectId, encodeURIComponent(value));
-          if (res && res.failed) {
+          if ((res && res.failed) || !res) {
             callback(formatMessage({ id: 'checkNameExist' }));
           } else {
             callback();
