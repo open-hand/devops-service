@@ -270,10 +270,17 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
     @Override
     public void checkName(Long envId, String name) {
-        DevopsConfigMapDTO devopsConfigMapDTO = baseQueryByEnvIdAndName(envId, name);
-        if (devopsConfigMapDTO != null) {
+        if (!isNameUnique(envId, name)) {
             throw new CommonException("error.name.exist");
         }
+    }
+
+    @Override
+    public boolean isNameUnique(Long envId, String name) {
+        DevopsConfigMapDTO devopsConfigMapDTO = new DevopsConfigMapDTO();
+        devopsConfigMapDTO.setName(name);
+        devopsConfigMapDTO.setEnvId(envId);
+        return devopsConfigMapMapper.selectCount(devopsConfigMapDTO) == 0;
     }
 
     @Override

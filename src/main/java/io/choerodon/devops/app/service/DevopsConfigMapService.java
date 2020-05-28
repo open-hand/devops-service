@@ -18,6 +18,8 @@ public interface DevopsConfigMapService {
 
     void checkName(Long envId, String name);
 
+    boolean isNameUnique(Long envId, String name);
+
     DevopsConfigMapRespVO createOrUpdateByGitOps(DevopsConfigMapVO devopsConfigMapVO, Long userId);
 
     DevopsConfigMapRespVO query(Long configMapId);
