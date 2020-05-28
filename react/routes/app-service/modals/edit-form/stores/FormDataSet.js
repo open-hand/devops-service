@@ -88,7 +88,7 @@ export default (({ intlPrefix, formatMessage, projectId, appServiceId }) => {
     if (value && pa.test(value)) {
       try {
         const res = await axios.get(`/devops/v1/projects/${projectId}/app_service/check_name?name=${encodeURIComponent(value)}`);
-        if (res && res.failed) {
+        if ((res && res.failed) || !res) {
           return formatMessage({ id: 'checkNameExist' });
         } else {
           return true;

@@ -11,8 +11,8 @@ export default ({ projectId, formatMessage, intlPrefix, modal, isEdit, afterOk, 
       projectId,
       clusterName: window.encodeURIComponent(value),
     }).then((res) => {
-      if (res && res.failed) {
-        messageName = `名称${formatMessage({ id: `${intlPrefix}.check.exist` })}`;
+      if ((res && res.failed) || !res) {
+        messageName = formatMessage({ id: 'checkNameExist' });
       }
     }).catch((e) => {
       messageName = `${formatMessage({ id: `${intlPrefix}.check.error` })}`;
@@ -30,9 +30,11 @@ export default ({ projectId, formatMessage, intlPrefix, modal, isEdit, afterOk, 
         projectId,
         clusterCode: value,
       }).then((res) => {
-        if (res && res.failed) {
-          messageCode = `编码${formatMessage({ id: `${intlPrefix}.check.exist` })}`;
+        if ((res && res.failed) || !res) {
+          messageCode = formatMessage({ id: 'checkCodeExist' });
         }
+      }).catch((e) => {
+        messageCode = formatMessage({ id: 'checkCodeFailed' });
       });
     }
     return messageCode;

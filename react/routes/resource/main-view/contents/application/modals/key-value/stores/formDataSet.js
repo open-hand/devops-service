@@ -1,20 +1,21 @@
 import { handlePromptError } from '../../../../../../../../utils';
 
 export default ({ title, id, formatMessage, projectId, envId, store }) => {
-  const checkName = (value, name, record) => {
+  const checkName = async (value, name, record) => {
     const pattern = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
     if (value && !pattern.test(value)) {
       return formatMessage({ id: 'network.name.check.failed' });
     } else if (value && pattern.test(value)) {
-      store.checkName(projectId, envId, value)
-        .then(res => {
-          if (handlePromptError(res, false)) {
-            return true;
-          } else {
-            return formatMessage({ id: 'checkNameExist' });
-          }
-        })
-        .catch(error => formatMessage({ id: 'checkNameFailed' }));
+      try {
+        const res = await store.checkName(projectId, envId, value);
+        if (res && !res.failed) {
+          return true;
+        } else {
+          return formatMessage({ id: 'checkNameExist' });
+        }
+      } catch (e) {
+        return formatMessage({ id: 'checkNameFailed' });
+      }
     } else {
       return true;
     }

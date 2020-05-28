@@ -58,7 +58,7 @@ export default class PipelineCreate extends Component {
       if (reg.test(value) && !emojiMatch.test(value)) {
         PipelineCreateStore.checkName(projectId, value)
           .then((data) => {
-            if (data && data.failed) {
+            if ((data && data.failed) || !data) {
               callback(formatMessage({ id: 'checkNameExist' }));
             } else {
               callback();

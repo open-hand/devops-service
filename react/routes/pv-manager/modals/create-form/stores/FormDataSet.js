@@ -12,7 +12,7 @@ export default (({ intlPrefix, formatMessage, projectId, typeDs, modeDs, storage
     if (pa.test(value)) {
       try {
         const res = await axios.get(`/devops/v1/projects/${projectId}/pvs/check_name?clusterId=${record.get('clusterId')}&pvName=${value}`);
-        if (res && res.failed) {
+        if ((res && res.failed) || !res) {
           return formatMessage({ id: 'checkNameExist' });
         } else {
           return true;

@@ -95,7 +95,7 @@ export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, deploySto
       if (!record.get('environmentId')) return;
       try {
         const res = await axios.get(`/devops/v1/projects/${projectId}/app_service_instances/check_name?instance_name=${value}&env_id=${record.get('environmentId')}`);
-        if (res && res.failed) {
+        if ((res && res.failed) || !res) {
           return formatMessage({ id: 'checkNameExist' });
         } else {
           return true;

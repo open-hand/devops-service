@@ -12,14 +12,14 @@ export default ({ formatMessage, intlPrefix, projectId, store, envId }) => {
   };
   const nameValidator = async (value, name, record) => {
     const id = record.get('id');
-    const param = id ? `&deploy_value_id=${id}` : '';
+    const oldName = record.getPristineValue('name');
+    if (id && oldName === value) {
+      return true;
+    }
     try {
-      const res = await axios.get(`/devops/v1/projects/${projectId}/deploy_value/check_name?name=${encodeURIComponent(value)}&env_id=${envId}${param}`);
-      if (res.failed) {
-        if (res.code === 'error.devops.pipeline.value.name.exit') {
-          return '名称已存在';
-        }
-        return '名称校验失败，请稍后再试';
+      const res = await axios.get(`/devops/v1/projects/${projectId}/deploy_value/check_name?name=${encodeURIComponent(value)}&env_id=${envId}`);
+      if ((res && res.failed) || !res) {
+        return '名称已存在';
       }
       return true;
     } catch (err) {

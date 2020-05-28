@@ -20,8 +20,8 @@ export default ({ projectId, appServiceId, formatMessage, contentStore }) => {
     } else {
       await axios.get(`/devops/v1/projects/${projectId}/app_service/${appServiceId}/git/check_branch_name?branch_name=${branchName}`)
         .then((res) => {
-          if (res && res.failed) {
-            mess = res.message;
+          if ((res && res.failed) || !res) {
+            mess = formatMessage({ id: 'branch.check.existence' });
           }
         });
     }

@@ -91,7 +91,7 @@ export default class TaskCreate extends Component {
     if (p.test(value)) {
       PipelineCreateStore.checkInstanceName(id, value, envId)
         .then((data) => {
-          if (data && data.failed) {
+          if ((data && data.failed) || !data) {
             callback(formatMessage({ id: 'checkNameExist' }));
           } else {
             callback();
