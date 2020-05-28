@@ -15,6 +15,8 @@ import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1beta1Ingress;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -63,6 +65,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class AppServiceInstanceServiceImpl implements AppServiceInstanceService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AppServiceInstanceServiceImpl.class);
+
     private static final String CREATE = "create";
     private static final String UPDATE = "update";
     private static final String CHOERODON = "choerodon-test";
@@ -1540,7 +1544,17 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return devopsEnvCommandValueDTO;
     }
 
+    /**
+     * 获取用于拉取此版本镜像的secret名称, 如果不需要secret, 返回null. 如果需要, 会创建并返回secret code
+     *
+     * @param appServiceDTO        应用服务信息
+     * @param appServiceVersionId  应用服务版本id
+     * @param devopsEnvironmentDTO 环境信息
+     * @return secret的code(如果需要)
+     */
+    @Nullable
     private String getSecret(AppServiceDTO appServiceDTO, Long appServiceVersionId, DevopsEnvironmentDTO devopsEnvironmentDTO) {
+        LOGGER.debug("Get secret for app service with id {} and code {} and version id: {}", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId);
         String secretCode = null;
         //如果应用绑定了私有镜像库,则处理secret
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceVersionId);
@@ -1550,12 +1564,19 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         } else {
             devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR, AUTHTYPE);
         }
+
         if (devopsConfigDTO != null) {
+            LOGGER.debug("Docker config for app service with id {} and code {} and version id: {} is not null. And the config id is {}...", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId, devopsConfigDTO.getId());
+
             ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
             if (devopsConfigDTO.getName() != null && devopsConfigDTO.getName().equals("harbor_default") && appServiceDTO.getProjectId() != null) {
                 configVO = queryDefaultConfig(appServiceDTO.getProjectId(), configVO);
+                LOGGER.debug("Real docker config for app service with id {} and code {} and version id: {} is queried. And the config id is {}...", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId, devopsConfigDTO.getId());
             }
+
             if (configVO.getPrivate() != null && configVO.getPrivate()) {
+                LOGGER.debug("Docker config for app service with id {} and code {} and version id: {} is private.", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId);
+
                 DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByClusterIdAndNamespace(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsConfigDTO.getId(), appServiceDTO.getProjectId());
                 if (devopsRegistrySecretDTO == null) {
                     //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
@@ -1578,6 +1599,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 }
             }
         }
+
+        LOGGER.debug("Got secret with code {} for app service with id {} and code {} and version id: {}", secretCode, appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId);
         return secretCode;
     }
 

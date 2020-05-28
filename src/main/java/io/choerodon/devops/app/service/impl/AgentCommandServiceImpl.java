@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 import com.alibaba.fastjson.JSONArray;
 import com.google.gson.Gson;
 import io.codearte.props2yaml.Props2YAML;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.hzero.websocket.constant.WebSocketConstant;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.hzero.websocket.vo.MsgVO;
@@ -65,7 +64,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private static final String OPERATE_DOCKER_REGISTRY_SECRET = "operate_docker_registry_secret";
 
 
-    private Pattern pattern = Pattern.compile("^[-+]?[\\d]*$");
+    private static final Pattern PATTERN = Pattern.compile("^[-+]?[\\d]*$");
     private static final Gson gson = new Gson();
 
 
@@ -81,9 +80,6 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     @Lazy
     private KeySocketSendHelper webSocketHelper;
 
-
-    @Value("${services.helm.url}")
-    private String helmUrl;
     @Value("${agent.repoUrl}")
     private String agentRepoUrl;
     @Value("${services.gitlab.sshUrl}")
@@ -285,7 +281,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         List<GitEnvConfigVO> gitEnvConfigVOS = new ArrayList<>();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
         Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getTenantNum(),
+        String repoUrl = GitUtil.getGitlabSshUrl(PATTERN, gitlabSshUrl, organization.getTenantNum(),
                 projectDTO.getCode(), devopsEnvironmentDTO.getCode(),
                 EnvironmentType.forValue(devopsEnvironmentDTO.getType()),
                 devopsClusterMapper.selectByPrimaryKey(devopsEnvironmentDTO.getClusterId()).getCode());
@@ -352,7 +348,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private void sendToWebSocket(Long clusterId, String key, String textMessage) {
         webSocketHelper.sendByGroup(CLUSTER + clusterId, key, textMessage);
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Send to webSocket: cluster: {}, key: {}, textMessage: {}", LogUtil.cutOutString(textMessage, 200));
+            LOGGER.info("Send to webSocket: cluster: {}, key: {}, textMessage: {}", clusterId, key, LogUtil.cutOutString(textMessage, 200));
         }
     }
 
