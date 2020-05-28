@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +21,7 @@ import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.EnvironmentType;
@@ -104,8 +104,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     private void screenOrgLable(GitlabGroupMemberVO gitlabGroupMemberVO, Boolean isCreate) {
         List<String> roleLabels = gitlabGroupMemberVO.getRoleLabels();
-        if (roleLabels.contains(LabelType.ORGANIZATION_GITLAB_OWNER.getValue())) {
-            List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(gitlabGroupMemberVO.getResourceId());
+        List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(gitlabGroupMemberVO.getResourceId());
+        if (!CollectionUtils.isEmpty(roleLabels) && roleLabels.contains(LabelType.ORGANIZATION_GITLAB_OWNER.getValue())) {
             if (projectDTOS != null && projectDTOS.size() > 0) {
                 if (isCreate) {
                     projectDTOS.forEach(projectDTO -> assignGitLabGroupMemeberForOwner(projectDTO, gitlabGroupMemberVO.getUserId()));
@@ -113,6 +113,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     deleteGitLabPermissions(projectDTOS, gitlabGroupMemberVO);
                 }
             }
+        } else if (Boolean.FALSE.equals(isCreate)) {
+            deleteGitLabPermissions(projectDTOS, gitlabGroupMemberVO);
         }
     }
 
