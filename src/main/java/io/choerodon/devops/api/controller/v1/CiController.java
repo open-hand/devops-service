@@ -18,16 +18,15 @@ import io.choerodon.swagger.annotation.Permission;
 /**
  * Created by younger on 2018/4/13.
  */
-
 @RestController
 @RequestMapping(value = "/ci")
 public class CiController {
     @Value("${devops.ci.default.image}")
     private String defaultCiImage;
 
-    private AppServiceService applicationService;
-    private AppServiceVersionService appServiceVersionService;
-    private DevopsCiJobService devopsCiJobService;
+    private final AppServiceService applicationService;
+    private final AppServiceVersionService appServiceVersionService;
+    private final DevopsCiJobService devopsCiJobService;
 
     public CiController(AppServiceService applicationService,
                         DevopsCiJobService devopsCiJobService,
@@ -68,7 +67,7 @@ public class CiController {
     @Permission(permissionPublic = true)
     @ApiOperation(value = "创建应用服务版本")
     @PostMapping
-    public ResponseEntity create(
+    public ResponseEntity<Void> create(
             @ApiParam(value = "image", required = true)
             @RequestParam String image,
             @ApiParam(value = "harbor_config_id", required = true)
@@ -82,13 +81,13 @@ public class CiController {
             @ApiParam(value = "taz包", required = true)
             @RequestParam MultipartFile file) {
         appServiceVersionService.create(image, harborConfigId, token, version, commit, file);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
     @Permission(permissionPublic = true)
     @ApiOperation(value = "查询CI流水线默认的镜像地址")
     @GetMapping("/default_image")
-    public ResponseEntity queryDefaultCiImageUrl() {
+    public ResponseEntity<String> queryDefaultCiImageUrl() {
         return ResponseEntity.ok(defaultCiImage);
     }
 
