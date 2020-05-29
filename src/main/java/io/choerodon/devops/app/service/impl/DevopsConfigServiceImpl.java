@@ -21,9 +21,9 @@ import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.api.vo.DevopsConfigRepVO;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.app.task.DevopsCommandRunner;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
@@ -464,9 +464,9 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     private DevopsConfigDTO baseQueryDefaultConfig(String type) {
         DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
         if (type.equals(HARBOR)) {
-            devopsConfigDTO.setName(DevopsCommandRunner.HARBOR_NAME);
+            devopsConfigDTO.setName(MiscConstants.DEFAULT_HARBOR_NAME);
         } else {
-            devopsConfigDTO.setName(DevopsCommandRunner.CHART_NAME);
+            devopsConfigDTO.setName(MiscConstants.DEFAULT_CHART_NAME);
         }
         return devopsConfigMapper.selectOne(devopsConfigDTO);
     }

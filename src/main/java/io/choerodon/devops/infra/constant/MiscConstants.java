@@ -1,0 +1,20 @@
+package io.choerodon.devops.infra.constant;
+
+/**
+ * 不好归类的常量
+ *
+ * @author zmf
+ * @since 5/29/20
+ */
+public class MiscConstants {
+    /**
+     * 默认的chart配置的名称
+     */
+    public static final String DEFAULT_CHART_NAME = "chart_default";
+    /**
+     * 默认的docker配置的名称
+     */
+    public static final String DEFAULT_HARBOR_NAME = "harbor_default";
+
+    public static final String DEFAULT_SONAR_NAME = "sonar_default";
+}
