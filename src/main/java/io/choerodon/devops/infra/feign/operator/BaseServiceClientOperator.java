@@ -1,20 +1,7 @@
 package io.choerodon.devops.infra.feign.operator;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
@@ -28,6 +15,18 @@ import io.choerodon.devops.infra.util.FeignParamUtils;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Sheep on 2019/7/11.
@@ -48,15 +47,16 @@ public class BaseServiceClientOperator {
 
     /**
      * @param organizationId 组织id
-     * @param label          角色标签
+     * @param code          角色标签
      * @return 角色id
      */
-    public Long getRoleId(Long organizationId, String label) {
-        ResponseEntity<Long> roleIdResponseEntity = baseServiceClient.getRoleId(organizationId, label);
-        if (roleIdResponseEntity.getStatusCode().is2xxSuccessful()) {
-            return roleIdResponseEntity.getBody();
+    public Long getRoleId(Long organizationId, String code) {
+        ResponseEntity<List<RoleDTO>> roleResponseEntity = baseServiceClient.getRoleByCode(organizationId, code);
+        List<RoleDTO> roleDTOList = roleResponseEntity.getBody();
+        if (roleResponseEntity.getStatusCode().is2xxSuccessful() && roleDTOList != null && roleDTOList.size() != 0) {
+            return roleDTOList.get(0).getId();
         } else {
-            throw new CommonException("error.organization.role.id.get", label);
+            throw new CommonException("error.organization.role.id.get", code);
         }
     }
 
@@ -283,15 +283,23 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public ClientDTO createClient(ClientVO clientVO) {
+    public ClientVO createClient(ClientVO clientVO) {
         try {
-            ClientDTO client = baseServiceClient.createClient(clientVO).getBody();
-            if (client == null) {
+            ClientVO client = baseServiceClient.createClient(clientVO).getBody();
+            if (client == null || client.getId() == null) {
                 throw new CommonException("error.create.client");
             }
             return client;
         } catch (Exception ex) {
             throw new CommonException("error.create.client");
+        }
+    }
+
+    public ClientVO queryClientByName(Long organization, String name) {
+        try {
+            return baseServiceClient.queryClientByName(organization, name).getBody();
+        } catch (Exception ex) {
+            throw new CommonException("error.get.client");
         }
     }
 
@@ -303,9 +311,9 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public ClientDTO queryClientBySourceId(Long organizationId, Long sourceId) {
+    public ClientVO queryClientBySourceId(Long organizationId, Long clientId) {
         try {
-            ResponseEntity<ClientDTO> responseEntity = baseServiceClient.queryClientBySourceId(organizationId, sourceId);
+            ResponseEntity<ClientVO> responseEntity = baseServiceClient.queryClientBySourceId(organizationId, clientId);
             return responseEntity.getBody();
         } catch (Exception ex) {
             throw new CommonException("error.query.client");

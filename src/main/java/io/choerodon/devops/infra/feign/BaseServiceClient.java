@@ -1,22 +1,20 @@
 package io.choerodon.devops.infra.feign;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.validation.Valid;
-import javax.websocket.server.PathParam;
-
-import io.swagger.annotations.ApiOperation;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by younger on 2018/3/29.
@@ -88,8 +86,8 @@ public interface BaseServiceClient {
      * @param clientVO clientVO
      * @return 分配结果
      */
-    @PostMapping(value = "/choerodon/v1/clients")
-    ResponseEntity<ClientDTO> createClient(@RequestBody @Valid ClientVO clientVO);
+    @PostMapping(value = "/v1/clients")
+    ResponseEntity<ClientVO> createClient(@RequestBody @Valid ClientVO clientVO);
 
     /**
      * 组织下删除client
@@ -105,11 +103,11 @@ public interface BaseServiceClient {
      * 根据集群Id和组织Id查询client
      *
      * @param organizationId
-     * @param sourceId
+     * @param clientId
      * @return
      */
-    @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/clients/source/{source_id}")
-    ResponseEntity<ClientDTO> queryClientBySourceId(@PathVariable("organization_id") Long organizationId, @PathVariable("source_id") Long sourceId);
+    @GetMapping(value = "/v1/{organization_id}/clients/{client_id}")
+    ResponseEntity<ClientVO> queryClientBySourceId(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId);
 
 
     @GetMapping(value = "/choerodon/v1/users/{id}/projects/{project_id}/check_is_gitlab_owner")
@@ -176,11 +174,10 @@ public interface BaseServiceClient {
     /**
      * 查询组织下指定角色的id
      */
-    // TODO by lihao
     @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/roles")
-    ResponseEntity<Long> getRoleId(
+    ResponseEntity<List<RoleDTO>> getRoleByCode(
             @PathVariable("organization_id") Long organizationId,
-            @PathParam("label") String label);
+            @RequestParam("role_code") String code);
 
     /**
      * 查询资源限制
@@ -189,4 +186,11 @@ public interface BaseServiceClient {
      */
     @GetMapping("/choerodon/v1/organizations/resource_limit")
     ResponseEntity<ResourceLimitVO> queryResourceLimit();
+
+    /**
+     * 根据名称查询客户端
+     */
+    @GetMapping("/choerodon/v1/organizations/{organization_id}/clients/query_by_name")
+    ResponseEntity<ClientVO> queryClientByName(@PathVariable("organization_id") Long organizationId,
+                                         @RequestParam(value = "client_name") String clientName);
 }

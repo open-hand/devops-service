@@ -1,8 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.TimeZoneConstants;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.ClientVO;
+import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,17 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
-import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.iam.ClientDTO;
-import io.choerodon.devops.infra.dto.iam.ClientVO;
-import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.*;
-import io.choerodon.devops.infra.util.*;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author zhaotianxin
@@ -256,14 +255,11 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
         // 解决分布式事务问题，注册client
-        ClientDTO clientDTO = baseServiceClientOperator.queryClientBySourceId(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getId());
-        LOGGER.info("clientDTO:{}", clientDTO);
         // 集群未注册client，则先注册
-        if (clientDTO == null) {
-            clientDTO = registerClient(devopsClusterDTO);
-        }
-        devopsClusterDTO.setClientId(clientDTO.getId());
-        devopsPrometheusVO.setClientName(clientDTO.getName());
+        ClientVO clientVO = registerClient(devopsClusterDTO);
+
+        devopsClusterDTO.setClientId(clientVO.getId());
+        devopsPrometheusVO.setClientName(clientVO.getName());
         devopsClusterService.baseUpdate(devopsClusterDTO);
 
         DevopsPrometheusDTO newPrometheusDTO = ConvertUtils.convertObject(devopsPrometheusVO, DevopsPrometheusDTO.class);
@@ -307,8 +303,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             return false;
         }
         // 添加client
-        ClientDTO clientDTO = baseServiceClientOperator.queryClientBySourceId(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getId());
-        devopsPrometheusDTO.setClientName(clientDTO.getName());
+        ClientVO clientVO = baseServiceClientOperator.queryClientBySourceId(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getClientId());
+        devopsPrometheusDTO.setClientName(clientVO.getName());
 
         devopsPrometheusDTO.setAdminPassword(devopsPrometheusVO.getAdminPassword());
         devopsPrometheusDTO.setGrafanaDomain(devopsPrometheusVO.getGrafanaDomain());
@@ -612,18 +608,26 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         return devopsClusterDTO;
     }
 
-    private ClientDTO registerClient(DevopsClusterDTO devopsClusterDTO) {
+    private ClientVO registerClient(DevopsClusterDTO devopsClusterDTO) {
+        String clientName = GRAFANA_CLIENT_PREFIX + devopsClusterDTO.getId();
         // 添加客户端
-        ClientVO clientVO = new ClientVO();
-        clientVO.setTenantName(GRAFANA_CLIENT_PREFIX + devopsClusterDTO.getId());
+        ClientVO clientVO = baseServiceClientOperator.queryClientByName(devopsClusterDTO.getOrganizationId(), clientName);
+        if (clientVO != null) {
+            return clientVO;
+        }
+
+        clientVO = new ClientVO();
+        clientVO.setName(clientName);
         clientVO.setOrganizationId(devopsClusterDTO.getOrganizationId());
         clientVO.setAuthorizedGrantTypes("password,implicit,client_credentials,refresh_token,authorization_code");
         clientVO.setSecret("grafana");
         clientVO.setRefreshTokenValidity(360000L);
         clientVO.setAccessTokenValidity(360000L);
+        clientVO.setPwdReplayFlag(0);
+        clientVO.setTimeZone(TimeZoneConstants.GMT8);
         LOGGER.info("clientVO:{}", clientVO);
         // 获取当前组织下的项目所有者的角色id
-        Long roleId = baseServiceClientOperator.getRoleId(devopsClusterDTO.getOrganizationId(), "PROJECT_ADMIN");
+        Long roleId = baseServiceClientOperator.getRoleId(devopsClusterDTO.getOrganizationId(), RoleLabel.PROJECT_ADMIN.value());
         // 在client添加这个id
         clientVO.setAccessRoles(String.valueOf(roleId));
         return baseServiceClientOperator.createClient(clientVO);

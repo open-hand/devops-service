@@ -1,14 +1,5 @@
 package io.choerodon.devops.infra.feign.fallback;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.validation.Valid;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
@@ -17,6 +8,14 @@ import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by younger on 2018/3/29.
@@ -32,8 +31,8 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<Long> getRoleId(Long organizationId, String label) {
-        throw new CommonException("error.organization.role.id.get", label);
+    public ResponseEntity<List<RoleDTO>> getRoleByCode(Long organizationId, String code) {
+        throw new CommonException("error.organization.role.id.get", code);
     }
 
     @Override
@@ -96,7 +95,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<ClientDTO> createClient(@Valid ClientVO clientVO) {
+    public ResponseEntity<ClientVO> createClient(@Valid ClientVO clientVO) {
         throw new CommonException("error.create.client");
     }
 
@@ -106,7 +105,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<ClientDTO> queryClientBySourceId(Long organizationId, Long sourceId) {
+    public ResponseEntity<ClientVO> queryClientBySourceId(Long organizationId, Long sourceId) {
         throw new CommonException("error.query.client");
     }
 
@@ -148,5 +147,10 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     @Override
     public ResponseEntity<Page<OrgAdministratorVO>> listOrgAdministrator(Long organizationId, Integer size) {
         throw new CommonException("error.query.org.by.id");
+    }
+
+    @Override
+    public ResponseEntity<ClientVO> queryClientByName(Long organizationId, String clientName) {
+        throw new CommonException("error.get.client");
     }
 }
