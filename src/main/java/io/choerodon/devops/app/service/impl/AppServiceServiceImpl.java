@@ -612,7 +612,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public void checkName(Long projectId, String name) {
-        if (isNameUnique(projectId, name)) {
+        if (!isNameUnique(projectId, name)) {
             throw new CommonException("error.name.exist");
         }
     }
