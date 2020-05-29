@@ -711,6 +711,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             //创建实例成功 发送web hook json
             if (CREATE.equals(instanceSagaPayload.getAppServiceDeployVO().getType())) {
                 AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectByPrimaryKey(instanceSagaPayload.getAppServiceDeployVO().getInstanceId());
+                appServiceInstanceDTO.setProjectId(instanceSagaPayload.getProjectId());
                 sendNotificationService.sendWhenInstanceSuccessOrDelete(appServiceInstanceDTO, SendSettingEnum.CREATE_RESOURCE.value());
             }
         } catch (Exception e) {
