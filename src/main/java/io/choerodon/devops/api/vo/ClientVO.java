@@ -1,19 +1,16 @@
-package io.choerodon.devops.infra.dto.iam;
+package io.choerodon.devops.api.vo;
 
+
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
-import io.swagger.annotations.ApiModelProperty;
-
-import io.choerodon.mybatis.domain.AuditDomain;
-
 /**
- * @author superlee
- * @since 2019-04-22
+ * wanghao
  */
-public class ClientDTO extends AuditDomain {
+public class ClientVO {
 
     private static final String REGEX = "^[a-z0-9A-Z]+$";
 
@@ -60,11 +57,23 @@ public class ClientDTO extends AuditDomain {
     @ApiModelProperty(value = "自动授权域/非必填")
     private String autoApprove;
 
-    @ApiModelProperty(value = "集群id")
-    private Long sourceId;
+    @ApiModelProperty(value = "客户端可访问角色")
+    private String accessRoles;
 
-    @ApiModelProperty(value = "client类型")
-    private String sourceType;
+    @ApiModelProperty("密码防重放标识")
+    @NotNull
+    private Integer pwdReplayFlag;
+
+    @ApiModelProperty("时区，默认 GMT+8")
+    private String timeZone;
+
+    public String getAccessRoles() {
+        return accessRoles;
+    }
+
+    public void setAccessRoles(String accessRoles) {
+        this.accessRoles = accessRoles;
+    }
 
     public Long getId() {
         return id;
@@ -72,14 +81,6 @@ public class ClientDTO extends AuditDomain {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public Long getOrganizationId() {
@@ -162,25 +163,36 @@ public class ClientDTO extends AuditDomain {
         this.autoApprove = autoApprove;
     }
 
-    public Long getSourceId() {
-        return sourceId;
+    public String getName() {
+        return name;
     }
 
-    public void setSourceId(Long sourceId) {
-        this.sourceId = sourceId;
+    public ClientVO setName(String name) {
+        this.name = name;
+        return this;
     }
 
-    public String getSourceType() {
-        return sourceType;
+    public Integer getPwdReplayFlag() {
+        return pwdReplayFlag;
     }
 
-    public void setSourceType(String sourceType) {
-        this.sourceType = sourceType;
+    public ClientVO setPwdReplayFlag(Integer pwdReplayFlag) {
+        this.pwdReplayFlag = pwdReplayFlag;
+        return this;
+    }
+
+    public String getTimeZone() {
+        return timeZone;
+    }
+
+    public ClientVO setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
+        return this;
     }
 
     @Override
     public String toString() {
-        return "ClientDTO{" +
+        return "ClientVO{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", organizationId=" + organizationId +
@@ -193,8 +205,9 @@ public class ClientDTO extends AuditDomain {
                 ", refreshTokenValidity=" + refreshTokenValidity +
                 ", additionalInformation='" + additionalInformation + '\'' +
                 ", autoApprove='" + autoApprove + '\'' +
-                ", sourceId=" + sourceId +
-                ", sourceType='" + sourceType + '\'' +
+                ", accessRoles='" + accessRoles + '\'' +
+                ", pwdReplayFlag=" + pwdReplayFlag +
+                ", timeZone='" + timeZone + '\'' +
                 '}';
     }
 }

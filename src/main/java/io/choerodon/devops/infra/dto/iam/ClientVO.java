@@ -1,12 +1,12 @@
 package io.choerodon.devops.infra.dto.iam;
 
 
+import io.swagger.annotations.ApiModelProperty;
+
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-
-import io.swagger.annotations.ApiModelProperty;
 
 /**
  * wanghao
@@ -22,7 +22,7 @@ public class ClientVO {
     @Size(min = 1, max = 12, message = "error.client.name.size")
     @NotNull(message = "error.clientName.null")
     @Pattern(regexp = REGEX, message = "error.client.name.regex")
-    private String tenantName;
+    private String name;
 
     @ApiModelProperty(value = "组织ID/必填")
     private Long organizationId;
@@ -69,6 +69,13 @@ public class ClientVO {
     @ApiModelProperty(value = "客户端可访问角色")
     private String accessRoles;
 
+    @ApiModelProperty("密码防重放标识")
+    @NotNull
+    private Integer pwdReplayFlag;
+
+    @ApiModelProperty("时区，默认 GMT+8")
+    private String timeZone;
+
     public String getAccessRoles() {
         return accessRoles;
     }
@@ -83,14 +90,6 @@ public class ClientVO {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getTenantName() {
-        return tenantName;
-    }
-
-    public void setTenantName(String tenantName) {
-        this.tenantName = tenantName;
     }
 
     public Long getOrganizationId() {
@@ -189,11 +188,38 @@ public class ClientVO {
         return sourceId;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public ClientVO setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public Integer getPwdReplayFlag() {
+        return pwdReplayFlag;
+    }
+
+    public ClientVO setPwdReplayFlag(Integer pwdReplayFlag) {
+        this.pwdReplayFlag = pwdReplayFlag;
+        return this;
+    }
+
+    public String getTimeZone() {
+        return timeZone;
+    }
+
+    public ClientVO setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "ClientVO{" +
                 "id=" + id +
-                ", name='" + tenantName + '\'' +
+                ", name='" + name + '\'' +
                 ", organizationId=" + organizationId +
                 ", resourceIds='" + resourceIds + '\'' +
                 ", secret='" + secret + '\'' +
@@ -206,6 +232,9 @@ public class ClientVO {
                 ", autoApprove='" + autoApprove + '\'' +
                 ", sourceId=" + sourceId +
                 ", sourceType='" + sourceType + '\'' +
+                ", accessRoles='" + accessRoles + '\'' +
+                ", pwdReplayFlag=" + pwdReplayFlag +
+                ", timeZone='" + timeZone + '\'' +
                 '}';
     }
 }
