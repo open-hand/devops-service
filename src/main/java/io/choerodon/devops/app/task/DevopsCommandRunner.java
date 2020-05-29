@@ -1,10 +1,21 @@
 package io.choerodon.devops.app.task;
 
+import static io.choerodon.devops.infra.constant.MiscConstants.*;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 import com.google.gson.Gson;
+import okhttp3.ResponseBody;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+import retrofit2.Call;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.sonar.UserToken;
@@ -15,14 +26,6 @@ import io.choerodon.devops.infra.enums.ProjectConfigType;
 import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.util.RetrofitCallExceptionParse;
-import okhttp3.ResponseBody;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
-import retrofit2.Call;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -31,14 +34,11 @@ import retrofit2.Call;
  */
 @Component
 public class DevopsCommandRunner implements CommandLineRunner {
-    public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCommandRunner.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCommandRunner.class);
 
-    public static final String HARBOR_NAME = "harbor_default";
-    public static final String CHART_NAME = "chart_default";
-    public static final String SONAR_NAME = "sonar_default";
     public static final String SONAR = "sonar";
 
-    private Gson gson = new Gson();
+    private final Gson gson = new Gson();
 
     @Autowired
     private DevopsConfigService devopsConfigService;
@@ -54,8 +54,6 @@ public class DevopsCommandRunner implements CommandLineRunner {
     private Boolean servicesHarborUpdate;
     @Value("${services.sonarqube.url:}")
     private String sonarqubeUrl;
-    @Value("${services.gateway.url}")
-    private String gatewayUrl;
     @Value("${services.sonarqube.username:}")
     private String userName;
     @Value("${services.sonarqube.password:}")
@@ -69,11 +67,11 @@ public class DevopsCommandRunner implements CommandLineRunner {
                 harborConfig.setUrl(servicesHarborBaseUrl);
                 harborConfig.setUserName(servicesHarborUsername);
                 harborConfig.setPassword(servicesHarborPassword);
-                initConfig(harborConfig, HARBOR_NAME, ProjectConfigType.HARBOR.getType());
+                initConfig(harborConfig, DEFAULT_HARBOR_NAME, ProjectConfigType.HARBOR.getType());
 
                 ConfigVO chartConfig = new ConfigVO();
                 chartConfig.setUrl(servicesHelmUrl);
-                initConfig(chartConfig, CHART_NAME, ProjectConfigType.CHART.getType());
+                initConfig(chartConfig, DEFAULT_CHART_NAME, ProjectConfigType.CHART.getType());
                 if (sonarqubeUrl != null && !sonarqubeUrl.isEmpty()) {
                     createSonarToken();
                 }
@@ -99,7 +97,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
     }
 
     private void createSonarToken() {
-        DevopsConfigDTO oldConfigDTO = devopsConfigService.baseQueryByName(null, SONAR_NAME);
+        DevopsConfigDTO oldConfigDTO = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
         if (oldConfigDTO == null) {
             try {
                 SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
@@ -113,10 +111,10 @@ public class DevopsCommandRunner implements CommandLineRunner {
                     map.put("name", "ci-token-new");
                 }
                 Call<ResponseBody> responseCallNew = sonarClient.createToken(map);
-                UserToken  userToken = RetrofitCallExceptionParse.executeCall(responseCallNew, "error.create.sonar.token", UserToken.class);
+                UserToken userToken = RetrofitCallExceptionParse.executeCall(responseCallNew, "error.create.sonar.token", UserToken.class);
                 DevopsConfigDTO newConfigDTO = new DevopsConfigDTO();
                 newConfigDTO.setConfig(userToken.getToken());
-                newConfigDTO.setName(SONAR_NAME);
+                newConfigDTO.setName(DEFAULT_SONAR_NAME);
                 newConfigDTO.setType(ProjectConfigType.SONAR.getType());
                 devopsConfigService.baseCreate(newConfigDTO);
 
