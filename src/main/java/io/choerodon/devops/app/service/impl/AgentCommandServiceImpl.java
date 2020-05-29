@@ -159,6 +159,31 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
     @Override
+    public void newUpgradeCluster(DevopsClusterDTO devopsClusterDTO, WebSocketSession webSocketSession) {
+        AgentMsgVO msg = new AgentMsgVO();
+        Map<String, String> configs = new HashMap<>();
+        configs.put("config.connect", agentServiceUrl);
+        configs.put("config.token", devopsClusterDTO.getToken());
+        configs.put("config.clusterId", devopsClusterDTO.getId().toString());
+        configs.put("config.choerodonId", devopsClusterDTO.getChoerodonId());
+        configs.put("rbac.create", "true");
+        Payload payload = new Payload(
+                "choerodon",
+                agentRepoUrl,
+                "choerodon-cluster-agent",
+                agentExpectVersion,
+                Props2YAML.fromContent(FileUtil.propertiesToString(configs))
+                        .convert(), "choerodon-cluster-agent-" + devopsClusterDTO.getCode(), null);
+        msg.setKey(String.format(KEY_FORMAT,
+                devopsClusterDTO.getId(),
+                "choerodon-cluster-agent-" + devopsClusterDTO.getCode()));
+        msg.setType(HELM_RELEASE_UPGRADE);
+        msg.setPayload(JsonHelper.marshalByJackson(payload));
+
+        sendToWebSocket(devopsClusterDTO.getId(), msg);
+    }
+
+    @Override
     public void createCertManager(Long clusterId) {
         AgentMsgVO msg = new AgentMsgVO();
         Payload payload = new Payload(
