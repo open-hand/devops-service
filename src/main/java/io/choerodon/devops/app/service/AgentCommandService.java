@@ -38,6 +38,8 @@ public interface AgentCommandService {
 
     void upgradeCluster(DevopsClusterDTO devopsClusterDTO, WebSocketSession webSocketSession);
 
+    void newUpgradeCluster(DevopsClusterDTO devopsClusterDTO, WebSocketSession webSocketSession);
+
     void createCertManager(Long clusterId);
 
     void operatePodCount(String deploymentName, String namespace, Long clusterId, Long count);
