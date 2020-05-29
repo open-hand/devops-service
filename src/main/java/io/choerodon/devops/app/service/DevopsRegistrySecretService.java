@@ -17,6 +17,15 @@ public interface DevopsRegistrySecretService {
 
     DevopsRegistrySecretDTO baseCreate(DevopsRegistrySecretDTO devopsRegistrySecretDTO);
 
+    /**
+     * 如果数据库中没有就创建
+     * 批量部署创建实例需要调用这个接口
+     *
+     * @param devopsRegistrySecretDTO secret数据
+     * @return 创建的或者查询到的已存在的纪录
+     */
+    DevopsRegistrySecretDTO createIfNonInDb(DevopsRegistrySecretDTO devopsRegistrySecretDTO);
+
     DevopsRegistrySecretDTO baseQuery(Long devopsRegistrySecretId);
 
     DevopsRegistrySecretDTO baseUpdate(DevopsRegistrySecretDTO devopsRegistrySecretDTO);

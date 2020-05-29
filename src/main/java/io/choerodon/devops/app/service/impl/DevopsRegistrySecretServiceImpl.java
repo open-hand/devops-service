@@ -40,11 +40,30 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
         return devopsRegistrySecretDTO;
     }
 
+    /**
+     * 这里的事务隔离级别要是 Propagation.REQUIRES_NEW
+     * 因为agent会回写secret的状态数据，但是假如事务的隔离级别
+     * 是REQUIRED，如果创建实例的事务没提交，agent返回的数据查不到
+     * 这条未提交的数据，就更新不到了
+     *
+     * @param devopsRegistrySecretDTO secret数据
+     * @return 相应的secret数据
+     */
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public DevopsRegistrySecretDTO createIfNonInDb(DevopsRegistrySecretDTO devopsRegistrySecretDTO) {
+        DevopsRegistrySecretDTO dbResult = baseQueryByClusterAndNamespaceAndName(devopsRegistrySecretDTO.getClusterId(), devopsRegistrySecretDTO.getNamespace(), devopsRegistrySecretDTO.getSecretCode());
+
+        // 如果不存在才创建
+        return dbResult == null ? baseCreate(devopsRegistrySecretDTO) : dbResult;
+    }
+
     @Override
     public DevopsRegistrySecretDTO baseQuery(Long devopsRegistrySecretId) {
         return devopsRegistrySecretMapper.selectByPrimaryKey(devopsRegistrySecretId);
     }
 
+    @Transactional
     @Override
     public DevopsRegistrySecretDTO baseUpdate(DevopsRegistrySecretDTO devopsRegistrySecretDTO) {
         DevopsRegistrySecretDTO beforeDevopsRegistrySecretDTO = devopsRegistrySecretMapper.selectByPrimaryKey(devopsRegistrySecretDTO.getId());
@@ -55,6 +74,7 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
         return beforeDevopsRegistrySecretDTO;
     }
 
+    @Transactional
     @Override
     public void baseUpdateStatus(Long id, Boolean status) {
         devopsRegistrySecretMapper.updateStatus(id, status);

@@ -2112,6 +2112,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     }
 
+    @Transactional
     @Override
     public void operateDockerRegistrySecretResp(String key, String result, Long clusterId) {
         String namespace = KeyParseUtil.getNamespace(key);
