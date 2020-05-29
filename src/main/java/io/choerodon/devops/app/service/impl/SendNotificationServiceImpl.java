@@ -719,7 +719,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         Receiver receiver = new Receiver();
         receiver.setUserId(Objects.requireNonNull(userId));
         receiver.setEmail(Objects.requireNonNull(email));
-        receiver.setPhone(Objects.requireNonNull(phone));
+        receiver.setPhone(phone);
         receiver.setTargetUserTenantId(Objects.requireNonNull(userTenantId));
         return receiver;
     }
