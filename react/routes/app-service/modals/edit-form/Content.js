@@ -19,7 +19,7 @@ const CreateForm = injectIntl(observer((props) => {
   const {
     modal,
     store,
-    AppState: { currentMenuType: { projectId } },
+    AppState: { currentMenuType: { projectId, organizationId } },
     intl: { formatMessage },
     intlPrefix,
     prefixCls,
@@ -69,7 +69,7 @@ const CreateForm = injectIntl(observer((props) => {
     formdata.append('file', e.target.files[0]);
     try {
       const data = await axios.post(
-        `/hfle/v1/files?bucket_name=devops-service&file_name=${img.name.split('.')[0]}`,
+        `/hfle/v1/${organizationId}/files/multipart?bucketName=devops-service&fileName=${img.name.split('.')[0]}`,
         formdata,
         {
           header: { 'Content-Type': 'multipart/form-data' },
@@ -128,7 +128,7 @@ const CreateForm = injectIntl(observer((props) => {
   return (<div className={`${prefixCls}-create-wrap`}>
     <div
       style={{
-        backgroundImage: `url(${record.get('imgUrl') || ''})`,
+        backgroundImage: record.get('imgUrl') ? `url('${record.get('imgUrl')}')` : '',
       }}
       className={`${prefixCls}-create-img`}
       onClick={triggerFileBtn}
