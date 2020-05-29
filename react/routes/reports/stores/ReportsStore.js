@@ -302,7 +302,7 @@ export default function useStore(AppState) {
       const { projectId, organizationId, type } = AppState.currentMenuType;
       const datas = ['devops-service.devops-environment.create'];
       axios
-        .post(`/iam/hzero/v1/menus/check-permissions?projectId=${projectId}`, JSON.stringify(datas))
+        .post(`iam/choerodon/v1/permissions/menus/check-permissions?projectId=${projectId}`, JSON.stringify(datas))
         .then((data) => {
           const res = handlePromptError(data);
           if (res && data && data.length) {
