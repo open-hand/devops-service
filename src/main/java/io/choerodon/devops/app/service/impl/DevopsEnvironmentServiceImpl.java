@@ -67,8 +67,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private static final Gson gson = new Gson();
     private static final String MASTER = "master";
     private static final String README = "README.md";
-    private static final String README_CONTENT =
-            "# This is gitops env repository!";
+    private static final String README_CONTENT = "# This is gitops env repository!";
     private static final String ENV = "ENV";
     private static final String ERROR_CODE_EXIST = "error.code.exist";
     private static final String ERROR_GITLAB_USER_SYNC_FAILED = "error.gitlab.user.sync.failed";
@@ -88,8 +87,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
 
-    @Value("${choerodon.organization.resourceLimit.envMaxNumber:30}")
-    private Integer envMaxNumber;
     @Autowired
     private DevopsServiceService devopsServiceService;
     @Autowired
@@ -363,7 +360,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<Long> groupIds = new ArrayList<>(resultMaps.keySet());
         Map<Long, DevopsEnvGroupDTO> devopsEnvGroupDTOMap = new HashMap<>();
         devopsEnvGroupMapper.listByIdList(groupIds)
-                .stream()
                 .forEach(i -> devopsEnvGroupDTOMap.put(i.getId(), i));
 
         List<Long> envGroupIds = new ArrayList<>();
@@ -712,7 +708,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         CommitVO commitDTO = new CommitVO();
         commitDTO.setId(commitDO.getId());
         commitDTO.setTimestamp(commitDO.getTimestamp());
-        pushWebHookVO.setCommits(Arrays.asList(commitDTO));
+        pushWebHookVO.setCommits(ArrayUtil.singleAsList(commitDTO));
 
         //当环境总览第一阶段为空，第一阶段的commit不是最新commit, 第一阶段和第二阶段commit不一致时，可以重新触发gitOps
         if (devopsEnvironmentDTO.getSagaSyncCommit() == null) {
@@ -1271,16 +1267,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Set<IamUserDTO> iamUserDTOS = new HashSet<>(allProjectMembers);
         iamUserDTOS.addAll(allProjectOwners);
 
-        List<IamUserDTO> returnUserDTOList;
         if (iamUserDTOS.isEmpty()) {
             return ConvertUtils.convertPage(new Page<>(), UserVO.class);
         } else {
-            returnUserDTOList = iamUserDTOS.stream()
-                    .peek(e -> {
-                        e.setProjectOwner(allProjectOwners.contains(e));
-                    }).collect(Collectors.toList());
+            iamUserDTOS.forEach(e -> e.setProjectOwner(allProjectOwners.contains(e)));
         }
-        List<UserVO> iamUserVOS = ConvertUtils.convertList(returnUserDTOList, UserVO.class);
+        List<UserVO> iamUserVOS = ConvertUtils.convertList(iamUserDTOS, UserVO.class);
         return PageInfoUtil.createPageFromList(iamUserVOS, pageable);
     }
 

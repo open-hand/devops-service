@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -94,7 +95,7 @@ public class ConvertUtils {
      * @param <D>    the destination content type
      * @return destination page
      */
-    public static <S, D> List<D> convertList(List<S> source, Class<D> destinationClass) {
+    public static <S, D> List<D> convertList(Collection<S> source, Class<D> destinationClass) {
         if (source == null) {
             return new ArrayList<>();
         }
@@ -113,7 +114,7 @@ public class ConvertUtils {
      * @param <D>    the destination content type
      * @return destination page
      */
-    public static <S, D> List<D> convertList(List<S> source, Function<S, D> converter) {
+    public static <S, D> List<D> convertList(Collection<S> source, Function<S, D> converter) {
         if (source == null) {
             return new ArrayList<>();
         }
