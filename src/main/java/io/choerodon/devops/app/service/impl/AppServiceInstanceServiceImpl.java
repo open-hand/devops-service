@@ -1592,7 +1592,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     secretCode = String.format("%s%s", "secret-", GenerateUUID.generateUUID().substring(0, 20));
                     // 测试应用的secret是没有环境id的，此处环境id只是暂存，之后不使用，考虑后续版本删除此字段
                     devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), secretCode, gson.toJson(configVO), appServiceDTO.getProjectId());
-                    devopsRegistrySecretService.baseCreate(devopsRegistrySecretDTO);
+                    devopsRegistrySecretService.createIfNonInDb(devopsRegistrySecretDTO);
                     agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, configVO, CREATE);
                 } else {
                     //判断如果某个配置有发生过修改，则需要修改secret信息，并通知k8s更新secret
