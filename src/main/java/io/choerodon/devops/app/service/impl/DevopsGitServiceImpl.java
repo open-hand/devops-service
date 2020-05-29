@@ -32,6 +32,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
@@ -506,6 +507,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public void fileResourceSync(PushWebHookVO pushWebHookVO) {
+        LOGGER.info("Starting GitOps: context user id is: {}", DetailsHelper.getUserDetails() == null ? null : DetailsHelper.getUserDetails().getUserId());
         final Integer gitLabProjectId = pushWebHookVO.getProjectId();
         final Integer gitLabUserId = pushWebHookVO.getUserId();
         final Long userId = userAttrService.baseQueryUserIdByGitlabUserId(TypeUtil.objToLong(gitLabUserId));
