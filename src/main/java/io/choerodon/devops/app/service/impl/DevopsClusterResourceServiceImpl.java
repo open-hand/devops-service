@@ -624,38 +624,12 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         clientVO.setPwdReplayFlag(0);
         clientVO.setTimeZone(TimeZoneConstants.GMT8);
         LOGGER.info("clientVO:{}", clientVO);
-        // 获取当前组织下的项目所有者的角色id
-        Long roleId = baseServiceClientOperator.getRoleId(devopsClusterDTO.getOrganizationId(), RoleLabel.PROJECT_ADMIN.value());
-        // 在client添加这个id
-        clientVO.setAccessRoles(String.valueOf(roleId));
+        // 获取当前组织下的项目管理员的角色id
+        Long projectAdminId = baseServiceClientOperator.getRoleId(devopsClusterDTO.getOrganizationId(), RoleLabel.PROJECT_ADMIN.getValue(), LabelType.PROJECT_ADMIN.getValue());
+        // 获取当前组织管理员的角色id
+        Long tenantAdminId = baseServiceClientOperator.getRoleId(devopsClusterDTO.getOrganizationId(), RoleLabel.TENANT_ADMIN.getValue(), LabelType.TENANT_ADMIN.getValue());
+        // 添加两个角色id
+        clientVO.setAccessRoles(String.valueOf(projectAdminId).concat(",").concat(String.valueOf(tenantAdminId)));
         return baseServiceClientOperator.createClient(clientVO);
-    }
-
-    private void updatePVForPromethues(DevopsPrometheusDTO newPrometheusDTO,
-                                       DevopsPrometheusDTO oldPrometheusDTO,
-                                       List<DevopsPvcDTO> pvcDTOList,
-                                       Long systemEnvId,
-                                       Long projectId) {
-        if (!newPrometheusDTO.getPrometheusPvId().equals(oldPrometheusDTO.getPrometheusPvId())) {
-            devopsPvcService.delete(pvcDTOList.get(0).getEnvId(), pvcDTOList.get(0).getId());
-            DevopsPvcReqVO prometheusPvcReqVO = operatePV(newPrometheusDTO.getPrometheusPvId(), systemEnvId, PrometheusPVCTypeEnum.PROMETHEUS_PVC.value());
-            devopsPvcService.create(projectId, prometheusPvcReqVO);
-            pvcDTOList.remove(0);
-        }
-
-        if (!newPrometheusDTO.getAlertmanagerPvId().equals(oldPrometheusDTO.getAlertmanagerPvId())) {
-            devopsPvcService.delete(pvcDTOList.get(0).getEnvId(), pvcDTOList.get(0).getId());
-            DevopsPvcReqVO prometheusPvcReqVO = operatePV(newPrometheusDTO.getAlertmanagerPvId(), systemEnvId, PrometheusPVCTypeEnum.ALERTMANAGER_PVC.value());
-            devopsPvcService.create(projectId, prometheusPvcReqVO);
-            pvcDTOList.remove(0);
-        }
-
-        if (!newPrometheusDTO.getGrafanaPvId().equals(oldPrometheusDTO.getGrafanaPvId())) {
-            devopsPvcService.delete(pvcDTOList.get(0).getEnvId(), pvcDTOList.get(0).getId());
-            DevopsPvcReqVO prometheusPvcReqVO = operatePV(newPrometheusDTO.getGrafanaPvId(), systemEnvId, PrometheusPVCTypeEnum.ALERTMANAGER_PVC.value());
-            devopsPvcService.create(projectId, prometheusPvcReqVO);
-            pvcDTOList.remove(0);
-        }
-
     }
 }

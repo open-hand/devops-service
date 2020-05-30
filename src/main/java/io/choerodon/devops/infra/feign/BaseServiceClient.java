@@ -177,7 +177,8 @@ public interface BaseServiceClient {
     @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/roles")
     ResponseEntity<List<RoleDTO>> getRoleByCode(
             @PathVariable("organization_id") Long organizationId,
-            @RequestParam("role_code") String code);
+            @RequestParam("role_code") String code,
+            @RequestParam("label_name") String labelName);
 
     /**
      * 查询资源限制

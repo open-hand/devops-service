@@ -50,8 +50,8 @@ public class BaseServiceClientOperator {
      * @param code           角色标签
      * @return 角色id
      */
-    public Long getRoleId(Long organizationId, String code) {
-        ResponseEntity<List<RoleDTO>> roleResponseEntity = baseServiceClient.getRoleByCode(organizationId, code);
+    public Long getRoleId(Long organizationId, String code, String labelName) {
+        ResponseEntity<List<RoleDTO>> roleResponseEntity = baseServiceClient.getRoleByCode(organizationId, code, labelName);
         List<RoleDTO> roleDTOList = roleResponseEntity.getBody();
         if (roleResponseEntity.getStatusCode().is2xxSuccessful() && roleDTOList != null && roleDTOList.size() != 0) {
             return roleDTOList.get(0).getId();
