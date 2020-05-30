@@ -238,13 +238,17 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
         // 上次实例部署时的完整values
         String yaml = FileUtil.checkValueFormat(baseQueryValueByInstanceId(instanceId));
-        String lastVersionValue = appServiceVersionService.baseQueryValue(appServiceInstanceDTO.getAppServiceVersionId());
+        // 这里不能直接用app_service_version_id字段查version的values，因为它可能为空
+        String lastVersionValue = appServiceInstanceMapper.queryLastCommandVersionValueByInstanceId(instanceId);
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(Objects.requireNonNull(appServiceInstanceMapper.queryLastCommandId(instanceId)));
 
         // 上次实例部署时的values相较于上次版本的默认values的变化值
-        String lastDeltaValues = getReplaceResult(lastVersionValue, yaml).getDeltaYaml();
+        String lastDeltaValues = getReplaceResult(Objects.requireNonNull(lastVersionValue),
+                Objects.requireNonNull(yaml))
+                .getDeltaYaml();
 
         // 新的版本的values值, 如果新版本id和上个版本id一致，就用之前查询的
-        String newVersionValue = appServiceInstanceDTO.getAppServiceVersionId().equals(appServiceVersionId) ? lastVersionValue : appServiceVersionService.baseQueryValue(appServiceVersionId);
+        String newVersionValue = devopsEnvCommandDTO.getObjectVersionId() != null && devopsEnvCommandDTO.getObjectVersionId().equals(appServiceVersionId) ? lastVersionValue : appServiceVersionService.baseQueryValue(appServiceVersionId);
 
         InstanceValueVO instanceValueVO = new InstanceValueVO();
         fillDeployValueInfo(instanceValueVO, appServiceInstanceDTO.getValueId());

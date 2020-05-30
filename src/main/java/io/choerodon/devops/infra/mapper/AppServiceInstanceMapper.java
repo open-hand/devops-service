@@ -52,6 +52,22 @@ public interface AppServiceInstanceMapper extends BaseMapper<AppServiceInstanceD
 
     String queryValueByInstanceId(@Param("instanceId") Long instanceId);
 
+    /**
+     * 查询当前实例的command代表的版本的原始values
+     *
+     * @param instanceId 实例id
+     * @return 原始values
+     */
+    String queryLastCommandVersionValueByInstanceId(@Param("instanceId") Long instanceId);
+
+    /**
+     * 查询当前实例的最新的commandId
+     *
+     * @param instanceId 实例id
+     * @return command id
+     */
+    Long queryLastCommandId(@Param("instanceId") Long instanceId);
+
     List<DeployDTO> listDeployTime(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("appServiceIds") Long[] appServiceIds, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
 
     List<DeployDTO> listDeployFrequency(@Param("projectId") Long projectId, @Param("envIds") Long[] envIds, @Param("appServiceId") Long appServiceId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
