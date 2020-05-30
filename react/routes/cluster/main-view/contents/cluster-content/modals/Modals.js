@@ -127,7 +127,7 @@ const ClusterModals = observer(() => {
     const { getCanCreate } = mainStore;
     return [{
       name: formatMessage({ id: `${intlPrefix}.modal.create` }),
-      permissions: ['devops-service.devops-cluster.create'],
+      permissions: ['choerodon.code.project.deploy.cluster.cluster-management.ps.create'],
       icon: 'playlist_add',
       handler: openCreate,
       display: true,
@@ -137,9 +137,7 @@ const ClusterModals = observer(() => {
     }, {
       name: formatMessage({ id: `${intlPrefix}.modal.permission` }),
       permissions: [
-        'devops-service.devops-cluster.assignPermission',
-        'devops-service.devops-cluster.checkName',
-        'devops-service.devops-cluster.checkCode',
+
       ],
       icon: 'authority',
       handler: openPermission,
