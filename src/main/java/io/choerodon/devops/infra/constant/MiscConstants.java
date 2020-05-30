@@ -6,7 +6,10 @@ package io.choerodon.devops.infra.constant;
  * @author zmf
  * @since 5/29/20
  */
-public class MiscConstants {
+public final class MiscConstants {
+    private MiscConstants() {
+    }
+
     /**
      * 默认的chart配置的名称
      */
