@@ -43,16 +43,17 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
     }
 
     /**
-     * 这里的事务隔离级别要是 Propagation.REQUIRES_NEW
+     * 这里的事务隔离级别要是 Propagation.NOT_SUPPORTED
      * 因为agent会回写secret的状态数据，但是假如事务的隔离级别
      * 是REQUIRED，如果创建实例的事务没提交，agent返回的数据查不到
      * 这条未提交的数据，就更新不到了
+     * 而且这个secret也不需要回滚
      *
      * @param devopsRegistrySecretDTO secret数据
      * @return 相应的secret数据
      */
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public DevopsRegistrySecretDTO createIfNonInDb(DevopsRegistrySecretDTO devopsRegistrySecretDTO) {
         DevopsRegistrySecretDTO dbResult = baseQueryByClusterAndNamespaceAndName(devopsRegistrySecretDTO.getClusterId(), devopsRegistrySecretDTO.getNamespace(), devopsRegistrySecretDTO.getSecretCode());
         LOGGER.debug("Registry secret: createIfNonInDb: the dbResult is {}", dbResult);
