@@ -1,25 +1,5 @@
 package io.choerodon.devops.api.ws.gitops;
 
-import static io.choerodon.devops.infra.handler.ClusterConnectionHandler.CLUSTER_SESSION;
-import static org.hzero.websocket.constant.WebSocketConstant.Attributes.GROUP;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import org.hzero.websocket.redis.BrokerServerSessionRedis;
-import org.hzero.websocket.registry.UserSessionRegistry;
-import org.hzero.websocket.vo.ClientVO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
-
 import io.choerodon.devops.api.vo.AgentMsgVO;
 import io.choerodon.devops.api.vo.ClusterSessionVO;
 import io.choerodon.devops.api.ws.AbstractSocketHandler;
@@ -37,6 +17,25 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.KeyParseUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.hzero.websocket.redis.BrokerServerSessionRedis;
+import org.hzero.websocket.registry.UserSessionRegistry;
+import org.hzero.websocket.vo.ClientVO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.infra.handler.ClusterConnectionHandler.CLUSTER_SESSION;
+import static org.hzero.websocket.constant.WebSocketConstant.Attributes.GROUP;
 
 /**
  * @author zmf
@@ -113,6 +112,15 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
+        try {
+            doHandle(session, message);
+            // 将异常捕获，否则未捕获的异常会导致外层的WebSocket框架关闭这个和Agent的连接
+        } catch (Exception ex) {
+            LOGGER.warn("Handle Agent Message: an unexpected exception occurred", ex);
+        }
+    }
+
+    private void doHandle(WebSocketSession session, TextMessage message) {
         String payload = message.getPayload();
         AgentMsgVO msg = JsonHelper.unmarshalByJackson(payload, AgentMsgVO.class);
         HelmType helmType = HelmType.forValue(String.valueOf(msg.getType()));
