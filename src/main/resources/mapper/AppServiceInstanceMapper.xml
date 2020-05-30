@@ -335,6 +335,28 @@
         r.value_id = dv.id
     </select>
 
+    <select id="queryLastCommandVersionValueByInstanceId" resultType="java.lang.String">
+        SELECT dasvv.value
+        FROM (SELECT de.object_version_id
+              FROM devops_app_service_instance dai
+                       LEFT JOIN devops_env_command de ON dai.id = de.object_id
+              WHERE dai.id = #{instanceId,jdbcType=BIGINT}
+                AND de.object = 'instance'
+              ORDER BY de.id DESC
+              LIMIT 1) r
+                 INNER JOIN devops_app_service_version dasv ON r.object_version_id = dasv.id
+                 INNER JOIN devops_app_service_version_value dasvv ON dasv.value_id = dasvv.id
+    </select>
+    <select id="queryLastCommandId" resultType="java.lang.Long">
+        SELECT de.id
+        FROM devops_app_service_instance dai
+                 LEFT JOIN devops_env_command de ON dai.id = de.object_id
+        WHERE dai.id = #{instanceId}
+          AND de.object = 'instance'
+        ORDER BY de.id DESC
+        LIMIT 1
+    </select>
+
     <sql id="sqlparam">
         <if test="envId != null">
             AND de.id = #{envId}

@@ -297,9 +297,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 // 兼容集群组件
                 if (appServiceInstanceDTO.getAppServiceId() != null) {
                     AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceInstanceDTO.getAppServiceId(), releasePayloadVO.getChartVersion());
-                    appServiceInstanceDTO.setAppServiceVersionId(appServiceVersionDTO.getId());
+                    appServiceInstanceDTO.setAppServiceVersionId(Objects.requireNonNull(appServiceVersionDTO.getId()));
                 } else {
-                    appServiceInstanceDTO.setComponentVersion(releasePayloadVO.getChartVersion());
+                    appServiceInstanceDTO.setComponentVersion(Objects.requireNonNull(releasePayloadVO.getChartVersion()));
                 }
 
                 if (StringUtils.isEmpty(releasePayloadVO.getCommit())) {

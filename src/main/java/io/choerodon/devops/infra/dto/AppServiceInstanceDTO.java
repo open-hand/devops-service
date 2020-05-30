@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.annotation.Nullable;
 import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -21,8 +22,17 @@ public class AppServiceInstanceDTO extends AuditDomain {
     private Long id;
     private String code;
     private Long appServiceId;
+    /**
+     * 这个应用服务版本是可能为空的，是集群中实际部署的实例的版本id
+     * 假如第一次部署就失败了，这个值就可能是空的
+     */
+    @Nullable
     private Long appServiceVersionId;
     private Long envId;
+    /**
+     * 因为脏数据，还有可能为空
+     */
+    @Nullable
     private Long commandId;
     private String status;
     private Long valueId;

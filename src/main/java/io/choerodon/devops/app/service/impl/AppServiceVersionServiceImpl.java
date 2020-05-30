@@ -502,7 +502,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     @Override
     public String baseQueryValue(Long versionId) {
-        return appServiceVersionMapper.queryValue(versionId);
+        return appServiceVersionMapper.queryValue(Objects.requireNonNull(versionId));
     }
 
     @Override
