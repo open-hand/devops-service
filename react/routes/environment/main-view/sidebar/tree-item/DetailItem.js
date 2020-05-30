@@ -256,40 +256,40 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     switch (result) {
       case RUNNING:
         actionData = [{
-          service: [],
+          service: ['choerodon.code.project.deploy.environment.ps.stop'],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.stop` }),
           action: openEffectModal,
         }, {
-          service: [],
+          service: ['choerodon.code.project.deploy.environment.ps.modify'],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.modify` }),
           action: openModifyModal,
         }];
         break;
       case DISCONNECTED:
         actionData = [{
-          service: [],
+          service: ['choerodon.code.project.deploy.environment.ps.modify'],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.modify` }),
           action: openModifyModal,
         }, {
-          service: [],
+          service: ['choerodon.code.project.deploy.environment.ps.delete'],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
           action: openDelete,
         }];
         break;
       case STOPPED:
         actionData = [{
-          service: [],
+          service: ['choerodon.code.project.deploy.environment.ps.stop'],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.start` }),
           action: () => handleEffect(true),
         }, {
-          service: [],
+          service: ['choerodon.code.project.deploy.environment.ps.delete'],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
           action: openDelete,
         }];
         break;
       case FAILED:
         actionData = [{
-          service: [],
+          service: ['choerodon.code.project.deploy.environment.ps.delete'],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
           action: openDelete,
         }];

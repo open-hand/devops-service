@@ -138,6 +138,7 @@ export default function DeployConfig() {
 
   function renderName({ value, record }) {
     return <ClickText
+      permissionCode={['']}
       clickAble={!disabled}
       value={value}
       onClick={openModifyModal}
@@ -148,7 +149,7 @@ export default function DeployConfig() {
 
   function renderActions() {
     const actionData = [{
-      service: [],
+      service: ['choerodon.code.project.deploy.app-deployment.resource.ps.delete-config'],
       text: formatMessage({ id: 'delete' }),
       action: checkDelete,
     }];

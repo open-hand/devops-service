@@ -188,12 +188,14 @@ const EnvModals = observer(() => {
 
   function getButtons() {
     return [{
+      permissions: ['choerodon.code.project.deploy.environment.ps.detail-create-env'],
       name: formatMessage({ id: `${currentIntlPrefix}.create` }),
       icon: 'playlist_add',
       handler: openEnvModal,
       display: true,
       group: 1,
     }, {
+      permissions: ['choerodon.code.project.deploy.environment.ps.detail-create-config'],
       disabled,
       name: formatMessage({ id: `${currentIntlPrefix}.create.config` }),
       icon: 'playlist_add',
@@ -201,6 +203,7 @@ const EnvModals = observer(() => {
       display: true,
       group: 1,
     }, {
+      permissions: ['choerodon.code.project.deploy.environment.ps.permission'],
       disabled,
       name: formatMessage({ id: `${intlPrefix}.modal.permission` }),
       icon: 'authority',

@@ -200,11 +200,11 @@ const AppService = withRouter(observer((props) => {
 
   return (
     <Page
-      service={permissions}
+      service={['choerodon.code.project.deploy.cluster.pv-management.ps.default']}
     >
       <Header>
         <Permission
-          service={['devops-service.devops-pv.createPv']}
+          service={['choerodon.code.project.deploy.cluster.pv-management.ps.create']}
         >
           <Button
             icon="playlist_add"

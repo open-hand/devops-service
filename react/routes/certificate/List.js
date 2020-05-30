@@ -117,11 +117,11 @@ const AppService = withRouter(observer((props) => {
 
   return (
     <Page
-      service={permissions}
+      service={['choerodon.code.project.deploy.cluster.cert-management.ps.default']}
     >
       <Header title={<FormattedMessage id="app.head" />}>
         <Permission
-          service={['devops-service.project-certification.createOrUpdate']}
+          service={['choerodon.code.project.deploy.cluster.cert-management.ps.create']}
         >
           <Button
             icon="playlist_add"

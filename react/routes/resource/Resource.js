@@ -11,7 +11,7 @@ function Resource() {
     resourceStore: { getShowHeader },
   } = useResourceStore();
 
-  return <Page service={permissions}>
+  return <Page service={['choerodon.code.project.deploy.app-deployment.resource.ps.default']}>
     <CustomHeader show={getShowHeader} />
     <MainView />
   </Page>;

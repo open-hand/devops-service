@@ -41,7 +41,7 @@ const PiplelineTable = withRouter(observer((props) => {
   }
   /**
    * 跳转到部署页面
-   * @param {*} id 
+   * @param {*} id
    */
   function linkToRecord(id) {
     history.push({
@@ -83,8 +83,8 @@ const PiplelineTable = withRouter(observer((props) => {
   }
   /**
    * 打开删除模态框
-   * @param {*} id 
-   * @param {*} itemName 
+   * @param {*} id
+   * @param {*} itemName
    */
   function deletePipeline(id, itemName) {
     Modal.open({
@@ -104,8 +104,8 @@ const PiplelineTable = withRouter(observer((props) => {
 
   /**
    * 打开invalid模态框
-   * @param {*} id 
-   * @param {*} itemName 
+   * @param {*} id
+   * @param {*} itemName
    */
   function openInvalid(id, itemName) {
     invalidModal = Modal.open({
@@ -244,8 +244,8 @@ const PiplelineTable = withRouter(observer((props) => {
 
   /**
      * 打开execute模态框
-     * @param {*} id 
-     * @param {*} itemName 
+     * @param {*} id
+     * @param {*} itemName
      */
   async function openExecuteCheck(id, itemName) {
     const myModal = Modal.open({
@@ -313,18 +313,12 @@ const PiplelineTable = withRouter(observer((props) => {
     <Page
       className="c7n-region"
       service={[
-        'devops-service.pipeline.pageByOptions',
-        'devops-service.pipeline.listByActive',
-        'devops-service.pipeline.execute',
-        'devops-service.pipeline.update',
-        'devops-service.pipeline.updateIsEnabled',
-        'devops-service.pipeline.delete',
-        'devops-service.pipeline.create',
+        'choerodon.code.project.deploy.app-deployment.pipeline.ps.default',
       ]}
     >
       <Header title={<FormattedMessage id="pipeline.head" />}>
         <Permission
-          service={['devops-service.pipeline.create']}
+          service={['choerodon.code.project.deploy.app-deployment.pipeline.ps.create']}
         >
           <Button
             funcType="flat"

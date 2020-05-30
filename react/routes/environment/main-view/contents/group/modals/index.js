@@ -66,12 +66,14 @@ const GroupModal = observer((props) => {
 
   function getButtons() {
     return [{
+      permissions: ['choerodon.code.project.deploy.environment.ps.group-add-env'],
       name: formatMessage({ id: `${intlPrefix}.create` }),
       icon: 'playlist_add',
       handler: openEnvModal,
       display: true,
       group: 1,
     }, {
+      permissions: ['choerodon.code.project.deploy.environment.ps.group-create'],
       name: formatMessage({ id: `${intlPrefix}.group.create` }),
       icon: 'playlist_add',
       handler: openGroupModal,

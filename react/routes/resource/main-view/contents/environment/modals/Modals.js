@@ -266,6 +266,7 @@ const EnvModals = observer(() => {
     const connect = record && record.get('connect');
     const configDisabled = !connect || notReady;
     return [{
+      permissions: ['choerodon.code.project.deploy.app-deployment.resource.ps.link'],
       name: formatMessage({ id: `${intlPrefix}.modal.service.link` }),
       icon: 'relate',
       handler: openLinkService,
@@ -273,6 +274,7 @@ const EnvModals = observer(() => {
       disabled: notReady,
       group: 1,
     }, {
+      permissions: ['choerodon.code.project.deploy.app-deployment.resource.ps.deploy-config'],
       disabled: notReady,
       name: formatMessage({ id: `${intlPrefix}.create.config` }),
       icon: 'playlist_add',
@@ -280,7 +282,7 @@ const EnvModals = observer(() => {
       display: true,
       group: 1,
     }, {
-      permissions: ['devops-service.app-service-instance.deploy'],
+      permissions: ['choerodon.code.project.deploy.app-deployment.resource.ps.manual'],
       disabled: configDisabled,
       name: formatMessage({ id: `${intlPrefixDeploy}.manual` }),
       icon: 'jsfiddle',
@@ -288,7 +290,7 @@ const EnvModals = observer(() => {
       display: true,
       group: 1,
     }, {
-      permissions: ['devops-service.app-service-instance.batchDeployment'],
+      permissions: ['choerodon.code.project.deploy.app-deployment.resource.ps.batch'],
       disabled: configDisabled,
       name: formatMessage({ id: `${intlPrefixDeploy}.batch` }),
       icon: 'jsfiddle',
@@ -296,7 +298,7 @@ const EnvModals = observer(() => {
       display: true,
       group: 1,
     }, {
-      permissions: ['devops-service.devops-environment.pageEnvUserPermissions'],
+      permissions: ['choerodon.code.project.deploy.app-deployment.resource.ps.permission'],
       name: formatMessage({ id: `${intlPrefix}.modal.permission` }),
       icon: 'authority',
       handler: openPermission,

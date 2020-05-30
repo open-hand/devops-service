@@ -170,6 +170,7 @@ const AppModals = observer(() => {
     const disabled = !connect || notReady;
 
     return [{
+      permissions: ['choerodon.code.project.deploy.app-deployment.resource.ps.network'],
       disabled,
       name: formatMessage({ id: `${intlPrefix}.create.network` }),
       icon: 'playlist_add',
@@ -177,6 +178,7 @@ const AppModals = observer(() => {
       display: true,
       group: 1,
     }, {
+      permissions: ['choerodon.code.project.deploy.app-deployment.resource.ps.domain'],
       disabled,
       name: formatMessage({ id: `${intlPrefix}.create.ingress` }),
       icon: 'playlist_add',
@@ -184,6 +186,7 @@ const AppModals = observer(() => {
       display: true,
       group: 1,
     }, {
+      permissions: ['choerodon.code.project.deploy.app-deployment.resource.ps.configmap'],
       disabled,
       name: formatMessage({ id: `${intlPrefix}.create.configMap` }),
       icon: 'playlist_add',
@@ -191,6 +194,7 @@ const AppModals = observer(() => {
       display: true,
       group: 1,
     }, {
+      permissions: ['choerodon.code.project.deploy.app-deployment.resource.ps.cipher'],
       disabled,
       name: formatMessage({ id: `${intlPrefix}.create.cipher` }),
       icon: 'playlist_add',

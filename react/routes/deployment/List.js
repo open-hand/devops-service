@@ -66,7 +66,7 @@ const Deployment = withRouter(observer((props) => {
       openDetail(newDeployId, 'auto');
     }
   }, []);
-  
+
 
   function refresh() {
     envOptionsDs.query();
@@ -377,11 +377,11 @@ const Deployment = withRouter(observer((props) => {
 
   return (
     <Page
-      service={permissions}
+      service={['choerodon.code.project.deploy.app-deployment.deployment-operation.ps.default']}
     >
       <Header title={<FormattedMessage id="app.head" />} backPath={getBackPath()}>
         <Permission
-          service={['devops-service.app-service-instance.deploy']}
+          service={['choerodon.code.project.deploy.app-deployment.deployment-operation.ps.manual']}
         >
           <Button
             icon="jsfiddle"
@@ -391,7 +391,7 @@ const Deployment = withRouter(observer((props) => {
           </Button>
         </Permission>
         <Permission
-          service={['devops-service.app-service-instance.batchDeployment']}
+          service={['choerodon.code.project.deploy.app-deployment.deployment-operation.ps.batch']}
         >
           <Button
             icon="jsfiddle"
@@ -401,7 +401,7 @@ const Deployment = withRouter(observer((props) => {
           </Button>
         </Permission>
         <Permission
-          service={['devops-service.pipeline.batchExecute']}
+          service={['choerodon.code.project.deploy.app-deployment.deployment-operation.ps.start-flow']}
         >
           <Button
             icon="playlist_play"
