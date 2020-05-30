@@ -15,6 +15,7 @@ import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1beta1Ingress;
 import org.apache.commons.lang.StringUtils;
+import org.hzero.core.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -1209,7 +1210,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return appServiceInstanceMapper.countInstanceByCondition(envId, status, appServiceId);
     }
 
-    private InstanceSagaPayload processSingleOfBatch(Long projectId, DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO userAttrDTO, AppServiceDeployVO appServiceDeployVO) {
+    private InstanceSagaPayload processSingleOfBatch(Long projectId, DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO userAttrDTO, AppServiceDeployVO appServiceDeployVO, Map<Long, List<Pair<Long, String>>> envSecrets) {
         //校验values
         FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
 
@@ -1232,7 +1233,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = initDevopsEnvCommandValueDTO(appServiceDeployVO);
 
         //获取部署实例时授权secret的code
-        String secretCode = getSecret(appServiceDTO, appServiceDeployVO.getAppServiceVersionId(), devopsEnvironmentDTO);
+        String secretCode = getSecret(appServiceDTO, appServiceDeployVO.getAppServiceVersionId(), devopsEnvironmentDTO, envSecrets.computeIfAbsent(devopsEnvironmentDTO.getId(), k -> new ArrayList<>()));
 
         // 初始化自定义实例名
         String code;
@@ -1283,8 +1284,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         List<DevopsDeployRecordInstanceDTO> recordInstances = new ArrayList<>();
         List<Long> instanceIds = new ArrayList<>();
 
+        // 纪录此次批量部署的环境id及要创建的docker_registry_secret的code的映射
+        // 环境id -> configId -> secretCode
+        Map<Long, List<Pair<Long, String>>> envSecrets = new HashMap<>();
+
         for (AppServiceDeployVO appServiceDeployVO : appServiceDeployVOS) {
-            InstanceSagaPayload payload = processSingleOfBatch(projectId, devopsEnvironmentDTO, userAttrDTO, appServiceDeployVO);
+            InstanceSagaPayload payload = processSingleOfBatch(projectId, devopsEnvironmentDTO, userAttrDTO, appServiceDeployVO, envSecrets);
             instances.add(payload);
             recordInstances.add(new DevopsDeployRecordInstanceDTO(
                     null,
@@ -1564,6 +1569,22 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      */
     @Nullable
     private String getSecret(AppServiceDTO appServiceDTO, Long appServiceVersionId, DevopsEnvironmentDTO devopsEnvironmentDTO) {
+        return getSecret(appServiceDTO, appServiceVersionId, devopsEnvironmentDTO, Collections.emptyList());
+    }
+
+    /**
+     * 获取用于拉取此版本镜像的secret名称, 如果不需要secret, 返回null. 如果需要, 会创建并返回secret code
+     *
+     * @param appServiceDTO        应用服务信息
+     * @param appServiceVersionId  应用服务版本id
+     * @param devopsEnvironmentDTO 环境信息
+     * @param existedConfigs       这个环境已经存在的secret的config的id，用于避免批量部署在同一个环境为同一个config
+     *                             创建相同的secret.
+     *                             只有config的id在这个列表中不存在， 才创建secret纪录
+     * @return secret的code(如果需要)
+     */
+    @Nullable
+    private String getSecret(AppServiceDTO appServiceDTO, Long appServiceVersionId, DevopsEnvironmentDTO devopsEnvironmentDTO, List<Pair<Long, String>> existedConfigs) {
         LOGGER.debug("Get secret for app service with id {} and code {} and version id: {}", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId);
         String secretCode = null;
         //如果应用绑定了私有镜像库,则处理secret
@@ -1589,12 +1610,23 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
                 DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByClusterIdAndNamespace(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsConfigDTO.getId(), appServiceDTO.getProjectId());
                 if (devopsRegistrySecretDTO == null) {
+                    // 如果调用方是批量部署， 此次批量部署之前的实例创建了secret，不重复创建，直接返回已有的
+                    // 只有批量部署的这个列表是非空的
+                    for (Pair<Long, String> configAndSecret : existedConfigs) {
+                        if (Objects.equals(configAndSecret.getFirst(), devopsConfigDTO.getId())) {
+                            LOGGER.info("Got existed secret {} from list...", configAndSecret.getSecond());
+                            return configAndSecret.getSecond();
+                        }
+                    }
+
                     //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
                     secretCode = String.format("%s%s", "secret-", GenerateUUID.generateUUID().substring(0, 20));
                     // 测试应用的secret是没有环境id的，此处环境id只是暂存，之后不使用，考虑后续版本删除此字段
                     devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), secretCode, gson.toJson(configVO), appServiceDTO.getProjectId());
                     devopsRegistrySecretService.createIfNonInDb(devopsRegistrySecretDTO);
                     agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, configVO, CREATE);
+                    // 更新列表
+                    existedConfigs.add(new Pair<>(devopsConfigDTO.getId(), secretCode));
                 } else {
                     //判断如果某个配置有发生过修改，则需要修改secret信息，并通知k8s更新secret
                     if (!devopsRegistrySecretDTO.getSecretDetail().equals(gson.toJson(configVO))) {
@@ -1613,7 +1645,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         LOGGER.debug("Got secret with code {} for app service with id {} and code {} and version id: {}", secretCode, appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId);
         return secretCode;
     }
-
 
     /**
      * filter the pods that are associated with the daemonSet.
