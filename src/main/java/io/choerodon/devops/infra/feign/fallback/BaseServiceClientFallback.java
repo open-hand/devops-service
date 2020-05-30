@@ -31,7 +31,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<RoleDTO>> getRoleByCode(Long organizationId, String code) {
+    public ResponseEntity<List<RoleDTO>> getRoleByCode(Long organizationId, String code, String labelName) {
         throw new CommonException("error.organization.role.id.get", code);
     }
 

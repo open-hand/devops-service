@@ -11,7 +11,9 @@ public enum RoleLabel {
 
     ORGANIZATION_OWNER("organization.owner"),
 
-    PROJECT_ADMIN("project-admin");
+    PROJECT_ADMIN("project-admin"),
+
+    TENANT_ADMIN("administrator");
 
     private final String value;
 
@@ -19,7 +21,7 @@ public enum RoleLabel {
         this.value = value;
     }
 
-    public String value() {
+    public String getValue() {
         return value;
     }
 }

@@ -4,6 +4,7 @@ package io.choerodon.devops.infra.enums;
  * 参考 io.choerodon.iam.infra.enums.RoleLabelEnum (在iam项目中)
  */
 public enum LabelType {
+    PROJECT_ADMIN("PROJECT_ADMIN"),
     TENANT_ADMIN("TENANT_ADMIN"),
     GITLAB_PROJECT_OWNER("GITLAB_OWNER"),
     GITLAB_PROJECT_DEVELOPER("GITLAB_DEVELOPER");
