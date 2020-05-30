@@ -89,7 +89,7 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
         List<Long> unnecessaryToUpgrade = clusterConnectionHandler.getUpdatedClusterList();
         if (!unnecessaryToUpgrade.contains(clusterId)) {
             DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
-            LOGGER.info("Upgrade agent: upgrade agent with cluster id {} from version {}", clusterId, clusterSession.getVersion());
+            LOGGER.info("New Upgrade agent: upgrade agent with cluster id {} from version {}", clusterId, clusterSession.getVersion());
             agentCommandService.newUpgradeCluster(devopsClusterDTO, session);
         } else {
             LOGGER.info("Init agent: init agent with cluster id {} and version {}", clusterId, clusterSession.getVersion());
