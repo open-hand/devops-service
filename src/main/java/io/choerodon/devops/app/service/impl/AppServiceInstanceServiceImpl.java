@@ -27,6 +27,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -1569,7 +1570,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      */
     @Nullable
     private String getSecret(AppServiceDTO appServiceDTO, Long appServiceVersionId, DevopsEnvironmentDTO devopsEnvironmentDTO) {
-        return getSecret(appServiceDTO, appServiceVersionId, devopsEnvironmentDTO, Collections.emptyList());
+        return getSecret(appServiceDTO, appServiceVersionId, devopsEnvironmentDTO, null);
     }
 
     /**
@@ -1584,7 +1585,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      * @return secret的code(如果需要)
      */
     @Nullable
-    private String getSecret(AppServiceDTO appServiceDTO, Long appServiceVersionId, DevopsEnvironmentDTO devopsEnvironmentDTO, List<Pair<Long, String>> existedConfigs) {
+    private String getSecret(AppServiceDTO appServiceDTO, Long appServiceVersionId, DevopsEnvironmentDTO devopsEnvironmentDTO, @Nullable List<Pair<Long, String>> existedConfigs) {
         LOGGER.debug("Get secret for app service with id {} and code {} and version id: {}", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId);
         String secretCode = null;
         //如果应用绑定了私有镜像库,则处理secret
@@ -1612,10 +1613,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 if (devopsRegistrySecretDTO == null) {
                     // 如果调用方是批量部署， 此次批量部署之前的实例创建了secret，不重复创建，直接返回已有的
                     // 只有批量部署的这个列表是非空的
-                    for (Pair<Long, String> configAndSecret : existedConfigs) {
-                        if (Objects.equals(configAndSecret.getFirst(), devopsConfigDTO.getId())) {
-                            LOGGER.info("Got existed secret {} from list...", configAndSecret.getSecond());
-                            return configAndSecret.getSecond();
+                    if (!CollectionUtils.isEmpty(existedConfigs)) {
+                        for (Pair<Long, String> configAndSecret : existedConfigs) {
+                            if (Objects.equals(configAndSecret.getFirst(), devopsConfigDTO.getId())) {
+                                LOGGER.info("Got existed secret {} from list...", configAndSecret.getSecond());
+                                return configAndSecret.getSecond();
+                            }
                         }
                     }
 
@@ -1625,8 +1628,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), secretCode, gson.toJson(configVO), appServiceDTO.getProjectId());
                     devopsRegistrySecretService.createIfNonInDb(devopsRegistrySecretDTO);
                     agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, configVO, CREATE);
+
                     // 更新列表
-                    existedConfigs.add(new Pair<>(devopsConfigDTO.getId(), secretCode));
+                    if (existedConfigs != null) {
+                        Pair<Long, String> newPair = new Pair<>(devopsConfigDTO.getId(), secretCode);
+                        existedConfigs.add(newPair);
+                        LOGGER.info("Docker registry pair added. It is {}. The current list size is {}", newPair, existedConfigs.size());
+                    }
                 } else {
                     //判断如果某个配置有发生过修改，则需要修改secret信息，并通知k8s更新secret
                     if (!devopsRegistrySecretDTO.getSecretDetail().equals(gson.toJson(configVO))) {
