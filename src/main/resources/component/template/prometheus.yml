@@ -65,7 +65,7 @@ grafana:
       scopes: default
       auth_url: {{api-host}}/oauth/oauth/authorize
       token_url: {{api-host}}/oauth/oauth/token
-      api_url: {{api-host}}/iam/v1/users/self
+      api_url: {{api-host}}/iam/hzero/v1/users/self
       team_ids:
       allowed_organizations:
 
