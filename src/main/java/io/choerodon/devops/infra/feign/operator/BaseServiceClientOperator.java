@@ -47,7 +47,7 @@ public class BaseServiceClientOperator {
 
     /**
      * @param organizationId 组织id
-     * @param code          角色标签
+     * @param code           角色标签
      * @return 角色id
      */
     public Long getRoleId(Long organizationId, String code) {

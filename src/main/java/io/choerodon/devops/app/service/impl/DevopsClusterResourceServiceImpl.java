@@ -74,8 +74,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Autowired
     private UserAttrService userAttrService;
     @Autowired
-    private DevopsPvMapper devopsPvMapper;
-    @Autowired
     private SendNotificationService sendNotificationService;
 
     @Override
@@ -612,7 +610,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         String clientName = GRAFANA_CLIENT_PREFIX + devopsClusterDTO.getId();
         // 添加客户端
         ClientVO clientVO = baseServiceClientOperator.queryClientByName(devopsClusterDTO.getOrganizationId(), clientName);
-        if (clientVO != null) {
+        if (clientVO != null && clientVO.getId() != null) {
             return clientVO;
         }
 
