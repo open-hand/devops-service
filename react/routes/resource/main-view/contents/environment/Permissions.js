@@ -1,6 +1,6 @@
 import React from 'react';
 import { Action } from '@choerodon/boot';
-import { Table } from 'choerodon-ui/pro';
+import { Table, Tooltip } from 'choerodon-ui/pro';
 import map from 'lodash/map';
 import { FormattedMessage } from 'react-intl';
 import TimePopover from '../../../../../components/time-popover';
@@ -46,7 +46,9 @@ export default function Permissions() {
 
   function renderRole({ value }) {
     const roles = map(value || [], 'name');
-    return roles.join();
+    return <Tooltip title={roles.join()}>
+      {roles.join()}
+    </Tooltip>;
   }
 
   function getActionColumn() {

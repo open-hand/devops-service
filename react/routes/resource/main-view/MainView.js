@@ -91,7 +91,6 @@ const MainView = observer(() => {
     } = resourceStore;
 
     if (!itemType) return <Loading display />;
-
     const cmMaps = {
       [ENV_ITEM]: getViewType === IST_VIEW_TYPE ? <EnvContent /> : <ResourceEnvContent />,
       [APP_ITEM]: <AppContent />,
