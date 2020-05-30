@@ -567,8 +567,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     public void sendWhenInstanceCreationFailure(AppServiceInstanceDTO appServiceInstanceDTO, Long creatorId, Long resourceCommandId) {
         doWithTryCatchAndLog(
                 () -> {
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceInstanceDTO.getProjectId());
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
                     Map<String, String> webHookParams = buildResourceParams(
                             appServiceInstanceDTO.getId(),
                             appServiceInstanceDTO.getCode(),
@@ -623,8 +623,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Override
     public void sendWhenInstanceSuccessOrDelete(AppServiceInstanceDTO appServiceInstanceDTO, String code) {
         doWithTryCatchAndLog(() -> {
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceInstanceDTO.getProjectId());
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
                     Map<String, String> params = buildResourceParams(appServiceInstanceDTO.getId(),
                             appServiceInstanceDTO.getCode(),
                             ObjectType.INSTANCE.getType(),
