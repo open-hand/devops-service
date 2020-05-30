@@ -160,6 +160,13 @@ public class AgentCommandServiceImpl implements AgentCommandService {
 
     @Override
     public void newUpgradeCluster(DevopsClusterDTO devopsClusterDTO, WebSocketSession webSocketSession) {
+        AgentMsgVO msg = buildAgentUpgradeMessage(devopsClusterDTO);
+        // 再包装一层, 统一所有的消息结构
+        MsgVO finalMessage = (new MsgVO()).setGroup(CLUSTER + devopsClusterDTO.getId()).setKey(msg.getKey()).setMessage(JsonHelper.marshalByJackson(msg));
+        sendToSession(webSocketSession, new TextMessage(JsonHelper.marshalByJackson(finalMessage)));
+    }
+
+    private AgentMsgVO buildAgentUpgradeMessage(DevopsClusterDTO devopsClusterDTO) {
         AgentMsgVO msg = new AgentMsgVO();
         Map<String, String> configs = new HashMap<>();
         configs.put("config.connect", agentServiceUrl);
@@ -179,8 +186,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
                 "choerodon-cluster-agent-" + devopsClusterDTO.getCode()));
         msg.setType(HELM_RELEASE_UPGRADE);
         msg.setPayload(JsonHelper.marshalByJackson(payload));
-
-        sendToWebSocket(devopsClusterDTO.getId(), msg);
+        return msg;
     }
 
     @Override
