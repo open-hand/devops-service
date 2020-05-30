@@ -61,7 +61,7 @@ export default (AppServiceOptionsDs, projectId, createUseStore, dataSource) => {
               let newRes;
               try {
                 newRes = JSON.parse(res);
-                if (newRes.length % 20 === 0) {
+                if (newRes.length % 20 === 0 && newRes.length !== 0) {
                   newRes.push({
                     appServiceId: 'more',
                     appServiceName: '加载更多',
