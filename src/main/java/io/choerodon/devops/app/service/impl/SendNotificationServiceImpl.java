@@ -165,7 +165,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceDTO, SendSettingEnum.CREATE_APPSERVICE.value(),
                         app -> ArrayUtil.singleAsList(constructReceiver(app.getCreatedBy()))),
-                ex -> LOGGER.info("Error occurred when sending message about of app-service-create. The exception is {}.", ex));
+                ex -> LOGGER.info("Error occurred when sending message about of app-service-create. The exception is ", ex));
     }
 
     @Override
@@ -178,7 +178,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, MessageCodeConstants.APP_SERVICE_CREATION_FAILED,
                         app -> ArrayUtil.singleAsList(constructReceiver(app.getCreatedBy()))),
-                ex -> LOGGER.info("Error occurred when sending message about failure of app-service. The exception is {}.", ex));
+                ex -> LOGGER.info("Error occurred when sending message about failure of app-service. The exception is", ex));
     }
 
     private static <T> List<T> mapNullListToEmpty(List<T> list) {
@@ -200,7 +200,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                                 .map(p -> constructReceiver(p.getIamUserId()))
                                 .collect(Collectors.toList())
                 ),
-                ex -> LOGGER.info("Error occurred when sending message about app-service-enable. The exception is {}.", ex));
+                ex -> LOGGER.info("Error occurred when sending message about app-service-enable. The exception is ", ex));
     }
 
 
@@ -219,7 +219,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                                 .stream()
                                 .map(p -> constructReceiver(p.getIamUserId()))
                                 .collect(Collectors.toList())),
-                ex -> LOGGER.info("Error occurred when sending message about app-service-disable. The exception is {}.", ex));
+                ex -> LOGGER.info("Error occurred when sending message about app-service-disable. The exception is ", ex));
     }
 
     /**
@@ -233,7 +233,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                                 .stream()
                                 .map(p -> constructReceiver(p.getIamUserId()))
                                 .collect(Collectors.toList())),
-                ex -> LOGGER.info("Error occurred when sending message about app-service-delete. The exception is {}.", ex));
+                ex -> LOGGER.info("Error occurred when sending message about app-service-delete. The exception is ", ex));
     }
 
 
@@ -274,7 +274,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     sendNotices(MessageCodeConstants.GITLAB_CONTINUOUS_DELIVERY_FAILURE, ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())), params);
                 },
-                ex -> LOGGER.info("Error occurred when sending message about gitlab-pipeline-failure. The exception is {}.", ex));
+                ex -> LOGGER.info("Error occurred when sending message about gitlab-pipeline-failure. The exception is", ex));
     }
 
     @Override
@@ -308,7 +308,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             sendNotices(SendSettingEnum.GITLAB_CD_SUCCESS.value(),
                     ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())),
                     params);
-        }, ex -> LOGGER.info("Error occurred when sending message about gitlab-pipeline-success. The exception is {}.", ex));
+        }, ex -> LOGGER.info("Error occurred when sending message about gitlab-pipeline-success. The exception is", ex));
     }
 
     @Override
@@ -329,7 +329,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             params
                     );
                 },
-                ex -> LOGGER.info("Error occurred when sending message about appservice-version. The exception is {}.", ex));
+                ex -> LOGGER.info("Error occurred when sending message about appservice-version. The exception is", ex));
     }
 
     /**
@@ -428,7 +428,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     sendNotices(MessageCodeConstants.AUDIT_MERGE_REQUEST, ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())), params);
                 },
-                ex -> LOGGER.info("Error occurred when sending message about merge-request-audit. The exception is {}.", ex));
+                ex -> LOGGER.info("Error occurred when sending message about merge-request-audit. The exception is: ", ex));
     }
 
     private AppServiceDTO queryAppServiceByGitlabProjectId(Integer gitlabProjectId) {

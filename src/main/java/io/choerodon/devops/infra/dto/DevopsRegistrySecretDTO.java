@@ -135,4 +135,20 @@ public class DevopsRegistrySecretDTO extends AuditDomain {
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
     }
+
+    @Override
+    public String toString() {
+        return "DevopsRegistrySecretDTO{" +
+                "id=" + id +
+                ", envId=" + envId +
+                ", configId=" + configId +
+                ", secretCode='" + secretCode + '\'' +
+                ", namespace='" + namespace + '\'' +
+                ", clusterId=" + clusterId +
+                ", secretDetail='" + secretDetail + '\'' +
+                ", status=" + status +
+                ", objectVersionNumber=" + objectVersionNumber +
+                ", projectId=" + projectId +
+                '}';
+    }
 }

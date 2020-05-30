@@ -3,6 +3,8 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -19,7 +21,7 @@ import io.choerodon.devops.infra.mapper.DevopsRegistrySecretMapper;
 
 @Service
 public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretService {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsRegistrySecretServiceImpl.class);
 
     @Autowired
     private DevopsRegistrySecretMapper devopsRegistrySecretMapper;
@@ -53,7 +55,7 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public DevopsRegistrySecretDTO createIfNonInDb(DevopsRegistrySecretDTO devopsRegistrySecretDTO) {
         DevopsRegistrySecretDTO dbResult = baseQueryByClusterAndNamespaceAndName(devopsRegistrySecretDTO.getClusterId(), devopsRegistrySecretDTO.getNamespace(), devopsRegistrySecretDTO.getSecretCode());
-
+        LOGGER.debug("Registry secret: createIfNonInDb: the dbResult is {}", dbResult);
         // 如果不存在才创建
         return dbResult == null ? baseCreate(devopsRegistrySecretDTO) : dbResult;
     }
