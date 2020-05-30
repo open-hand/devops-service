@@ -414,8 +414,12 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             Long pvId = createPvRecord(devopsPvDTO).getId();
             devopsEnvCommandDTO.setObjectId(pvId);
             devopsPvDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+            LOGGER.debug("Create Pv: to update... the pv is {}", devopsPvDTO);
+            devopsPvDTO.setObjectVersionNumber(1L);
             baseUpdate(devopsPvDTO);
         } else {
+            LOGGER.warn("Pv GitOps: unexpected pv update operation");
+            // 不应该有更新的操作, pv不允许更新
             DevopsPvDTO dbRecord = devopsPvMapper.selectByPrimaryKey(devopsPvReqVO.getId());
             devopsPvDTO.setObjectVersionNumber(dbRecord.getObjectVersionNumber());
             devopsEnvCommandDTO.setObjectId(devopsPvDTO.getId());
