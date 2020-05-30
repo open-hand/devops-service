@@ -191,4 +191,26 @@ public class DevopsPvDTO extends AuditDomain {
     public void setClusterConnect(Boolean clusterConnect) {
         this.clusterConnect = clusterConnect;
     }
+
+    @Override
+    public String toString() {
+        return "DevopsPvDTO{" +
+                "id=" + id +
+                ", projectId=" + projectId +
+                ", name='" + name + '\'' +
+                ", type='" + type + '\'' +
+                ", description='" + description + '\'' +
+                ", status='" + status + '\'' +
+                ", pvcName='" + pvcName + '\'' +
+                ", clusterName='" + clusterName + '\'' +
+                ", clusterConnect=" + clusterConnect +
+                ", clusterId=" + clusterId +
+                ", accessModes='" + accessModes + '\'' +
+                ", skipCheckProjectPermission=" + skipCheckProjectPermission +
+                ", requestResource='" + requestResource + '\'' +
+                ", commandId=" + commandId +
+                ", envId=" + envId +
+                ", valueConfig='" + valueConfig + '\'' +
+                '}';
+    }
 }
