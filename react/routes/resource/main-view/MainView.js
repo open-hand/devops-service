@@ -89,7 +89,6 @@ const MainView = observer(() => {
       getViewType,
       getSelectedMenu: { itemType },
     } = resourceStore;
-
     if (!itemType) return <Loading display />;
     const cmMaps = {
       [ENV_ITEM]: getViewType === IST_VIEW_TYPE ? <EnvContent /> : <ResourceEnvContent />,

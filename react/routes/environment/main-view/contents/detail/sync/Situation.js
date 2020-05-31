@@ -106,7 +106,7 @@ const SyncSituation = observer(() => {
           </div>
           <div className="log-sync-line-arrow log-sync-line-retry">
             <Permission
-              service={['devops-service.devops-environment.retryByGitOps']}
+              service={[]}
             >
               <Tooltip title={<FormattedMessage id={`${intlPrefix}.environment.retry`} />}>
                 <Button

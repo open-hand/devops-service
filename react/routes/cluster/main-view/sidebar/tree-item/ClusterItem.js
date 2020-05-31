@@ -159,17 +159,17 @@ function ClusterItem({
   const getSuffix = useMemo(() => {
     const [status] = getStatus();
     const Data = [{
-      service: ['devops-service.devops-cluster.update'],
+      service: ['choerodon.code.project.deploy.cluster.cluster-management.ps.edit'],
       text: formatMessage({ id: `${intlPrefix}.action.edit` }),
       action: editItem,
     }];
     if (status === 'disconnect') {
       Data.push({
-        service: ['devops-service.devops-cluster.queryShell'],
+        service: ['choerodon.code.project.deploy.cluster.cluster-management.ps.active'],
         text: formatMessage({ id: `${intlPrefix}.activate.header` }),
         action: activateItem,
       }, {
-        service: ['devops-service.devops-cluster.deleteCluster'],
+        service: ['choerodon.code.project.deploy.cluster.cluster-management.ps.delete'],
         text: formatMessage({ id: `${intlPrefix}.action.delete` }),
         action: deleteItem,
       });

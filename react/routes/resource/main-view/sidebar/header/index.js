@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { runInAction } from 'mobx';
 import { Button } from 'choerodon-ui/pro';
+import { Permission } from '@choerodon/boot';
 import { useResourceStore } from '../../../stores';
 
 import './index.less';
@@ -48,13 +49,17 @@ const SidebarHeader = () => {
     >
       {formatMessage({ id: `${intlPrefix}.viewer.${IST_VIEW_TYPE}` })}
     </Button>
-    <Button
-      {...buttonProps}
-      onClick={chooseResource}
-      className={getViewType === RES_VIEW_TYPE ? `${prefixCls}-sidebar-active` : ''}
+    <Permission
+      service={['choerodon.code.project.deploy.app-deployment.resource.ps.resource']}
     >
-      {formatMessage({ id: `${intlPrefix}.viewer.${RES_VIEW_TYPE}` })}
-    </Button>
+      <Button
+        {...buttonProps}
+        onClick={chooseResource}
+        className={getViewType === RES_VIEW_TYPE ? `${prefixCls}-sidebar-active` : ''}
+      >
+        {formatMessage({ id: `${intlPrefix}.viewer.${RES_VIEW_TYPE}` })}
+      </Button>
+    </Permission>
   </div>;
 };
 

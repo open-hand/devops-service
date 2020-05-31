@@ -1,7 +1,8 @@
-import React, { Fragment, useMemo } from 'react';
+import React, { Fragment, useMemo, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Action, Choerodon } from '@choerodon/boot';
 import { Modal, Table, Spin } from 'choerodon-ui/pro';
+import checkPermission from '../../../../../utils/checkPermission';
 import StatusTag from '../../../../../components/status-tag';
 import eventStopProp from '../../../../../utils/eventStopProp';
 import { getEnvStatus, statusMappings } from '../../../../../components/status-dot';
@@ -36,6 +37,15 @@ const Group = observer(() => {
     intl: { formatMessage },
   } = useEnvGroupStore();
   const { getSelectedMenu: { name } } = envStore;
+
+  const [canDetail, setCanDetail] = useState(false);
+
+  useEffect(() => {
+    async function init() {
+      const res = await checkPermission({ code: 'choerodon.code.project.deploy.environment.ps.detail-group' });
+      setCanDetail(res);
+    }
+  }, []);
 
   function refresh() {
     groupDs.query();
@@ -254,7 +264,7 @@ const Group = observer(() => {
         />
         <ClickText
           value={value}
-          clickAble={status === RUNNING || status === DISCONNECTED}
+          clickAble={(status === RUNNING || status === DISCONNECTED) && canDetail}
           onClick={openModifyModal.bind(this, record)}
           record={record}
         />
@@ -274,40 +284,40 @@ const Group = observer(() => {
     switch (status) {
       case RUNNING:
         actionData = [{
-          service: [],
+          service: ['choerodon.code.project.deploy.environment.ps.stop'],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.stop` }),
           action: () => openEffectModal(record),
         }, {
-          service: [],
+          service: ['choerodon.code.project.deploy.environment.ps.modify'],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.modify` }),
           action: openModifyModal.bind(this, record),
         }];
         break;
       case DISCONNECTED:
         actionData = [{
-          service: [],
+          service: ['choerodon.code.project.deploy.environment.ps.modify'],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.modify` }),
           action: () => openModifyModal(record),
         }, {
-          service: [],
+          service: ['choerodon.code.project.deploy.environment.ps.delete'],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
           action: () => openDelete(record),
         }];
         break;
       case STOPPED:
         actionData = [{
-          service: [],
+          service: ['choerodon.code.project.deploy.environment.ps.stop'],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.start` }),
           action: () => handleEffect(envId, true),
         }, {
-          service: [],
+          service: ['choerodon.code.project.deploy.environment.ps.delete'],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
           action: () => openDelete(record),
         }];
         break;
       case FAILED:
         actionData = [{
-          service: [],
+          service: ['choerodon.code.project.deploy.environment.ps.delete'],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
           action: () => openDelete(record),
         }];

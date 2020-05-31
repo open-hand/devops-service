@@ -46,13 +46,13 @@ export default function useStore({ defaultTab }) {
     },
 
     async checkPermission({ projectId, organizationId, resourceType }) {
-      const res = await checkPermission({
-        code: 'devops-service.devops-environment.pageEnvUserPermissions',
-        organizationId,
-        projectId,
-        resourceType,
-      });
-      this.setPermission(res);
+      // const res = await checkPermission({
+      //   code: '',
+      //   organizationId,
+      //   projectId,
+      //   resourceType,
+      // });
+      // this.setPermission(res);
     },
 
     async loadValue(projectId, id) {
