@@ -743,6 +743,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public AppServiceInstanceRepVO queryByCommandId(Long commandId) {
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(commandId);
+        if (commandId == null) {
+            throw new CommonException("error.command.not.exist", commandId);
+        }
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(devopsEnvCommandDTO.getObjectId());
         AppServiceInstanceRepVO appServiceInstanceRepVO = new AppServiceInstanceRepVO();
         appServiceInstanceRepVO.setAppServiceName(applicationService.baseQuery(appServiceInstanceDTO.getAppServiceId()).getName());
