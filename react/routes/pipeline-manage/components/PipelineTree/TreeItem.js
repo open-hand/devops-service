@@ -182,7 +182,7 @@ const TreeItem = observer(({ record, search }) => {
         case 'pending':
         case 'running':
           actionData = [{
-            service: ['devops-service.devops-ci-pipeline-record.cancel'],
+            service: ['choerodon.code.project.develop.ci-pipeline.ps.cancel'],
             text: formatMessage({ id: `${intlPrefix}.execute.cancel` }),
             action: () => changeRecordExecute('cancel'),
           }];
@@ -190,7 +190,7 @@ const TreeItem = observer(({ record, search }) => {
         case 'failed':
         case 'canceled':
           actionData = [{
-            service: ['devops-service.devops-ci-pipeline-record.retry'],
+            service: ['choerodon.code.project.develop.ci-pipeline.ps.retry'],
             text: formatMessage({ id: `${intlPrefix}.execute.retry` }),
             action: () => changeRecordExecute('retry'),
           }];
@@ -218,18 +218,17 @@ const TreeItem = observer(({ record, search }) => {
     } else {
       const actionData = [
         {
-          service: ['devops-service.devops-ci-pipeline.executeNew'],
+          service: ['choerodon.code.project.develop.ci-pipeline.ps.execute'],
           text: formatMessage({ id: `${intlPrefix}.execute` }),
           action: handleExecute,
         },
         {
-          service: enabled ? ['devops-service.devops-ci-pipeline.disablePipeline',
-          ] : ['devops-service.devops-ci-pipeline.enablePipeline'],
+          service: [`choerodon.code.project.develop.ci-pipeline.ps.${enabled ? 'disable' : 'enable'}`],
           text: formatMessage({ id: enabled ? 'stop' : 'active' }),
           action: handleChangeActive,
         },
         {
-          service: ['devops-service.devops-ci-pipeline.deletePipeline'],
+          service: ['choerodon.code.project.develop.ci-pipeline.ps.delete'],
           text: formatMessage({ id: 'delete' }),
           action: handleDelete,
         },

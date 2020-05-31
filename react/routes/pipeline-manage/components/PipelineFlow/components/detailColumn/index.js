@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { Tooltip } from 'choerodon-ui';
 import { Button } from 'choerodon-ui/pro';
 import { Modal } from 'choerodon-ui/pro';
-import { Choerodon } from '@choerodon/boot';
+import { Choerodon, Permission } from '@choerodon/boot';
 import StatusDot from '../statusDot';
 import CodeQuality from '../codeQuality';
 import CodeLog from '../codeLog';
@@ -238,39 +238,47 @@ const DetailItem = (props) => {
       {(type === 'build' || type === 'sonar') && renderMain()}
 
       <footer>
-        <Tooltip title="查看日志">
-          <Button
-            funcType="flat"
-            shape="circle"
-            size="small"
-            icon="description-o"
-            disabled={itemStatus === 'created'}
-            onClick={openDescModal}
-            color="primary"
-          />
-        </Tooltip>
-        <Tooltip title="重试">
-          <Button
-            funcType="flat"
-            disabled={!(itemStatus === 'success' || itemStatus === 'failed' || itemStatus === 'canceled')}
-            shape="circle"
-            size="small"
-            icon="refresh"
-            color="primary"
-            onClick={handleJobRetry}
-          />
-        </Tooltip>
-        {
-          type === 'sonar' && <Tooltip title="查看代码质量报告">
+        <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.job.log']}>
+          <Tooltip title="查看日志">
             <Button
               funcType="flat"
               shape="circle"
               size="small"
-              onClick={openCodequalityModal}
-              icon="policy-o"
+              icon="description-o"
+              disabled={itemStatus === 'created'}
+              onClick={openDescModal}
               color="primary"
             />
           </Tooltip>
+        </Permission>
+        <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.job.retry']}>
+          <Tooltip title="重试">
+            <Button
+              funcType="flat"
+              disabled={!(itemStatus === 'success' || itemStatus === 'failed' || itemStatus === 'canceled')}
+              shape="circle"
+              size="small"
+              icon="refresh"
+              color="primary"
+              onClick={handleJobRetry}
+            />
+          </Tooltip>
+        </Permission>
+        {
+          type === 'sonar' && (
+            <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.job.sonarqube']}>
+              <Tooltip title="查看代码质量报告">
+                <Button
+                  funcType="flat"
+                  shape="circle"
+                  size="small"
+                  onClick={openCodequalityModal}
+                  icon="policy-o"
+                  color="primary"
+                />
+              </Tooltip>
+            </Permission>
+          )
         }
         <span className="c7n-piplineManage-detail-column-item-time">
           <span>任务耗时：</span>

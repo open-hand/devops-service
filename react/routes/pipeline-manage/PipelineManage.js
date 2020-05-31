@@ -177,7 +177,7 @@ const PipelineManage = observer((props) => {
     const { parentId, status } = getSelectedMenu;
     if (!parentId) {
       return (
-        <Permission service={['devops-service.devops-ci-pipeline.update']}>
+        <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.update']}>
           <Button
             icon="mode_edit"
             onClick={openEditModal}
@@ -192,7 +192,7 @@ const PipelineManage = observer((props) => {
       switch (status) {
         case 'running':
         case 'pending':
-          btn = <Permission service={['devops-service.devops-ci-pipeline-record.cancel']}>
+          btn = <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.cancel']}>
             <Button
               icon="power_settings_new"
               onClick={() => changeRecordExecute('cancel')}
@@ -203,7 +203,7 @@ const PipelineManage = observer((props) => {
           break;
         case 'canceled':
         case 'failed':
-          btn = <Permission service={['devops-service.devops-ci-pipeline-record.retry']}>
+          btn = <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.retry']}>
             <Button
               icon="refresh"
               onClick={() => changeRecordExecute('retry')}
@@ -230,7 +230,7 @@ const PipelineManage = observer((props) => {
   return (
     <Page service={permissions} className="pipelineManage_page">
       <Header title="流水线">
-        <Permission service={['devops-service.devops-ci-pipeline.create']}>
+        <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.create']}>
           <Button
             onClick={handleCreatePipeline}
             icon="playlist_add"
