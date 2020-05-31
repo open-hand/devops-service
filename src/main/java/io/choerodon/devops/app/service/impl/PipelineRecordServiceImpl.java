@@ -43,7 +43,7 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
         if (pipelineRecordMapper.insert(pipelineRecordDTO) != 1) {
             throw new CommonException("error.insert.pipeline.record");
         }
-        return pipelineRecordDTO;
+        return pipelineRecordMapper.selectByPrimaryKey(pipelineRecordDTO.getId());
     }
 
     @Override

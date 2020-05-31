@@ -50,7 +50,7 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
         if (devopsEnvCommandMapper.insert(devopsEnvCommandDTO) != 1) {
             throw new CommonException("error.env.command.insert");
         }
-        return devopsEnvCommandDTO;
+        return devopsEnvCommandMapper.selectByPrimaryKey(devopsEnvCommandDTO);
     }
 
     @Override

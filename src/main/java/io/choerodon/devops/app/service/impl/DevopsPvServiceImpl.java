@@ -411,11 +411,10 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         if (CommandType.CREATE.getType().equals(devopsPvReqVO.getCommandType())) {
             devopsEnvCommandDTO.setCreatedBy(userId);
-            Long pvId = createPvRecord(devopsPvDTO).getId();
-            devopsEnvCommandDTO.setObjectId(pvId);
+            devopsPvDTO = createPvRecord(devopsPvDTO);
+            devopsEnvCommandDTO.setObjectId(devopsPvDTO.getId());
             devopsPvDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
             LOGGER.debug("Create Pv: to update... the pv is {}", devopsPvDTO);
-            devopsPvDTO.setObjectVersionNumber(1L);
             baseUpdate(devopsPvDTO);
         } else {
             LOGGER.warn("Pv GitOps: unexpected pv update operation");
