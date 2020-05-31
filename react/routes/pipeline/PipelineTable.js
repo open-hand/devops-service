@@ -8,6 +8,7 @@ import { Permission, Content, Header, Page, Action, Breadcrumb, Choerodon } from
 import { usePiplineStore } from './stores';
 import { handlePromptError } from '../../utils';
 
+import checkPermission from '../../utils/checkPermission';
 import pipelineCreateStore from './stores/PipelineCreateStore';
 import PipelineCreate from './pipeline-create';
 import PipelineEdit from './pipeline-edit';
@@ -35,6 +36,16 @@ const PiplelineTable = withRouter(observer((props) => {
     history,
     location: { search },
   } = usePiplineStore();
+
+  const [canDetail, setCanDetail] = useState(false);
+
+  useEffect(() => {
+    async function init() {
+      const res = await checkPermission({ code: 'choerodon.code.project.deploy.app-deployment.pipeline.ps.pipeline-detail' });
+      setCanDetail(res);
+    }
+    init();
+  }, []);
 
   function handleRefresh() {
     piplineDS.query();
@@ -165,13 +176,14 @@ const PiplelineTable = withRouter(observer((props) => {
     const id = record && record.get('id');
     const isEnabled = record && record.get('isEnabled');
     const itemName = record && record.get('name');
+
     return (
       <div>
         <StatusTags
           name={formatMessage({ id: isEnabled !== '0' ? 'active' : 'stop' })}
           color={isEnabled !== '0' ? '#00bfa5' : '#cecece'}
         />
-        {isEnabled !== '0' ? <a className={`${prefixCls}-status-a`} onClick={(e) => { handleClickName(e, id); }}>{itemName}</a> : <span style={{ marginLeft: '0.08rem' }}>{itemName}</span>}
+        {isEnabled !== '0' && canDetail ? <a className={`${prefixCls}-status-a`} onClick={(e) => { handleClickName(e, id); }}>{itemName}</a> : <span style={{ marginLeft: '0.08rem' }}>{itemName}</span>}
       </div>
     );
   }

@@ -1,6 +1,7 @@
 import React, { Fragment, lazy, Suspense, memo, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs, Icon, Spin } from 'choerodon-ui';
+import { Permission } from '@choerodon/boot';
 import PageTitle from '../../../../../components/page-title';
 import { useApplicationStore } from './stores';
 import { useResourceStore } from '../../../stores';
