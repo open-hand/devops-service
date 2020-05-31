@@ -611,16 +611,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 createEnvAppRelationShipIfNon(appServiceDeployVO.getAppServiceId(), appServiceDeployVO.getEnvironmentId());
                 appServiceInstanceDTO.setCode(code);
                 appServiceInstanceDTO.setId(baseCreate(appServiceInstanceDTO).getId());
-                devopsEnvCommandDTO.setObjectId(appServiceInstanceDTO.getId());
-                devopsEnvCommandDTO.setValueId(devopsEnvCommandValueService.baseCreate(devopsEnvCommandValueDTO).getId());
-                appServiceInstanceDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
-                baseUpdate(appServiceInstanceDTO);
-            } else {
-                devopsEnvCommandDTO.setObjectId(appServiceInstanceDTO.getId());
-                devopsEnvCommandDTO.setValueId(devopsEnvCommandValueService.baseCreate(devopsEnvCommandValueDTO).getId());
-                appServiceInstanceDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
-                baseUpdate(appServiceInstanceDTO);
             }
+            devopsEnvCommandDTO.setObjectId(appServiceInstanceDTO.getId());
+            devopsEnvCommandDTO.setValueId(devopsEnvCommandValueService.baseCreate(devopsEnvCommandValueDTO).getId());
+            devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
+            appServiceInstanceDTO.setCommandId(devopsEnvCommandDTO.getId());
+            baseUpdate(appServiceInstanceDTO);
 
             //插入部署记录
             if (!isFromPipeline) {
@@ -783,7 +779,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         devopsEnvCommandDTO.setCreatedBy(userId);
         devopsEnvCommandDTO.setObjectId(appServiceInstanceDTO.getId());
         devopsEnvCommandDTO.setValueId(devopsEnvCommandValueService.baseCreate(devopsEnvCommandValueDTO).getId());
-        appServiceInstanceDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+        devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
+        appServiceInstanceDTO.setCommandId(devopsEnvCommandDTO.getId());
         baseUpdate(appServiceInstanceDTO);
 
         // 插入应用服务和环境的关联关系
