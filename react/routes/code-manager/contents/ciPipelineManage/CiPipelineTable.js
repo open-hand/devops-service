@@ -184,7 +184,7 @@ export default injectIntl(observer(() => {
     if (status && status !== 'passed' && status !== 'success' && status !== 'skipped') {
       const action = [
         {
-          service: ['devops-service.project-pipeline.retry', 'devops-service.project-pipeline.cancel'],
+          service: [(status === 'running' || status === 'pending') ? 'choerodon.code.project.develop.code-management.ps.ci.cancel' : 'choerodon.code.project.develop.code-management.ps.ci.retry'],
           text: formatMessage({ id: (status === 'running' || status === 'pending') ? 'cancel' : 'retry' }),
           action: handleAction.bind(this, record),
         },
@@ -348,9 +348,7 @@ export default injectIntl(observer(() => {
   return (
     <Page
       className="c7n-ciPipeline page-container"
-      service={[
-        'devops-service.pipeline.pageByOptions',
-      ]}
+      service={[]}
     >
       {appServiceDs.status !== 'ready' || !appServiceId
         ? <Loading display />

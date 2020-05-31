@@ -169,7 +169,7 @@ const HeaderButtons = observer(({ children }) => {
         </Button>
       </Permission>
       <Permission
-        service={['devops-service.app-service.query']}
+        service={['choerodon.code.project.develop.app-service.ps.default']}
       >
         <Button
           icon="find_in_page"

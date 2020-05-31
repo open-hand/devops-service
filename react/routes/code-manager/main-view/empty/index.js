@@ -41,7 +41,7 @@ export default function EmptyShown() {
   useEffect(() => {
     async function judgeRole() {
       const data = {
-        code: 'devops-service.devops-environment.create',
+        code: 'choerodon.code.project.develop.app-service.ps.create',
         projectId,
         organizationId,
         resourceType: 'project',

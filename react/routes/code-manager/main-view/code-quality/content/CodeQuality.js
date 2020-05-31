@@ -113,9 +113,7 @@ export default withRouter(observer((props) => {
   return (
     <Page
       className="c7n-region c7n-codeQuality-wrapper page-container"
-      service={[
-        'devops-service.app-service.getSonarQube',
-      ]}
+      service={[]}
     >
       {appServiceDs.status !== 'ready' || codeQuality.loading ? <Loading display /> : getDetail()}
     </Page>

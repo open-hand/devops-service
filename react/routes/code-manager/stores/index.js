@@ -83,21 +83,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const appServiceDs = useMemo(() => new DataSet(AppServiceDs({ projectId })), []);
     const selectAppDs = useMemo(() => new DataSet(SelectAppDataSet({ handleDataSetChange })), []);
     const codeManagerStore = useStore();
-    const permissions = useMemo(() => ([
-      'devops-service.devops-git.pageTagsByOptions',
-      'devops-service.devops-git.createTag',
-      'devops-service.devops-git.checkTag',
-      'devops-service.devops-git.createBranch',
-      'devops-service.devops-git.deleteBranch',
-      'devops-service.devops-git.updateBranchIssue',
-      'devops-service.devops-git.pageBranchByOptions',
-      'devops-service.pipeline.pageByOptions',
-      'devops-service.application.getSonarQube',
-      'devops-service.devops-git.queryUrl',
-      'devops-service.devops-git.listMergeRequest',
-      'devops-service.app-service.listByActive',
-      'choerodon.route.develop.code-management',
-    ]), []);
+    const permissions = useMemo(() => (['choerodon.code.project.develop.code-management.ps.default']), []);
 
     useEffect(() => {
       codeManagerStore.checkHasApp(projectId);
