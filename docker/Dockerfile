@@ -6,5 +6,5 @@ COPY --from=base /usr/bin/kaniko /usr/bin/kaniko
 WORKDIR /choerodon
 COPY app.jar devops-service.jar
 RUN chown -R www-data:www-data /usr/lib/yaml /usr/bin/kaniko /choerodon
-USER www-data
+USER 33
 CMD java $JAVA_OPTS $SKYWALKING_OPTS -jar /choerodon/devops-service.jar
