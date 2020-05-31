@@ -29,11 +29,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const value = {
       ...props,
       prefixCls: 'c7ncd-repository',
-      permissions: [
-        'devops-service.devops-project-config.queryProjectDefaultConfig',
-        'devops-service.devops-project-config.create',
-        'devops-service.devops-project-config.query',
-      ],
+      permissions: ['choerodon.code.project.setting.setting-repository.ps.default'],
       intlPrefix,
       promptMsg: formatMessage({ id: `${intlPrefix}.prompt.inform.title` }) + Choerodon.STRING_DEVIDER + formatMessage({ id: `${intlPrefix}.prompt.inform.message` }),
       detailDs,
