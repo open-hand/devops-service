@@ -3,10 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,6 +108,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
     @Override
     public void baseCreate(DevopsDeployRecordDTO devopsDeployRecordDTO) {
+        Objects.requireNonNull(devopsDeployRecordDTO.getDeployTime(), "Deploy time can't be null");
         if (devopsDeployRecordMapper.insert(devopsDeployRecordDTO) != 1) {
             throw new CommonException("error.deploy.record.insert");
         }
