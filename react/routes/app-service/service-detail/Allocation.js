@@ -56,7 +56,7 @@ const Allocation = observer(() => {
   function renderAction({ record }) {
     if ((detailDs.current && detailDs.current.get('skipCheckPermission')) || record.get('gitlabProjectOwner')) return;
     const actionData = [{
-      service: ['devops-service.app-service.deletePermission'],
+      service: ['choerodon.code.project.develop.app-service.ps.permission.delete'],
       text: formatMessage({ id: 'delete' }),
       action: handleDelete,
     }];
@@ -103,7 +103,7 @@ const Allocation = observer(() => {
     const isStop = detailDs.current && !detailDs.current.get('active');
     return (
       <Permission
-        service={['devops-service.app-service.updatePermission']}
+        service={['choerodon.code.project.develop.app-service.ps.permission.update']}
       >
         <Tooltip
           title={isStop ? <FormattedMessage id={`${intlPrefix}.button.disabled`} /> : ''}
@@ -133,15 +133,7 @@ const Allocation = observer(() => {
 
   return (
     <TabPage
-      service={[
-        'devops-service.app-service.query',
-        'devops-service.app-service.update',
-        'devops-service.app-service.updateActive',
-        'devops-service.app-service.pagePermissionUsers',
-        'devops-service.app-service.updatePermission',
-        'devops-service.app-service.deletePermission',
-        'devops-service.app-service.listNonPermissionUsers',
-      ]}
+      service={['choerodon.code.project.develop.app-service.ps.permission']}
     >
       <HeaderButtons>
         {renderButtons()}

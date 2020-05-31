@@ -2678,7 +2678,7 @@ const zhCN = {
   'codeQuality.new_duplicated_lines_density': '新增代码部分重复率',
   'codeQuality.empty.title': '暂无详情',
   'codeQuality.empty.content':
-    '当前应用未使用SonarQube进行代码质量的检测，因此没有相关的代码质量详情。',
+    '当前应用服务未使用SonarQube进行代码质量的检测，因此没有相关的代码质量详情。',
 
   // Notifications
   'notification.header.title': '通知设置',

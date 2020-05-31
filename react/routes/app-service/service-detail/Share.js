@@ -50,7 +50,7 @@ const Share = () => {
         value={`#${value}`}
         onClick={() => openModal('edit')}
         clickAble
-        permissionCode={['devops-service.app-share-rule.update']}
+        permissionCode={['choerodon.code.project.develop.app-service.ps.share.update']}
       />
     );
   }
@@ -58,7 +58,7 @@ const Share = () => {
   function renderAction() {
     const actionData = [
       {
-        service: ['devops-service.app-share-rule.delete'],
+        service: ['choerodon.code.project.develop.app-service.ps.share.delete'],
         text: formatMessage({ id: 'delete' }),
         action: handleDelete,
       },
@@ -103,7 +103,7 @@ const Share = () => {
     const isStop = detailDs.current && !detailDs.current.get('active');
     return (
       <Permission
-        service={['devops-service.app-share-rule.create']}
+        service={['choerodon.code.project.develop.app-service.ps.share.add']}
       >
         <Tooltip
           title={isStop ? <FormattedMessage id={`${intlPrefix}.button.disabled`} /> : ''}
@@ -133,16 +133,7 @@ const Share = () => {
 
   return (
     <TabPage
-      service={[
-        'devops-service.app-service.query',
-        'devops-service.app-service.update',
-        'devops-service.app-service.updateActive',
-        'devops-service.app-share-rule.create',
-        'devops-service.app-share-rule.update',
-        'devops-service.app-share-rule.delete',
-        'devops-service.app-share-rule.query',
-        'devops-service.app-share-rule.pageByOptions',
-      ]}
+      service={['choerodon.code.project.develop.app-service.ps.share']}
     >
       <HeaderButtons>
         {renderButtons()}

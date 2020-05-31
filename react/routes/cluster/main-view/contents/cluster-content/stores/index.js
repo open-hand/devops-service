@@ -115,7 +115,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       const res = await contentStore.loadGrafanaUrl(projectId, id);
       if (res) {
         const uri = escape(`${window.location}`);
-        axios.get('/oauth/is_login', { withCredentials: true })
+        axios.get('oauth/public/is-online', { withCredentials: true })
           .then((response) => {
             if (!response) {
               window.location = `${window._env_.API_HOST}/oauth/oauth/authorize?response_type=token&client_id=${window._env_.CLIENT_ID}&state=&redirect_uri=${uri}%26redirectFlag`;

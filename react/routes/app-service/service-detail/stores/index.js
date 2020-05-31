@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useEffect } from 'react';
+import React, { createContext, useContext, useMemo, useEffect, useState } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
@@ -9,6 +9,7 @@ import usePermissionStore from '../modals/stores/useStore';
 import OptionsDataSet from './OptionsDataSet';
 import { useAppTopStore } from '../../stores';
 import DetailDataSet from './DetailDataSet';
+import checkPermission from '../../../../utils/checkPermission';
 
 const Store = createContext();
 
@@ -33,6 +34,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const nonePermissionDs = useMemo(() => new DataSet(OptionsDataSet()), []);
     const permissionStore = usePermissionStore();
 
+    const [accessPermission, setAccessPermission] = useState(false);
+    const [accessShare, setAccessShare] = useState(false);
+
     useEffect(() => {
       nonePermissionDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/${id}/list_non_permission_users`;
       detailDs.transport.read = {
@@ -43,7 +47,21 @@ export const StoreProvider = injectIntl(inject('AppState')(
     }, [projectId, id]);
 
     useEffect(() => {
-      appServiceStore.judgeRole(organizationId, projectId);
+      async function judgeRole() {
+        const codeArr = [
+          'choerodon.code.project.develop.app-service.ps.permission',
+          'choerodon.code.project.develop.app-service.ps.share',
+        ];
+        try {
+          const [permission, share] = await checkPermission({ organizationId, projectId, codeArr });
+          setAccessPermission(permission);
+          setAccessShare(share);
+        } catch (e) {
+          setAccessPermission(false);
+          setAccessShare(false);
+        }
+      }
+      judgeRole();
     }, [organizationId, projectId]);
 
     const value = {
@@ -57,6 +75,10 @@ export const StoreProvider = injectIntl(inject('AppState')(
       params: {
         projectId,
         id,
+      },
+      access: {
+        accessPermission,
+        accessShare,
       },
     };
     return (
