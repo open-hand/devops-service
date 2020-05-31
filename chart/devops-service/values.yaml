@@ -4,23 +4,6 @@ preJob:
   timeout: 1200
   # 工具 jar 包镜像库地址
   image: registry.cn-shanghai.aliyuncs.com/c7n/dbtool:0.6.7
-  # 初始化配置 job 定义
-  preConfig:
-    # 是否初始化配置至配置服务
-    enabled: true
-    # 初始化到配置中心文件名
-    configFile: application.yml
-    # 初始化到配置中心存储方式: k8s/db
-    configType: k8s
-    # 初始化配置策略: not/add/override/update
-    updatePolicy: override
-    # 当 configType 值为 k8s 时配置注册中心地址
-    registerHost: http://register-server:8000
-    # 当 configType 值为 db 时配置 manager-service 的数据库
-    datasource:
-      url: jdbc:mysql://localhost:3306/manager_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true&serverTimezone=Asia/Shanghai
-      username: username
-      password: password
   # 初始化数据库定义
   preInitDB:
     # 是否初始化本服务数据库
@@ -32,6 +15,7 @@ preJob:
       url: jdbc:mysql://localhost:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true&serverTimezone=Asia/Shanghai
       username: username
       password: password
+      driver: com.mysql.jdbc.Driver
 
 ## 实例运行数量
 replicaCount: 1
