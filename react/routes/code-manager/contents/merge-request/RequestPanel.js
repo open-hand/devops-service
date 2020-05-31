@@ -85,7 +85,7 @@ const RequestPanel = withRouter(observer((props) => {
   function getSelfToolBar() {
     return (
       <Permission
-        service={['devops-service.devops-git.queryUrl']}
+        service={['choerodon.code.project.develop.code-management.ps.default']}
       >
         <Button
           funcType="flat"
@@ -193,10 +193,7 @@ const RequestPanel = withRouter(observer((props) => {
   return (
     <Page
       className="c7n-region page-container c7n-merge-wrapper"
-      service={[
-        'devops-service.devops-git.listMergeRequest',
-        'devops-service.devops-git.queryUrl',
-      ]}
+      service={[]}
     >
       {appServiceDs.status !== 'ready' || !appId
         ? <Loading display />

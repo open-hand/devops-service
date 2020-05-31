@@ -36,10 +36,7 @@ export default observer((props) => {
    */
   const getSelfToolBar = () => (
     <Permission
-      service={[
-        'devops-service.devops-git.createTag',
-        'devops-service.devops-git.checkTag',
-      ]}
+      service={['choerodon.code.project.develop.code-management.ps.tag.create']}
     >
       <Button
         type="primary"
@@ -155,13 +152,18 @@ export default observer((props) => {
         <div className="c7n-tag-panel-name">
           <Icon type="local_offer" />
           <div className="c7n-tag-name">
-            <span className="c7n-tag-name-text" onClick={(e) => { stopPropagation(e); openEdit(release.tagName, release.description !== 'empty' ? release.description : formatMessage({ id: 'apptag.release.empty' })); }}>{release.tagName}</span>
+            <Permission
+              service={['choerodon.code.project.develop.code-management.ps.tag.update']}
+              defaultChildren={<span className="c7n-tag-name-text">{release.tagName}</span>}
+            >
+              <span className="c7n-tag-name-text" onClick={(e) => { stopPropagation(e); openEdit(release.tagName, release.description !== 'empty' ? release.description : formatMessage({ id: 'apptag.release.empty' })); }}>{release.tagName}</span>
+            </Permission>
           </div>
           <div className="c7n-tag-action" onClick={stopPropagation}>
             <Action data={[
               {
                 service: [
-                  'devops-service.devops-git.deleteTag',
+                  'choerodon.code.project.develop.code-management.ps.tag.delete',
                 ],
                 text: formatMessage({ id: 'delete' }),
                 action: () => { openRemove(release.tagName); },
@@ -204,12 +206,7 @@ export default observer((props) => {
   return <Fragment>
     <Page
       className="c7n-tag-wrapper page-container"
-      service={[
-        'devops-service.devops-git.pageTagsByOptions',
-        'devops-service.devops-git.deleteTag',
-        'devops-service.devops-git.createTag',
-        'devops-service.devops-git.checkTag',
-      ]}
+      service={[]}
     >
       {/* 应用/标签是否加载完成的判断，目的是控制Loading的显示 */}
       {appServiceDs.status !== 'ready' || appTagDs.status !== 'ready' ? <Loading display />

@@ -109,7 +109,7 @@ export default function useStore() {
     },
 
     async judgeRole(organizationId, projectId) {
-      const data = ['devops-service.app-service.create'];
+      const data = ['choerodon.code.project.develop.app-service.ps.create'];
       try {
         const res = await axios.post(`iam/choerodon/v1/permissions/menus/check-permissions?projectId=${projectId}`, JSON.stringify(data));
         if (handlePromptError(res)) {
