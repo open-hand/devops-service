@@ -116,22 +116,22 @@ const ListView = withRouter(observer((props) => {
   function renderActions({ record }) {
     const actionData = {
       edit: {
-        service: ['devops-service.app-service.update'],
+        service: ['choerodon.code.project.develop.app-service.ps.update'],
         text: formatMessage({ id: 'edit' }),
         action: openEdit,
       },
       stop: {
-        service: ['devops-service.app-service.updateActive'],
+        service: ['choerodon.code.project.develop.app-service.ps.disable'],
         text: formatMessage({ id: 'stop' }),
         action: openStop.bind(this, record),
       },
       run: {
-        service: ['devops-service.app-service.updateActive'],
+        service: ['choerodon.code.project.develop.app-service.ps.enable'],
         text: formatMessage({ id: 'active' }),
         action: () => changeActive(true),
       },
       delete: {
-        service: ['devops-service.app-service.delete'],
+        service: ['choerodon.code.project.develop.app-service.ps.delete'],
         text: formatMessage({ id: 'delete' }),
         action: handleDelete,
       },
@@ -322,7 +322,7 @@ const ListView = withRouter(observer((props) => {
     const disabledMessage = disabled ? formatMessage({ id: `${intlPrefix}.create.disabled` }) : '';
     return <Header title={<FormattedMessage id="app.head" />}>
       <Permission
-        service={['devops-service.app-service.create']}
+        service={['choerodon.code.project.develop.app-service.ps.create']}
       >
         <Tooltip title={disabledMessage} placement="bottom">
           <Button
@@ -335,7 +335,7 @@ const ListView = withRouter(observer((props) => {
         </Tooltip>
       </Permission>
       <Permission
-        service={['devops-service.app-service.importApp']}
+        service={['choerodon.code.project.develop.app-service.ps.import']}
       >
         <Tooltip title={disabledMessage} placement="bottom">
           <Button

@@ -31,7 +31,7 @@ const AppService = withRouter(observer(() => {
   useEffect(() => {
     async function judgeRole() {
       const data = {
-        code: 'devops-service.app-service.create',
+        code: 'choerodon.code.project.develop.app-service.ps.create',
         projectId,
         organizationId,
         resourceType: 'project',

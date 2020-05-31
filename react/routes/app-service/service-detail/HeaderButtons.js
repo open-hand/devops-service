@@ -143,7 +143,7 @@ const HeaderButtons = observer(({ children }) => {
   return (
     <Header>
       <Permission
-        service={['devops-service.app-service.update']}
+        service={['choerodon.code.project.develop.app-service.ps.update']}
       >
         <Tooltip
           title={!serviceActive ? <FormattedMessage id={`${intlPrefix}.button.disabled`} /> : ''}
@@ -159,7 +159,7 @@ const HeaderButtons = observer(({ children }) => {
         </Tooltip>
       </Permission>
       <Permission
-        service={['devops-service.app-service.updateActive']}
+        service={[serviceActive ? 'choerodon.code.project.develop.app-service.ps.disable' : 'choerodon.code.project.develop.app-service.ps.enable']}
       >
         <Button
           icon={serviceActive ? 'remove_circle_outline' : 'finished'}

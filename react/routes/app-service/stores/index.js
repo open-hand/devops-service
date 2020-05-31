@@ -17,29 +17,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
     } = props;
     const appServiceStore = useStore();
     const intlPrefix = 'c7ncd.appService';
-    const listPermissions = useMemo(() => ([
-      'devops-service.app-service.pageByOptions',
-      'devops-service.app-service.create',
-      'devops-service.app-service.importApp',
-      'devops-service.app-service.update',
-      'devops-service.app-service.updateActive',
-      'devops-service.app-service.delete',
-    ]), []);
-    const detailPermissions = useMemo(() => ([
-      'devops-service.app-service.query',
-      'devops-service.app-service.update',
-      'devops-service.app-service.updateActive',
-      'devops-service.app-service-version.pageByOptions',
-      'devops-service.app-share-rule.create',
-      'devops-service.app-share-rule.update',
-      'devops-service.app-share-rule.delete',
-      'devops-service.app-share-rule.query',
-      'devops-service.app-share-rule.pageByOptions',
-      'devops-service.app-service.pagePermissionUsers',
-      'devops-service.app-service.updatePermission',
-      'devops-service.app-service.deletePermission',
-      'devops-service.app-service.listNonPermissionUsers',
-    ]), []);
+    const listPermissions = useMemo(() => (['choerodon.code.project.develop.app-service.ps.default']), []);
+    const detailPermissions = useMemo(() => ([]), []);
 
     useEffect(() => {
       appServiceStore.checkHasApp(projectId);
