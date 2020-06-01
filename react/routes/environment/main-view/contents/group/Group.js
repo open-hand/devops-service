@@ -141,10 +141,11 @@ const Group = observer(() => {
     return new Promise((resolve) => {
       mainStore.checkStatus(projectId, envId).then((res) => {
         if (res && res.id) {
+          res.failed = res.fail;
           const newStatus = getEnvStatus(res);
           resolve(newStatus === oldStatus);
         }
-      });
+      }).catch(() => resolve(false));
     });
   }
 
