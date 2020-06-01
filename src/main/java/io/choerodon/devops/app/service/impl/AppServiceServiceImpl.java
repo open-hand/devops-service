@@ -129,8 +129,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private String gitlabUrl;
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
-    @Value("${spring.application.name}")
-    private String applicationName;
     @Value("${services.sonarqube.url:}")
     private String sonarqubeUrl;
     @Value("${services.gateway.url}")
@@ -139,8 +137,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private String userName;
     @Value("${services.sonarqube.password:}")
     private String password;
-    @Value("${choerodon.organization.resourceLimit.appSvcMaxNumber:100}")
-    private Integer appSvcMaxNumber;
     @Autowired
     private HarborConfigurationProperties harborConfigurationProperties;
     @Autowired
@@ -177,8 +173,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsEnvAppServiceMapper devopsEnvAppServiceMapper;
     @Autowired
     private AppServiceVersionService appServiceVersionService;
-    @Value("${services.helm.url}")
-    private String helmUrl;
     @Autowired
     private AppServiceShareRuleMapper appServiceShareRuleMapper;
     @Autowired
@@ -192,6 +186,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private SendNotificationService sendNotificationService;
     @Autowired
     private PermissionHelper permissionHelper;
+    @Autowired
+    private DevopsCiPipelineService devopsCiPipelineService;
 
 
     static {
@@ -340,6 +336,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         if (checkResult.getCheckRule()) {
             throw new CommonException("error.delete.application.service.due.to.resources");
+        }
+
+        if (devopsCiPipelineService.selectCountByAppServiceId(appServiceId) != 0) {
+            throw new CommonException("error.delete.app.service.due.to.ci.pipeline", appServiceId);
         }
 
         appServiceDTO.setSynchro(Boolean.FALSE);
