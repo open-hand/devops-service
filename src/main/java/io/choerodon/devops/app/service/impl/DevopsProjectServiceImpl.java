@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
@@ -61,9 +63,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
 
     @Override
     public DevopsProjectDTO baseQueryByProjectId(Long projectId) {
-        DevopsProjectDTO devopsProjectDTO = new DevopsProjectDTO();
-        devopsProjectDTO.setIamProjectId(projectId);
-        devopsProjectDTO = devopsProjectMapper.selectOne(devopsProjectDTO);
+        DevopsProjectDTO devopsProjectDTO = queryWithoutCheck(projectId);
         if (devopsProjectDTO == null) {
             throw new CommonException("error.group.not.sync");
         }
@@ -71,6 +71,14 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
             throw new CommonException("error.gitlab.groupId.select");
         }
         return devopsProjectDTO;
+    }
+
+    @Nullable
+    @Override
+    public DevopsProjectDTO queryWithoutCheck(Long projectId) {
+        DevopsProjectDTO devopsProjectDTO = new DevopsProjectDTO();
+        devopsProjectDTO.setIamProjectId(Objects.requireNonNull(projectId));
+        return devopsProjectMapper.selectOne(devopsProjectDTO);
     }
 
     @Override

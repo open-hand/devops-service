@@ -33,6 +33,7 @@ import io.choerodon.devops.app.service.GitlabUserService;
 import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 
@@ -139,7 +140,7 @@ public class SagaHandler {
                 }.getType());
         LOGGER.info("update user role start");
         loggerInfo(gitlabGroupMemberVOList);
-        gitlabGroupMemberService.createGitlabGroupMemberRole(gitlabGroupMemberVOList);
+        gitlabGroupMemberService.createGitlabGroupMemberRole(gitlabGroupMemberVOList, false);
         LOGGER.info("update user role end");
         return gitlabGroupMemberVOList;
     }
@@ -283,10 +284,13 @@ public class SagaHandler {
             sagaCode = SagaTaskCodeConstants.ORG_USER_CREAT,
             maxRetryCount = 5, seq = 1)
     public String createAndUpdateUser(String payload) {
+        LOGGER.info("Org create user: the payload is {}", payload);
         CreateAndUpdateUserEventPayload createAndUpdateUserEventPayload = gson.fromJson(payload, CreateAndUpdateUserEventPayload.class);
-        loggerInfo(createAndUpdateUserEventPayload);
-        handleCreateUserEvent(gson.toJson(Arrays.asList(createAndUpdateUserEventPayload.getUserEventPayload())));
-        handleGitlabGroupMemberEvent(gson.toJson(createAndUpdateUserEventPayload.getUserMemberEventPayloads()));
+        handleCreateUserEvent(gson.toJson(ArrayUtil.singleAsList(createAndUpdateUserEventPayload.getUserEventPayload())));
+
+        LOGGER.info("Org create user: update user role start");
+        gitlabGroupMemberService.createGitlabGroupMemberRole(createAndUpdateUserEventPayload.getUserMemberEventPayloads(), true);
+        LOGGER.info("Org create user: update user role end");
         return payload;
     }
 }
