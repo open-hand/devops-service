@@ -17,26 +17,18 @@ public interface DevopsCiPipelineService {
      * 创建流水线
      *
      * @param projectId          项目id
-     * @param devopsCiPipelineVO
-     * @return
+     * @param devopsCiPipelineVO 流水线数据
+     * @return 创建的流水线
      */
     DevopsCiPipelineDTO create(Long projectId, DevopsCiPipelineVO devopsCiPipelineVO);
 
     /**
      * 更新流水线
-     *
-     * @param projectId          项目id
-     * @param ciPipelineId       流水线id
-     * @param devopsCiPipelineVO
-     * @return
      */
     DevopsCiPipelineDTO update(Long projectId, Long ciPipelineId, DevopsCiPipelineVO devopsCiPipelineVO);
 
     /**
      * 查询流水线详情（包含阶段和job信息）
-     * @param projectId
-     * @param ciPipelineId
-     * @return
      */
     DevopsCiPipelineVO query(Long projectId, Long ciPipelineId);
 
@@ -50,57 +42,44 @@ public interface DevopsCiPipelineService {
 
     /**
      * 查询项目下流水线列表（包含5条执行记录）
-     * @param projectId
-     * @param name
-     * @return
      */
     List<DevopsCiPipelineVO> listByProjectIdAndAppName(Long projectId, String name);
 
     /**
      * 查询流水线信息
-     * @param ciPipelineId
-     * @return
      */
     DevopsCiPipelineVO queryById(Long ciPipelineId);
 
     /**
      * 停用流水线
-     * @param projectId 项目id
-     * @param ciPipelineId 流水线id
-     * @return
      */
     DevopsCiPipelineDTO disablePipeline(Long projectId, Long ciPipelineId);
 
     /**
      * 删除流水线
-     * @param projectId
-     * @param ciPipelineId
      */
     void deletePipeline(Long projectId, Long ciPipelineId);
 
     /**
      * 启用流水线
-     * @param projectId 项目id
-     * @param ciPipelineId 流水线id
-     * @return
      */
     DevopsCiPipelineDTO enablePipeline(Long projectId, Long ciPipelineId);
 
     /**
      * 全新执行流水线
-     * @param projectId
-     * @param ciPipelineId
-     * @param gitlabProjectId
-     * @param ref
      */
     void executeNew(Long projectId, Long ciPipelineId, Long gitlabProjectId, String ref);
 
     /**
      * 校验用户是否有分支权限
-     * @param projectId
-     * @param gitlabUserId
-     * @param gitlabProjectId
-     * @param ref
      */
     void checkUserBranchPushPermission(Long projectId, Long gitlabUserId, Long gitlabProjectId, String ref);
+
+    /**
+     * 查询这个应用服务关联的CI流水线的数量
+     *
+     * @param appServiceId 应用服务id
+     * @return 数量
+     */
+    int selectCountByAppServiceId(Long appServiceId);
 }

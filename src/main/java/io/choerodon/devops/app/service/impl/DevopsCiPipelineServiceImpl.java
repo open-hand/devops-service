@@ -374,6 +374,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
     }
 
+    @Override
+    public int selectCountByAppServiceId(Long appServiceId) {
+        DevopsCiPipelineDTO devopsCiPipelineDTO = new DevopsCiPipelineDTO();
+        devopsCiPipelineDTO.setAppServiceId(Objects.requireNonNull(appServiceId));
+        return devopsCiPipelineMapper.selectCount(devopsCiPipelineDTO);
+    }
+
     private void deleteGitlabCiFile(Integer gitlabProjectId) {
         RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(gitlabProjectId, GitOpsConstants.MASTER, GitOpsConstants.GITLAB_CI_FILE_NAME);
         if (repositoryFile != null) {
