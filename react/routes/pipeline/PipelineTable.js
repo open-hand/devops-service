@@ -41,7 +41,7 @@ const PiplelineTable = withRouter(observer((props) => {
 
   useEffect(() => {
     async function init() {
-      const res = await checkPermission({ code: 'choerodon.code.project.deploy.app-deployment.pipeline.ps.pipeline-detail' });
+      const res = await checkPermission({ projectId, code: 'choerodon.code.project.deploy.app-deployment.pipeline.ps.pipeline-detail' });
       setCanDetail(res);
     }
     init();
