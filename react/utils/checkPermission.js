@@ -11,7 +11,7 @@ export default async function checkPermission({ projectId, organizationId, resou
         const result = [];
         codeArr.forEach((item, index) => {
           const permission = res.find(({ code: resCode }) => resCode === item);
-          const { approve } = permission && permission.length ? permission[0] || {} : {};
+          const { approve } = permission || {};
           result[index] = approve;
         });
         return result;
