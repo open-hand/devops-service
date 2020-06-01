@@ -41,6 +41,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PolarisScanningServiceImpl.class);
 
     private static final String ERROR_ENV_ID_NOT_EXIST = "error.env.id.not.exist";
+    private static final String ERROR_PROJECT_NOT_FOUND = "error.project.not.found";
 
     /**
      * polaris扫描的超时时间
@@ -88,6 +89,10 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     @Override
     public DevopsPolarisRecordRespVO queryRecordByScopeAndScopeId(Long projectId, String scope, Long scopeId) {
         PolarisScopeType scopeType = PolarisScopeType.forValue(scope);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        if (projectDTO == null) {
+            throw new CommonException(ERROR_PROJECT_NOT_FOUND);
+        }
         if (scopeType == null) {
             return null;
         }
@@ -101,7 +106,10 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             }
             devopsEnvUserPermissionService.checkEnvDeployPermission(DetailsHelper.getUserDetails().getUserId(), scopeId);
         } else {
-            permissionHelper.checkProjectOwnerOrGitlabAdmin(projectId, userId);
+            // 如果是组织管理员，则跳过项目层权限校验
+            if (Boolean.FALSE.equals(permissionHelper.isOrganzationRoot(userId, projectDTO.getOrganizationId()))) {
+                permissionHelper.checkProjectOwnerOrGitlabAdmin(projectId, userId);
+            }
         }
 
         // 以上是预检
