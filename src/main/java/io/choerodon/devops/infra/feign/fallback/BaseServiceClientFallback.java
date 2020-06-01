@@ -95,7 +95,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<ClientVO> createClient(@Valid ClientVO clientVO) {
+    public ResponseEntity<ClientVO> createClient(Long organizationId, @Valid ClientVO clientVO) {
         throw new CommonException("error.create.client");
     }
 

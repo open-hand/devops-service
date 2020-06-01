@@ -86,8 +86,9 @@ public interface BaseServiceClient {
      * @param clientVO clientVO
      * @return 分配结果
      */
-    @PostMapping(value = "/v1/clients")
-    ResponseEntity<ClientVO> createClient(@RequestBody @Valid ClientVO clientVO);
+    @PostMapping(value = "/choerodon/v1/organizations/{organization_id}/clients")
+    ResponseEntity<ClientVO> createClient(@PathVariable("organization_id") Long organizationId,
+                                          @RequestBody @Valid ClientVO clientVO);
 
     /**
      * 组织下删除client
@@ -193,5 +194,5 @@ public interface BaseServiceClient {
      */
     @GetMapping("/choerodon/v1/organizations/{organization_id}/clients/query_by_name")
     ResponseEntity<ClientVO> queryClientByName(@PathVariable("organization_id") Long organizationId,
-                                         @RequestParam(value = "client_name") String clientName);
+                                               @RequestParam(value = "client_name") String clientName);
 }

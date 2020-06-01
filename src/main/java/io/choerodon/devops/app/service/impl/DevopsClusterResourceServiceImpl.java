@@ -623,6 +623,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         clientVO.setAccessTokenValidity(360000L);
         clientVO.setPwdReplayFlag(0);
         clientVO.setTimeZone(TimeZoneConstants.GMT8);
+        clientVO.setSourceId(devopsClusterDTO.getId());
+        clientVO.setSourceType("cluster");
         LOGGER.info("clientVO:{}", clientVO);
         // 获取当前组织下的项目管理员的角色id
         Long projectAdminId = baseServiceClientOperator.getRoleId(devopsClusterDTO.getOrganizationId(), RoleLabel.PROJECT_ADMIN.getValue(), LabelType.PROJECT_ADMIN.getValue());
@@ -630,6 +632,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         Long tenantAdminId = baseServiceClientOperator.getRoleId(devopsClusterDTO.getOrganizationId(), RoleLabel.TENANT_ADMIN.getValue(), LabelType.TENANT_ADMIN.getValue());
         // 添加两个角色id
         clientVO.setAccessRoles(String.valueOf(projectAdminId).concat(",").concat(String.valueOf(tenantAdminId)));
-        return baseServiceClientOperator.createClient(clientVO);
+        return baseServiceClientOperator.createClient(devopsClusterDTO.getOrganizationId(), clientVO);
     }
 }
