@@ -283,9 +283,9 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public ClientVO createClient(ClientVO clientVO) {
+    public ClientVO createClient(Long organizationId, ClientVO clientVO) {
         try {
-            ClientVO client = baseServiceClient.createClient(clientVO).getBody();
+            ClientVO client = baseServiceClient.createClient(organizationId, clientVO).getBody();
             if (client == null || client.getId() == null) {
                 throw new CommonException("error.create.client");
             }
