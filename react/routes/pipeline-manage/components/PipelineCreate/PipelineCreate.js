@@ -58,7 +58,7 @@ const PipelineCreate = observer(() => {
         image: origin.selectImage === '1' ? origin.image : null,
         stageList: editBlockStore.getStepData2,
       };
-      if (data.stageList.length === 1 && data.stageList[0].jobList.length === 0) {
+      if (data.stageList.some(s => s.jobList.length === 0)) {
         message.error(`CI流水线中存在空阶段，无法${modal.props.title.includes('创建') ? '创建' : '保存'}`);
         return false;
       }

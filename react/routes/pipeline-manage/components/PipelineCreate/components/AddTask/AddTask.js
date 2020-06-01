@@ -77,7 +77,7 @@ const AddTask = observer(() => {
       const res = await useStore.axiosGetDefaultImage();
       useStore.setDefaultImage(res);
       if (jobDetail) {
-        if (jobDetail.type !== 'custom') {
+        if (!['custom', 'chart'].includes(jobDetail.type)) {
           const { config, authType, username, token, password, sonarUrl } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
           let uploadFilePattern;
           let dockerContextDir;
@@ -117,7 +117,9 @@ const AddTask = observer(() => {
           setSteps(newSteps);
         } else {
           AddTaskFormDataSet.loadData([jobDetail]);
-          setCustomYaml(jobDetail.metadata);
+          if (jobDetail.type === 'custom') {
+            setCustomYaml(jobDetail.metadata);
+          }
         }
         if (!jobDetail.image) {
           AddTaskFormDataSet.current.set('selectImage', '0');
@@ -306,10 +308,14 @@ const AddTask = observer(() => {
           >
             <Option value="Maven">Maven构建</Option>
             <Option value="npm">Npm构建</Option>
-            <Option value="go">Go语言构建</Option>
+            {/* <Option value="go">Go语言构建</Option> */}
             <Option value="upload">上传软件包至存储库</Option>
-            <Option value="docker">Docker构建</Option>
-            <Option value="chart">Chart构建</Option>
+            <Option value="docker">Docker构建
+              <Tooltip title="由于该步骤中Dockerfile内kaniko指令限制，建议此步骤作为同任务中最后一个步骤。">
+                <Icon style={{ position: 'relative', left: '1px', bottom: '1px' }} type="help" />
+              </Tooltip>
+            </Option>
+            {/* <Option value="chart">Chart构建</Option> */}
           </Select>
         </Form>
       ),
@@ -439,21 +445,17 @@ const AddTask = observer(() => {
   const handleChangeBuildTemple = (value) => {
     if (value) {
       AddTaskFormDataSet.current.set('bzmc', obj[value]);
-      const origin = [{
+      const origin = value !== 'go' ? [{
         name: obj[value],
         type: value,
         checked: true,
         yaml: useStore.getYaml[value],
-      }];
+      }] : [];
       let extra = [];
       if (value === 'Maven') {
         extra = [{
           name: 'Docker构建',
           type: 'docker',
-          checked: false,
-        }, {
-          name: 'Chart构建',
-          type: 'chart',
           checked: false,
         }];
       } else if (value === 'npm') {
@@ -461,20 +463,12 @@ const AddTask = observer(() => {
           name: 'Docker构建',
           type: 'docker',
           checked: false,
-        }, {
-          name: 'Chart构建',
-          type: 'chart',
-          checked: false,
         }];
       } else if (value === 'go') {
         extra = [{
           name: 'Docker构建',
           type: 'docker',
-          checked: false,
-        }, {
-          name: 'Chart构建',
-          type: 'chart',
-          checked: false,
+          checked: true,
         }];
       }
       setSteps([...origin, ...extra]);
@@ -587,7 +581,7 @@ const AddTask = observer(() => {
     if (AddTaskFormDataSet.current.get('private').includes('copy')) {
       Modal.confirm({
         title: '切换配置方式',
-        children: '确定要切换为"界面可视化定义/粘贴XML内容"的方式吗，切换后，将会清空已有的Setting配置。',
+        children: '确定要切换为"界面可视化定义"的方式吗，切换后，将会清空已有的Setting配置。',
       }).then(button => {
         if (button === 'ok') {
           setSteps(steps.map(s => {
@@ -629,7 +623,7 @@ const AddTask = observer(() => {
     if (AddTaskFormDataSet.current.get('private').includes('custom')) {
       Modal.confirm({
         title: '切换配置方式',
-        children: '确定要切换为"界面可视化定义/粘贴XML内容"的方式吗，切换后，将会清空已有的Setting配置。',
+        children: '确定要切换为"粘贴XML内容"的方式吗，切换后，将会清空已有的Setting配置。',
       }).then(button => {
         if (button === 'ok') {
           setSteps(steps.map(s => {
@@ -953,6 +947,7 @@ const AddTask = observer(() => {
           <Option value="build">构建</Option>
           <Option value="sonar">代码检查</Option>
           <Option value="custom">自定义</Option>
+          <Option value="chart">发布c7n版本</Option>
         </Select>
         {
           AddTaskFormDataSet.current.get('type') !== 'custom' ? [
@@ -967,7 +962,7 @@ const AddTask = observer(() => {
               <Option value="tag">tag</Option>
             </Select>,
             getImageDom(),
-            getMissionOther(),
+            AddTaskFormDataSet.current.get('type') !== 'chart' ? getMissionOther() : '',
           ] : [
             <YamlEditor
               readOnly={false}
