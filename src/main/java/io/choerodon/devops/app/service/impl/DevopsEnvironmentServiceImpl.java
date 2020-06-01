@@ -623,6 +623,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         DevopsEnvironmentInfoVO vo = new DevopsEnvironmentInfoVO();
         BeanUtils.copyProperties(envInfo, vo);
+        vo.setFail(envInfo.getFailed());
 
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         vo.setConnect(upgradeClusterList.contains(envInfo.getClusterId()));

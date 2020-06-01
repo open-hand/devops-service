@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.devops.infra.enums.EnvironmentGitopsStatus;
 
 /**
@@ -19,7 +21,8 @@ public class DevopsEnvironmentInfoVO {
     private String description;
     private Long objectVersionNumber;
     private Boolean active;
-    private Boolean failed;
+    @ApiModelProperty("环境是否失败")
+    private Boolean fail;
     private Long groupId;
     private String gitlabUrl;
     /**
@@ -27,12 +30,12 @@ public class DevopsEnvironmentInfoVO {
      */
     private String gitopsStatus;
 
-    public Boolean getFailed() {
-        return failed;
+    public Boolean getFail() {
+        return fail;
     }
 
-    public void setFailed(Boolean failed) {
-        this.failed = failed;
+    public void setFail(Boolean fail) {
+        this.fail = fail;
     }
 
     public Long getGroupId() {
