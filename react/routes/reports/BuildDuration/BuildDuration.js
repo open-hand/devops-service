@@ -67,6 +67,8 @@ const BuildDuration = observer(() => {
       if (data && data.length) {
         ReportsStore.setAppId(data[0].id);
         loadCharts();
+      } else {
+        ReportsStore.judgeRole(['choerodon.code.project.develop.app-service.ps.create']);
       }
     });
   };
@@ -298,13 +300,7 @@ const BuildDuration = observer(() => {
 
   return (<Page
     className="c7n-region c7n-ciPipeline"
-    service={[
-      'devops-service.application.listByActive',
-      'devops-service.devops-gitlab-pipeline.listPipelineTime',
-      'devops-service.devops-gitlab-pipeline.pagePipeline',
-      'devops-service.project-pipeline.cancel',
-      'devops-service.project-pipeline.retry',
-    ]}
+    service={['choerodon.code.project.operation.chart.ps.build.duration']}
   >
     <Header
       title={formatMessage({ id: 'report.build-duration.head' })}

@@ -123,8 +123,8 @@ const Submission = observer(() => {
       ReportsStore.setCommitsRecord([]);
     } else {
       const { id: projectId } = AppState.currentMenuType;
-      const startTime = getStartTime.format('YYYY-MM-DD HH:mm:ss');
-      const endTime = getEndTime.format('YYYY-MM-DD HH:mm:ss');
+      const startTime = ReportsStore.getStartTime.format('YYYY-MM-DD HH:mm:ss');
+      const endTime = ReportsStore.getEndTime.format('YYYY-MM-DD HH:mm:ss');
       setAppId(e);
       loadCommits(projectId, startTime, endTime, e);
       loadCommitsRecord(projectId, startTime, endTime, e, 1);
@@ -133,8 +133,8 @@ const Submission = observer(() => {
 
   const handlePageChange = (pageCurrent) => {
     const { id: projectId } = AppState.currentMenuType;
-    const startTime = getStartTime.format('YYYY-MM-DD HH:mm:ss');
-    const endTime = getEndTime.format('YYYY-MM-DD HH:mm:ss');
+    const startTime = ReportsStore.getStartTime.format('YYYY-MM-DD HH:mm:ss');
+    const endTime = ReportsStore.getEndTime.format('YYYY-MM-DD HH:mm:ss');
     setPage(pageCurrent);
     loadCommitsRecord(projectId, startTime, endTime, appId, pageCurrent);
   };
@@ -145,8 +145,8 @@ const Submission = observer(() => {
       repoAppId = state.appId;
     }
     const { id: projectId } = AppState.currentMenuType;
-    const startTime = getStartTime.format('YYYY-MM-DD HH:mm:ss');
-    const endTime = getEndTime.format('YYYY-MM-DD HH:mm:ss');
+    const startTime = ReportsStore.getStartTime.format('YYYY-MM-DD HH:mm:ss');
+    const endTime = ReportsStore.getEndTime.format('YYYY-MM-DD HH:mm:ss');
     changeIsRefresh(true);
     loadAllApps(projectId).then((data) => {
       changeIsRefresh(false);
@@ -161,14 +161,16 @@ const Submission = observer(() => {
         }
         loadCommits(projectId, startTime, endTime, selectApp);
         loadCommitsRecord(projectId, startTime, endTime, selectApp, page);
+      } else {
+        ReportsStore.judgeRole(['choerodon.code.project.develop.app-service.ps.create']);
       }
     });
   };
 
   function handleRefreshChartByTimePicker() {
     const { id: projectId } = AppState.currentMenuType;
-    const startTime = getStartTime.format('YYYY-MM-DD HH:mm:ss');
-    const endTime = getEndTime.format('YYYY-MM-DD HH:mm:ss');
+    const startTime = ReportsStore.getStartTime.format('YYYY-MM-DD HH:mm:ss');
+    const endTime = ReportsStore.getEndTime.format('YYYY-MM-DD HH:mm:ss');
     loadCommits(projectId, startTime, endTime, appId);
     loadCommitsRecord(projectId, startTime, endTime, appId, index);
   }
@@ -273,11 +275,7 @@ const Submission = observer(() => {
   return (
     <Page
       className="c7n-region"
-      service={[
-        'devops-service.application.listByActive',
-        'devops-service.devops-gitlab-commit.getCommits',
-        'devops-service.devops-gitlab-commit.getRecordCommits',
-      ]}
+      service={['choerodon.code.project.operation.chart.ps.commit']}
     >
       <Header
         title={formatMessage({ id: 'report.submission.head' })}

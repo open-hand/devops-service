@@ -63,18 +63,13 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
           detailDs.current.set('appServiceIds', [appServiceId]);
         }
       } else {
-        ReportsStore.judgeRole();
+        ReportsStore.judgeRole(['choerodon.code.project.deploy.environment.ps.detail-create-env']);
       }
     }
 
     const value = {
       ...props,
-      permissions: [
-        'devops-service.app-service.listByActive',
-        'devops-service.app-service-instance.listDeployTime',
-        'devops-service.app-service-instance.pageDeployTimeDetail',
-        'devops-service.devops-environment.listByProjectIdAndActive',
-      ],
+      permissions: ['choerodon.code.project.operation.chart.ps.deploy.duration'],
       detailDs,
       appServiceDs,
       chartsDs,

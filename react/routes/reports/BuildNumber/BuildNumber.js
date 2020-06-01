@@ -95,6 +95,8 @@ const BuildNumber = observer(() => {
         }
         setAppId(selectApp);
         loadCharts();
+      } else {
+        ReportsStore.judgeRole(['choerodon.code.project.develop.app-service.ps.create']);
       }
     });
   };
@@ -119,9 +121,9 @@ const BuildNumber = observer(() => {
 
   const loadCharts = (pageInfoCurrent) => {
     const projectId = AppState.currentMenuType.id;
-    const startTime = getStartTime.format('YYYY-MM-DD HH:mm:ss');
+    const startTime = ReportsStore.getStartTime.format('YYYY-MM-DD HH:mm:ss');
     const appIdCurrent = ReportsStore.getAppId;
-    const endTime = getEndTime.format('YYYY-MM-DD HH:mm:ss');
+    const endTime = ReportsStore.getEndTime.format('YYYY-MM-DD HH:mm:ss');
     loadBuildNumber(projectId, appIdCurrent, startTime, endTime);
     if (pageInfoCurrent) {
       loadBuildTable(projectId, appIdCurrent, startTime, endTime, pageInfoCurrent.current, pageInfoCurrent.pageSize);
@@ -184,13 +186,7 @@ const BuildNumber = observer(() => {
 
   return (<Page
     className="c7n-region c7n-ciPipeline"
-    service={[
-      'devops-service.application.listByActive',
-      'devops-service.devops-gitlab-pipeline.listPipelineFrequency',
-      'devops-service.devops-gitlab-pipeline.pagePipeline',
-      'devops-service.project-pipeline.cancel',
-      'devops-service.project-pipeline.retry',
-    ]}
+    service={['choerodon.code.project.operation.chart.ps.build.times']}
   >
     <Header
       title={formatMessage({ id: 'report.build-number.head' })}

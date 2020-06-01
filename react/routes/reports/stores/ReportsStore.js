@@ -290,7 +290,7 @@ export default function useStore(AppState) {
       } else {
         this.setEchartsLoading(false);
         this.changeLoading(false);
-        this.judgeRole();
+        // this.judgeRole();
       }
       this.changeIsRefresh(false);
     },
@@ -298,11 +298,11 @@ export default function useStore(AppState) {
     /**
    * 判断角色
    */
-    judgeRole() {
+    judgeRole(codes) {
       const { projectId, organizationId, type } = AppState.currentMenuType;
       const datas = ['devops-service.devops-environment.create'];
       axios
-        .post(`iam/choerodon/v1/permissions/menus/check-permissions?projectId=${projectId}`, JSON.stringify(datas))
+        .post(`iam/choerodon/v1/permissions/menus/check-permissions?projectId=${projectId}`, JSON.stringify(codes))
         .then((data) => {
           const res = handlePromptError(data);
           if (res && data && data.length) {
