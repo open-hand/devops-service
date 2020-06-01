@@ -601,7 +601,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
                         switch (type) {
                             // GO和NPM是一样处理
-                            case GO:
                             case NPM:
                                 result.addAll(GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(config.getScript()), true, true));
                                 break;
@@ -618,12 +617,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                             case DOCKER:
                                 result.addAll(GitlabCiUtil.generateDockerScripts(projectId, config.getArtifactFileName(), config.getDockerContextDir(), config.getDockerFilePath()));
                                 break;
-                            case CHART:
-                                result.add(GitlabCiUtil.generateChartBuildScripts());
-                                break;
                         }
                     });
             return result;
+        } else if (CiJobTypeEnum.CHART.value().equals(jobVO.getType())) {
+            // 生成chart步骤
+            return ArrayUtil.singleAsList(GitlabCiUtil.generateChartBuildScripts());
         }
         return Collections.emptyList();
     }

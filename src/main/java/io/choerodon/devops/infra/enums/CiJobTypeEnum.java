@@ -5,14 +5,18 @@ package io.choerodon.devops.infra.enums;
  * 〈〉
  *
  * @author wanghao
- * @Date 2020/4/3 16:57
+ * @since 2020/4/3 16:57
  */
 public enum CiJobTypeEnum {
     BUILD("build"),
     SONAR("sonar"),
+    /**
+     * maven chart 类型
+     */
+    CHART("chart"),
     CUSTOM("custom");
 
-    private String value;
+    private final String value;
 
     CiJobTypeEnum(String value) {
         this.value = value;
