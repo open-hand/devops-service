@@ -71,17 +71,14 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
         chartsDs.setQueryParameter('objectType', defaultObjectType);
         detailDs.current.set('appServiceId', appServiceId);
       } else {
-        ReportsStore.judgeRole();
+        ReportsStore.judgeRole(['choerodon.code.project.develop.app-service.ps.create']);
       }
     }
 
     const value = {
       ...props,
       prefixCls: 'c7ncd-codeQuality',
-      permissions: [
-        'devops-service.app-service.listByActive',
-        'devops-service.app-service.getSonarQubeTable',
-      ],
+      permissions: ['choerodon.code.project.operation.chart.ps.sonarqube'],
       intlPrefix,
       detailDs,
       appServiceDs,

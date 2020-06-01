@@ -132,7 +132,7 @@ const DeployTimes = observer(() => {
           setEnvIds(selectEnv);
           loadCharts(appId, selectEnv);
         } else {
-          ReportsStore.judgeRole();
+          ReportsStore.judgeRole(['choerodon.code.project.deploy.environment.ps.detail-create-env']);
         }
       });
   };
@@ -473,11 +473,7 @@ const DeployTimes = observer(() => {
 
   return (<Page
     className="c7n-region"
-    service={[
-      'devops-service.app-service.listByActive',
-      'devops-service.app-service-instance.listDeployFrequency',
-      'devops-service.app-service-instance.pageDeployFrequencyDetail',
-    ]}
+    service={['choerodon.code.project.operation.chart.ps.deploy.times']}
   >
     <Header
       title={formatMessage({ id: 'report.deploy-times.head' })}
