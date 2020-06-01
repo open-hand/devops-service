@@ -26,7 +26,7 @@ public interface BaseServiceClient {
     @GetMapping(value = "/choerodon/v1/projects/{projectId}")
     ResponseEntity<ProjectDTO> queryIamProject(@PathVariable("projectId") Long projectId);
 
-    @GetMapping(value = "/v1/{organizationId}/tenants")
+    @GetMapping(value = "/choerodon/v1/organizations/{organizationId}")
     ResponseEntity<Tenant> queryOrganizationById(@PathVariable("organizationId") Long organizationId);
 
     /**
