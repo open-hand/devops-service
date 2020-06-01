@@ -13,7 +13,13 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
  */
 public interface GitlabGroupMemberService {
 
-    void createGitlabGroupMemberRole(List<GitlabGroupMemberVO> gitlabGroupMemberVOList);
+    /**
+     * 同步用户权限到gitlab
+     *
+     * @param gitlabGroupMemberVOList 用户当前角色信息
+     * @param isCreateUser            是否是创建用户, 用于跳过会报错的逻辑, 保证用户创建成功
+     */
+    void createGitlabGroupMemberRole(List<GitlabGroupMemberVO> gitlabGroupMemberVOList, boolean isCreateUser);
 
     void deleteGitlabGroupMemberRole(List<GitlabGroupMemberVO> gitlabGroupMemberVOList);
 

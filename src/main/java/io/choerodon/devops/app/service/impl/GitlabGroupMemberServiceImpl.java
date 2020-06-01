@@ -65,7 +65,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
 
     @Override
-    public void createGitlabGroupMemberRole(List<GitlabGroupMemberVO> gitlabGroupMemberVOList) {
+    public void createGitlabGroupMemberRole(List<GitlabGroupMemberVO> gitlabGroupMemberVOList, boolean isCreateUser) {
         gitlabGroupMemberVOList.stream()
                 .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceLevel.PROJECT.value()))
                 .forEach(gitlabGroupMemberVO -> {
@@ -94,7 +94,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         // 同步到gitlab
         gitlabGroupMemberVOList.stream()
                 .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceLevel.ORGANIZATION.value()))
-                .forEach(this::doCreateOrUpdateWithOrgLabel);
+                .forEach(member -> doCreateOrUpdateWithOrgLabel(member, isCreateUser));
     }
 
     /**
@@ -102,7 +102,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
      *
      * @param gitlabGroupMemberVO 用户信息
      */
-    private void doCreateOrUpdateWithOrgLabel(GitlabGroupMemberVO gitlabGroupMemberVO) {
+    private void doCreateOrUpdateWithOrgLabel(GitlabGroupMemberVO gitlabGroupMemberVO, boolean isCreateUser) {
         List<String> roleLabels = gitlabGroupMemberVO.getRoleLabels();
         // 如果是组织管理员
         if (!CollectionUtils.isEmpty(roleLabels) && roleLabels.contains(LabelType.TENANT_ADMIN.getValue())) {
@@ -110,7 +110,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             if (!CollectionUtils.isEmpty(projectDTOS)) {
                 projectDTOS.forEach(projectDTO -> assignGitLabGroupMemberForOwner(projectDTO, gitlabGroupMemberVO.getUserId()));
             }
-        } else {
+        } else if (!isCreateUser) {
+            // 创建用户时不需要删除之前的权限
             // 原本的此用户可能是组织管理员,需要将此组织下所有的项目的group的权限判断一遍
             // 如果这里过慢,可以考虑让hzero-iam发送更新用户前的标签数据
             deleteGitLabPermissionsForOrgAdmin(gitlabGroupMemberVO);
@@ -131,7 +132,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             LOGGER.info("start delete project id is {} for gitlab org owner", projectDTO.getId());
             // 如果删除的成员为该项目下的项目所有者，则不删除gitlab相应的权限
             if (!baseServiceClientOperator.isProjectOwner(gitlabGroupMemberVO.getUserId(), projectDTO.getId())) {
-                deleteAllPermissionInProjectOfUser(gitlabGroupMemberVO, projectDTO.getId());
+                deleteAllPermissionInProjectOfUser(gitlabGroupMemberVO, projectDTO.getId(), true);
             }
         });
     }
@@ -166,6 +167,18 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
 
     private void deleteAllPermissionInProjectOfUser(GitlabGroupMemberVO gitlabGroupMemberVO, Long projectId) {
+        deleteAllPermissionInProjectOfUser(gitlabGroupMemberVO, projectId, false);
+    }
+
+    /**
+     * 删除项目下的用户的权限
+     *
+     * @param gitlabGroupMemberVO 权限信息
+     * @param projectId           项目id
+     * @param skipNullProject     是否跳过未同步的项目(创建项目事务失败的项目)
+     *                            一般是组织层的权限分配会需要跳过
+     */
+    private void deleteAllPermissionInProjectOfUser(GitlabGroupMemberVO gitlabGroupMemberVO, Long projectId, boolean skipNullProject) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupMemberVO.getUserId());
         userAttrService.checkUserSync(userAttrDTO, gitlabGroupMemberVO.getUserId());
         Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
@@ -177,7 +190,16 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         }
         DevopsProjectDTO devopsProjectDTO;
         MemberDTO memberDTO;
-        devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+        if (skipNullProject) {
+            // 组织层的用户的角色同步不应该因为项目事务失败导致用户权限同步失败
+            devopsProjectDTO = devopsProjectService.queryWithoutCheck(projectId);
+            if (devopsProjectDTO == null) {
+                LOGGER.warn("Skip to sync permission to project with id {} due to null DevOps project. the permission info is {}", projectId, gitlabGroupMemberVO);
+                return;
+            }
+        } else {
+            devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+        }
 
         // 删除应用服务对应gitlab的权限
         memberDTO = gitlabServiceClientOperator.queryGroupMember(
@@ -204,7 +226,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             }
             deleteAboutCluster(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
         }
-
     }
 
     /**
@@ -634,6 +655,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 MemberDTO clusterMemberDTO1 = gitlabServiceClientOperator.queryGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
                 assignGitLabGroupOwner(devopsProjectDTO.getDevopsClusterEnvGroupId(), clusterMemberDTO1, memberDTO);
             }
+        } else {
+            LOGGER.warn("assignGitLabGroupMemberForOwner skip due to empty project with id {}", projectDTO.getId());
         }
     }
 }
