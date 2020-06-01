@@ -63,7 +63,7 @@ public class GitlabServiceClientOperator {
             userDOResponseEntity = gitlabServiceClient.createUser(projectsLimit, gitlabTransferDTO);
         } catch (FeignException e) {
             LOGGER.info("error.gitlab.user.create");
-            throw new CommonException(e);
+            throw new CommonException(e.getMessage(), e);
         }
         return userDOResponseEntity.getBody();
     }
