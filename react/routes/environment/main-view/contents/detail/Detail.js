@@ -46,7 +46,7 @@ const EnvContent = observer(() => {
       const active = record.get('active');
       const connect = record.get('connect');
       const synchro = record.get('synchronize');
-      const failed = record.get('failed');
+      const failed = record.get('fail');
       const clusterName = record.get('clusterName');
       return {
         id,
