@@ -64,21 +64,23 @@ export default observer((props) => {
   }, [getStepData]);
 
   function getJobTask(metadata) {
-    const newData = JSON.parse(metadata.replace(/'/g, '"'));
-    const { type, sonarUrl, config } = newData || {};
-    let content;
-    if (type === 'sonar') {
-      content = <div className="c7ncd-pipeline-detail-job-task-sonar">{sonarUrl}</div>;
-    } else {
-      content = (
-        map(config, ({ name: taskName, sequence }) => (
-          <div className="c7ncd-pipeline-detail-job-task-item" key={sequence}>
-            {taskName}
-          </div>
-        ))
-      );
+    if (metadata) {
+      const newData = JSON.parse(metadata.replace(/'/g, '"'));
+      const { type, sonarUrl, config } = newData || {};
+      let content;
+      if (type === 'sonar') {
+        content = <div className="c7ncd-pipeline-detail-job-task-sonar">{sonarUrl}</div>;
+      } else {
+        content = (
+          map(config, ({ name: taskName, sequence }) => (
+            <div className="c7ncd-pipeline-detail-job-task-item" key={sequence}>
+              {taskName}
+            </div>
+          ))
+        );
+      }
+      return <div className="c7ncd-pipeline-detail-job-task">{content}</div>;
     }
-    return <div className="c7ncd-pipeline-detail-job-task">{content}</div>;
   }
 
   function getJobRectStyle(stageIndex, index) {
