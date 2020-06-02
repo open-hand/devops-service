@@ -46,13 +46,13 @@ export default function useStore({ defaultTab }) {
     },
 
     async checkPermission({ projectId, organizationId, resourceType }) {
-      // const res = await checkPermission({
-      //   code: '',
-      //   organizationId,
-      //   projectId,
-      //   resourceType,
-      // });
-      // this.setPermission(res);
+      const res = await checkPermission({
+        code: 'choerodon.code.project.deploy.app-deployment.resource.ps.permission',
+        organizationId,
+        projectId,
+        resourceType,
+      });
+      this.setPermission(res);
     },
 
     async loadValue(projectId, id) {
