@@ -698,6 +698,9 @@ const AddTask = observer(() => {
             }
             return s;
           }));
+          if (!steps.find(s => s.checked).mavenSettings) {
+            AddTaskFormDataSet.current.set('private', AddTaskFormDataSet.current.get('private').filter(o => o !== 'copy'));
+          }
         },
       });
     }
