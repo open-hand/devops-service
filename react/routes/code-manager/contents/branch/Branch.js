@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { Modal as ProModal, Table, Tooltip, Button } from 'choerodon-ui/pro';
 import { Page, Permission, stores, Action } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
@@ -38,6 +38,16 @@ function Branch(props) {
     appServiceId,
     formatMessage,
   } = useTableStore();
+
+  const [isOPERATIONS, setIsOPERATIONS] = useState(false);
+
+  useEffect(() => {
+    const pattern = new URLSearchParams(window.location.hash);
+    if (pattern.get('category') === 'OPERATIONS') {
+      setIsOPERATIONS(true);
+    }
+  }, []);
+
   useEffect(() => {
     handleMapStore.setCodeManagerBranch({
       refresh: handleRefresh,
@@ -163,7 +173,7 @@ function Branch(props) {
           error={errorMessage}
           name={text}
           width={0.17}
-          clickAble={status !== 'operating'}
+          clickAble={(status !== 'operating') && !isOPERATIONS}
           onClick={() => openEditIssueModal(record.toData())}
           record={text}
           permissionCode={['choerodon.code.project.develop.code-management.ps.branch.update']}
@@ -323,7 +333,7 @@ function Branch(props) {
           <Column align="right" width={60} renderer={actionRender} />
           <Column name="commitContent" className="lasetCommit" width={300} renderer={updateCommitRender} />
           <Column name="createUserRealName" renderer={createUserRender} />
-          <Column name="issueName" renderer={issueNameRender} />
+          { !isOPERATIONS && <Column name="issueName" renderer={issueNameRender} /> }
         </Table>
       </div>
     );

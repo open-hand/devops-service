@@ -38,6 +38,14 @@ function BranchCreate(props) {
   const [moreBranchLoading, setMoreBranchLoading] = useState(false);
   const [selectCom, setSelectCom] = useState(null);
   const [isCallHandleInput, setIsCallHandleInput] = useState(false);
+  const [isOPERATIONS, setIsOPERATIONS] = useState(false);
+
+  useEffect(() => {
+    const pattern = new URLSearchParams(window.location.hash);
+    if (pattern.get('category') === 'OPERATIONS') {
+      setIsOPERATIONS(true);
+    }
+  }, []);
 
   useEffect(() => {
     loadBranchData(branchPageSize);
@@ -57,9 +65,9 @@ function BranchCreate(props) {
           setLoadMoreBranch(judgeShowMore(branchs));
           setLoadMoreTag(judgeShowMore(tags));
           const value = formDs.current.get('branchOrigin');
-          if (!text 
-            && value 
-            && !(_.findIndex(branchs.list, (item) => item.branchName === value.slice(0, -7)) !== -1 
+          if (!text
+            && value
+            && !(_.findIndex(branchs.list, (item) => item.branchName === value.slice(0, -7)) !== -1
             || _.findIndex(tags.list, (item) => item.release.tagName === value.slice(0, -7)) !== -1)) {
             if (value.slice(-7) === '_type_b') {
               branchs.list.push({
@@ -78,7 +86,7 @@ function BranchCreate(props) {
         }
       }));
   }, 700), [selectCom, projectId, appServiceId, branchPageSize, tagPageSize]);
-  
+
 
   /**
    * 加载分支数据
@@ -91,7 +99,7 @@ function BranchCreate(props) {
     if (handlePromptError(data)) {
       setBranchOringData(data.list);
       setLoadMoreBranch(judgeShowMore(data));
-    }    
+    }
   }
 
   /**
@@ -277,7 +285,7 @@ function BranchCreate(props) {
       </span>
     );
   };
-  
+
 
   const loadMore = (type, e) => {
     e.stopPropagation();
@@ -312,7 +320,7 @@ function BranchCreate(props) {
           <span className="c7n-option-span">{formatMessage({ id: 'loadMore' })}</span>
         </div>);
     }
-   
+
     return renderOption(record.get('value'));
   };
 
@@ -332,17 +340,17 @@ function BranchCreate(props) {
       {text && text.slice(0, -7)}
     </span>);
   }
-  
+
   function searchMatcher() {
     return true;
   }
 
-  function handleInput({ target: { value } }) {  
+  function handleInput({ target: { value } }) {
     if (!isCallHandleInput) setIsCallHandleInput(true);
     searchData(value);
   }
 
-  
+
   function changeRef(obj) {
     if (obj) {
       const fields = obj.fields;
@@ -370,15 +378,18 @@ function BranchCreate(props) {
           columns={5}
           ref={changeRef}
         >
-          <Select
-            name="issue"
-            colSpan={5}
-            onChange={changeIssue}
-            optionRenderer={issueNameOptionRender}
-            renderer={issueNameRender}
-            searchable
-            searchMatcher="content"
-          />
+          {
+            !isOPERATIONS
+              && <Select
+                name="issue"
+                colSpan={5}
+                onChange={changeIssue}
+                optionRenderer={issueNameOptionRender}
+                renderer={issueNameRender}
+                searchable
+                searchMatcher="content"
+              />
+          }
           <Select
             colSpan={5}
             name="branchOrigin"
