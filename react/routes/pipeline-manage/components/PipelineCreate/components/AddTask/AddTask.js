@@ -291,6 +291,19 @@ const AddTask = observer(() => {
     }));
   };
 
+  const renderer = ({ text }) => text;
+
+  const optionRenderer = ({ text }) => {
+    if (text === 'Docker构建') {
+      return (
+        <Tooltip title="由于该步骤中Dockerfile内kaniko指令限制，建议此步骤作为同任务中最后一个步骤。">
+          {text}<Icon style={{ position: 'relative', left: '1px', bottom: '1px' }} type="help" />
+        </Tooltip>
+      );
+    }
+    return text;
+  };
+
   const handleAddStepItem = (index) => {
     Modal.open({
       key: Modal.key(),
@@ -304,17 +317,19 @@ const AddTask = observer(() => {
             onOption={({ record }) => ({
               disabled: steps.map(s => s.type).includes(record.get('value')),
             })}
+            optionRenderer={optionRenderer}
+            renderer={renderer}
             name="kybz"
           >
-            <Option value="Maven">Maven构建</Option>
-            <Option value="npm">Npm构建</Option>
-            {/* <Option value="go">Go语言构建</Option> */}
-            <Option value="upload">上传软件包至存储库</Option>
-            <Option value="docker">Docker构建
-              <Tooltip title="由于该步骤中Dockerfile内kaniko指令限制，建议此步骤作为同任务中最后一个步骤。">
-                <Icon style={{ position: 'relative', left: '1px', bottom: '1px' }} type="help" />
-              </Tooltip>
-            </Option>
+            {/* <Option value="Maven">Maven构建</Option> */}
+            {/* <Option value="npm">Npm构建</Option> */}
+            {/* /!* <Option value="go">Go语言构建</Option> *!/ */}
+            {/* <Option value="upload">上传软件包至存储库</Option> */}
+            {/* <Option value="docker">Docker构建 */}
+            {/*   <Tooltip title="由于该步骤中Dockerfile内kaniko指令限制，建议此步骤作为同任务中最后一个步骤。"> */}
+            {/*    <Icon style={{ position: 'relative', left: '1px', bottom: '1px' }} type="help" /> */}
+            {/*   </Tooltip> */}
+            {/* </Option> */}
             {/* <Option value="chart">Chart构建</Option> */}
           </Select>
         </Form>
@@ -613,10 +628,12 @@ const AddTask = observer(() => {
     }
   };
 
-  const handleCancel = (privateIf) => {
+  const handleCancel = (data) => {
     const old = AddTaskFormDataSet.current.get('private');
-    const newData = old.filter(o => o !== (privateIf ? 'true' : 'false'));
-    AddTaskFormDataSet.current.set('private', newData);
+    if (data.length === 0) {
+      const newData = old.filter(o => o !== 'custom');
+      AddTaskFormDataSet.current.set('private', newData);
+    }
   };
 
   const handleOpenXML = () => {

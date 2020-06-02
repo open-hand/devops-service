@@ -37,7 +37,7 @@ const DependRepo = observer(({ ds, modal, handleAdd, dsData, handleParentCancel 
   const handleCancel = (ParentCancel) => {
     ds.reset();
     if (ParentCancel) {
-      handleParentCancel();
+      handleParentCancel(ds.toData());
     }
   };
 
