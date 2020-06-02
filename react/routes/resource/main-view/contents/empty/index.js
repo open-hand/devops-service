@@ -22,7 +22,7 @@ export default function EmptyShown() {
   useEffect(() => {
     async function judgeRole() {
       const data = {
-        code: 'devops-service.devops-environment.create',
+        code: 'choerodon.code.project.deploy.environment.ps.group-add-env',
         projectId,
         organizationId,
         resourceType: 'project',
