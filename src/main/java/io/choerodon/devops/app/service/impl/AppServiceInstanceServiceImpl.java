@@ -1605,7 +1605,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             LOGGER.debug("Docker config for app service with id {} and code {} and version id: {} is not null. And the config id is {}...", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId, devopsConfigDTO.getId());
 
             ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
-            if (!MiscConstants.DEFAULT_HARBOR_NAME.equals(devopsConfigDTO.getName()) && appServiceDTO.getProjectId() != null) {
+            if (MiscConstants.DEFAULT_HARBOR_NAME.equals(devopsConfigDTO.getName()) && appServiceDTO.getProjectId() != null) {
                 configVO = queryDefaultConfig(appServiceDTO.getProjectId(), configVO);
                 LOGGER.debug("Real docker config for app service with id {} and code {} and version id: {} is queried. And the config id is {}...", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId, devopsConfigDTO.getId());
             }
