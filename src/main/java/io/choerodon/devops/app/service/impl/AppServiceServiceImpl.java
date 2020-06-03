@@ -683,9 +683,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         devOpsAppServicePayload.setGitlabProjectId(gitlabProjectDO.getId());
 
-        String applicationServiceToken = getApplicationToken(devOpsAppServicePayload.getGitlabProjectId(), devOpsAppServicePayload.getUserId());
+        String applicationServiceToken = getApplicationToken(appServiceDTO.getToken(), devOpsAppServicePayload.getGitlabProjectId(), devOpsAppServicePayload.getUserId());
         appServiceDTO.setGitlabProjectId(gitlabProjectDO.getId());
-        appServiceDTO.setToken(applicationServiceToken);
         appServiceDTO.setSynchro(true);
         appServiceDTO.setFailed(false);
         setProjectHook(appServiceDTO, devOpsAppServicePayload.getGitlabProjectId(), applicationServiceToken, devOpsAppServicePayload.getUserId());
@@ -826,9 +825,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         try {
             // 设置application的属性
-            String applicationServiceToken = getApplicationToken(gitlabProjectDO.getId(), devOpsAppServiceImportPayload.getUserId());
+            String applicationServiceToken = getApplicationToken(appServiceDTO.getToken(), gitlabProjectDO.getId(), devOpsAppServiceImportPayload.getUserId());
             appServiceDTO.setGitlabProjectId(TypeUtil.objToInteger(devOpsAppServiceImportPayload.getGitlabProjectId()));
-            appServiceDTO.setToken(applicationServiceToken);
             appServiceDTO.setSynchro(true);
             appServiceDTO.setFailed(false);
 
@@ -984,7 +982,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         appServiceDTO = fromImportVoToDto(appServiceImportVO);
-
+        appServiceDTO.setToken(GenerateUUID.generateUUID());
         appServiceDTO.setProjectId(projectId);
         appServiceDTO.setActive(true);
         appServiceDTO.setSynchro(false);
@@ -1883,6 +1881,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 appServiceDTO.setName(oldAppService.getName());
             }
 
+            appServiceDTO.setToken(GenerateUUID.generateUUID());
             appServiceDTO.setProjectId(projectId);
             appServiceDTO.setActive(true);
             appServiceDTO.setSynchro(false);
@@ -1958,8 +1957,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
-        String applicationServiceToken = getApplicationToken(appServiceDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        appServiceDTO.setToken(applicationServiceToken);
+        String applicationServiceToken = getApplicationToken(appServiceDTO.getToken(), appServiceDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         appServiceDTO.setSynchro(true);
         appServiceDTO.setFailed(false);
         setProjectHook(appServiceDTO, appServiceDTO.getGitlabProjectId(), applicationServiceToken, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
@@ -2223,6 +2221,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceReqVO, AppServiceDTO.class);
         checkName(projectId, appServiceDTO.getName());
         checkCode(projectId, appServiceDTO.getCode());
+        appServiceDTO.setToken(GenerateUUID.generateUUID());
         appServiceDTO.setActive(true);
         appServiceDTO.setSynchro(false);
         appServiceDTO.setProjectId(projectId);
@@ -2708,10 +2707,9 @@ public class AppServiceServiceImpl implements AppServiceService {
      * @param userId    gitlab user id
      * @return the application token that is stored in gitlab variables
      */
-    private String getApplicationToken(Integer projectId, Integer userId) {
+    private String getApplicationToken(String token, Integer projectId, Integer userId) {
         List<VariableDTO> variables = gitlabServiceClientOperator.listVariable(projectId, userId);
         if (variables.isEmpty()) {
-            String token = GenerateUUID.generateUUID();
             gitlabServiceClientOperator.createVariable(projectId, "Token", token, false, userId);
             return token;
         } else {
