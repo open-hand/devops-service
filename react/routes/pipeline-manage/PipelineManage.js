@@ -110,7 +110,11 @@ const PipelineManage = observer((props) => {
     const { id } = getMainData;
     const { parentId } = getSelectedMenu;
     const { gitlabPipelineId } = getDetailData;
-    !parentId ? loadData(projectId, id) : loadDetailData(projectId, gitlabPipelineId);
+    if (!parentId) {
+      id && loadData(projectId, id);
+    } else {
+      gitlabPipelineId && loadDetailData(projectId, gitlabPipelineId);
+    }
   }
 
   async function handleSaveEdit() {
