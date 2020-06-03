@@ -180,7 +180,7 @@ public class DevopsSagaHandler {
             throw e;
         }
         //创建成功发送webhook
-        sendNotificationService.sendWhenAppServiceCreate(devOpsAppServicePayload.getAppServiceDTO());
+        sendNotificationService.sendWhenAppServiceCreate(appServiceService.baseQuery(devOpsAppServicePayload.getAppServiceId()));
         return data;
     }
 
