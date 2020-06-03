@@ -60,7 +60,9 @@ const Content = observer(() => {
 
   function handleMessage({ data }) {
     try {
-      setValue(JSON.parse(data).data);
+      const message = JSON.parse(data).message;
+      const newMessage = message && JSON.parse(message) ? JSON.parse(message).payload || '' : '';
+      setValue(newMessage);
       setLoading(false);
       destroySocket();
     } catch (e) {
