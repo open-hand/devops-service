@@ -10,6 +10,7 @@ import StatusTag from '../../components/status-tag';
 import TimePopover from '../../components/timePopover/TimePopover';
 import UserInfo from '../../components/userInfo';
 import { handlePromptError } from '../../utils';
+import checkPermission from '../../utils/checkPermission';
 import Process from './modals/process';
 import ManualDetail from './modals/manualDetail';
 import AutoDetail from './modals/autoDetail';
@@ -44,7 +45,7 @@ const STATUS = ['success', 'failed', 'deleted', 'pendingcheck', 'stop', 'running
 const Deployment = withRouter(observer((props) => {
   const {
     intl: { formatMessage },
-    AppState: { currentMenuType: { id } },
+    AppState: { currentMenuType: { id, projectId } },
     intlPrefix,
     prefixCls,
     permissions,
@@ -57,8 +58,16 @@ const Deployment = withRouter(observer((props) => {
   } = useDeployStore();
 
   const [showPendingCheck, serShowPendingCheck] = useState(false);
+  const [canDetail, setCanDetail] = useState(false);
 
   useEffect(() => {
+    async function init() {
+      const res = await checkPermission({ projectId, code: 'choerodon.code.project.deploy.app-deployment.deployment-operation.ps.detail' });
+      if (res) {
+        setCanDetail(true);
+      }
+    }
+    init();
     const { location: { search } } = props;
     const param = search.match(/(^|&)pipelineRecordId=([^&]*)(&|$)/);
     const newDeployId = param && param[2];
@@ -271,7 +280,7 @@ const Deployment = withRouter(observer((props) => {
         </div>
         <ClickText
           value={`#${value}`}
-          clickAble
+          clickAble={canDetail}
           onClick={openDetail}
         />
         {errorInfo && deployStatus === 'failed' && (
@@ -332,21 +341,21 @@ const Deployment = withRouter(observer((props) => {
       switch (record.get('deployStatus')) {
         case 'failed':
           actionData = [{
-            service: ['devops-service.pipeline.retry'],
+            service: ['choerodon.code.project.deploy.app-deployment.deployment-operation.ps.retry'],
             text: formatMessage({ id: `${intlPrefix}.retry` }),
             action: () => openOperatingModal('retry'),
           }];
           break;
         case 'running':
           actionData = [{
-            service: ['devops-service.pipeline.failed'],
+            service: ['choerodon.code.project.deploy.app-deployment.deployment-operation.ps.failed'],
             text: formatMessage({ id: `${intlPrefix}.failed` }),
             action: () => openOperatingModal('failed'),
           }];
           break;
         case 'pendingcheck':
           execute && (actionData = [{
-            service: ['devops-service.pipeline.audit'],
+            service: ['choerodon.code.project.deploy.app-deployment.deployment-operation.ps.check'],
             text: formatMessage({ id: `${intlPrefix}.check` }),
             action: () => serShowPendingCheck(true),
           }]);
@@ -357,7 +366,7 @@ const Deployment = withRouter(observer((props) => {
     } else if (record.get('deployType') === 'manual') {
       actionData = [{
         text: formatMessage({ id: `${intlPrefix}.view.instance` }),
-        service: ['devops-service.devops-environment.listByActive'],
+        service: ['choerodon.code.project.deploy.app-deployment.deployment-operation.ps.view'],
         action: () => linkToInstance(record),
       }];
     }
