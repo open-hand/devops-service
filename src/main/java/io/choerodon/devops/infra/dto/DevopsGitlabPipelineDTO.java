@@ -1,11 +1,11 @@
 package io.choerodon.devops.infra.dto;
 
-import java.util.Date;
-import javax.persistence.*;
-
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+
+import javax.persistence.*;
+import java.util.Date;
 
 @ModifyAudit
 @VersionAudit
@@ -128,4 +128,21 @@ public class DevopsGitlabPipelineDTO extends AuditDomain {
         this.commitUserId = commitUserId;
     }
 
+    @Override
+    public String toString() {
+        return "DevopsGitlabPipelineDTO{" +
+                "id=" + id +
+                ", appServiceId=" + appServiceId +
+                ", pipelineId=" + pipelineId +
+                ", pipelineCreateUserId=" + pipelineCreateUserId +
+                ", commitId=" + commitId +
+                ", stage='" + stage + '\'' +
+                ", status='" + status + '\'' +
+                ", pipelineCreationDate=" + pipelineCreationDate +
+                ", ref='" + ref + '\'' +
+                ", sha='" + sha + '\'' +
+                ", content='" + content + '\'' +
+                ", commitUserId=" + commitUserId +
+                '}';
+    }
 }
