@@ -104,6 +104,8 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             gitlabUserId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
             // 这里不设置用户上下文会报错
             CustomContextUtil.setDefaultIfNull(userAttrE.getIamUserId());
+        } else {
+            CustomContextUtil.setDefault();
         }
         //查询pipeline最新阶段信息
         List<Stage> stages = new ArrayList<>();
