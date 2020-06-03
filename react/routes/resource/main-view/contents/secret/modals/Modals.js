@@ -60,6 +60,7 @@ const KeyValueModals = observer(() => {
     const disabled = !connect;
 
     return ([{
+      permissions: ['choerodon.code.project.deploy.app-deployment.resource.ps.cipher'],
       name: formatMessage({ id: `${intlPrefix}.create.cipher` }),
       icon: 'playlist_add',
       handler: openModal,

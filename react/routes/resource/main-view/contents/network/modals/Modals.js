@@ -61,6 +61,7 @@ const EnvModals = observer(() => {
     const disabled = !connect;
 
     return ([{
+      permissions: ['choerodon.code.project.deploy.app-deployment.resource.ps.network'],
       name: formatMessage({ id: `${intlPrefix}.create.network` }),
       icon: 'playlist_add',
       handler: openModal,

@@ -61,6 +61,7 @@ const CustomModals = observer(() => {
     const disabled = !connect;
 
     return ([{
+      permissions: ['choerodon.code.project.deploy.app-deployment.resource.ps.customize-resource'],
       name: formatMessage({ id: `${intlPrefix}.create.custom` }),
       icon: 'playlist_add',
       handler: openModal,
