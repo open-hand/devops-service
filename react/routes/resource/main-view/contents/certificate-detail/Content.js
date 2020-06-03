@@ -3,6 +3,7 @@ import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 import { Spin } from 'choerodon-ui';
+import { Permission } from '@choerodon/boot';
 import ResourceTitle from '../../components/resource-title';
 import { useResourceStore } from '../../../stores';
 import { useCertDetailStore } from './stores';
@@ -66,17 +67,21 @@ const Content = observer(() => {
   }
 
   return (
-    <div className={`${prefixCls}-certificate-detail`}>
-      <ResourceTitle
-        iconType="class"
-        record={detailDs.current}
-        statusKey="commandStatus"
-      />
-      <Spin spinning={detailDs.status === 'loading'}>
-        {getContent()}
-      </Spin>
-      <Modals />
-    </div>
+    <Permission
+      service={['choerodon.code.project.deploy.app-deployment.resource.ps.cert-detail']}
+    >
+      <div className={`${prefixCls}-certificate-detail`}>
+        <ResourceTitle
+          iconType="class"
+          record={detailDs.current}
+          statusKey="commandStatus"
+        />
+        <Spin spinning={detailDs.status === 'loading'}>
+          {getContent()}
+        </Spin>
+        <Modals />
+      </div>
+    </Permission>
   );
 });
 
