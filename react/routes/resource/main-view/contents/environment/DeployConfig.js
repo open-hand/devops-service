@@ -138,7 +138,7 @@ export default function DeployConfig() {
 
   function renderName({ value, record }) {
     return <ClickText
-      permissionCode={['']}
+      permissionCode={['choerodon.code.project.deploy.app-deployment.resource.ps.update-deploy-config']}
       clickAble={!disabled}
       value={value}
       onClick={openModifyModal}

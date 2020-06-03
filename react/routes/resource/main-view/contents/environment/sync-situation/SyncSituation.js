@@ -106,7 +106,7 @@ const SyncSituation = observer(() => {
           </div>
           <div className="log-sync-line-arrow log-sync-line-retry">
             <Permission
-              service={[]}
+              service={['choerodon.code.project.deploy.app-deployment.resource.ps.gitops.retry']}
             >
               <Tooltip title={<FormattedMessage id={`${intlPrefix}.environment.retry`} />}>
                 <Button
