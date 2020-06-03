@@ -216,6 +216,9 @@ public class DevopsSagaHandler {
         DevOpsUserPayload devOpsUserPayload = gson.fromJson(data, DevOpsUserPayload.class);
         try {
             UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
+            if (CollectionUtils.isEmpty(devOpsUserPayload.getIamUserIds())) {
+                LOGGER.info("updateGitlabUser: empty users -> skip...");
+            }
             //如果是用户是组织层的root，则跳过权限跟新
             devOpsUserPayload.getIamUserIds().forEach(userId -> {
                 IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
