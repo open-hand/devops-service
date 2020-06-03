@@ -111,7 +111,7 @@ export default withRouter(injectIntl(observer(({
       case 'running':
         dom = (
           <Permission
-            service={['devops-service.pipeline.failed']}
+            service={['choerodon.code.project.deploy.app-deployment.deployment-operation.ps.failed']}
           >
             <Button
               onClick={() => openModal('stop')}
@@ -127,7 +127,7 @@ export default withRouter(injectIntl(observer(({
       case 'failed':
         execute && (dom = (
           <Permission
-            service={['devops-service.pipeline.retry']}
+            service={['choerodon.code.project.deploy.app-deployment.deployment-operation.ps.retry-detail']}
           >
             <Button
               onClick={() => openModal('retry')}
@@ -143,7 +143,7 @@ export default withRouter(injectIntl(observer(({
       case 'pendingcheck':
         execute && (dom = (
           <Permission
-            service={['devops-service.pipeline.audit']}
+            service={['choerodon.code.project.deploy.app-deployment.deployment-operation.ps.auto']}
           >
             <Button
               onClick={openPendingCheck}

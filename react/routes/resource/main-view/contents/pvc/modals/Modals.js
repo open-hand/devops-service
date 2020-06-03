@@ -50,6 +50,7 @@ const PVCModals = observer(() => {
     const disabled = !connect;
 
     return ([{
+      permissions: ['choerodon.code.project.deploy.app-deployment.resource.ps.create-pvc'],
       name: formatMessage({ id: `${intlPrefix}.create.pvc` }),
       icon: 'playlist_add',
       handler: openModal,

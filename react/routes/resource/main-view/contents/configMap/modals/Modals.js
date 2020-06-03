@@ -61,6 +61,7 @@ const KeyValueModals = observer(() => {
     const disabled = !connect;
 
     return ([{
+      permissions: ['choerodon.code.project.deploy.app-deployment.resource.ps.configmap'],
       name: formatMessage({ id: `${intlPrefix}.create.configMap` }),
       icon: 'playlist_add',
       handler: openModal,

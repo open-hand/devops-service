@@ -58,6 +58,7 @@ const EnvModals = observer(() => {
     const disabled = !connect || !certStore.getHasCertManager;
 
     return ([{
+      permissions: ['choerodon.code.project.deploy.app-deployment.resource.ps.create-certifications'],
       name: formatMessage({ id: `${intlPrefix}.create.certificate` }),
       icon: 'playlist_add',
       handler: openModal,

@@ -97,7 +97,7 @@ const pvcContent = observer((props) => {
     }
     const action = [
       {
-        service: ['devops-service.devops-pvc.deletePvc'],
+        service: ['choerodon.code.project.deploy.app-deployment.resource.ps.delete-pvc'],
         text: formatMessage({ id: 'delete' }),
         action: handleDelete,
       },
