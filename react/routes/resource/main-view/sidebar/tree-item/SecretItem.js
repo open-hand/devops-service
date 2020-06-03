@@ -106,11 +106,11 @@ function ConfigItem({
       return null;
     }
     const actionData = [{
-      service: ['devops-service.devops-secret.update'],
+      service: ['choerodon.code.project.deploy.app-deployment.resource.ps.edit-cipher'],
       text: formatMessage({ id: 'edit' }),
       action: openModal,
     }, {
-      service: ['devops-service.devops-secret.deleteSecret'],
+      service: ['choerodon.code.project.deploy.app-deployment.resource.ps.delete-cipher'],
       text: formatMessage({ id: 'delete' }),
       action: () => openDeleteModal(envId, id, recordName, 'secret', freshMenu),
     }];

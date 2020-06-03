@@ -49,8 +49,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const value = {
       ...props,
       permissions: {
-        edit: ['devops-service.devops-secret.update'],
-        delete: ['devops-service.devops-secret.deleteSecret'],
+        edit: ['choerodon.code.project.deploy.app-deployment.resource.ps.edit-cipher'],
+        delete: ['choerodon.code.project.deploy.app-deployment.resource.ps.delete-cipher'],
       },
       formStore,
       SecretTableDs,

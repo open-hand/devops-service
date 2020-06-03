@@ -63,7 +63,7 @@ const IngressContent = observer(() => {
           error={error || ''}
           clickAble={!disabled}
           onClick={openModal}
-          permissionCode={['devops-service.devops-ingress.update']}
+          permissionCode={['choerodon.code.project.deploy.app-deployment.resource.ps.update.domain']}
         />
       </Fragment>
     );
@@ -119,7 +119,7 @@ const IngressContent = observer(() => {
     const name = record.get('name');
     const buttons = [
       {
-        service: ['devops-service.devops-ingress.delete'],
+        service: ['choerodon.code.project.deploy.app-deployment.resource.ps.delete-domain'],
         text: formatMessage({ id: 'delete' }),
         action: () => openDeleteModal(parentId, id, name, 'ingress', refresh),
       },

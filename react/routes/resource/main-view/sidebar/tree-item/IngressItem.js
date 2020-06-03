@@ -104,11 +104,11 @@ function IngressItem({
       return null;
     }
     const actionData = [{
-      service: ['devops-service.devops-ingress.update'],
+      service: ['choerodon.code.project.deploy.app-deployment.resource.ps.update.domain'],
       text: formatMessage({ id: 'edit' }),
       action: openModal,
     }, {
-      service: ['devops-service.devops-ingress.delete'],
+      service: ['choerodon.code.project.deploy.app-deployment.resource.ps.delete-domain'],
       text: formatMessage({ id: 'delete' }),
       action: () => openDeleteModal(envId, id, ingressName, 'ingress', freshMenu),
     }];

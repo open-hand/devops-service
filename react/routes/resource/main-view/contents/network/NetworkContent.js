@@ -65,7 +65,7 @@ const NetworkContent = observer(() => {
         error={error || ''}
         clickAble={!disabled}
         onClick={openModal}
-        permissionCode={['devops-service.devops-service.update']}
+        permissionCode={['choerodon.code.project.deploy.app-deployment.resource.ps.update-net']}
       />
     );
   }
@@ -270,7 +270,7 @@ const NetworkContent = observer(() => {
     const name = record.get('name');
     const buttons = [
       {
-        service: ['devops-service.devops-service.delete'],
+        service: ['choerodon.code.project.deploy.app-deployment.resource.ps.delete-net'],
         text: formatMessage({ id: 'delete' }),
         action: () => openDeleteModal(parentId, id, name, 'service', refresh),
       },

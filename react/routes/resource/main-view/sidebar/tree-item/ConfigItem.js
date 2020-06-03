@@ -107,11 +107,11 @@ function ConfigItem({
       return null;
     }
     const actionData = [{
-      service: ['devops-service.devops-config-map.update'],
+      service: ['choerodon.code.project.deploy.app-deployment.resource.ps.edit-configmap'],
       text: formatMessage({ id: 'edit' }),
       action: openModal,
     }, {
-      service: ['devops-service.devops-config-map.delete'],
+      service: ['choerodon.code.project.deploy.app-deployment.resource.ps.delete-map'],
       text: formatMessage({ id: 'delete' }),
       action: () => openDeleteModal(envId, id, recordName, 'configMap', freshMenu),
     }];

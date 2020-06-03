@@ -50,8 +50,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const value = {
       ...props,
       permissions: {
-        edit: ['devops-service.devops-config-map.update'],
-        delete: ['devops-service.devops-config-map.delete'],
+        edit: ['choerodon.code.project.deploy.app-deployment.resource.ps.edit-configmap'],
+        delete: ['choerodon.code.project.deploy.app-deployment.resource.ps.delete-map'],
       },
       formStore,
       ConfigMapTableDs,

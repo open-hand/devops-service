@@ -106,11 +106,11 @@ function NetworkItem({
       return null;
     }
     const actionData = [{
-      service: ['devops-service.devops-service.update'],
+      service: ['choerodon.code.project.deploy.app-deployment.resource.ps.update-net'],
       text: formatMessage({ id: 'edit' }),
       action: openModal,
     }, {
-      service: ['devops-service.devops-service.delete'],
+      service: ['choerodon.code.project.deploy.app-deployment.resource.ps.delete-net'],
       text: formatMessage({ id: 'delete' }),
       action: () => openDeleteModal(envId, id, netName, 'service', freshMenu),
     }];
