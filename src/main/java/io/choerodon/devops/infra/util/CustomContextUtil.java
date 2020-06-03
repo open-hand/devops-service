@@ -39,6 +39,10 @@ public class CustomContextUtil {
         setUserContext(ObjectUtils.defaultIfNull(userId, DEFAULT_USER_ID));
     }
 
+    public static void setDefault() {
+        setUserContext(DEFAULT_USER_ID);
+    }
+
     public static void setDefaultIfNull(@Nullable IamUserDTO user) {
         if (user == null) {
             setUserContext(DEFAULT_USER_ID);
