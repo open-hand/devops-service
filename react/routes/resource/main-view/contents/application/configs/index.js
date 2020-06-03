@@ -76,7 +76,7 @@ const AppConfigs = observer(() => {
           onClick={handleEdit}
           status={commandStatus || ''}
           error={error || ''}
-          permissionCode={['devops-service.devops-config-map.update']}
+          permissionCode={['choerodon.code.project.deploy.app-deployment.resource.ps.edit-configmap']}
           record={record}
         />
       </div>
@@ -105,7 +105,7 @@ const AppConfigs = observer(() => {
     }
     const buttons = [
       {
-        service: ['devops-service.devops-config-map.delete'],
+        service: ['choerodon.code.project.deploy.app-deployment.resource.ps.delete-map'],
         text: formatMessage({ id: 'delete' }),
         action: () => openDeleteModal(parentId, configId, name, 'configMap', refresh),
       },

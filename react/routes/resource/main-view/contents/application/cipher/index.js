@@ -77,7 +77,7 @@ const Cipher = observer(() => {
           status={commandStatus || ''}
           error={error || ''}
           record={record}
-          permissionCode={['devops-service.devops-secret.update']}
+          permissionCode={['choerodon.code.project.deploy.app-deployment.resource.ps.edit-cipher']}
         />
       </div>
     );
@@ -105,7 +105,7 @@ const Cipher = observer(() => {
     }
     const buttons = [
       {
-        service: ['devops-service.devops-secret.deleteSecret'],
+        service: ['choerodon.code.project.deploy.app-deployment.resource.ps.delete-cipher'],
         text: formatMessage({ id: 'delete' }),
         action: () => openDeleteModal(parentId, secretId, name, 'secret', refresh),
       },
