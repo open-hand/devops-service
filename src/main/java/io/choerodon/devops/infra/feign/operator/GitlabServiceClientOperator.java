@@ -796,7 +796,8 @@ public class GitlabServiceClientOperator {
     public List<JobDTO> listJobs(Integer projectId, Integer pipelineId, Integer userId) {
         ResponseEntity<List<JobDTO>> responseEntity;
         try {
-            responseEntity = gitlabServiceClient.listJobs(projectId, pipelineId, userId);
+            responseEntity = gitlabServiceClient.listJobs(Objects.requireNonNull(projectId),
+                    Objects.requireNonNull(pipelineId), userId);
         } catch (FeignException e) {
             return new ArrayList<>();
         }
@@ -1067,7 +1068,7 @@ public class GitlabServiceClientOperator {
         try {
             pipeline = gitlabServiceClient.createPipeline(projectId, gitlabUserid, ref);
         } catch (FeignException e) {
-           throw new CommonException(ERROR_CREATE_PIPELINE_FILED);
+            throw new CommonException(ERROR_CREATE_PIPELINE_FILED);
         }
         return pipeline.getBody();
     }
