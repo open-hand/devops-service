@@ -20,6 +20,7 @@ import io.choerodon.devops.api.vo.ResourceCheckVO;
 import io.choerodon.devops.api.vo.notify.MessageSettingVO;
 import io.choerodon.devops.api.vo.notify.TargetUserDTO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.ObjectType;
@@ -37,9 +38,6 @@ import io.choerodon.devops.infra.util.StringMapBuilder;
  */
 @Service
 public class DevopsNotificationServiceImpl implements DevopsNotificationService {
-
-    public static final String RESOURCE_DELETE_CONFIRMATION = "resourceDeleteConfirmation";
-    private static final String CODE = "resourceDeleteConfirmation";
     private static final String NOTIFY_TYPE = "resourceDelete";
     public static final Gson gson = new Gson();
     private static final Long TIMEOUT = 600L;
@@ -72,7 +70,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     public ResourceCheckVO checkResourceDelete(Long envId, String objectType) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         ResourceCheckVO resourceCheckVO = new ResourceCheckVO();
-        MessageSettingVO messageSettingVO = hzeroMessageClient.queryByEnvIdAndEventNameAndProjectIdAndCode(NOTIFY_TYPE, devopsEnvironmentDTO.getProjectId(), CODE, envId, objectType);
+        MessageSettingVO messageSettingVO = hzeroMessageClient.queryByEnvIdAndEventNameAndProjectIdAndCode(NOTIFY_TYPE, devopsEnvironmentDTO.getProjectId(), MessageCodeConstants.RESOURCE_DELETE_CONFIRMATION, envId, objectType);
         if (Objects.isNull(messageSettingVO)) {
             return resourceCheckVO;
         }
@@ -144,7 +142,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
 
         //生成发送消息需要的模板对象
-        MessageSettingVO messageSettingVO = hzeroMessageClient.queryByEnvIdAndEventNameAndProjectIdAndCode(NOTIFY_TYPE, devopsEnvironmentDTO.getProjectId(), CODE, envId, objectType);
+        MessageSettingVO messageSettingVO = hzeroMessageClient.queryByEnvIdAndEventNameAndProjectIdAndCode(NOTIFY_TYPE, devopsEnvironmentDTO.getProjectId(), MessageCodeConstants.RESOURCE_DELETE_CONFIRMATION, envId, objectType);
 
         StringMapBuilder params = StringMapBuilder.newBuilder();
         List<IamUserDTO> userES = baseServiceClientOperator.listUsersByIds(ArrayUtil.singleAsList(GitUserNameUtil.getUserId().longValue()));
@@ -202,7 +200,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
         MessageSender messageSender = new MessageSender();
         messageSender.setTenantId(0L);
-        messageSender.setMessageCode(RESOURCE_DELETE_CONFIRMATION);
+        messageSender.setMessageCode(MessageCodeConstants.RESOURCE_DELETE_CONFIRMATION);
         messageSender.setArgs(params.build());
         messageSender.setAdditionalInformation(additionalParams);
         messageSender.setReceiverAddressList(users);
