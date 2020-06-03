@@ -54,7 +54,7 @@ function AppItem({ name, record, intl: { formatMessage }, intlPrefix }) {
 
   function getSuffix() {
     const actionData = [{
-      service: ['devops-service.devops-env-app-service.delete'],
+      service: ['choerodon.code.project.deploy.app-deployment.resource.ps.delete-contact'],
       text: formatMessage({ id: `${intlPrefix}.modal.service.delete` }),
       action: openModal,
     }];

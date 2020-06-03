@@ -62,7 +62,7 @@ const Networking = observer(() => {
       error={error || ''}
       clickAble={!disabled}
       onClick={openNetworkEdit}
-      permissionCode={['devops-service.devops-service.update']}
+      permissionCode={['choerodon.code.project.deploy.app-deployment.resource.ps.net-detail']}
     />);
   }
 
@@ -267,7 +267,7 @@ const Networking = observer(() => {
     }
     const buttons = [
       {
-        service: ['devops-service.devops-service.delete'],
+        service: ['choerodon.code.project.deploy.app-deployment.resource.ps.delete-net'],
         text: formatMessage({ id: 'delete' }),
         action: () => openDeleteModal(parentId, netId, name, 'service', refresh),
       },
@@ -304,7 +304,7 @@ const Networking = observer(() => {
       drawer: true,
       children: <EditNetwork
         envId={parentId}
-        appId={id} 
+        appId={id}
         networkStore={networkStore}
         refresh={refresh}
         networkId={netDs.current.get('id')}
@@ -318,7 +318,7 @@ const Networking = observer(() => {
       _.map(devopsIngressDTOS, ({ id: itemId, name, domain, error, status, pathList }) => {
         const buttons = [
           {
-            service: ['devops-service.devops-ingress.update'],
+            service: ['choerodon.code.project.deploy.app-deployment.resource.ps.delete-domain'],
             text: formatMessage({ id: 'delete' }),
             action: () => openDeleteModal(parentId, itemId, name, 'ingress', refresh),
           },
@@ -334,7 +334,7 @@ const Networking = observer(() => {
                 error={error}
                 clickAble={!disabled}
                 onClick={() => openDomainEdit(itemId)}
-                permissionCode={['devops-service.devops-ingress.delete']}
+                permissionCode={['choerodon.code.project.deploy.app-deployment.resource.ps.domain-detail']}
               />
             </div>
             {!disabled && (

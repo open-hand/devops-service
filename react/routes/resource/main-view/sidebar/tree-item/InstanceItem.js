@@ -122,17 +122,17 @@ function InstanceItem({
     let actionData;
     const actionItems = {
       stop: {
-        service: ['devops-service.app-service-instance.stop'],
+        service: ['choerodon.code.project.deploy.app-deployment.resource.ps.stop'],
         text: formatMessage({ id: `${intlPrefix}.instance.action.stop` }),
         action: () => openChangeActive('stop'),
       },
       start: {
-        service: ['devops-service.app-service-instance.start'],
+        service: ['choerodon.code.project.deploy.app-deployment.resource.ps.start'],
         text: formatMessage({ id: `${intlPrefix}.instance.action.start` }),
         action: () => openChangeActive('start'),
       },
       delete: {
-        service: ['devops-service.app-service-instance.delete'],
+        service: ['choerodon.code.project.deploy.app-deployment.resource.ps.delete'],
         text: formatMessage({ id: `${intlPrefix}.instance.action.delete` }),
         action: () => openDeleteModal(envId, istId, istName, 'instance', freshMenu),
       },
