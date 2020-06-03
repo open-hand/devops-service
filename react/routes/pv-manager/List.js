@@ -98,12 +98,12 @@ const AppService = withRouter(observer((props) => {
   function renderActions({ record }) {
     const actionData = {
       permission: {
-        service: ['devops-service.devops-pv.queryById'],
+        service: ['choerodon.code.project.deploy.cluster.pv-management.ps.permission-manage'],
         text: formatMessage({ id: `${intlPrefix}.permission` }),
         action: openPermission,
       },
       delete: {
-        service: ['devops-service.devops-pv.deletePv'],
+        service: ['choerodon.code.project.deploy.cluster.pv-management.ps.delete'],
         text: formatMessage({ id: 'delete' }),
         action: handleDelete,
       },

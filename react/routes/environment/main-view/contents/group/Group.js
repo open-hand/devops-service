@@ -42,9 +42,10 @@ const Group = observer(() => {
 
   useEffect(() => {
     async function init() {
-      const res = await checkPermission({ code: 'choerodon.code.project.deploy.environment.ps.detail-group' });
+      const res = await checkPermission({ projectId, code: 'choerodon.code.project.deploy.environment.ps.detail-group' });
       setCanDetail(res);
     }
+    init();
   }, []);
 
   function refresh() {

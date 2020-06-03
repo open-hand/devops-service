@@ -77,11 +77,11 @@ function GroupItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     if (!groupId) return null;
 
     const actionData = [{
-      service: [],
+      service: ['choerodon.code.project.deploy.environment.ps.group-modify'],
       text: formatMessage({ id: `${intlPrefix}.modal.group.modify` }),
       action: handleClick,
     }, {
-      service: [],
+      service: ['choerodon.code.project.deploy.environment.ps.group-delete'],
       text: formatMessage({ id: `${intlPrefix}.modal.group.delete` }),
       action: confirmDelete,
     }];

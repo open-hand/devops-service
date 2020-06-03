@@ -1,10 +1,11 @@
-import React, { useCallback, Fragment } from 'react';
+import React, { useState, useEffect, useCallback, Fragment } from 'react';
 import { Page, Content, Header, Permission, Action, Breadcrumb } from '@choerodon/boot';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
+import checkPermission from '../../utils/checkPermission';
 import { useCertificateStore } from './stores';
 import PermissionManage from './modals/permission';
 import CreateForm from './modals/create-form';
@@ -34,6 +35,18 @@ const AppService = withRouter(observer((props) => {
     certStore,
   } = useCertificateStore();
 
+  const [canDetail, setCanDetail] = useState(false);
+
+  useEffect(() => {
+    async function init() {
+      const res = await checkPermission({ projectId: id, code: 'choerodon.code.project.deploy.cluster.cert-management.ps.detail' });
+      if (res) {
+        setCanDetail(true);
+      }
+    }
+    init();
+  }, []);
+
   function refresh() {
     listDs.query();
   }
@@ -42,7 +55,7 @@ const AppService = withRouter(observer((props) => {
     return (
       <ClickText
         value={value}
-        clickAble
+        clickAble={canDetail}
         onClick={() => openModal('edit')}
         permissionCode={['devops-service.project-certification.createOrUpdate']}
       />
@@ -52,12 +65,12 @@ const AppService = withRouter(observer((props) => {
   function renderActions() {
     const actionData = [
       {
-        service: ['devops-service.project-certification.assignPermission'],
+        service: ['choerodon.code.project.deploy.cluster.cert-management.ps.permission'],
         text: formatMessage({ id: `${intlPrefix}.permission` }),
         action: openPermission,
       },
       {
-        service: ['devops-service.project-certification.deleteOrgCert'],
+        service: ['choerodon.code.project.deploy.cluster.cert-management.ps.delete'],
         text: formatMessage({ id: 'delete' }),
         action: handleDelete,
       },

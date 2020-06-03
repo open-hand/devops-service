@@ -199,27 +199,27 @@ const PiplelineTable = withRouter(observer((props) => {
 
     const action = {
       execute: {
-        service: ['devops-service.pipeline.execute'],
+        service: ['choerodon.code.project.deploy.app-deployment.pipeline.ps.execute'],
         text: formatMessage({ id: 'pipeline.action.run' }),
         action: openExecuteCheck.bind(this, id, itemName),
       },
       disabled: {
-        service: ['devops-service.pipeline.updateIsEnabled'],
+        service: ['choerodon.code.project.deploy.app-deployment.pipeline.ps.disable'],
         text: formatMessage({ id: 'stop' }),
         action: openInvalid.bind(this, id, itemName),
       },
       enable: {
-        service: ['devops-service.pipeline.updateIsEnabled'],
+        service: ['choerodon.code.project.deploy.app-deployment.pipeline.ps.enable'],
         text: formatMessage({ id: 'active' }),
         action: makeStatusActive.bind(this, id),
       },
       remove: {
-        service: ['devops-service.pipeline.delete'],
+        service: ['choerodon.code.project.deploy.app-deployment.pipeline.ps.delete'],
         text: formatMessage({ id: 'delete' }),
         action: deletePipeline.bind(this, id, itemName),
       },
       record: {
-        service: ['devops-service.devops-deploy-record.pageByOptions'],
+        service: ['choerodon.code.project.deploy.app-deployment.pipeline.ps.record'],
         text: formatMessage({ id: 'pipeline.all.record' }),
         action: gotoRecord.bind(this, id, itemName),
       },

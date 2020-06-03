@@ -8,7 +8,9 @@ export default props => (
     service={[
       'choerodon.code.project.deploy.app-deployment.resource.ps.gitops',
       'choerodon.code.project.deploy.app-deployment.resource.ps.deploy-config-tab',
-      'choerodon.code.project.deploy.app-deployment.resource.ps.polaris']}
+      'choerodon.code.project.deploy.app-deployment.resource.ps.polaris',
+      'choerodon.code.project.deploy.app-deployment.resource.ps.permission-allocation',
+    ]}
   >
     <StoreProvider {...props}>
       <EnvContent />

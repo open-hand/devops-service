@@ -94,7 +94,7 @@ const CustomModals = observer(() => {
     const connect = envRecord && envRecord.get('connect');
     const configDisabled = !connect;
     return [{
-      permissions: ['devops-service.app-service-instance.deploy'],
+      permissions: ['choerodon.code.project.deploy.app-deployment.resource.ps.resource-deploy'],
       disabled: configDisabled,
       name: formatMessage({ id: `${intlPrefixDeploy}.manual` }),
       icon: 'jsfiddle',
@@ -102,7 +102,7 @@ const CustomModals = observer(() => {
       display: true,
       group: 1,
     }, {
-      permissions: ['devops-service.app-service-instance.batchDeployment'],
+      permissions: ['choerodon.code.project.deploy.app-deployment.resource.ps.resource-batch'],
       disabled: configDisabled,
       name: formatMessage({ id: `${intlPrefixDeploy}.batch` }),
       icon: 'jsfiddle',
