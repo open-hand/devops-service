@@ -68,8 +68,12 @@ chmod -R 755 node_modules
 # 编译
 npm run compile
 echo "//\${NPM_REGISTRY}:_authToken=\${NPM_TOKEN}">.npmrc
-# 发布
-npm publish --registry \${NPM_PUBLISH_REGISTRY}`,
+# 发布，发包到私库需要设置token,私库地址等参数
+npm publish --registry \${NPM_PUBLISH_REGISTRY}
+# 构建
+npm run dist
+cp -r src/main/resources/lib $CI_PROJECT_DIR/docker/lib`,
+
       custom: `
 # job模板，使用时根据需求替换
 # job名称（与任务名称保持一致）
