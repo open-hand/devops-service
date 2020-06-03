@@ -46,6 +46,10 @@ const jobType = {
     name: '自定义',
     children: [],
   },
+  chart: {
+    name: '发布c7n版本',
+    children: [],
+  },
 };
 
 const sonarText = {
