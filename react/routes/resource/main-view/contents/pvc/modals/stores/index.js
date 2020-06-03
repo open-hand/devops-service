@@ -14,7 +14,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
 
     const value = {
       ...props,
-      permissions: ['devops-service.devops-pvc.create'],
+      permissions: ['choerodon.code.project.deploy.app-deployment.resource.ps.create-pvc'],
     };
     return (
       <Store.Provider value={value}>

@@ -116,11 +116,11 @@ function CustomItem({
       return null;
     }
     const actionData = [{
-      service: ['devops-service.devops-customize-resource.createResource'],
+      service: ['choerodon.code.project.deploy.app-deployment.resource.ps.custome-resource.update'],
       text: formatMessage({ id: 'edit' }),
       action: openModal,
     }, {
-      service: ['devops-service.devops-customize-resource.deleteResource'],
+      service: ['choerodon.code.project.deploy.app-deployment.resource.ps.custom-resource.delete'],
       text: formatMessage({ id: 'delete' }),
       action: deleteItem,
     }];

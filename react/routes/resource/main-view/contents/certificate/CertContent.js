@@ -107,7 +107,7 @@ const CertContent = observer(() => {
     }
     const buttons = [
       {
-        service: ['devops-service.certification.delete'],
+        service: ['choerodon.code.project.deploy.app-deployment.resource.ps.delete-certificate'],
         text: formatMessage({ id: 'delete' }),
         action: () => openDeleteModal(parentId, id, name, 'certificate', refresh),
       },

@@ -51,7 +51,7 @@ function CertItem({
       return null;
     }
     const actionData = [{
-      service: ['devops-service.certification.delete'],
+      service: ['choerodon.code.project.deploy.app-deployment.resource.ps.delete-certificate'],
       text: formatMessage({ id: 'delete' }),
       action: () => openDeleteModal(envId, id, certName, 'certificate', freshMenu),
     }];

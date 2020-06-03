@@ -15,7 +15,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const value = {
       ...props,
       permissions: [
-        'devops-service.devops-service.create',
+        'choerodon.code.project.deploy.app-deployment.resource.ps.network',
       ],
     };
     return (
