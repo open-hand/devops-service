@@ -140,7 +140,6 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 devopsGitlabPipelineDTO.setCommitId(devopsGitlabCommitDTO.getId());
             }
             devopsGitlabPipelineDTO.setStage(JSONArray.toJSONString(stages));
-            System.out.println(devopsGitlabPipelineDTO);
             baseCreate(devopsGitlabPipelineDTO);
         } else {
             devopsGitlabPipelineDTO.setStatus(pipelineWebHookVO.getObjectAttributes().getStatus());
@@ -164,7 +163,6 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             if (devopsGitlabCommitDTO != null) {
                 devopsGitlabPipelineDTO.setCommitId(devopsGitlabCommitDTO.getId());
             }
-            System.out.println(devopsGitlabPipelineDTO);
             baseUpdate(devopsGitlabPipelineDTO);
         }
 
