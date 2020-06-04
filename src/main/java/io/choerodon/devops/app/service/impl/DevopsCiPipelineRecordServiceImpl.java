@@ -388,23 +388,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         customCommitVO.setCommitSha(devopsCiPipelineRecordDTO.getCommitSha());
         customCommitVO.setCommitContent(devopsGitlabCommitDTO.getCommitContent());
         customCommitVO.setCommitUrl(devopsGitlabCommitDTO.getUrl());
-        customCommitVO.setGitlabProjectUrl(calculateGitlabProjectUrl(devopsGitlabCommitDTO.getUrl()));
 
         if (commitUser != null) {
             customCommitVO.setUserHeadUrl(commitUser.getImageUrl());
             customCommitVO.setUserName(commitUser.getLdap() ? commitUser.getLoginName() : commitUser.getEmail());
         }
-    }
-
-    /**
-     * 计算gitlab project地址
-     *
-     * @param url
-     * @return
-     */
-    private String calculateGitlabProjectUrl(String url) {
-        url = url.substring(0, url.lastIndexOf('/'));
-        return url.substring(0, url.lastIndexOf('/'));
     }
 
     private Long calculateStageDuration(List<DevopsCiJobRecordVO> devopsCiJobRecordVOS) {
