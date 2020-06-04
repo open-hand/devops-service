@@ -235,6 +235,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     public DevopsCiPipelineVO query(Long projectId, Long ciPipelineId) {
         // 根据pipeline_id查询数据
         DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineMapper.selectByPrimaryKey(ciPipelineId);
+        CommonExAssertUtil.assertTrue(devopsCiPipelineDTO != null, "error.ci.pipeline.not.exist", ciPipelineId);
         List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(ciPipelineId);
         List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(ciPipelineId);
         // dto转vo
