@@ -285,12 +285,13 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsCiPipelineRecordDTO.getTriggerUserId());
         devopsCiPipelineRecordVO.setUserDTO(iamUserDTO);
 
-        // 添加提交信息
-        addCommitInfo(devopsCiPipelineRecordVO, devopsCiPipelineRecordDTO);
 
         // 添加流水线信息
         DevopsCiPipelineVO ciPipelineVO = devopsCiPipelineService.queryById(devopsCiPipelineRecordDTO.getCiPipelineId());
         devopsCiPipelineRecordVO.setDevopsCiPipelineVO(ciPipelineVO);
+
+        // 添加提交信息
+        addCommitInfo(ciPipelineVO.getAppServiceId(), devopsCiPipelineRecordVO, devopsCiPipelineRecordDTO);
 
         // 查询流水线记录下的job记录
         DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
@@ -361,8 +362,14 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     /**
      * 添加提交信息
      */
-    private void addCommitInfo(DevopsCiPipelineRecordVO devopsCiPipelineRecordVO, DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO) {
+    private void addCommitInfo(Long appServiceId, DevopsCiPipelineRecordVO devopsCiPipelineRecordVO, DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO) {
         DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.baseQueryByShaAndRef(devopsCiPipelineRecordDTO.getCommitSha(), devopsCiPipelineRecordDTO.getGitlabTriggerRef());
+
+        CustomCommitVO customCommitVO = new CustomCommitVO();
+        devopsCiPipelineRecordVO.setCommit(customCommitVO);
+
+        customCommitVO.setGitlabProjectUrl(applicationService.calculateGitlabProjectUrlWithSuffix(appServiceId));
+
         // 可能因为GitLab webhook 失败, commit信息查不出
         if (devopsGitlabCommitDTO == null) {
             return;
@@ -372,7 +379,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             commitUser = baseServiceClientOperator.queryUserByUserId(devopsGitlabCommitDTO.getUserId());
         }
 
-        CustomCommitVO customCommitVO = new CustomCommitVO();
         customCommitVO.setRef(devopsCiPipelineRecordDTO.getGitlabTriggerRef());
         customCommitVO.setCommitSha(devopsCiPipelineRecordDTO.getCommitSha());
         customCommitVO.setCommitContent(devopsGitlabCommitDTO.getCommitContent());
@@ -383,9 +389,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             customCommitVO.setUserHeadUrl(commitUser.getImageUrl());
             customCommitVO.setUserName(commitUser.getLdap() ? commitUser.getLoginName() : commitUser.getEmail());
         }
-
-
-        devopsCiPipelineRecordVO.setCommit(customCommitVO);
     }
 
     /**

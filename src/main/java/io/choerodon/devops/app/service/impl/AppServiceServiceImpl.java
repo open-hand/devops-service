@@ -61,6 +61,7 @@ import io.choerodon.devops.app.eventhandler.payload.DevOpsUserPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
@@ -2687,6 +2688,18 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     private static AppServiceSimpleVO dto2SimpleVo(AppServiceDTO app) {
         return new AppServiceSimpleVO(app.getId(), app.getName(), app.getCode());
+    }
+
+    @Override
+    public String calculateGitlabProjectUrlWithSuffix(Long appServiceId) {
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(Objects.requireNonNull(appServiceId));
+        if (appServiceDTO == null) {
+            return null;
+        }
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+        Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
+        return String.format(GitOpsConstants.REPO_URL_TEMPLATE_WITHOUT_SUFFIX, repoUrl, tenant.getTenantNum(), projectDTO.getCode(), appServiceDTO.getCode());
     }
 
     /**
