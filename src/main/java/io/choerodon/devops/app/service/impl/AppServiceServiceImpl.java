@@ -2107,7 +2107,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public AppServiceDTO baseQueryByToken(String token) {
-        return appServiceMapper.queryByToken(token);
+        return appServiceMapper.queryByToken(Objects.requireNonNull(token));
     }
 
     @Override
