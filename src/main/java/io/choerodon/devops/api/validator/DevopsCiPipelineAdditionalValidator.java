@@ -14,6 +14,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.enums.CiJobScriptTypeEnum;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
+import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.MavenSettingsUtil;
 
 /**
@@ -38,6 +39,7 @@ public class DevopsCiPipelineAdditionalValidator {
     private static final String ERROR_MAVEN_REPO_USERNAME_EMPTY = "error.maven.repository.username.empty";
     private static final String ERROR_MAVEN_REPO_PASSWORD_EMPTY = "error.maven.repository.password.empty";
     private static final String ERROR_CUSTOM_JOB_FORMAT_INVALID = "error.custom.job.format.invalid";
+    private static final String ERROR_CUSTOM_JOB_STAGE_NOT_MATCH = "error.custom.job.stage.not.match";
     private static final String ERROR_JOB_NAME_NOT_UNIQUE = "error.job.name.not.unique";
     private static final String ERROR_STAGE_NAME_NOT_UNIQUE = "error.stage.name.not.unique";
     private static final String ERROR_BOTH_REPOS_AND_SETTINGS_EXIST = "error.both.repos.and.settings.exist";
@@ -224,10 +226,8 @@ public class DevopsCiPipelineAdditionalValidator {
             }
             devopsCiJobVO.setName(key);
             JSONObject jsonObject = new JSONObject((Map<String, Object>) value);
-            if (!stageName.equals(jsonObject.getString(GitOpsConstants.STAGE))) {
-                throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
-            }
-
+            String stageNameDefinedInJob = jsonObject.getString(GitOpsConstants.STAGE);
+            CommonExAssertUtil.assertTrue(stageName.equals(stageNameDefinedInJob), ERROR_CUSTOM_JOB_STAGE_NOT_MATCH, stageNameDefinedInJob, stageName);
         });
     }
 
