@@ -79,7 +79,7 @@ export default injectIntl(observer(() => {
 
   function renderAction() {
     const actionData = [{
-      service: ['devops-service.project-certification.deletePermissionOfProject'],
+      service: [],
       text: formatMessage({ id: `${intlPrefix}.permission.delete` }),
       action: handleDelete,
     }];
