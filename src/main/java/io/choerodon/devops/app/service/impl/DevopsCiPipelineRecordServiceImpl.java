@@ -37,10 +37,7 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiJobArtifactRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.CustomContextUtil;
-import io.choerodon.devops.infra.util.PageRequestUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -152,6 +149,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     @Override
     public void handleCreate(PipelineWebHookVO pipelineWebHookVO) {
+        LOGGER.debug("Start to handle pipeline with gitlab pipeline id {}...", pipelineWebHookVO.getObjectAttributes().getId());
         AppServiceDTO applicationDTO = applicationService.baseQueryByToken(pipelineWebHookVO.getToken());
         DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(applicationDTO.getId());
 
@@ -163,6 +161,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         //pipeline不存在则创建,存在则更新状态和阶段信息
         if (devopsCiPipelineRecordDTO == null) {
+            LOGGER.debug("Start to create pipeline with gitlab pipeline id {}...", pipelineWebHookVO.getObjectAttributes().getId());
             devopsCiPipelineRecordDTO = new DevopsCiPipelineRecordDTO();
             devopsCiPipelineRecordDTO.setCiPipelineId(devopsCiPipelineDTO.getId());
             devopsCiPipelineRecordDTO.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
@@ -179,6 +178,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             Long pipelineRecordId = devopsCiPipelineRecordDTO.getId();
             saveJobRecords(pipelineWebHookVO, pipelineRecordId);
         } else {
+            LOGGER.debug("Start to update pipeline with gitlab pipeline id {}...", pipelineWebHookVO.getObjectAttributes().getId());
             devopsCiPipelineRecordDTO.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
             devopsCiPipelineRecordDTO.setTriggerUserId(iamUserId);
             devopsCiPipelineRecordDTO.setCommitSha(pipelineWebHookVO.getObjectAttributes().getSha());
@@ -198,6 +198,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         pipelineWebHookVO.getBuilds().forEach(ciJobWebHookVO -> {
             DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(ciJobWebHookVO.getId());
             if (devopsCiJobRecordDTO == null) {
+                LOGGER.debug("Start to create job with gitlab job id {}...", ciJobWebHookVO.getId());
                 devopsCiJobRecordDTO = new DevopsCiJobRecordDTO();
                 devopsCiJobRecordDTO.setGitlabJobId(ciJobWebHookVO.getId());
                 devopsCiJobRecordDTO.setCiPipelineRecordId(pipelineRecordId);
@@ -211,12 +212,13 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setGitlabProjectId(pipelineWebHookVO.getProject().getId());
                 devopsCiJobRecordMapper.insertSelective(devopsCiJobRecordDTO);
             } else {
+                LOGGER.debug("Start to update job with gitlab job id {}...", ciJobWebHookVO.getId());
                 devopsCiJobRecordDTO.setCiPipelineRecordId(pipelineRecordId);
                 devopsCiJobRecordDTO.setStartedDate(ciJobWebHookVO.getStartedAt());
                 devopsCiJobRecordDTO.setFinishedDate(ciJobWebHookVO.getFinishedAt());
                 devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
                 devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
-                devopsCiJobRecordMapper.updateByPrimaryKeySelective(devopsCiJobRecordDTO);
+                MapperUtil.resultJudgedInsertSelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, "error.update.ci.job.record", ciJobWebHookVO.getId());
             }
         });
     }
