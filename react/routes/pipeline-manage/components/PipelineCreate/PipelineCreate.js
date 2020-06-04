@@ -43,7 +43,9 @@ const PipelineCreate = observer(() => {
     const init = async () => {
       const res = await createUseStore.axiosGetDefaultImage();
       createUseStore.setDefaultImage(res);
-      PipelineCreateFormDataSet.current.set('image', res);
+      if (!dataSource) {
+        PipelineCreateFormDataSet.current.set('image', res);
+      }
     };
     init();
   }, []);
