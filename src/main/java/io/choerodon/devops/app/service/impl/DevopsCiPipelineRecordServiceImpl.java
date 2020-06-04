@@ -109,6 +109,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
         DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
         if (devopsCiPipelineDTO == null || Boolean.FALSE.equals(devopsCiPipelineDTO.getEnabled())) {
+            LOGGER.debug("Skip null of disabled pipeline for pipeline webhook with id {} and token: {}", pipelineWebHookVO.getObjectAttributes().getId(), token);
             return;
         }
         List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(devopsCiPipelineDTO.getId());
@@ -119,10 +120,12 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         for (CiJobWebHookVO job : pipelineWebHookVO.getBuilds()) {
             DevopsCiJobDTO devopsCiJobDTO = jobMap.get(job.getName());
             if (devopsCiJobDTO == null) {
+                LOGGER.debug("Job Mismatch {} Skip the pipeline webhook...", job.getName());
                 return;
             } else {
                 DevopsCiStageDTO devopsCiStageDTO = stageMap.get(devopsCiJobDTO.getCiStageId());
                 if (devopsCiStageDTO == null || !devopsCiStageDTO.getName().equals(job.getStage())) {
+                    LOGGER.debug("the stage name of the job {} mismatch...", job.getStage());
                     return;
                 } else {
                     job.setType(devopsCiJobDTO.getType());
