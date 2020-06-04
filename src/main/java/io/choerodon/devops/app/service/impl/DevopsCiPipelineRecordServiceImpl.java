@@ -221,7 +221,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setFinishedDate(ciJobWebHookVO.getFinishedAt());
                 devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
                 devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
-                MapperUtil.resultJudgedInsertSelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, "error.update.ci.job.record", ciJobWebHookVO.getId());
+                MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, "error.update.ci.job.record", ciJobWebHookVO.getId());
             }
         });
     }
