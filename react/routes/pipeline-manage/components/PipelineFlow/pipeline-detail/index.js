@@ -19,7 +19,7 @@ export default observer((props) => {
   const {
     projectId,
     stepStore,
-    getSelectedMenu: { id, name },
+    getSelectedMenu: { id, name, appServiceName },
   } = usePipelineFlowStore();
 
   const [leftLineDom, setLeftLineDom] = useState([]);
@@ -94,7 +94,10 @@ export default observer((props) => {
 
   return (
     <div className="c7ncd-pipeline-detail">
-      <div className="c7ncd-pipeline-detail-title">{name}</div>
+      <div className="c7ncd-pipeline-detail-title">
+        <span>{name}</span>
+        <span className="c7ncd-pipeline-detail-title-appService">{appServiceName ? ` (${appServiceName}) ` : ''}</span>
+      </div>
       <div className="c7ncd-pipeline-detail-content">
         {map(getStepData, ({ id: stageId, name: stageName, jobList }, stageIndex) => (
           <div className="c7ncd-pipeline-detail-stage" key={stageId}>
