@@ -274,6 +274,7 @@ const AddTask = observer(() => {
     }
     if (AddTaskFormDataSet.current.get('type') === 'custom') {
       AddTaskFormDataSet.getField('name').set('required', false);
+      AddTaskFormDataSet.getField('glyyfw').set('required', false);
     }
   }, [testConnect, AddTaskFormDataSet.current.get('type'), AddTaskFormDataSet.current.get('authType')]);
 
