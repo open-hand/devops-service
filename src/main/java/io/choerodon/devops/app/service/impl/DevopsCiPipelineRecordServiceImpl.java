@@ -363,6 +363,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
      */
     private void addCommitInfo(DevopsCiPipelineRecordVO devopsCiPipelineRecordVO, DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO) {
         DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.baseQueryByShaAndRef(devopsCiPipelineRecordDTO.getCommitSha(), devopsCiPipelineRecordDTO.getGitlabTriggerRef());
+        // 可能因为GitLab webhook 失败, commit信息查不出
+        if (devopsGitlabCommitDTO == null) {
+            return;
+        }
         IamUserDTO commitUser = null;
         if (devopsGitlabCommitDTO.getUserId() != null) {
             commitUser = baseServiceClientOperator.queryUserByUserId(devopsGitlabCommitDTO.getUserId());
