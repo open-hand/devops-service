@@ -558,4 +558,12 @@ public interface AppServiceService {
      * @return 应用服务列表
      */
     List<AppServiceSimpleVO> pageAppServiceToCreateCiPipeline(Long projectId, PageRequest pageRequest, @Nullable String params);
+
+    /**
+     * 查出不带.git后缀的gitlab仓库地址
+     *
+     * @param appServiceId 应用服务id
+     * @return 地址
+     */
+    String calculateGitlabProjectUrlWithSuffix(Long appServiceId);
 }

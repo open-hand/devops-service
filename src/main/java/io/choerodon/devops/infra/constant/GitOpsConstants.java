@@ -165,4 +165,10 @@ public class GitOpsConstants {
      * 分页插件的第一页的页码
      */
     public static final int FIRST_PAGE_INDEX = 0;
+
+    /**
+     * 不带.git后缀的仓库名模板
+     * {带/的gitlab地址}{组织code}-{项目code}/{应用服务code}
+     */
+    public static final String REPO_URL_TEMPLATE_WITHOUT_SUFFIX = "%s%s-%s/%s";
 }
