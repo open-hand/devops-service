@@ -70,8 +70,8 @@ export default observer((props) => {
       );
     }) : (
       <EmptyPage
-        title={formatMessage({ id: `${intlPrefix}.record.empty.title` })}
-        describe={formatMessage({ id: `${intlPrefix}.record.empty.des` })}
+        title={formatMessage({ id: status === 'skipped' ? `${intlPrefix}.record.empty.title` : `${intlPrefix}.record.empty.title.other` })}
+        describe={formatMessage({ id: status === 'skipped' ? `${intlPrefix}.record.empty.des` : `${intlPrefix}.record.empty.des.other` })}
         access
       />
     )
