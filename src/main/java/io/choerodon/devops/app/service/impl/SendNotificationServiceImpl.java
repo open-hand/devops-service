@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
 import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
 import io.choerodon.devops.app.service.*;
@@ -102,7 +103,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         List<Receiver> targetUsers = targetSupplier.apply(appServiceDTO);
         LOGGER.debug("AppService notice {}. Target users size: {}", sendSettingCode, targetUsers.size());
 
-        sendNotices(sendSettingCode, targetUsers, makeAppServiceParams(organizationDTO.getTenantId(), projectDTO.getId(), projectDTO.getName(), projectDTO.getCategory(), appServiceDTO));
+        sendNotices(sendSettingCode, targetUsers, makeAppServiceParams(organizationDTO.getTenantId(), projectDTO.getId(), projectDTO.getName(), projectDTO.getCategory(), appServiceDTO), projectDTO.getId());
     }
 
     /**
@@ -131,7 +132,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         List<Receiver> targetUsers = targetSupplier.apply(appServiceDTO);
         LOGGER.debug("AppService notice {}. Target users size: {}", sendSettingCode, targetUsers.size());
 
-        sendNotices(sendSettingCode, targetUsers, makeAppServiceParams(organizationDTO.getTenantId(), projectDTO.getId(), projectDTO.getName(), projectDTO.getCategory(), appServiceDTO));
+        sendNotices(sendSettingCode, targetUsers, makeAppServiceParams(organizationDTO.getTenantId(), projectDTO.getId(), projectDTO.getName(), projectDTO.getCategory(), appServiceDTO), projectDTO.getId());
     }
 
     /**
@@ -272,7 +273,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(pipelineOperatorUserName);
 
-                    sendNotices(MessageCodeConstants.GITLAB_CONTINUOUS_DELIVERY_FAILURE, ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())), params);
+                    sendNotices(MessageCodeConstants.GITLAB_CONTINUOUS_DELIVERY_FAILURE, ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())), params, projectDTO.getId());
                 },
                 ex -> LOGGER.info("Error occurred when sending message about gitlab-pipeline-failure. The exception is", ex));
     }
@@ -307,7 +308,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     .build();
             sendNotices(SendSettingEnum.GITLAB_CD_SUCCESS.value(),
                     ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())),
-                    params);
+                    params, projectDTO.getId());
         }, ex -> LOGGER.info("Error occurred when sending message about gitlab-pipeline-success. The exception is", ex));
     }
 
@@ -326,7 +327,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     sendNotices(
                             SendSettingEnum.CREATE_APPSERVICE_VERSION.value(),
                             ArrayUtil.singleAsList(constructReceiver(appServiceVersionDTO.getCreatedBy())),
-                            params
+                            params, projectDTO.getId()
                     );
                 },
                 ex -> LOGGER.info("Error occurred when sending message about appservice-version. The exception is", ex));
@@ -426,7 +427,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     Map<String, String> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), authorUser.getRealName(), mergeRequestId);
 
-                    sendNotices(MessageCodeConstants.AUDIT_MERGE_REQUEST, ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())), params);
+                    sendNotices(MessageCodeConstants.AUDIT_MERGE_REQUEST, ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())), params, projectDTO.getId());
                 },
                 ex -> LOGGER.info("Error occurred when sending message about merge-request-audit. The exception is: ", ex));
     }
@@ -493,7 +494,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     Map<String, String> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), authorUser.getRealName(), mergeRequestId);
 
-                    sendNotices(sendSettingCode, ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())), params);
+                    sendNotices(sendSettingCode, ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())), params, projectDTO.getId());
                 },
                 ex -> LOGGER.info("Error occurred when sending message about {}. The exception is {}.", sendSettingCode, ex));
     }
@@ -559,7 +560,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     .build();
 
 
-            sendNotices(sendSettingCode, ArrayUtil.singleAsList(constructReceiver(Objects.requireNonNull(creatorId))), params);
+            sendNotices(sendSettingCode, ArrayUtil.singleAsList(constructReceiver(Objects.requireNonNull(creatorId))), params, projectDTO.getId());
         }, ex -> LOGGER.info("Exception occurred when send failure message about failed resource creation. the message code is {}, env id is {}, resource name is {}, and the ex is: {}", sendSettingCode, envId, resourceName, ex));
     }
 
@@ -614,7 +615,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             devopsEnvironmentDTO.getId(),
                             devopsEnvironmentDTO.getName()
                     );
-                    sendNotices(code, WEB_HOOK, params);
+                    sendNotices(code, WEB_HOOK, params, devopsEnvironmentDTO.getProjectId());
                 },
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", code, ex));
 
@@ -633,7 +634,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             devopsEnvironmentDTO.getId(),
                             devopsEnvironmentDTO.getName()
                     );
-                    sendNotices(code, WEB_HOOK, params);
+                    sendNotices(code, WEB_HOOK, params, projectDTO.getId());
                 },
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", code, ex));
     }
@@ -651,7 +652,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             devopsEnvironmentDTO.getId(),
                             devopsEnvironmentDTO.getName()
                     );
-                    sendNotices(code, WEB_HOOK, params);
+                    sendNotices(code, WEB_HOOK, params, projectDTO.getId());
                 },
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", code, ex));
 
@@ -671,7 +672,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             devopsEnvironmentDTO.getId(),
                             devopsEnvironmentDTO.getName()
                     );
-                    sendNotices(code, WEB_HOOK, params);
+                    sendNotices(code, WEB_HOOK, params, projectDTO.getId());
                 },
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", code, ex));
 
@@ -690,7 +691,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             devopsEnvironmentDTO.getId(),
                             devopsEnvironmentDTO.getName()
                     );
-                    sendNotices(code, WEB_HOOK, params);
+                    sendNotices(code, WEB_HOOK, params, projectDTO.getId());
                 },
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", code, ex));
 
@@ -709,7 +710,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             devopsEnvironmentDTO.getId(),
                             devopsEnvironmentDTO.getName()
                     );
-                    sendNotices(code, WEB_HOOK, params);
+                    sendNotices(code, WEB_HOOK, params, projectDTO.getId());
                 },
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", code, ex));
 
@@ -754,7 +755,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private void sendPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
         PipelineRecordDTO record = pipelineRecordService.baseQueryById(pipelineRecordId);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(record.getProjectId());
-        sendNotices(type, users, constructParamsForPipeline(record, projectDTO, params, stageId, stageName));
+        sendNotices(type, users, constructParamsForPipeline(record, projectDTO, params, stageId, stageName), projectDTO.getId());
     }
 
     private Map<String, String> constructParamsForPipeline(PipelineRecordDTO record, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
@@ -833,7 +834,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             .put("gitlabPassword", Objects.requireNonNull(password))
                             .build();
 
-                    sendNotices(MessageCodeConstants.GITLAB_PWD, ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())), params);
+                    sendOrganizationNotices(MessageCodeConstants.GITLAB_PWD, ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())), params, organizationId);
                 },
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", MessageCodeConstants.GITLAB_PWD, ex));
     }
@@ -852,28 +853,28 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Override
     public void sendWhenEnvCreate(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId) {
         doWithTryCatchAndLog(
-                () -> sendNotices(SendSettingEnum.CREATE_ENV.value(), WEB_HOOK, constructParamsForEnv(devopsEnvironmentDTO, organizationId)),
+                () -> sendNotices(SendSettingEnum.CREATE_ENV.value(), WEB_HOOK, constructParamsForEnv(devopsEnvironmentDTO, organizationId), devopsEnvironmentDTO.getProjectId()),
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", SendSettingEnum.CREATE_ENV.value(), ex));
     }
 
     @Override
     public void sendWhenEnvEnable(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId) {
         doWithTryCatchAndLog(
-                () -> sendNotices(SendSettingEnum.ENABLE_ENV.value(), WEB_HOOK, constructParamsForEnv(devopsEnvironmentDTO, organizationId)),
+                () -> sendNotices(SendSettingEnum.ENABLE_ENV.value(), WEB_HOOK, constructParamsForEnv(devopsEnvironmentDTO, organizationId), devopsEnvironmentDTO.getProjectId()),
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", SendSettingEnum.ENABLE_ENV.value(), ex));
     }
 
     @Override
     public void sendWhenEnvDisable(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId) {
         doWithTryCatchAndLog(
-                () -> sendNotices(SendSettingEnum.DISABLE_ENV.value(), WEB_HOOK, constructParamsForEnv(devopsEnvironmentDTO, organizationId)),
+                () -> sendNotices(SendSettingEnum.DISABLE_ENV.value(), WEB_HOOK, constructParamsForEnv(devopsEnvironmentDTO, organizationId), devopsEnvironmentDTO.getProjectId()),
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", SendSettingEnum.DISABLE_ENV.value(), ex));
     }
 
     @Override
     public void sendWhenEnvDelete(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId) {
         doWithTryCatchAndLog(
-                () -> sendNotices(SendSettingEnum.DELETE_ENV.value(), WEB_HOOK, constructParamsForEnv(devopsEnvironmentDTO, organizationId)),
+                () -> sendNotices(SendSettingEnum.DELETE_ENV.value(), WEB_HOOK, constructParamsForEnv(devopsEnvironmentDTO, organizationId), devopsEnvironmentDTO.getProjectId()),
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", SendSettingEnum.DELETE_ENV.value(), ex));
     }
 
@@ -882,7 +883,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         doWithTryCatchAndLog(
                 () -> sendNotices(SendSettingEnum.CREATE_ENVFAILED.value(),
                         WEB_HOOK,
-                        constructParamsForEnv(devopsEnvironmentDTO, organizationId)),
+                        constructParamsForEnv(devopsEnvironmentDTO, organizationId), devopsEnvironmentDTO.getProjectId()),
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", SendSettingEnum.CREATE_ENVFAILED.value(), ex));
     }
 
@@ -896,7 +897,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(iamUserIds);
                     List<Receiver> userList = iamUserDTOS.stream().map(iamUserDTO -> constructReceiver(iamUserDTO.getId())).collect(Collectors.toList());
                     params.put("users", JSONObject.toJSONString(userList));
-                    sendNotices(SendSettingEnum.UPDATE_ENV_PERMISSIONS.value(), WEB_HOOK, params);
+                    sendNotices(SendSettingEnum.UPDATE_ENV_PERMISSIONS.value(), WEB_HOOK, params, devopsEnvironmentDTO.getProjectId());
                 },
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", SendSettingEnum.UPDATE_ENV_PERMISSIONS.value(), ex));
     }
@@ -914,13 +915,13 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Override
     public void sendWhenCreateCluster(DevopsClusterDTO devopsClusterDTO, ProjectDTO iamProject) {
         doWithTryCatchAndLog(
-                () -> sendNotices(SendSettingEnum.CREATE_CLUSTER.value(), WEB_HOOK, constructParamsForCluster(devopsClusterDTO, iamProject.getOrganizationId(), null)),
+                () -> sendNotices(SendSettingEnum.CREATE_CLUSTER.value(), WEB_HOOK, constructParamsForCluster(devopsClusterDTO, iamProject.getOrganizationId(), null), devopsClusterDTO.getProjectId()),
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", SendSettingEnum.CREATE_CLUSTER.value(), ex));
     }
 
     @Override
     public void sendWhenCreateClusterFail(DevopsClusterDTO devopsClusterDTO, ProjectDTO iamProject, String msg) {
-        doWithTryCatchAndLog(() -> sendNotices(SendSettingEnum.CREATE_CLUSTERFAILED.value(), WEB_HOOK, constructParamsForCluster(devopsClusterDTO, iamProject.getOrganizationId(), msg)),
+        doWithTryCatchAndLog(() -> sendNotices(SendSettingEnum.CREATE_CLUSTERFAILED.value(), WEB_HOOK, constructParamsForCluster(devopsClusterDTO, iamProject.getOrganizationId(), msg), iamProject.getId()),
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", SendSettingEnum.CREATE_CLUSTERFAILED.value(), ex));
     }
 
@@ -936,7 +937,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             devopsEnvironmentDTO.getId(),
                             devopsEnvironmentDTO.getName()
                     );
-                    sendNotices(code, WEB_HOOK, params);
+                    sendNotices(code, WEB_HOOK, params, projectDTO.getId());
                 },
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", code, ex));
     }
@@ -961,7 +962,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     if (Objects.isNull(projectDTO)) {
                         return;
                     }
-                    sendNotices(SendSettingEnum.ACTIVITE_CLUSTER.value(), WEB_HOOK, constructParamsForCluster(devopsClusterDTO, projectDTO.getOrganizationId(), null));
+                    sendNotices(SendSettingEnum.ACTIVITE_CLUSTER.value(), WEB_HOOK, constructParamsForCluster(devopsClusterDTO, projectDTO.getOrganizationId(), null), projectDTO.getId());
                 },
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", SendSettingEnum.ACTIVITE_CLUSTER, ex));
     }
@@ -974,7 +975,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     if (Objects.isNull(projectDTO)) {
                         return;
                     }
-                    sendNotices(SendSettingEnum.DELETE_CLUSTER.value(), WEB_HOOK, constructParamsForCluster(devopsClusterDTO, projectDTO.getOrganizationId(), null));
+                    sendNotices(SendSettingEnum.DELETE_CLUSTER.value(), WEB_HOOK, constructParamsForCluster(devopsClusterDTO, projectDTO.getOrganizationId(), null), projectDTO.getId());
                 },
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", SendSettingEnum.DELETE_CLUSTER.value(), ex));
     }
@@ -995,7 +996,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             .put("organizationId", devopsClusterDTO.getOrganizationId())
                             .put("msg", payload)
                             .build();
-                    sendNotices(value, WEB_HOOK, params);
+                    sendNotices(value, WEB_HOOK, params, devopsClusterDTO.getProjectId());
                 },
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", value, ex));
     }
@@ -1056,25 +1057,50 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         return constructReceiver(userId, user.getEmail(), user.getPhone(), user.getOrganizationId());
     }
 
-    private static MessageSender constructMessageSender(String sendSettingCode, List<Receiver> targetUsers, String receiveType, Map<String, String> params, Map<String, Object> additionalArgs) {
+    private static MessageSender constructMessageSender(String sendSettingCode, List<Receiver> targetUsers, String receiveType, Map<String, String> params, Map<String, Object> addition, Long projectId) {
         MessageSender messageSender = new MessageSender();
         messageSender.setTenantId(0L);
         messageSender.setReceiverAddressList(targetUsers);
         messageSender.setReceiverTypeCode(receiveType);
         messageSender.setArgs(params);
         messageSender.setMessageCode(sendSettingCode);
-        messageSender.setAdditionalInformation(additionalArgs);
+        if (addition == null) {
+            addition = new HashMap<>();
+        }
+        addition.putIfAbsent(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(), Objects.requireNonNull(projectId));
+        messageSender.setAdditionalInformation(addition);
+        return messageSender;
+    }
+
+    private static MessageSender constructOrganizationMessageSender(String sendSettingCode, List<Receiver> targetUsers, String receiveType, Map<String, String> params, Map<String, Object> addition, Long organizationId) {
+        MessageSender messageSender = new MessageSender();
+        messageSender.setTenantId(0L);
+        messageSender.setReceiverAddressList(targetUsers);
+        messageSender.setReceiverTypeCode(receiveType);
+        messageSender.setArgs(params);
+        messageSender.setMessageCode(sendSettingCode);
+        if (addition == null) {
+            addition = new HashMap<>();
+        }
+        addition.putIfAbsent(MessageAdditionalType.PARAM_TENANT_ID.getTypeName(), Objects.requireNonNull(organizationId));
+        messageSender.setAdditionalInformation(addition);
         return messageSender;
     }
 
     @Override
-    public void sendNotices(String sendSettingCode, List<Receiver> receivers, Map<String, String> params) {
+    public void sendNotices(String sendSettingCode, List<Receiver> receivers, Map<String, String> params, Long projectId) {
         doWithTryCatchAndLog(
-                () -> messageClient.async().sendMessage(constructMessageSender(sendSettingCode, receivers, null, params, null)),
+                () -> messageClient.async().sendMessage(constructMessageSender(sendSettingCode, receivers, null, params, null, projectId)),
                 ex -> LOGGER.info("Failed to send message with code {}", sendSettingCode));
     }
 
-    private void sendNotices(String sendSettingCode, String receiveType, Map<String, String> params) {
-        messageClient.async().sendMessage(constructMessageSender(sendSettingCode, null, receiveType, params, null));
+    public void sendOrganizationNotices(String sendSettingCode, List<Receiver> receivers, Map<String, String> params, Long organizationId) {
+        doWithTryCatchAndLog(
+                () -> messageClient.async().sendMessage(constructOrganizationMessageSender(sendSettingCode, receivers, null, params, null, organizationId)),
+                ex -> LOGGER.info("Failed to send message with code {}", sendSettingCode));
+    }
+
+    private void sendNotices(String sendSettingCode, String receiveType, Map<String, String> params, Long projectId) {
+        messageClient.async().sendMessage(constructMessageSender(sendSettingCode, null, receiveType, params, null, projectId));
     }
 }
