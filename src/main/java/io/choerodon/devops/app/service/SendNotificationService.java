@@ -26,7 +26,7 @@ public interface SendNotificationService {
      * @param receivers       目标用户
      * @param params          参数映射
      */
-    void sendNotices(String sendSettingCode, List<Receiver> receivers, Map<String, String> params);
+    void sendNotices(String sendSettingCode, List<Receiver> receivers, Map<String, String> params, Long projectId);
 
     /**
      * 创建应用服务发送webhook通知
