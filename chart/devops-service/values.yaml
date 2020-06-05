@@ -105,7 +105,7 @@ env:
     # 指定 cluster-agent 与本服务匹配的版本
     AGENT_VERSION: 0.19.0
     # cluster-agent 访问本服务的 websocket 地址
-    AGENT_SERVICEURL: ws://devops.example.com/agent/
+    AGENT_SERVICEURL: ws://devops.example.com/websocket
     # agent 的 helm chart 仓库地址
     AGENT_REPOURL: https://openchart.choerodon.com.cn/choerodon/c7n/
     # cert-manager 的 helm chart 仓库地址
@@ -150,7 +150,7 @@ resources:
 ## 插件相关配置
 plugins:
   # skywalking agent 镜像地址
-  skywalkingAgentImage: registry.cn-shanghai.aliyuncs.com/c7n/skywalking-agent:6.5.0
+  skywalkingAgentImage: registry.cn-shanghai.aliyuncs.com/c7n/skywalking-agent:6.6.0
 
 ## service 相关设置
 ## ref: http://kubernetes.io/docs/user-guide/services/
