@@ -169,11 +169,11 @@ service:
     # 服务端口
     http: 
       port: 8060
-      nodePort: 30106
+      nodePort: 30138
     # 管理端口
     actuator: 
       port: 8061
-      nodePort: 30107
+      nodePort: 30139
   ## externalIPs 设置
   # externalIPs:
   #   - externalIp1
