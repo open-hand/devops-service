@@ -41,7 +41,7 @@ spec:
       initContainers:
       - name: skywalking-agent
         image: {{ .Values.plugins.skywalkingAgentImage }}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         command:
         - sh
         - -c

@@ -5,7 +5,6 @@ import { Button } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
-import checkPermission from '../../utils/checkPermission';
 import { useCertificateStore } from './stores';
 import PermissionManage from './modals/permission';
 import CreateForm from './modals/create-form';
@@ -35,18 +34,6 @@ const AppService = withRouter(observer((props) => {
     certStore,
   } = useCertificateStore();
 
-  const [canDetail, setCanDetail] = useState(false);
-
-  useEffect(() => {
-    async function init() {
-      const res = await checkPermission({ projectId: id, code: 'choerodon.code.project.deploy.cluster.cert-management.ps.detail' });
-      if (res) {
-        setCanDetail(true);
-      }
-    }
-    init();
-  }, []);
-
   function refresh() {
     listDs.query();
   }
@@ -55,9 +42,9 @@ const AppService = withRouter(observer((props) => {
     return (
       <ClickText
         value={value}
-        clickAble={canDetail}
+        clickAble
         onClick={() => openModal('edit')}
-        permissionCode={['devops-service.project-certification.createOrUpdate']}
+        permissionCode={['choerodon.code.project.deploy.cluster.cert-management.ps.create']}
       />
     );
   }

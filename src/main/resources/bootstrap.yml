@@ -28,8 +28,8 @@ eureka:
   instance:
     # 以IP注册到注册中心
     preferIpAddress: ${EUREKA_INSTANCE_PREFER_IP_ADDRESS:true}
-    leaseRenewalIntervalInSeconds: 10
-    leaseExpirationDurationInSeconds: 30
+    leaseRenewalIntervalInSeconds: 3
+    leaseExpirationDurationInSeconds: 9
     # 服务的一些元数据信息
     metadata-map:
       VERSION: 1.3.0.RELEASE
@@ -37,5 +37,5 @@ eureka:
     serviceUrl:
       # 注册中心地址
       defaultZone: ${EUREKA_DEFAULT_ZONE:http://dev.hzero.org:8000/eureka}
-    registryFetchIntervalSeconds: 10
+    registryFetchIntervalSeconds: 3
     disable-delta: true

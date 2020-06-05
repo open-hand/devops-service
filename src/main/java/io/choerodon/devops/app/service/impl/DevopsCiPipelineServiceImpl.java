@@ -281,6 +281,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 devopsCiPipelineVO.setLatestExecuteStatus(pipelineRecordVOPageInfo.getContent().get(0).getStatus());
             }
             devopsCiPipelineVO.setPipelineRecordVOList(pipelineRecordVOPageInfo.getContent());
+            devopsCiPipelineVO.setHasMoreRecords(pipelineRecordVOPageInfo.getTotalElements() > DEFAULT_PIPELINE_RECORD_SIZE);
         });
 
         return devopsCiPipelineVOS;

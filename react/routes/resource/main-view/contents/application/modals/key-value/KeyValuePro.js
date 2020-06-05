@@ -134,7 +134,7 @@ const FormView = observer(() => {
       return false;
     }
 
-    const errorMsg = formatMessage({
+    const errorMsg = hasErrorKey ? '键值不能含空格及-、_、.以外的特殊字符，请检查输入' : formatMessage({
       id: hasRepeatKey ? 'configMap.keyRepeat' : `${title}.keyValueSpan`,
     });
 

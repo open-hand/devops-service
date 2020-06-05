@@ -11,7 +11,7 @@
     <parent>
         <groupId>io.choerodon</groupId>
         <artifactId>choerodon-framework-parent</artifactId>
-        <version>0.16.2-SNAPSHOT</version>
+        <version>0.17.0.RELEASE</version>
     </parent>
 
 
@@ -82,9 +82,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.hzero.starter</groupId>
-            <artifactId>hzero-starter-asgard</artifactId>
-            <version>${hzero.starter.version}</version>
+            <groupId>io.choerodon</groupId>
+            <artifactId>choerodon-starter-asgard</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -310,7 +309,23 @@
         </dependency>
 
     </dependencies>
+
     <build>
         <finalName>app</finalName>
+<!--        设置资源编译插件, 避免编译导致一些文件损坏不可用, 比如code-i.tgz这个文件-->
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <nonFilteredFileExtensions>
+                        <nonFilteredFileExtension>tgz</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>xml</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>yml</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>json</nonFilteredFileExtension>
+                    </nonFilteredFileExtensions>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 </project>

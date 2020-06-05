@@ -40,6 +40,7 @@ import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -169,6 +170,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         applicationDTO.setActive(true);
         applicationDTO.setSynchro(false);
         applicationDTO.setSkipCheckPermission(Boolean.TRUE);
+        applicationDTO.setToken(GenerateUUID.generateUUID());
 
         // 查询创建应用所在的gitlab应用组
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(applicationDTO.getProjectId());
