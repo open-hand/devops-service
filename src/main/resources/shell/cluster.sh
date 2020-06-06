@@ -1,6 +1,6 @@
 helm install --repo={REPOURL} \
     --namespace=choerodon \
-    --name={NAME} \
+    {NAME} \
     --version={VERSION} \
     --set config.connect={SERVICEURL} \
     --set config.token={TOKEN} \
