@@ -326,7 +326,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     sendNotices(
                             SendSettingEnum.CREATE_APPSERVICE_VERSION.value(),
-                            ArrayUtil.singleAsList(constructReceiver(appServiceVersionDTO.getCreatedBy())),
+                            WEB_HOOK,
                             params, projectDTO.getId()
                     );
                 },
