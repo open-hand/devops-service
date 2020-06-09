@@ -805,21 +805,29 @@ const AddTask = observer(() => {
               name="bzmc"
             />
             {
-              steps.find(s => s.checked) && steps.find(s => s.checked).type === 'Maven' ? (
+              steps.find(s => s.checked) && steps.find(s => s.checked).type === 'Maven' ? (<div>
+                <div className="c7ncd-pipeline-add-task-tips">
+                  <span>Setting配置</span>
+                  <Tooltip
+                    title="用于运行过程中，在项目根目录下生成settings文件；您可在脚本中加上 -s 或者 -gs 参数进行使用"
+                    theme="light"
+                  >
+                    <Icon type="help" />
+                  </Tooltip>
+                </div>
                 <SelectBox
-                  style={{ marginTop: 30 }}
                   onChange={handleChangePrivate}
                   name="private"
-                  label={(
-                    <span>Setting配置
-                      <Tooltip
-                        title="123"
-                        theme="light"
-                      >
-                        <Icon type="help" />
-                      </Tooltip>
-                    </span>
-                  )}
+                  // label={(
+                  //   <span>Setting配置
+                  //     <Tooltip
+                  //       title="123"
+                  //       theme="light"
+                  //     >
+                  //       <Icon type="help" />
+                  //     </Tooltip>
+                  //   </span>
+                  // )}
                 >
                   <Option value="custom">
                     <span style={{ display: 'inline-flex', alignItems: 'center' }}>
@@ -866,7 +874,7 @@ const AddTask = observer(() => {
                     </span>
                   </Option>
                 </SelectBox>
-              ) : ''
+              </div>) : ''
             }
           </div>
           {
