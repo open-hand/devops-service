@@ -1351,6 +1351,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     private void installResource(List<Resource> resources, AppServiceInstanceDTO appServiceInstanceDTO) {
         try {
+            if (CollectionUtils.isEmpty(resources)) {
+                // 可能为空的情况是prometheus的资源数据过大(80M), 所以agent处理将resource字段设置为null
+                logger.info("InstallResource: resource empty for instance with code: {}", appServiceInstanceDTO.getCode());
+                return;
+            }
             for (Resource resource : resources) {
                 Long instanceId = appServiceInstanceDTO.getId();
                 if (resource.getKind().equals(ResourceType.INGRESS.getType())) {
