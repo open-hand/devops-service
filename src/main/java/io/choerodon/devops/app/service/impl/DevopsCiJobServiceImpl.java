@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.api.vo.SonarInfoVO;
 import org.hzero.boot.file.FileClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +65,12 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
      */
     @Value("${ci.max.file.bytes:209715200}")
     private Long maxFileSize;
+    @Value("${services.sonarqube.url:}")
+    private String sonarqubeUrl;
+    @Value("${services.sonarqube.username:}")
+    private String userName;
+    @Value("${services.sonarqube.password:}")
+    private String password;
 
     private DevopsCiJobMapper devopsCiJobMapper;
     private GitlabServiceClientOperator gitlabServiceClientOperator;
@@ -302,5 +309,10 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         }
         DevopsCiJobArtifactRecordDTO recordDTO = devopsCiJobArtifactRecordMapper.queryByPipelineIdAndName(ciPipelineId, artifactName);
         return recordDTO == null ? null : recordDTO.getFileUrl();
+    }
+
+    @Override
+    public SonarInfoVO getSonarDefault() {
+        return new SonarInfoVO(userName, password, sonarqubeUrl);
     }
 }

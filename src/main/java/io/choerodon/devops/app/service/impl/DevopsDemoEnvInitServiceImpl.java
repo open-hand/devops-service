@@ -2,19 +2,20 @@ package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import javax.annotation.PostConstruct;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
+import io.choerodon.devops.infra.dto.DevopsBranchDTO;
+import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
+import io.choerodon.devops.infra.enums.CommandStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StreamUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -82,6 +83,8 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     private DevopsSagaHandler devopsSagaHandler;
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    private DevopsBranchService devopsBranchService;
 
     private Gson gson = new Gson();
 
@@ -141,11 +144,38 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         }
         createFakeApplicationVersion(applicationRepDTO.getId());
 
+        // 7.读出应用服务的分支存入devops_branch
+        createDevopsBranch(gitlabProjectId, gitlabUserId, applicationRepDTO, organizationRegisterEventPayload.getUser().getId());
+
         // 7. 发布应用
 //        ApplicationReleasingVO applicationReleasingDTO = demoDataVO.getApplicationRelease();
 //        applicationReleasingDTO.setAppServiceId(applicationRepDTO.getId());
 //        applicationReleasingDTO.setAppVersions(Collections.singletonList(getApplicationVersion(projectId, applicationRepDTO.getId())));
 //        applicationMarketService.create(projectId, applicationReleasingDTO);
+    }
+
+    private void createDevopsBranch(Integer gitlabProjectId, Integer gitlabUserId, AppServiceRepVO appServiceRepVO, Long userId) {
+        List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listBranch(gitlabProjectId, gitlabUserId);
+        if (!CollectionUtils.isEmpty(branchDTOS)) {
+            branchDTOS.forEach(branchDTO -> {
+                CommitDTO commitDTO = branchDTO.getCommit();
+                Date checkoutDate = commitDTO.getCommittedDate();
+                String checkoutSha = commitDTO.getId();
+                DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
+                devopsBranchDTO.setAppServiceId(appServiceRepVO.getId());
+                devopsBranchDTO.setStatus(CommandStatus.SUCCESS.getStatus());
+                devopsBranchDTO.setCheckoutDate(checkoutDate);
+                devopsBranchDTO.setCheckoutCommit(checkoutSha);
+                devopsBranchDTO.setBranchName(branchDTO.getName());
+                devopsBranchDTO.setUserId(userId);
+
+                devopsBranchDTO.setLastCommitDate(checkoutDate);
+                devopsBranchDTO.setLastCommit(checkoutSha);
+                devopsBranchDTO.setLastCommitMsg(commitDTO.getMessage());
+                devopsBranchDTO.setLastCommitUser(userId);
+                devopsBranchService.baseCreate(devopsBranchDTO);
+            });
+        }
     }
 
     /**
@@ -284,7 +314,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
             byte[] bytes = StreamUtils.copyToByteArray(this.getClass().getClassLoader().getResourceAsStream(tgzFilePath));
             MockMultipartFile multipartFile = new MockMultipartFile("code-i.tgz", "code-i.tgz", "application/tgz", bytes);
             //harborConfigId需要传入
-            appServiceVersionService.create(demoDataVO.getAppServiceVersionDTO().getImage(),null, applicationService.baseQuery(appServiceId).getToken(), demoDataVO.getAppServiceVersionDTO().getVersion(), demoDataVO.getAppServiceVersionDTO().getCommit(), multipartFile);
+            appServiceVersionService.create(demoDataVO.getAppServiceVersionDTO().getImage(), null, applicationService.baseQuery(appServiceId).getToken(), demoDataVO.getAppServiceVersionDTO().getVersion(), demoDataVO.getAppServiceVersionDTO().getCommit(), multipartFile);
         } catch (IOException e) {
             logger.error("can not find file {}", tgzFilePath);
             throw new CommonException(e);

@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,7 @@ import io.choerodon.swagger.annotation.Permission;
 public class DevopsCiJobController {
     private DevopsCiJobService devopsCiJobService;
 
+
     public DevopsCiJobController(DevopsCiJobService devopsCiJobService) {
         this.devopsCiJobService = devopsCiJobService;
     }
@@ -36,6 +38,13 @@ public class DevopsCiJobController {
             @PathVariable(name = "project_id") Long projectId,
             @RequestBody SonarQubeConfigVO sonarQubeConfigVO) {
         return ResponseEntity.ok(devopsCiJobService.sonarConnect(projectId, sonarQubeConfigVO));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @GetMapping("/sonar/default")
+    @ApiOperation("sonar默认配置")
+    public ResponseEntity<SonarInfoVO> getSonarDefault() {
+        return ResponseEntity.ok(devopsCiJobService.getSonarDefault());
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})

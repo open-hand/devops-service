@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
@@ -129,4 +130,6 @@ public interface DevopsCiJobService {
      * @param artifactName 软件包名称
      */
     String queryArtifactUrl(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName);
+
+    SonarInfoVO getSonarDefault();
 }
