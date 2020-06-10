@@ -1,5 +1,11 @@
 package io.choerodon.devops.api.vo;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+/**
+ * @author lihao
+ */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CiVariableVO {
 
     private String key;

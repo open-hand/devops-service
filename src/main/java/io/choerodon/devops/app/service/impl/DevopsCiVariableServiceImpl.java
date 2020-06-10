@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.CiVariableVO;
 import io.choerodon.devops.api.vo.UserAttrVO;
@@ -14,9 +15,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+/**
+ * @author lihao
+ */
 @Service
 public class DevopsCiVariableServiceImpl implements DevopsCiVariableService {
+    private static final String LEVEL_PROJECT = "project";
+    private static final String LEVEL_APP_SERVICE = "app";
+
+
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
 
@@ -30,16 +39,52 @@ public class DevopsCiVariableServiceImpl implements DevopsCiVariableService {
     private AppServiceService appServiceService;
 
     @Override
-    public List<CiVariableVO> listGlobalVariable(Long projectId) {
-        DevopsProjectDTO devopsProjectDTO = projectService.queryById(projectId);
+    public List<CiVariableVO> listKeys(Long projectId, String level, Long appServiceId) {
         UserAttrVO userAttrVO = userAttrService.queryByUserId(DetailsHelper.getUserDetails().getUserId());
-        return gitlabServiceClientOperator.listProjectVariable(devopsProjectDTO.getDevopsAppGroupId().intValue(), userAttrVO.getGitlabUserId().intValue());
+        switch (level) {
+            case LEVEL_PROJECT:
+                DevopsProjectDTO devopsProjectDTO = projectService.queryById(projectId);
+                return eraseValue(gitlabServiceClientOperator.listProjectVariable(devopsProjectDTO.getDevopsAppGroupId().intValue(), userAttrVO.getGitlabUserId().intValue()));
+            case LEVEL_APP_SERVICE:
+                if (appServiceId == null) {
+                    return null;
+                }
+                AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+                return eraseValue(gitlabServiceClientOperator.listAppServiceVariable(appServiceDTO.getGitlabProjectId(), userAttrVO.getGitlabUserId().intValue()));
+            default:
+                throw new CommonException("error.level.error");
+        }
     }
 
     @Override
-    public List<CiVariableVO> listAppServiceVariable(Long projectId, Long appServiceId) {
-        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+    public List<CiVariableVO> listValues(Long projectId, String level, Long appServiceId, List<String> keys) {
+        List<CiVariableVO> ciVariableVOList;
+
         UserAttrVO userAttrVO = userAttrService.queryByUserId(DetailsHelper.getUserDetails().getUserId());
-        return gitlabServiceClientOperator.listAppServiceVariable(appServiceDTO.getGitlabProjectId(), userAttrVO.getGitlabUserId().intValue());
+        switch (level) {
+            case LEVEL_PROJECT:
+                DevopsProjectDTO devopsProjectDTO = projectService.queryById(projectId);
+                ciVariableVOList = gitlabServiceClientOperator.listProjectVariable(devopsProjectDTO.getDevopsAppGroupId().intValue(), userAttrVO.getGitlabUserId().intValue());
+                break;
+            case LEVEL_APP_SERVICE:
+                if (appServiceId == null) {
+                    return null;
+                }
+                AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+                ciVariableVOList = gitlabServiceClientOperator.listAppServiceVariable(appServiceDTO.getGitlabProjectId(), userAttrVO.getGitlabUserId().intValue());
+                break;
+            default:
+                throw new CommonException("error.level.error");
+        }
+        if (ciVariableVOList == null) {
+            throw new CommonException("error.level.error");
+        }
+        return ciVariableVOList.stream()
+                .filter(ciVariableVO -> keys.contains(ciVariableVO.getKey()))
+                .collect(Collectors.toList());
+    }
+
+    private List<CiVariableVO> eraseValue(List<CiVariableVO> ciVariableVOList) {
+        return ciVariableVOList.stream().peek(ciVariableVO -> ciVariableVO.setValue(null)).collect(Collectors.toList());
     }
 }
