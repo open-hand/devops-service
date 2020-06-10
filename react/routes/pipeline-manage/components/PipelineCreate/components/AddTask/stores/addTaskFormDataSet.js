@@ -44,6 +44,10 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       //
       // }),
     }, {
+      name: 'pplx',
+      type: 'string',
+      label: '匹配类型',
+    }, {
       name: 'triggerRefs',
       type: 'string',
       multiple: true,

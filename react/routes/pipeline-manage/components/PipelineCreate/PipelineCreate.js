@@ -29,6 +29,8 @@ const PipelineCreate = observer(() => {
     mainStore,
   } = usePipelineCreateStore();
 
+  const [expandIf, setExpandIf] = useState(false);
+
   useEffect(() => {
     if (dataSource) {
       const { name, appServiceId, image, stageList } = dataSource;
@@ -155,18 +157,25 @@ const PipelineCreate = observer(() => {
           help="此处仅能看到您有开发权限的启用状态的应用服务，并要求该应用服务必须有master分支，且尚未有关联的CI流水线"
         />
         <TextField style={{ display: 'none' }} />
-        <Select
-          // disabled={
-          //   !!(PipelineCreateFormDataSet.current && PipelineCreateFormDataSet.current.get('selectImage') === '0')
-          // }
-          combo
-          newLine
-          colSpan={2}
-          name="image"
-          onChange={handleChangeSelectImage}
-        >
-          <Option value={createUseStore.getDefaultImage}>{createUseStore.getDefaultImage}</Option>
-        </Select>
+        <div className="advanced_text" style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
+          高级设置(默认收起)<Icon style={{ fontSize: 18 }} type={expandIf ? 'expand_less' : 'expand_more'} />
+        </div>
+        {
+          expandIf ? (
+            <Select
+              // disabled={
+              //   !!(PipelineCreateFormDataSet.current && PipelineCreateFormDataSet.current.get('selectImage') === '0')
+              // }
+              combo
+              newLine
+              colSpan={2}
+              name="image"
+              onChange={handleChangeSelectImage}
+            >
+              <Option value={createUseStore.getDefaultImage}>{createUseStore.getDefaultImage}</Option>
+            </Select>
+          ) : ''
+        }
         {/* <SelectBox name="triggerType"> */}
         {/*  <Option value="auto">自动触发</Option> */}
         {/*  <Option disabled value="F">手动触发</Option> */}
