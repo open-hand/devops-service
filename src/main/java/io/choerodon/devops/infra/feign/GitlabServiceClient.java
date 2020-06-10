@@ -1,20 +1,20 @@
 package io.choerodon.devops.infra.feign;
 
-import java.util.List;
-import java.util.Map;
-import javax.validation.Valid;
-
+import io.choerodon.devops.api.vo.CiVariableVO;
+import io.choerodon.devops.api.vo.FileCreationVO;
+import io.choerodon.devops.infra.dto.RepositoryFileDTO;
+import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
+import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.devops.api.vo.FileCreationVO;
-import io.choerodon.devops.infra.dto.RepositoryFileDTO;
-import io.choerodon.devops.infra.dto.gitlab.*;
-import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
-import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Map;
 
 /**
  * gitlab服务 feign客户端
@@ -104,7 +104,7 @@ public interface GitlabServiceClient {
     @PutMapping(value = "/v1/projects/{projectId}/variables")
     ResponseEntity<List<Map<String, Object>>> batchAddProjectVariable(@PathVariable("projectId") Integer projectId,
                                                                       @RequestParam("userId") Integer userId,
-                                                                      @RequestBody @Valid List<VariableDTO> variableDTODTOS);
+                                                                      @RequestBody @Valid List<CiVariableVO> variableDTODTOS);
 
     @DeleteMapping(value = "/v1/projects/{projectId}")
     ResponseEntity deleteProjectById(@PathVariable("projectId") Integer projectId,
@@ -124,9 +124,27 @@ public interface GitlabServiceClient {
                                                         @RequestParam("projectName") String projectName);
 
 
+    /**
+     * 列举出gitlab项目的ci variable
+     *
+     * @param projectId gitlab项目id
+     * @param userId    gitlab用户id
+     * @return
+     */
     @GetMapping(value = "/v1/projects/{projectId}/variable")
-    ResponseEntity<List<VariableDTO>> listVariable(@PathVariable("projectId") Integer projectId,
-                                                   @RequestParam("userId") Integer userId);
+    ResponseEntity<List<CiVariableVO>> listAppServiceVariable(@PathVariable("projectId") Integer projectId,
+                                                              @RequestParam("userId") Integer userId);
+
+    /**
+     * 列举出gitlab项目组的ci variable
+     *
+     * @param groupId 组id
+     * @param userId  gitlab用户id
+     * @return
+     */
+    @GetMapping(value = "/v1/groups/{groupId}/variable")
+    ResponseEntity<List<CiVariableVO>> listProjectVariable(@PathVariable("groupId") Integer groupId,
+                                                           @RequestParam("userId") Integer userId);
 
 
     @PostMapping(value = "/v1/users/{userId}/impersonation_tokens")

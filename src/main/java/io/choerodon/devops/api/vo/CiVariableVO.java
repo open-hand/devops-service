@@ -1,6 +1,6 @@
-package io.choerodon.devops.infra.dto.gitlab;
+package io.choerodon.devops.api.vo;
 
-public class VariableDTO {
+public class CiVariableVO {
 
     private String key;
     private String value;
@@ -19,5 +19,13 @@ public class VariableDTO {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        return "CiVariableVO{" +
+                "key='" + key + '\'' +
+                ", value='" + value + '\'' +
+                '}';
     }
 }
