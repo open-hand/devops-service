@@ -3,7 +3,7 @@
   "routeName": "devops",
   "description": "",
   "license": "ISC",
-  "version": "0.22.0",
+  "version": "0.23.0",
   "keywords": [],
   "contributors": [
     "choerodon"
@@ -23,10 +23,10 @@
   },
   "peerDependencies": {
     "@choerodon/boot": "0.21.2",
-    "@choerodon/master": "0.22.0",
-    "choerodon-ui": "0.8.x"
+    "@choerodon/master": "0.22.0"
   },
   "dependencies": {
+    "choerodon-ui": "0.8.x",
     "diff-match-patch": "^1.0.4",
     "echarts": "^4.2.1",
     "echarts-for-react": "^2.0.12",

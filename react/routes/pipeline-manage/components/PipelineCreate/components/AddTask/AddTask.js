@@ -50,6 +50,7 @@ const AddTask = observer(() => {
   const [ConnectLoading, setConnectLoading] = useState(false);
   const [customYaml, setCustomYaml] = useState(useStore.getYaml.custom);
   const [defaultImage, setDefaultImage] = useState('');
+  const [expandIf, setExpandIf] = useState(false);
 
   useEffect(() => {
     if (steps.length > 0) {
@@ -946,20 +947,25 @@ const AddTask = observer(() => {
     }
   };
 
-  const getImageDom = () => (
-    <Select
-      // disabled={
-      //     !!(AddTaskFormDataSet.current && AddTaskFormDataSet.current.get('selectImage') === '0')
-      //   }
-      onChange={handleChangeImage}
-      newLine
-      combo
-      colSpan={2}
-      name="image"
-    >
-      <Option value={defaultImage}>{`${defaultImage}${defaultImage === useStore.getDefaultImage ? '(默认)' : ''}`}</Option>
-    </Select>
-  );
+  const getImageDom = () => [
+    <div colSpan={2} newLine className="advanced_text" style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
+      高级设置(默认收起)<Icon style={{ fontSize: 18 }} type={expandIf ? 'expand_less' : 'expand_more'} />
+    </div>,
+    expandIf ? (
+      <Select
+          // disabled={
+          //     !!(AddTaskFormDataSet.current && AddTaskFormDataSet.current.get('selectImage') === '0')
+          //   }
+        onChange={handleChangeImage}
+        newLine
+        combo
+        colSpan={2}
+        name="image"
+      >
+        <Option value={defaultImage}>{`${defaultImage}${defaultImage === useStore.getDefaultImage ? '(默认)' : ''}`}</Option>
+      </Select>
+    ) : '',
+  ];
 
   return (
     <React.Fragment>
@@ -968,20 +974,28 @@ const AddTask = observer(() => {
           <Option value="build">构建</Option>
           <Option value="sonar">代码检查</Option>
           <Option value="custom">自定义</Option>
-          <Option value="chart">发布c7n版本</Option>
+          <Option value="chart">发布Chart</Option>
         </Select>
         {
           AddTaskFormDataSet.current.get('type') !== 'custom' ? [
             <TextField name="name" />,
             <TextField name="glyyfw" />,
-            <Select combo searchable name="triggerRefs" showHelp="tooltip" help="您可以在此输入或选择触发该任务的分支类型，若不填写，则默认为所有分支或tag">
-              <Option value="master">master</Option>
-              <Option value="feature">feature</Option>
-              <Option value="bugfix">bugfix</Option>
-              <Option value="hotfix">hotfix</Option>
-              <Option value="release">release</Option>
-              <Option value="tag">tag</Option>
-            </Select>,
+            <div style={{ display: 'inline-flex' }}>
+              <Select style={{ marginRight: 8 }} name="pplx">
+                <Option value="qzpp">前缀匹配</Option>
+                <Option value="zzpp">正则匹配</Option>
+                <Option value="jqpp">精确匹配</Option>
+                <Option value="jqpc">精确排除</Option>
+              </Select>
+              <Select combo searchable name="triggerRefs" showHelp="tooltip" help="您可以在此输入或选择触发该任务的分支类型，若不填写，则默认为所有分支或tag">
+                <Option value="master">master</Option>
+                <Option value="feature">feature</Option>
+                <Option value="bugfix">bugfix</Option>
+                <Option value="hotfix">hotfix</Option>
+                <Option value="release">release</Option>
+                <Option value="tag">tag</Option>
+              </Select>
+            </div>,
             getImageDom(),
             AddTaskFormDataSet.current.get('type') !== 'chart' ? getMissionOther() : '',
           ] : [
