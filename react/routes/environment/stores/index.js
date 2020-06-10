@@ -20,7 +20,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     } = props;
     const intlPrefix = 'c7ncd.env';
     const envStore = useStore();
-    const treeDs = useMemo(() => new DataSet(TreeDataSet({ id, store: envStore, formatMessage, intlPrefix, organizationId, projectName })), [id]);
+    const treeDs = useMemo(() => new DataSet(TreeDataSet({ projectId: id, store: envStore, formatMessage, intlPrefix, organizationId, projectName })), [id]);
 
     const value = {
       ...props,
