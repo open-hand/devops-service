@@ -71,11 +71,11 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 .forEach(gitlabGroupMemberVO -> {
                     try {
                         List<String> userMemberRoleList = gitlabGroupMemberVO.getRoleLabels();
-                        if (userMemberRoleList == null) {
-                            userMemberRoleList = new ArrayList<>();
+                        if (CollectionUtils.isEmpty(userMemberRoleList)) {
                             LOGGER.info("user member role is empty");
                             // 用户成员角色为空时，相当于删除该用户在此项目下的成员角色
                             deleteGitlabGroupMemberRole(gitlabGroupMemberVOList);
+                            return;
                         }
                         MemberHelper memberHelper = getGitlabGroupMemberRole(userMemberRoleList);
                         operation(gitlabGroupMemberVO.getResourceId(),
