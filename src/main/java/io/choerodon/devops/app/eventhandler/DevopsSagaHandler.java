@@ -30,13 +30,13 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.app.service.impl.UpdateAppUserPermissionServiceImpl;
 import io.choerodon.devops.app.service.impl.UpdateEnvUserPermissionServiceImpl;
 import io.choerodon.devops.app.service.impl.UpdateUserPermissionService;
+import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
 import io.choerodon.devops.infra.dto.PipelineTaskRecordDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.PipelineNoticeType;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
@@ -335,7 +335,7 @@ public class DevopsSagaHandler {
             pipelineService.updateStatus(pipelineRecordId, null, WorkFlowStatus.FAILED.toValue(), e.getMessage());
             Long userId = GitUserNameUtil.getUserId().longValue();
             sendNotificationService.sendPipelineNotice(pipelineRecordId,
-                    PipelineNoticeType.PIPELINEFAILED.toValue(),
+                    MessageCodeConstants.PIPELINE_FAILED,
                     userId, GitUserNameUtil.getEmail(), new HashMap<>());
             LOGGER.info("send pipeline failed message to the user. The user id is {}", userId);
         }

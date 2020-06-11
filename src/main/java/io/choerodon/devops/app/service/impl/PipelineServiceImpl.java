@@ -33,12 +33,16 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineTaskDTO;
-import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.CommandType;
+import io.choerodon.devops.infra.enums.DeployType;
+import io.choerodon.devops.infra.enums.PipelineStatus;
+import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.feign.HzeroMessageClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
@@ -411,7 +415,7 @@ public class PipelineServiceImpl implements PipelineService {
                             break;
                         }
                     } else {
-                        sendNotificationService.sendPipelineAuditMassage(PipelineNoticeType.PIPELINEPASS.toValue(), auditUser, recordRelDTO.getPipelineRecordId(), stageRecordDTO.getStageName(), stageRecordDTO.getStageId());
+                        sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_PASS, auditUser, recordRelDTO.getPipelineRecordId(), stageRecordDTO.getStageName(), stageRecordDTO.getStageId());
                     }
                     updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), WorkFlowStatus.RUNNING.toValue(), null);
                     startNextTask(taskRecordDTO.getId(), recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
@@ -440,7 +444,7 @@ public class PipelineServiceImpl implements PipelineService {
                     } else {
                         startEmptyStage(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
                     }
-                    sendNotificationService.sendPipelineAuditMassage(PipelineNoticeType.PIPELINEPASS.toValue(), auditUser, recordRelDTO.getPipelineRecordId(), stageRecordDTO.getStageName(), stageRecordDTO.getStageId());
+                    sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_PASS, auditUser, recordRelDTO.getPipelineRecordId(), stageRecordDTO.getStageName(), stageRecordDTO.getStageId());
                 } else {
                     updateStatus(recordRelDTO.getPipelineRecordId(), null, status, null);
                 }
@@ -862,7 +866,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     private void sendFailedSiteMessage(Long pipelineRecordId, Long userId) {
         sendNotificationService.sendPipelineNotice(pipelineRecordId,
-                PipelineNoticeType.PIPELINEFAILED.toValue(), userId, null, null);
+                MessageCodeConstants.PIPELINE_FAILED, userId, null, null);
     }
 
     /**
@@ -1160,7 +1164,7 @@ public class PipelineServiceImpl implements PipelineService {
                 LOGGER.info("任务成功了");
                 recordE.setStatus(WorkFlowStatus.SUCCESS.toValue());
                 pipelineRecordService.baseUpdate(recordE);
-                sendNotificationService.sendPipelineNotice(recordE.getId(), PipelineNoticeType.PIPELINESUCCESS.toValue(), recordE.getCreatedBy(), null, null);
+                sendNotificationService.sendPipelineNotice(recordE.getId(), MessageCodeConstants.PIPELINE_SUCCESS, recordE.getCreatedBy(), null, null);
             } else {
                 //更新下一个阶段状态
                 startNextStageRecord(stageRecordId, recordE);
@@ -1208,7 +1212,7 @@ public class PipelineServiceImpl implements PipelineService {
                 }
                 HashMap<String, String> params = new HashMap<>();
                 params.put(STAGE_NAME, pipelineStageRecordService.baseQueryById(stageRecordId).getStageName());
-                sendNotificationService.sendPipelineNotice(recordE.getId(), PipelineNoticeType.PIPELINEAUDIT.toValue(), userList, params);
+                sendNotificationService.sendPipelineNotice(recordE.getId(), MessageCodeConstants.PIPELINE_AUDIT, userList, params);
                 updateStatus(recordE.getId(), null, WorkFlowStatus.PENDINGCHECK.toValue(), null);
             }
         } else {
@@ -1234,7 +1238,7 @@ public class PipelineServiceImpl implements PipelineService {
         } else {
             updateStatus(pipelineRecordId, null, WorkFlowStatus.SUCCESS.toValue(), null);
             sendNotificationService.sendPipelineNotice(pipelineRecordId,
-                    PipelineNoticeType.PIPELINESUCCESS.toValue(), pipelineRecordDTO.getCreatedBy(), null, null);
+                    MessageCodeConstants.PIPELINE_SUCCESS, pipelineRecordDTO.getCreatedBy(), null, null);
         }
     }
 
@@ -1257,7 +1261,7 @@ public class PipelineServiceImpl implements PipelineService {
             }
             HashMap<String, String> params = new HashMap<>();
             params.put(STAGE_NAME, pipelineStageRecordService.baseQueryById(stageRecordId).getStageName());
-            sendNotificationService.sendPipelineNotice(pipelineRecordId, PipelineNoticeType.PIPELINEAUDIT.toValue(), userList, params);
+            sendNotificationService.sendPipelineNotice(pipelineRecordId, MessageCodeConstants.PIPELINE_AUDIT, userList, params);
         }
     }
 
@@ -1454,7 +1458,7 @@ public class PipelineServiceImpl implements PipelineService {
         } else {
             status = WorkFlowStatus.STOP.toValue();
             auditUser = auditUser.contains(pipelineRecordDTO.getCreatedBy().toString()) ? auditUser : auditUser + "," + pipelineRecordDTO.getCreatedBy();
-            sendNotificationService.sendPipelineAuditMassage(PipelineNoticeType.PIPELINESTOP.toValue(), auditUser, pipelineRecordDTO.getId(), pipelineStageRecordDTO.getStageName(), pipelineStageRecordDTO.getStageId());
+            sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_STOP, auditUser, pipelineRecordDTO.getId(), pipelineStageRecordDTO.getStageName(), pipelineStageRecordDTO.getStageId());
         }
         return status;
     }
