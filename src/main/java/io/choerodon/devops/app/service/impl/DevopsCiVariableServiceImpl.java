@@ -44,17 +44,14 @@ public class DevopsCiVariableServiceImpl implements DevopsCiVariableService {
     @Override
     public Map<String, List<CiVariableVO>> listKeys(Long projectId, Long appServiceId) {
         Map<String, List<CiVariableVO>> keys = new HashMap<>();
-        List<CiVariableVO> ciVariableVOSOnProject = new ArrayList<>();
-        List<CiVariableVO> ciVariableVOSOnApp = new ArrayList<>();
-        UserAttrVO userAttrVO = userAttrService.queryByUserId(DetailsHelper.getUserDetails().getUserId());
-        DevopsProjectDTO devopsProjectDTO = projectService.queryById(projectId);
-        ciVariableVOSOnProject.addAll(gitlabServiceClientOperator.listProjectVariable(devopsProjectDTO.getDevopsAppGroupId().intValue(), userAttrVO.getGitlabUserId().intValue()));
+        List<CiVariableVO> ciVariableVOListOnProject = new ArrayList<>();
+        List<CiVariableVO> ciVariableVOListOnApp = new ArrayList<>();
+        ciVariableVOListOnProject.addAll(listKeysOnProject(projectId));
         if (appServiceId != null) {
-            AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
-            ciVariableVOSOnApp.addAll(gitlabServiceClientOperator.listAppServiceVariable(appServiceDTO.getGitlabProjectId(), userAttrVO.getGitlabUserId().intValue()));
+            ciVariableVOListOnApp.addAll(listKeysOnApp(appServiceId));
         }
-        keys.put("project", eraseValue(ciVariableVOSOnProject));
-        keys.put("app", eraseValue(ciVariableVOSOnApp));
+        keys.put(LEVEL_PROJECT, eraseValue(ciVariableVOListOnProject));
+        keys.put(LEVEL_APP_SERVICE, eraseValue(ciVariableVOListOnApp));
         return keys;
     }
 
@@ -73,6 +70,91 @@ public class DevopsCiVariableServiceImpl implements DevopsCiVariableService {
                 return gitlabServiceClientOperator.listAppServiceVariable(appServiceDTO.getGitlabProjectId(), userAttrVO.getGitlabUserId().intValue());
             default:
                 throw new CommonException("error.level.error");
+        }
+    }
+
+    @Override
+    public void save(Long projectId, String level, Long appServiceId, List<CiVariableVO> ciVariableVOList) {
+        List<String> keysToDelete;
+        List<String> newKeys = ciVariableVOList.stream().map(CiVariableVO::getKey).collect(Collectors.toList());
+        switch (level) {
+            case LEVEL_PROJECT:
+                List<CiVariableVO> existCiVariablesOnProject = listKeysOnProject(projectId);
+                keysToDelete = existCiVariablesOnProject.stream().filter(ciVariableVO -> !newKeys.contains(ciVariableVO.getKey()))
+                        .map(CiVariableVO::getKey)
+                        .collect(Collectors.toList());
+                performUpdate(projectId, level, appServiceId, keysToDelete, ciVariableVOList);
+                break;
+            case LEVEL_APP_SERVICE:
+                List<CiVariableVO> existCiVariablesOnApp = listKeysOnApp(appServiceId);
+                keysToDelete = existCiVariablesOnApp.stream().filter(ciVariableVO -> !newKeys.contains(ciVariableVO.getKey()))
+                        .map(CiVariableVO::getKey)
+                        .collect(Collectors.toList());
+                performUpdate(projectId, level, appServiceId, keysToDelete, ciVariableVOList);
+                break;
+            default:
+                throw new CommonException("error.level.error");
+        }
+    }
+
+    @Override
+    public List<CiVariableVO> batchUpdate(Long projectId, String level, Long appServiceId, List<CiVariableVO> ciVariableVOList) {
+        UserAttrVO userAttrVO = userAttrService.queryByUserId(DetailsHelper.getUserDetails().getUserId());
+        switch (level) {
+            case LEVEL_PROJECT:
+                DevopsProjectDTO devopsProjectDTO = projectService.queryById(projectId);
+                return gitlabServiceClientOperator.batchSaveGroupVariable(devopsProjectDTO.getDevopsAppGroupId().intValue(), userAttrVO.getGitlabUserId().intValue(), ciVariableVOList);
+            case LEVEL_APP_SERVICE:
+                if (appServiceId == null) {
+                    return null;
+                }
+                AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+                return gitlabServiceClientOperator.batchSaveProjectVariable(appServiceDTO.getGitlabProjectId(), userAttrVO.getGitlabUserId().intValue(), ciVariableVOList);
+            default:
+                throw new CommonException("error.level.error");
+        }
+    }
+
+    @Override
+    public void batchDelete(Long projectId, String level, Long appServiceId, List<String> keys) {
+        UserAttrVO userAttrVO = userAttrService.queryByUserId(DetailsHelper.getUserDetails().getUserId());
+        switch (level) {
+            case LEVEL_PROJECT:
+                DevopsProjectDTO devopsProjectDTO = projectService.queryById(projectId);
+                gitlabServiceClientOperator.batchDeleteGroupVariable(devopsProjectDTO.getDevopsAppGroupId().intValue(), userAttrVO.getGitlabUserId().intValue(), keys);
+                break;
+            case LEVEL_APP_SERVICE:
+                if (appServiceId == null) {
+                    return;
+                }
+                AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+                gitlabServiceClientOperator.batchDeleteProjectVariable(appServiceDTO.getGitlabProjectId(), userAttrVO.getGitlabUserId().intValue(), keys);
+                break;
+            default:
+                throw new CommonException("error.level.error");
+        }
+    }
+
+    @Override
+    public List<CiVariableVO> listKeysOnProject(Long projectId) {
+        UserAttrVO userAttrVO = userAttrService.queryByUserId(DetailsHelper.getUserDetails().getUserId());
+        DevopsProjectDTO devopsProjectDTO = projectService.queryById(projectId);
+        return gitlabServiceClientOperator.listProjectVariable(devopsProjectDTO.getDevopsAppGroupId().intValue(), userAttrVO.getGitlabUserId().intValue());
+    }
+
+    @Override
+    public List<CiVariableVO> listKeysOnApp(Long appServiceId) {
+        UserAttrVO userAttrVO = userAttrService.queryByUserId(DetailsHelper.getUserDetails().getUserId());
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+        return gitlabServiceClientOperator.listAppServiceVariable(appServiceDTO.getGitlabProjectId(), userAttrVO.getGitlabUserId().intValue());
+    }
+
+    private void performUpdate(Long projectId, String level, Long appServiceId, List<String> keysToDelete, List<CiVariableVO> ciVariableVOList) {
+        if (keysToDelete.size() != 0) {
+            batchDelete(projectId, level, appServiceId, keysToDelete);
+        }
+        if (ciVariableVOList.size() != 0) {
+            batchUpdate(projectId, level, appServiceId, ciVariableVOList);
         }
     }
 

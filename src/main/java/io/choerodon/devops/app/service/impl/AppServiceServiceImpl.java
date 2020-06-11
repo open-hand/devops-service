@@ -2722,7 +2722,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private String getApplicationToken(String token, Integer projectId, Integer userId) {
         List<CiVariableVO> variables = gitlabServiceClientOperator.listAppServiceVariable(projectId, userId);
         if (variables.isEmpty()) {
-            gitlabServiceClientOperator.createVariable(projectId, "Token", token, false, userId);
+            gitlabServiceClientOperator.createProjectVariable(projectId, "Token", token, false, userId);
             return token;
         } else {
             return variables.get(0).getValue();

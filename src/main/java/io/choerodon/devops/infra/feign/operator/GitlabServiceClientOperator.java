@@ -170,16 +170,45 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public void createVariable(Integer gitlabProjectId, String key, String value, Boolean protecteds, Integer userId) {
+    public void createProjectVariable(Integer gitlabProjectId, String key, String value, Boolean protecteds, Integer userId) {
         GitlabTransferDTO gitlabTransferDTO = new GitlabTransferDTO();
         gitlabTransferDTO.setKey(key);
         gitlabTransferDTO.setValue(value);
         gitlabServiceClient.addProjectVariable(gitlabProjectId, gitlabTransferDTO, protecteds, userId);
     }
 
-    public void batchAddProjectVariable(Integer gitlabProjectId, Integer userId, List<CiVariableVO> variableDTODTOS) {
-        gitlabServiceClient.batchAddProjectVariable(gitlabProjectId, userId, variableDTODTOS);
+    public List<CiVariableVO> batchSaveGroupVariable(Integer gitlabGroupId, Integer userId, List<CiVariableVO> variableVOS) {
+        try {
+            return gitlabServiceClient.batchSaveGroupVariable(gitlabGroupId, userId, variableVOS).getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
     }
+
+    public List<CiVariableVO> batchSaveProjectVariable(Integer gitlabProjectId, Integer userId, List<CiVariableVO> ciVariableVOList) {
+        try {
+            return gitlabServiceClient.batchSaveProjectVariable(gitlabProjectId, userId, ciVariableVOList).getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+    }
+
+    public void batchDeleteGroupVariable(Integer gitlabGroupId, Integer userId, List<String> keys) {
+        try {
+            gitlabServiceClient.batchGroupDeleteVariable(gitlabGroupId, userId, keys);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+    }
+
+    public void batchDeleteProjectVariable(Integer gitlabProjectId, Integer userId, List<String> keys) {
+        try {
+            gitlabServiceClient.batchProjectDeleteVariable(gitlabProjectId, userId, keys);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+    }
+
 
     public List<String> listProjectToken(Integer gitlabProjectId, String name, Integer userId) {
         ResponseEntity<List<ImpersonationTokenDTO>> impersonationTokens;

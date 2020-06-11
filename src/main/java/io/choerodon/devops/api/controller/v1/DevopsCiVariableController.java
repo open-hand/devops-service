@@ -66,5 +66,21 @@ public class DevopsCiVariableController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.ci.variable.value.list"));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "保存对key的修改")
+    @PostMapping
+    public ResponseEntity<Void> save(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "层级", required = true)
+            @RequestParam("level") String level,
+            @ApiParam(value = "应用Id")
+            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
+            @ApiParam(value = "变量列表")
+            @RequestBody List<CiVariableVO> ciVariableVOList) {
+        devopsCiVariableService.save(projectId, level, appServiceId, ciVariableVOList);
+        return ResponseEntity.noContent().build();
+    }
 }
 
