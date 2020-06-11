@@ -55,16 +55,15 @@ public class DevopsCiVariableController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "列举出指定key的value")
-    @PostMapping("/values")
+    @GetMapping("/values")
     public ResponseEntity<List<CiVariableVO>> listValues(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "层级", required = true)
             @RequestParam("level") String level,
             @ApiParam(value = "应用Id")
-            @RequestParam("app_service_id") Long appServiceId,
-            @RequestBody List<String> keys) {
-        return Optional.ofNullable(devopsCiVariableService.listValues(projectId, level, appServiceId, keys))
+            @RequestParam("app_service_id") Long appServiceId) {
+        return Optional.ofNullable(devopsCiVariableService.listValues(projectId, level, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.ci.variable.value.list"));
     }

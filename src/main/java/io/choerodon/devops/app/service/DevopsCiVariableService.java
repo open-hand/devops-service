@@ -19,13 +19,12 @@ public interface DevopsCiVariableService {
     List<CiVariableVO> listKeys(Long projectId, String level, Long appServiceId);
 
     /**
-     * 列出指定key的value
+     * 列出所有的key，包括values
      *
      * @param projectId    项目id
      * @param level        层级
      * @param appServiceId 应用id
-     * @param keys         key列表
      * @return List<CiVariableVO>
      */
-    List<CiVariableVO> listValues(Long projectId, String level, Long appServiceId, List<String> keys);
+    List<CiVariableVO> listValues(Long projectId, String level, Long appServiceId);
 }
