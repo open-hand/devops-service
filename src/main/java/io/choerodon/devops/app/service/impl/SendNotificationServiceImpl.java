@@ -1031,6 +1031,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     @Override
     public void sendPipelineAuditMassage(String type, String auditUser, Long pipelineRecordId, String stageName, Long stageId) {
+        LOGGER.debug("Send pipeline audit message..., the type is {}, auditUser is {}, stageName is {}, stageId is {}", type, auditUser, stageName, stageId);
         doWithTryCatchAndLog(
                 () -> {
                     List<Long> userIds = new ArrayList<>();
@@ -1089,18 +1090,37 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     @Override
     public void sendNotices(String sendSettingCode, List<Receiver> receivers, Map<String, String> params, Long projectId) {
+        LOGGER.debug("Send Notice: code: {}, receivers: {}, params: {}, projectId: {}", sendSettingCode, receivers, params, projectId);
         doWithTryCatchAndLog(
-                () -> messageClient.async().sendMessage(constructMessageSender(sendSettingCode, receivers, null, params, null, projectId)),
+                () -> {
+                    MessageSender sender = constructMessageSender(sendSettingCode, receivers, null, params, null, projectId);
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.info("Sender: {}", JsonHelper.marshalByJackson(sender));
+                    }
+                    messageClient.async().sendMessage(sender);
+                },
                 ex -> LOGGER.info("Failed to send message with code {}", sendSettingCode));
     }
 
     public void sendOrganizationNotices(String sendSettingCode, List<Receiver> receivers, Map<String, String> params, Long organizationId) {
+        LOGGER.debug("Send Notice: code: {}, receivers: {}, params: {}, organizationId: {}", sendSettingCode, receivers, params, organizationId);
         doWithTryCatchAndLog(
-                () -> messageClient.async().sendMessage(constructOrganizationMessageSender(sendSettingCode, receivers, null, params, null, organizationId)),
+                () -> {
+                    MessageSender sender = constructOrganizationMessageSender(sendSettingCode, receivers, null, params, null, organizationId);
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.info("Sender: {}", JsonHelper.marshalByJackson(sender));
+                    }
+                    messageClient.async().sendMessage(sender);
+                },
                 ex -> LOGGER.info("Failed to send message with code {}", sendSettingCode));
     }
 
     private void sendNotices(String sendSettingCode, String receiveType, Map<String, String> params, Long projectId) {
-        messageClient.async().sendMessage(constructMessageSender(sendSettingCode, null, receiveType, params, null, projectId));
+        LOGGER.debug("Send Notice: code: {}, params: {}, projectId: {}", sendSettingCode, params, projectId);
+        MessageSender sender = constructMessageSender(sendSettingCode, null, receiveType, params, null, projectId);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.info("Sender: {}", JsonHelper.marshalByJackson(sender));
+        }
+        messageClient.async().sendMessage(sender);
     }
 }

@@ -12,6 +12,7 @@ public class JobDTO {
     private String name;
     private Date startedAt;
     private Boolean tag;
+    private GitLabUserDTO user;
     private String stage;
     private JobStatus status;
 
@@ -77,5 +78,13 @@ public class JobDTO {
 
     public void setStatus(JobStatus status) {
         this.status = status;
+    }
+
+    public GitLabUserDTO getUser() {
+        return user;
+    }
+
+    public void setUser(GitLabUserDTO user) {
+        this.user = user;
     }
 }

@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.feign.operator;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
@@ -15,6 +16,7 @@ import io.choerodon.devops.infra.util.FeignParamUtils;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -405,5 +409,13 @@ public class BaseServiceClientOperator {
     public ResourceLimitVO queryResourceLimit() {
         ResponseEntity<ResourceLimitVO> resourceLimitVOResponseEntity = baseServiceClient.queryResourceLimit();
         return resourceLimitVOResponseEntity.getBody();
+    }
+
+    public List<UserProjectLabelVO> listRoleLabelsForUserInTheProject(Long userId, Set<Long> projectIds) {
+        if (CollectionUtils.isEmpty(projectIds)) {
+            return Collections.emptyList();
+        }
+        ResponseEntity<List<UserProjectLabelVO>> labels = baseServiceClient.listRoleLabelsForUserInTheProject(Objects.requireNonNull(userId), projectIds);
+        return labels.getBody();
     }
 }

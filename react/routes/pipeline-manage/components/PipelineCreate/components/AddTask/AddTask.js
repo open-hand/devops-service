@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Form, Select, TextField, Modal, SelectBox, Button, Password } from 'choerodon-ui/pro';
 import { Icon, Spin, Tooltip } from 'choerodon-ui';
+import { Base64 } from 'js-base64';
 import Tips from '../../../../../../components/new-tips';
 import YamlEditor from '../../../../../../components/yamlEditor';
 import emptyImg from '../../../../../../components/empty-page/image/owner.png';
@@ -72,6 +73,11 @@ const AddTask = observer(() => {
     }
   }, [steps]);
 
+  function decode(base64) {
+    const decodeStr = atob(base64);
+    return decodeURI(decodeStr);
+  }
+
   useEffect(() => {
     const init = async () => {
       const res = await useStore.axiosGetDefaultImage();
@@ -92,6 +98,9 @@ const AddTask = observer(() => {
               dockerContextDir = c.dockerContextDir;
               dockerFilePath = c.dockerFilePath;
               dockerArtifactFileName = c.artifactFileName;
+            }
+            if (c.mavenSettings) {
+              c.mavenSettings = Base64.decode(c.mavenSettings);
             }
           });
           const newSteps = config || [];
@@ -156,6 +165,11 @@ const AddTask = observer(() => {
     init();
   }, []);
 
+  function encode(str) {
+    const encodeStr = encodeURI(str);
+    return btoa(encodeStr);
+  }
+
   const handleAdd = async () => {
     const result = await AddTaskFormDataSet.validate();
     if (result) {
@@ -185,6 +199,9 @@ const AddTask = observer(() => {
                     return p;
                   })];
                 }
+                if (s.mavenSettings) {
+                  s.mavenSettings = Base64.encode(s.mavenSettings);
+                }
                 if (s.type === 'upload') {
                   s.uploadFilePattern = data.uploadFilePattern;
                   if (data.uploadArtifactFileName) {
@@ -200,7 +217,7 @@ const AddTask = observer(() => {
                 }
                 return s;
               }),
-            }).replace(/"/g, "'").replace(/\//g, '\\/');
+            }).replace(/"/g, "'");
           } else if (data.type === 'sonar') {
             return JSON.stringify({
               ...data,

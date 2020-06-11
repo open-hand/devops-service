@@ -3,7 +3,7 @@
   "routeName": "devops",
   "description": "",
   "license": "ISC",
-  "version": "0.22.1",
+  "version": "0.22.2",
   "keywords": [],
   "contributors": [
     "choerodon"
@@ -31,6 +31,7 @@
     "diff-match-patch": "^1.0.4",
     "echarts": "^4.2.1",
     "echarts-for-react": "^2.0.12",
+    "js-base64": "^2.5.2",
     "js-file-download": "^0.4.8",
     "js-yaml": "^3.12.1",
     "mobx-react-lite": "^1.4.1",

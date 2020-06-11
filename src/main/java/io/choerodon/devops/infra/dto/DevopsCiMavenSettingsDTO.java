@@ -30,7 +30,7 @@ public class DevopsCiMavenSettingsDTO extends AuditDomain {
     @ApiModelProperty("所属step的序列号")
     private Long sequence;
 
-    @ApiModelProperty("maven settings文件内容")
+    @ApiModelProperty("maven settings文件内容 / settings原文, 不是base64加密过的")
     private String mavenSettings;
 
 
