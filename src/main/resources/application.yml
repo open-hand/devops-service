@@ -27,10 +27,6 @@ services:
     url: "helm.example.com" # 存放helm chart包的仓库地址
   gateway:
     url: "http://api.example.com" # 网关地址
-  sonarqube:
-    url: http://sonarqube.example.com/
-    username: admin
-    password: password
 hzero:
   websocket:
     # 用于连接websocket的路径

@@ -65,12 +65,6 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
      */
     @Value("${ci.max.file.bytes:209715200}")
     private Long maxFileSize;
-    @Value("${services.sonarqube.url:}")
-    private String sonarqubeUrl;
-    @Value("${services.sonarqube.username:}")
-    private String userName;
-    @Value("${services.sonarqube.password:}")
-    private String password;
 
     private DevopsCiJobMapper devopsCiJobMapper;
     private GitlabServiceClientOperator gitlabServiceClientOperator;
@@ -311,8 +305,5 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         return recordDTO == null ? null : recordDTO.getFileUrl();
     }
 
-    @Override
-    public SonarInfoVO getSonarDefault() {
-        return new SonarInfoVO(userName, password, sonarqubeUrl);
-    }
+
 }

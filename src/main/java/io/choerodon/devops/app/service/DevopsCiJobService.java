@@ -131,5 +131,5 @@ public interface DevopsCiJobService {
      */
     String queryArtifactUrl(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName);
 
-    SonarInfoVO getSonarDefault();
+
 }

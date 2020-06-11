@@ -40,12 +40,6 @@ public class DevopsCiJobController {
         return ResponseEntity.ok(devopsCiJobService.sonarConnect(projectId, sonarQubeConfigVO));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @GetMapping("/sonar/default")
-    @ApiOperation("sonar默认配置")
-    public ResponseEntity<SonarInfoVO> getSonarDefault() {
-        return ResponseEntity.ok(devopsCiJobService.getSonarDefault());
-    }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询job日志")
