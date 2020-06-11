@@ -31,6 +31,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
+import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 
@@ -380,11 +381,14 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         AccessLevel accessLevel = AccessLevel.forValue(Collections.max(Arrays.asList(roles)));
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrDTO.getIamUserId());
         if (Objects.isNull(iamUserDTO)) {
+            LogUtil.loggerInfoObjectNullWithId("user", userAttrDTO.getIamUserId(), LOGGER);
             return;
         }
-        // 如果当前iam用户只有项目成员的权限,并且他不是组织管理员
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(resourceId);
+        // 如果当前iam用户只有项目成员的权限,并且他不是这个组织的组织管理员
         if (AccessLevel.DEVELOPER.equals(accessLevel)
-                && !baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), iamUserDTO.getOrganizationId())) {
+                && !baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), projectDTO.getOrganizationId())) {
+            LOGGER.debug("Access level is develop for user with id {} in project {}", userId, resourceId);
             // 查看是不是由项目所有者改为项目成员
             devopsProjectDTO = devopsProjectService.baseQueryByProjectId(resourceId);
 
@@ -416,6 +420,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             // 为当前项目下所有跳过权限检查的环境库加上gitlab用户权限
             addRoleForSkipPermissionEnvironment(resourceId, gitlabUserId);
         } else if (AccessLevel.OWNER.equals(accessLevel)) {
+            LOGGER.debug("Access level is owner for user with id {} in project {}", userId, resourceId);
             // 删除用户时同时清除gitlab的权限
             List<Integer> gitlabProjectIds = applicationService
                     .baseListByProjectId(resourceId).stream().filter(e -> e.getGitlabProjectId() != null)
@@ -457,6 +462,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             }
 
         }
+        LOGGER.debug("Finish member role operation for user with id {} and access level {}", userId, accessLevel);
     }
 
     private void deletePermissionUserRelation(Long projectId, Long userId) {

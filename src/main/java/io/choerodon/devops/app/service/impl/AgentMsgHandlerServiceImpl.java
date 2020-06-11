@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.GitOpsConstants.DATE_PATTERN;
+import static io.choerodon.devops.infra.constant.GitOpsConstants.THREE_MINUTE_MILLISECONDS;
+
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -49,9 +52,6 @@ import io.choerodon.devops.infra.util.*;
  */
 @Service
 public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
-    private static final int THREE_MINUTE_MILLISECONDS = 3 * 60 * 1000;
-    private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
-
     public static final String CREATE_TYPE = "create";
     public static final String UPDATE_TYPE = "update";
     public static final String EVICTED = "Evicted";

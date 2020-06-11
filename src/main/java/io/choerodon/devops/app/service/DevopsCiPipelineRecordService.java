@@ -26,6 +26,14 @@ public interface DevopsCiPipelineRecordService {
      */
     Page<DevopsCiPipelineRecordVO> pagingPipelineRecord(Long projectId, Long ciPipelineId, PageRequest pageable);
 
+    /**
+     * 异步地拉取gitlab中流水线的状态到数据库进行更新
+     *
+     * @param pipelineRecordId 猪齿鱼流水线纪录id
+     * @param gitlabPipelineId gitlab流水线id
+     */
+    void asyncPipelineUpdate(Long pipelineRecordId, Integer gitlabPipelineId);
+
     DevopsCiPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId);
 
     /**

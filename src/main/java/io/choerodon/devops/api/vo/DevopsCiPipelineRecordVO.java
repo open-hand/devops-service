@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -38,6 +39,10 @@ public class DevopsCiPipelineRecordVO {
     private IamUserDTO userDTO;
     @ApiModelProperty("提交信息")
     private CustomCommitVO commit;
+
+    @JsonIgnore
+    @ApiModelProperty("最后更新时间")
+    private Date lastUpdateDate;
 
     public Long getId() {
         return id;
@@ -141,5 +146,13 @@ public class DevopsCiPipelineRecordVO {
 
     public void setCommit(CustomCommitVO commit) {
         this.commit = commit;
+    }
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
     }
 }
