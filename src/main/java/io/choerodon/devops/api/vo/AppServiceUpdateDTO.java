@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import javax.validation.constraints.NotNull;
 
+import io.choerodon.devops.api.vo.harbor.HarborCustomRepoVO;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -20,6 +21,9 @@ public class AppServiceUpdateDTO {
     private DevopsConfigVO harbor;
     @ApiModelProperty("char配置")
     private DevopsConfigVO chart;
+
+    @ApiModelProperty("制品库harbor配置")
+    private HarborCustomRepoVO harborCustomRepoVO;
 
     public DevopsConfigVO getHarbor() {
         return harbor;
@@ -59,5 +63,13 @@ public class AppServiceUpdateDTO {
 
     public void setImgUrl(String imgUrl) {
         this.imgUrl = imgUrl;
+    }
+
+    public HarborCustomRepoVO getHarborCustomRepoVO() {
+        return harborCustomRepoVO;
+    }
+
+    public void setHarborCustomRepoVO(HarborCustomRepoVO harborCustomRepoVO) {
+        this.harborCustomRepoVO = harborCustomRepoVO;
     }
 }
