@@ -42,7 +42,7 @@ public class DevopsCiVariableController {
             @ApiParam(value = "层级", required = true)
             @RequestParam("level") String level,
             @ApiParam(value = "应用Id")
-            @RequestParam("app_service_id") Long appServiceId) {
+            @RequestParam(value = "app_service_id", required = false) Long appServiceId) {
         return Optional.ofNullable(devopsCiVariableService.listKeys(projectId, level, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.ci.variable.key.list", level));
@@ -62,9 +62,10 @@ public class DevopsCiVariableController {
             @ApiParam(value = "层级", required = true)
             @RequestParam("level") String level,
             @ApiParam(value = "应用Id")
-            @RequestParam("app_service_id") Long appServiceId) {
+            @RequestParam(value = "app_service_id", required = false) Long appServiceId) {
         return Optional.ofNullable(devopsCiVariableService.listValues(projectId, level, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.ci.variable.value.list"));
     }
 }
+
