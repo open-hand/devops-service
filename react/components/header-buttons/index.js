@@ -13,7 +13,7 @@ import './index.less';
 
 const WAIT_TIME = 1000;
 
-const HeaderButtons = ({ items, children }) => {
+const HeaderButtons = ({ items, children, showClassName = true }) => {
   const displayBtn = useMemo(() => items.filter(({ display }) => display), [items]);
 
   const btnNodes = useMemo(() => {
@@ -61,7 +61,7 @@ const HeaderButtons = ({ items, children }) => {
     return initial(flatten(btnGroups));
   }, [displayBtn]);
 
-  return displayBtn.length ? <div className="c7ncd-header-btns">
+  return displayBtn.length ? <div className={showClassName ? 'c7ncd-header-btns' : ''}>
     {btnNodes}
     {children}
   </div> : null;
