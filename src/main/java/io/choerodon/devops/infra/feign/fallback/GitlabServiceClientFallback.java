@@ -88,7 +88,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<Map<String, Object>> addProjectVariable(Integer projectId, GitlabTransferDTO gitlabTransferDTO, Boolean protecteds, Integer userId) {
+    public ResponseEntity<List<CiVariableVO>> addProjectVariable(Integer projectId, GitlabTransferDTO gitlabTransferDTO, Boolean protecteds, Integer userId) {
         throw new CommonException("error.variable.get");
     }
 
@@ -294,7 +294,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<Map<String, Object>>> batchAddProjectVariable(Integer projectId, Integer userId, @Valid List<CiVariableVO> variableDTODTOS) {
+    public ResponseEntity<List<CiVariableVO>> batchSaveProjectVariable(Integer projectId, Integer userId, @Valid List<CiVariableVO> ciVariableVOList) {
         throw new CommonException("error.variable.create");
     }
 
@@ -446,5 +446,30 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<GitLabUserDTO> queryAdminUser() {
         throw new CommonException("error.gitlab.admin.id.query");
+    }
+
+    @Override
+    public ResponseEntity<CiVariableVO> createGroupVariable(Integer groupId, GitlabTransferDTO gitlabTransferDTO, boolean protecteds, Integer userId) {
+        throw new CommonException("error.gitlab.create.group.variable");
+    }
+
+    @Override
+    public ResponseEntity<List<CiVariableVO>> batchSaveGroupVariable(Integer groupId, Integer userId, List<CiVariableVO> list) {
+        throw new CommonException("error.gitlab.batch.create.group.variable");
+    }
+
+    @Override
+    public ResponseEntity<Void> deleteVariable(Integer groupId, Integer userId, String key) {
+        throw new CommonException("error.gitlab.delete.group.variable");
+    }
+
+    @Override
+    public ResponseEntity<Void> batchGroupDeleteVariable(Integer groupId, Integer userId, List<String> key) {
+        throw new CommonException("error.gitlab.batch.delete.group.variable");
+    }
+
+    @Override
+    public ResponseEntity<Void> batchProjectDeleteVariable(Integer projectId, Integer userId, List<String> key) {
+        throw new CommonException("error.gitlab.batch.delete.project.variable");
     }
 }
