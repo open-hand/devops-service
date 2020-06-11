@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.UserProjectLabelVO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.EnvironmentType;
 import io.choerodon.devops.infra.enums.GitlabGroupType;
@@ -129,11 +131,25 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         if (CollectionUtils.isEmpty(projectDTOS)) {
             return;
         }
+        Set<Long> projectIds = projectDTOS.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
+        List<UserProjectLabelVO> labels = baseServiceClientOperator.listRoleLabelsForUserInTheProject(gitlabGroupMemberVO.getUserId(), projectIds);
+        Map<Long, UserProjectLabelVO> projectLabels = labels.stream().collect(Collectors.toMap(UserProjectLabelVO::getProjectId, Function.identity()));
+
         projectDTOS.forEach(projectDTO -> {
             LOGGER.info("start delete project id is {} for gitlab org owner", projectDTO.getId());
             // 如果删除的成员为该项目下的项目所有者，则不删除gitlab相应的权限
             if (!baseServiceClientOperator.isProjectOwner(gitlabGroupMemberVO.getUserId(), projectDTO.getId())) {
                 deleteAllPermissionInProjectOfUser(gitlabGroupMemberVO, projectDTO.getId(), true);
+
+                // 如果不是所有者, 同步一次项目层权限,
+                // 假如用户在gitlab的project是develop权限, 但是在group是owner, 删除group的owner后,
+                // project中的develop权限也会被gitlab删除
+                UserProjectLabelVO label = projectLabels.get(projectDTO.getId());
+                MemberHelper memberHelper = getGitlabGroupMemberRole(label == null || CollectionUtils.isEmpty(label.getRoleLabels()) ? Collections.emptyList() : new ArrayList<>(label.getRoleLabels()));
+                operation(projectDTO.getId(),
+                        ResourceLevel.PROJECT.value(),
+                        memberHelper,
+                        gitlabGroupMemberVO.getUserId());
             }
         });
     }

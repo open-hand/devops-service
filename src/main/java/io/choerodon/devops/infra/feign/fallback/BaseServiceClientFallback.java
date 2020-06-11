@@ -153,4 +153,9 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     public ResponseEntity<ClientVO> queryClientByName(Long organizationId, String clientName) {
         throw new CommonException("error.get.client");
     }
+
+    @Override
+    public ResponseEntity<List<UserProjectLabelVO>> listRoleLabelsForUserInTheProject(Long userId, Set<Long> projectIds) {
+        throw new CommonException("error.get.user.labels", userId, projectIds == null ? null : projectIds.toString());
+    }
 }
