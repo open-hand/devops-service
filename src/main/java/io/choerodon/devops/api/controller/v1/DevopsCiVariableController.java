@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -36,16 +37,14 @@ public class DevopsCiVariableController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "列举出ci变量")
     @GetMapping("/keys")
-    public ResponseEntity<List<CiVariableVO>> listVariableKey(
+    public ResponseEntity<Map<String, List<CiVariableVO>>> listVariableKey(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable("project_id") Long projectId,
-            @ApiParam(value = "层级", required = true)
-            @RequestParam("level") String level,
             @ApiParam(value = "应用Id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId) {
-        return Optional.ofNullable(devopsCiVariableService.listKeys(projectId, level, appServiceId))
+        return Optional.ofNullable(devopsCiVariableService.listKeys(projectId, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.ci.variable.key.list", level));
+                .orElseThrow(() -> new CommonException("error.devops.ci.variable.key.list"));
     }
 
     /**

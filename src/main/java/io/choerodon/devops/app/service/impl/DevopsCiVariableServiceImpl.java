@@ -14,7 +14,10 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -39,21 +42,20 @@ public class DevopsCiVariableServiceImpl implements DevopsCiVariableService {
     private AppServiceService appServiceService;
 
     @Override
-    public List<CiVariableVO> listKeys(Long projectId, String level, Long appServiceId) {
+    public Map<String, List<CiVariableVO>> listKeys(Long projectId, Long appServiceId) {
+        Map<String, List<CiVariableVO>> keys = new HashMap<>();
+        List<CiVariableVO> ciVariableVOSOnProject = new ArrayList<>();
+        List<CiVariableVO> ciVariableVOSOnApp = new ArrayList<>();
         UserAttrVO userAttrVO = userAttrService.queryByUserId(DetailsHelper.getUserDetails().getUserId());
-        switch (level) {
-            case LEVEL_PROJECT:
-                DevopsProjectDTO devopsProjectDTO = projectService.queryById(projectId);
-                return eraseValue(gitlabServiceClientOperator.listProjectVariable(devopsProjectDTO.getDevopsAppGroupId().intValue(), userAttrVO.getGitlabUserId().intValue()));
-            case LEVEL_APP_SERVICE:
-                if (appServiceId == null) {
-                    return null;
-                }
-                AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
-                return eraseValue(gitlabServiceClientOperator.listAppServiceVariable(appServiceDTO.getGitlabProjectId(), userAttrVO.getGitlabUserId().intValue()));
-            default:
-                throw new CommonException("error.level.error");
+        DevopsProjectDTO devopsProjectDTO = projectService.queryById(projectId);
+        ciVariableVOSOnProject.addAll(gitlabServiceClientOperator.listProjectVariable(devopsProjectDTO.getDevopsAppGroupId().intValue(), userAttrVO.getGitlabUserId().intValue()));
+        if (appServiceId != null) {
+            AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+            ciVariableVOSOnApp.addAll(gitlabServiceClientOperator.listAppServiceVariable(appServiceDTO.getGitlabProjectId(), userAttrVO.getGitlabUserId().intValue()));
         }
+        keys.put("project", eraseValue(ciVariableVOSOnProject));
+        keys.put("app", eraseValue(ciVariableVOSOnApp));
+        return keys;
     }
 
     @Override
