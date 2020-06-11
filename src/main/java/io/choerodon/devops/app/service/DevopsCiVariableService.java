@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import io.choerodon.devops.api.vo.CiVariableVO;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author lihao
@@ -16,7 +17,7 @@ public interface DevopsCiVariableService {
      * @param appServiceId 应用id
      * @return List<CiVariableVO>
      */
-    List<CiVariableVO> listKeys(Long projectId, String level, Long appServiceId);
+    Map<String, List<CiVariableVO>> listKeys(Long projectId, Long appServiceId);
 
     /**
      * 列出所有的key，包括values
