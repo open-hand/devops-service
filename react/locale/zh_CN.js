@@ -32,6 +32,7 @@ const commonField = {
   reset: '重置',
   install: '安装',
   uninstall: '卸载',
+  copy: '复制',
 
   // 通用描述
   app: '应用',
@@ -178,6 +179,7 @@ const commonField = {
   'search.placeholder': '请输入搜索条件',
   all_instance: '所有实例',
   appService: '应用服务',
+  copy_success: '复制成功',
 
   // 资源树名称
   instances: '实例',
@@ -797,6 +799,15 @@ const pipelineManage = {
   'c7ncd.pipelineManage.record.empty.des': '已跳过该流水线的首次执行。您可直接点击全新执行来重跑流水线',
   'c7ncd.pipelineManage.record.empty.title.other': '阶段信息为空',
   'c7ncd.pipelineManage.record.empty.des.other': '未获取到此次执行的阶段信息',
+  'c7ncd.pipelineManage.settings.global': '全局变量配置',
+  'c7ncd.pipelineManage.settings.local': '环境变量配置',
+  'c7ncd.pipelineManage.settings.add': '添加变量',
+  'c7ncd.pipelineManage.settings.values.reveal': '显示所有值',
+  'c7ncd.pipelineManage.settings.values.hide': '隐藏所有值',
+  'c7ncd.pipelineManage.settings.check.exist': '键值重复',
+  'c7ncd.pipelineManage.settings.check.failed': '只能有字母、数字和_组成',
+  'c7ncd.pipelineManage.settings.project': '项目层',
+  'c7ncd.pipelineManage.settings.app': '应用服务层',
 };
 
 const emptyPage = {
@@ -816,6 +827,11 @@ const emptyPage = {
   'empty.create.env': '创建环境',
   'empty.link.app': '跳转至应用服务',
   'empty.link.env': '跳转至环境配置',
+};
+
+const prompt = {
+  'prompt.inform.title': '离开此页',
+  'prompt.inform.message': '此页面修改项尚未保存，确定要离开此页面？',
 };
 
 // 文档地址前缀
@@ -2765,6 +2781,7 @@ const zhCN = {
   ...emptyPage,
   ...pvManager,
   ...pipelineManage,
+  ...prompt,
 };
 
 export default zhCN;

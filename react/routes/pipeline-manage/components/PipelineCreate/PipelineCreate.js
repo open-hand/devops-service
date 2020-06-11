@@ -176,6 +176,7 @@ const PipelineCreate = observer(() => {
         editBlockStore={editBlockStore}
         edit
         image={PipelineCreateFormDataSet.current.get('image')}
+        appServiceId={PipelineCreateFormDataSet.current.get('appServiceId')}
       />
       <p className="pipeline_createInfo"><Icon style={{ color: 'red', verticalAlign: 'text-bottom' }} type="error" />此页面定义了阶段与任务后，GitLab仓库中的.gitlab-ci.yml文件也会同步修改。</p>
     </div>
