@@ -662,11 +662,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             settings = buildSettings(ciConfigTemplateVO.getRepos());
         } else if (!StringUtils.isEmpty(ciConfigTemplateVO.getMavenSettings())) {
             // 使用用户提供的xml内容，不进行内容的校验
-            settings = ciConfigTemplateVO.getMavenSettings();
+            settings = Base64Util.getBase64DecodedString(ciConfigTemplateVO.getMavenSettings());
         } else {
             // 用户没有提供settings文件配置
             return false;
         }
+        // 这里存储的ci setting文件内容是解密后的
         DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, ciConfigTemplateVO.getSequence(), settings);
         MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
         return true;

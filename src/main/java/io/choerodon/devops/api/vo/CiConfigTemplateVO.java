@@ -34,7 +34,7 @@ public class CiConfigTemplateVO {
     @ApiModelProperty("表单填写的Maven的依赖仓库")
     private List<MavenRepoVO> repos;
 
-    @ApiModelProperty("直接粘贴的maven的settings内容")
+    @ApiModelProperty("直接粘贴的maven的settings内容 / 是base64加密过的字符串, 处理特殊字符")
     private String mavenSettings;
 
     @ApiModelProperty("Docker步骤的构建上下文")
