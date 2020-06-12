@@ -99,6 +99,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCiContentService devopsCiContentService,
             GitlabServiceClientOperator gitlabServiceClientOperator,
             UserAttrService userAttrService,
+            @Lazy
             AppServiceService appServiceService,
             DevopsCiJobRecordService devopsCiJobRecordService,
             DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
