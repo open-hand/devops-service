@@ -806,6 +806,7 @@ const pipelineManage = {
   'c7ncd.pipelineManage.settings.values.hide': '隐藏所有值',
   'c7ncd.pipelineManage.settings.check.exist': '键值重复',
   'c7ncd.pipelineManage.settings.check.failed': '只能有字母、数字和_组成',
+  'c7ncd.pipelineManage.settings.check.empty': '此项不能为空',
   'c7ncd.pipelineManage.settings.project': '项目层',
   'c7ncd.pipelineManage.settings.app': '应用服务层',
 };

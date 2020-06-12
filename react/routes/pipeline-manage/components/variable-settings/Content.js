@@ -1,7 +1,6 @@
 import React, { useState, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Form, Modal, Spin, Icon, TextField, Button, Tooltip, TextArea } from 'choerodon-ui/pro';
-import { Prompt } from 'react-router-dom';
 import { useRecordDetailStore } from './stores';
 
 import './index.less';
@@ -13,21 +12,12 @@ export default observer(() => {
     prefixCls,
     formDs,
     modal,
-    pipelineId,
     appServiceName,
     appServiceId,
   } = useRecordDetailStore();
   const [showRevealValues, changeShowRevealValues] = useState(false);
-  const [showFailed, changeShowFailed] = useState(false);
 
   modal.handleOk(async () => {
-    const isFailed = formDs.some((eachRecord) => (eachRecord.get('key') && !eachRecord.get('value')) || (!eachRecord.get('key') && eachRecord.get('value')));
-    if (isFailed) {
-      changeShowFailed(true);
-      return false;
-    } else {
-      changeShowFailed(false);
-    }
     try {
       const res = await formDs.submit();
       if (res !== false) {
@@ -91,7 +81,6 @@ export default observer(() => {
           name="value"
           renderer={renderValue}
           resize="vertical"
-          // rows={1}
           autoSize={{ minRows: 1 }}
         />
         {formDs.length > 1 ? (
@@ -114,10 +103,5 @@ export default observer(() => {
     >
       {formatMessage({ id: `${intlPrefix}.settings.add` })}
     </Button>
-    {showFailed ? (
-      <div className={`${prefixCls}-failed-text`}>
-        {formatMessage({ id: 'mapping.keyValueSpan' })}
-      </div>
-    ) : null}
   </div>);
 });
