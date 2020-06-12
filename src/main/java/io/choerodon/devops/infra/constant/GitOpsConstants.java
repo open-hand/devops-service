@@ -192,4 +192,13 @@ public class GitOpsConstants {
     public static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     public static final int THREE_MINUTE_MILLISECONDS = 3 * 60 * 1000;
+
+    /**
+     * 发布jar包的命令的变量锚点, 仓库名称
+     */
+    public static final String CHOERODON_MAVEN_REPO_ID = "${CHOERODON_MAVEN_REPOSITORY_ID}";
+    /**
+     * 发布jar包的命令的变量锚点, 仓库地址
+     */
+    public static final String CHOERODON_MAVEN_REPO_URL = "${CHOERODON_MAVEN_REPO_URL}";
 }

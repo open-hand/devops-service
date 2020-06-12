@@ -12,7 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
  * 〈〉
  *
  * @author wanghao
- * @Date 2020/4/3 9:57
+ * @since 2020/4/3 9:57
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CiConfigTemplateVO {
@@ -36,6 +36,9 @@ public class CiConfigTemplateVO {
 
     @ApiModelProperty("直接粘贴的maven的settings内容 / 是base64加密过的字符串, 处理特殊字符")
     private String mavenSettings;
+
+    @ApiModelProperty("Maven发布jar到maven仓库的配置对象 / 上传软件包到制品库步骤需要")
+    private MavenDeployRepoSettings mavenDeployRepoSettings;
 
     @ApiModelProperty("Docker步骤的构建上下文")
     private String dockerContextDir;
@@ -127,5 +130,13 @@ public class CiConfigTemplateVO {
 
     public void setMavenSettings(String mavenSettings) {
         this.mavenSettings = mavenSettings;
+    }
+
+    public MavenDeployRepoSettings getMavenDeployRepoSettings() {
+        return mavenDeployRepoSettings;
+    }
+
+    public void setMavenDeployRepoSettings(MavenDeployRepoSettings mavenDeployRepoSettings) {
+        this.mavenDeployRepoSettings = mavenDeployRepoSettings;
     }
 }
