@@ -26,8 +26,11 @@ export default ({ formatMessage, intlPrefix, projectId, appServiceId, store }) =
   const urlParams = appServiceId ? `app_service_id=${appServiceId}&level=app` : 'level=project';
   function checkKey(value, name, record) {
     const p = /^([_A-Za-z0-9])+$/;
-    if (!value) {
+    if (!value && !record.get('value')) {
       return;
+    }
+    if (!value && record.get('value')) {
+      return formatMessage({ id: `${intlPrefix}.settings.check.empty` });
     }
     if (p.test(value)) {
       const dataSet = record.dataSet;
@@ -54,10 +57,18 @@ export default ({ formatMessage, intlPrefix, projectId, appServiceId, store }) =
       submit: ({ dataSet }) => {
         const res = [];
         dataSet.toData().forEach((item) => {
-          if (!isEmpty(item) && item.key && item.value) {
+          if (!isEmpty(item) && item.key) {
+            if (!item.value) {
+              item.value = '';
+            }
             res.push(item);
           }
         });
+        return {
+          url: `devops/v1/projects/${projectId}/ci_variable?${urlParams}`,
+          method: 'post',
+          data: res,
+        };
       },
     },
     fields: [
