@@ -276,7 +276,7 @@ public class AppServiceController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询所有已经启用的服务")
     @GetMapping("/list_by_active")
-    public ResponseEntity<List<AppServiceRepVO>> listByActive(
+        public ResponseEntity<List<AppServiceRepVO>> listByActive(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(applicationServiceService.listByActive(projectId))

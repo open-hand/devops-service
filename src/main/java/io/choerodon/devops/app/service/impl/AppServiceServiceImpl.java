@@ -1,47 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
-import io.kubernetes.client.JSON;
-import org.apache.commons.io.IOUtils;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -81,6 +41,45 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.kubernetes.client.JSON;
+import org.apache.commons.io.IOUtils;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.*;
 
 
 /**
@@ -543,7 +542,19 @@ public class AppServiceServiceImpl implements AppServiceService {
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOS.getContent(), urlSlash);
 
-        return ConvertUtils.convertPage(applicationServiceDTOS, this::dtoToRepVo);
+        Page<AppServiceRepVO> destination = new Page<>();
+        BeanUtils.copyProperties(applicationServiceDTOS, destination, "content");
+        if (applicationServiceDTOS.getContent() != null) {
+            List<AppServiceDTO> appServiceDTOList = applicationServiceDTOS.getContent();
+            List<Long> createdByIds = appServiceDTOList.stream().map(AppServiceDTO::getCreatedBy).collect(toList());
+            List<Long> lastUpdatedByIds = appServiceDTOList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList());
+            Map<Long, List<IamUserDTO>> createdByUsers = baseServiceClientOperator.listUsersByIds(createdByIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
+            Map<Long, List<IamUserDTO>> lastUpdatedByUsers = baseServiceClientOperator.listUsersByIds(lastUpdatedByIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
+            destination.setContent(applicationServiceDTOS.getContent().stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, createdByUsers, lastUpdatedByUsers)).collect(Collectors.toList()));
+        } else {
+            destination.setContent(new ArrayList<>());
+        }
+        return destination;
     }
 
 
@@ -579,9 +590,13 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-
+        List<Long> createdByIds = applicationDTOServiceList.stream().map(AppServiceDTO::getCreatedBy).collect(toList());
+        List<Long> lastUpdatedByIds = applicationDTOServiceList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList());
+        Map<Long, List<IamUserDTO>> createdByUsers = baseServiceClientOperator.listUsersByIds(createdByIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
+        Map<Long, List<IamUserDTO>> lastUpdatedByUsers = baseServiceClientOperator.listUsersByIds(lastUpdatedByIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
         initApplicationParams(projectDTO, organizationDTO, applicationDTOServiceList, urlSlash);
-        return ConvertUtils.convertList(applicationDTOServiceList, this::dtoToRepVo);
+
+        return applicationDTOServiceList.stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, createdByUsers, lastUpdatedByUsers)).collect(toList());
     }
 
     @Override
@@ -2721,9 +2736,9 @@ public class AppServiceServiceImpl implements AppServiceService {
      * @return the application token that is stored in gitlab variables
      */
     private String getApplicationToken(String token, Integer projectId, Integer userId) {
-        List<VariableDTO> variables = gitlabServiceClientOperator.listVariable(projectId, userId);
+        List<CiVariableVO> variables = gitlabServiceClientOperator.listAppServiceVariable(projectId, userId);
         if (variables.isEmpty()) {
-            gitlabServiceClientOperator.createVariable(projectId, "Token", token, false, userId);
+            gitlabServiceClientOperator.createProjectVariable(projectId, "Token", token, false, userId);
             return token;
         } else {
             return variables.get(0).getValue();
@@ -2858,8 +2873,24 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         appServiceRepVO.setGitlabProjectId(TypeUtil.objToLong(appServiceDTO.getGitlabProjectId()));
         return appServiceRepVO;
+    }
 
-
+    public AppServiceRepVO dtoToRepVo(AppServiceDTO appServiceDTO, Map<Long, List<IamUserDTO>> createdByUsers, Map<Long, List<IamUserDTO>> lastUpdatedByUsers) {
+        AppServiceRepVO appServiceRepVO = new AppServiceRepVO();
+        BeanUtils.copyProperties(appServiceDTO, appServiceRepVO);
+        appServiceRepVO.setFail(appServiceDTO.getFailed());
+        IamUserDTO createUser = null == createdByUsers.get(appServiceDTO.getCreatedBy()) ? null : createdByUsers.get(appServiceDTO.getCreatedBy()).get(0);
+        IamUserDTO updateUser = null == lastUpdatedByUsers.get(appServiceDTO.getLastUpdatedBy()) ? null : lastUpdatedByUsers.get(appServiceDTO.getLastUpdatedBy()).get(0);
+        if (createUser != null) {
+            appServiceRepVO.setCreateUserName(createUser.getRealName());
+            appServiceRepVO.setCreateLoginName(createUser.getLoginName());
+        }
+        if (updateUser != null) {
+            appServiceRepVO.setUpdateUserName(updateUser.getRealName());
+            appServiceRepVO.setUpdateLoginName(updateUser.getLoginName());
+        }
+        appServiceRepVO.setGitlabProjectId(TypeUtil.objToLong(appServiceDTO.getGitlabProjectId()));
+        return appServiceRepVO;
     }
 
 }
