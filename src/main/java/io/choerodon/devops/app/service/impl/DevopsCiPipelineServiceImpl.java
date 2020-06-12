@@ -2,7 +2,20 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.GitOpsConstants.DEFAULT_PIPELINE_RECORD_SIZE;
 
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -17,35 +30,25 @@ import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
-import io.choerodon.devops.infra.dto.gitlab.ci.OnlyExceptPolicy;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.maven.Repository;
 import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
 import io.choerodon.devops.infra.dto.maven.Server;
-import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
+import io.choerodon.devops.infra.enums.AccessLevel;
+import io.choerodon.devops.infra.enums.CiJobScriptTypeEnum;
+import io.choerodon.devops.infra.enums.CiJobTypeEnum;
+import io.choerodon.devops.infra.enums.SonarAuthType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.ProdRepoClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
@@ -78,19 +81,20 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Value("${devops.ci.default.image}")
     private String defaultCiImage;
 
-    private DevopsCiPipelineMapper devopsCiPipelineMapper;
-    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
-    private DevopsCiStageService devopsCiStageService;
-    private DevopsCiJobService devopsCiJobService;
-    private DevopsCiContentService devopsCiContentService;
-    private GitlabServiceClientOperator gitlabServiceClientOperator;
-    private UserAttrService userAttrService;
-    private AppServiceService appServiceService;
-    private DevopsCiJobRecordService devopsCiJobRecordService;
-    private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
-    private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
-    private DevopsProjectService devopsProjectService;
-    private BaseServiceClientOperator baseServiceClientOperator;
+    private final DevopsCiPipelineMapper devopsCiPipelineMapper;
+    private final DevopsCiPipelineRecordService devopsCiPipelineRecordService;
+    private final DevopsCiStageService devopsCiStageService;
+    private final DevopsCiJobService devopsCiJobService;
+    private final DevopsCiContentService devopsCiContentService;
+    private final GitlabServiceClientOperator gitlabServiceClientOperator;
+    private final UserAttrService userAttrService;
+    private final AppServiceService appServiceService;
+    private final DevopsCiJobRecordService devopsCiJobRecordService;
+    private final DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
+    private final DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
+    private final DevopsProjectService devopsProjectService;
+    private final BaseServiceClientOperator baseServiceClientOperator;
+    private final ProdRepoClientOperator prodRepoClientOperator;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiPipelineMapper devopsCiPipelineMapper,
@@ -107,6 +111,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
             DevopsProjectService devopsProjectService,
             BaseServiceClientOperator baseServiceClientOperator,
+            ProdRepoClientOperator prodRepoClientOperator,
             DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper) {
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
@@ -121,6 +126,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.baseServiceClientOperator = baseServiceClientOperator;
         this.devopsProjectService = devopsProjectService;
+        this.prodRepoClientOperator = prodRepoClientOperator;
     }
 
     private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
@@ -572,6 +578,39 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
     }
 
+    private static MavenRepoVO convertRepo(NexusMavenRepoDTO nexusMavenRepoDTO) {
+        MavenRepoVO mavenRepoVO = new MavenRepoVO();
+        mavenRepoVO.setName(nexusMavenRepoDTO.getName());
+        mavenRepoVO.setPrivateRepo(Boolean.TRUE);
+        if ("MIXED".equals(nexusMavenRepoDTO.getVersionPolicy())) {
+            mavenRepoVO.setType(GitOpsConstants.SNAPSHOT + "," + GitOpsConstants.RELEASE);
+        } else {
+            mavenRepoVO.setType(nexusMavenRepoDTO.getVersionPolicy().toLowerCase());
+        }
+        mavenRepoVO.setUrl(nexusMavenRepoDTO.getUrl());
+        mavenRepoVO.setUsername(nexusMavenRepoDTO.getNeUserId());
+        mavenRepoVO.setPassword(nexusMavenRepoDTO.getNeUserPassword());
+        return mavenRepoVO;
+    }
+
+    /**
+     * 生成maven构建相关的脚本
+     *
+     * @param projectId          项目id
+     * @param jobId              job id
+     * @param ciConfigTemplateVO maven构建阶段的信息
+     * @param hasSettings        这个阶段是否有配置settings
+     * @return 生成的shell脚本
+     */
+    private List<String> buildMavenScripts(final Long projectId, final Long jobId, CiConfigTemplateVO ciConfigTemplateVO, boolean hasSettings) {
+        List<String> shells = GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(ciConfigTemplateVO.getScript()), true, true);
+        if (hasSettings) {
+            // 插入shell指令将配置的settings文件下载到项目目录下
+            shells.add(0, GitlabCiUtil.downloadMavenSettings(projectId, jobId, ciConfigTemplateVO.getSequence()));
+        }
+        return shells;
+    }
+
     /**
      * 把配置转换为gitlab-ci配置（maven,sonarqube）
      *
@@ -640,6 +679,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                             case DOCKER:
                                 result.addAll(GitlabCiUtil.generateDockerScripts(projectId, config.getArtifactFileName(), config.getDockerContextDir(), config.getDockerFilePath()));
                                 break;
+                            case MAVEN_DEPLOY:
+                                List<MavenRepoVO> repos = buildAndSaveMavenSettings(projectId, jobId, config.getSequence(), config.getMavenDeployRepoSettings());
+                                result.addAll(buildMavenScripts(projectId, jobId, config, repos));
+                                break;
                         }
                     });
             return result;
@@ -648,24 +691,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             return ArrayUtil.singleAsList(GitlabCiUtil.generateChartBuildScripts());
         }
         return Collections.emptyList();
-    }
-
-    /**
-     * 生成maven构建相关的脚本
-     *
-     * @param projectId          项目id
-     * @param jobId              job id
-     * @param ciConfigTemplateVO maven构建阶段的信息
-     * @param hasSettings        这个阶段是否有配置settings
-     * @return 生成的shell脚本
-     */
-    private List<String> buildMavenScripts(final Long projectId, final Long jobId, CiConfigTemplateVO ciConfigTemplateVO, boolean hasSettings) {
-        List<String> shells = GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(ciConfigTemplateVO.getScript()), true, true);
-        if (hasSettings) {
-            // 插入shell指令将配置的settings文件下载到项目目录下
-            shells.add(0, GitlabCiUtil.downloadMavenSettings(projectId, jobId, ciConfigTemplateVO.getSequence()));
-        }
-        return shells;
     }
 
     /**
@@ -692,5 +717,90 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, ciConfigTemplateVO.getSequence(), settings);
         MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
         return true;
+    }
+
+    /**
+     * 生成maven构建相关的脚本
+     *
+     * @param projectId          项目id
+     * @param jobId              job id
+     * @param ciConfigTemplateVO maven发布软件包阶段的信息
+     * @param mavenRepoVO        仓库信息
+     * @return 生成的shell脚本
+     */
+    private List<String> buildMavenScripts(final Long projectId, final Long jobId, CiConfigTemplateVO ciConfigTemplateVO, List<MavenRepoVO> mavenRepoVO) {
+        List<String> shells = new ArrayList<>();
+        // 这里这么写是为了考虑之后可能选了多个仓库, 如果是多个仓库的话, 变量替换不便
+        List<String> templateShells = GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(ciConfigTemplateVO.getScript()), true, true);
+        if (!CollectionUtils.isEmpty(mavenRepoVO)) {
+            // 插入shell指令将配置的settings文件下载到项目目录下
+            shells.add(GitlabCiUtil.downloadMavenSettings(projectId, jobId, ciConfigTemplateVO.getSequence()));
+
+            // 包含repoId锚点的字符串在templateShells中的索引号
+            int repoIdIndex = -1;
+            // 包含repoUrl锚点的字符串在templateShells中的索引号
+            int repoUrlIndex = -1;
+            // 寻找包含这两个锚点的字符串位置
+            for (int i = 0; i < templateShells.size(); i++) {
+                if (repoIdIndex == -1) {
+                    if (templateShells.get(i).contains(GitOpsConstants.CHOERODON_MAVEN_REPO_ID)) {
+                        repoIdIndex = i;
+                    }
+                }
+                if (repoUrlIndex == -1) {
+                    if (templateShells.get(i).contains(GitOpsConstants.CHOERODON_MAVEN_REPO_URL)) {
+                        repoUrlIndex = i;
+                    }
+                }
+                if (repoIdIndex != -1 && repoUrlIndex != -1) {
+                    // 没必要再找了
+                    break;
+                }
+            }
+
+            // 为每一个仓库都从模板的脚本中加一份生成的命令
+            for (MavenRepoVO repo : mavenRepoVO) {
+                // 将预定的变量(仓库名和地址)替换为settings.xml文件指定的
+                List<String> commands = new ArrayList<>(templateShells);
+                if (repoIdIndex != -1) {
+                    commands.set(repoIdIndex, commands.get(repoIdIndex).replace(GitOpsConstants.CHOERODON_MAVEN_REPO_ID, repo.getName()));
+                }
+                if (repoUrlIndex != -1) {
+                    commands.set(repoUrlIndex, commands.get(repoUrlIndex).replace(GitOpsConstants.CHOERODON_MAVEN_REPO_URL, repo.getUrl()));
+                }
+                shells.addAll(commands);
+            }
+        } else {
+            shells.addAll(templateShells);
+        }
+        return shells;
+    }
+
+    /**
+     * 生成并存储maven settings到数据库
+     *
+     * @param projectId               项目id
+     * @param jobId                   job id
+     * @param sequence                这个步骤的序号
+     * @param mavenDeployRepoSettings 配置信息
+     * @return null表示没有settings配置，不为null表示有
+     */
+    private List<MavenRepoVO> buildAndSaveMavenSettings(Long projectId, Long jobId, Long sequence, MavenDeployRepoSettings mavenDeployRepoSettings) {
+        if (CollectionUtils.isEmpty(mavenDeployRepoSettings.getNexusRepoIds())) {
+            return Collections.emptyList();
+        }
+        List<NexusMavenRepoDTO> nexusMavenRepoDTOs = prodRepoClientOperator.getRepoUserByProject(null, projectId, mavenDeployRepoSettings.getNexusRepoIds());
+
+        if (CollectionUtils.isEmpty(nexusMavenRepoDTOs)) {
+            return Collections.emptyList();
+        }
+
+        List<MavenRepoVO> mavenRepoVOS = nexusMavenRepoDTOs.stream().map(DevopsCiPipelineServiceImpl::convertRepo).collect(Collectors.toList());
+
+        // settings文件内容
+        String settings = buildSettings(mavenRepoVOS);
+        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, sequence, settings);
+        MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
+        return mavenRepoVOS;
     }
 }
