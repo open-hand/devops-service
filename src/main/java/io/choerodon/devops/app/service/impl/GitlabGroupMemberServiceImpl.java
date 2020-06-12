@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.UserProjectLabelVO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.EnvironmentType;
 import io.choerodon.devops.infra.enums.GitlabGroupType;
@@ -31,6 +33,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
+import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 
@@ -71,11 +74,11 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 .forEach(gitlabGroupMemberVO -> {
                     try {
                         List<String> userMemberRoleList = gitlabGroupMemberVO.getRoleLabels();
-                        if (userMemberRoleList == null) {
-                            userMemberRoleList = new ArrayList<>();
+                        if (CollectionUtils.isEmpty(userMemberRoleList)) {
                             LOGGER.info("user member role is empty");
                             // 用户成员角色为空时，相当于删除该用户在此项目下的成员角色
                             deleteGitlabGroupMemberRole(gitlabGroupMemberVOList);
+                            return;
                         }
                         MemberHelper memberHelper = getGitlabGroupMemberRole(userMemberRoleList);
                         operation(gitlabGroupMemberVO.getResourceId(),
@@ -128,11 +131,25 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         if (CollectionUtils.isEmpty(projectDTOS)) {
             return;
         }
+        Set<Long> projectIds = projectDTOS.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
+        List<UserProjectLabelVO> labels = baseServiceClientOperator.listRoleLabelsForUserInTheProject(gitlabGroupMemberVO.getUserId(), projectIds);
+        Map<Long, UserProjectLabelVO> projectLabels = labels.stream().collect(Collectors.toMap(UserProjectLabelVO::getProjectId, Function.identity()));
+
         projectDTOS.forEach(projectDTO -> {
             LOGGER.info("start delete project id is {} for gitlab org owner", projectDTO.getId());
             // 如果删除的成员为该项目下的项目所有者，则不删除gitlab相应的权限
             if (!baseServiceClientOperator.isProjectOwner(gitlabGroupMemberVO.getUserId(), projectDTO.getId())) {
                 deleteAllPermissionInProjectOfUser(gitlabGroupMemberVO, projectDTO.getId(), true);
+
+                // 如果不是所有者, 同步一次项目层权限,
+                // 假如用户在gitlab的project是develop权限, 但是在group是owner, 删除group的owner后,
+                // project中的develop权限也会被gitlab删除
+                UserProjectLabelVO label = projectLabels.get(projectDTO.getId());
+                MemberHelper memberHelper = getGitlabGroupMemberRole(label == null || CollectionUtils.isEmpty(label.getRoleLabels()) ? Collections.emptyList() : new ArrayList<>(label.getRoleLabels()));
+                operation(projectDTO.getId(),
+                        ResourceLevel.PROJECT.value(),
+                        memberHelper,
+                        gitlabGroupMemberVO.getUserId());
             }
         });
     }
@@ -380,11 +397,14 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         AccessLevel accessLevel = AccessLevel.forValue(Collections.max(Arrays.asList(roles)));
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrDTO.getIamUserId());
         if (Objects.isNull(iamUserDTO)) {
+            LogUtil.loggerInfoObjectNullWithId("user", userAttrDTO.getIamUserId(), LOGGER);
             return;
         }
-        // 如果当前iam用户只有项目成员的权限,并且他不是组织管理员
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(resourceId);
+        // 如果当前iam用户只有项目成员的权限,并且他不是这个组织的组织管理员
         if (AccessLevel.DEVELOPER.equals(accessLevel)
-                && !baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), iamUserDTO.getOrganizationId())) {
+                && !baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), projectDTO.getOrganizationId())) {
+            LOGGER.debug("Access level is develop for user with id {} in project {}", userId, resourceId);
             // 查看是不是由项目所有者改为项目成员
             devopsProjectDTO = devopsProjectService.baseQueryByProjectId(resourceId);
 
@@ -416,6 +436,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             // 为当前项目下所有跳过权限检查的环境库加上gitlab用户权限
             addRoleForSkipPermissionEnvironment(resourceId, gitlabUserId);
         } else if (AccessLevel.OWNER.equals(accessLevel)) {
+            LOGGER.debug("Access level is owner for user with id {} in project {}", userId, resourceId);
             // 删除用户时同时清除gitlab的权限
             List<Integer> gitlabProjectIds = applicationService
                     .baseListByProjectId(resourceId).stream().filter(e -> e.getGitlabProjectId() != null)
@@ -457,6 +478,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             }
 
         }
+        LOGGER.debug("Finish member role operation for user with id {} and access level {}", userId, accessLevel);
     }
 
     private void deletePermissionUserRelation(Long projectId, Long userId) {

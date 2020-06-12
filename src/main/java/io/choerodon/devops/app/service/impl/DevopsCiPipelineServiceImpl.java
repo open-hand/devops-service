@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.GitOpsConstants.DEFAULT_PIPELINE_RECORD_SIZE;
+
 import com.alibaba.fastjson.JSONObject;
 
 import io.choerodon.core.domain.Page;
@@ -57,7 +59,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCiPipelineServiceImpl.class);
 
-    private static final int DEFAULT_PIPELINE_RECORD_SIZE = 5;
     private static final String CREATE_PIPELINE_FAILED = "create.pipeline.failed";
     private static final String UPDATE_PIPELINE_FAILED = "update.pipeline.failed";
     private static final String DISABLE_PIPELINE_FAILED = "disable.pipeline.failed";
@@ -100,6 +101,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCiContentService devopsCiContentService,
             GitlabServiceClientOperator gitlabServiceClientOperator,
             UserAttrService userAttrService,
+            @Lazy
             AppServiceService appServiceService,
             DevopsCiJobRecordService devopsCiJobRecordService,
             DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
@@ -681,11 +683,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             settings = buildSettings(ciConfigTemplateVO.getRepos());
         } else if (!StringUtils.isEmpty(ciConfigTemplateVO.getMavenSettings())) {
             // 使用用户提供的xml内容，不进行内容的校验
-            settings = ciConfigTemplateVO.getMavenSettings();
+            settings = Base64Util.getBase64DecodedString(ciConfigTemplateVO.getMavenSettings());
         } else {
             // 用户没有提供settings文件配置
             return false;
         }
+        // 这里存储的ci setting文件内容是解密后的
         DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, ciConfigTemplateVO.getSequence(), settings);
         MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
         return true;

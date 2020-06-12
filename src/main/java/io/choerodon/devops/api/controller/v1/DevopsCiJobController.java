@@ -26,6 +26,7 @@ import io.choerodon.swagger.annotation.Permission;
 public class DevopsCiJobController {
     private DevopsCiJobService devopsCiJobService;
 
+
     public DevopsCiJobController(DevopsCiJobService devopsCiJobService) {
         this.devopsCiJobService = devopsCiJobService;
     }
@@ -44,6 +45,7 @@ public class DevopsCiJobController {
     public ResponseEntity<SonarInfoVO> getSonarDefault() {
         return ResponseEntity.ok(devopsCiJobService.getSonarDefault());
     }
+
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询job日志")

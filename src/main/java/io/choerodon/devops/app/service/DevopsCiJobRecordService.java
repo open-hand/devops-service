@@ -16,8 +16,6 @@ import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 public interface DevopsCiJobRecordService {
     /**
      * 根据gitlab-Job id查询job执行记录
-     * @param gitlabJobId
-     * @return
      */
     DevopsCiJobRecordDTO queryByGitlabJobId(Long gitlabJobId);
 
@@ -27,7 +25,6 @@ public interface DevopsCiJobRecordService {
 
     /**
      * 根据gitlab_project_id删除job record
-     * @param gitlabProjectId
      */
     void deleteByGitlabProjectId(Long gitlabProjectId);
 
@@ -40,4 +37,12 @@ public interface DevopsCiJobRecordService {
      * 保存一条job记录
      */
     void create(Long ciPipelineRecordId, Long gitlabProjectId, JobDTO jobDTO, Long iamUserId);
+
+    /**
+     * 根据流水线纪录id获取job纪录的数量
+     *
+     * @param ciPipelineRecordId 流水线纪录id
+     * @return job纪录数量
+     */
+    int selectCountByCiPipelineRecordId(Long ciPipelineRecordId);
 }

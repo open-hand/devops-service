@@ -18,6 +18,9 @@ public class Command {
     @ApiModelProperty("资源的状态/如果资源需要状态，由agent返回")
     private String resourceStatus;
 
+    @ApiModelProperty("资源所在namespace")
+    private String namespace;
+
     public Long getId() {
         return id;
     }
@@ -57,6 +60,14 @@ public class Command {
 
     public void setResourceStatus(String resourceStatus) {
         this.resourceStatus = resourceStatus;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
 
     @Override

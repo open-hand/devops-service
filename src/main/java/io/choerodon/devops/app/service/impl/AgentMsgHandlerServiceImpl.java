@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.GitOpsConstants.DATE_PATTERN;
+import static io.choerodon.devops.infra.constant.GitOpsConstants.THREE_MINUTE_MILLISECONDS;
+
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -49,9 +52,6 @@ import io.choerodon.devops.infra.util.*;
  */
 @Service
 public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
-    private static final int THREE_MINUTE_MILLISECONDS = 3 * 60 * 1000;
-    private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
-
     public static final String CREATE_TYPE = "create";
     public static final String UPDATE_TYPE = "update";
     public static final String EVICTED = "Evicted";
@@ -1351,6 +1351,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     private void installResource(List<Resource> resources, AppServiceInstanceDTO appServiceInstanceDTO) {
         try {
+            if (CollectionUtils.isEmpty(resources)) {
+                // 可能为空的情况是prometheus的资源数据过大(80M), 所以agent处理将resource字段设置为null
+                logger.info("InstallResource: resource empty for instance with code: {}", appServiceInstanceDTO.getCode());
+                return;
+            }
             for (Resource resource : resources) {
                 Long instanceId = appServiceInstanceDTO.getId();
                 if (resource.getKind().equals(ResourceType.INGRESS.getType())) {

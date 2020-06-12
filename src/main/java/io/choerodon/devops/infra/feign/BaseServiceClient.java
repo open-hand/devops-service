@@ -6,6 +6,7 @@ import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
+
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -183,8 +184,6 @@ public interface BaseServiceClient {
 
     /**
      * 查询资源限制
-     *
-     * @return
      */
     @GetMapping("/choerodon/v1/organizations/resource_limit")
     ResponseEntity<ResourceLimitVO> queryResourceLimit();
@@ -195,4 +194,16 @@ public interface BaseServiceClient {
     @GetMapping("/choerodon/v1/organizations/{organization_id}/clients/query_by_name")
     ResponseEntity<ClientVO> queryClientByName(@PathVariable("organization_id") Long organizationId,
                                                @RequestParam(value = "client_name") String clientName);
+
+    /**
+     * 批量根据项目id查询用户在这个项目下拥有的角色标签, 如果在某个项目下没有角色, 不会包含该项目的纪录
+     *
+     * @param userId     用户id
+     * @param projectIds 项目id
+     * @return 标签
+     */
+    @PostMapping("/choerodon/v1/users/{user_id}/project_role_labels")
+    ResponseEntity<List<UserProjectLabelVO>> listRoleLabelsForUserInTheProject(
+            @PathVariable("user_id") Long userId,
+            @RequestBody Set<Long> projectIds);
 }

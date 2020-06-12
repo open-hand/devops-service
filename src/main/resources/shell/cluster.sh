@@ -1,6 +1,7 @@
-helm install --repo={REPOURL} \
+helm upgrade --install  \
+    {NAME} \
+    --repo={REPOURL} \
     --namespace=choerodon \
-    --name={NAME} \
     --version={VERSION} \
     --set config.connect={SERVICEURL} \
     --set config.token={TOKEN} \

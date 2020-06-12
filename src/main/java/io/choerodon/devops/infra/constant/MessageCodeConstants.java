@@ -25,4 +25,9 @@ public class MessageCodeConstants {
     public static final String GITLAB_PWD = "GITLABPASSWORD";
     public static final String INVITE_USER = "INVITEUSER";
     public static final String DELETE_APP_SERVICE = "DELETEAPPSERVICE";
+    public static final String PIPELINE_FAILED = "PIPELINEFAILED";
+    public static final String PIPELINE_SUCCESS = "PIPELINESUCCESS";
+    public static final String PIPELINE_AUDIT = "PIPELINEAUDIT";
+    public static final String PIPELINE_STOP = "PIPELINESTOP";
+    public static final String PIPELINE_PASS = "PIPELINEPASS";
 }

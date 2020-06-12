@@ -127,4 +127,11 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
 
         devopsCiJobRecordMapper.insertSelective(recordDTO);
     }
+
+    @Override
+    public int selectCountByCiPipelineRecordId(Long ciPipelineRecordId) {
+        DevopsCiJobRecordDTO condition = new DevopsCiJobRecordDTO();
+        condition.setCiPipelineRecordId(Objects.requireNonNull(ciPipelineRecordId));
+        return devopsCiJobRecordMapper.selectCount(condition);
+    }
 }

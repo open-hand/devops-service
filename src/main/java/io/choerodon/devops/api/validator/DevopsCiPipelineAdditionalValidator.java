@@ -14,6 +14,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.enums.CiJobScriptTypeEnum;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
+import io.choerodon.devops.infra.util.Base64Util;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.MavenSettingsUtil;
 
@@ -185,7 +186,7 @@ public class DevopsCiPipelineAdditionalValidator {
         // 校验用户直接粘贴的maven的settings文件的内容
         if (!StringUtils.isEmpty(config.getMavenSettings())) {
             // 如果不符合xml格式，抛异常
-            if (!MavenSettingsUtil.isXmlFormat(config.getMavenSettings())) {
+            if (!MavenSettingsUtil.isXmlFormat(Base64Util.getBase64DecodedString(config.getMavenSettings()))) {
                 throw new CommonException(ERROR_MAVEN_SETTINGS_NOT_XML_FORMAT, config.getName());
             }
         }

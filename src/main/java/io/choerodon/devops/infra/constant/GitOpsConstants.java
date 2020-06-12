@@ -171,4 +171,25 @@ public class GitOpsConstants {
      * {带/的gitlab地址}{组织code}-{项目code}/{应用服务code}
      */
     public static final String REPO_URL_TEMPLATE_WITHOUT_SUFFIX = "%s%s-%s/%s";
+
+    /**
+     * 流水线异步数据更新的执行器的名称
+     * 不用完整单词作为名称的原因是, 长了在日志中会被截取后半部分显示, 反而会更不完整
+     */
+    public static final String PIPELINE_EXECUTOR = "ci-p-executor";
+
+    /**
+     * DevOps的流水线的redis的key的模板, 用于控制后台刷新gitlab流水线数据的频率
+     * 变量是 gitlabPipelineId
+     */
+    public static final String CI_PIPELINE_REDIS_KEY_TEMPLATE = "devops-service:ci-pipeline:%s";
+
+    /**
+     * 查询流水线时, 默认的流水线纪录大小
+     */
+    public static final int DEFAULT_PIPELINE_RECORD_SIZE = 5;
+
+    public static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
+
+    public static final int THREE_MINUTE_MILLISECONDS = 3 * 60 * 1000;
 }

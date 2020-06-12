@@ -103,7 +103,7 @@ env:
     SERVICES_GATEWAY_URL: http://api.example.com
 
     # 指定 cluster-agent 与本服务匹配的版本
-    AGENT_VERSION: 0.19.0
+    AGENT_VERSION: 0.22.1
     # cluster-agent 访问本服务的 websocket 地址
     AGENT_SERVICEURL: ws://devops.example.com/websocket
     # agent 的 helm chart 仓库地址
@@ -142,10 +142,10 @@ readinessProbe:
 resources: 
   limits:
     # cpu: 100m
-    memory: 2Gi
+    memory: 3Gi
   requests:
     # cpu: 100m
-    memory: 2Gi
+    memory: 3Gi
 
 ## 插件相关配置
 plugins:
