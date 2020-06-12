@@ -783,7 +783,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      * @param jobId                   job id
      * @param sequence                这个步骤的序号
      * @param mavenDeployRepoSettings 配置信息
-     * @return null表示没有settings配置，不为null表示有
+     * @return 为空表示没有settings配置，不为空表示有
      */
     private List<MavenRepoVO> buildAndSaveMavenSettings(Long projectId, Long jobId, Long sequence, MavenDeployRepoSettings mavenDeployRepoSettings) {
         if (CollectionUtils.isEmpty(mavenDeployRepoSettings.getNexusRepoIds())) {
