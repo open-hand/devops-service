@@ -8,11 +8,14 @@ import javax.validation.constraints.NotEmpty;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.api.validator.annotation.AtMostSeveralFieldsNotEmpty;
+
 /**
- *
  * @author wanghao
  * @Date 2020/4/2 17:00
  */
+@AtMostSeveralFieldsNotEmpty(fields = {"triggerRefs", "regexMatch", "exactMatch", "exactExclude"},
+        message = "error.job.trigger.type.at.most.one")
 @Table(name = "devops_ci_job")
 public class DevopsCiJobVO {
 
@@ -33,9 +36,16 @@ public class DevopsCiJobVO {
     @ApiModelProperty("任务类型")
     @NotEmpty(message = "error.job.type.cannot.be.null")
     private String type;
-    @ApiModelProperty("触发分支")
-    @NotEmpty(message = "error.job.triggerRefs.cannot.be.null")
+
+    @ApiModelProperty("分支匹配模式/可以传入分支关键字和tags关键字,模糊匹配")
     private String triggerRefs;
+    @ApiModelProperty("正则匹配模式")
+    private String regexMatch;
+    @ApiModelProperty("精确匹配模式")
+    private String exactMatch;
+    @ApiModelProperty("精确排除模式")
+    private String exactExclude;
+
     @ApiModelProperty("详细信息")
     @NotEmpty(message = "error.job.metadata.cannot.be.null")
     private String metadata;
@@ -112,5 +122,29 @@ public class DevopsCiJobVO {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public String getRegexMatch() {
+        return regexMatch;
+    }
+
+    public void setRegexMatch(String regexMatch) {
+        this.regexMatch = regexMatch;
+    }
+
+    public String getExactMatch() {
+        return exactMatch;
+    }
+
+    public void setExactMatch(String exactMatch) {
+        this.exactMatch = exactMatch;
+    }
+
+    public String getExactExclude() {
+        return exactExclude;
+    }
+
+    public void setExactExclude(String exactExclude) {
+        this.exactExclude = exactExclude;
     }
 }
