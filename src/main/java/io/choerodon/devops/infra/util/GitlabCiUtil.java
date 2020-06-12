@@ -11,7 +11,10 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
 
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
+import io.choerodon.devops.infra.dto.gitlab.ci.OnlyExceptPolicy;
+import io.choerodon.devops.infra.enums.DefaultTriggerRefTypeEnum;
 
 /**
  * @author zmf
@@ -273,5 +276,46 @@ public class GitlabCiUtil {
      */
     public static String generateChartBuildScripts() {
         return GitOpsConstants.CHART_BUILD;
+    }
+
+    public static void processTriggerRefs(CiJob ciJob, String triggerRefs) {
+        OnlyExceptPolicy onlyExceptPolicy = new OnlyExceptPolicy();
+        List<String> refs = new ArrayList<>();
+        for (String ref : triggerRefs.split(",")) {
+            if (!DefaultTriggerRefTypeEnum.contains(ref)) {
+                if ("tag".equals(ref)) {
+                    ref = DefaultTriggerRefTypeEnum.TAGS.value();
+                } else {
+                    ref = "/^.*" + ref + ".*$/";
+                }
+
+            }
+
+            refs.add(ref);
+        }
+        onlyExceptPolicy.setRefs(refs);
+        ciJob.setOnly(onlyExceptPolicy);
+    }
+
+    public static void processRegexMatch(CiJob ciJob, String regexMatch) {
+        OnlyExceptPolicy onlyExceptPolicy = new OnlyExceptPolicy();
+        List<String> refs = new ArrayList<>();
+        refs.add(regexMatch);
+        onlyExceptPolicy.setRefs(refs);
+        ciJob.setOnly(onlyExceptPolicy);
+    }
+
+    public static void processExactMatch(CiJob ciJob, String exactMatch) {
+        String regex = "^" + exactMatch + "$";
+        processRegexMatch(ciJob, regex);
+    }
+
+    public static void processExactExclude(CiJob ciJob, String exactExclude) {
+        String regex = "^" + exactExclude + "$";
+        OnlyExceptPolicy onlyExceptPolicy = new OnlyExceptPolicy();
+        List<String> refs = new ArrayList<>();
+        refs.add(regex);
+        onlyExceptPolicy.setRefs(refs);
+        ciJob.setExcept(onlyExceptPolicy);
     }
 }

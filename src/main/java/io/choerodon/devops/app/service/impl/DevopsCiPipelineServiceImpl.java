@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -29,6 +30,7 @@ import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -540,7 +542,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         ciJob.setImage(job.getImage());
                     }
                     ciJob.setStage(stageVO.getName());
-                    ciJob.setOnly(buildOnlyExceptPolicyObject(job.getTriggerRefs()));
+                    processOnlyAndExcept(job, ciJob);
                     ciJob.setScript(buildScript(projectId, job));
                     gitlabCi.addJob(job.getName(), ciJob);
                 });
@@ -548,6 +550,24 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         });
         gitlabCi.setBeforeScript(ArrayUtil.singleAsList(GitOpsConstants.CHOERODON_BEFORE_SCRIPT));
         return gitlabCi;
+    }
+
+    /**
+     * 处理job的触发方式
+     *
+     * @param metadata job元数据
+     * @param ciJob    ci文件的job对象
+     */
+    private void processOnlyAndExcept(DevopsCiJobVO metadata, CiJob ciJob) {
+        if (!StringUtils.isEmpty(metadata.getTriggerRefs())) {
+            GitlabCiUtil.processTriggerRefs(ciJob, metadata.getTriggerRefs());
+        } else if (!StringUtils.isEmpty(metadata.getRegexMatch())) {
+            GitlabCiUtil.processRegexMatch(ciJob, metadata.getRegexMatch());
+        } else if (!StringUtils.isEmpty(metadata.getExactMatch())) {
+            GitlabCiUtil.processExactMatch(ciJob, metadata.getExactMatch());
+        } else if (!StringUtils.isEmpty(metadata.getExactExclude())) {
+            GitlabCiUtil.processExactExclude(ciJob, metadata.getExactExclude());
+        }
     }
 
     /**
@@ -669,25 +689,5 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, ciConfigTemplateVO.getSequence(), settings);
         MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
         return true;
-    }
-
-
-    private OnlyExceptPolicy buildOnlyExceptPolicyObject(String triggerRefs) {
-        OnlyExceptPolicy onlyExceptPolicy = new OnlyExceptPolicy();
-        List<String> refs = new ArrayList<>();
-        for (String ref : triggerRefs.split(",")) {
-            if (!DefaultTriggerRefTypeEnum.contains(ref)) {
-                if ("tag".equals(ref)) {
-                    ref = DefaultTriggerRefTypeEnum.TAGS.value();
-                } else {
-                    ref = "/^.*" + ref + ".*$/";
-                }
-
-            }
-
-            refs.add(ref);
-        }
-        onlyExceptPolicy.setRefs(refs);
-        return onlyExceptPolicy;
     }
 }
