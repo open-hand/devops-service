@@ -1205,8 +1205,11 @@ public class PipelineServiceImpl implements PipelineService {
                     userIds.forEach(t -> {
                         IamUserDTO userDTO = baseServiceClientOperator.queryUserByUserId(TypeUtil.objToLong(t));
                         Receiver receiver = new Receiver();
-                        receiver.setEmail(userDTO.getEmail());
-                        receiver.setUserId(userDTO.getId());
+                        receiver.setEmail(Objects.requireNonNull(userDTO.getEmail()));
+                        receiver.setUserId(Objects.requireNonNull(userDTO.getId()));
+                        receiver.setTargetUserTenantId(Objects.requireNonNull(userDTO.getOrganizationId()));
+                        receiver.setPhone(userDTO.getPhone());
+
                         userList.add(receiver);
                     });
                 }
@@ -1256,6 +1259,8 @@ public class PipelineServiceImpl implements PipelineService {
                     Receiver user = new Receiver();
                     user.setEmail(iamUserDTO.getEmail());
                     user.setUserId(iamUserDTO.getId());
+                    user.setPhone(iamUserDTO.getPhone());
+                    user.setTargetUserTenantId(iamUserDTO.getOrganizationId());
                     userList.add(user);
                 });
             }

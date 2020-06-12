@@ -1095,7 +1095,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 () -> {
                     MessageSender sender = constructMessageSender(sendSettingCode, receivers, null, params, null, projectId);
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.info("Sender: {}", JsonHelper.marshalByJackson(sender));
+                        LOGGER.debug("Sender: {}", JsonHelper.marshalByJackson(sender));
                     }
                     messageClient.async().sendMessage(sender);
                 },
@@ -1108,7 +1108,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 () -> {
                     MessageSender sender = constructOrganizationMessageSender(sendSettingCode, receivers, null, params, null, organizationId);
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.info("Sender: {}", JsonHelper.marshalByJackson(sender));
+                        LOGGER.debug("Sender: {}", JsonHelper.marshalByJackson(sender));
                     }
                     messageClient.async().sendMessage(sender);
                 },
@@ -1119,7 +1119,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         LOGGER.debug("Send Notice: code: {}, params: {}, projectId: {}", sendSettingCode, params, projectId);
         MessageSender sender = constructMessageSender(sendSettingCode, null, receiveType, params, null, projectId);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.info("Sender: {}", JsonHelper.marshalByJackson(sender));
+            LOGGER.debug("Sender: {}", JsonHelper.marshalByJackson(sender));
         }
         messageClient.async().sendMessage(sender);
     }
