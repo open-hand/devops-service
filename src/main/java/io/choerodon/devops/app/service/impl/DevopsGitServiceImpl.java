@@ -1,30 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
-import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-
 import com.alibaba.fastjson.JSONObject;
-import io.kubernetes.client.models.V1Endpoints;
-import org.eclipse.jgit.api.Git;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.MessageSource;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
-import org.yaml.snakeyaml.Yaml;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -55,6 +31,29 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.kubernetes.client.models.V1Endpoints;
+import org.eclipse.jgit.api.Git;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.yaml.snakeyaml.Yaml;
+
+import javax.annotation.PostConstruct;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
+import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
 
 /**
  * Creator: Runge
@@ -315,15 +314,21 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchService.basePageBranch(appServiceId, pageable, params);
         Page<BranchVO> devopsBranchVOPageInfo = ConvertUtils.convertPage(devopsBranchDTOPageInfo, BranchVO.class);
 
+        List<Long> userIds = devopsBranchDTOPageInfo.getContent().stream().map(DevopsBranchDTO::getUserId).collect(Collectors.toList());
+        List<Long> lastCommitUserIds = devopsBranchDTOPageInfo.getContent().stream().map(DevopsBranchDTO::getLastCommitUser).collect(Collectors.toList());
+        List<Long> issuedIds = devopsBranchDTOPageInfo.getContent().stream().map(DevopsBranchDTO::getIssueId).collect(Collectors.toList());
+
+        Map<Long, List<IamUserDTO>> iamUserDTOMap = baseServiceClientOperator.listUsersByIds(userIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
+        Map<Long, List<IamUserDTO>> lastCommitUserDTOMap = baseServiceClientOperator.listUsersByIds(lastCommitUserIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
+        Map<Long, List<IssueDTO>> issues = agileServiceClientOperator.listIssueByIds(projectId, issuedIds).stream().collect(Collectors.groupingBy(IssueDTO::getIssueId));
+
         devopsBranchVOPageInfo.setContent(devopsBranchDTOPageInfo.getContent().stream().map(t -> {
             IssueDTO issueDTO = null;
             if (t.getIssueId() != null) {
-                issueDTO = agileServiceClientOperator.queryIssue(projectId, t.getIssueId(), organizationDTO.getTenantId());
+                issueDTO = issues.get(t.getIssueId()) == null ? null : issues.get(t.getIssueId()).get(0);
             }
-            IamUserDTO userDTO = baseServiceClientOperator.queryUserByUserId(
-                    userAttrService.queryUserIdByGitlabUserId(t.getUserId()));
-            IamUserDTO commitUserDTO = baseServiceClientOperator.queryUserByUserId(
-                    userAttrService.queryUserIdByGitlabUserId(t.getLastCommitUser()));
+            IamUserDTO userDTO = iamUserDTOMap.get(t.getUserId()) == null ? null : iamUserDTOMap.get(t.getUserId()).get(0);
+            IamUserDTO commitUserDTO = lastCommitUserDTOMap.get(t.getLastCommitUser()) == null ? null : lastCommitUserDTOMap.get(t.getLastCommitUser()).get(0);
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
             return getBranchVO(t, commitUrl, commitUserDTO, userDTO, issueDTO);
         }).collect(Collectors.toList()));

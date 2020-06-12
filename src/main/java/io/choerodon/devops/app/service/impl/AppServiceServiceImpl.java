@@ -542,7 +542,19 @@ public class AppServiceServiceImpl implements AppServiceService {
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOS.getContent(), urlSlash);
 
-        return ConvertUtils.convertPage(applicationServiceDTOS, this::dtoToRepVo);
+        Page<AppServiceRepVO> destination = new Page<>();
+        BeanUtils.copyProperties(applicationServiceDTOS, destination, "content");
+        if (applicationServiceDTOS.getContent() != null) {
+            List<AppServiceDTO> appServiceDTOList = applicationServiceDTOS.getContent();
+            List<Long> createdByIds = appServiceDTOList.stream().map(AppServiceDTO::getCreatedBy).collect(toList());
+            List<Long> lastUpdatedByIds = appServiceDTOList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList());
+            Map<Long, List<IamUserDTO>> createdByUsers = baseServiceClientOperator.listUsersByIds(createdByIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
+            Map<Long, List<IamUserDTO>> lastUpdatedByUsers = baseServiceClientOperator.listUsersByIds(lastUpdatedByIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
+            destination.setContent(applicationServiceDTOS.getContent().stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, createdByUsers, lastUpdatedByUsers)).collect(Collectors.toList()));
+        } else {
+            destination.setContent(new ArrayList<>());
+        }
+        return destination;
     }
 
 
@@ -578,9 +590,13 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-
+        List<Long> createdByIds = applicationDTOServiceList.stream().map(AppServiceDTO::getCreatedBy).collect(toList());
+        List<Long> lastUpdatedByIds = applicationDTOServiceList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList());
+        Map<Long, List<IamUserDTO>> createdByUsers = baseServiceClientOperator.listUsersByIds(createdByIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
+        Map<Long, List<IamUserDTO>> lastUpdatedByUsers = baseServiceClientOperator.listUsersByIds(lastUpdatedByIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
         initApplicationParams(projectDTO, organizationDTO, applicationDTOServiceList, urlSlash);
-        return ConvertUtils.convertList(applicationDTOServiceList, this::dtoToRepVo);
+
+        return applicationDTOServiceList.stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, createdByUsers, lastUpdatedByUsers)).collect(toList());
     }
 
     @Override
@@ -2857,8 +2873,24 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         appServiceRepVO.setGitlabProjectId(TypeUtil.objToLong(appServiceDTO.getGitlabProjectId()));
         return appServiceRepVO;
+    }
 
-
+    public AppServiceRepVO dtoToRepVo(AppServiceDTO appServiceDTO, Map<Long, List<IamUserDTO>> createdByUsers, Map<Long, List<IamUserDTO>> lastUpdatedByUsers) {
+        AppServiceRepVO appServiceRepVO = new AppServiceRepVO();
+        BeanUtils.copyProperties(appServiceDTO, appServiceRepVO);
+        appServiceRepVO.setFail(appServiceDTO.getFailed());
+        IamUserDTO createUser = null == createdByUsers.get(appServiceDTO.getCreatedBy()) ? null : createdByUsers.get(appServiceDTO.getCreatedBy()).get(0);
+        IamUserDTO updateUser = null == lastUpdatedByUsers.get(appServiceDTO.getLastUpdatedBy()) ? null : lastUpdatedByUsers.get(appServiceDTO.getLastUpdatedBy()).get(0);
+        if (createUser != null) {
+            appServiceRepVO.setCreateUserName(createUser.getRealName());
+            appServiceRepVO.setCreateLoginName(createUser.getLoginName());
+        }
+        if (updateUser != null) {
+            appServiceRepVO.setUpdateUserName(updateUser.getRealName());
+            appServiceRepVO.setUpdateLoginName(updateUser.getLoginName());
+        }
+        appServiceRepVO.setGitlabProjectId(TypeUtil.objToLong(appServiceDTO.getGitlabProjectId()));
+        return appServiceRepVO;
     }
 
 }
