@@ -35,6 +35,7 @@ const TreeMenu = observer(() => {
     if (item && item.itemType === ENV_ITEM) {
       const recentEnv = {
         ...item,
+        active: true,
         projectId,
         organizationId,
         projectName,
