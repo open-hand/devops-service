@@ -3,7 +3,7 @@ export default function setRecentItem({ value: recent }) {
     const recents = localStorage.envRecentItem ? JSON.parse(localStorage.envRecentItem) : [];
     const recentItem = saveRecent(
       recents,
-      recent, 7,
+      recent, 10,
     );
     localStorage.envRecentItem = JSON.stringify(recentItem);
   }
