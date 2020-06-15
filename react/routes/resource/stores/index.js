@@ -35,14 +35,24 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
       if (location.state) {
         const { envId, appServiceId, instanceId } = location.state;
         if (newViewType === IST_VIEW_TYPE) {
-          const parentId = `${envId}-${appServiceId}`;
-          resourceStore.setSelectedMenu({
-            id: instanceId,
-            parentId,
-            key: `${parentId}-${instanceId}`,
-            itemType: itemTypes.IST_ITEM,
-          });
-          resourceStore.setExpandedKeys([`${envId}`, `${envId}-${appServiceId}`]);
+          if (instanceId) {
+            const parentId = `${envId}-${appServiceId}`;
+            resourceStore.setSelectedMenu({
+              id: instanceId,
+              parentId,
+              key: `${parentId}-${instanceId}`,
+              itemType: itemTypes.IST_ITEM,
+            });
+            resourceStore.setExpandedKeys([`${envId}`, `${envId}-${appServiceId}`]);
+          } else {
+            resourceStore.setSelectedMenu({
+              id: envId,
+              parentId: '0',
+              key: String(envId),
+              itemType: itemTypes.ENV_ITEM,
+            });
+            resourceStore.setExpandedKeys([`${envId}`]);
+          }
         } else {
           resourceStore.setSelectedMenu({
             id: 0,
