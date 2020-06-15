@@ -283,7 +283,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void deleteArtifactsByGitlabProjectId(Long projectId, List<Long> gitlabPipelineIds) {
+    public void deleteArtifactsByGitlabPipelineIds(Long projectId, List<Long> gitlabPipelineIds) {
         if (CollectionUtils.isEmpty(gitlabPipelineIds)) {
             return;
         }

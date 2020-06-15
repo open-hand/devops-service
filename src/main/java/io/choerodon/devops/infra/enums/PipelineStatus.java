@@ -16,7 +16,7 @@ public enum PipelineStatus {
     CANCELED,
     SKIPPED;
 
-    private static HashMap<String, PipelineStatus> valuesMap = new HashMap<>(6);
+    private static final HashMap<String, PipelineStatus> valuesMap = new HashMap<>(6);
 
     static {
         PipelineStatus[] var0 = values();

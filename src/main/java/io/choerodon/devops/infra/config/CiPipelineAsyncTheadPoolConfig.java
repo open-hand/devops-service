@@ -1,6 +1,9 @@
 package io.choerodon.devops.infra.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.AsyncTaskExecutor;
@@ -15,15 +18,18 @@ import io.choerodon.devops.infra.constant.GitOpsConstants;
  * @since 2020/6/9
  */
 @Configuration
-public class AsyncTheadPoolConfig {
+public class CiPipelineAsyncTheadPoolConfig {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CiPipelineAsyncTheadPoolConfig.class);
 
     @Bean
     @Qualifier(GitOpsConstants.PIPELINE_EXECUTOR)
-    public AsyncTaskExecutor syncPipeline() {
+    public AsyncTaskExecutor syncPipeline(@Value("${devops.ci.pipeline.sync.executor.corePoolSize:5}") Integer corePoolSize,
+                                          @Value("${devops.ci.pipeline.sync.executor.maxPoolSize:8}") Integer maxPoolSize) {
+        LOGGER.debug("Create AsyncTaskExecutor for ci-pipeline. The coreSize is {} and the maxSize is {}", corePoolSize, maxPoolSize);
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setThreadNamePrefix(GitOpsConstants.PIPELINE_EXECUTOR);
-        executor.setMaxPoolSize(GitOpsConstants.DEFAULT_PIPELINE_RECORD_SIZE + 3);
-        executor.setCorePoolSize(GitOpsConstants.DEFAULT_PIPELINE_RECORD_SIZE);
+        executor.setMaxPoolSize(maxPoolSize);
+        executor.setCorePoolSize(corePoolSize);
         return executor;
     }
 }

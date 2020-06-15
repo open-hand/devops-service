@@ -31,10 +31,10 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.GitlabPipelineDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
-import io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.JobStatusEnum;
+import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.SonarQubeType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -203,6 +203,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             Long pipelineRecordId = devopsCiPipelineRecordDTO.getId();
             saveJobRecords(pipelineWebHookVO, pipelineRecordId);
         }
+
+        cleanArtifacts(applicationDTO.getProjectId(), record.getGitlabPipelineId(), PipelineStatus.forValue(devopsCiPipelineRecordDTO.getStatus()));
     }
 
     private void saveJobRecords(PipelineWebHookVO pipelineWebHookVO, Long pipelineRecordId) {
@@ -271,6 +273,27 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         return pipelineRecordInfo;
     }
 
+    private boolean isToDeleteArtifacts(PipelineStatus pipelineStatus) {
+        return PipelineStatus.CANCELED.equals(pipelineStatus)
+                || PipelineStatus.FAILED.equals(pipelineStatus)
+                || PipelineStatus.SUCCESS.equals(pipelineStatus);
+    }
+
+    /**
+     * 流水线状态为终结状态时, 清除软件包
+     *
+     * @param projectId        项目id
+     * @param gitlabPipelineId gitlab流水线id
+     * @param pipelineStatus   流水线状态
+     */
+    private void cleanArtifacts(Long projectId, Long gitlabPipelineId, PipelineStatus pipelineStatus) {
+        LOGGER.debug("Before check: to clean artifacts for pipeline with projectId {} gitlabPipelineId {} and pipeline status {}", projectId, gitlabPipelineId, pipelineStatus);
+        if (isToDeleteArtifacts(pipelineStatus)) {
+            LOGGER.debug("After check: to clean artifacts for pipeline with projectId {} gitlabPipelineId {} and pipeline status {}", projectId, gitlabPipelineId, pipelineStatus);
+            devopsCiJobService.deleteArtifactsByGitlabPipelineIds(projectId, Collections.singletonList(gitlabPipelineId));
+        }
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @Async(GitOpsConstants.PIPELINE_EXECUTOR)
     @Override
@@ -285,7 +308,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 GitUserNameUtil.getAdminId());
         List<JobDTO> jobDTOList = gitlabServiceClientOperator.listJobs(gitlabProjectId, gitlabPipelineId, GitUserNameUtil.getAdminId());
 
-        handUpdate(appServiceDTO, pipelineRecordId, TypeUtil.objToLong(gitlabPipelineId), pipelineDTO, jobDTOList);
+        Long gitlabPipelineIdLong = TypeUtil.objToLong(gitlabPipelineId);
+        handUpdate(appServiceDTO, pipelineRecordId, gitlabPipelineIdLong, pipelineDTO, jobDTOList);
+        cleanArtifacts(appServiceDTO.getProjectId(), gitlabPipelineIdLong, pipelineDTO.getStatus());
     }
 
     private void handUpdate(AppServiceDTO appServiceDTO, Long pipelineRecordId, Long gitlabPipelineId, GitlabPipelineDTO gitlabPipelineDTO, List<JobDTO> jobs) {

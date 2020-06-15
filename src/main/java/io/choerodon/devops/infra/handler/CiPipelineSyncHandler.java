@@ -33,25 +33,25 @@ public class CiPipelineSyncHandler {
     /**
      * ci流水线对未终结的流水线进行数据补偿的时间阈值, 单位: 毫秒 (默认600秒)
      */
-    @Value("${ci.pipeline.sync.unterminated.thresholdSeconds:600000}")
+    @Value("${devops.ci.pipeline.sync.unterminated.thresholdMilliSeconds:600000}")
     private Long unterminatedPipelineSyncThresholdMilliSeconds;
 
     /**
      * ci流水线对pending的流水线进行数据补偿的时间阈值, 单位: 毫秒 (默认600秒)
      */
-    @Value("${ci.pipeline.sync.pending.thresholdSeconds:600000}")
+    @Value("${devops.ci.pipeline.sync.pending.thresholdMilliSeconds:600000}")
     private Long pendingPipelineSyncThresholdMilliSeconds;
 
     /**
      * ci流水线对非跳过状态的且没有job信息流水线进行数据补偿的时间阈值, 单位: 毫秒 (默认600秒)
      */
-    @Value("${ci.pipeline.sync.jobEmpty.thresholdSeconds:600000}")
+    @Value("${devops.ci.pipeline.sync.jobEmpty.thresholdMilliSeconds:600000}")
     private Long emptyStageThresholdMilliSeconds;
 
     /**
      * redisKey的过期时间, 用于控制同一条流水线的刷新间隔, 减少对gitlab的访问次数
      */
-    @Value("${ci.pipeline.sync.refresh.periodSeconds:60}")
+    @Value("${devops.ci.pipeline.sync.refresh.periodSeconds:60}")
     private Long ciPipelineRefreshSeconds;
 
     @Lazy

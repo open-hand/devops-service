@@ -92,6 +92,25 @@ devops:
   ci:
     default:
       image: registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.9.1
+    pipeline:
+      sync:
+        executor:
+          # 核心线程池大小
+          corePoolSize: 5
+          # 最大线程池大小
+          maxPoolSize: 8
+        unterminated:
+          # ci流水线对未终结的流水线进行数据补偿的时间阈值, 单位: 毫秒 (默认600秒)
+          thresholdMilliSeconds: 600000
+        pending:
+          # ci流水线对pending的流水线进行数据补偿的时间阈值, 单位: 毫秒 (默认600秒)
+          thresholdMilliSeconds: 600000
+        jobEmpty:
+          # ci流水线对非跳过状态的且没有job信息流水线进行数据补偿的时间阈值, 单位: 毫秒 (默认600秒)
+          thresholdMilliSeconds: 600000
+        refresh:
+          # redisKey的过期时间, 用于控制同一条流水线的刷新间隔, 减少对gitlab的访问次数
+          periodSeconds: 60
   # 批量部署的请求条数限制
   batch:
     deployment:

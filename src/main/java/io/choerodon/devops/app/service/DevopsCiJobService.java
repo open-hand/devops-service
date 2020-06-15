@@ -117,7 +117,7 @@ public interface DevopsCiJobService {
      * @param projectId         项目id
      * @param gitlabPipelineIds gitlab流水线id列表
      */
-    void deleteArtifactsByGitlabProjectId(Long projectId, List<Long> gitlabPipelineIds);
+    void deleteArtifactsByGitlabPipelineIds(Long projectId, List<Long> gitlabPipelineIds);
 
     /**
      * CI过程上传软件包

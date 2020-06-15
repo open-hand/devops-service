@@ -335,7 +335,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCiJobRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
 
         // 删除pipeline之前执行过程上传的软件包数据
-        devopsCiJobService.deleteArtifactsByGitlabProjectId(projectId, devopsCiPipelineRecordMapper.listGitlabPipelineIdsByPipelineId(ciPipelineId));
+        devopsCiJobService.deleteArtifactsByGitlabPipelineIds(projectId, devopsCiPipelineRecordMapper.listGitlabPipelineIdsByPipelineId(ciPipelineId));
 
         // 删除pipeline记录
         devopsCiPipelineRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
