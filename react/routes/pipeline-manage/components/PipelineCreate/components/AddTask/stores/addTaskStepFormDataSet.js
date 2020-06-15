@@ -9,9 +9,6 @@ const optionDs = new DataSet({
     name: 'Npm构建',
     value: 'npm',
   }, {
-    name: '上传软件包至存储库',
-    value: 'upload',
-  }, {
     name: 'Docker构建',
     value: 'docker',
   }],

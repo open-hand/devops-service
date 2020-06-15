@@ -799,6 +799,8 @@ const pipelineManage = {
   'c7ncd.pipelineManage.record.empty.des': '已跳过该流水线的首次执行。您可直接点击全新执行来重跑流水线',
   'c7ncd.pipelineManage.record.empty.title.other': '阶段信息为空',
   'c7ncd.pipelineManage.record.empty.des.other': '未获取到此次执行的阶段信息',
+  'c7ncd.pipelineManage.create.share.title': '共享目录设置',
+  'c7ncd.pipelineManage.create.share.tips': '若勾选上传共享目录，则会将此任务中产生的工件或其它文件上传至共享目录，供之后的任务下载使用。若勾选下载共享目录，则会在此任务中下载使用该条流水线中已上传至共享目录中的工件',
 };
 
 const emptyPage = {

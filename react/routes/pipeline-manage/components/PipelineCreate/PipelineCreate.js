@@ -1,5 +1,5 @@
 import { axios } from '@choerodon/boot';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Fragment } from 'react';
 import { Form, TextField, Select, SelectBox, Modal, Button, DataSet } from 'choerodon-ui/pro';
 import { message, Icon } from 'choerodon-ui';
 import { observer } from 'mobx-react-lite';
@@ -9,6 +9,7 @@ import { usePipelineManageStore } from '../../stores';
 import StageEditBlock from '../PipelineFlow/components/stageEditBlock';
 
 import './pipelineCreate.less';
+import Tips from '../../../../../lib/components/new-tips';
 
 const { Option } = Select;
 
@@ -28,6 +29,8 @@ const PipelineCreate = observer(() => {
     dataSource,
     mainStore,
   } = usePipelineCreateStore();
+
+  const [expandIf, setExpandIf] = useState(false);
 
   useEffect(() => {
     if (dataSource) {
@@ -155,18 +158,24 @@ const PipelineCreate = observer(() => {
           help="此处仅能看到您有开发权限的启用状态的应用服务，并要求该应用服务必须有master分支，且尚未有关联的CI流水线"
         />
         <TextField style={{ display: 'none' }} />
-        <Select
-          // disabled={
-          //   !!(PipelineCreateFormDataSet.current && PipelineCreateFormDataSet.current.get('selectImage') === '0')
-          // }
-          combo
-          newLine
-          colSpan={2}
-          name="image"
-          onChange={handleChangeSelectImage}
-        >
-          <Option value={createUseStore.getDefaultImage}>{createUseStore.getDefaultImage}</Option>
-        </Select>
+        <div className="advanced_text" onClick={() => setExpandIf(!expandIf)}>
+          <span>高级设置</span>
+          <Icon style={{ fontSize: 18, marginLeft: 10 }} type={expandIf ? 'expand_less' : 'expand_more'} />
+        </div>
+        { expandIf ? (
+          <Select
+            // disabled={
+            //   !!(PipelineCreateFormDataSet.current && PipelineCreateFormDataSet.current.get('selectImage') === '0')
+            // }
+            combo
+            newLine
+            colSpan={2}
+            name="image"
+            onChange={handleChangeSelectImage}
+          >
+            <Option value={createUseStore.getDefaultImage}>{createUseStore.getDefaultImage}</Option>
+          </Select>
+        ) : null}
         {/* <SelectBox name="triggerType"> */}
         {/*  <Option value="auto">自动触发</Option> */}
         {/*  <Option disabled value="F">手动触发</Option> */}

@@ -47,7 +47,7 @@ const jobType = {
     children: [],
   },
   chart: {
-    name: '发布c7n版本',
+    name: '发布Chart',
     children: [],
   },
 };

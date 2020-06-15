@@ -16,7 +16,7 @@ const { Option } = Select;
 const obj = {
   Maven: 'Maven构建',
   npm: 'Npm构建',
-  upload: '上传软件包至存储库',
+  // upload: '上传软件包至存储库',
   docker: 'Docker构建',
   chart: 'Chart构建',
   go: 'Go语言构建',
@@ -44,6 +44,7 @@ const AddTask = observer(() => {
     appServiceId,
     PipelineCreateFormDataSet,
     image,
+    intl: { formatMessage },
   } = useAddTaskStore();
 
   const [steps, setSteps] = useState([]);
@@ -51,6 +52,7 @@ const AddTask = observer(() => {
   const [ConnectLoading, setConnectLoading] = useState(false);
   const [customYaml, setCustomYaml] = useState(useStore.getYaml.custom);
   const [defaultImage, setDefaultImage] = useState('');
+  const [expandIf, setExpandIf] = useState(false);
 
   useEffect(() => {
     if (steps.length > 0) {
@@ -90,6 +92,7 @@ const AddTask = observer(() => {
           let dockerFilePath;
           let uploadArtifactFileName;
           let dockerArtifactFileName;
+          const share = [];
           config && config.forEach((c) => {
             if (c.type === 'upload') {
               uploadFilePattern = c.uploadFilePattern;
@@ -101,6 +104,11 @@ const AddTask = observer(() => {
             }
             if (c.mavenSettings) {
               c.mavenSettings = Base64.decode(c.mavenSettings);
+            }
+          });
+          ['toUpload', 'toDownload'].forEach(item => {
+            if (jobDetail[item]) {
+              share.push(item);
             }
           });
           const newSteps = config || [];
@@ -120,6 +128,7 @@ const AddTask = observer(() => {
             password,
             sonarUrl,
             private: newSteps.length > 0 && newSteps.find(s => s.checked).repos ? ['custom'] : '',
+            share,
           };
           AddTaskFormDataSet.loadData([data]);
 
@@ -184,6 +193,8 @@ const AddTask = observer(() => {
         ...data,
         image: data.selectImage === '1' ? data.image : null,
         triggerRefs: data.triggerRefs.join(','),
+        toUpload: data.type === 'build' && data.share.includes('toUpload'),
+        toDownload: data.type === 'build' && data.share.includes('toDownload'),
         metadata: (function () {
           if (data.type === 'build') {
             return JSON.stringify({
@@ -929,7 +940,6 @@ const AddTask = observer(() => {
                     <div style={{ marginBottom: 20 }}>
                       <TextField style={{ width: 312 }} name="dockerFilePath" showHelp="tooltip" help="Dockerfile路径为Dockerfile文件相对于代码库根目录所在路径，如docker/Dockerfile或Dockerfile" />
                     </div>,
-                    <TextField style={{ width: 339 }} name="dockerArtifactFileName" />,
                   ];
                 }
               }
@@ -971,7 +981,7 @@ const AddTask = observer(() => {
     }
   };
 
-  const getImageDom = () => (
+  const getImageDom = () => (expandIf ? (
     <Select
       // disabled={
       //     !!(AddTaskFormDataSet.current && AddTaskFormDataSet.current.get('selectImage') === '0')
@@ -984,7 +994,21 @@ const AddTask = observer(() => {
     >
       <Option value={defaultImage}>{`${defaultImage}${defaultImage === useStore.getDefaultImage ? '(默认)' : ''}`}</Option>
     </Select>
-  );
+  ) : null);
+
+  const getShareSettings = () => (expandIf && AddTaskFormDataSet.current.get('type') === 'build' ? (
+    <div newLine colSpan={2}>
+      <Tips
+        title={formatMessage({ id: 'c7ncd.pipelineManage.create.share.title' })}
+        helpText={formatMessage({ id: 'c7ncd.pipelineManage.create.share.tips' })}
+        newLine
+      />
+      <SelectBox name="share" newLine colSpan={2}>
+        <Option value="toUpload">上传共享目录choerodon-ui-cache</Option>
+        <Option value="toDownload">下载共享目录choerodon-ui-cache</Option>
+      </SelectBox>
+    </div>
+  ) : null);
 
   return (
     <React.Fragment>
@@ -993,7 +1017,7 @@ const AddTask = observer(() => {
           <Option value="build">构建</Option>
           <Option value="sonar">代码检查</Option>
           <Option value="custom">自定义</Option>
-          <Option value="chart">发布c7n版本</Option>
+          <Option value="chart">发布Chart</Option>
         </Select>
         {
           AddTaskFormDataSet.current.get('type') !== 'custom' ? [
@@ -1007,7 +1031,17 @@ const AddTask = observer(() => {
               <Option value="release">release</Option>
               <Option value="tag">tag</Option>
             </Select>,
+            <div
+              className="advanced_text"
+              newLine
+              colSpan={2}
+              onClick={() => setExpandIf(!expandIf)}
+            >
+              <span>高级设置</span>
+              <Icon style={{ fontSize: 18, marginLeft: 10 }} type={expandIf ? 'expand_less' : 'expand_more'} />
+            </div>,
             getImageDom(),
+            getShareSettings(),
             AddTaskFormDataSet.current.get('type') !== 'chart' ? getMissionOther() : '',
           ] : [
             <YamlEditor
