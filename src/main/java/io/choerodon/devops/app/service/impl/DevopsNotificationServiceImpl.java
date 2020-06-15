@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import com.google.gson.Gson;
+import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.lang.StringUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -176,6 +177,8 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 phones.add(userES.get(0).getPhone());
                 user.setEmail(GitUserNameUtil.getEmail());
                 user.setUserId(GitUserNameUtil.getUserId().longValue());
+                user.setTargetUserTenantId(DetailsHelper.getUserDetails().getTenantId());
+                user.setPhone(userES.get(0).getPhone());
                 users.add(user);
             }
             if (TriggerObject.PROJECT_OWNER.getObject().equals(e.getType())) {
