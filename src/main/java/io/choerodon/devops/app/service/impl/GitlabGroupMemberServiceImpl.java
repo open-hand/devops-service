@@ -166,20 +166,19 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         deleteAllPermissionInProjectOfUser(gitlabGroupMemberVO, projectDTO.getId());
                     }
                 });
-        // todo ???
         //组织root的标签，那么删除在组织下的root的权限
         // 列表中所有用户应该都是同一个组织的
-//        List<ProjectDTO> projectDTOS = null;
-//        for (GitlabGroupMemberVO gitlabGroupMemberVO : gitlabGroupMemberVOList) {
-//            // 项目层上面已经处理了,这里只处理组织层的
-//            if (gitlabGroupMemberVO.getResourceType().equals(ResourceLevel.ORGANIZATION.value())) {
-//                // 这里是避免多次查询
-//                if (projectDTOS == null) {
-//                    projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(gitlabGroupMemberVO.getResourceId());
-//                }
-//                deleteGitLabPermissionsForOrgAdmin(projectDTOS, gitlabGroupMemberVO);
-//            }
-//        }
+        List<ProjectDTO> projectDTOS = null;
+        for (GitlabGroupMemberVO gitlabGroupMemberVO : gitlabGroupMemberVOList) {
+            // 项目层上面已经处理了,这里只处理组织层的
+            if (gitlabGroupMemberVO.getResourceType().equals(ResourceLevel.ORGANIZATION.value())) {
+                // 这里是避免多次查询
+                if (projectDTOS == null) {
+                    projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(gitlabGroupMemberVO.getResourceId());
+                }
+                deleteGitLabPermissionsForOrgAdmin(projectDTOS, gitlabGroupMemberVO);
+            }
+        }
     }
 
 
