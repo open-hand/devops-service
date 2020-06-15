@@ -50,4 +50,9 @@ public class RdupmClientFallback implements RdupmClient {
     public ResponseEntity<List<NexusMavenRepoDTO>> getRepoUserByProject(Long organizationId, Long projectId, Set<Long> repositoryIds) {
         throw new CommonException("error.query.nexus.repo.user.list", projectId, repositoryIds);
     }
+
+    @Override
+    public ResponseEntity<HarborRepoDTO> queryHarborRepoConfigById(Long projectId, Long repoId, String repoType) {
+        throw new CommonException("error.query.config.by.configId");
+    }
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.app.eventhandler.payload.HarborPayload;
+import io.choerodon.devops.infra.dto.DevopsConfigDTO;
 import io.choerodon.devops.infra.dto.harbor.User;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.HarborClient;
@@ -17,9 +18,11 @@ import io.choerodon.devops.infra.feign.HarborClient;
  */
 public interface HarborService {
 
-    void createHarborUserByClient(HarborPayload harborPayload, User user, ProjectDTO projectDTO, List<Integer> roles);
-
     User convertHarborUser(ProjectDTO projectDTO, Boolean isPush, String username);
 
     List<HarborCustomRepo> listAllCustomRepoByProject(Long projectId);
+
+    DevopsConfigDTO queryRepoConfigToDevopsConfig(Long projectId, Long id,String operateType);
+
+    DevopsConfigDTO queryRepoConfigByIdToDevopsConfig(Long projectId, Long harborConfigId, String repoType,String operateType);
 }

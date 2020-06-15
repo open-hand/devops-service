@@ -11,15 +11,45 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel("Harbor仓库配置DTO")
 public class HarborRepoConfigDTO {
 
+    @ApiModelProperty(value = "仓库ID")
+    private Long repoId;
     @ApiModelProperty(value = "仓库地址")
     private String repoUrl;
     @ApiModelProperty(value = "仓库名称")
     private String repoName;
+    @ApiModelProperty(value = "是否私有")
+    private String isPrivate;
 
     @ApiModelProperty(value = "登录名")
     private String loginName;
     @ApiModelProperty(value = "密码")
     private String password;
+    @ApiModelProperty(value = "邮箱")
+    private String email;
+
+    public Long getRepoId() {
+        return repoId;
+    }
+
+    public void setRepoId(Long repoId) {
+        this.repoId = repoId;
+    }
+
+    public String getIsPrivate() {
+        return isPrivate;
+    }
+
+    public void setIsPrivate(String isPrivate) {
+        this.isPrivate = isPrivate;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
     public String getRepoUrl() {
         return repoUrl;

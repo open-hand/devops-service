@@ -197,6 +197,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
     @Lazy
     private RdupmClient rdupmClient;
+    @Autowired
+    private HarborService harborService;
 
 
     static {
@@ -896,7 +898,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         try {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
             Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            DevopsConfigDTO harborConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR, AUTHTYPE_PUSH);
+//            DevopsConfigDTO harborConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR, AUTHTYPE_PUSH);
+            DevopsConfigDTO harborConfigDTO = harborService.queryRepoConfigToDevopsConfig(projectDTO.getId(), appServiceDTO.getId(), AUTHTYPE_PUSH);
             ConfigVO harborProjectConfig = gson.fromJson(harborConfigDTO.getConfig(), ConfigVO.class);
             Map<String, String> params = new HashMap<>();
             String groupName = organizationDTO.getTenantNum() + "-" + projectDTO.getCode();

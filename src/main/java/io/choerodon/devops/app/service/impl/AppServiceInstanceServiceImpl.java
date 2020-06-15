@@ -10,7 +10,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.google.gson.Gson;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.feign.RdupmClient;
 import io.kubernetes.client.JSON;
@@ -158,6 +160,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private DevopsIngressService devopsIngressService;
     @Autowired
     private RdupmClient rdupmClient;
+    @Autowired
+    private HarborService harborService;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -1600,66 +1604,59 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceVersionId);
         DevopsConfigDTO devopsConfigDTO;
         if (appServiceVersionDTO.getHarborConfigId() != null) {
-            devopsConfigDTO = devopsConfigService.baseQuery(appServiceVersionDTO.getHarborConfigId());
+            devopsConfigDTO = harborService.queryRepoConfigByIdToDevopsConfig(appServiceDTO.getProjectId(),
+                    appServiceVersionDTO.getHarborConfigId(), appServiceVersionDTO.getRepoType(),null);
         } else {
-            devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR, AUTHTYPE);
             //查询harbor的用户名密码
-            HarborRepoDTO harborRepoDTO = rdupmClient.queryHarborRepoConfig(appServiceDTO.getProjectId(), appServiceDTO.getId()).getBody();
-
+            devopsConfigDTO = harborService.queryRepoConfigToDevopsConfig(appServiceDTO.getProjectId(),
+                    appServiceDTO.getId(),AUTHTYPE);
         }
+        LOGGER.debug("Docker config for app service with id {} and code {} and version id: {} is not null. And the config id is {}...", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId, devopsConfigDTO.getId());
 
-        if (devopsConfigDTO != null) {
-            LOGGER.debug("Docker config for app service with id {} and code {} and version id: {} is not null. And the config id is {}...", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId, devopsConfigDTO.getId());
+        ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+        if (configVO.getPrivate() != null && configVO.getPrivate()) {
+            LOGGER.debug("Docker config for app service with id {} and code {} and version id: {} is private.", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId);
 
-            ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
-            if (MiscConstants.DEFAULT_HARBOR_NAME.equals(devopsConfigDTO.getName()) && appServiceDTO.getProjectId() != null) {
-                configVO = queryDefaultConfig(appServiceDTO.getProjectId(), configVO);
-                LOGGER.debug("Real docker config for app service with id {} and code {} and version id: {} is queried. And the config id is {}...", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId, devopsConfigDTO.getId());
-            }
-
-            if (configVO.getPrivate() != null && configVO.getPrivate()) {
-                LOGGER.debug("Docker config for app service with id {} and code {} and version id: {} is private.", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId);
-
-                DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByClusterIdAndNamespace(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsConfigDTO.getId(), appServiceDTO.getProjectId());
-                if (devopsRegistrySecretDTO == null) {
-                    // 如果调用方是批量部署， 此次批量部署之前的实例创建了secret，不重复创建，直接返回已有的
-                    // 只有批量部署的这个列表是非空的
-                    if (!CollectionUtils.isEmpty(existedConfigs)) {
-                        for (Pair<Long, String> configAndSecret : existedConfigs) {
-                            if (Objects.equals(configAndSecret.getFirst(), devopsConfigDTO.getId())) {
-                                LOGGER.info("Got existed secret {} from list...", configAndSecret.getSecond());
-                                return configAndSecret.getSecond();
-                            }
+            DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByClusterIdAndNamespace(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsConfigDTO.getId(), appServiceDTO.getProjectId());
+            if (devopsRegistrySecretDTO == null) {
+                // 如果调用方是批量部署， 此次批量部署之前的实例创建了secret，不重复创建，直接返回已有的
+                // 只有批量部署的这个列表是非空的
+                if (!CollectionUtils.isEmpty(existedConfigs)) {
+                    for (Pair<Long, String> configAndSecret : existedConfigs) {
+                        if (Objects.equals(configAndSecret.getFirst(), devopsConfigDTO.getId())) {
+                            LOGGER.info("Got existed secret {} from list...", configAndSecret.getSecond());
+                            return configAndSecret.getSecond();
                         }
                     }
-
-                    //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
-                    secretCode = String.format("%s%s", "secret-", GenerateUUID.generateUUID().substring(0, 20));
-                    // 测试应用的secret是没有环境id的，此处环境id只是暂存，之后不使用，考虑后续版本删除此字段
-                    devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), secretCode, gson.toJson(configVO), appServiceDTO.getProjectId());
-                    devopsRegistrySecretService.createIfNonInDb(devopsRegistrySecretDTO);
-                    agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, configVO, CREATE);
-
-                    // 更新列表
-                    if (existedConfigs != null) {
-                        Pair<Long, String> newPair = new Pair<>(devopsConfigDTO.getId(), secretCode);
-                        existedConfigs.add(newPair);
-                        LOGGER.info("Docker registry pair added. It is {}. The current list size is {}", newPair, existedConfigs.size());
-                    }
-                } else {
-                    //判断如果某个配置有发生过修改，则需要修改secret信息，并通知k8s更新secret
-                    if (!devopsRegistrySecretDTO.getSecretDetail().equals(gson.toJson(configVO))) {
-                        devopsRegistrySecretDTO.setSecretDetail(gson.toJson(configVO));
-                        devopsRegistrySecretService.baseUpdate(devopsRegistrySecretDTO);
-                    }
-                    // 无论是否修改，都通知agent创建secret，保证secret存在
-                    // 解决secret在Kubernetes集群中被删除而猪齿鱼无法感知的问题
-                    // 此为临时解决方案，应对0.21.x，在0.22版本将修改
-                    agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsRegistrySecretDTO.getSecretCode(), configVO, UPDATE);
-                    secretCode = devopsRegistrySecretDTO.getSecretCode();
                 }
+
+                //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
+                secretCode = String.format("%s%s", "secret-", GenerateUUID.generateUUID().substring(0, 20));
+                // 测试应用的secret是没有环境id的，此处环境id只是暂存，之后不使用，考虑后续版本删除此字段
+                devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), secretCode, gson.toJson(configVO), appServiceDTO.getProjectId());
+                devopsRegistrySecretService.createIfNonInDb(devopsRegistrySecretDTO);
+                agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, configVO, CREATE);
+
+                // 更新列表
+                if (existedConfigs != null) {
+                    Pair<Long, String> newPair = new Pair<>(devopsConfigDTO.getId(), secretCode);
+                    existedConfigs.add(newPair);
+                    LOGGER.info("Docker registry pair added. It is {}. The current list size is {}", newPair, existedConfigs.size());
+                }
+            } else {
+                //判断如果某个配置有发生过修改，则需要修改secret信息，并通知k8s更新secret
+                if (!devopsRegistrySecretDTO.getSecretDetail().equals(gson.toJson(configVO))) {
+                    devopsRegistrySecretDTO.setSecretDetail(gson.toJson(configVO));
+                    devopsRegistrySecretService.baseUpdate(devopsRegistrySecretDTO);
+                }
+                // 无论是否修改，都通知agent创建secret，保证secret存在
+                // 解决secret在Kubernetes集群中被删除而猪齿鱼无法感知的问题
+                // 此为临时解决方案，应对0.21.x，在0.22版本将修改
+                agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsRegistrySecretDTO.getSecretCode(), configVO, UPDATE);
+                secretCode = devopsRegistrySecretDTO.getSecretCode();
             }
         }
+
 
         LOGGER.debug("Got secret with code {} for app service with id {} and code {} and version id: {}", secretCode, appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId);
         return secretCode;

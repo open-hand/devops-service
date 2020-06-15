@@ -40,9 +40,9 @@ public interface RdupmClient {
      */
     @GetMapping("/v1/harbor-choerodon-repos/project/{projectId}/{appServiceId}/list_related_custom_repo")
     ResponseEntity<HarborCustomRepo> listRelatedCustomRepoByService(@ApiParam(value = "猪齿鱼项目ID", required = true)
-                                                                      @PathVariable("projectId") Long projectId,
-                                                                      @ApiParam(value = "应用服务ID", required = true)
-                                                                      @PathVariable("appServiceId") Long appServiceId);
+                                                                    @PathVariable("projectId") Long projectId,
+                                                                    @ApiParam(value = "应用服务ID", required = true)
+                                                                    @PathVariable("appServiceId") Long appServiceId);
 
     /**
      * 保存关联关系
@@ -79,15 +79,17 @@ public interface RdupmClient {
 
     /**
      * 仓库配置查询接口
+     *
      * @param projectId
      * @param appServiceId
      * @return
      */
     @GetMapping("/v1/harbor-choerodon-repos/project/{projectId}/{appServiceId}/harbor_repo_config")
-     ResponseEntity<HarborRepoDTO> queryHarborRepoConfig(@ApiParam(value = "猪齿鱼项目ID", required = true)
-                                                         @PathVariable("projectId") Long projectId,
-                                                         @ApiParam(value = "应用服务ID", required = true)
-                                                         @PathVariable("appServiceId") Long appServiceId);
+    ResponseEntity<HarborRepoDTO> queryHarborRepoConfig(@ApiParam(value = "猪齿鱼项目ID", required = true)
+                                                        @PathVariable("projectId") Long projectId,
+                                                        @ApiParam(value = "应用服务ID", required = true)
+                                                        @PathVariable("appServiceId") Long appServiceId);
+
 
     @ApiOperation(value = "CI-流水线-获取项目下仓库列表")
     @GetMapping("/v1/nexus-repositorys/{organizationId}/project/{projectId}/ci/repo/list")
@@ -100,6 +102,19 @@ public interface RdupmClient {
             @RequestParam("repoType") String repoType,
             @ApiParam(value = "nexus仓库类型: hosted、proxy、group", required = false)
             @RequestParam(name = "type", required = false) String type);
+
+    /**
+     * 根据Harbor仓库ID查询仓库配置
+     *
+     * @param projectId
+     * @param repoId
+     * @param repoType
+     * @return
+     */
+    @GetMapping("/v1/harbor-choerodon-repos/project/{projectId}/{repoId}/harbor_config_by_id")
+    ResponseEntity<HarborRepoDTO> queryHarborRepoConfigById(@ApiParam(value = "猪齿鱼项目ID", required = true) @PathVariable("projectId") Long projectId,
+                                                            @ApiParam(value = "仓库ID", required = true) @PathVariable("repoId") Long repoId,
+                                                            @ApiParam(value = "仓库类型", required = true) @RequestParam String repoType);
 
 
     @ApiOperation(value = "CI-流水线-获取项目下仓库列表-包含用户信息")

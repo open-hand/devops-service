@@ -678,5 +678,32 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         }
     }
 
+    @Override
+    public void fixHarbor() {
+        //修复应用版本的仓库类型字段,同步harborConfigId
+        int selectCount = appServiceVersionMapper.selectCount(null);
+        int size = 100;
+        int totalPage = (selectCount + size - 1) / size;
+        int pageNum = 1;
+        do {
+            PageRequest pageable = new PageRequest();
+            pageable.setPage(pageNum);
+            pageable.setSize(size);
+            pageable.setSort(new Sort("id"));
+            Page<AppServiceVersionDTO> page = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
+                    () -> appServiceVersionMapper.selectAll());
+            if (!CollectionUtils.isEmpty(page.getContent())) {
+                List<AppServiceVersionDTO> appServiceVersionDTOS = page.getContent();
+                for (AppServiceVersionDTO appServiceVersionDTO : appServiceVersionDTOS) {
+                    if (appServiceVersionDTO.getHarborConfigId() != null) {
+                        appServiceVersionDTO.setRepoType("CUSTOM_REPO");
+                    } else {
+
+                    }
+                }
+            }
+            pageNum++;
+        } while (pageNum <= totalPage);
+    }
 
 }
