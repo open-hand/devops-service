@@ -106,7 +106,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             GitlabServiceClientOperator gitlabServiceClientOperator,
             UserAttrService userAttrService,
             @Lazy
-            AppServiceService appServiceService,
+                    AppServiceService appServiceService,
             DevopsCiJobRecordService devopsCiJobRecordService,
             DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
             DevopsProjectService devopsProjectService,
@@ -669,7 +669,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                             case MAVEN:
                                 // 处理settings文件
                                 DevopsCiPipelineAdditionalValidator.validateMavenStep(config);
-                                boolean hasSettings = buildAndSaveMavenSettings(jobId, config);
+                                boolean hasSettings = buildAndSaveMavenSettings(projectId, jobId, config);
                                 result.addAll(buildMavenScripts(projectId, jobId, config, hasSettings));
                                 break;
                             case UPLOAD:
@@ -696,23 +696,43 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     /**
      * 生成并存储maven settings到数据库
      *
+     * @param projectId          项目id
      * @param jobId              job id
      * @param ciConfigTemplateVO 配置信息
      * @return true表示有settings配置，false表示没有
      */
-    private boolean buildAndSaveMavenSettings(Long jobId, CiConfigTemplateVO ciConfigTemplateVO) {
+    private boolean buildAndSaveMavenSettings(Long projectId, Long jobId, CiConfigTemplateVO ciConfigTemplateVO) {
         // settings文件内容
         String settings;
-        if (!CollectionUtils.isEmpty(ciConfigTemplateVO.getRepos())) {
-            // 由用户填写的表单构建xml文件内容
-            settings = buildSettings(ciConfigTemplateVO.getRepos());
-        } else if (!StringUtils.isEmpty(ciConfigTemplateVO.getMavenSettings())) {
+        final List<MavenRepoVO> repos = new ArrayList<>();
+
+        // 是否有手动填写仓库表单
+        final boolean hasManualRepos = !CollectionUtils.isEmpty(ciConfigTemplateVO.getRepos());
+        // 是否有选择已有的maven仓库
+        final boolean hasNexusRepos = !CollectionUtils.isEmpty(ciConfigTemplateVO.getNexusMavenRepoIds());
+
+        if (!StringUtils.isEmpty(ciConfigTemplateVO.getMavenSettings())) {
             // 使用用户提供的xml内容，不进行内容的校验
             settings = Base64Util.getBase64DecodedString(ciConfigTemplateVO.getMavenSettings());
+        } else if (hasManualRepos || hasNexusRepos) {
+            if (hasNexusRepos) {
+                // 用户选择的已有的maven仓库
+                List<NexusMavenRepoDTO> nexusMavenRepoDTOs = prodRepoClientOperator.getRepoUserByProject(null, projectId, ciConfigTemplateVO.getNexusMavenRepoIds());
+                repos.addAll(nexusMavenRepoDTOs.stream().map(DevopsCiPipelineServiceImpl::convertRepo).collect(Collectors.toList()));
+            }
+
+            if (hasManualRepos) {
+                // 由用户填写的表单构建xml文件内容
+                repos.addAll(ciConfigTemplateVO.getRepos());
+            }
+
+            // 构建settings文件
+            settings = buildSettings(repos);
         } else {
-            // 用户没有提供settings文件配置
+            // 没有填关于settings的信息
             return false;
         }
+
         // 这里存储的ci setting文件内容是解密后的
         DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, ciConfigTemplateVO.getSequence(), settings);
         MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);

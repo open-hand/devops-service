@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 import java.util.List;
+import java.util.Set;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -30,6 +31,9 @@ public class CiConfigTemplateVO {
 
     @ApiModelProperty("执行脚本")
     private String script;
+
+    @ApiModelProperty("项目下已有的maven仓库id列表/用于maven构建步骤")
+    private Set<Long> nexusMavenRepoIds;
 
     @ApiModelProperty("表单填写的Maven的依赖仓库")
     private List<MavenRepoVO> repos;
@@ -138,5 +142,13 @@ public class CiConfigTemplateVO {
 
     public void setMavenDeployRepoSettings(MavenDeployRepoSettings mavenDeployRepoSettings) {
         this.mavenDeployRepoSettings = mavenDeployRepoSettings;
+    }
+
+    public Set<Long> getNexusMavenRepoIds() {
+        return nexusMavenRepoIds;
+    }
+
+    public void setNexusMavenRepoIds(Set<Long> nexusMavenRepoIds) {
+        this.nexusMavenRepoIds = nexusMavenRepoIds;
     }
 }
