@@ -18,7 +18,7 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
   observer((props) => {
     const {
       intl: { formatMessage },
-      AppState: { currentMenuType: { id } },
+      AppState: { currentMenuType: { id, organizationId, name: projectName } },
       children,
       location,
     } = props;
@@ -27,7 +27,7 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
     const { viewType: newViewType = viewTypeMemo.IST_VIEW_TYPE } = location.state || {};
     const resourceStore = useStore(newViewType);
     const viewType = resourceStore.getViewType;
-    const treeDs = useMemo(() => new DataSet(TreeDataSet({ store: resourceStore, type: viewType, projectId: id, formatMessage })), [viewType, id]);
+    const treeDs = useMemo(() => new DataSet(TreeDataSet({ store: resourceStore, type: viewType, projectId: id, formatMessage, organizationId, projectName })), [viewType, id]);
 
     useEffect(() => {
       // NOTE: 这里只对部署跳转进来的这一种情况处理，若之后添加新的情况可在此处做
