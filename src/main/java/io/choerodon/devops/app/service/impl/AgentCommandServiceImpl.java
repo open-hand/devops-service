@@ -21,6 +21,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.Command;
 import io.choerodon.devops.api.vo.kubernetes.ImagePullSecret;
@@ -369,7 +370,11 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         GitEnvConfigVO gitEnvConfigVO = new GitEnvConfigVO();
         gitEnvConfigVO.setEnvId(envId);
         gitEnvConfigVO.setNamespace(code);
-        sendToWebSocket(clusterId, ENV_DELETE, JsonHelper.marshalByJackson(gitEnvConfigVO));
+        AgentMsgVO msg = new AgentMsgVO();
+        msg.setPayload(JsonHelper.marshalByJackson(gitEnvConfigVO));
+        msg.setType(ENV_DELETE);
+        msg.setKey(String.format(CLUSTER_FORMAT, clusterId));
+        sendToWebSocket(clusterId, msg);
     }
 
     private void sendToWebSocket(Long clusterId, AgentMsgVO agentMsgVO) {
