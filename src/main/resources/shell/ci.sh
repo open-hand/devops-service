@@ -201,6 +201,9 @@ function downloadSettingsFile() {
 # $3 project_id 项目id
 # $4 组织id
 function c7nCompressAndUploadArtifact() {
+  if [ ! -d "$2" ];then
+    mkdir -p "$2"
+  fi
   # 打包文件
   tar -zcvf "$1.tgz" "$2"
   # 压缩后的包大于200M，退出ci执行
@@ -256,7 +259,7 @@ function c7nDownloadArtifactAndUnCompress() {
 
   if [ "$http_status_code" != "200" ]; then
     echo "file $1 not exists"
-    exit 1
+    echo "Before you retry the job, the previous shared content was deleted. If you want to retry the job, please retry the whole pipeline instead."
   fi
 
   url=$(cat response.url)

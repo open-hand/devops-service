@@ -33,4 +33,15 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
             }
         }
     }
+
+    changeSet(author: 'zmf', id: '2020-06-15-job-add-upload-and-download') {
+        addColumn(tableName: 'devops_ci_job') {
+            column(name: 'is_to_upload', type: 'TINYINT(1) UNSIGNED', defaultValue: "0", remarks: '是否上传共享目录的内容, 默认为false', afterColumn: 'trigger_refs') {
+                constraints(nullable: false)
+            }
+            column(name: 'is_to_download', type: 'TINYINT(1) UNSIGNED', defaultValue: "0", remarks: '是否下载共享目录的内容,默认为false', afterColumn: 'is_to_upload') {
+                constraints(nullable: false)
+            }
+        }
+    }
 }

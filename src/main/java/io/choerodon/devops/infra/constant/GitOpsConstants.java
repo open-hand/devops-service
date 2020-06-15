@@ -137,6 +137,16 @@ public class GitOpsConstants {
      */
     public static final String CI_JOB_ARTIFACT_NAME_TEMPLATE = "%s-%s.tgz";
 
+    /**
+     * 在ci流水线中用于共享文件的目录
+     */
+    public static final String CHOERODON_CI_CACHE_DIR = "choerodon-ci-cache";
+
+    /**
+     * 打包后的软件包名称(不含.tgz后缀)
+     */
+    public static final String CHOERODON_ARTIFACT_NAME = "choerodon-ci-cache-pkg";
+
     public static final Pattern ARTIFACT_NAME_PATTERN = Pattern.compile("[0-9a-zA-Z._-]{6,30}");
 
 

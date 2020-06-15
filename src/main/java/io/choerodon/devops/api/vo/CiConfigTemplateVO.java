@@ -43,12 +43,6 @@ public class CiConfigTemplateVO {
     @ApiModelProperty("Dockerfile文件路径")
     private String dockerFilePath;
 
-    @ApiModelProperty("上传软件包的文件路径")
-    private String uploadFilePattern;
-
-    @ApiModelProperty("上传或下载软件包的名称")
-    private String artifactFileName;
-
     public String getName() {
         return name;
     }
@@ -103,22 +97,6 @@ public class CiConfigTemplateVO {
 
     public void setDockerFilePath(String dockerFilePath) {
         this.dockerFilePath = dockerFilePath;
-    }
-
-    public String getUploadFilePattern() {
-        return uploadFilePattern;
-    }
-
-    public void setUploadFilePattern(String uploadFilePattern) {
-        this.uploadFilePattern = uploadFilePattern;
-    }
-
-    public String getArtifactFileName() {
-        return artifactFileName;
-    }
-
-    public void setArtifactFileName(String artifactFileName) {
-        this.artifactFileName = artifactFileName;
     }
 
     public String getMavenSettings() {

@@ -37,7 +37,6 @@ hzero:
     secretKey: devops_ws
 choerodon:
   saga:
-    service: hzero-asgard
     consumer:
       core-thread-num: 20
       max-thread-num:  20 # 消费线程数

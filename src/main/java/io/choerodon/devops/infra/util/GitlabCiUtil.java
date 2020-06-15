@@ -232,7 +232,7 @@ public class GitlabCiUtil {
      *
      * @param artifactFileName 需要下载的包名称
      */
-    private static String generateDownloadTgzScripts(String artifactFileName, Long projectId) {
+    public static String generateDownloadTgzScripts(String artifactFileName, Long projectId) {
         String rawCommand = "c7nDownloadArtifactAndUnCompress %s %s";
         return String.format(rawCommand, artifactFileName, projectId);
     }
@@ -243,27 +243,9 @@ public class GitlabCiUtil {
      * @param dockerBuildContextDir docker构建上下文目录
      * @param dockerFilePath        dockerfile文件路径
      */
-    private static String generateDockerScripts(String dockerBuildContextDir, String dockerFilePath) {
+    public static String generateDockerScripts(String dockerBuildContextDir, String dockerFilePath) {
         String rawCommand = "kaniko -c $PWD/%s -f $PWD/%s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
         return String.format(rawCommand, dockerBuildContextDir, dockerFilePath);
-    }
-
-    /**
-     * 生成docker构建的步骤的脚本
-     *
-     * @param artifactFileName      需要下载的包名称
-     * @param dockerBuildContextDir docker构建上下文
-     * @param dockerFilePath        dockerfile路径
-     * @return 脚本
-     */
-    public static List<String> generateDockerScripts(Long projectId, String artifactFileName, String dockerBuildContextDir, String dockerFilePath) {
-        List<String> scripts = new ArrayList<>();
-        // 只有需要下载时才生成此步骤
-        if (!StringUtils.isEmpty(artifactFileName)) {
-            scripts.add(GitlabCiUtil.generateDownloadTgzScripts(artifactFileName, projectId));
-        }
-        scripts.add(GitlabCiUtil.generateDockerScripts(Objects.requireNonNull(dockerBuildContextDir), Objects.requireNonNull(dockerFilePath)));
-        return scripts;
     }
 
     /**

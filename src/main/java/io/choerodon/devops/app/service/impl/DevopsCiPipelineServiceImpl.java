@@ -539,6 +539,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         // 如果用户指定了就使用用户指定的，如果没有指定就使用默认的猪齿鱼提供的镜像
         gitlabCi.setImage(StringUtils.isEmpty(devopsCiPipelineVO.getImage()) ? defaultCiImage : devopsCiPipelineVO.getImage());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         gitlabCi.setStages(stages);
         devopsCiPipelineVO.getStageList().forEach(stageVO -> {
@@ -553,7 +554,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     }
                     ciJob.setStage(stageVO.getName());
                     ciJob.setOnly(buildOnlyExceptPolicyObject(job.getTriggerRefs()));
-                    ciJob.setScript(buildScript(projectId, job));
+                    ciJob.setScript(buildScript(Objects.requireNonNull(projectDTO.getOrganizationId()), projectId, job));
                     gitlabCi.addJob(job.getName(), ciJob);
                 });
             }
@@ -565,12 +566,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     /**
      * 把配置转换为gitlab-ci配置（maven,sonarqube）
      *
-     * @param projectId 项目id
-     * @param jobVO     生成脚本
+     * @param organizationId 组织id
+     * @param projectId      项目id
+     * @param jobVO          生成脚本
      * @return 生成的脚本列表
      */
-    private List<String> buildScript(final Long projectId, DevopsCiJobVO jobVO) {
+    private List<String> buildScript(final Long organizationId, final Long projectId, DevopsCiJobVO jobVO) {
         Assert.notNull(jobVO, "Job can't be null");
+        Assert.notNull(organizationId, "Organization id can't be null");
+        Assert.notNull(projectId, "project id can't be null");
         final Long jobId = jobVO.getId();
         Assert.notNull(jobId, "Ci job id is required.");
 
@@ -601,6 +605,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 最后生成的所有script集合
             List<String> result = new ArrayList<>();
 
+            // 添加下载命令
+            if (Boolean.TRUE.equals(jobVO.getToDownload())) {
+                result.add(GitlabCiUtil.generateUploadTgzScripts(projectId, GitOpsConstants.CHOERODON_ARTIFACT_NAME, GitOpsConstants.CHOERODON_CI_CACHE_DIR, organizationId));
+            }
+
             // 同一个job中的所有step要按照sequence顺序来
             // 将每一个step都转为一个List<String>并将所有的list合并为一个
             ciConfigVO.getConfig()
@@ -623,15 +632,17 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                 boolean hasSettings = buildAndSaveMavenSettings(jobId, config);
                                 result.addAll(buildMavenScripts(projectId, jobId, config, hasSettings));
                                 break;
-                            case UPLOAD:
-                                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-                                result.add(GitlabCiUtil.generateUploadTgzScripts(projectId, config.getArtifactFileName(), config.getUploadFilePattern(), Objects.requireNonNull(projectDTO.getOrganizationId())));
-                                break;
                             case DOCKER:
-                                result.addAll(GitlabCiUtil.generateDockerScripts(projectId, config.getArtifactFileName(), config.getDockerContextDir(), config.getDockerFilePath()));
+                                result.add(GitlabCiUtil.generateDockerScripts(config.getDockerContextDir(), config.getDockerFilePath()));
                                 break;
                         }
                     });
+
+            // 上传共享目录的内容
+            if (Boolean.TRUE.equals(jobVO.getToUpload())) {
+                result.add(GitlabCiUtil.generateDownloadTgzScripts(GitOpsConstants.CHOERODON_ARTIFACT_NAME, projectId));
+            }
+
             return result;
         } else if (CiJobTypeEnum.CHART.value().equals(jobVO.getType())) {
             // 生成chart步骤

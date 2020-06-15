@@ -12,9 +12,8 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
- *
  * @author wanghao
- * @Date 2020/4/2 17:00
+ * @since 2020/4/2 17:00
  */
 @ModifyAudit
 @VersionAudit
@@ -40,6 +39,12 @@ public class DevopsCiJobDTO extends AuditDomain {
     private String triggerRefs;
     @ApiModelProperty("详细信息")
     private String metadata;
+
+    @ApiModelProperty("是否上传共享目录的内容 / 默认为false")
+    private Boolean toUpload = Boolean.FALSE;
+
+    @ApiModelProperty("是否下载共享目录的内容 / 默认为false")
+    private Boolean toDownload = Boolean.FALSE;
 
     public Long getId() {
         return id;
@@ -103,5 +108,21 @@ public class DevopsCiJobDTO extends AuditDomain {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public Boolean getToUpload() {
+        return toUpload;
+    }
+
+    public void setToUpload(Boolean toUpload) {
+        this.toUpload = toUpload;
+    }
+
+    public Boolean getToDownload() {
+        return toDownload;
+    }
+
+    public void setToDownload(Boolean toDownload) {
+        this.toDownload = toDownload;
     }
 }

@@ -26,9 +26,6 @@ public class DevopsCiPipelineAdditionalValidator {
     private static final Pattern MAVEN_REPO_NAME_REGEX = Pattern.compile("[0-9a-zA-Z-]{6,30}");
 
     private static final String ERROR_STAGES_EMPTY = "error.stages.empty";
-    private static final String ERROR_ARTIFACT_NAME_INVALID = "error.artifact.name.invalid";
-    private static final String ERROR_ARTIFACT_NAME_DUPLICATED = "error.artifact.name.duplicated";
-    private static final String ERROR_ARTIFACT_DOWNLOAD_BEFORE_UPLOAD = "error.artifact.download.before.upload";
     private static final String ERROR_STEP_SEQUENCE_NULl = "error.step.sequence.null";
     private static final String ERROR_STEP_SEQUENCE_DUPLICATED = "error.step.sequence.duplicated";
     private static final String ERROR_MAVEN_REPO_TYPE_EMPTY = "error.maven.repository.type.null";
@@ -59,7 +56,6 @@ public class DevopsCiPipelineAdditionalValidator {
             throw new CommonException(ERROR_STAGES_EMPTY);
         }
 
-        List<String> uploadArtifactNames = new ArrayList<>();
         List<String> jobNames = new ArrayList<>();
         List<String> stageNames = new ArrayList<>();
 
@@ -80,39 +76,6 @@ public class DevopsCiPipelineAdditionalValidator {
                         validateImage(job.getImage());
                         validateCustomJobFormat(Objects.requireNonNull(stage.getName()), job);
                         validateJobNameUniqueInPipeline(job.getName(), jobNames);
-
-                        if (CiJobTypeEnum.BUILD.value().equals(job.getType())) {
-                            // 将构建类型的stage中的job的每个step进行解析和转化
-                            CiConfigVO ciConfigVO = JSONObject.parseObject(job.getMetadata(), CiConfigVO.class);
-                            if (ciConfigVO == null || CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
-                                return;
-                            }
-                            ciConfigVO.getConfig()
-                                    .stream()
-                                    .sorted(Comparator.comparingLong(CiConfigTemplateVO::getSequence))
-                                    .forEach(config -> {
-                                        if (CiJobScriptTypeEnum.UPLOAD.getType().equals(config.getType())) {
-                                            if (config.getArtifactFileName() == null || !GitOpsConstants.ARTIFACT_NAME_PATTERN.matcher(config.getArtifactFileName()).matches()) {
-                                                throw new CommonException(ERROR_ARTIFACT_NAME_INVALID, config.getArtifactFileName());
-                                            }
-                                            if (uploadArtifactNames.contains(config.getArtifactFileName())) {
-                                                throw new CommonException(ERROR_ARTIFACT_NAME_DUPLICATED, config.getArtifactFileName(), config.getName());
-                                            }
-                                            uploadArtifactNames.add(config.getArtifactFileName());
-                                        } else if (CiJobScriptTypeEnum.DOCKER.getType().equals(config.getType())) {
-                                            if (config.getArtifactFileName() != null) {
-                                                if (!GitOpsConstants.ARTIFACT_NAME_PATTERN.matcher(config.getArtifactFileName()).matches()) {
-                                                    throw new CommonException(ERROR_ARTIFACT_NAME_INVALID, config.getArtifactFileName());
-                                                }
-                                                // 进行这个判断的前提是stage和step是有序的。
-                                                // 如果在此之前，没有在上传的软件包列表中没有找到同名的，那就是在上传软件包之前就使用了。
-                                                if (!uploadArtifactNames.contains(config.getArtifactFileName())) {
-                                                    throw new CommonException(ERROR_ARTIFACT_DOWNLOAD_BEFORE_UPLOAD, config.getArtifactFileName(), config.getName());
-                                                }
-                                            }
-                                        }
-                                    });
-                        }
                     });
                 });
     }
