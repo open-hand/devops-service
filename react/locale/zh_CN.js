@@ -538,7 +538,9 @@ const appService = {
     '您可在此批量选择应用服务添加至导入列表。此处展示的均是有代码库的应用服务',
   'c7ncd.appService.import.tips':
     '导入至本项目下的应用服务的名称与编码具有唯一性。即在导入之前，请先确认服务的名称和编码与本项目下已有的应用服务不同',
-  'c7ncd.appService.address.tips':
+  'c7ncd.appService.address.gitlab.tips':
+    '此处支持HTTP或HTTPS地址',
+  'c7ncd.appService.address.github.tips':
     '此处仅支持HTTPS地址',
   'c7ncd.appService.detail.share.tips':
     '共享设置用于为该应用服务添加共享规则，并按照共享规则分别将其共享给范围内的项目',
