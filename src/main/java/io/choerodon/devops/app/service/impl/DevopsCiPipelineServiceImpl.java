@@ -2,7 +2,21 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.GitOpsConstants.DEFAULT_PIPELINE_RECORD_SIZE;
 
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -31,19 +45,6 @@ import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
@@ -89,6 +90,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
     private DevopsProjectService devopsProjectService;
     private BaseServiceClientOperator baseServiceClientOperator;
+    private PermissionHelper permissionHelper;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiPipelineMapper devopsCiPipelineMapper,
@@ -100,11 +102,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             GitlabServiceClientOperator gitlabServiceClientOperator,
             UserAttrService userAttrService,
             @Lazy
-            AppServiceService appServiceService,
+                    AppServiceService appServiceService,
             DevopsCiJobRecordService devopsCiJobRecordService,
             DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
             DevopsProjectService devopsProjectService,
             BaseServiceClientOperator baseServiceClientOperator,
+            PermissionHelper permissionHelper,
             DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper) {
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
@@ -119,6 +122,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.baseServiceClientOperator = baseServiceClientOperator;
         this.devopsProjectService = devopsProjectService;
+        this.permissionHelper = permissionHelper;
     }
 
     private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
@@ -273,7 +277,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (projectId == null) {
             throw new CommonException(ERROR_PROJECT_ID_IS_NULL);
         }
-        List<DevopsCiPipelineVO> devopsCiPipelineVOS = devopsCiPipelineMapper.queryByProjectIdAndName(projectId, name);
+        boolean isOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId);
+        List<DevopsCiPipelineVO> devopsCiPipelineVOS;
+        if (isOwner) {
+            devopsCiPipelineVOS = devopsCiPipelineMapper.queryByProjectIdAndName(projectId, name);
+        } else {
+            devopsCiPipelineVOS = devopsCiPipelineMapper.queryByProjectIdAndNameForProjectMember(projectId, DetailsHelper.getUserDetails().getUserId(), name);
+        }
         PageRequest pageable = new PageRequest(GitOpsConstants.FIRST_PAGE_INDEX, DEFAULT_PIPELINE_RECORD_SIZE, new Sort(new Sort.Order(Sort.Direction.DESC, DevopsCiPipelineRecordDTO.FIELD_GITLAB_PIPELINE_ID)));
 
         devopsCiPipelineVOS.forEach(devopsCiPipelineVO -> {
