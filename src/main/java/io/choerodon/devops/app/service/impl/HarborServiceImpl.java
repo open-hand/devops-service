@@ -7,11 +7,13 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
-import io.choerodon.devops.api.vo.harbor.HarborCustomRepoVO;
+import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
+import io.choerodon.devops.infra.feign.RdupmClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -62,7 +64,8 @@ public class HarborServiceImpl implements HarborService {
     @Autowired
     private DevopsHarborUserService devopsHarborUserService;
     @Autowired
-    private HarborService harborService;
+    @Lazy
+    private RdupmClient rdupmClient;
 
     @Value("${services.harbor.baseUrl}")
     private String baseUrl;
@@ -71,56 +74,6 @@ public class HarborServiceImpl implements HarborService {
     @Value("${services.harbor.password}")
     private String password;
 
-    @Override
-    public void createHarborForProject(HarborPayload harborPayload) {
-        HarborClient harborClient = initHarborClient(harborPayload);
-        Boolean createUser = harborPayload.getProjectId() != null;
-        createHarbor(harborClient, harborPayload.getProjectId(), harborPayload.getProjectCode(), createUser, true);
-    }
-
-
-    @Override
-    public void createHarbor(HarborClient harborClient, Long projectId, String projectCode, Boolean createUser, Boolean harborPrivate) {
-        //创建harbor仓库
-        try {
-            Response<Void> result = null;
-            LOGGER.info(harborConfigurationProperties.getParams());
-            if (harborConfigurationProperties.getParams() == null || harborConfigurationProperties.getParams().equals("")) {
-                result = harborClient.insertProject(new Project(projectCode, harborPrivate ? 0 : 1)).execute();
-            } else {
-                Map<String, String> params = new HashMap<>();
-                params = gson.fromJson(harborConfigurationProperties.getParams(), params.getClass());
-                result = harborClient.insertProject(params, new Project(projectCode, harborPrivate ? 0 : 1)).execute();
-            }
-            if (result.raw().code() != 201 && result.raw().code() != 409) {
-                throw new CommonException(result.message());
-            }
-            if (createUser) {
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-                Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-                DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-                User user = convertHarborUser(projectDTO, true, null);
-                User pullUser = convertHarborUser(projectDTO, false, null);
-                //创建用户,绑定角色
-                createHarborUser(harborClient, user, Arrays.asList(1), organizationDTO, projectDTO);
-                createHarborUser(harborClient, pullUser, Arrays.asList(3), organizationDTO, projectDTO);
-
-                HarborUserDTO harborUserDTO = new HarborUserDTO(user.getUsername(), user.getPassword(), user.getEmail(), true);
-                HarborUserDTO pullHarborUserDTO = new HarborUserDTO(pullUser.getUsername(), pullUser.getPassword(), pullUser.getEmail(), false);
-                devopsHarborUserService.baseCreateOrUpdate(harborUserDTO);
-                devopsHarborUserService.baseCreateOrUpdate(pullHarborUserDTO);
-
-                devopsProjectDTO.setHarborProjectIsPrivate(true);
-                devopsProjectDTO.setHarborUserId(harborUserDTO.getId());
-                devopsProjectDTO.setHarborPullUserId(pullHarborUserDTO.getId());
-                devopsProjectService.baseUpdate(devopsProjectDTO);
-
-            }
-        } catch (IOException e) {
-            throw new CommonException(e);
-        }
-
-    }
 
     @Override
     public void createHarborUserByClient(HarborPayload harborPayload, User user, ProjectDTO projectDTO, List<Integer> roles) {
@@ -207,8 +160,8 @@ public class HarborServiceImpl implements HarborService {
     }
 
     @Override
-    public List<HarborCustomRepoVO> listAllCustomRepoByProject(Long projectId) {
-        List<HarborCustomRepoVO> harborCustomRepoVOS = harborService.listAllCustomRepoByProject(projectId);
+    public List<HarborCustomRepo> listAllCustomRepoByProject(Long projectId) {
+        List<HarborCustomRepo> harborCustomRepoVOS = rdupmClient.listAllCustomRepoByProject(projectId).getBody();
         return harborCustomRepoVOS;
     }
 }

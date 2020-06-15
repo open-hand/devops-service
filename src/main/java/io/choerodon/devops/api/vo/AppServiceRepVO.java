@@ -2,7 +2,10 @@ package io.choerodon.devops.api.vo;
 
 
 import java.util.Date;
+import java.util.List;
 
+import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -55,8 +58,12 @@ public class AppServiceRepVO {
     @ApiModelProperty("应用服务数据库纪录的版本号")
     private Long objectVersionNumber;
 
+
     @ApiModelProperty("应用服务对应的harbor配置信息")
-    private DevopsConfigVO harbor;
+    private HarborRepoDTO harborRepoDTO;
+
+    @ApiModelProperty("可选仓库")
+    private List<HarborCustomRepo> harborCustomRepos;
 
     @ApiModelProperty("应用服务对应的chart配置信息")
     private DevopsConfigVO chart;
@@ -91,13 +98,16 @@ public class AppServiceRepVO {
     @ApiModelProperty("应用服务类型")
     private String serviceType;
 
-    public DevopsConfigVO getHarbor() {
-        return harbor;
+    public HarborRepoDTO getHarborRepoDTO() {
+        return harborRepoDTO;
     }
 
-    public void setHarbor(DevopsConfigVO harbor) {
-        this.harbor = harbor;
+    public void setHarborRepoDTO(HarborRepoDTO harborRepoDTO) {
+        this.harborRepoDTO = harborRepoDTO;
     }
+
+
+
 
     public DevopsConfigVO getChart() {
         return chart;
@@ -314,4 +324,13 @@ public class AppServiceRepVO {
     public void setServiceType(String serviceType) {
         this.serviceType = serviceType;
     }
+
+    public List<HarborCustomRepo> getHarborCustomRepos() {
+        return harborCustomRepos;
+    }
+
+    public void setHarborCustomRepos(List<HarborCustomRepo> harborCustomRepos) {
+        this.harborCustomRepos = harborCustomRepos;
+    }
 }
+

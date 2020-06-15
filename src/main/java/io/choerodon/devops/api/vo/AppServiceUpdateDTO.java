@@ -2,7 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import javax.validation.constraints.NotNull;
 
-import io.choerodon.devops.api.vo.harbor.HarborCustomRepoVO;
+import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -23,7 +24,18 @@ public class AppServiceUpdateDTO {
     private DevopsConfigVO chart;
 
     @ApiModelProperty("制品库harbor配置")
-    private HarborCustomRepoVO harborCustomRepoVO;
+    private HarborRepoDTO harborRepoDTO;
+
+    @ApiModelProperty("自定义仓库id")
+    private Long customRepoId;
+
+    public Long getCustomRepoId() {
+        return customRepoId;
+    }
+
+    public void setCustomRepoId(Long customRepoId) {
+        this.customRepoId = customRepoId;
+    }
 
     public DevopsConfigVO getHarbor() {
         return harbor;
@@ -65,11 +77,11 @@ public class AppServiceUpdateDTO {
         this.imgUrl = imgUrl;
     }
 
-    public HarborCustomRepoVO getHarborCustomRepoVO() {
-        return harborCustomRepoVO;
+    public HarborRepoDTO getHarborRepoDTO() {
+        return harborRepoDTO;
     }
 
-    public void setHarborCustomRepoVO(HarborCustomRepoVO harborCustomRepoVO) {
-        this.harborCustomRepoVO = harborCustomRepoVO;
+    public void setHarborRepoDTO(HarborRepoDTO harborRepoDTO) {
+        this.harborRepoDTO = harborRepoDTO;
     }
 }

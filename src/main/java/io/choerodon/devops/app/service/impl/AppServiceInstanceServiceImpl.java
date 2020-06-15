@@ -11,6 +11,8 @@ import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
+import io.choerodon.devops.infra.feign.RdupmClient;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1beta1Ingress;
@@ -154,6 +156,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private DevopsPrometheusMapper devopsPrometheusMapper;
     @Autowired
     private DevopsIngressService devopsIngressService;
+    @Autowired
+    private RdupmClient rdupmClient;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -1599,6 +1603,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             devopsConfigDTO = devopsConfigService.baseQuery(appServiceVersionDTO.getHarborConfigId());
         } else {
             devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR, AUTHTYPE);
+            //查询harbor的用户名密码
+            HarborRepoDTO harborRepoDTO = rdupmClient.queryHarborRepoConfig(appServiceDTO.getProjectId(), appServiceDTO.getId()).getBody();
+
         }
 
         if (devopsConfigDTO != null) {

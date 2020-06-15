@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.util.*;
 
 import com.google.gson.Gson;
+import io.choerodon.devops.infra.feign.RdupmClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -83,43 +85,15 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     @Autowired
     private DevopsHarborUserService devopsHarborUserService;
 
+    @Autowired
+    @Lazy
+    private RdupmClient rdupmClient;
+
     @Override
     public void operate(Long resourceId, String resourceType, List<DevopsConfigVO> devopsConfigVOS) {
-
         devopsConfigVOS.forEach(devopsConfigVO -> {
             //根据每个配置的默认还是自定义执行不同逻辑
             if (devopsConfigVO.getCustom()) {
-                //保存
-                //自定义的harbor类型,不管是新建还是更新，当传进来有harbor project时都要检验project是否是私有
-                if (devopsConfigVO.getType().equals(HARBOR) && devopsConfigVO.getConfig().getProject() != null) {
-                    checkRegistryProjectIsPrivate(devopsConfigVO);
-                }
-                if (devopsConfigVO.getType().equals(HARBOR)) {
-                    appServiceService.checkHarbor(devopsConfigVO.getConfig().getUrl(), devopsConfigVO.getConfig().getUserName(), devopsConfigVO.getConfig().getPassword(), devopsConfigVO.getConfig().getProject(), devopsConfigVO.getConfig().getEmail());
-                    if (devopsConfigVO.getConfig().getProject() == null && !resourceType.equals(ResourceLevel.ORGANIZATION.value())) {
-                        harborConfigurationProperties.setUsername(devopsConfigVO.getConfig().getUserName());
-                        harborConfigurationProperties.setPassword(devopsConfigVO.getConfig().getPassword());
-                        harborConfigurationProperties.setBaseUrl(devopsConfigVO.getConfig().getUrl());
-                        ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
-                        configurationProperties.setType(HARBOR);
-                        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-                        HarborClient harborClient = retrofit.create(HarborClient.class);
-
-                        ProjectDTO projectDTO;
-                        Tenant organizationDTO;
-                        if (resourceType.equals(ResourceLevel.PROJECT.value())) {
-                            projectDTO = baseServiceClientOperator.queryIamProjectById(resourceId);
-                            organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-                        } else {
-                            AppServiceDTO appServiceDTO = appServiceService.baseQuery(resourceId);
-                            projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
-                            organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-                        }
-                        // todo
-                        harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getTenantNum() + "-" + projectDTO.getCode(), false, devopsConfigVO.getHarborPrivate());
-                        devopsConfigVO.getConfig().setPrivate(devopsConfigVO.getHarborPrivate());
-                    }
-                }
                 //根据配置所在的资源层级，查询出数据库中是否存在
                 DevopsConfigDTO devopsConfigDTO = baseQueryByResourceAndType(resourceId, resourceType, devopsConfigVO.getType());
                 DevopsConfigDTO newDevopsConfigDTO = voToDto(devopsConfigVO);
@@ -141,14 +115,6 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     baseCreate(newDevopsConfigDTO);
                 }
             } else {
-                //默认的harbor类型,在项目层级有设置私有的功能
-                if (devopsConfigVO.getType().equals(HARBOR) && resourceType.equals(ResourceLevel.PROJECT.value())) {
-                    DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(resourceId);
-                    //判断当前默认仓库私有配置是否和数据库中存储一致，不一致则执行对应逻辑,注意，只能将系统默认的harhor配置设置为私有
-                    if (!devopsProjectDTO.getHarborProjectIsPrivate().equals(devopsConfigVO.getHarborPrivate())) {
-                        operateHarborProject(resourceId, devopsConfigVO.getHarborPrivate());
-                    }
-                }
                 //根据配置所在的资源层级，查询出数据库中是否存在，存在则删除
                 DevopsConfigDTO devopsConfigDTO = baseQueryByResourceAndType(resourceId, resourceType, devopsConfigVO.getType());
                 if (devopsConfigDTO != null) {
@@ -330,46 +296,6 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 return projectConfig;
             }
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
-            Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            DevopsConfigDTO organizationConfig = baseQueryByResourceAndType(organizationDTO.getTenantId(), ResourceLevel.ORGANIZATION.value(), configType);
-            //如果组织层使用自定义设置，为了避免给组织层下所有项目都创一遍harborProject,则只在具体某个应用服务用到的时候，在去给应用服务所属的项目创建对应的harborProject
-            if (organizationConfig != null) {
-                if (configType.equals(HARBOR)) {
-                    ConfigVO configVO = gson.fromJson(organizationConfig.getConfig(), ConfigVO.class);
-                    harborConfigurationProperties.setUsername(configVO.getUserName());
-                    harborConfigurationProperties.setPassword(configVO.getPassword());
-                    harborConfigurationProperties.setBaseUrl(configVO.getUrl());
-                    ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
-                    configurationProperties.setType(HARBOR);
-                    Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-                    HarborClient harborClient = retrofit.create(HarborClient.class);
-                    projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
-                    organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-                    harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getTenantNum() + "-" + projectDTO.getCode(), false, true);
-                }
-                return organizationConfig;
-            }
-            //若应用服务最后查出来的配置是最高级的默认harbor配置
-            //如果用于ci推送镜像，直接拿push对象
-            //如果为私有，设置为私有，拿pull对象
-            //如果未拿到harbor对象，拿系统默认对象
-            if (configType.equals(HARBOR)) {
-                DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
-                ConfigVO configVO = gson.fromJson(defaultConfig.getConfig(), ConfigVO.class);
-                HarborUserDTO harborUserDTO = new HarborUserDTO();
-                if (operateType.equals(AUTHTYPE_PUSH)) {
-                    harborUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborUserId());
-                } else if (devopsProjectDTO.getHarborProjectIsPrivate() != null && devopsProjectDTO.getHarborProjectIsPrivate()) {
-                    configVO.setPrivate(true);
-                    harborUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborPullUserId());
-                }
-                if (harborUserDTO != null) {
-                    configVO.setUserName(harborUserDTO.getHarborProjectUserName());
-                    configVO.setPassword(harborUserDTO.getHarborProjectUserPassword());
-                    configVO.setEmail(harborUserDTO.getHarborProjectUserEmail());
-                }
-                defaultConfig.setConfig(gson.toJson(configVO));
-            }
             return defaultConfig;
         } else if (resourceType.equals(ResourceLevel.PROJECT.value())) {
             DevopsConfigDTO projectConfig = baseQueryByResourceAndType(resourceId, ResourceLevel.PROJECT.value(), configType);
@@ -530,19 +456,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     @Override
     public void operateConfig(Long resourceId, String resourceType, DevopsConfigRepVO devopsConfigRepVO) {
         List<DevopsConfigVO> configVOS = new ArrayList<>();
-        DevopsConfigVO harbor = new DevopsConfigVO();
         DevopsConfigVO chart = new DevopsConfigVO();
-        if (ObjectUtils.isEmpty(devopsConfigRepVO.getHarbor())) {
-            harbor.setCustom(false);
-            harbor.setType(HARBOR);
-            harbor.setHarborPrivate(devopsConfigRepVO.getHarborPrivate());
-            configVOS.add(harbor);
-        } else {
-            harbor = devopsConfigRepVO.getHarbor();
-            harbor.setHarborPrivate(harbor.getHarborPrivate() == null ? Boolean.TRUE : harbor.getHarborPrivate());
-            configVOS.add(harbor);
-        }
-
         if (ObjectUtils.isEmpty(devopsConfigRepVO.getChart())) {
             chart.setCustom(false);
             chart.setType(CHART);
