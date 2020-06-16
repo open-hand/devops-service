@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.ApprovalVO;
+import io.choerodon.devops.api.vo.LatestAppServiceVO;
 import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.app.service.UserAttrService;
@@ -14,13 +15,14 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.ApprovalTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.AppServiceMapper;
-import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
-import io.choerodon.devops.infra.mapper.PipelineStageRecordMapper;
+import io.choerodon.devops.infra.mapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +33,15 @@ public class WorkDesktopServiceImpl implements WorkDesktopService {
 
     @Autowired
     private DevopsMergeRequestMapper devopsMergeRequestMapper;
+
+    @Autowired
+    private AppServiceMapper appServiceMapper;
+
+    @Autowired
+    private DevopsBranchMapper devopsBranchMapper;
+
+    @Autowired
+    private DevopsGitlabCommitMapper devopsGitlabCommitMapper;
 
     @Autowired
     private PipelineStageRecordMapper pipelineStageRecordMapper;
@@ -44,9 +55,17 @@ public class WorkDesktopServiceImpl implements WorkDesktopService {
     @Autowired
     DevopsGitService devopsGitService;
 
-    @Autowired
-    private AppServiceMapper appServiceMapper;
-
+    @Override
+    public List<LatestAppServiceVO> listLatestAppService(Long organizationId, Long projectId) {
+        Tenant tenant = baseServiceClientOperator.queryOrganizationById(organizationId);
+        List<ProjectDTO> projectDTOList;
+        if (projectId == null) {
+            projectDTOList = baseServiceClientOperator.listIamProjectByOrgId(tenant.getTenantId());
+        } else {
+            projectDTOList = Collections.singletonList(baseServiceClientOperator.queryIamProjectById(projectId));
+        }
+        return listLatestUserAppServiceDTO(organizationId, projectDTOList);
+    }
 
     @Override
     public List<ApprovalVO> listApproval(Long organizationId, Long projectId) {
@@ -56,7 +75,7 @@ public class WorkDesktopServiceImpl implements WorkDesktopService {
             return listApprovalVOByProject(tenant, projectId);
         } else {
             List<ApprovalVO> approvalVOList = new ArrayList<>();
-            List<ProjectDTO> projectList = baseServiceClientOperator.pageProjectByOrgId(tenant.getTenantId(), 0, -1, null, null, null, null).getContent();
+            List<ProjectDTO> projectList = baseServiceClientOperator.listIamProjectByOrgId(tenant.getTenantId());
             projectList.forEach(projectDTO -> {
                 approvalVOList.addAll(listApprovalVOByProject(tenant, projectDTO.getId()));
             });
@@ -125,4 +144,38 @@ public class WorkDesktopServiceImpl implements WorkDesktopService {
         });
         return approvalVOList;
     }
+
+    private List<LatestAppServiceVO> listLatestUserAppServiceDTO(Long organizationId, List<ProjectDTO> projectDTOList) {
+        List<Long> projectIds = projectDTOList.stream().map(ProjectDTO::getId).collect(Collectors.toList());
+        Map<Long, List<ProjectDTO>> projectDTOMap = projectDTOList.stream().collect(Collectors.groupingBy(ProjectDTO::getId));
+        Long userId = DetailsHelper.getUserDetails().getUserId() == null ? 0 : DetailsHelper.getUserDetails().getUserId();
+        List<LatestAppServiceVO> latestAppServiceVOList = new ArrayList<>();
+        latestAppServiceVOList.addAll(appServiceMapper.listLatestUseAppServiceIdAndDate(projectIds, userId));
+        latestAppServiceVOList.addAll(devopsBranchMapper.listLatestUseAppServiceIdAndDate(projectIds, userId));
+        latestAppServiceVOList.addAll(devopsGitlabCommitMapper.listLatestUseAppServiceIdAndDate(projectIds, userId));
+        latestAppServiceVOList.addAll(devopsMergeRequestMapper.listLatestUseAppServiceIdAndDate(projectIds, userId));
+
+        List<LatestAppServiceVO> latestTenAppServiceList = latestAppServiceVOList.stream().sorted(Comparator.comparing(LatestAppServiceVO::getLastUpdateDate).reversed())
+                .filter(distinctByKey(LatestAppServiceVO::getLastUpdateDate))
+                .collect(Collectors.toList()).subList(0, 10);
+
+        Set<Long> appServiceIds = latestTenAppServiceList.stream().map(LatestAppServiceVO::getId).collect(Collectors.toSet());
+        Map<Long, List<AppServiceDTO>> appServiceDTOMap = appServiceMapper.listAppServiceByIds(appServiceIds, null, null).stream().collect(Collectors.groupingBy(AppServiceDTO::getId));
+
+        latestTenAppServiceList.forEach(latestAppServiceVO -> {
+            AppServiceDTO appServiceDTO = appServiceDTOMap.get(latestAppServiceVO.getId()).get(0);
+            ProjectDTO projectDTO = projectDTOMap.get(appServiceDTO.getProjectId()).get(0);
+            latestAppServiceVO.setProjectName(projectDTO.getName())
+                    .setProjectId(appServiceDTO.getProjectId())
+                    .setCode(appServiceDTO.getCode())
+                    .setName(appServiceDTO.getName());
+        });
+        return latestTenAppServiceList;
+    }
+
+    private static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+        Set<Object> seen = ConcurrentHashMap.newKeySet();
+        return t -> seen.add(keyExtractor.apply(t));
+    }
+
 }
