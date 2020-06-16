@@ -168,6 +168,15 @@ public class GitlabCiUtil {
     }
 
     /**
+     * 获取默认的sonar命令
+     *
+     * @return 命令
+     */
+    public static String getDefaultSonarCommand() {
+        return DEFAULT_SONAR_TEMPLATE;
+    }
+
+    /**
      * 获取用于CI的sonar的命令
      *
      * @param sonarUrl sonar服务地址

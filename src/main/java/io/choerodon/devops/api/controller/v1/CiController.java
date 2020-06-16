@@ -24,6 +24,9 @@ public class CiController {
     @Value("${devops.ci.default.image}")
     private String defaultCiImage;
 
+    @Value("${services.sonarqube.url:}")
+    private String sonarqubeUrl;
+
     private final AppServiceService applicationService;
     private final AppServiceVersionService appServiceVersionService;
     private final DevopsCiJobService devopsCiJobService;
@@ -89,6 +92,13 @@ public class CiController {
     @GetMapping("/default_image")
     public ResponseEntity<String> queryDefaultCiImageUrl() {
         return ResponseEntity.ok(defaultCiImage);
+    }
+
+    @Permission(permissionLogin = true)
+    @ApiOperation(value = "判断平台是否有配置sonarqube")
+    @GetMapping("/has_default_sonar")
+    public ResponseEntity<Boolean> hasDefaultSonarqubeConfig() {
+        return ResponseEntity.ok(sonarqubeUrl != null);
     }
 
     /**

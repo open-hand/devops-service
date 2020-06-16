@@ -108,6 +108,11 @@ public class GitOpsConstants {
             "source ./.auto_devops.sh\n";
 
     /**
+     * 默认的sonar命令
+     */
+    public static final String DEFAULT_SONAR_TEMPLATE = "mvn --batch-mode verify sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}";
+
+    /**
      * 使用Token认证的sonar命令
      * SonarUrl
      * Token
