@@ -550,13 +550,13 @@ public interface GitlabServiceClient {
     @PostMapping(value = "/v1/groups/{groupId}/variable")
     ResponseEntity<CiVariableVO> createGroupVariable(
             @ApiParam(value = "组ID", required = true)
-            @PathVariable Integer groupId,
+            @PathVariable("groupId") Integer groupId,
             @ApiParam(value = "变量key&value", required = true)
             @RequestBody GitlabTransferDTO gitlabTransferDTO,
             @ApiParam(value = "变量是否保护", required = true)
-            @RequestParam boolean protecteds,
+            @RequestParam("protecteds") boolean protecteds,
             @ApiParam(value = "用户Id称")
-            @RequestParam(required = false) Integer userId);
+            @RequestParam(required = false, name = "userId") Integer userId);
 
     /**
      * 批量增加/更新组ci环境变量
@@ -570,7 +570,7 @@ public interface GitlabServiceClient {
     @PutMapping(value = "/v1/groups/{groupId}/variables")
     ResponseEntity<List<CiVariableVO>> batchSaveGroupVariable(
             @ApiParam(value = "组ID", required = true)
-            @PathVariable Integer groupId,
+            @PathVariable("groupId") Integer groupId,
             @ApiParam(value = "用户ID", required = true)
             @RequestParam(value = "userId") Integer userId,
             @ApiParam(value = "variable信息", required = true)
@@ -588,11 +588,11 @@ public interface GitlabServiceClient {
     @DeleteMapping(value = "/v1/groups/{groupId}/variables")
     ResponseEntity<Void> deleteVariable(
             @ApiParam(value = "组ID", required = true)
-            @PathVariable Integer groupId,
+            @PathVariable("groupId") Integer groupId,
             @ApiParam(value = "用户ID", required = true)
             @RequestParam(value = "userId") Integer userId,
             @ApiParam(value = "variable key", required = true)
-            @RequestParam String key);
+            @RequestParam(value = "key") String key);
 
     /**
      * 批量删除组中指定key的变量
@@ -606,7 +606,7 @@ public interface GitlabServiceClient {
     @DeleteMapping(value = "/v1/groups/{groupId}/variables")
     ResponseEntity<Void> batchGroupDeleteVariable(
             @ApiParam(value = "组ID", required = true)
-            @PathVariable Integer groupId,
+            @PathVariable("groupId") Integer groupId,
             @ApiParam(value = "用户ID", required = true)
             @RequestParam(value = "userId") Integer userId,
             @ApiParam(value = "variable keys", required = true)
@@ -647,7 +647,7 @@ public interface GitlabServiceClient {
     @DeleteMapping(value = "/v1/projects/{projectId}/variables")
     ResponseEntity<Void> batchProjectDeleteVariable(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Integer projectId,
+            @PathVariable(value = "projectId") Integer projectId,
             @ApiParam(value = "用户ID", required = true)
             @RequestParam(value = "userId") Integer userId,
             @ApiParam(value = "variable keys", required = true)

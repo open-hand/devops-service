@@ -6,6 +6,7 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -138,10 +139,7 @@ public class DevopsGitController {
             @RequestBody(required = false) String params,
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
             @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
-        return Optional.ofNullable(devopsGitService.pageTagsByOptions(projectId, appServiceId, params,
-                page, size))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.tags.get"));
+        return Results.success(devopsGitService.pageTagsByOptions(projectId, appServiceId, params, page, size));
     }
 
     /**
@@ -254,9 +252,7 @@ public class DevopsGitController {
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsGitService.pageBranchByOptions(projectId, pageable, appServiceId, params))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.branch.get"));
+        return Results.success(devopsGitService.pageBranchByOptions(projectId, pageable, appServiceId, params));
     }
 
     /**
@@ -348,9 +344,7 @@ public class DevopsGitController {
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageable) {
-        return Optional.ofNullable(devopsGitService.listMergeRequest(projectId, appServiceId, state, pageable))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.mergerequest.get"));
+        return Results.success(devopsGitService.listMergeRequest(projectId, appServiceId, state, pageable));
     }
 
     /**
