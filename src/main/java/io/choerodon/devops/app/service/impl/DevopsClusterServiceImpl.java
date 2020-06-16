@@ -636,7 +636,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         if (ObjectUtils.isEmpty(devopsClusterDTO)) {
             throw new CommonException("error.devops.cluster.is.not.exist");
         }
-        if (Boolean.TRUE.equals(permissionHelper.isRoot(userId)) || Boolean.TRUE.equals(permissionHelper.isOrganzationRoot(userId, devopsClusterDTO.getOrganizationId()))) {
+        if (Boolean.TRUE.equals(permissionHelper.isRoot(userId)) || Boolean.TRUE.equals(permissionHelper.isOrganizationRoot(userId, devopsClusterDTO.getOrganizationId()))) {
             return true;
         }
         if (Boolean.TRUE.equals(permissionHelper.isGitlabProjectOwner(userId, devopsClusterDTO.getProjectId()))) {

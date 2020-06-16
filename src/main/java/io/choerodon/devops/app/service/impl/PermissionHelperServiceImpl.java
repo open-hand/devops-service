@@ -80,7 +80,7 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     }
 
     @Override
-    public Boolean isOrganzationRoot(Long userId, Long organizationId) {
+    public Boolean isOrganizationRoot(Long userId, Long organizationId) {
         return baseServiceClientOperator.isOrganzationRoot(userId, organizationId);
     }
 

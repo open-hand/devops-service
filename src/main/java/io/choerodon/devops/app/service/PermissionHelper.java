@@ -72,6 +72,7 @@ public interface PermissionHelper {
 
     /**
      * 判断指定用户是否是root用户
+     *
      * @param userId
      * @return
      */
@@ -79,24 +80,28 @@ public interface PermissionHelper {
 
     /**
      * 判断指定用户是否是组织Root用户
-     * @param userId
-     * @param organizationId
-     * @return
+     *
+     * @param userId         用户id
+     * @param organizationId 组织id
+     * @return true表示是
      */
-    Boolean isOrganzationRoot(Long userId, Long organizationId);
+    Boolean isOrganizationRoot(Long userId, Long organizationId);
 
     /**
      * 判断指定用户是否是项目所有者
-     * @param userId
-     * @param projectId
-     * @return
+     *
+     * @param userId    用户id
+     * @param projectId 项目id
+     * @return 是否是项目所有者
      */
     Boolean isProjectOwner(Long userId, Long projectId);
+
     /**
      * 判断指定用户是否是gitlab owner
-     * @param userId
-     * @param projectId
-     * @return
+     *
+     * @param userId    用户id
+     * @param projectId 项目id
+     * @return 是否是gitlab owner
      */
     Boolean isGitlabProjectOwner(Long userId, Long projectId);
 

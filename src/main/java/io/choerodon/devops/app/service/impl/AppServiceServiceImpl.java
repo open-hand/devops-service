@@ -65,6 +65,7 @@ import io.choerodon.devops.app.task.DevopsTask;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
@@ -225,6 +226,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             description = "Devops创建应用服务", inputSchema = "{}")
     @Transactional
     public AppServiceRepVO create(Long projectId, AppServiceReqVO appServiceReqVO) {
+        appServiceReqVO.setProjectId(projectId);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplicationService(appServiceReqVO.getCode());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
@@ -358,6 +360,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (appServiceDTO == null) {
             return;
         }
+
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
         // 禁止删除未失败或者启用状态的应用服务
         if (Boolean.TRUE.equals(appServiceDTO.getActive())
                 && Boolean.FALSE.equals(appServiceDTO.getFailed())) {
@@ -459,8 +464,16 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     @Transactional
     public Boolean update(Long projectId, AppServiceUpdateDTO appServiceUpdateDTO) {
-        AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceUpdateDTO, AppServiceDTO.class);
         Long appServiceId = appServiceUpdateDTO.getId();
+        AppServiceDTO oldAppServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+
+        if (oldAppServiceDTO == null) {
+            return false;
+        }
+
+        CommonExAssertUtil.assertTrue(projectId.equals(oldAppServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceUpdateDTO, AppServiceDTO.class);
         List<DevopsConfigVO> devopsConfigVOS = new ArrayList<>();
         DevopsConfigVO chart = new DevopsConfigVO();
         if (ObjectUtils.isEmpty(appServiceUpdateDTO.getChart())) {
@@ -506,10 +519,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, CHART, AUTHTYPE_PULL);
             appServiceDTO.setChartConfigId(chartConfig.getId());
         }
-        AppServiceDTO oldAppServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-        if (oldAppServiceDTO == null) {
-            return false;
-        }
+
         if (!oldAppServiceDTO.getName().equals(appServiceUpdateDTO.getName())) {
             checkName(oldAppServiceDTO.getProjectId(), appServiceDTO.getName());
         }
@@ -532,6 +542,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         Boolean toUpdateValue = Boolean.FALSE.equals(active) ? Boolean.FALSE : Boolean.TRUE;
 
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         // 如果原先的值和更新的值相等，则不更新
         if (toUpdateValue.equals(appServiceDTO.getActive())) {
@@ -1864,6 +1876,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public void updatePermission(Long projectId, Long appServiceId, AppServicePermissionVO applicationPermissionVO) {
         // 创建gitlabUserPayload
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         DevOpsUserPayload devOpsUserPayload = new DevOpsUserPayload();
         devOpsUserPayload.setIamProjectId(projectId);
@@ -1928,7 +1941,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public void deletePermission(Long projectId, Long appServiceId, Long userId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-        appServiceUserPermissionService.baseDeleteByUserIdAndAppIds(Arrays.asList(appServiceId), userId);
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        appServiceUserPermissionService.baseDeleteByUserIdAndAppIds(ArrayUtil.singleAsList(appServiceId), userId);
         //原来不跳，现在也不跳，删除用户在gitlab权限
         DevOpsUserPayload devOpsUserPayload = new DevOpsUserPayload();
         devOpsUserPayload.setIamProjectId(projectId);
@@ -2784,7 +2798,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         userAttrService.checkUserSync(userAttrDTO, TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         // 判断用户是否有应用服务权限
         if (permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(appServiceDTO.getProjectId())
-                || permissionHelper.isOrganzationRoot(userId, baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId()).getOrganizationId())
+                || permissionHelper.isOrganizationRoot(userId, baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId()).getOrganizationId())
                 || appServiceDTO.getIsSkipCheckPermission()) {
             return true;
         } else {

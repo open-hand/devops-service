@@ -22,4 +22,6 @@ public final class MiscConstants {
     public static final String DEFAULT_SONAR_NAME = "sonar_default";
 
     public static final String APP_SERVICE = "appService";
+
+    public static final String ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT = "error.operating.resource.in.other.project";
 }

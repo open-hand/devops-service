@@ -107,7 +107,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             devopsEnvUserPermissionService.checkEnvDeployPermission(DetailsHelper.getUserDetails().getUserId(), scopeId);
         } else {
             // 如果是组织管理员，则跳过项目层权限校验
-            if (Boolean.FALSE.equals(permissionHelper.isOrganzationRoot(userId, projectDTO.getOrganizationId()))) {
+            if (Boolean.FALSE.equals(permissionHelper.isOrganizationRoot(userId, projectDTO.getOrganizationId()))) {
                 permissionHelper.checkProjectOwnerOrGitlabAdmin(projectId, userId);
             }
         }
