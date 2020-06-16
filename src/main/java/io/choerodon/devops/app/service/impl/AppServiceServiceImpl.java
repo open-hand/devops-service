@@ -1019,9 +1019,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setProjectId(projectId);
         appServiceDTO.setActive(true);
         appServiceDTO.setSynchro(false);
-        appServiceDTO.setSkipCheckPermission(Boolean.TRUE);
-        appServiceDTO.setHarborConfigId(appServiceImportVO.getHarborConfigId());
-        appServiceDTO.setChartConfigId(appServiceImportVO.getChartConfigId());
 
         // 查询创建应用所在的gitlab应用组
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(appServiceDTO.getProjectId());

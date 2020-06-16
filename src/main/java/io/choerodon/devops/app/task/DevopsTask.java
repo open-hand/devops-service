@@ -63,7 +63,7 @@ public class DevopsTask {
             repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
     public void fixAppServiceVersion(Map<String, Object> map) {
         logger.info("begin to fix appservice version harbor data.");
-        devopsCheckLogService.checkLog("0.23.0");
+//        devopsCheckLogService.checkLog("0.23.0");
     }
 
 }
