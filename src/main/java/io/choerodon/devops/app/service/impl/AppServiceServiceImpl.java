@@ -11,6 +11,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.sonar.*;
 import io.choerodon.devops.app.eventhandler.DevopsSagaHandler;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
@@ -24,6 +25,7 @@ import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
 import io.choerodon.devops.infra.dto.harbor.User;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -34,6 +36,7 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.exception.GitlabAccessInvalidException;
 import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HarborClient;
+import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -56,6 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -191,6 +195,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsCiPipelineService devopsCiPipelineService;
     @Autowired
     private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
+    @Lazy
+    private RdupmClient rdupmClient;
+    @Autowired
+    private HarborService harborService;
 
 
     static {
@@ -294,9 +302,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<DevopsConfigVO> devopsConfigVOS = devopsConfigService.queryByResourceId(appServiceId, APP_SERVICE);
         if (!devopsConfigVOS.isEmpty()) {
             devopsConfigVOS.forEach(devopsConfigVO -> {
-                if (devopsConfigVO.getType().equals(HARBOR)) {
-                    appServiceRepVO.setHarbor(devopsConfigVO);
-                }
                 if (devopsConfigVO.getType().equals(CHART)) {
                     appServiceRepVO.setChart(devopsConfigVO);
                 }
@@ -306,6 +311,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (appServiceDTO.getGitlabProjectId() != null) {
             appServiceRepVO.setRepoUrl(concatRepoUrl(organizationDTO.getTenantNum(), projectDTO.getCode(), appServiceDTO.getCode()));
         }
+        //添加harbor的配置信息
+        HarborRepoDTO selectedHarborConfig = rdupmClient.queryHarborRepoConfig(projectId, appServiceId).getBody();
+        appServiceRepVO.setHarborRepoDTO(selectedHarborConfig);
+        List<HarborCustomRepo> customRepos = rdupmClient.listAllCustomRepoByProject(projectId).getBody();
+        appServiceRepVO.setHarborCustomRepos(customRepos);
         return appServiceRepVO;
     }
 
@@ -411,6 +421,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                 gitlabServiceClientOperator.deleteProjectById(gitlabProjectId, gitlabUserId);
             }
         }
+        //删除应用服务与自定义harbor仓库的关联关系
+        HarborCustomRepo harborCustomRepo = rdupmClient.listRelatedCustomRepoByService(projectId, appServiceId).getBody();
+        if (!Objects.isNull(harborCustomRepo)) {
+            rdupmClient.deleteRelationByService(projectId, appServiceId, harborCustomRepo.getId());
+        }
         appServiceMapper.deleteByPrimaryKey(appServiceId);
     }
 
@@ -422,19 +437,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceUpdateDTO, AppServiceDTO.class);
         Long appServiceId = appServiceUpdateDTO.getId();
         List<DevopsConfigVO> devopsConfigVOS = new ArrayList<>();
-
-        DevopsConfigVO harbor = new DevopsConfigVO();
         DevopsConfigVO chart = new DevopsConfigVO();
-        if (ObjectUtils.isEmpty(appServiceUpdateDTO.getHarbor())) {
-            harbor.setCustom(false);
-            harbor.setType(HARBOR);
-            devopsConfigVOS.add(harbor);
-        } else {
-            harbor = appServiceUpdateDTO.getHarbor();
-            harbor.setHarborPrivate(harbor.getHarborPrivate() == null ? Boolean.TRUE : harbor.getHarborPrivate());
-            devopsConfigVOS.add(harbor);
-        }
-
         if (ObjectUtils.isEmpty(appServiceUpdateDTO.getChart())) {
             chart.setCustom(false);
             chart.setType(CHART);
@@ -442,31 +445,41 @@ public class AppServiceServiceImpl implements AppServiceService {
         } else {
             devopsConfigVOS.add(appServiceUpdateDTO.getChart());
         }
-
-
+        //处理helm仓库的配置
         devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
-
-        if (appServiceUpdateDTO.getHarbor() != null) {
-            DevopsConfigDTO harborConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, HARBOR, AUTHTYPE_PULL);
-            appServiceDTO.setHarborConfigId(harborConfig.getId());
+        //保存应用服务与harbor仓库的关系
+        if (!Objects.isNull(appServiceUpdateDTO.getHarborRepoDTO())) {
+            if (HarborRepoDTO.DEFAULT_REPO.equals(appServiceUpdateDTO.getHarborRepoDTO().getRepoType())) {
+                HarborRepoDTO beforeRepo = rdupmClient.queryHarborRepoConfig(projectId, appServiceId).getBody();
+                if (!HarborRepoDTO.DEFAULT_REPO.equals(beforeRepo.getRepoType())) {
+                    deleteHarborAppServiceRel(projectId, appServiceDTO.getId());
+                }
+            }
+            if (HarborRepoDTO.CUSTOM_REPO.equals((appServiceUpdateDTO.getHarborRepoDTO().getRepoType()))) {
+                deleteHarborAppServiceRel(projectId, appServiceDTO.getId());
+                rdupmClient.saveRelationByService(projectId, appServiceDTO.getId(), appServiceUpdateDTO.getCustomRepoId());
+            }
         }
         if (appServiceUpdateDTO.getChart() != null) {
             DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, CHART, AUTHTYPE_PULL);
             appServiceDTO.setChartConfigId(chartConfig.getId());
         }
-
-
         AppServiceDTO oldAppServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-
         if (oldAppServiceDTO == null) {
             return false;
         }
-
         if (!oldAppServiceDTO.getName().equals(appServiceUpdateDTO.getName())) {
             checkName(oldAppServiceDTO.getProjectId(), appServiceDTO.getName());
         }
         baseUpdate(appServiceDTO);
         return true;
+    }
+
+    private void deleteHarborAppServiceRel(Long projectId, Long appServcieId) {
+        HarborCustomRepo harborCustomRepoVO = rdupmClient.listRelatedCustomRepoByService(projectId, appServcieId).getBody();
+        if (!Objects.isNull(harborCustomRepoVO)) {
+            rdupmClient.deleteRelationByService(projectId, appServcieId, harborCustomRepoVO.getId());
+        }
     }
 
 
@@ -885,7 +898,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         try {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
             Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            DevopsConfigDTO harborConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR, AUTHTYPE_PUSH);
+//            DevopsConfigDTO harborConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR, AUTHTYPE_PUSH);
+            DevopsConfigDTO harborConfigDTO = harborService.queryRepoConfigToDevopsConfig(projectDTO.getId(), appServiceDTO.getId(), AUTHTYPE_PUSH);
             ConfigVO harborProjectConfig = gson.fromJson(harborConfigDTO.getConfig(), ConfigVO.class);
             Map<String, String> params = new HashMap<>();
             String groupName = organizationDTO.getTenantNum() + "-" + projectDTO.getCode();
@@ -1005,9 +1019,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setProjectId(projectId);
         appServiceDTO.setActive(true);
         appServiceDTO.setSynchro(false);
-        appServiceDTO.setSkipCheckPermission(Boolean.TRUE);
-        appServiceDTO.setHarborConfigId(appServiceImportVO.getHarborConfigId());
-        appServiceDTO.setChartConfigId(appServiceImportVO.getChartConfigId());
 
         // 查询创建应用所在的gitlab应用组
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(appServiceDTO.getProjectId());

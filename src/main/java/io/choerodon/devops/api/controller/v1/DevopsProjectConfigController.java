@@ -33,23 +33,23 @@ public class DevopsProjectConfigController {
     AppServiceService appServiceService;
 
     /**
-     * 项目下处理配置
+     * 项目下处理配置 （项目下配置库的接口不要了）
      *
      * @param projectId         项目id
      * @param devopsConfigRepVO 配置信息
      * @return void
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下创建配置")
-    @PostMapping
-    public ResponseEntity create(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "配置信息", required = true)
-            @RequestBody DevopsConfigRepVO devopsConfigRepVO) {
-        devopsConfigService.operateConfig(projectId, ResourceLevel.PROJECT.value(), devopsConfigRepVO);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
+//    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
+//    @ApiOperation(value = "项目下创建配置")
+//    @PostMapping
+//    public ResponseEntity create(
+//            @ApiParam(value = "项目ID", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @ApiParam(value = "配置信息", required = true)
+//            @RequestBody DevopsConfigRepVO devopsConfigRepVO) {
+//        devopsConfigService.operateConfig(projectId, ResourceLevel.PROJECT.value(), devopsConfigRepVO);
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
 
     /**
      * 项目下查询配置详情

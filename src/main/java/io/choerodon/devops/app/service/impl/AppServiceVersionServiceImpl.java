@@ -11,6 +11,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
+import io.choerodon.devops.infra.feign.RdupmClient;
+import io.choerodon.devops.infra.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -31,9 +34,6 @@ import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.ProjectConfigType;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.AppServiceMapper;
-import io.choerodon.devops.infra.mapper.AppServiceVersionMapper;
-import io.choerodon.devops.infra.mapper.AppServiceVersionReadmeMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -48,7 +48,9 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private static final String APP_SERVICE = "appService";
     private static final String CHART = "chart";
     private static final String AUTHTYPE_PULL = "pull";
-
+    private static final String HARBOR_DEFAULT = "harbor_default";
+    private static final String DEFAULT_REPO = "DEFAULT_REPO";
+    private static final String CUSTOM_REPO = "CUSTOM_REPO";
     private static final String ERROR_VERSION_INSERT = "error.version.insert";
 
     @Value("${services.gitlab.url}")
@@ -88,6 +90,12 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private DevopsConfigService devopsConfigService;
     @Autowired
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private RdupmClient rdupmClient;
+    @Autowired
+    private DevopsConfigMapper devopsConfigMapper;
+    @Autowired
+    private DevopsRegistrySecretMapper devopsRegistrySecretMapper;
 
 
     private Gson gson = new Gson();
@@ -120,7 +128,10 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         appServiceVersionDTO.setImage(image);
         appServiceVersionDTO.setCommit(commit);
         appServiceVersionDTO.setVersion(version);
-        appServiceVersionDTO.setHarborConfigId(harborConfigId);
+        //根据配置id 查询仓库是自定义还是默认
+        HarborRepoDTO harborRepoDTO = rdupmClient.queryHarborRepoConfig(appServiceDTO.getProjectId(), appServiceDTO.getId()).getBody();
+        appServiceVersionDTO.setHarborConfigId(harborRepoDTO.getHarborRepoConfig().getRepoId());
+        appServiceVersionDTO.setRepoType(harborRepoDTO.getRepoType());
 
         DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART, AUTHTYPE_PULL);
         String helmUrl = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class).getUrl();
@@ -678,5 +689,103 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         }
     }
 
+    @Override
+    public void fixHarbor() {
+        //修复appVsersion表，register_secret表
+        LOGGER.info("start fix appVsersion table");
+        int selectCount = appServiceVersionMapper.selectCount(null);
+        int size = 100;
+        int totalPage = (selectCount + size - 1) / size;
+        int pageNum = 1;
+        do {
+            PageRequest pageable = new PageRequest();
+            pageable.setPage(pageNum);
+            pageable.setSize(size);
+            pageable.setSort(new Sort("id"));
+            Page<AppServiceVersionDTO> page = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
+                    () -> appServiceVersionMapper.selectAll());
+            if (!CollectionUtils.isEmpty(page.getContent())) {
+                List<AppServiceVersionDTO> appServiceVersionDTOS = page.getContent();
+                for (AppServiceVersionDTO appServiceVersionDTO : appServiceVersionDTOS) {
+                    //看看config是否为null,如果不为null,查询devops_config表。判断config_name
+                    if (appServiceVersionDTO.getHarborConfigId() != null) {
+                        //除了default-harbor 是默认配置,其他都是自定义配置
+                        DevopsConfigDTO devopsConfigDTO = devopsConfigMapper.selectByPrimaryKey(appServiceVersionDTO.getHarborConfigId());
+                        if (!Objects.isNull(devopsConfigDTO) && HARBOR_DEFAULT.equals(devopsConfigDTO.getName())) {
+                            appServiceVersionDTO.setRepoType(DEFAULT_REPO);
+                            appServiceVersionDTO.setHarborConfigId(null);
+                            appServiceVersionMapper.updateByPrimaryKey(appServiceVersionDTO);
+                        } else {
+                            appServiceVersionDTO.setRepoType(CUSTOM_REPO);
+                            appServiceVersionMapper.updateByPrimaryKey(appServiceVersionDTO);
+                        }
+                    } else {
+                        //如果configID为null
+                        DevopsConfigDTO appConfig = new DevopsConfigDTO();
+                        appConfig.setAppServiceId(appServiceVersionDTO.getAppServiceId());
+                        DevopsConfigDTO devopsConfigDTO = devopsConfigMapper.selectOne(appConfig);
+                        if (!Objects.isNull(devopsConfigDTO)) {
+                            appServiceVersionDTO.setHarborConfigId(devopsConfigDTO.getId());
+                            appServiceVersionDTO.setRepoType(CUSTOM_REPO);
+                            appServiceVersionMapper.updateByPrimaryKey(appServiceVersionDTO);
+                        } else {
+                            AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceVersionDTO.getAppServiceId());
+                            appConfig.setProjectId(appServiceDTO.getProjectId());
+                            DevopsConfigDTO devopsConfigDTOProject = devopsConfigMapper.selectOne(appConfig);
+                            if (!Objects.isNull(devopsConfigDTOProject)) {
+                                appServiceVersionDTO.setRepoType(CUSTOM_REPO);
+                                appServiceVersionDTO.setHarborConfigId(devopsConfigDTOProject.getId());
+                                appServiceVersionMapper.updateByPrimaryKey(appServiceVersionDTO);
+                            } else {
+                                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+                                appConfig.setOrganizationId(projectDTO.getOrganizationId());
+                                DevopsConfigDTO devopsConfigDTOOrg = devopsConfigMapper.selectOne(appConfig);
+                                if (!Objects.isNull(devopsConfigDTOOrg)) {
+                                    appServiceVersionDTO.setRepoType(CUSTOM_REPO);
+                                    appServiceVersionDTO.setHarborConfigId(devopsConfigDTOOrg.getId());
+                                    appServiceVersionMapper.updateByPrimaryKey(appServiceVersionDTO);
+                                } else {
+                                    appServiceVersionDTO.setRepoType(DEFAULT_REPO);
+                                    appServiceVersionDTO.setHarborConfigId(null);
+                                    appServiceVersionMapper.updateByPrimaryKey(appServiceVersionDTO);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            pageNum++;
+        } while (pageNum <= totalPage);
 
+        LOGGER.info("end fix appVsersion table");
+        LOGGER.info("start fix register_secret");
+        int count = devopsRegistrySecretMapper.selectCount(null);
+        int pageSize = 100;
+        int total = (count + pageSize - 1) / pageSize;
+        int pageNumber = 1;
+        do {
+            PageRequest pageable = new PageRequest();
+            pageable.setPage(pageNumber);
+            pageable.setSize(pageSize);
+            pageable.setSort(new Sort("id"));
+            Page<DevopsRegistrySecretDTO> doPageAndSort = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
+                    () -> devopsRegistrySecretMapper.selectAll());
+            if (!CollectionUtils.isEmpty(doPageAndSort.getContent())) {
+                for (DevopsRegistrySecretDTO devopsRegistrySecretDTO : doPageAndSort) {
+                    DevopsConfigDTO devopsConfigDTO = devopsConfigMapper.selectByPrimaryKey(devopsRegistrySecretDTO.getConfigId());
+                    if (HARBOR_DEFAULT.equals(devopsConfigDTO.getName())) {
+                        devopsRegistrySecretDTO.setConfigId(null);
+                        devopsRegistrySecretDTO.setRepoType(DEFAULT_REPO);
+                        devopsRegistrySecretMapper.updateByPrimaryKey(devopsRegistrySecretDTO);
+                    } else {
+                        devopsRegistrySecretDTO.setRepoType(CUSTOM_REPO);
+                        devopsRegistrySecretMapper.updateByPrimaryKey(devopsRegistrySecretDTO);
+                    }
+                }
+            }
+            pageNumber++;
+        } while (pageNumber <= total);
+
+        LOGGER.info("end fix register_secret");
+    }
 }

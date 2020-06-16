@@ -1,10 +1,15 @@
 package io.choerodon.devops.api.vo.harbor;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotBlank;
 import java.util.Set;
@@ -15,8 +20,10 @@ import java.util.Set;
  * @author mofei.li@hand-china.com 2020-06-02 09:51:58
  */
 @ApiModel("制品库-harbor自定义镜像仓库表")
+@VersionAudit
+@ModifyAudit
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-public class HarborCustomRepoVO extends AuditDomain {
+public class HarborCustomRepo extends AuditDomain {
 
     public static final String FIELD_ID = "id";
 
@@ -30,6 +37,7 @@ public class HarborCustomRepoVO extends AuditDomain {
     public static final String FIELD_EMAIL = "email";
     public static final String FIELD_DESCRIPTION = "description";
     public static final String FIELD_PUBLIC_FLAG = "publicFlag";
+    public static final String FIELD_PROJECT_SHARE = "projectShare";
     public static final String FIELD_CREATION_DATE = "creationDate";
     public static final String FIELD_CREATED_BY = "createdBy";
     public static final String FIELD_LAST_UPDATED_BY = "lastUpdatedBy";
@@ -41,8 +49,24 @@ public class HarborCustomRepoVO extends AuditDomain {
     // ------------------------------------------------------------------------------
 
 
-    public HarborCustomRepoVO() {
+    public HarborCustomRepo() {
     }
+
+    public HarborCustomRepo(HarborCustomRepoDTO harborCustomRepoDTO) {
+        this.id = harborCustomRepoDTO.getRepoId();
+        this.projectId = harborCustomRepoDTO.getProjectId();
+        this.organizationId = harborCustomRepoDTO.getOrganizationId();
+        this.repoName = harborCustomRepoDTO.getRepoName();
+        this.repoUrl = harborCustomRepoDTO.getRepoUrl();
+        this.loginName = harborCustomRepoDTO.getRepoLoginName();
+        this.password = harborCustomRepoDTO.getRepoPassword();
+        this.email = harborCustomRepoDTO.getRepoEmail();
+        this.description = harborCustomRepoDTO.getRepoDescription();
+        this.publicFlag = harborCustomRepoDTO.getRepoPublicFlag();
+        this.projectShare = harborCustomRepoDTO.getProjectShare();
+        this.set_token(harborCustomRepoDTO.get_token());
+    }
+
 
     //
     // 数据库字段
@@ -50,6 +74,8 @@ public class HarborCustomRepoVO extends AuditDomain {
 
 
     @ApiModelProperty("表ID，主键，供其他表做外键")
+    @Id
+    @GeneratedValue
     private Long id;
 
     @ApiModelProperty(value = "猪齿鱼项目ID")
@@ -77,6 +103,9 @@ public class HarborCustomRepoVO extends AuditDomain {
     private String description;
     @ApiModelProperty(value = "是否公开访问，默认false")
     private String publicFlag;
+    @ApiModelProperty(value = "是否项目下共享，默认false")
+    @NotBlank
+    private String projectShare;
 	//
     // 非数据库字段
     // ------------------------------------------------------------------------------
@@ -181,6 +210,14 @@ public class HarborCustomRepoVO extends AuditDomain {
 
     public void setPublicFlag(String publicFlag) {
         this.publicFlag = publicFlag;
+    }
+
+    public String getProjectShare() {
+        return projectShare;
+    }
+
+    public void setProjectShare(String projectShare) {
+        this.projectShare = projectShare;
     }
 
     public Set<Long> getAppServiceIds() {
