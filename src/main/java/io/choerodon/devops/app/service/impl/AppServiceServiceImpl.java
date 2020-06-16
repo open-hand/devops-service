@@ -31,6 +31,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.RoleDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.exception.GitlabAccessInvalidException;
 import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.SonarClient;
@@ -188,6 +189,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private PermissionHelper permissionHelper;
     @Autowired
     private DevopsCiPipelineService devopsCiPipelineService;
+    @Autowired
+    private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
 
 
     static {
@@ -1136,7 +1139,11 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public SonarContentsVO getSonarContent(Long projectId, Long appServiceId) {
-
+        try {
+            checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.SONAR_LIST);
+        } catch (GitlabAccessInvalidException e) {
+            return null;
+        }
         //没有使用sonarqube直接返回空对象
         if (sonarqubeUrl.equals("")) {
             return new SonarContentsVO();
