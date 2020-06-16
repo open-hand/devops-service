@@ -92,7 +92,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final DevopsProjectService devopsProjectService;
     private final BaseServiceClientOperator baseServiceClientOperator;
     private final RdupmClientOperator rdupmClientOperator;
-    private final ProdRepoClientOperator prodRepoClientOperator;
     private final CheckGitlabAccessLevelService checkGitlabAccessLevelService;
 
     public DevopsCiPipelineServiceImpl(
@@ -127,7 +126,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.baseServiceClientOperator = baseServiceClientOperator;
         this.devopsProjectService = devopsProjectService;
         this.rdupmClientOperator = rdupmClientOperator;
-        this.prodRepoClientOperator = prodRepoClientOperator;
         this.checkGitlabAccessLevelService = checkGitlabAccessLevelService;
     }
 
