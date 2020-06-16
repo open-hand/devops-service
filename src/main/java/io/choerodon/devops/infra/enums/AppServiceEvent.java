@@ -20,7 +20,90 @@ public enum AppServiceEvent {
     /**
      * 非保护分支删除
      */
-    BRANCH_DELETE(20);
+    BRANCH_DELETE(20),
+
+    /**
+     * 标记List
+     */
+    TAG_LIST(10),
+
+    /**
+     * 标记创建
+     */
+    TAG_CREATE(20),
+
+    /**
+     * 标记修改
+     */
+    TAG_UPDATE(20),
+
+    /**
+     * 标记删除
+     */
+    TAG_DELETE(30),
+
+    /**
+     * merge request List
+     */
+    MERGE_REQUEST_LIST(10),
+
+    /**
+     * merge request 创建
+     */
+    MERGE_REQUEST_CREATE(20),
+
+    /**
+     * 持续集成 连接详情
+     */
+    CICD_DETAIL(10),
+
+    /**
+     * 持续集成 操作
+     */
+    CICD_OPERATION(20),
+
+    /**
+     * 代码质量查看
+     */
+    SONAR_LIST(10),
+    /**
+     * ci 流水线 连接详情
+     */
+    CI_PIPELINE_DETAIL(10),
+    /**
+     * ci 流水线 权限执行
+     */
+    CI_PIPELINE_NEW_PERFORM(20),
+    /**
+     * ci 流水线 启用/停用
+     */
+    CI_PIPELINE_STATUS_UPDATE(20),
+    /**
+     * ci 流水线 删除
+     */
+    CI_PIPELINE_DELETE(20),
+    /**
+     * ci 流水线 更新
+     */
+    CI_PIPELINE_UPDATE(20),
+    /**
+     * ci 流水线 创建
+     */
+    CI_PIPELINE_CREATE(20),
+    /**
+     * ci 流水线 重试
+     */
+    CI_PIPELINE_RETRY(20),
+    /**
+     * ci 流水线 任务重试
+     */
+    CI_PIPELINE_RETRY_TASK(20),
+
+    /**
+     * ci 流水线 取消
+     */
+    CI_PIPELINE_CANCEL(20);
+
 
 
     private Integer accesslevel;
