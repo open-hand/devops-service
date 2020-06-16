@@ -709,7 +709,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         setProjectHook(appServiceDTO, devOpsAppServicePayload.getGitlabProjectId(), applicationServiceToken, devOpsAppServicePayload.getUserId());
 
         // 为项目下的成员分配对于此gitlab项目的权限
-        operateGitlabMemberPermission(devOpsAppServicePayload);
+//        operateGitlabMemberPermission(devOpsAppServicePayload);
         if (devOpsAppServicePayload.getTemplateAppServiceId() != null && devOpsAppServicePayload.getTemplateAppServiceVersionId() != null) {
             LOGGER.info("The current app service id is {} and the service code is {}", appServiceDTO.getId(), appServiceDTO.getCode());
             LOGGER.info("The template app service id is not null: {}, start to clone template repository", devOpsAppServicePayload.getTemplateAppServiceId());
@@ -746,7 +746,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppServiceImportPayload.setGitlabProjectId(gitlabProjectDO.getId());
 
         // 为项目下的成员分配对于此gitlab项目的权限
-        operateGitlabMemberPermission(devOpsAppServiceImportPayload);
+//        operateGitlabMemberPermission(devOpsAppServiceImportPayload);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(devOpsAppServiceImportPayload.getUserId()));
 
