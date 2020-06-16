@@ -105,4 +105,12 @@ public interface PermissionHelper {
      */
     Boolean isGitlabProjectOwner(Long userId, Long projectId);
 
+    /**
+     * 这个项目是否有集群的权限
+     *
+     * @param clusterId 集群id
+     * @param projectId 项目id
+     * @return true表示有权限
+     */
+    boolean projectPermittedToCluster(Long clusterId, Long projectId);
 }

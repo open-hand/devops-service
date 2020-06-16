@@ -403,7 +403,7 @@ public class AppServiceInstanceController {
             @ApiParam(value = "部署信息", required = true)
             @RequestBody @Valid AppServiceDeployVO appServiceDeployVO) {
         appServiceDeployVO.setType("create");
-        return Optional.ofNullable(appServiceInstanceService.createOrUpdate(appServiceDeployVO, false))
+        return Optional.ofNullable(appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, false))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.deploy"));
     }
@@ -426,7 +426,7 @@ public class AppServiceInstanceController {
             @ApiParam(value = "更新信息", required = true)
             @RequestBody @Valid AppServiceDeployUpdateVO appServiceDeployUpdateVO) {
         appServiceDeployUpdateVO.setType("update");
-        return Optional.ofNullable(appServiceInstanceService.createOrUpdate(ConvertUtils.convertObject(appServiceDeployUpdateVO, AppServiceDeployVO.class), false))
+        return Optional.ofNullable(appServiceInstanceService.createOrUpdate(projectId, ConvertUtils.convertObject(appServiceDeployUpdateVO, AppServiceDeployVO.class), false))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.deploy"));
     }
@@ -532,17 +532,16 @@ public class AppServiceInstanceController {
      * @param instanceId 实例id
      * @return responseEntity
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "实例停止")
     @PutMapping(value = "/{instance_id}/stop")
-    public ResponseEntity stop(
+    public ResponseEntity<Void> stop(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
-        appServiceInstanceService.stopInstance(instanceId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        appServiceInstanceService.stopInstance(projectId, instanceId);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -552,17 +551,16 @@ public class AppServiceInstanceController {
      * @param instanceId 实例id
      * @return responseEntity
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "实例重启")
     @PutMapping(value = "/{instance_id}/start")
-    public ResponseEntity start(
+    public ResponseEntity<Void> start(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable("instance_id") Long instanceId) {
-        appServiceInstanceService.startInstance(instanceId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        appServiceInstanceService.startInstance(projectId, instanceId);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -581,7 +579,7 @@ public class AppServiceInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
-        appServiceInstanceService.restartInstance(instanceId);
+        appServiceInstanceService.restartInstance(projectId, instanceId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -601,7 +599,7 @@ public class AppServiceInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
-        appServiceInstanceService.deleteInstance(instanceId, false);
+        appServiceInstanceService.deleteInstance(projectId, instanceId, false);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -762,19 +760,16 @@ public class AppServiceInstanceController {
      *
      * @param projectId          项目id
      * @param appServiceDeployVO 部署信息
-     * @return ApplicationInstanceVO
      */
     @ApiOperation(value = "部署自动化测试服务")
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/deploy_test_app")
     public void deployTestApp(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署信息", required = true)
             @RequestBody AppServiceDeployVO appServiceDeployVO) {
-        appServiceInstanceService.deployTestApp(appServiceDeployVO);
+        appServiceInstanceService.deployTestApp(projectId, appServiceDeployVO);
     }
 
     /**
@@ -784,7 +779,6 @@ public class AppServiceInstanceController {
      * @param envId     环境id
      * @param name      deploymentName
      * @param count     pod数量
-     * @return ApplicationInstanceVO
      */
     @ApiOperation(value = "操作pod的数量")
     @Permission(level = ResourceLevel.ORGANIZATION,
@@ -800,7 +794,7 @@ public class AppServiceInstanceController {
             @RequestParam String name,
             @ApiParam(value = "pod数量", required = true)
             @RequestParam Long count) {
-        appServiceInstanceService.operationPodCount(name, envId, count);
+        appServiceInstanceService.operationPodCount(projectId, name, envId, count);
     }
 
 

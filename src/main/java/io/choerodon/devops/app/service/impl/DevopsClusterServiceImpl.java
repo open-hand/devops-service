@@ -59,9 +59,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private String agentServiceUrl;
     @Value("${agent.repoUrl}")
     private String agentRepoUrl;
-    @Value("${choerodon.organization.resourceLimit.clusterMaxNumber:10}")
-    private Integer clusterMaxNumber;
-    private final Gson gson = new Gson();
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired

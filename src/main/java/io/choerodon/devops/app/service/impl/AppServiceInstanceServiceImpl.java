@@ -48,6 +48,7 @@ import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
 import io.choerodon.devops.app.eventhandler.payload.ServiceSagaPayLoad;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -158,6 +159,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private RdupmClient rdupmClient;
     @Autowired
     private HarborService harborService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -394,7 +397,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
     @Override
-    public void deployTestApp(AppServiceDeployVO appServiceDeployVO) {
+    public void deployTestApp(Long projectId, AppServiceDeployVO appServiceDeployVO) {
+        CommonExAssertUtil.assertTrue(permissionHelper.projectPermittedToCluster(appServiceDeployVO.getEnvironmentId(), projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         String versionValue = appServiceVersionService.baseQueryValue(appServiceDeployVO.getAppServiceVersionId());
         AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
@@ -443,9 +447,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public void operationPodCount(String deploymentName, Long envId, Long count) {
-
+    public void operationPodCount(Long projectId, String deploymentName, Long envId, Long count) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -553,9 +557,14 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE,
             description = "Devops创建实例", inputSchemaClass = InstanceSagaPayload.class)
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    public AppServiceInstanceVO createOrUpdate(AppServiceDeployVO appServiceDeployVO, boolean isFromPipeline) {
+    public AppServiceInstanceVO createOrUpdate(@Nullable Long projectId, AppServiceDeployVO appServiceDeployVO, boolean isFromPipeline) {
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceDeployVO.getEnvironmentId());
+
+        // 自动部署传入的项目id是空的, 不用校验
+        if (projectId != null) {
+            CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        }
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -815,21 +824,22 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
     @Override
-    public void stopInstance(Long instanceId) {
-        handleStartOrStopInstance(instanceId, CommandType.STOP.getType());
+    public void stopInstance(Long projectId, Long instanceId) {
+        handleStartOrStopInstance(projectId, instanceId, CommandType.STOP.getType());
     }
 
     @Override
-    public void startInstance(Long instanceId) {
-        handleStartOrStopInstance(instanceId, CommandType.RESTART.getType());
+    public void startInstance(Long projectId, Long instanceId) {
+        handleStartOrStopInstance(projectId, instanceId, CommandType.RESTART.getType());
     }
 
 
     @Override
-    public void restartInstance(Long instanceId) {
+    public void restartInstance(Long projectId, Long instanceId) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -885,7 +895,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteInstance(Long instanceId, Boolean deletePrometheus) {
+    public void deleteInstance(Long projectId, Long instanceId, Boolean deletePrometheus) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
 
         if (appServiceInstanceDTO == null) {
@@ -893,6 +903,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
+
+        // 内部调用不需要校验
+        if (projectId != null) {
+            CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        }
+
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         // 校验环境相关信息
@@ -965,10 +981,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             metadata.setName(appServiceInstanceDTO.getCode());
             c7nHelmRelease.setMetadata(metadata);
             resourceConvertToYamlHandler.setType(c7nHelmRelease);
-            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
+            Integer gitlabProjectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
             resourceConvertToYamlHandler.operationEnvGitlabFile(
                     RELEASE_PREFIX + appServiceInstanceDTO.getCode(),
-                    projectId,
+                    gitlabProjectId,
                     "delete",
                     userAttrDTO.getGitlabUserId(),
                     appServiceInstanceDTO.getId(), C7NHELM_RELEASE, null, false, devopsEnvironmentDTO.getId(), path);
@@ -1283,6 +1299,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     public List<AppServiceInstanceVO> batchDeployment(Long projectId, List<AppServiceDeployVO> appServiceDeployVOS) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceDeployVOS.get(0).getEnvironmentId());
 
+        CommonExAssertUtil.assertTrue(devopsEnvironmentDTO != null, "error.env.id.not.exist", appServiceDeployVOS.get(0).getEnvironmentId());
+
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //校验环境相关信息
@@ -1410,11 +1430,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 GitOpsConstants.BATCH_DEPLOYMENT_COMMIT_MESSAGE);
     }
 
-    private void handleStartOrStopInstance(Long instanceId, String type) {
+    private void handleStartOrStopInstance(Long projectId, Long instanceId, String type) {
 
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
+
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 

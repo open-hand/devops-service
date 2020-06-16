@@ -1,16 +1,23 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.app.service.UserAttrService;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
+import io.choerodon.devops.infra.dto.DevopsClusterProPermissionDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
+import io.choerodon.devops.infra.mapper.DevopsClusterProPermissionMapper;
+import io.choerodon.devops.infra.util.CommonExAssertUtil;
 
 /**
  * @author zmf
@@ -19,9 +26,14 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 @Service
 public class PermissionHelperServiceImpl implements PermissionHelper {
     @Autowired
+    @Lazy
     private UserAttrService userAttrService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private DevopsClusterMapper devopsClusterMapper;
+    @Autowired
+    private DevopsClusterProPermissionMapper devopsClusterProPermissionMapper;
 
     @Override
     public boolean isGitlabAdmin(Long userId) {
@@ -92,5 +104,20 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     @Override
     public Boolean isGitlabProjectOwner(Long userId, Long projectId) {
         return baseServiceClientOperator.isGitlabProjectOwner(userId, projectId);
+    }
+
+    @Override
+    public boolean projectPermittedToCluster(Long clusterId, Long projectId) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(Objects.requireNonNull(clusterId));
+        CommonExAssertUtil.assertTrue(devopsClusterDTO != null, "error.cluster.not.exist", clusterId);
+
+        if (Boolean.TRUE.equals(devopsClusterDTO.getSkipCheckProjectPermission())) {
+            return true;
+        }
+
+        DevopsClusterProPermissionDTO devopsClusterProPermissionDTO = new DevopsClusterProPermissionDTO();
+        devopsClusterProPermissionDTO.setClusterId(clusterId);
+        devopsClusterProPermissionDTO.setProjectId(Objects.requireNonNull(projectId));
+        return devopsClusterProPermissionMapper.selectCount(devopsClusterProPermissionDTO) > 0;
     }
 }
