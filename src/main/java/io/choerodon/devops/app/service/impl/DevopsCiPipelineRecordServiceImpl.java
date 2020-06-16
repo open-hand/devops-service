@@ -33,12 +33,14 @@ import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.enums.AppServiceEvent;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.JobStatusEnum;
 import io.choerodon.devops.infra.enums.SonarQubeType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.CiPipelineSyncHandler;
+import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiJobArtifactRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
@@ -77,6 +79,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private final DevopsGitlabCommitService devopsGitlabCommitService;
     private final DevopsCiJobArtifactRecordMapper devopsCiJobArtifactRecordMapper;
     private final CiPipelineSyncHandler ciPipelineSyncHandler;
+    private final CheckGitlabAccessLevelService checkGitlabAccessLevelService;
+    private final AppServiceMapper appServiceMapper;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -90,6 +94,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                              AppServiceService applicationService,
                                              TransactionalProducer transactionalProducer,
                                              UserAttrService userAttrService,
+                                             AppServiceMapper appServiceMapper,
+                                             CheckGitlabAccessLevelService checkGitlabAccessLevelService,
                                              BaseServiceClientOperator baseServiceClientOperator,
                                              GitlabServiceClientOperator gitlabServiceClientOperator,
                                              DevopsCiJobArtifactRecordMapper devopsCiJobArtifactRecordMapper,
@@ -109,6 +115,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         this.devopsCiJobArtifactRecordMapper = devopsCiJobArtifactRecordMapper;
         this.devopsGitlabCommitService = devopsGitlabCommitService;
         this.ciPipelineSyncHandler = ciPipelineSyncHandler;
+        this.checkGitlabAccessLevelService = checkGitlabAccessLevelService;
+        this.appServiceMapper = appServiceMapper;
     }
 
     @Override
@@ -551,6 +559,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     public void retry(Long projectId, Long gitlabPipelineId, Long gitlabProjectId) {
         Assert.notNull(gitlabPipelineId, ERROR_GITLAB_PIPELINE_ID_IS_NULL);
         Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
+        AppServiceDTO appServiceDTO = appServiceMapper.listByGitLabProjectIds(Collections.singletonList(gitlabProjectId)).get(0);
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceDTO.getId(), AppServiceEvent.CI_PIPELINE_RETRY);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
         checkUserBranchPushPermission(projectId, gitlabPipelineId, gitlabProjectId, userAttrDTO.getGitlabUserId());
@@ -573,6 +583,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     public void cancel(Long projectId, Long gitlabPipelineId, Long gitlabProjectId) {
         Assert.notNull(gitlabPipelineId, ERROR_GITLAB_PIPELINE_ID_IS_NULL);
         Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
+        AppServiceDTO appServiceDTO = appServiceMapper.listByGitLabProjectIds(Collections.singletonList(gitlabProjectId)).get(0);
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceDTO.getId(), AppServiceEvent.CI_PIPELINE_CANCEL);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
         checkUserBranchPushPermission(projectId, gitlabPipelineId, gitlabProjectId, userAttrDTO.getGitlabUserId());

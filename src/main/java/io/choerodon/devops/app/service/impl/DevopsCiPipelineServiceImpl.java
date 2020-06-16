@@ -36,10 +36,7 @@ import io.choerodon.devops.infra.dto.maven.Repository;
 import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
 import io.choerodon.devops.infra.dto.maven.Server;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
-import io.choerodon.devops.infra.enums.AccessLevel;
-import io.choerodon.devops.infra.enums.CiJobScriptTypeEnum;
-import io.choerodon.devops.infra.enums.CiJobTypeEnum;
-import io.choerodon.devops.infra.enums.SonarAuthType;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
@@ -95,6 +92,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final DevopsProjectService devopsProjectService;
     private final BaseServiceClientOperator baseServiceClientOperator;
     private final RdupmClientOperator rdupmClientOperator;
+    private final CheckGitlabAccessLevelService checkGitlabAccessLevelService;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiPipelineMapper devopsCiPipelineMapper,
@@ -105,6 +103,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCiContentService devopsCiContentService,
             GitlabServiceClientOperator gitlabServiceClientOperator,
             UserAttrService userAttrService,
+            CheckGitlabAccessLevelService checkGitlabAccessLevelService,
             @Lazy
                     AppServiceService appServiceService,
             DevopsCiJobRecordService devopsCiJobRecordService,
@@ -127,6 +126,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.baseServiceClientOperator = baseServiceClientOperator;
         this.devopsProjectService = devopsProjectService;
         this.rdupmClientOperator = rdupmClientOperator;
+        this.checkGitlabAccessLevelService = checkGitlabAccessLevelService;
     }
 
     private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
@@ -199,6 +199,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     @Transactional
     public DevopsCiPipelineDTO create(Long projectId, DevopsCiPipelineVO devopsCiPipelineVO) {
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, devopsCiPipelineVO.getAppServiceId(), AppServiceEvent.CI_PIPELINE_CREATE);
         Long iamUserId = TypeUtil.objToLong(GitUserNameUtil.getUserId());
         checkUserPermission(devopsCiPipelineVO.getAppServiceId(), iamUserId);
         devopsCiPipelineVO.setProjectId(projectId);
@@ -305,6 +306,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     @Transactional
     public DevopsCiPipelineDTO disablePipeline(Long projectId, Long ciPipelineId) {
+        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineMapper.selectByPrimaryKey(ciPipelineId);
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, devopsCiPipelineDTO.getAppServiceId(), AppServiceEvent.CI_PIPELINE_STATUS_UPDATE);
         if (devopsCiPipelineMapper.disablePipeline(ciPipelineId) != 1) {
             throw new CommonException(DISABLE_PIPELINE_FAILED);
         }
@@ -315,6 +318,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Transactional
     public void deletePipeline(Long projectId, Long ciPipelineId) {
         DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineMapper.selectByPrimaryKey(ciPipelineId);
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, devopsCiPipelineDTO.getAppServiceId(), AppServiceEvent.CI_PIPELINE_DELETE);
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(devopsCiPipelineDTO.getAppServiceId());
         // 校验用户是否有应用服务权限
         Long userId = DetailsHelper.getUserDetails().getUserId();
@@ -348,6 +352,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     @Transactional
     public DevopsCiPipelineDTO enablePipeline(Long projectId, Long ciPipelineId) {
+        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineMapper.selectByPrimaryKey(ciPipelineId);
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, devopsCiPipelineDTO.getAppServiceId(), AppServiceEvent.CI_PIPELINE_STATUS_UPDATE);
         if (devopsCiPipelineMapper.enablePipeline(ciPipelineId) != 1) {
             throw new CommonException(ENABLE_PIPELINE_FAILED);
         }
@@ -356,6 +362,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     @Override
     public void executeNew(Long projectId, Long ciPipelineId, Long gitlabProjectId, String ref) {
+        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineMapper.selectByPrimaryKey(ciPipelineId);
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, devopsCiPipelineDTO.getAppServiceId(), AppServiceEvent.CI_PIPELINE_NEW_PERFORM);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
         checkUserBranchPushPermission(projectId, userAttrDTO.getGitlabUserId(), gitlabProjectId, ref);
         Pipeline pipeline = gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(), userAttrDTO.getGitlabUserId().intValue(), ref);
@@ -431,6 +439,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     @Transactional
     public DevopsCiPipelineDTO update(Long projectId, Long ciPipelineId, DevopsCiPipelineVO devopsCiPipelineVO) {
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, devopsCiPipelineVO.getAppServiceId(), AppServiceEvent.CI_PIPELINE_UPDATE);
         Long userId = DetailsHelper.getUserDetails().getUserId();
         checkUserPermission(devopsCiPipelineVO.getAppServiceId(), userId);
         // 校验自定义任务格式
