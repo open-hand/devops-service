@@ -23,9 +23,6 @@ public interface RdupmClient {
 
     /**
      * 查询项目下所有自定义仓库
-     *
-     * @param projectId
-     * @return
      */
     @GetMapping("/v1/harbor-choerodon-repos/project/{projectId}/list_all_custom_repo")
     ResponseEntity<List<HarborCustomRepo>> listAllCustomRepoByProject(@PathVariable("projectId") Long projectId);
@@ -34,9 +31,6 @@ public interface RdupmClient {
     /**
      * 查询关联的自定义仓库
      *
-     * @param projectId
-     * @param appServiceId
-     * @return
      */
     @GetMapping("/v1/harbor-choerodon-repos/project/{projectId}/{appServiceId}/list_related_custom_repo")
     ResponseEntity<HarborCustomRepo> listRelatedCustomRepoByService(@ApiParam(value = "猪齿鱼项目ID", required = true)
@@ -47,10 +41,6 @@ public interface RdupmClient {
     /**
      * 保存关联关系
      *
-     * @param projectId
-     * @param appServiceId
-     * @param customRepoId
-     * @return
      */
     @PostMapping("/v1/harbor-choerodon-repos/project/{projectId}/{appServiceId}/save_relation")
     ResponseEntity saveRelationByService(@ApiParam(value = "猪齿鱼项目ID", required = true)
@@ -64,10 +54,6 @@ public interface RdupmClient {
     /**
      * 删除关联关系
      *
-     * @param projectId
-     * @param appServiceId
-     * @param customRepoId
-     * @return
      */
     @DeleteMapping("/v1/harbor-choerodon-repos/project/{projectId}/{appServiceId}/delete_relation")
     ResponseEntity deleteRelationByService(@ApiParam(value = "猪齿鱼项目ID", required = true)
@@ -80,9 +66,6 @@ public interface RdupmClient {
     /**
      * 仓库配置查询接口
      *
-     * @param projectId
-     * @param appServiceId
-     * @return
      */
     @GetMapping("/v1/harbor-choerodon-repos/project/{projectId}/{appServiceId}/harbor_repo_config")
     ResponseEntity<HarborRepoDTO> queryHarborRepoConfig(@ApiParam(value = "猪齿鱼项目ID", required = true)
@@ -106,10 +89,6 @@ public interface RdupmClient {
     /**
      * 根据Harbor仓库ID查询仓库配置
      *
-     * @param projectId
-     * @param repoId
-     * @param repoType
-     * @return
      */
     @GetMapping("/v1/harbor-choerodon-repos/project/{projectId}/{repoId}/harbor_config_by_id")
     ResponseEntity<HarborRepoDTO> queryHarborRepoConfigById(@ApiParam(value = "猪齿鱼项目ID", required = true) @PathVariable("projectId") Long projectId,
