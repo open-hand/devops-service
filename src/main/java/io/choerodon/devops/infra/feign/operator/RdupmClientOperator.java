@@ -13,16 +13,16 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
-import io.choerodon.devops.infra.feign.ProdRepoClient;
+import io.choerodon.devops.infra.feign.RdupmClient;
 
 /**
  * @author zmf
  * @since 2020/6/12
  */
 @Component
-public class ProdRepoClientOperator {
+public class RdupmClientOperator {
     @Autowired
-    private ProdRepoClient prodRepoClient;
+    private RdupmClient rdupmClient;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
 
@@ -42,7 +42,7 @@ public class ProdRepoClientOperator {
             organizationId = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(projectId))
                     .getOrganizationId();
         }
-        ResponseEntity<List<NexusMavenRepoDTO>> response = prodRepoClient.getRepoUserByProject(
+        ResponseEntity<List<NexusMavenRepoDTO>> response = rdupmClient.getRepoUserByProject(
                 Objects.requireNonNull(organizationId), projectId, repositoryIds);
         if (response == null || response.getBody() == null) {
             throw new CommonException("error.query.nexus.repo.user.list", projectId, repositoryIds);
