@@ -25,6 +25,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.infra.exception.GitlabAccessInvalidException;
 import io.choerodon.devops.infra.feign.operator.AgileServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -119,6 +120,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private PermissionHelper permissionHelper;
     @Autowired
     private MessageSource messageSource;
+    @Autowired
+    private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
 
     @Autowired
     private List<HandlerObjectFileRelationsService> handlerObjectFileRelationsServices;
@@ -305,6 +308,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             if (memberDTO == null) {
                 throw new CommonException("error.user.not.in.gitlab.project");
             }
+        }
+
+        try {
+            checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.BRANCH_LIST);
+        } catch (GitlabAccessInvalidException e) {
+            return null;
         }
 
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
