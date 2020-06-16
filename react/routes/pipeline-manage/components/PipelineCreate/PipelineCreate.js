@@ -158,7 +158,7 @@ const PipelineCreate = observer(() => {
         />
         <TextField style={{ display: 'none' }} />
         <div className="advanced_text" style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
-          高级设置(默认收起)<Icon style={{ fontSize: 18 }} type={expandIf ? 'expand_less' : 'expand_more'} />
+          高级设置<Icon style={{ fontSize: 18 }} type={expandIf ? 'expand_less' : 'expand_more'} />
         </div>
         {
           expandIf ? (
