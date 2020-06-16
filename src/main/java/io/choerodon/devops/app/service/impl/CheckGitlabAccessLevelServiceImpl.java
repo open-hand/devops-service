@@ -36,7 +36,7 @@ public class CheckGitlabAccessLevelServiceImpl implements CheckGitlabAccessLevel
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         List<MemberPrivilegeViewDTO> viewDTOList = hrdsCodeRepoClient.selfPrivilege(projectDTO.getOrganizationId(), projectId, Collections.singleton(appServiceId)).getBody();
-        if (CollectionUtils.isEmpty(viewDTOList)) {
+        if (CollectionUtils.isEmpty(viewDTOList) || viewDTOList.get(0).getAccessLevel() == null) {
             throw new CommonException("error.empty.gitlab.access.level");
         }
         Integer maxAccessLevel = viewDTOList.stream().map(MemberPrivilegeViewDTO::getAccessLevel).collect(Collectors.toSet()).stream().max(Integer::compare).get();

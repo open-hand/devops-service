@@ -313,6 +313,12 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
 
     @Override
     public Page<DevopsGitlabPipelineVO> pageByOptions(Long appServiceId, String branch, PageRequest pageable, Date startTime, Date endTime) {
+        AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceId);
+        try {
+            checkGitlabAccessLevelService.checkGitlabPermission(appServiceDTO.getProjectId(), appServiceId, AppServiceEvent.TAG_LIST);
+        } catch (GitlabAccessInvalidException e) {
+            return null;
+        }
         if (appServiceId == null) {
             return new Page<>();
         }
@@ -341,7 +347,6 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 refWithPipelineIds.put(key, devopsGitlabPipelineDTO.getPipelineId());
             }
         });
-        AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceId);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
         Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
