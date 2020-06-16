@@ -1,13 +1,13 @@
 package io.choerodon.devops.infra.mapper;
 
+import io.choerodon.devops.api.vo.LatestAppServiceVO;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.mybatis.common.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.ibatis.annotations.Param;
-
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * Created by younger on 2018/3/28.
@@ -159,5 +159,13 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
                                                                 @Param("iamUserId") Long iamUserId,
                                                                 @Param("searchParam") Map<String, Object> searchParam,
                                                                 @Param("params") List<String> params);
+
+    /**
+     * 查询出指定项目下最近使用过的应用
+     *
+     * @param projectIds 项目ids
+     * @return 应用id和最后更新时间
+     */
+    List<LatestAppServiceVO> listLatestUseAppServiceIdAndDate(@Param("projectIds") List<Long> projectIds, @Param("userId") Long userId);
 }
 
