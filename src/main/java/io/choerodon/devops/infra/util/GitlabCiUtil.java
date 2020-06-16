@@ -306,16 +306,22 @@ public class GitlabCiUtil {
     }
 
     public static void processExactMatch(CiJob ciJob, String exactMatch) {
-        String regex = "^" + exactMatch + "$";
-        processRegexMatch(ciJob, regex);
+        String[] items = exactMatch.split(COMMA);
+        for (int i = 0; i < items.length; i++) {
+            items[i] = "^" + items[i] + "$";
+        }
+        OnlyExceptPolicy onlyExceptPolicy = new OnlyExceptPolicy();
+        onlyExceptPolicy.setRefs(Arrays.asList(items));
+        ciJob.setOnly(onlyExceptPolicy);
     }
 
     public static void processExactExclude(CiJob ciJob, String exactExclude) {
-        String regex = "^" + exactExclude + "$";
+        String[] items = exactExclude.split(COMMA);
+        for (int i = 0; i < items.length; i++) {
+            items[i] = "^" + items[i] + "$";
+        }
         OnlyExceptPolicy onlyExceptPolicy = new OnlyExceptPolicy();
-        List<String> refs = new ArrayList<>();
-        refs.add(regex);
-        onlyExceptPolicy.setRefs(refs);
+        onlyExceptPolicy.setRefs(Arrays.asList(items));
         ciJob.setExcept(onlyExceptPolicy);
     }
 }
