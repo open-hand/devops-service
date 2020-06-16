@@ -504,7 +504,7 @@ public class DevopsSagaHandler {
             sagaCode = SagaTopicCodeConstants.DEVOPS_APP_DELETE,
             description = "Devops删除应用服务", maxRetryCount = 3,
             seq = 1)
-    public void deleteAppService(String data) {
+    public String deleteAppService(String data) {
         DevOpsAppServicePayload devOpsAppServicePayload = JSONObject.parseObject(data, DevOpsAppServicePayload.class);
         appServiceService.deleteAppServiceSage(devOpsAppServicePayload.getIamProjectId(), devOpsAppServicePayload.getAppServiceId());
         //删除应用服务成功之后，发送消息
@@ -512,6 +512,7 @@ public class DevopsSagaHandler {
             sendNotificationService.sendWhenAppServiceDelete(devOpsAppServicePayload.getDevopsUserPermissionVOS(), devOpsAppServicePayload.getAppServiceDTO());
         }
         LOGGER.info("================删除应用服务执行成功，serviceId：{}", devOpsAppServicePayload.getAppServiceId());
+        return data;
     }
 
     /**
