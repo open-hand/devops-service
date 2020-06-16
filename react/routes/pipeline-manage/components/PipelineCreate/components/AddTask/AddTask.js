@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
+import { axios } from '@choerodon/boot';
 import { Form, Select, TextField, Modal, SelectBox, Button, Password } from 'choerodon-ui/pro';
 import { Icon, Spin, Tooltip } from 'choerodon-ui';
 import { Base64 } from 'js-base64';
@@ -12,6 +13,28 @@ import { useAddTaskStore } from './stores';
 import './index.less';
 
 const { Option } = Select;
+
+let currentSize = 10;
+
+const originBranchs = [{
+  value: 'master',
+  name: 'master',
+}, {
+  value: 'feature',
+  name: 'feature',
+}, {
+  value: 'bugfix',
+  name: 'bugfix',
+}, {
+  value: 'hotfix',
+  name: 'hotfix',
+}, {
+  value: 'release',
+  name: 'release',
+}, {
+  value: 'tag',
+  name: 'tag',
+}];
 
 const obj = {
   Maven: 'Maven构建',
@@ -51,6 +74,8 @@ const AddTask = observer(() => {
   const [ConnectLoading, setConnectLoading] = useState(false);
   const [customYaml, setCustomYaml] = useState(useStore.getYaml.custom);
   const [defaultImage, setDefaultImage] = useState('');
+  const [expandIf, setExpandIf] = useState(false);
+  const [branchsList, setBranchsList] = useState(originBranchs);
 
   useEffect(() => {
     if (steps.length > 0) {
@@ -77,6 +102,35 @@ const AddTask = observer(() => {
     const decodeStr = atob(base64);
     return decodeURI(decodeStr);
   }
+  const getBranchsList = useCallback(async () => {
+    const url = `devops/v1/projects/${id}/app_service/${PipelineCreateFormDataSet.current.get('appServiceId')}/git/page_branch_by_options?page=1&size=${currentSize}`;
+    const res = await axios.post(url);
+    if (res.content.length % 10 === 0 && res.content.length !== 0) {
+      res.content.push({
+        name: '加载更多',
+        value: 'more',
+      });
+    }
+    setBranchsList(res.content.map((c) => {
+      if (c.branchName) {
+        c.name = c.branchName;
+        c.value = c.branchName;
+      }
+      return c;
+    }));
+  }, [currentSize]);
+
+  useEffect(() => {
+    async function initBranchs() {
+      const value = AddTaskFormDataSet.current.get('pplx');
+      if (!value.includes('exact')) {
+        setBranchsList(originBranchs);
+      } else {
+        getBranchsList();
+      }
+    }
+    initBranchs();
+  }, [AddTaskFormDataSet.current.get('pplx')]);
 
   useEffect(() => {
     const init = async () => {
@@ -104,6 +158,14 @@ const AddTask = observer(() => {
             }
           });
           const newSteps = config || [];
+          const pplxResult = (function () {
+            const arr = ['triggerRefs', 'regexMatch', 'exactMatch', 'exactExclude'];
+            for (let i = 0; i < arr.length; i++) {
+              if (jobDetail[arr[i]]) {
+                return arr[i];
+              }
+            }
+          }());
           const data = {
             ...jobDetail,
             uploadFilePattern,
@@ -111,7 +173,9 @@ const AddTask = observer(() => {
             dockerFilePath,
             uploadArtifactFileName,
             dockerArtifactFileName,
-            triggerRefs: jobDetail.triggerRefs ? jobDetail.triggerRefs.split(',') : [],
+            pplx: pplxResult,
+            branchs: pplxResult !== 'regexMatch' ? jobDetail[pplxResult].split(',') : jobDetail[pplxResult],
+            // triggerRefs: jobDetail.triggerRefs ? jobDetail.triggerRefs.split(',') : [],
             glyyfw: appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')),
             bzmc: newSteps.find(s => s.checked) ? newSteps.find(s => s.checked).name : '',
             authType,
@@ -180,10 +244,13 @@ const AddTask = observer(() => {
         }
       }
       let data = AddTaskFormDataSet.toData()[0];
+      const matchObj = {};
+      matchObj[data.pplx] = data.pplx !== 'regexMatch' ? data.branchs.join(',') : data.branchs;
       data = {
         ...data,
         image: data.selectImage === '1' ? data.image : null,
-        triggerRefs: data.triggerRefs.join(','),
+        ...matchObj,
+        // triggerRefs: data.triggerRefs.join(','),
         metadata: (function () {
           if (data.type === 'build') {
             return JSON.stringify({
@@ -787,6 +854,17 @@ const AddTask = observer(() => {
     // }
   };
 
+  const renderderBranchs = ({ text }) => (text === '加载更多' ? (
+    <a
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        currentSize += 10;
+        getBranchsList();
+      }}
+    >{text}</a>
+  ) : text);
+
   const getMissionOther = () => {
     if (AddTaskFormDataSet.current.get('type') === 'build') {
       return [
@@ -971,20 +1049,25 @@ const AddTask = observer(() => {
     }
   };
 
-  const getImageDom = () => (
-    <Select
-      // disabled={
-      //     !!(AddTaskFormDataSet.current && AddTaskFormDataSet.current.get('selectImage') === '0')
-      //   }
-      onChange={handleChangeImage}
-      newLine
-      combo
-      colSpan={2}
-      name="image"
-    >
-      <Option value={defaultImage}>{`${defaultImage}${defaultImage === useStore.getDefaultImage ? '(默认)' : ''}`}</Option>
-    </Select>
-  );
+  const getImageDom = () => [
+    <div colSpan={2} newLine className="advanced_text" style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
+      高级设置<Icon style={{ fontSize: 18 }} type={expandIf ? 'expand_less' : 'expand_more'} />
+    </div>,
+    expandIf ? (
+      <Select
+          // disabled={
+          //     !!(AddTaskFormDataSet.current && AddTaskFormDataSet.current.get('selectImage') === '0')
+          //   }
+        onChange={handleChangeImage}
+        newLine
+        combo
+        colSpan={2}
+        name="image"
+      >
+        <Option value={defaultImage}>{`${defaultImage}${defaultImage === useStore.getDefaultImage ? '(默认)' : ''}`}</Option>
+      </Select>
+    ) : '',
+  ];
 
   return (
     <React.Fragment>
@@ -993,20 +1076,60 @@ const AddTask = observer(() => {
           <Option value="build">构建</Option>
           <Option value="sonar">代码检查</Option>
           <Option value="custom">自定义</Option>
-          <Option value="chart">发布c7n版本</Option>
+          <Option value="chart">发布Chart</Option>
         </Select>
         {
           AddTaskFormDataSet.current.get('type') !== 'custom' ? [
             <TextField name="name" />,
             <TextField name="glyyfw" />,
-            <Select combo searchable name="triggerRefs" showHelp="tooltip" help="您可以在此输入或选择触发该任务的分支类型，若不填写，则默认为所有分支或tag">
-              <Option value="master">master</Option>
-              <Option value="feature">feature</Option>
-              <Option value="bugfix">bugfix</Option>
-              <Option value="hotfix">hotfix</Option>
-              <Option value="release">release</Option>
-              <Option value="tag">tag</Option>
-            </Select>,
+            <div style={{ display: 'inline-flex' }}>
+              <Select
+                onChange={(value) => {
+                  const arr = ['triggerRefs', 'regexMatch', 'exactMatch', 'exactExclude'];
+                  arr.forEach((a) => {
+                    if (a !== value) {
+                      AddTaskFormDataSet.current.set(a, undefined);
+                    }
+                  });
+                  AddTaskFormDataSet.current.set('branchs', undefined);
+                }}
+                combo={false}
+                style={{ marginRight: 8 }}
+                name="pplx"
+              >
+                <Option value="triggerRefs">分支类型匹配</Option>
+                <Option value="regexMatch">正则匹配</Option>
+                <Option value="exactMatch">精确匹配</Option>
+                <Option value="exactExclude">精确排除</Option>
+              </Select>
+              {AddTaskFormDataSet.current.get('pplx') === 'regexMatch' ? (
+                <TextField name="branchs" />
+              ) : (
+                <Select
+                  combo
+                  searchable
+                  multiple
+                  name="branchs"
+                  showHelp="tooltip"
+                  help="您可以在此输入或选择触发该任务的分支类型，若不填写，则默认为所有分支或tag"
+                  searchMatcher="branchName"
+                  optionRenderer={({ text }) => renderderBranchs({ text })}
+                  renderer={renderderBranchs}
+                >
+                  {
+                    branchsList.map(b => (
+                      <Option value={b.value}>{b.name}</Option>
+                    ))
+                  }
+                  {/* <Option value="master">master</Option> */}
+                  {/* <Option value="feature">feature</Option> */}
+                  {/* <Option value="bugfix">bugfix</Option> */}
+                  {/* <Option value="hotfix">hotfix</Option> */}
+                  {/* <Option value="release">release</Option> */}
+                  {/* <Option value="tag">tag</Option> */}
+                </Select>
+              )}
+            </div>,
             getImageDom(),
             AddTaskFormDataSet.current.get('type') !== 'chart' ? getMissionOther() : '',
           ] : [

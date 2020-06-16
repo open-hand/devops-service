@@ -44,9 +44,14 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       //
       // }),
     }, {
-      name: 'triggerRefs',
+      name: 'pplx',
       type: 'string',
-      multiple: true,
+      label: '匹配类型',
+      required: true,
+      defaultValue: 'triggerRefs',
+    }, {
+      name: 'branchs',
+      type: 'string',
       label: '触发分支类型',
     }, {
       name: 'gjmb',

@@ -23,8 +23,7 @@
   },
   "peerDependencies": {
     "@choerodon/boot": "0.21.2",
-    "@choerodon/master": "0.22.0",
-    "choerodon-ui": "0.8.x"
+    "@choerodon/master": "0.22.0"
   },
   "dependencies": {
     "choerodon-ui": "0.8.x",

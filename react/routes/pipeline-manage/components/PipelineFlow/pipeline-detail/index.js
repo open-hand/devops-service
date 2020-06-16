@@ -11,7 +11,7 @@ const jobTask = {
   build: '构建',
   sonar: '代码检查',
   custom: '自定义',
-  chart: '发布c7n版本',
+  chart: '发布Chart',
 };
 
 
