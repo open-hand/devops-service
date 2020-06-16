@@ -57,7 +57,7 @@ public interface RdupmClient {
                                          @PathVariable("projectId") Long projectId,
                                          @ApiParam(value = "应用服务ID", required = true)
                                          @PathVariable("appServiceId") Long appServiceId,
-                                         @ApiParam(value = "自定义仓库ID", required = true) @RequestParam Long customRepoId);
+                                         @ApiParam(value = "自定义仓库ID", required = true) @RequestParam("customRepoId") Long customRepoId);
 
 
     /**
@@ -74,7 +74,7 @@ public interface RdupmClient {
                                            @ApiParam(value = "应用服务ID", required = true)
                                            @PathVariable("appServiceId") Long appServiceId,
                                            @ApiParam(value = "自定义仓库ID", required = true)
-                                           @RequestParam Long customRepoId);
+                                           @RequestParam("customRepoId") Long customRepoId);
 
 //    /**
 //     * 仓库配置查询接口
@@ -96,7 +96,7 @@ public interface RdupmClient {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(name = "projectId") Long projectId,
             @ApiParam(value = "制品类型: MAVEN、NPM ", required = true)
-            @RequestParam String repoType,
+            @RequestParam("repoType") String repoType,
             @ApiParam(value = "nexus仓库类型: hosted、proxy、group", required = false)
             @RequestParam(name = "type", required = false) String type);
 
@@ -109,5 +109,5 @@ public interface RdupmClient {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(name = "projectId") Long projectId,
             @ApiParam(value = "仓库主键list", required = true)
-            @RequestParam Set<Long> repositoryIds);
+            @RequestParam("repositoryIds") Set<Long> repositoryIds);
 }
