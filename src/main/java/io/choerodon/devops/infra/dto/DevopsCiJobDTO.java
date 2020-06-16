@@ -1,9 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -41,9 +38,11 @@ public class DevopsCiJobDTO extends AuditDomain {
     private String metadata;
 
     @ApiModelProperty("是否上传共享目录的内容 / 默认为false")
+    @Column(name = "is_to_upload")
     private Boolean toUpload = Boolean.FALSE;
 
     @ApiModelProperty("是否下载共享目录的内容 / 默认为false")
+    @Column(name = "is_to_download")
     private Boolean toDownload = Boolean.FALSE;
 
     public Long getId() {
