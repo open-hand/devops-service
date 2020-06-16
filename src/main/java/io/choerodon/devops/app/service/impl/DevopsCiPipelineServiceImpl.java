@@ -42,7 +42,7 @@ import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.SonarAuthType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.ProdRepoClientOperator;
+import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
@@ -94,7 +94,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
     private final DevopsProjectService devopsProjectService;
     private final BaseServiceClientOperator baseServiceClientOperator;
-    private final ProdRepoClientOperator prodRepoClientOperator;
+    private final RdupmClientOperator rdupmClientOperator;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiPipelineMapper devopsCiPipelineMapper,
@@ -111,7 +111,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
             DevopsProjectService devopsProjectService,
             BaseServiceClientOperator baseServiceClientOperator,
-            ProdRepoClientOperator prodRepoClientOperator,
+            RdupmClientOperator rdupmClientOperator,
             DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper) {
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
@@ -126,7 +126,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.baseServiceClientOperator = baseServiceClientOperator;
         this.devopsProjectService = devopsProjectService;
-        this.prodRepoClientOperator = prodRepoClientOperator;
+        this.rdupmClientOperator = rdupmClientOperator;
     }
 
     private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
@@ -717,7 +717,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         } else if (hasManualRepos || hasNexusRepos) {
             if (hasNexusRepos) {
                 // 用户选择的已有的maven仓库
-                List<NexusMavenRepoDTO> nexusMavenRepoDTOs = prodRepoClientOperator.getRepoUserByProject(null, projectId, ciConfigTemplateVO.getNexusMavenRepoIds());
+                List<NexusMavenRepoDTO> nexusMavenRepoDTOs = rdupmClientOperator.getRepoUserByProject(null, projectId, ciConfigTemplateVO.getNexusMavenRepoIds());
                 repos.addAll(nexusMavenRepoDTOs.stream().map(DevopsCiPipelineServiceImpl::convertRepo).collect(Collectors.toList()));
             }
 
@@ -809,7 +809,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (CollectionUtils.isEmpty(mavenDeployRepoSettings.getNexusRepoIds())) {
             return Collections.emptyList();
         }
-        List<NexusMavenRepoDTO> nexusMavenRepoDTOs = prodRepoClientOperator.getRepoUserByProject(null, projectId, mavenDeployRepoSettings.getNexusRepoIds());
+        List<NexusMavenRepoDTO> nexusMavenRepoDTOs = rdupmClientOperator.getRepoUserByProject(null, projectId, mavenDeployRepoSettings.getNexusRepoIds());
 
         if (CollectionUtils.isEmpty(nexusMavenRepoDTOs)) {
             return Collections.emptyList();
