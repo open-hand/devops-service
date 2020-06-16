@@ -130,6 +130,4 @@ public interface DevopsCiJobService {
      * @param artifactName 软件包名称
      */
     String queryArtifactUrl(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName);
-
-    SonarInfoVO getSonarDefault();
 }

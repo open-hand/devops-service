@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.GitOpsConstants.DEFAULT_PIPELINE_RECORD_SIZE;
+import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -93,6 +94,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final BaseServiceClientOperator baseServiceClientOperator;
     private final RdupmClientOperator rdupmClientOperator;
     private final CheckGitlabAccessLevelService checkGitlabAccessLevelService;
+    private final DevopsConfigService devopsConfigService;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiPipelineMapper devopsCiPipelineMapper,
@@ -111,6 +113,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsProjectService devopsProjectService,
             BaseServiceClientOperator baseServiceClientOperator,
             RdupmClientOperator rdupmClientOperator,
+            DevopsConfigService devopsConfigService,
             DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper) {
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
@@ -126,6 +129,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.baseServiceClientOperator = baseServiceClientOperator;
         this.devopsProjectService = devopsProjectService;
         this.rdupmClientOperator = rdupmClientOperator;
+        this.devopsConfigService = devopsConfigService;
         this.checkGitlabAccessLevelService = checkGitlabAccessLevelService;
     }
 
@@ -636,14 +640,22 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // sonar配置转化为gitlab-ci配置
             List<String> scripts = new ArrayList<>();
             SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(jobVO.getMetadata(), SonarQubeConfigVO.class);
-            if (Objects.isNull(sonarQubeConfigVO.getSonarUrl())) {
-                throw new CommonException("error.sonar.url.is.null");
+            if (CiSonarConfigType.DEFAULT.value().equals(sonarQubeConfigVO.getConfigType())) {
+                // 查询默认的sonarqube配置
+                DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
+                CommonExAssertUtil.assertTrue(sonarConfig != null, "error.default.sonar.not.exist");
+                scripts.add(GitlabCiUtil.getDefaultSonarCommand());
+            } else {
+                if (Objects.isNull(sonarQubeConfigVO.getSonarUrl())) {
+                    throw new CommonException("error.sonar.url.is.null");
+                }
+                if (SonarAuthType.USERNAME_PWD.value().equals(sonarQubeConfigVO.getAuthType())) {
+                    scripts.add(GitlabCiUtil.renderSonarCommand(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getUsername(), sonarQubeConfigVO.getPassword()));
+                } else if (SonarAuthType.TOKEN.value().equals(sonarQubeConfigVO.getAuthType())) {
+                    scripts.add(GitlabCiUtil.renderSonarCommand(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getToken()));
+                }
             }
-            if (SonarAuthType.USERNAME_PWD.value().equals(sonarQubeConfigVO.getAuthType())) {
-                scripts.add(GitlabCiUtil.renderSonarCommand(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getUsername(), sonarQubeConfigVO.getPassword()));
-            } else if (SonarAuthType.TOKEN.value().equals(sonarQubeConfigVO.getAuthType())) {
-                scripts.add(GitlabCiUtil.renderSonarCommand(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getToken()));
-            }
+
             return scripts;
         } else if (CiJobTypeEnum.BUILD.value().equals(jobVO.getType())) {
             // 将构建类型的stage中的job的每个step进行解析和转化
