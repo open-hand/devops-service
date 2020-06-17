@@ -1,8 +1,8 @@
 package io.choerodon.devops.app.service;
 
-import javax.annotation.Nullable;
-
 import io.choerodon.devops.infra.dto.UserAttrDTO;
+
+import javax.annotation.Nullable;
 
 /**
  * 校验权限相关
