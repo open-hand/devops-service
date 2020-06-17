@@ -9,7 +9,7 @@ import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.app.service.WorkDesktopService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
-import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
+import io.choerodon.devops.infra.dto.PipelineRecordDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
@@ -130,16 +130,19 @@ public class WorkDesktopServiceImpl implements WorkDesktopService {
 
         Long userId = DetailsHelper.getUserDetails().getUserId() == null ? 0 : DetailsHelper.getUserDetails().getUserId();
         // 查出该用户待审批的流水线阶段
-        List<PipelineStageRecordDTO> pipelineStageRecordDTOList = pipelineStageRecordMapper.listToBeAuditedByProjectIds(Collections.singletonList(projectId), userId);
-        List<PipelineStageRecordDTO> pipelineStageRecordDTOAuditByThisUserList = pipelineStageRecordDTOList.stream()
-                .filter(pipelineStageRecordDTO -> pipelineStageRecordDTO.getAuditUser() != null && pipelineStageRecordDTO.getAuditUser().contains(String.valueOf(userId)))
+        List<PipelineRecordDTO> pipelineRecordDTOList = pipelineStageRecordMapper.listToBeAuditedByProjectIds(Collections.singletonList(projectId), userId);
+        List<PipelineRecordDTO> pipelineRecordDTOAuditByThisUserList = pipelineRecordDTOList.stream()
+                .filter(pipelineRecordDTO -> pipelineRecordDTO.getAuditUser() != null && pipelineRecordDTO.getAuditUser().contains(String.valueOf(userId)))
                 .collect(Collectors.toList());
-        pipelineStageRecordDTOAuditByThisUserList.forEach(pipelineStageRecordDTO -> {
+        pipelineRecordDTOAuditByThisUserList.forEach(pipelineRecordDTO -> {
             ApprovalVO approvalVO = new ApprovalVO()
                     .setType(ApprovalTypeEnum.PIPE_LINE.getType())
                     .setOrganizationNameAndProjectName(organizationAndProjectName)
-                    .setContent(String.format(PIPELINE_CONTENT_FORMAT, pipelineStageRecordDTO.getPipelineName(), pipelineStageRecordDTO.getStageName()))
-                    .setPipeRecordId(pipelineStageRecordDTO.getId());
+                    .setContent(String.format(PIPELINE_CONTENT_FORMAT, pipelineRecordDTO.getPipelineName(), pipelineRecordDTO.getStageName()))
+                    .setPipelineId(pipelineRecordDTO.getPipelineId())
+                    .setPipelineRecordId(pipelineRecordDTO.getId())
+                    .setStageRecordId(pipelineRecordDTO.getStageRecordId())
+                    .setTaskRecordId(pipelineRecordDTO.getTaskRecordId());
             approvalVOList.add(approvalVO);
         });
         return approvalVOList;

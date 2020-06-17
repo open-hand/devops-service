@@ -25,15 +25,19 @@
     </select>
 
     <select id="listToBeAuditedByProjectIds"
-            resultType="io.choerodon.devops.infra.dto.PipelineStageRecordDTO">
-        SELECT dpsr.id,
-               dpsr.audit_user,
+            resultType="io.choerodon.devops.infra.dto.PipelineRecordDTO">
+        SELECT dpr.id,
+               dpr.pipeline_id,
+               dpr.audit_user,
+               dpr.pipeline_name,
                dpsr.stage_name,
-               dpr.pipeline_name
-        FROM devops_pipeline_stage_record dpsr
-                     JOIN devops_pipeline_record dpr ON dpsr.pipeline_record_id = dpr.id
-                WHERE dpsr.status = 'pendingcheck'
-                  AND dpsr.project_id IN
+               dpsr.id AS stageRecordId,
+               dptr.id AS taskRecordId
+        FROM devops_pipeline_record dpr
+                     JOIN devops_pipeline_stage_record dpsr ON dpsr.pipeline_record_id = dpr.id
+                     JOIN devops_pipeline_task_record dptr ON dptr.stage_record_id = dpsr.id
+                WHERE dpr.status = 'pendingcheck'
+                  AND dpr.project_id IN
         <foreach collection="projectIds" item="projectId" separator="," open="(" close=")">
             #{projectId}
         </foreach>
