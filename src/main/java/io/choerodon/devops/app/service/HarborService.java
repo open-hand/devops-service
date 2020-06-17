@@ -5,6 +5,7 @@ import java.util.List;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.app.eventhandler.payload.HarborPayload;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
 import io.choerodon.devops.infra.dto.harbor.User;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.HarborClient;
@@ -20,7 +21,7 @@ public interface HarborService {
 
     User convertHarborUser(ProjectDTO projectDTO, Boolean isPush, String username);
 
-    List<HarborCustomRepo> listAllCustomRepoByProject(Long projectId);
+    List<HarborRepoConfigDTO> listAllCustomRepoByProject(Long projectId);
 
     DevopsConfigDTO queryRepoConfigToDevopsConfig(Long projectId, Long id,String operateType);
 

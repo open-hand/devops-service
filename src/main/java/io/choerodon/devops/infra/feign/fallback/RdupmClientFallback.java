@@ -6,6 +6,7 @@ import java.util.Set;
 import org.springframework.http.ResponseEntity;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.infra.dto.harbor.HarborAllRepoDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
@@ -54,5 +55,10 @@ public class RdupmClientFallback implements RdupmClient {
     @Override
     public ResponseEntity<HarborRepoDTO> queryHarborRepoConfigById(Long projectId, Long repoId, String repoType) {
         throw new CommonException("error.query.config.by.configId");
+    }
+
+    @Override
+    public ResponseEntity<HarborAllRepoDTO> queryAllHarborRepoConfig(Long projectId) {
+        throw new CommonException("error.query.all.config");
     }
 }
