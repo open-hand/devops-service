@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { axios } from '@choerodon/boot';
 import { Form, Select, TextField, Modal, SelectBox, Button, Password } from 'choerodon-ui/pro';
+import _ from 'lodash';
 import { Icon, Spin, Tooltip } from 'choerodon-ui';
 import { Base64 } from 'js-base64';
 import Tips from '../../../../../../components/new-tips';
@@ -1002,10 +1003,26 @@ const AddTask = observer(() => {
                 } else if (type === 'docker') {
                   return [
                     <div style={{ marginBottom: 20 }}>
-                      <TextField className="dockerContextDir" style={{ width: 312 }} name="dockerContextDir" showHelp="tooltip" help="ContextPath为docker build命令执行上下文路径。填写相对于代码根目录的路径，如docker" />
+                      <TextField
+                        onChange={(value) => {
+                          let res;
+                          const arrValue = value.split('');
+                          const lastIndex = _.findLastIndex(arrValue, (o) => o === '/');
+                          if (lastIndex !== -1) {
+                            res = arrValue.slice(0, lastIndex).join('');
+                          } else {
+                            res = '.';
+                          }
+                          AddTaskFormDataSet.current.set('dockerContextDir', res);
+                        }}
+                        style={{ width: 312 }}
+                        name="dockerFilePath"
+                        showHelp="tooltip"
+                        help="Dockerfile路径为Dockerfile文件相对于代码库根目录所在路径，如docker/Dockerfile或Dockerfile"
+                      />
                     </div>,
                     <div style={{ marginBottom: 20 }}>
-                      <TextField style={{ width: 312 }} name="dockerFilePath" showHelp="tooltip" help="Dockerfile路径为Dockerfile文件相对于代码库根目录所在路径，如docker/Dockerfile或Dockerfile" />
+                      <TextField className="dockerContextDir" style={{ width: 312 }} name="dockerContextDir" showHelp="tooltip" help="ContextPath为docker build命令执行上下文路径。填写相对于代码根目录的路径，如docker" />
                     </div>,
                     <TextField style={{ width: 339 }} name="dockerArtifactFileName" />,
                   ];

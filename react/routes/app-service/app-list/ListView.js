@@ -316,7 +316,6 @@ const ListView = withRouter(observer((props) => {
     });
   }
 
-
   function getHeader() {
     const disabled = !appListStore.getCanCreate;
     const disabledMessage = disabled ? formatMessage({ id: `${intlPrefix}.create.disabled` }) : '';
@@ -346,6 +345,22 @@ const ListView = withRouter(observer((props) => {
             <FormattedMessage id={`${intlPrefix}.import`} />
           </Button>
         </Tooltip>
+      </Permission>
+      <Permission
+        service={[]}
+      >
+        <Button
+          icon="authority"
+          onClick={() => {
+            const {
+              history,
+              location,
+            } = props;
+            history.push(`/infra/code-lib-management${location.search}`);
+          }}
+        >
+          权限管理
+        </Button>
       </Permission>
       <Button
         icon="refresh"
