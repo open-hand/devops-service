@@ -455,6 +455,7 @@ const appService = {
   'c7ncd.appService.docker': 'Docker仓库配置',
   'c7ncd.appService.docker.default': '默认Docker仓库',
   'c7ncd.appService.docker.custom': '自定义Docker仓库',
+  'c7ncd.appService.docker.tips': '您可在此选择项目下制品库管理页面中已维护好的Docker仓库；选中后，该应用服务之后生成的镜像便会放于该仓库之中',
   'c7ncd.appService.helm': 'Helm仓库配置',
   'c7ncd.appService.helm.default': '默认Helm仓库',
   'c7ncd.appService.helm.custom': '自定义Helm仓库',
@@ -727,6 +728,9 @@ const repository = {
   'c7ncd.repository.tab.application': '应用配置',
   'c7ncd.repository.prompt.inform.title': '离开此页',
   'c7ncd.repository.prompt.inform.message': '此页面修改项尚未保存，确定要离开此页面？',
+  'c7ncd.repository.empty.title': 'Docker仓库配置',
+  'c7ncd.repository.empty.des': 'Docker仓库配置功能已迁移至【制品库管理】页面，请点击下方按钮跳转。',
+  'c7ncd.repository.empty.link': '跳转至制品库管理',
 };
 
 const pvManager = {
@@ -759,7 +763,6 @@ const pvManager = {
   'c7ncd.pv.permission.delete.title': '删除权限',
   'c7ncd.pv.permission.project.delete.des': '确定要删除该项目的权限吗？',
 };
-
 
 const codeManagement = {
   'code-management.branch': '分支',
@@ -828,6 +831,8 @@ const emptyPage = {
   'empty.create.env': '创建环境',
   'empty.link.app': '跳转至应用服务',
   'empty.link.env': '跳转至环境配置',
+  'empty.link.code': '跳转至代码库管理',
+  'empty.title.code': '当前用户在该应用服务的GitLab权限为Guest，无法查看此页面。若想执行对应操作，请转至代码库管理界面申请更高的GitLab权限。',
 };
 
 const prompt = {
@@ -1277,7 +1282,6 @@ const pageDetail = {
   'notification.edit.description': '您可在此修改该通知内的环境，触发事件，通知方式以及通知对象。',
   'notification.edit.link': `${docServer}/user-guide/system-configuration/project/devops-notifications`,
 };
-
 
 const cluster = {
   'c7ncd.cluster.node.list': '节点列表',
@@ -2738,7 +2742,6 @@ const zhCN = {
   'resource.mode.upload': '直接上传文件添加',
   'resource.required': '请上传YAML文件',
   'resource.one.file': '仅能上传一个文件',
-
 
   // 删除弹框确认信息
   'instance.delete': '删除实例',

@@ -14,6 +14,7 @@ import { useAppTagStore } from './stores';
 import { useCodeManagerStore } from '../../stores';
 import AppTagCreate from './modals/app-tag-create/AppTagCreate';
 import AppTagEdit from './modals/app-tag-edit/index';
+import NewEmptyPage from '../../components/empty-page';
 
 import './index.less';
 
@@ -56,7 +57,6 @@ export default observer((props) => {
     });
   }, [getSelfToolBar]);
 
-
   function refresh() {
     appTagDs.query();
   }
@@ -91,7 +91,6 @@ export default observer((props) => {
       cancelProps: { color: 'dark' },
     });
   }
-  
 
   const openCreate = () => {
     tagStore.queryBranchData({ projectId, appServiceId });
@@ -135,73 +134,94 @@ export default observer((props) => {
     });
   };
 
-  const tagList = map(appTagData, (item) => {
-    const {
-      commit: {
-        authorName,
-        committedDate,
-        message: commitMsg,
-        shortId,
-        url,
-      },
-      commitUserImage,
-      release,
-    } = item;
-    const header = (<div className="c7n-tag-panel">
-      <div className="c7n-tag-panel-info">
-        <div className="c7n-tag-panel-name">
-          <Icon type="local_offer" />
-          <div className="c7n-tag-name">
-            <Permission
-              service={['choerodon.code.project.develop.code-management.ps.tag.update']}
-              defaultChildren={<span className="c7n-tag-name-text">{release.tagName}</span>}
-            >
-              <span className="c7n-tag-name-text" onClick={(e) => { stopPropagation(e); openEdit(release.tagName, release.description !== 'empty' ? release.description : formatMessage({ id: 'apptag.release.empty' })); }}>{release.tagName}</span>
-            </Permission>
+  function getTagList() {
+    return (map(appTagData, (item) => {
+      const {
+        commit: {
+          authorName,
+          committedDate,
+          message: commitMsg,
+          shortId,
+          url,
+        },
+        commitUserImage,
+        release,
+      } = item;
+      const header = (<div className="c7n-tag-panel">
+        <div className="c7n-tag-panel-info">
+          <div className="c7n-tag-panel-name">
+            <Icon type="local_offer" />
+            <div className="c7n-tag-name">
+              <Permission
+                service={['choerodon.code.project.develop.code-management.ps.tag.update']}
+                defaultChildren={<span className="c7n-tag-name-text">{release.tagName}</span>}
+              >
+                <span className="c7n-tag-name-text" onClick={(e) => { stopPropagation(e); openEdit(release.tagName, release.description !== 'empty' ? release.description : formatMessage({ id: 'apptag.release.empty' })); }}>{release.tagName}</span>
+              </Permission>
+            </div>
+            <div className="c7n-tag-action" onClick={stopPropagation}>
+              <Action data={[
+                {
+                  service: [
+                    'choerodon.code.project.develop.code-management.ps.tag.delete',
+                  ],
+                  text: formatMessage({ id: 'delete' }),
+                  action: () => { openRemove(release.tagName); },
+                },
+              ]}
+              />
+            </div>
           </div>
-          <div className="c7n-tag-action" onClick={stopPropagation}>
-            <Action data={[
-              {
-                service: [
-                  'choerodon.code.project.develop.code-management.ps.tag.delete',
-                ],
-                text: formatMessage({ id: 'delete' }),
-                action: () => { openRemove(release.tagName); },
-              },
-            ]}
-            />
+          <div className="c7n-tag-panel-detail">
+            <Icon className="c7n-tag-icon-point" type="point" />
+            <a href={url} rel="nofollow me noopener noreferrer" target="_blank">{shortId}</a>
+            <span className="c7n-divide-point">&bull;</span>
+            <span className="c7n-tag-msg">{commitMsg}</span>
+            <span className="c7n-divide-point">&bull;</span>
+            <span className="c7n-tag-panel-person">
+              <UserInfo
+                name={authorName || ''}
+                avatar={commitUserImage}
+              />
+            </span>
+            <span className="c7n-divide-point">&bull;</span>
+            <div className="c7n-tag-time"><TimePopover content={committedDate} /></div>
           </div>
         </div>
-        <div className="c7n-tag-panel-detail">
-          <Icon className="c7n-tag-icon-point" type="point" />
-          <a href={url} rel="nofollow me noopener noreferrer" target="_blank">{shortId}</a>
-          <span className="c7n-divide-point">&bull;</span>
-          <span className="c7n-tag-msg">{commitMsg}</span>
-          <span className="c7n-divide-point">&bull;</span>
-          <span className="c7n-tag-panel-person">
-            <UserInfo
-              name={authorName || ''}
-              avatar={commitUserImage}
-            />
-          </span>
-          <span className="c7n-divide-point">&bull;</span>
-          <div className="c7n-tag-time"><TimePopover content={committedDate} /></div>
+      </div>);
+      return <Panel
+        header={header}
+        key={release.tagName}
+      >
+        <div className="c7n-tag-release">{release ? <div className="c7n-md-parse c7n-md-preview">
+          <ReactMarkdown
+            source={release.description !== 'empty' ? release.description : formatMessage({ id: 'apptag.release.empty' })}
+            skipHtml={false}
+            escapeHtml={false}
+          />
+        </div> : formatMessage({ id: 'apptag.release.empty' })}</div>
+      </Panel>;
+    }));
+  }
+
+  function getContent() {
+    return (appTagData.length > 0
+      ? <Fragment>
+        <Collapse bordered={false}>
+          {getTagList()}
+        </Collapse>
+        <div className="c7n-tag-pagin">
+          <Pagination dataSet={appTagDs} />
         </div>
-      </div>
-    </div>);
-    return <Panel
-      header={header}
-      key={release.tagName}
-    >
-      <div className="c7n-tag-release">{release ? <div className="c7n-md-parse c7n-md-preview">
-        <ReactMarkdown
-          source={release.description !== 'empty' ? release.description : formatMessage({ id: 'apptag.release.empty' })}
-          skipHtml={false}
-          escapeHtml={false}
-        />
-      </div> : formatMessage({ id: 'apptag.release.empty' })}</div>
-    </Panel>;
-  });
+      </Fragment> : <EmptyPage
+        title={formatMessage({ id: 'code-management.tag.empty' })}
+        describe={formatMessage({ id: 'code-management.tag.empty.des' })}
+        btnText={formatMessage({ id: 'apptag.create' })}
+        onClick={openCreate}
+        access
+      />
+    );
+  }
 
   return <Fragment>
     <Page
@@ -211,23 +231,14 @@ export default observer((props) => {
       {/* 应用/标签是否加载完成的判断，目的是控制Loading的显示 */}
       {appServiceDs.status !== 'ready' || appTagDs.status !== 'ready' ? <Loading display />
         : <div className="c7ncd-tag-content">
-          {appTagData.length > 0
-            ? <Fragment>
-              <Collapse bordered={false}>
-                {
-              tagList
-            }
-              </Collapse>
-              <div className="c7n-tag-pagin">
-                <Pagination dataSet={appTagDs} />
-              </div>
-            </Fragment> : <EmptyPage
-              title={formatMessage({ id: 'code-management.tag.empty' })}
-              describe={formatMessage({ id: 'code-management.tag.empty.des' })}
-              btnText={formatMessage({ id: 'apptag.create' })}
-              onClick={openCreate}
-              access
-            />}
+          {tagStore.getIsEmpty ? (
+            <NewEmptyPage
+              title={formatMessage({ id: 'empty.title.prohibited' })}
+              describe={formatMessage({ id: 'empty.title.code' })}
+              btnText={formatMessage({ id: 'empty.link.code' })}
+              pathname="/rducm/code-lib-management"
+            />
+          ) : getContent()}
         </div>}
     </Page>
   </Fragment>;

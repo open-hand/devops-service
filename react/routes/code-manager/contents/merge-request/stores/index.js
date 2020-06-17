@@ -12,7 +12,6 @@ export function useRequestStore() {
   return useContext(Store);
 }
 
-
 const StoreProvider = injectIntl(inject('AppState')(observer(((props) => {
   const {
     children,
