@@ -645,7 +645,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
                 CommonExAssertUtil.assertTrue(sonarConfig != null, "error.default.sonar.not.exist");
                 scripts.add(GitlabCiUtil.getDefaultSonarCommand());
-            } else {
+            } else if (CiSonarConfigType.CUSTOM.value().equals(sonarQubeConfigVO.getConfigType())){
                 if (Objects.isNull(sonarQubeConfigVO.getSonarUrl())) {
                     throw new CommonException("error.sonar.url.is.null");
                 }
@@ -654,6 +654,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 } else if (SonarAuthType.TOKEN.value().equals(sonarQubeConfigVO.getAuthType())) {
                     scripts.add(GitlabCiUtil.renderSonarCommand(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getToken()));
                 }
+            } else {
+                throw new CommonException("error.sonar.config.type.not.supported", sonarQubeConfigVO.getConfigType());
             }
 
             return scripts;
