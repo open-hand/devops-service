@@ -90,6 +90,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
 
 
     List<AppServiceDTO> listProjectMembersAppService(@Param("projectId") Long projectId,
+                                                     @Param("appServiceIds") Set<Long> appServiceIds,
                                                      @Param("isActive") Boolean isActive,
                                                      @Param("hasVersion") Boolean hasVersion,
                                                      @Param("type") String type,
@@ -157,6 +158,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
      */
     List<AppServiceDTO> listAppServiceToCreatePipelineForMember(@Param("projectId") Long projectId,
                                                                 @Param("iamUserId") Long iamUserId,
+                                                                @Param("appServiceIds") Set<Long> appServiceIds,
                                                                 @Param("searchParam") Map<String, Object> searchParam,
                                                                 @Param("params") List<String> params);
 
