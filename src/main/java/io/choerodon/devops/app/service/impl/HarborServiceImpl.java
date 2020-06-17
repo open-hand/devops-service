@@ -1,16 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.google.gson.Gson;
+
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
 import io.choerodon.devops.infra.feign.RdupmClient;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +52,8 @@ public class HarborServiceImpl implements HarborService {
     private static final Logger LOGGER = LoggerFactory.getLogger(HarborServiceImpl.class);
     private static final String HARBOR = "harbor";
     private static final String AUTHTYPE = "pull";
+    private static final String CUSTOM_REPO = "CUSTOM_REPO";
+    private static final String DEFAULT_REPO = "DEFAULT_REPO";
     private static final Gson gson = new Gson();
 
     @Autowired
@@ -95,8 +96,23 @@ public class HarborServiceImpl implements HarborService {
 
 
     @Override
-    public List<HarborCustomRepo> listAllCustomRepoByProject(Long projectId) {
-        List<HarborCustomRepo> harborCustomRepoVOS = rdupmClient.listAllCustomRepoByProject(projectId).getBody();
+    public List<HarborRepoConfigDTO> listAllCustomRepoByProject(Long projectId) {
+        HarborAllRepoDTO harborAllRepoDTO = rdupmClient.queryAllHarborRepoConfig(projectId).getBody();
+        List<HarborRepoConfigDTO> harborCustomRepoVOS = new ArrayList<>();
+        if (!Objects.isNull(harborAllRepoDTO)) {
+            List<HarborRepoConfigDTO> harborCustomRepoConfigList = harborAllRepoDTO.getHarborCustomRepoConfigList();
+            HarborRepoConfigDTO harborDefaultRepoConfig = harborAllRepoDTO.getHarborDefaultRepoConfig();
+            if (!CollectionUtils.isEmpty(harborCustomRepoConfigList)) {
+                for (HarborRepoConfigDTO harborRepoConfigDTO : harborCustomRepoConfigList) {
+                    harborRepoConfigDTO.setType(CUSTOM_REPO);
+                    harborCustomRepoVOS.add(harborRepoConfigDTO);
+                }
+            }
+            if (!Objects.isNull(harborDefaultRepoConfig)) {
+                harborDefaultRepoConfig.setType(DEFAULT_REPO);
+                harborCustomRepoVOS.add(harborDefaultRepoConfig);
+            }
+        }
         return harborCustomRepoVOS;
     }
 
