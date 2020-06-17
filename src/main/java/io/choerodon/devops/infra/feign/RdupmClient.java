@@ -65,6 +65,8 @@ public interface RdupmClient {
 
     /**
      * 仓库配置查询接口
+     * 应用服务关联了自定义仓库就返回自定义，
+     * 否则返回共享自定义仓库，否则返回默认
      *
      */
     @GetMapping("/v1/harbor-choerodon-repos/project/{projectId}/{appServiceId}/harbor_repo_config")
