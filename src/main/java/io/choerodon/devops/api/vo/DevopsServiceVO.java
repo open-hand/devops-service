@@ -4,12 +4,15 @@ import java.util.List;
 import java.util.Map;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 
 /**
  * Created by Zenger on 2018/4/19.
  */
 public class DevopsServiceVO extends DevopsResourceDataInfoVO {
-
+    @Encrypt(DevopsServiceDTO.ENCRYPT_KEY)
     private Long id;
     private String name;
     private String status;

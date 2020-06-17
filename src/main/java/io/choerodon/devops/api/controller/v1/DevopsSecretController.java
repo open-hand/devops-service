@@ -5,6 +5,8 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.hzero.starter.keyencrypt.mvc.EncryptDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,7 @@ import io.choerodon.devops.api.vo.SecretReqVO;
 import io.choerodon.devops.api.vo.SecretRespVO;
 import io.choerodon.devops.api.vo.SecretUpdateVO;
 import io.choerodon.devops.app.service.DevopsSecretService;
+import io.choerodon.devops.infra.dto.DevopsSecretDTO;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -77,7 +80,7 @@ public class DevopsSecretController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "请求体", required = true)
-            @RequestBody @Valid SecretUpdateVO secretUpdateVO) {
+            @EncryptDTO @RequestBody @Valid SecretUpdateVO secretUpdateVO) {
         secretUpdateVO.setType("update");
         return Optional.ofNullable(devopsSecretService.createOrUpdate(ConvertUtils.convertObject(secretUpdateVO, SecretReqVO.class)))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
@@ -101,7 +104,7 @@ public class DevopsSecretController {
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "密钥id", required = true)
-            @PathVariable(value = "secret_id") Long secretId) {
+            @Encrypt(DevopsSecretDTO.ENCRYPT_KEY) @PathVariable(value = "secret_id") Long secretId) {
         return Optional.ofNullable(devopsSecretService.deleteSecret(envId, secretId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.secret.delete"));
@@ -154,7 +157,7 @@ public class DevopsSecretController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "密钥id", required = true)
-            @PathVariable(value = "secret_id") Long secretId,
+            @Encrypt(DevopsSecretDTO.ENCRYPT_KEY) @PathVariable(value = "secret_id") Long secretId,
             @ApiParam(value = "是否解码值")
             @RequestParam(value = "to_decode", required = false, defaultValue = "false") boolean toDecode) {
         return Optional.ofNullable(devopsSecretService.querySecret(secretId, toDecode))

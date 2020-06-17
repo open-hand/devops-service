@@ -5,6 +5,8 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.hzero.starter.keyencrypt.mvc.EncryptDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsPvcReqVO;
 import io.choerodon.devops.api.vo.DevopsPvcRespVO;
 import io.choerodon.devops.app.service.DevopsPvcService;
+import io.choerodon.devops.infra.dto.DevopsPvcDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -27,6 +30,7 @@ import io.choerodon.swagger.annotation.Permission;
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/pvcs")
 public class DevopsPvcController {
+
     @Autowired
     DevopsPvcService devopsPvcService;
 
@@ -68,7 +72,7 @@ public class DevopsPvcController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "PVC信息", required = true)
-            @RequestBody @Valid DevopsPvcReqVO devopsPvcReqVO) {
+            @EncryptDTO @RequestBody @Valid DevopsPvcReqVO devopsPvcReqVO) {
         return Optional.ofNullable(devopsPvcService.create(projectId, devopsPvcReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pvc.create"));
@@ -91,7 +95,7 @@ public class DevopsPvcController {
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "PVC id", required = true)
-            @PathVariable(value = "pvc_id") Long pvcId) {
+            @Encrypt(DevopsPvcDTO.ENCRYPT_KEY) @PathVariable(value = "pvc_id")  Long pvcId) {
         return Optional.of(devopsPvcService.delete(envId, pvcId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pvc.delete"));

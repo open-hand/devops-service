@@ -3,6 +3,8 @@ package io.choerodon.devops.infra.dto;
 import java.util.Map;
 import javax.persistence.*;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -17,9 +19,11 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 @Table(name = "devops_secret")
 public class DevopsSecretDTO extends AuditDomain {
+    public static final String ENCRYPT_KEY = "devops_secret";
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Encrypt(DevopsSecretDTO.ENCRYPT_KEY)
     private Long id;
     private Long envId;
     private String name;

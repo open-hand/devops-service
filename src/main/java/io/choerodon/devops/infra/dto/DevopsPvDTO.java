@@ -4,6 +4,7 @@ package io.choerodon.devops.infra.dto;
 import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -14,8 +15,10 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_pv")
 public class DevopsPvDTO extends AuditDomain {
 
+    public static final String ENCRYPT_KEY = "devops_pv";
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Id
+    @Encrypt(DevopsPvDTO.ENCRYPT_KEY)
     private Long id;
 
     @ApiModelProperty("projectId")

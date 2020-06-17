@@ -6,6 +6,7 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import io.choerodon.devops.api.vo.DevopsPvReqVO;
 import io.choerodon.devops.api.vo.DevopsPvVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.DevopsPvService;
+import io.choerodon.devops.infra.dto.DevopsPvDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -86,7 +88,7 @@ public class DevopsPvController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "pvId", required = true)
-            @PathVariable(value = "pv_id") Long pvId) {
+            @Encrypt(DevopsPvDTO.ENCRYPT_KEY)  @PathVariable(value = "pv_id") Long pvId) {
         devopsPvService.deletePvById(pvId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
@@ -98,7 +100,7 @@ public class DevopsPvController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "pvId", required = true)
-            @PathVariable(value = "pv_id") Long pvId) {
+            @Encrypt(DevopsPvDTO.ENCRYPT_KEY)  @PathVariable(value = "pv_id") Long pvId) {
         return Optional.ofNullable(devopsPvService.queryById(pvId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));

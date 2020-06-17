@@ -6,6 +6,8 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.hzero.starter.keyencrypt.mvc.EncryptDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.api.vo.DevopsServiceVO;
 import io.choerodon.devops.app.service.DevopsServiceService;
+import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -75,7 +78,7 @@ public class DevopsServiceController {
     public ResponseEntity<Boolean> create(@ApiParam(value = "项目ID", required = true)
                                           @PathVariable(value = "project_id") Long projectId,
                                           @ApiParam(value = "部署网络参数", required = true)
-                                          @RequestBody @Valid DevopsServiceReqVO devopsServiceReqVO) {
+                                          @EncryptDTO @RequestBody @Valid DevopsServiceReqVO devopsServiceReqVO) {
         return Optional.ofNullable(
                 devopsServiceService.create(projectId, devopsServiceReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.CREATED))
@@ -99,7 +102,7 @@ public class DevopsServiceController {
                                           @ApiParam(value = "网络ID", required = true)
                                           @PathVariable Long id,
                                           @ApiParam(value = "部署网络参数", required = true)
-                                          @RequestBody DevopsServiceReqVO devopsServiceReqVO) {
+                                          @EncryptDTO @RequestBody DevopsServiceReqVO devopsServiceReqVO) {
         return Optional.ofNullable(
                 devopsServiceService.update(projectId, id, devopsServiceReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.CREATED))
@@ -120,7 +123,7 @@ public class DevopsServiceController {
     public ResponseEntity delete(@ApiParam(value = "项目ID", required = true)
                                  @PathVariable(value = "project_id") Long projectId,
                                  @ApiParam(value = "网络ID", required = true)
-                                 @PathVariable Long id) {
+                                 @Encrypt(DevopsServiceDTO.ENCRYPT_KEY) @PathVariable Long id) {
         devopsServiceService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -165,7 +168,7 @@ public class DevopsServiceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "网络ID", required = true)
-            @PathVariable Long id) {
+            @Encrypt(DevopsServiceDTO.ENCRYPT_KEY) @PathVariable Long id) {
         return Optional.ofNullable(devopsServiceService.querySingleService(id))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));
@@ -222,7 +225,7 @@ public class DevopsServiceController {
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String searchParam) {
+            @EncryptDTO @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(devopsServiceService.pageByEnv(projectId, envId, pageable, searchParam, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));
@@ -256,7 +259,7 @@ public class DevopsServiceController {
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String searchParam) {
+            @EncryptDTO @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(devopsServiceService.pageByInstance(projectId, envId, instanceId, pageable, appServiceId, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));

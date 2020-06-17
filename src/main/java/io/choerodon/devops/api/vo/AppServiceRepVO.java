@@ -8,6 +8,9 @@ import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 
 /**
  * @author younger
@@ -15,6 +18,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class AppServiceRepVO {
     @ApiModelProperty("应用服务id")
+    @Encrypt(AppServiceDTO.ENCRYPT_KEY)
     private Long id;
 
     @ApiModelProperty("应用服务名称")
