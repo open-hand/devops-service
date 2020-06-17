@@ -566,4 +566,6 @@ public interface AppServiceService {
      * @return 地址
      */
     String calculateGitlabProjectUrlWithSuffix(Long appServiceId);
+
+    void fixAppServiceVersion();
 }

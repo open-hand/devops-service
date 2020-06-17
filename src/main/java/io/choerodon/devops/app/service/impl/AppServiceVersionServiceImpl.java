@@ -696,7 +696,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         //修复appVsersion表，register_secret表
         LOGGER.info("start fix appVsersion table");
         int selectCount = appServiceVersionMapper.selectCount(null);
-        int size = 100;
+        int size = 1000;
         int totalPage = (selectCount + size - 1) / size;
         int pageNum = 0;
         do {
@@ -707,10 +707,11 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             Page<AppServiceVersionDTO> page = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                     () -> appServiceVersionMapper.selectAll());
             if (!CollectionUtils.isEmpty(page.getContent())) {
+                LOGGER.info("fix page {}  data", page);
+                List<AppServiceVersionDTO> appServiceVersionDefault = new ArrayList<>();
+                List<AppServiceVersionDTO> appServiceVersionDCustom = new ArrayList<>();
                 List<AppServiceVersionDTO> appServiceVersionDTOS = page.getContent();
                 for (AppServiceVersionDTO appServiceVersionDTO : appServiceVersionDTOS) {
-//                    appServiceVersionMapper.updateObjectVersionNumber(appServiceVersionDTO.getId());
-//                    appServiceVersionDTO = appServiceVersionMapper.selectByPrimaryKey(appServiceVersionDTO.getId());
                     //看看config是否为null,如果不为null,查询devops_config表。判断config_name
                     if (appServiceVersionDTO.getHarborConfigId() != null) {
                         //除了default-harbor 是默认配置,其他都是自定义配置
@@ -718,10 +719,10 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                         if (!Objects.isNull(devopsConfigDTO) && HARBOR_DEFAULT.equals(devopsConfigDTO.getName())) {
                             appServiceVersionDTO.setRepoType(DEFAULT_REPO);
                             appServiceVersionDTO.setHarborConfigId(null);
-                            appServiceVersionMapper.updateByPrimaryKey(appServiceVersionDTO);
+                            appServiceVersionDefault.add(appServiceVersionDTO);
                         } else {
                             appServiceVersionDTO.setRepoType(CUSTOM_REPO);
-                            appServiceVersionMapper.updateByPrimaryKey(appServiceVersionDTO);
+                            appServiceVersionDCustom.add(appServiceVersionDTO);
                         }
                     } else {
                         //如果configID为null
@@ -731,7 +732,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                         if (!Objects.isNull(devopsConfigDTO)) {
                             appServiceVersionDTO.setHarborConfigId(devopsConfigDTO.getId());
                             appServiceVersionDTO.setRepoType(CUSTOM_REPO);
-                            appServiceVersionMapper.updateByPrimaryKey(appServiceVersionDTO);
+                            appServiceVersionDCustom.add(appServiceVersionDTO);
                         } else {
                             AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceVersionDTO.getAppServiceId());
                             appConfig.setProjectId(appServiceDTO.getProjectId());
@@ -739,7 +740,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                             if (!Objects.isNull(devopsConfigDTOProject)) {
                                 appServiceVersionDTO.setRepoType(CUSTOM_REPO);
                                 appServiceVersionDTO.setHarborConfigId(devopsConfigDTOProject.getId());
-                                appServiceVersionMapper.updateByPrimaryKey(appServiceVersionDTO);
+                                appServiceVersionDCustom.add(appServiceVersionDTO);
                             } else {
                                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                                 appConfig.setOrganizationId(projectDTO.getOrganizationId());
@@ -747,15 +748,23 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                                 if (!Objects.isNull(devopsConfigDTOOrg)) {
                                     appServiceVersionDTO.setRepoType(CUSTOM_REPO);
                                     appServiceVersionDTO.setHarborConfigId(devopsConfigDTOOrg.getId());
-                                    appServiceVersionMapper.updateByPrimaryKey(appServiceVersionDTO);
+                                    appServiceVersionDCustom.add(appServiceVersionDTO);
                                 } else {
                                     appServiceVersionDTO.setRepoType(DEFAULT_REPO);
                                     appServiceVersionDTO.setHarborConfigId(null);
-                                    appServiceVersionMapper.updateByPrimaryKey(appServiceVersionDTO);
+                                    appServiceVersionDefault.add(appServiceVersionDTO);
                                 }
                             }
                         }
                     }
+                }
+                //批量修改数据库
+                //默认仓库的config Id 置为null,然后将其类型编程DEFAULT_REPO
+                if (!CollectionUtils.isEmpty(appServiceVersionDefault)) {
+                    appServiceVersionMapper.updateVersionDefaultBatch(appServiceVersionDefault);
+                }
+                if (CollectionUtils.isEmpty(appServiceVersionDCustom)) {
+                    appServiceVersionMapper.updateVersionCustomBatch(appServiceVersionDCustom);
                 }
             }
             pageNum++;

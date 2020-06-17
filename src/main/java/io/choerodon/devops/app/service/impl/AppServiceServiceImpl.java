@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -20,6 +21,7 @@ import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayloa
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsUserPayload;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.app.task.DevopsTask;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
@@ -45,6 +47,7 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jgit.api.Git;
@@ -200,6 +203,9 @@ public class AppServiceServiceImpl implements AppServiceService {
     private RdupmClient rdupmClient;
     @Autowired
     private HarborService harborService;
+    @Autowired
+    @Lazy
+    private DevopsTask devopsTask;
 
 
     static {
@@ -2912,4 +2918,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         return appServiceRepVO;
     }
 
+
+    @Override
+    public void fixAppServiceVersion() {
+        devopsTask.fixAppServiceVersion(null);
+    }
 }
