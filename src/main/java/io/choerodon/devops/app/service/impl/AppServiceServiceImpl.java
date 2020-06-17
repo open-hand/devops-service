@@ -538,12 +538,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     @Transactional
     public Boolean updateActive(Long projectId, Long appServiceId, final Boolean active) {
+        AppServiceDTO appServiceDTO = permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
+
         // 为空则默认true
         Boolean toUpdateValue = Boolean.FALSE.equals(active) ? Boolean.FALSE : Boolean.TRUE;
-
-        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-
-        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         // 如果原先的值和更新的值相等，则不更新
         if (toUpdateValue.equals(appServiceDTO.getActive())) {
@@ -1875,8 +1873,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public void updatePermission(Long projectId, Long appServiceId, AppServicePermissionVO applicationPermissionVO) {
         // 创建gitlabUserPayload
-        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        AppServiceDTO appServiceDTO = permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
 
         DevOpsUserPayload devOpsUserPayload = new DevOpsUserPayload();
         devOpsUserPayload.setIamProjectId(projectId);
@@ -1940,8 +1937,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public void deletePermission(Long projectId, Long appServiceId, Long userId) {
-        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        AppServiceDTO appServiceDTO = permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
         appServiceUserPermissionService.baseDeleteByUserIdAndAppIds(ArrayUtil.singleAsList(appServiceId), userId);
         //原来不跳，现在也不跳，删除用户在gitlab权限
         DevOpsUserPayload devOpsUserPayload = new DevOpsUserPayload();
@@ -2118,15 +2114,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         //push 到远程仓库
         GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserById(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         gitUtil.push(git, applicationDir, "The template version:" + oldAppServiceVersionDTO.getVersion(), repositoryUrl, gitLabUserDTO.getUsername(), pushToken);
-    }
-
-    @Override
-    public void baseCheckApp(Long projectId, Long appServiceId) {
-        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-        if (appServiceDTO == null) {
-            throw new CommonException("error.app.project.notMatch");
-        }
-        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
     }
 
     @Override
@@ -2957,6 +2944,14 @@ public class AppServiceServiceImpl implements AppServiceService {
             return null;
         }
         return viewDTOList.get(0).getAppServiceIds();
+    }
+
+    @Override
+    public void baseCheckApp(Long projectId, Long appServiceId) {
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        if (appServiceDTO == null || !projectId.equals(appServiceDTO.getProjectId())) {
+            throw new CommonException("error.app.project.notMatch");
+        }
     }
 
     private void initApplicationParams(ProjectDTO projectDTO, Tenant

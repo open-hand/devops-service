@@ -6,7 +6,6 @@ import io.choerodon.devops.api.vo.DevopsEnvPodInfoVO;
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 import io.choerodon.devops.api.vo.PodMetricsRedisInfoVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -55,6 +54,8 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     private AgentCommandService agentCommandService;
     @Autowired
     private UserAttrService userAttrService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     @Override
     public Page<DevopsEnvPodVO> pageByOptions(Long projectId, Long envId, Long appServiceId, Long instanceId, PageRequest pageable, String searchParam) {
@@ -284,8 +285,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             return;
         }
         //检验环境相关信息
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
