@@ -87,7 +87,8 @@ public interface AppServiceService {
                                         String type,
                                         Boolean doPage,
                                         PageRequest pageable,
-                                        String params);
+                                        String params,
+                                        Boolean checkMember);
 
     /**
      * 处理服务创建逻辑
@@ -393,9 +394,8 @@ public interface AppServiceService {
 
     AppServiceDTO baseQuery(Long appServiceId);
 
-    Page<AppServiceDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean
-            appMarket,
-                                          String type, Boolean doPage, PageRequest pageable, String params);
+    Page<AppServiceDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean appMarket,
+                                          String type, Boolean doPage, PageRequest pageable, String params, Boolean checkMember);
 
     Page<AppServiceDTO> basePageCodeRepository(Long projectId, PageRequest pageable, String params,
                                                Boolean isProjectOwner, Long userId);

@@ -560,10 +560,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     public Page<AppServiceRepVO> pageByOptions(Long projectId, Boolean isActive, Boolean hasVersion,
                                                Boolean appMarket,
                                                String type, Boolean doPage,
-                                               PageRequest pageable, String params) {
+                                               PageRequest pageable, String params, Boolean checkMember) {
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Page<AppServiceDTO> applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params);
+        Page<AppServiceDTO> applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params,checkMember);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOS.getContent(), urlSlash);
@@ -2066,7 +2066,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public Page<AppServiceDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean
-            appMarket, String type, Boolean doPage, PageRequest pageable, String params) {
+            appMarket, String type, Boolean doPage, PageRequest pageable, String params, Boolean checkMember) {
 
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         Long userId = DetailsHelper.getUserDetails().getUserId();
@@ -2086,10 +2086,16 @@ public class AppServiceServiceImpl implements AppServiceService {
                         TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable));
             }
         } else {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-            Set<Long> appServiceIds = getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
-            if (CollectionUtils.isEmpty(appServiceIds)) {
-                return new Page<>();
+            // 是否需要进行项目成员gitlab角色校验
+            Set<Long> appServiceIds;
+            if (checkMember) {
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+                appServiceIds = getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
+                if (CollectionUtils.isEmpty(appServiceIds)) {
+                    return new Page<>();
+                }
+            } else {
+                appServiceIds = null;
             }
             //是否需要分页
             if (doPage == null || doPage) {
@@ -2578,7 +2584,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public Page<AppServiceVO> listByIdsOrPage(Long projectId, @Nullable Set<Long> ids, @Nullable Boolean doPage, PageRequest pageable) {
         // 如果没指定应用服务id，按照普通分页处理
         if (CollectionUtils.isEmpty(ids)) {
-            return ConvertUtils.convertPage(basePageByOptions(projectId, null, null, null, null, doPage, pageable, null), AppServiceVO.class);
+            return ConvertUtils.convertPage(basePageByOptions(projectId, null, null, null, null, doPage, pageable, null,false), AppServiceVO.class);
         } else {
             // 指定应用服务id，从这些id中根据参数决定是否分页
             // 如果不分页

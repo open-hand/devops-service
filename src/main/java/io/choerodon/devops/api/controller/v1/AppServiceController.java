@@ -203,6 +203,8 @@ public class AppServiceController {
             @RequestParam(value = "app_market", required = false) Boolean appMarket,
             @ApiParam(value = "服务类型")
             @RequestParam(value = "type", required = false) String type,
+            @ApiParam(value = "是否校验团队成员权限")
+            @RequestParam(value = "checkMember", required = false, defaultValue = "false") Boolean checkMember,
             @ApiParam(value = "是否分页")
             @RequestParam(value = "doPage", required = false) Boolean doPage,
             @ApiParam(value = "分页参数")
@@ -210,7 +212,7 @@ public class AppServiceController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationServiceService.pageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params))
+                applicationServiceService.pageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params,checkMember))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.service.baseList"));
     }
