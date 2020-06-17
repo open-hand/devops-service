@@ -93,7 +93,7 @@ public interface RdupmClient {
     @GetMapping("/v1/harbor-choerodon-repos/project/{projectId}/{repoId}/harbor_config_by_id")
     ResponseEntity<HarborRepoDTO> queryHarborRepoConfigById(@ApiParam(value = "猪齿鱼项目ID", required = true) @PathVariable("projectId") Long projectId,
                                                             @ApiParam(value = "仓库ID", required = true) @PathVariable("repoId") Long repoId,
-                                                            @ApiParam(value = "仓库类型", required = true) @RequestParam String repoType);
+                                                            @ApiParam(value = "仓库类型", required = true) @RequestParam("repoType") String repoType);
 
 
     @ApiOperation(value = "CI-流水线-获取项目下仓库列表-包含用户信息")

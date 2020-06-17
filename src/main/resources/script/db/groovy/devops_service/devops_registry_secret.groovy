@@ -56,7 +56,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_registry_secret.groovy') {
     }
     changeSet(author: 'wx', id: '2020-6-16-add-column') {
         addColumn(tableName: 'devops_registry_secret') {
-            column(name: 'repoType', type: 'VARCHAR(64)', afterColumn: 'id', remarks: '仓库类型(DEFAULT_REPO、CUSTOM_REPO)')
+            column(name: 'repo_type', type: 'VARCHAR(64)', afterColumn: 'id', remarks: '仓库类型(DEFAULT_REPO、CUSTOM_REPO)')
         }
     }
 }
