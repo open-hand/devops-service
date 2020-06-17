@@ -11,10 +11,10 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.app.service.UserAttrService;
-import io.choerodon.devops.infra.dto.DevopsClusterDTO;
-import io.choerodon.devops.infra.dto.DevopsClusterProPermissionDTO;
-import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
+import io.choerodon.devops.infra.mapper.DevopsCertificationProRelMapper;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.mapper.DevopsClusterProPermissionMapper;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
@@ -34,6 +34,10 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     private DevopsClusterMapper devopsClusterMapper;
     @Autowired
     private DevopsClusterProPermissionMapper devopsClusterProPermissionMapper;
+    @Autowired
+    private DevopsCertificationProRelMapper devopsCertificationProRelMapper;
+    @Autowired
+    private DevopsCertificationMapper devopsCertificationMapper;
 
     @Override
     public boolean isGitlabAdmin(Long userId) {
@@ -119,5 +123,19 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
         devopsClusterProPermissionDTO.setClusterId(clusterId);
         devopsClusterProPermissionDTO.setProjectId(Objects.requireNonNull(projectId));
         return devopsClusterProPermissionMapper.selectCount(devopsClusterProPermissionDTO) > 0;
+    }
+
+    @Override
+    public boolean projectPermittedToCert(Long certId, Long projectId) {
+        CertificationDTO certificationDTO = devopsCertificationMapper.selectByPrimaryKey(Objects.requireNonNull(certId));
+        CommonExAssertUtil.assertNotNull(certificationDTO, "certification.not.exist.in.database", certId);
+        if (Boolean.TRUE.equals(certificationDTO.getSkipCheckProjectPermission())) {
+            return true;
+        }
+
+        DevopsCertificationProRelationshipDTO condition = new DevopsCertificationProRelationshipDTO();
+        condition.setCertId(certId);
+        condition.setProjectId(projectId);
+        return devopsCertificationProRelMapper.selectCount(condition) > 0;
     }
 }

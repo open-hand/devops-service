@@ -77,6 +77,8 @@ public class CertificationServiceImpl implements CertificationService {
     private DevopsIngressMapper devopsIngressMapper;
     @Autowired
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -156,6 +158,8 @@ public class CertificationServiceImpl implements CertificationService {
         CertificationFileDTO certificationFileDTO = null;
         //如果创建的时候选择证书
         if (certificationDTO.getCertId() != null) {
+            CommonExAssertUtil.assertTrue(permissionHelper.projectPermittedToCert(certificationDTO.getCertId(), projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
             certificationDTO.setType(UPLOAD);
             type = certificationDTO.getType();
             certificationFileDTO = baseQueryCertFile(baseQueryById(certificationDTO.getCertId()).getId());

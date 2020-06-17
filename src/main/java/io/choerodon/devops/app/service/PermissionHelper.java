@@ -113,4 +113,13 @@ public interface PermissionHelper {
      * @return true表示有权限
      */
     boolean projectPermittedToCluster(Long clusterId, Long projectId);
+
+    /**
+     * 项目是否有证书的权限
+     *
+     * @param certId    证书id
+     * @param projectId 项目id
+     * @return true表示有
+     */
+    boolean projectPermittedToCert(Long certId, Long projectId);
 }
