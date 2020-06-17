@@ -2086,14 +2086,19 @@ public class AppServiceServiceImpl implements AppServiceService {
                         TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable));
             }
         } else {
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            Set<Long> appServiceIds = getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
+            if (CollectionUtils.isEmpty(appServiceIds)) {
+                return new Page<>();
+            }
             //是否需要分页
             if (doPage == null || doPage) {
                 return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
-                        () -> appServiceMapper.listProjectMembersAppService(projectId, isActive, hasVersion, type,
+                        () -> appServiceMapper.listProjectMembersAppService(projectId,appServiceIds, isActive, hasVersion, type,
                                 TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                                 TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable), userId));
             } else {
-                list = appServiceMapper.listProjectMembersAppService(projectId, isActive, hasVersion, type,
+                list = appServiceMapper.listProjectMembersAppService(projectId,appServiceIds, isActive, hasVersion, type,
                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable), userId);
             }
@@ -2729,7 +2734,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId)) {
             return ConvertUtils.convertPage(PageHelper.doPageAndSort(pageRequest, () -> appServiceMapper.listAppServiceToCreatePipelineForOwner(projectId, searchParamMap, paramList)), AppServiceServiceImpl::dto2SimpleVo);
         } else {
-            return ConvertUtils.convertPage(PageHelper.doPageAndSort(pageRequest, () -> appServiceMapper.listAppServiceToCreatePipelineForMember(projectId, userId, searchParamMap, paramList)), AppServiceServiceImpl::dto2SimpleVo);
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            Set<Long> appServiceIds = getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
+            if (CollectionUtils.isEmpty(appServiceIds)) {
+                return new ArrayList<>();
+            }
+            return ConvertUtils.convertPage(PageHelper.doPageAndSort(pageRequest, () -> appServiceMapper.listAppServiceToCreatePipelineForMember(projectId, userId, appServiceIds, searchParamMap, paramList)), AppServiceServiceImpl::dto2SimpleVo);
         }
     }
 
