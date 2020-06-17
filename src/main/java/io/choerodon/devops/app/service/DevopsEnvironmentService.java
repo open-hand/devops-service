@@ -196,9 +196,10 @@ public interface DevopsEnvironmentService {
     /**
      * 环境下为用户分配权限
      *
+     * @param projectId                   项目id
      * @param devopsEnvPermissionUpdateVO 权限更新信息
      */
-    void updateEnvUserPermission(DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO);
+    void updateEnvUserPermission(Long projectId, DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO);
 
     /**
      * 删除已停用或失败的环境
@@ -239,7 +240,7 @@ public interface DevopsEnvironmentService {
      *
      * @param envId 环境id
      */
-    void retryGitOps(Long envId);
+    void retryGitOps(Long projectId, Long envId);
 
     /**
      * 重试系统环境的GitOps解析
@@ -370,12 +371,4 @@ public interface DevopsEnvironmentService {
      * @return 数量
      */
     Long countEnvByOption(Long projectId, @Nullable Long clusterId, @Nullable Boolean isFailed);
-
-    /**
-     * 检查环境是否属于指定项目
-     *
-     * @param projectId 项目id
-     * @param envId     环境id
-     */
-    void checkEnvBelongToProject(Long projectId, Long envId);
 }

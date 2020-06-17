@@ -371,7 +371,7 @@ public class DevopsEnvironmentController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除该用户在该环境下的权限")
     @DeleteMapping(value = "/{env_id}/permission")
-    public ResponseEntity deletePermissionOfUser(
+    public ResponseEntity<Void> deletePermissionOfUser(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
@@ -379,7 +379,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "用户id", required = true)
             @RequestParam(value = "user_id") Long userId) {
         devopsEnvironmentService.deletePermissionOfUser(projectId, envId, userId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
 
@@ -421,7 +421,7 @@ public class DevopsEnvironmentController {
             @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "有权限的用户ids")
             @EncryptDTO @RequestBody @Valid DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO) {
-        devopsEnvironmentService.updateEnvUserPermission(devopsEnvPermissionUpdateVO);
+        devopsEnvironmentService.updateEnvUserPermission(projectId, devopsEnvPermissionUpdateVO);
         return new ResponseEntity(HttpStatus.OK);
     }
 
@@ -499,7 +499,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境编码", required = true)
             @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @PathVariable(value = "env_id") Long envId) {
-        devopsEnvironmentService.retryGitOps(envId);
+        devopsEnvironmentService.retryGitOps(projectId, envId);
     }
 
     /**

@@ -59,7 +59,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public DevopsDeployValueVO createOrUpdate(Long projectId, DevopsDeployValueVO devopsDeployValueVO) {
-        devopsEnvironmentService.checkEnvBelongToProject(projectId, devopsDeployValueVO.getEnvId());
+        permissionHelper.checkEnvBelongToProject(projectId, devopsDeployValueVO.getEnvId());
 
         FileUtil.checkYamlFormat(devopsDeployValueVO.getValue());
 
@@ -72,7 +72,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     @Override
     public void delete(Long projectId, Long valueId) {
         DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueMapper.selectByPrimaryKey(valueId);
-        devopsEnvironmentService.checkEnvBelongToProject(projectId, devopsDeployValueDTO.getEnvId());
+        permissionHelper.checkEnvBelongToProject(projectId, devopsDeployValueDTO.getEnvId());
         baseDelete(valueId);
     }
 
@@ -133,7 +133,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     @Override
     public Boolean checkDelete(Long projectId, Long valueId) {
         DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueMapper.selectByPrimaryKey(valueId);
-        devopsEnvironmentService.checkEnvBelongToProject(projectId, devopsDeployValueDTO.getEnvId());
+        permissionHelper.checkEnvBelongToProject(projectId, devopsDeployValueDTO.getEnvId());
         List<PipelineAppServiceDeployDTO> pipelineAppServiceDeployDTOS = pipelineAppDeployService.baseQueryByValueId(valueId);
         if (pipelineAppServiceDeployDTOS == null || pipelineAppServiceDeployDTOS.isEmpty()) {
             List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceService.baseListByValueId(valueId);

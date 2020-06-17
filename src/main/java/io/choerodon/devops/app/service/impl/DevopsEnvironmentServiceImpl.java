@@ -575,11 +575,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public Boolean updateActive(Long projectId, Long environmentId, Boolean active) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(environmentId);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
         if (active == null) {
             active = Boolean.TRUE;
         }
-
-        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(environmentId);
         List<Long> updatedClusterList = clusterConnectionHandler.getUpdatedClusterList();
 
         // 要停用环境时，对环境进行校验
@@ -676,6 +677,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public DevopsEnvironmentUpdateVO update(DevopsEnvironmentUpdateVO devopsEnvironmentUpdateDTO, Long projectId) {
+        permissionHelper.checkEnvBelongToProject(projectId, devopsEnvironmentUpdateDTO.getId());
         DevopsEnvironmentDTO toUpdate = new DevopsEnvironmentDTO();
         toUpdate.setId(devopsEnvironmentUpdateDTO.getId());
         toUpdate.setName(devopsEnvironmentUpdateDTO.getName());
@@ -694,9 +696,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
 
     @Override
-    public void retryGitOps(Long envId) {
+    public void retryGitOps(Long projectId, Long envId) {
         // TODO 参考{@link io.choerodon.devops.app.service.impl.DevopsClusterResourceServiceImpl.retrySystemEnvGitOps}改写
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId().longValue());
         if (userAttrDTO == null) {
             throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
@@ -1107,15 +1110,17 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             return;
         }
 
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
-
-        if (userAttrDTO == null) {
-            return;
-        }
-
         DevopsEnvironmentDTO environmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
 
         if (environmentDTO == null) {
+            return;
+        }
+
+        CommonExAssertUtil.assertTrue(projectId.equals(environmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
+
+        if (userAttrDTO == null) {
             return;
         }
 
@@ -1167,8 +1172,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Saga(code = SagaTopicCodeConstants.DEVOPS_UPDATE_ENV_PERMISSION, description = "更新环境的权限")
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void updateEnvUserPermission(DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO) {
+    public void updateEnvUserPermission(Long projectId, DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO) {
         DevopsEnvironmentDTO preEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsEnvPermissionUpdateVO.getEnvId());
+        CommonExAssertUtil.assertTrue(projectId.equals(preEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
 
         DevopsEnvUserPayload userPayload = new DevopsEnvUserPayload();
         userPayload.setEnvId(preEnvironmentDTO.getId());
@@ -1295,6 +1302,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (devopsEnvironmentDTO == null) {
             return;
         }
+
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         //排除掉运行中的环境
         if (Boolean.TRUE.equals(devopsEnvironmentDTO.getActive()) && Boolean.FALSE.equals(devopsEnvironmentDTO.getFailed()) && upgradeClusterList.contains(devopsEnvironmentDTO.getClusterId())) {
@@ -1858,11 +1868,5 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
         environmentMsgVO.setCheckResources(check);
         return environmentMsgVO;
-    }
-
-    @Override
-    public void checkEnvBelongToProject(Long projectId, Long envId) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
     }
 }

@@ -1,23 +1,20 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.Objects;
-import javax.annotation.Nullable;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.app.service.UserAttrService;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
-import io.choerodon.devops.infra.mapper.DevopsCertificationProRelMapper;
-import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
-import io.choerodon.devops.infra.mapper.DevopsClusterProPermissionMapper;
+import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /**
  * @author zmf
@@ -38,8 +35,11 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     private DevopsCertificationProRelMapper devopsCertificationProRelMapper;
     @Autowired
     private DevopsCertificationMapper devopsCertificationMapper;
+    @Autowired
+    private DevopsEnvironmentMapper devopsEnvironmentMapper;
 
     @Override
+
     public boolean isGitlabAdmin(Long userId) {
         UserAttrDTO result = userAttrService.baseQueryById(userId);
         return result != null && result.getGitlabAdmin();
@@ -137,5 +137,11 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
         condition.setCertId(certId);
         condition.setProjectId(projectId);
         return devopsCertificationProRelMapper.selectCount(condition) > 0;
+    }
+
+    @Override
+    public void checkEnvBelongToProject(Long projectId, Long envId) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
     }
 }

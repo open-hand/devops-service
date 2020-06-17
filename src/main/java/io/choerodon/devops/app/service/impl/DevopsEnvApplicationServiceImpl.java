@@ -6,6 +6,7 @@ import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -39,11 +40,13 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     private DevopsEnvAppServiceMapper devopsEnvAppServiceMapper;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public List<DevopsEnvApplicationVO> batchCreate(Long projectId, DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
-        devopsEnvironmentService.checkEnvBelongToProject(projectId, devopsEnvAppServiceVO.getEnvId());
+        permissionHelper.checkEnvBelongToProject(projectId, devopsEnvAppServiceVO.getEnvId());
         return Stream.of(devopsEnvAppServiceVO.getAppServiceIds())
                 .map(appServiceId -> new DevopsEnvAppServiceDTO(appServiceId, devopsEnvAppServiceVO.getEnvId()))
                 .peek(e -> devopsEnvAppServiceMapper.insertIgnore(e))

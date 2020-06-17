@@ -1,7 +1,7 @@
 package io.choerodon.devops.api.validator;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
@@ -23,7 +23,7 @@ public class EnvironmentApplicationValidator {
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
 
     @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
+    private PermissionHelper permissionHelper;
 
     @Autowired
     private AppServiceMapper appServiceMapper;
@@ -69,7 +69,7 @@ public class EnvironmentApplicationValidator {
      * 校验环境id和应用id存在关联
      */
     public void checkEnvIdAndAppIdsExist(Long projectId, Long envId, Long appServiceId) {
-        devopsEnvironmentService.checkEnvBelongToProject(projectId, envId);
+        permissionHelper.checkEnvBelongToProject(projectId, envId);
         if (envId == null) {
             throw new CommonException("error.env.id.null");
         }

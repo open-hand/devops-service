@@ -122,4 +122,12 @@ public interface PermissionHelper {
      * @return true表示有
      */
     boolean projectPermittedToCert(Long certId, Long projectId);
+
+    /**
+     * 检查环境是否属于指定项目
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     */
+    void checkEnvBelongToProject(Long projectId, Long envId);
 }
