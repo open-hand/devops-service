@@ -22,8 +22,17 @@ public class ApprovalVO {
     @ApiModelProperty("gitlab项目id")
     private Integer gitlabProjectId;
 
+    @ApiModelProperty("pipeline id")
+    private Long pipelineId;
+
     @ApiModelProperty("pipeline record id")
-    private Long pipeRecordId;
+    private Long pipelineRecordId;
+
+    @ApiModelProperty("pipeline stage id")
+    private Long stageRecordId;
+
+    @ApiModelProperty("pripeline task id")
+    private Long taskRecordId;
 
     public String getOrganizationNameAndProjectName() {
         return organizationNameAndProjectName;
@@ -70,12 +79,39 @@ public class ApprovalVO {
         return this;
     }
 
-    public Long getPipeRecordId() {
-        return pipeRecordId;
+    public Long getPipelineRecordId() {
+        return pipelineRecordId;
     }
 
-    public ApprovalVO setPipeRecordId(Long pipeRecordId) {
-        this.pipeRecordId = pipeRecordId;
+    public ApprovalVO setPipelineRecordId(Long pipelineRecordId) {
+        this.pipelineRecordId = pipelineRecordId;
+        return this;
+    }
+
+    public Long getStageRecordId() {
+        return stageRecordId;
+    }
+
+    public ApprovalVO setStageRecordId(Long stageRecordId) {
+        this.stageRecordId = stageRecordId;
+        return this;
+    }
+
+    public Long getTaskRecordId() {
+        return taskRecordId;
+    }
+
+    public ApprovalVO setTaskRecordId(Long taskRecordId) {
+        this.taskRecordId = taskRecordId;
+        return this;
+    }
+
+    public Long getPipelineId() {
+        return pipelineId;
+    }
+
+    public ApprovalVO setPipelineId(Long pipelineId) {
+        this.pipelineId = pipelineId;
         return this;
     }
 
@@ -87,7 +123,10 @@ public class ApprovalVO {
                 ", content='" + content + '\'' +
                 ", type='" + type + '\'' +
                 ", gitlabProjectId=" + gitlabProjectId +
-                ", pipeRecordId=" + pipeRecordId +
+                ", pipelineId=" + pipelineId +
+                ", pipelineRecordId=" + pipelineRecordId +
+                ", stageRecordId=" + stageRecordId +
+                ", taskRecordId=" + taskRecordId +
                 '}';
     }
 }
