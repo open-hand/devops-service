@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -98,7 +99,7 @@ public class CiController {
     @ApiOperation(value = "判断平台是否有配置sonarqube")
     @GetMapping("/has_default_sonar")
     public ResponseEntity<Boolean> hasDefaultSonarqubeConfig() {
-        return ResponseEntity.ok(sonarqubeUrl != null);
+        return ResponseEntity.ok(!StringUtils.isEmpty(sonarqubeUrl));
     }
 
     /**
