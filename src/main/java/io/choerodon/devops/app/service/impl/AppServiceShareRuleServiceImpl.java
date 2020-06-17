@@ -5,6 +5,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceShareRuleVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.AppServiceShareRuleService;
+import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.infra.dto.AppServiceShareRuleDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -41,6 +42,8 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     private AppServiceShareRuleMapper appServiceShareRuleMapper;
     @Autowired
     private AppServiceService appServiceService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     private static final String PROJECT_NAME = "组织下所有项目";
 
@@ -48,7 +51,7 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     @Transactional
     public AppServiceShareRuleVO createOrUpdate(Long projectId, AppServiceShareRuleVO appServiceShareRuleVO) {
 
-        appServiceService.checkResourceBelongToProject(projectId, appServiceShareRuleVO.getAppServiceId());
+        permissionHelper.checkResourceBelongToProject(projectId, appServiceShareRuleVO.getAppServiceId());
 
         AppServiceShareRuleDTO appServiceShareRuleDTO = ConvertUtils.convertObject(appServiceShareRuleVO, AppServiceShareRuleDTO.class);
         if (appServiceShareRuleDTO.getVersion() != null && appServiceShareRuleDTO.getVersionType() != null) {
@@ -104,7 +107,7 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     @Override
     public void delete(Long projectId, Long ruleId) {
         AppServiceShareRuleDTO appServiceShareRuleDTO = appServiceShareRuleMapper.selectByPrimaryKey(ruleId);
-        appServiceService.checkResourceBelongToProject(projectId, appServiceShareRuleDTO.getAppServiceId());
+        permissionHelper.checkResourceBelongToProject(projectId, appServiceShareRuleDTO.getAppServiceId());
         appServiceShareRuleMapper.deleteByPrimaryKey(ruleId);
     }
 }
