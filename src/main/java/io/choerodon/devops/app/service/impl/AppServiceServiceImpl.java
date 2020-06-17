@@ -615,7 +615,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             if (CollectionUtils.isEmpty(appServiceIds)) {
                 return new ArrayList<>();
             }
-            applicationDTOServiceList = appServiceMapper.selectByIds(Joiner.on(",").join(appServiceIds));
+            applicationDTOServiceList = appServiceMapper.listProjectMembersAppServiceByActive(projectId, appServiceIds,userId);
         }
 
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
