@@ -76,7 +76,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_versionion.groovy') {
 
     changeSet(author: 'wx', id: '2020-6-15-add-column') {
         addColumn(tableName: 'devops_app_service_version') {
-            column(name: 'repoType', type: 'VARCHAR(64)', afterColumn: 'id', remarks: '仓库类型(DEFAULT_REPO、CUSTOM_REPO)')
+            column(name: 'repo_type', type: 'VARCHAR(64)', afterColumn: 'id', remarks: '仓库类型(DEFAULT_REPO、CUSTOM_REPO)')
         }
     }
 }

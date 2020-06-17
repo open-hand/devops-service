@@ -11,9 +11,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
+
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.mapper.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -696,7 +698,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         int selectCount = appServiceVersionMapper.selectCount(null);
         int size = 100;
         int totalPage = (selectCount + size - 1) / size;
-        int pageNum = 1;
+        int pageNum = 0;
         do {
             PageRequest pageable = new PageRequest();
             pageable.setPage(pageNum);
@@ -707,6 +709,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             if (!CollectionUtils.isEmpty(page.getContent())) {
                 List<AppServiceVersionDTO> appServiceVersionDTOS = page.getContent();
                 for (AppServiceVersionDTO appServiceVersionDTO : appServiceVersionDTOS) {
+//                    appServiceVersionMapper.updateObjectVersionNumber(appServiceVersionDTO.getId());
+//                    appServiceVersionDTO = appServiceVersionMapper.selectByPrimaryKey(appServiceVersionDTO.getId());
                     //看看config是否为null,如果不为null,查询devops_config表。判断config_name
                     if (appServiceVersionDTO.getHarborConfigId() != null) {
                         //除了default-harbor 是默认配置,其他都是自定义配置
@@ -762,7 +766,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         int count = devopsRegistrySecretMapper.selectCount(null);
         int pageSize = 100;
         int total = (count + pageSize - 1) / pageSize;
-        int pageNumber = 1;
+        int pageNumber = 0;
         do {
             PageRequest pageable = new PageRequest();
             pageable.setPage(pageNumber);
