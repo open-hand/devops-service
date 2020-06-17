@@ -105,6 +105,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
                                             @Param("params") List<String> params);
 
     List<AppServiceDTO> listProjectMembersAppServiceByActive(@Param("projectId") Long projectId,
+                                                             @Param("appServiceIds") Set<Long> appServiceIds,
                                                              @Param("userId") Long userId);
 
     Integer countProjectMembersAppServiceByActive(@Param("projectId") Long projectId,
