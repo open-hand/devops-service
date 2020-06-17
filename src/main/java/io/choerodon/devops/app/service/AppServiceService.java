@@ -376,6 +376,17 @@ public interface AppServiceService {
 
     void setProjectHook(AppServiceDTO appServiceDTO, Integer projectId, String token, Integer userId);
 
+    /**
+     * 查询项目成员 项目下有权限的应用服务Id
+     *
+     * @param organizationId
+     * @param projectId
+     * @param userId
+     * @return
+     */
+    Set<Long> getMemberAppServiceIds(Long organizationId, Long projectId, Long userId);
+
+
     void baseCheckApp(Long projectId, Long appServiceId);
 
     AppServiceDTO baseUpdate(AppServiceDTO appServiceDTO);

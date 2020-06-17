@@ -5,11 +5,12 @@ import java.util.Set;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import io.choerodon.devops.api.vo.hrdsCode.MemberPrivilegeViewDTO;
+import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
 import io.choerodon.devops.infra.feign.fallback.HzeroMessageServiceClientFallBack;
 
 /**
@@ -28,8 +29,21 @@ public interface HrdsCodeRepoClient {
      * @param repositoryIds  应用服务Id
      * @return
      */
-    @GetMapping("/v1/organizations/{organizationId}/projects/{projectId}/gitlab/repositories/members/self/privilege")
+    @PostMapping("/v1/organizations/{organizationId}/projects/{projectId}/gitlab/repositories/members/self/privilege")
     ResponseEntity<List<MemberPrivilegeViewDTO>> selfPrivilege(@PathVariable("organizationId") Long organizationId,
                                                                @PathVariable("projectId") Long projectId,
                                                                @RequestBody Set<Long> repositoryIds);
+
+    /**
+     * 查询用户在项目下有权限的应用服务
+     *
+     * @param organizationId
+     * @param projectId
+     * @param userIds        用户id
+     * @return
+     */
+    @PostMapping("/v1/organizations/{organizationId}/projects/{projectId}/gitlab/members/repositories/within")
+    ResponseEntity<List<RepositoryPrivilegeViewDTO>> listRepositoriesByPrivilege(@PathVariable("organizationId") Long organizationId,
+                                                                                 @PathVariable("projectId") Long projectId,
+                                                                                 @RequestBody Set<Long> userIds);
 }

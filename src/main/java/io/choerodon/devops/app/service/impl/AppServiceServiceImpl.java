@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import com.google.common.base.Functions;
+import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -13,6 +14,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
+import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
 import io.choerodon.devops.api.vo.sonar.*;
 import io.choerodon.devops.app.eventhandler.DevopsSagaHandler;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
@@ -36,10 +38,7 @@ import io.choerodon.devops.infra.dto.iam.RoleDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.exception.GitlabAccessInvalidException;
-import io.choerodon.devops.infra.feign.ChartClient;
-import io.choerodon.devops.infra.feign.HarborClient;
-import io.choerodon.devops.infra.feign.RdupmClient;
-import io.choerodon.devops.infra.feign.SonarClient;
+import io.choerodon.devops.infra.feign.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
@@ -206,6 +205,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     @Lazy
     private DevopsTask devopsTask;
+    @Autowired
+    private HrdsCodeRepoClient hrdsCodeRepoClient;
 
 
     static {
@@ -608,7 +609,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (projectOwner) {
             applicationDTOServiceList = appServiceMapper.listByActive(projectId);
         } else {
-            applicationDTOServiceList = appServiceMapper.listProjectMembersAppServiceByActive(projectId, userId);
+            Set<Long> appServiceIds = getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
+            if (CollectionUtils.isEmpty(appServiceIds)) {
+                return new ArrayList<>();
+            }
+            applicationDTOServiceList = appServiceMapper.selectByIds(Joiner.on(",").join(appServiceIds));
         }
 
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
@@ -2842,6 +2847,14 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
     }
 
+    @Override
+    public Set<Long> getMemberAppServiceIds(Long organizationId, Long projectId, Long userId) {
+        List<RepositoryPrivilegeViewDTO> viewDTOList = hrdsCodeRepoClient.listRepositoriesByPrivilege(organizationId, projectId, Collections.singleton(userId)).getBody();
+        if (CollectionUtils.isEmpty(viewDTOList)) {
+            return null;
+        }
+        return viewDTOList.get(0).getAppServiceIds();
+    }
 
     private void initApplicationParams(ProjectDTO projectDTO, Tenant
             organizationDTO, List<AppServiceDTO> applicationDTOS, String urlSlash) {

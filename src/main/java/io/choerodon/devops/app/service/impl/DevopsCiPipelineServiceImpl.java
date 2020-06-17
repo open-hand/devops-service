@@ -41,6 +41,7 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
+import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
@@ -95,6 +96,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final RdupmClientOperator rdupmClientOperator;
     private final CheckGitlabAccessLevelService checkGitlabAccessLevelService;
     private final DevopsConfigService devopsConfigService;
+    private final PermissionHelper permissionHelper;
+    private final AppServiceMapper appServiceMapper;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiPipelineMapper devopsCiPipelineMapper,
@@ -114,6 +117,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             BaseServiceClientOperator baseServiceClientOperator,
             RdupmClientOperator rdupmClientOperator,
             DevopsConfigService devopsConfigService,
+            PermissionHelper permissionHelper,
+            AppServiceMapper appServiceMapper,
             DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper) {
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
@@ -131,6 +136,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.rdupmClientOperator = rdupmClientOperator;
         this.devopsConfigService = devopsConfigService;
         this.checkGitlabAccessLevelService = checkGitlabAccessLevelService;
+        this.permissionHelper = permissionHelper;
+        this.appServiceMapper = appServiceMapper;
     }
 
     private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
@@ -286,7 +293,22 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (projectId == null) {
             throw new CommonException(ERROR_PROJECT_ID_IS_NULL);
         }
-        List<DevopsCiPipelineVO> devopsCiPipelineVOS = devopsCiPipelineMapper.queryByProjectIdAndName(projectId, name);
+
+        // 应用有权限的应用服务
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
+        Set<Long> appServiceIds;
+        if (projectOwner) {
+            appServiceIds = appServiceMapper.listByActive(projectId).stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
+        } else {
+            appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
+            if (CollectionUtils.isEmpty(appServiceIds)) {
+                return new ArrayList<>();
+            }
+        }
+
+        List<DevopsCiPipelineVO> devopsCiPipelineVOS = devopsCiPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, name);
         PageRequest pageable = new PageRequest(GitOpsConstants.FIRST_PAGE_INDEX, DEFAULT_PIPELINE_RECORD_SIZE, new Sort(new Sort.Order(Sort.Direction.DESC, DevopsCiPipelineRecordDTO.FIELD_GITLAB_PIPELINE_ID)));
 
         devopsCiPipelineVOS.forEach(devopsCiPipelineVO -> {
