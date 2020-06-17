@@ -1,9 +1,12 @@
 package io.choerodon.devops.api.vo;
 
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class DevopsClusterRepVO {
     @ApiModelProperty("集群id")
+    @Encrypt(DevopsClusterDTO.ENCRYPT_KEY)
     private Long id;
 
     @ApiModelProperty("集群名称")

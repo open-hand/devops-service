@@ -1,16 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Date;
-import java.util.Optional;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -18,9 +7,21 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
 import io.choerodon.devops.api.vo.DevopsGitlabCommitVO;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.Date;
+import java.util.Optional;
 
 /**
  * Created by n!Ck
@@ -51,7 +52,7 @@ public class DevopsGitlabCommitController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务ids", required = true)
-            @RequestBody String appServiceIds,
+            @Encrypt(AppServiceDTO.ENCRYPT_KEY) @RequestBody String appServiceIds,
             @ApiParam(value = "开始时间start_date", required = true)
             @RequestParam(value = "start_date") Date startDate,
             @ApiParam(value = "结束时间end_date", required = true)
@@ -61,6 +62,7 @@ public class DevopsGitlabCommitController {
                 .orElseThrow(() -> new CommonException("error.commits.get"));
     }
 
+    // TODO 李浩   这里的appServiceIds需要特殊处理，需要讨论
     /**
      * 服务获取下最近的commit记录
      *

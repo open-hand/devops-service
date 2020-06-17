@@ -1,26 +1,28 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Optional;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.app.service.DevopsIngressService;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.DevopsIngressDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.Optional;
 
 /**
  * Creator: Runge
@@ -72,7 +74,7 @@ public class DevopsIngressController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名ID", required = true)
-            @PathVariable Long id,
+            @Encrypt(DevopsIngressDTO.ENCRYPT_KEY) @PathVariable Long id,
             @ApiParam(value = "域名信息", required = true)
             @RequestBody DevopsIngressVO devopsIngressVO) {
         devopsIngressService.updateIngress(id, devopsIngressVO, projectId);
@@ -96,7 +98,7 @@ public class DevopsIngressController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名ID", required = true)
-            @PathVariable Long id) {
+            @Encrypt(DevopsIngressDTO.ENCRYPT_KEY) @PathVariable Long id) {
         return Optional.ofNullable(devopsIngressService.queryIngress(projectId, id))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.IngressName.query"));
@@ -119,7 +121,7 @@ public class DevopsIngressController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名ID", required = true)
-            @PathVariable Long id) {
+            @Encrypt(DevopsIngressDTO.ENCRYPT_KEY) @PathVariable Long id) {
         return Optional.ofNullable(devopsIngressService.queryIngressDetailById(projectId, id))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.query.by.id"));
@@ -141,7 +143,7 @@ public class DevopsIngressController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名ID", required = true)
-            @PathVariable Long id) {
+            @Encrypt(DevopsIngressDTO.ENCRYPT_KEY) @PathVariable Long id) {
         devopsIngressService.deleteIngress(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -159,7 +161,7 @@ public class DevopsIngressController {
             @ApiParam(value = "域名名称", required = true)
             @RequestParam String name,
             @ApiParam(value = "域名名称", required = true)
-            @RequestParam(value = "env_id") Long envId) {
+            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @RequestParam(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsIngressService.checkName(envId, name))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.ingress.check"));
@@ -182,13 +184,13 @@ public class DevopsIngressController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @RequestParam(value = "env_id") Long envId,
+            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "域名", required = true)
             @RequestParam String domain,
             @ApiParam(value = "路径", required = true)
             @RequestParam String path,
             @ApiParam(value = "ingress ID")
-            @RequestParam(value = "id", required = false) Long id) {
+            @Encrypt(DevopsIngressDTO.ENCRYPT_KEY) @RequestParam(value = "id", required = false) Long id) {
         return Optional.ofNullable(devopsIngressService.checkDomainAndPath(envId, domain, path, id))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.domain.name.check"));
@@ -217,7 +219,7 @@ public class DevopsIngressController {
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiParam(value = "分页参数") PageRequest pageable,
             @ApiParam(value = "env_id", required = true)
-            @PathVariable(value = "env_id") Long envId,
+            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsIngressService.pageByEnv(projectId, envId, pageable, params))

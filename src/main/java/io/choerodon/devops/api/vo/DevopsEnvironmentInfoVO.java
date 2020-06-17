@@ -1,8 +1,9 @@
 package io.choerodon.devops.api.vo;
 
-import io.swagger.annotations.ApiModelProperty;
-
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.enums.EnvironmentGitopsStatus;
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 展示环境信息及一些相关的信息
@@ -10,6 +11,7 @@ import io.choerodon.devops.infra.enums.EnvironmentGitopsStatus;
  * @author zmf
  */
 public class DevopsEnvironmentInfoVO {
+    @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
     private Long id;
     private String code;
     private String name;

@@ -318,6 +318,12 @@
             <artifactId>sshj</artifactId>
             <version>0.24.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.hzero.starter</groupId>
+            <artifactId>hzero-starter-keyencrypt</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

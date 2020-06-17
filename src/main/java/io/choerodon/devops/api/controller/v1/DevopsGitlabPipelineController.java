@@ -7,6 +7,7 @@ import java.util.Optional;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import io.choerodon.devops.api.vo.DevopsGitlabPipelineVO;
 import io.choerodon.devops.api.vo.PipelineFrequencyVO;
 import io.choerodon.devops.api.vo.PipelineTimeVO;
 import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -50,7 +52,7 @@ public class DevopsGitlabPipelineController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "app_service_id")
-            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
+            @Encrypt(AppServiceDTO.ENCRYPT_KEY) @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "start_time")
             @RequestParam(value = "start_time") Date startTime,
             @ApiParam(value = "end_time")
@@ -79,7 +81,7 @@ public class DevopsGitlabPipelineController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "app_service_id")
-            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
+            @Encrypt(AppServiceDTO.ENCRYPT_KEY) @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "start_time")
             @RequestParam(value = "start_time") Date startTime,
             @ApiParam(value = "end_time")
@@ -113,7 +115,7 @@ public class DevopsGitlabPipelineController {
             @ApiParam(value = "branch")
             @RequestParam(required = false) String branch,
             @ApiParam(value = "app_service_id")
-            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
+            @Encrypt(AppServiceDTO.ENCRYPT_KEY) @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "start_time")
             @RequestParam(required = false, value = "start_time") Date startTime,
             @ApiParam(value = "end_time")

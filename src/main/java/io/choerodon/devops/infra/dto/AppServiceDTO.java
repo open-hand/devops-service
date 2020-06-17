@@ -1,12 +1,12 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.*;
-
-import io.swagger.annotations.ApiModelProperty;
-
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import javax.persistence.*;
 
 /**
  * if (!isSynchro) {
@@ -26,8 +26,11 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_app_service")
 public class AppServiceDTO extends AuditDomain {
 
+    public static final String ENCRYPT_KEY = "devops_app_service";
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Encrypt(AppServiceDTO.ENCRYPT_KEY)
     private Long id;
     private Long projectId;
     private String name;

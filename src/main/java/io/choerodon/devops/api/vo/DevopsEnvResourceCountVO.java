@@ -1,11 +1,15 @@
 package io.choerodon.devops.api.vo;
 
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * 环境的资源的统计数据
  *
  * @author zmf
  */
 public class DevopsEnvResourceCountVO {
+    @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
     private Long envId;
 
     private Long instanceCount;

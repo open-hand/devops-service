@@ -1,8 +1,15 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.*;
-
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.DevopsIngressDTO;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Creator: Runge
@@ -12,10 +19,13 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class DevopsIngressVO extends DevopsResourceDataInfoVO {
 
+    @Encrypt(DevopsIngressDTO.ENCRYPT_KEY)
     private Long id;
+    @Encrypt(AppServiceDTO.ENCRYPT_KEY)
     private Long appServiceId;
     private String domain;
     private String name;
+    @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
     private Long envId;
     private String envName;
     private Boolean envStatus;

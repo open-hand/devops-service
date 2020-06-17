@@ -1,26 +1,31 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
-import java.util.Optional;
-import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvGroupDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.hzero.starter.keyencrypt.mvc.EncryptDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by younger on 2018/4/9.
@@ -48,7 +53,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境信息", required = true)
-            @RequestBody @Valid DevopsEnvironmentReqVO devopsEnvironmentReqVO) {
+            @EncryptDTO @RequestBody @Valid DevopsEnvironmentReqVO devopsEnvironmentReqVO) {
         devopsEnvironmentService.create(projectId, devopsEnvironmentReqVO);
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -108,6 +113,8 @@ public class DevopsEnvironmentController {
                 .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
     }
 
+    // TODO 该接口未找到使用的地方，下次发版时去掉
+
     /**
      * 项目下环境流水线查询环境
      *
@@ -144,7 +151,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "environment_id") Long environmentId,
+            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @PathVariable(value = "environment_id") Long environmentId,
             @ApiParam(value = "是否启用", required = true)
             @RequestParam(value = "active") Boolean active) {
         return Optional.ofNullable(devopsEnvironmentService.updateActive(projectId, environmentId, active))
@@ -167,7 +174,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "environment_id") Long environmentId) {
+            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @PathVariable(value = "environment_id") Long environmentId) {
         return new ResponseEntity<>(devopsEnvironmentService.query(environmentId), HttpStatus.OK);
     }
 
@@ -187,7 +194,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "environment_id") Long environmentId) {
+            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @PathVariable(value = "environment_id") Long environmentId) {
         return new ResponseEntity<>(devopsEnvironmentService.queryInfoById(projectId, environmentId), HttpStatus.OK);
     }
 
@@ -207,7 +214,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "env_id") Long envId) {
+            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvironmentService.queryEnvResourceCount(envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_QUERY));
@@ -228,7 +235,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境信息", required = true)
-            @RequestBody DevopsEnvironmentUpdateVO devopsEnvironmentUpdateDTO) {
+            @EncryptDTO @RequestBody DevopsEnvironmentUpdateVO devopsEnvironmentUpdateDTO) {
         return Optional.ofNullable(devopsEnvironmentService.update(devopsEnvironmentUpdateDTO, projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.update"));
@@ -267,7 +274,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务id")
-            @RequestParam(value = "app_service_id", required = false) Long appServiceId) {
+            @Encrypt(AppServiceDTO.ENCRYPT_KEY) @RequestParam(value = "app_service_id", required = false) Long appServiceId) {
         return Optional.ofNullable(devopsEnvironmentService.listByProjectId(projectId, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.running.get"));
@@ -290,7 +297,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "env_id") Long envId) {
+            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvironmentService.queryEnvSyncStatus(projectId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElse(new ResponseEntity<>(new EnvSyncStatusVO(), HttpStatus.OK));
@@ -315,7 +322,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "env_id") Long envId,
+            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "分页参数", required = true)
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
@@ -342,7 +349,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "env_id") Long envId,
+            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "分页参数", required = true)
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "指定用户id")
@@ -368,7 +375,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "env_id") Long envId,
+            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "用户id", required = true)
             @RequestParam(value = "user_id") Long userId) {
         devopsEnvironmentService.deletePermissionOfUser(projectId, envId, userId);
@@ -391,7 +398,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "env_id") Long envId) {
+            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvironmentService.listAllUserPermission(envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
@@ -411,9 +418,9 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "env_id") Long envId,
+            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "有权限的用户ids")
-            @RequestBody @Valid DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO) {
+            @EncryptDTO @RequestBody @Valid DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO) {
         devopsEnvironmentService.updateEnvUserPermission(devopsEnvPermissionUpdateVO);
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -433,7 +440,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "env_id") Long envId) {
+            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @PathVariable(value = "env_id") Long envId) {
         devopsEnvironmentService.deleteDeactivatedOrFailedEnvironment(projectId, envId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -491,7 +498,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境编码", required = true)
-            @PathVariable(value = "env_id") Long envId) {
+            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @PathVariable(value = "env_id") Long envId) {
         devopsEnvironmentService.retryGitOps(envId);
     }
 
@@ -528,7 +535,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分组id")
-            @RequestParam(value = "group_id", required = false) Long groupId) {
+            @Encrypt(DevopsEnvGroupDTO.ENCRYPT_KEY) @RequestParam(value = "group_id", required = false) Long groupId) {
         return Optional.ofNullable(devopsEnvironmentService.listByGroup(projectId, groupId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
@@ -549,7 +556,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id")
-            @PathVariable(value = "env_id") Long envId) {
+            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvironmentService.deleteCheck(projectId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
@@ -570,7 +577,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id")
-            @PathVariable(value = "env_id") Long envId) {
+            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvironmentService.disableCheck(projectId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
@@ -597,7 +604,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "对象id")
             @RequestParam(value = "object_id", required = false) Long objectId,
             @ApiParam(value = "环境id")
-            @PathVariable(value = "env_id") Long envId) {
+            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvironmentService.checkExist(projectId, envId, objectId, type))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
@@ -619,7 +626,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "环境是否失败", required = false)
             @RequestParam(value = "is_failed", required = false) Boolean isFailed,
             @ApiParam(value = "集群id，传此值时表示查询集群下的环境，不传则查询项目下环境", required = false)
-            @RequestParam(value = "cluster_id", required = false) Long clusterId) {
+            @Encrypt(DevopsClusterDTO.ENCRYPT_KEY) @RequestParam(value = "cluster_id", required = false) Long clusterId) {
         return new ResponseEntity<>(devopsEnvironmentService.countEnvByOption(projectId, clusterId, isFailed), HttpStatus.OK);
     }
 }
