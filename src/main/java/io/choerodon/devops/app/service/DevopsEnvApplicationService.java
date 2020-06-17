@@ -1,25 +1,26 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-import java.util.Map;
-
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
 import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author lizongwei
  * @date 2019/7/1
  */
 public interface DevopsEnvApplicationService {
-    List<DevopsEnvApplicationVO> batchCreate(DevopsEnvAppServiceVO devopsEnvAppServiceVO);
+    List<DevopsEnvApplicationVO> batchCreate(Long projectId, DevopsEnvAppServiceVO devopsEnvAppServiceVO);
 
     /**
      * 删除与该环境关联的应用
+     *
      * @param envId
      * @param appServiceId
      */
-    void delete(Long envId,Long appServiceId);
+    void delete(Long envId, Long appServiceId);
 
     /**
      * 查询环境下的所有应用
@@ -36,7 +37,7 @@ public interface DevopsEnvApplicationService {
      * @param appServiceId
      * @return
      */
-    List<Map<String,String>> listLabelByAppAndEnvId(Long envId, Long appServiceId);
+    List<Map<String, String>> listLabelByAppAndEnvId(Long envId, Long appServiceId);
 
     /**
      * 查询应用在环境下的所有端口

@@ -1,17 +1,17 @@
 package io.choerodon.devops.api.validator;
 
-import java.util.stream.Stream;
-
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
+import io.choerodon.devops.infra.mapper.AppServiceMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
-import io.choerodon.devops.infra.mapper.AppServiceMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
+import java.util.stream.Stream;
 
 /**
  * @author zmf
@@ -21,6 +21,9 @@ import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 public class EnvironmentApplicationValidator {
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
+
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
 
     @Autowired
     private AppServiceMapper appServiceMapper;
@@ -65,7 +68,8 @@ public class EnvironmentApplicationValidator {
     /**
      * 校验环境id和应用id存在关联
      */
-    public void checkEnvIdAndAppIdsExist(Long envId, Long appServiceId) {
+    public void checkEnvIdAndAppIdsExist(Long projectId, Long envId, Long appServiceId) {
+        devopsEnvironmentService.checkEnvBelongToProject(projectId, envId);
         if (envId == null) {
             throw new CommonException("error.env.id.null");
         }
