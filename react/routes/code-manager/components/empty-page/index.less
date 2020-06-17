@@ -1,0 +1,48 @@
+.c7ncd-empty-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 4rem;
+
+  &-wrap {
+    padding: 15vh 10vw 0;
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+  }
+
+  &-image {
+    flex: 0 0 2.66rem;
+    width: 2.66rem;
+    height: 2.12rem;
+
+    &-member {
+      background: url("./image/member.png") no-repeat;
+      background-size: contain;
+      height: 1.77rem;
+    }
+
+    &-owner {
+      background: url("./image/owner.png") no-repeat;
+      background-size: contain;
+    }
+  }
+
+  &-text {
+    margin-left: .35rem;
+    padding-top: .1rem;
+    max-width: 3.88rem;
+  }
+
+  &-title {
+    font-size: .13rem;
+    color: rgba(0, 0, 0, 0.65);
+    line-height: .2rem;
+  }
+
+  &-des {
+    font-size: .16rem;
+    line-height: .28rem;
+    margin: .08rem 0 .2rem;
+  }
+}

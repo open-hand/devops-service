@@ -239,6 +239,7 @@ const PipelineManage = observer((props) => {
                 detailStore={detailStore}
                 handleRefresh={handleRefresh}
                 treeDs={treeDs}
+                mainStore={mainStore}
               />
             </div>
           </div>

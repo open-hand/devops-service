@@ -13,6 +13,7 @@ import Loading from '../../../../components/loading';
 import StatusIcon from '../../../../components/StatusIcon/StatusIcon';
 import handleMapStore from '../../main-view/store/handleMapStore';
 import { useTableStore } from './stores';
+import EmptyPage from '../../components/empty-page';
 
 import '../../../main.less';
 import './Branch.less';
@@ -37,6 +38,7 @@ function Branch(props) {
     appServiceDs,
     appServiceId,
     formatMessage,
+    branchStore,
   } = useTableStore();
 
   const [isOPERATIONS, setIsOPERATIONS] = useState(false);
@@ -326,6 +328,16 @@ function Branch(props) {
 
   // 获取分支正文列表
   function tableBranch() {
+    if (branchStore.getIsEmpty) {
+      return (
+        <EmptyPage
+          title={formatMessage({ id: 'empty.title.prohibited' })}
+          describe={formatMessage({ id: 'empty.title.code' })}
+          btnText={formatMessage({ id: 'empty.link.code' })}
+          pathname="/rducm/code-lib-management"
+        />
+      );
+    }
     return (
       <div className="c7ncd-tab-table">
         <Table className="c7n-branch-main-table" queryBar="bar" dataSet={tableDs}>
@@ -338,7 +350,6 @@ function Branch(props) {
       </div>
     );
   }
-
 
   return (
     <Page
