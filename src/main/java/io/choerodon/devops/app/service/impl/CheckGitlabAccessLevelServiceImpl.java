@@ -41,7 +41,7 @@ public class CheckGitlabAccessLevelServiceImpl implements CheckGitlabAccessLevel
         }
         Integer maxAccessLevel = viewDTOList.stream().map(MemberPrivilegeViewDTO::getAccessLevel).collect(Collectors.toSet()).stream().max(Integer::compare).get();
         if (maxAccessLevel <= appServiceEvent.getAccessLevel()) {
-            throw new GitlabAccessInvalidException("error.gitlab.access.level,{}", AccessLevel.getAccessLevelName(maxAccessLevel));
+            throw new GitlabAccessInvalidException("error.gitlab.access.level", AccessLevel.getAccessLevelName(maxAccessLevel));
         }
     }
 }
