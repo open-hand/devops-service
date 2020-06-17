@@ -1,19 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Objects;
-import java.util.Optional;
-import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -26,6 +12,19 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Created by Sheep on 2019/6/26.
@@ -73,7 +72,7 @@ public class DevopsCustomizeResourceController {
     @DeleteMapping
     public ResponseEntity deleteResource(@PathVariable(value = "project_id") Long projectId,
                                          @RequestParam(value = "resource_id") Long resourceId) {
-        devopsCustomizeResourceService.deleteResource(resourceId);
+        devopsCustomizeResourceService.deleteResource(projectId, resourceId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
@@ -102,7 +101,7 @@ public class DevopsCustomizeResourceController {
      *
      * @param projectId   项目id
      * @param envId       环境id
-     * @param pageable 分页参数
+     * @param pageable    分页参数
      * @param searchParam 查询参数
      * @return Page of DevopsCustomizeResourceDTO
      */
