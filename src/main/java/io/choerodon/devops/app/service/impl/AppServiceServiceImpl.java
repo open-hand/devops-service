@@ -637,7 +637,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (projectOwnerOrRoot) {
             count = appServiceMapper.countByActive(projectId);
         } else {
-            count = appServiceMapper.countProjectMembersAppServiceByActive(projectId, userId);
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            Set<Long> appServiceIds = getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
+            if (CollectionUtils.isEmpty(appServiceIds)) {
+                return 0;
+            }
+            count = appServiceMapper.countProjectMembersAppServiceByActive(projectId, appServiceIds, userId);
         }
 
         return count;

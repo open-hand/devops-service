@@ -178,6 +178,13 @@
         WHERE da.is_active IS TRUE
         AND da.is_synchro IS TRUE
         AND da.gitlab_project_id IS NOT NULL
+        <if test="appServiceIds!=null and appServiceIds.size>0">
+            and da.id in
+            <foreach collection="appServiceIds" item="appServiceId" index="index"
+                     open="(" close=")" separator=",">
+                #{appServiceId}
+            </foreach>
+        </if>
     </sql>
 
     <select id="listByActive" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
