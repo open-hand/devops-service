@@ -2123,9 +2123,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public void baseCheckApp(Long projectId, Long appServiceId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-        if (appServiceDTO == null || !projectId.equals(appServiceDTO.getProjectId())) {
+        if (appServiceDTO == null) {
             throw new CommonException("error.app.project.notMatch");
         }
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
     }
 
     @Override

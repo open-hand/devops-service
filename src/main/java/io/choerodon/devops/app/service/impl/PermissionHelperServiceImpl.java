@@ -152,7 +152,7 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     }
 
     @Override
-    public void checkResourceBelongToProject(Long projectId, Long appServiceId) {
+    public void checkAppServiceBelongToProject(Long projectId, Long appServiceId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
     }

@@ -51,7 +51,7 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     @Transactional
     public AppServiceShareRuleVO createOrUpdate(Long projectId, AppServiceShareRuleVO appServiceShareRuleVO) {
 
-        permissionHelper.checkResourceBelongToProject(projectId, appServiceShareRuleVO.getAppServiceId());
+        permissionHelper.checkAppServiceBelongToProject(projectId, appServiceShareRuleVO.getAppServiceId());
 
         AppServiceShareRuleDTO appServiceShareRuleDTO = ConvertUtils.convertObject(appServiceShareRuleVO, AppServiceShareRuleDTO.class);
         if (appServiceShareRuleDTO.getVersion() != null && appServiceShareRuleDTO.getVersionType() != null) {
@@ -107,7 +107,7 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     @Override
     public void delete(Long projectId, Long ruleId) {
         AppServiceShareRuleDTO appServiceShareRuleDTO = appServiceShareRuleMapper.selectByPrimaryKey(ruleId);
-        permissionHelper.checkResourceBelongToProject(projectId, appServiceShareRuleDTO.getAppServiceId());
+        permissionHelper.checkAppServiceBelongToProject(projectId, appServiceShareRuleDTO.getAppServiceId());
         appServiceShareRuleMapper.deleteByPrimaryKey(ruleId);
     }
 }

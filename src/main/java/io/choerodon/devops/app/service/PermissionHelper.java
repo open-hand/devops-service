@@ -138,5 +138,5 @@ public interface PermissionHelper {
      * @param appServiceId 应用id
      * @return 校验结果
      */
-    void checkResourceBelongToProject(Long projectId, Long appServiceId);
+    void checkAppServiceBelongToProject(Long projectId, Long appServiceId);
 }

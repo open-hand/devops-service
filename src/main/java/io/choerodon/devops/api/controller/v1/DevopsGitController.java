@@ -314,15 +314,15 @@ public class DevopsGitController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除分支")
     @DeleteMapping("/branch")
-    public ResponseEntity deleteBranch(
+    public ResponseEntity<Void> deleteBranch(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务id", required = true)
             @Encrypt(AppServiceDTO.ENCRYPT_KEY) @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分支名", required = true)
             @RequestParam(value = "branch_name") String branchName) {
-        devopsGitService.deleteBranch(appServiceId, branchName);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        devopsGitService.deleteBranch(projectId, appServiceId, branchName);
+        return ResponseEntity.noContent().build();
     }
 
     /**

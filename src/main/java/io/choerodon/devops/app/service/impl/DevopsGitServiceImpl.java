@@ -1,6 +1,31 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
+import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
+
 import com.alibaba.fastjson.JSONObject;
+import io.kubernetes.client.models.V1Endpoints;
+import org.eclipse.jgit.api.Git;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.util.CollectionUtils;
+import org.yaml.snakeyaml.Yaml;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -14,6 +39,7 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.agile.IssueDTO;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
@@ -32,30 +58,6 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.kubernetes.client.models.V1Endpoints;
-import org.eclipse.jgit.api.Git;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.MessageSource;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
-import org.springframework.util.CollectionUtils;
-import org.yaml.snakeyaml.Yaml;
-
-import javax.annotation.PostConstruct;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
-import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
 
 /**
  * Creator: Runge
@@ -222,6 +224,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             description = "devops创建分支", inputSchema = "{}")
     public void createBranch(Long projectId, Long appServiceId, DevopsBranchVO devopsBranchVO) {
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.BRANCH_CREATE);
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         DevopsBranchDTO devopsBranchDTO = ConvertUtils.convertObject(devopsBranchVO, DevopsBranchDTO.class);
 
@@ -231,11 +235,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         devopsBranchDTO.setUserId(gitLabUser);
         devopsBranchDTO.setAppServiceId(appServiceId);
         devopsBranchDTO.setStatus(CommandStatus.OPERATING.getStatus());
-        AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
         devopsBranchDTO = devopsBranchService.baseCreate(devopsBranchDTO);
         Long devopsBranchId = devopsBranchDTO.getId();
 
-        BranchSagaPayLoad branchSagaPayLoad = new BranchSagaPayLoad(TypeUtil.objToLong(applicationDTO.getGitlabProjectId()), devopsBranchId, devopsBranchVO.getBranchName(), devopsBranchVO.getOriginBranch());
+        BranchSagaPayLoad branchSagaPayLoad = new BranchSagaPayLoad(TypeUtil.objToLong(appServiceDTO.getGitlabProjectId()), devopsBranchId, devopsBranchVO.getBranchName(), devopsBranchVO.getOriginBranch());
 
         producer.apply(
                 StartSagaBuilder
@@ -382,13 +385,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public void updateBranchIssue(Long projectId, Long appServiceId, DevopsBranchUpdateVO devopsBranchUpdateVO) {
+        permissionHelper.checkAppServiceBelongToProject(projectId, devopsBranchUpdateVO.getAppServiceId());
         devopsBranchService.updateBranchIssue(ConvertUtils.convertObject(devopsBranchUpdateVO, DevopsBranchDTO.class));
     }
 
     @Override
-    public void deleteBranch(Long appServiceId, String branchName) {
+    public void deleteBranch(Long projectId, Long appServiceId, String branchName) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         checkGitlabAccessLevelService.checkGitlabPermission(appServiceDTO.getProjectId(), appServiceId, AppServiceEvent.BRANCH_DELETE);
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listBranch(appServiceDTO.getGitlabProjectId(),
