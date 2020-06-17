@@ -196,6 +196,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
     @Lazy
+    @Autowired
     private RdupmClient rdupmClient;
     @Autowired
     private HarborService harborService;

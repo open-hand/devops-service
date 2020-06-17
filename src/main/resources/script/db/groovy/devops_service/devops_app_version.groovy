@@ -78,5 +78,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_versionion.groovy') {
         addColumn(tableName: 'devops_app_service_version') {
             column(name: 'repo_type', type: 'VARCHAR(64)', afterColumn: 'id', remarks: '仓库类型(DEFAULT_REPO、CUSTOM_REPO)')
         }
+        sql("""
+            UPDATE 
+            devops_app_service_version dasv 
+            set object_version_number=1
+            """)
     }
 }
