@@ -46,7 +46,7 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
 
     @Override
     public Boolean retry(Long gitlabProjectId, Long pipelineId) {
-        AppServiceDTO appServiceDTO = appServiceMapper.listByGitLabProjectIds(Collections.singletonList(gitlabProjectId)).get(0);
+        AppServiceDTO appServiceDTO = appServiceMapper.selectOne(new AppServiceDTO().setGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId)));
         checkGitlabAccessLevelService.checkGitlabPermission(appServiceDTO.getProjectId(), appServiceDTO.getId(), AppServiceEvent.CICD_OPERATION);
         return gitlabServiceClientOperator.retryPipeline(gitlabProjectId.intValue(),
                 pipelineId.intValue(), getGitlabUserId()) != null;
@@ -54,7 +54,7 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
 
     @Override
     public Boolean cancel(Long gitlabProjectId, Long pipelineId) {
-        AppServiceDTO appServiceDTO = appServiceMapper.listByGitLabProjectIds(Collections.singletonList(gitlabProjectId)).get(0);
+        AppServiceDTO appServiceDTO = appServiceMapper.selectOne(new AppServiceDTO().setGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId)));
         checkGitlabAccessLevelService.checkGitlabPermission(appServiceDTO.getProjectId(), appServiceDTO.getId(), AppServiceEvent.CICD_OPERATION);
         return gitlabServiceClientOperator.cancelPipeline(gitlabProjectId.intValue(),
                 pipelineId.intValue(), getGitlabUserId()) != null;
