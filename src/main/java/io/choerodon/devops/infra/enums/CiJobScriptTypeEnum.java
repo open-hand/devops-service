@@ -27,7 +27,7 @@ public enum CiJobScriptTypeEnum {
     /**
      * 上传软件包到制品库
      */
-    MAVEN_DEPLOY("maven-deploy");
+    MAVEN_DEPLOY("maven_deploy");
 
     private final String type;
     private static final Map<String, CiJobScriptTypeEnum> enumMap;
