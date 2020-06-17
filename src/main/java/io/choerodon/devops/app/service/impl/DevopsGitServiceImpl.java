@@ -319,12 +319,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             }
         }
 
-        try {
-            checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.BRANCH_LIST);
-        } catch (GitlabAccessInvalidException e) {
-            return null;
-        }
-
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
                 gitlabUrl, urlSlash, organizationDTO.getTenantNum(), projectDTO.getCode(), applicationDTO.getCode());
