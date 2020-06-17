@@ -1,17 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
-import java.util.Optional;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -26,6 +14,17 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by n!Ck
@@ -51,7 +50,7 @@ public class CertificationController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建证书")
     @PostMapping
-    public ResponseEntity create(
+    public ResponseEntity<Void> create(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书", required = true)
@@ -61,7 +60,7 @@ public class CertificationController {
             @ApiParam(value = "cert文件")
             @RequestParam(value = "cert", required = false) MultipartFile cert) {
         certificationService.createCertification(projectId, certification, key, cert, false);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     /**
@@ -80,7 +79,7 @@ public class CertificationController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书id", required = true)
             @RequestParam(value = "cert_id") Long certId) {
-        certificationService.deleteById(certId);
+        certificationService.deleteById(projectId, certId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -88,10 +87,10 @@ public class CertificationController {
     /**
      * 分页查询
      *
-     * @param projectId   项目id
-     * @param envId       环境ID
-     * @param pageable 分页参数
-     * @param params      查询参数
+     * @param projectId 项目id
+     * @param envId     环境ID
+     * @param pageable  分页参数
+     * @param params    查询参数
      * @return CertificationDTO page
      */
     @Permission(level = ResourceLevel.ORGANIZATION,

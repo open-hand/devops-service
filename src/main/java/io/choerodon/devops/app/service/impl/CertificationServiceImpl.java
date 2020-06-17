@@ -1,17 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
@@ -22,6 +12,7 @@ import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.api.vo.kubernetes.certification.*;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -35,6 +26,15 @@ import io.choerodon.devops.infra.mapper.DevopsIngressMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by n!Ck
@@ -107,6 +107,8 @@ public class CertificationServiceImpl implements CertificationService {
         Long envId = certificationDTO.getEnvId();
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -264,7 +266,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteById(Long certId) {
+    public void deleteById(Long projectId, Long certId) {
         CertificationDTO certificationDTO = baseQueryById(certId);
 
         if (certificationDTO == null) {
@@ -273,6 +275,8 @@ public class CertificationServiceImpl implements CertificationService {
 
         Long certEnvId = certificationDTO.getEnvId();
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(certEnvId);
+
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
