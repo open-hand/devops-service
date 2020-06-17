@@ -816,25 +816,30 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             appServiceVersionMapper.updateVersionAppServiceId(appServiceId, devopsConfigDTOApp.getId(), CUSTOM_REPO);
         } else {
             AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-            DevopsConfigDTO configDTO = new DevopsConfigDTO();
-            configDTO.setProjectId(appServiceDTO.getProjectId());
-            DevopsConfigDTO devopsConfigDTOPro = devopsConfigMapper.selectOne(devopsConfigDTO);
-            if (!Objects.isNull(devopsConfigDTOPro)) {
-                //自定义仓库 ，配置和project一样
-                appServiceVersionMapper.updateVersionAppServiceId(appServiceId, devopsConfigDTOPro.getId(), CUSTOM_REPO);
-            } else {
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
-                DevopsConfigDTO dto = new DevopsConfigDTO();
-                dto.setProjectId(projectDTO.getOrganizationId());
-                DevopsConfigDTO devopsConfigDTOOrg = devopsConfigMapper.selectOne(devopsConfigDTO);
-                if (!Objects.isNull(devopsConfigDTOOrg)) {
-                    //自定义仓库 ，配置和Org一样
-                    appServiceVersionMapper.updateVersionAppServiceId(appServiceId, devopsConfigDTOOrg.getId(), CUSTOM_REPO);
+            if (!Objects.isNull(appServiceDTO)) {
+                DevopsConfigDTO configDTO = new DevopsConfigDTO();
+                configDTO.setProjectId(appServiceDTO.getProjectId());
+                DevopsConfigDTO devopsConfigDTOPro = devopsConfigMapper.selectOne(devopsConfigDTO);
+                if (!Objects.isNull(devopsConfigDTOPro)) {
+                    //自定义仓库 ，配置和project一样
+                    appServiceVersionMapper.updateVersionAppServiceId(appServiceId, devopsConfigDTOPro.getId(), CUSTOM_REPO);
                 } else {
-                    //默认仓库
-                    appServiceVersionMapper.updateVersionOrgId(appServiceId, DEFAULT_REPO);
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+                    if (!Objects.isNull(projectDTO)) {
+                        DevopsConfigDTO dto = new DevopsConfigDTO();
+                        dto.setProjectId(projectDTO.getOrganizationId());
+                        DevopsConfigDTO devopsConfigDTOOrg = devopsConfigMapper.selectOne(devopsConfigDTO);
+                        if (!Objects.isNull(devopsConfigDTOOrg)) {
+                            //自定义仓库 ，配置和Org一样
+                            appServiceVersionMapper.updateVersionAppServiceId(appServiceId, devopsConfigDTOOrg.getId(), CUSTOM_REPO);
+                        } else {
+                            //默认仓库
+                            appServiceVersionMapper.updateVersionOrgId(appServiceId, DEFAULT_REPO);
+                        }
+                    }
                 }
             }
+
         }
     }
 }
