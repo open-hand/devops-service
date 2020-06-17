@@ -158,9 +158,14 @@ public class WorkDesktopServiceImpl implements WorkDesktopService {
         latestAppServiceVOList.addAll(devopsGitlabCommitMapper.listLatestUseAppServiceIdAndDate(projectIds, userId));
         latestAppServiceVOList.addAll(devopsMergeRequestMapper.listLatestUseAppServiceIdAndDate(projectIds, userId));
 
-        List<LatestAppServiceVO> latestTenAppServiceList = latestAppServiceVOList.stream().sorted(Comparator.comparing(LatestAppServiceVO::getLastUpdateDate).reversed())
+        // 去掉重复的appService,只保留最近使用的
+        List<LatestAppServiceVO> latestAppServiceVOListWithoutRepeatService = latestAppServiceVOList.stream().sorted(Comparator.comparing(LatestAppServiceVO::getLastUpdateDate).reversed())
                 .filter(distinctByKey(LatestAppServiceVO::getLastUpdateDate))
-                .collect(Collectors.toList()).subList(0, 10);
+                .collect(Collectors.toList());
+
+        int end = Math.min(latestAppServiceVOListWithoutRepeatService.size(), 10);
+
+        List<LatestAppServiceVO> latestTenAppServiceList = latestAppServiceVOListWithoutRepeatService.subList(0, end);
 
         Set<Long> appServiceIds = latestTenAppServiceList.stream().map(LatestAppServiceVO::getId).collect(Collectors.toSet());
         Map<Long, List<AppServiceDTO>> appServiceDTOMap = appServiceMapper.listAppServiceByIds(appServiceIds, null, null).stream().collect(Collectors.groupingBy(AppServiceDTO::getId));
