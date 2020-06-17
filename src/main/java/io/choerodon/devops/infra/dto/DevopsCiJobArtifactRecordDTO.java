@@ -18,6 +18,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @ModifyAudit
 @VersionAudit
 @Table(name = "devops_ci_job_artifact_record")
+@Deprecated
 public class DevopsCiJobArtifactRecordDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

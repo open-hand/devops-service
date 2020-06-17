@@ -8,7 +8,7 @@ public enum CachePolicy {
     PUSH("push"),
     PULL_PUSH("pull-push"),
     PULL("pull");
-    private String value;
+    private final String value;
 
     CachePolicy(String value) {
         this.value = value;

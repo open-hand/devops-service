@@ -35,8 +35,6 @@ public class DevopsCiJobRecordVO {
     @ApiModelProperty("job执行时间")
     private Long durationSeconds;
 
-    @ApiModelProperty("job中的构建包列表")
-    private List<DevopsCiArtifactVO> artifacts;
     @ApiModelProperty("ci中返回sonar")
     private List<SonarContentVO> sonarContentVOS;
 
@@ -134,13 +132,5 @@ public class DevopsCiJobRecordVO {
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public List<DevopsCiArtifactVO> getArtifacts() {
-        return artifacts;
-    }
-
-    public void setArtifacts(List<DevopsCiArtifactVO> artifacts) {
-        this.artifacts = artifacts;
     }
 }
