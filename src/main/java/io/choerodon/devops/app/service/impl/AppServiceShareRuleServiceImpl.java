@@ -3,15 +3,12 @@ package io.choerodon.devops.app.service.impl;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceShareRuleVO;
+import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.AppServiceShareRuleService;
-import io.choerodon.devops.infra.constant.MiscConstants;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceShareRuleDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.AppServiceShareRuleMapper;
-import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -40,11 +37,10 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
 
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
-
     @Autowired
     private AppServiceShareRuleMapper appServiceShareRuleMapper;
     @Autowired
-    private AppServiceMapper appServiceMapper;
+    private AppServiceService appServiceService;
 
     private static final String PROJECT_NAME = "组织下所有项目";
 
@@ -52,8 +48,7 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     @Transactional
     public AppServiceShareRuleVO createOrUpdate(Long projectId, AppServiceShareRuleVO appServiceShareRuleVO) {
 
-        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceShareRuleVO.getAppServiceId());
-        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        appServiceService.checkResourceBelongToProject(projectId, appServiceShareRuleVO.getAppServiceId());
 
         AppServiceShareRuleDTO appServiceShareRuleDTO = ConvertUtils.convertObject(appServiceShareRuleVO, AppServiceShareRuleDTO.class);
         if (appServiceShareRuleDTO.getVersion() != null && appServiceShareRuleDTO.getVersionType() != null) {
@@ -109,8 +104,7 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     @Override
     public void delete(Long projectId, Long ruleId) {
         AppServiceShareRuleDTO appServiceShareRuleDTO = appServiceShareRuleMapper.selectByPrimaryKey(ruleId);
-        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceShareRuleDTO.getAppServiceId());
-        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        appServiceService.checkResourceBelongToProject(projectId, appServiceShareRuleDTO.getAppServiceId());
         appServiceShareRuleMapper.deleteByPrimaryKey(ruleId);
     }
 }

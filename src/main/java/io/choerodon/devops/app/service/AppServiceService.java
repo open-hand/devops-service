@@ -590,4 +590,12 @@ public interface AppServiceService {
     String calculateGitlabProjectUrlWithSuffix(Long appServiceId);
 
     void fixAppServiceVersion();
+    /**
+     * 检查应用是否属于指定项目
+     *
+     * @param projectId    项目id
+     * @param appServiceId 应用id
+     * @return 校验结果
+     */
+    void checkResourceBelongToProject(Long projectId, Long appServiceId);
 }

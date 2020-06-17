@@ -246,6 +246,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         Long iamUserId = TypeUtil.objToLong(GitUserNameUtil.getUserId());
         checkUserPermission(ciCdPipelineVO.getAppServiceId(), iamUserId);
         ciCdPipelineVO.setProjectId(projectId);
+        appServiceService.checkResourceBelongToProject(projectId, ciCdPipelineVO.getAppServiceId());
 
         // 设置默认镜像
         if (StringUtils.isEmpty(ciCdPipelineVO.getImage())) {
@@ -503,8 +504,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     @Override
     @Transactional
+<<<<<<< HEAD
     public CiCdPipelineDTO disablePipeline(Long projectId, Long pipelineId) {
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
+        appServiceService.checkResourceBelongToProject(projectId, ciCdPipelineDTO.getAppServiceId());
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_STATUS_UPDATE);
         if (ciCdPipelineMapper.disablePipeline(pipelineId) != 1) {
             throw new CommonException(DISABLE_PIPELINE_FAILED);
@@ -516,6 +519,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Transactional
     public void deletePipeline(Long projectId, Long pipelineId) {
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
+        appServiceService.checkResourceBelongToProject(projectId, ciCdPipelineDTO.getAppServiceId());
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_DELETE);
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
         // 校验用户是否有应用服务权限
@@ -552,6 +556,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Transactional
     public CiCdPipelineDTO enablePipeline(Long projectId, Long pipelineId) {
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
+        appServiceService.checkResourceBelongToProject(projectId, ciCdPipelineDTO.getAppServiceId());
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_STATUS_UPDATE);
         if (ciCdPipelineMapper.enablePipeline(pipelineId) != 1) {
             throw new CommonException(ENABLE_PIPELINE_FAILED);
@@ -562,6 +567,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     public void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref) {
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
+        appServiceService.checkResourceBelongToProject(projectId, pipelineId);
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_NEW_PERFORM);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
         checkUserBranchPushPermission(projectId, userAttrDTO.getGitlabUserId(), gitlabProjectId, ref);
@@ -577,7 +583,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
     }
 
-
+    @Override
     public void checkUserBranchPushPermission(Long projectId, Long gitlabUserId, Long gitlabProjectId, String ref) {
         BranchDTO branchDTO = gitlabServiceClientOperator.getBranch(gitlabProjectId.intValue(), ref);
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
@@ -640,6 +646,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Transactional
     public CiCdPipelineDTO update(Long projectId, Long pipelineId, CiCdPipelineVO ciCdPipelineVO) {
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_UPDATE);
+        appServiceService.checkResourceBelongToProject(projectId, ciCdPipelineVO.getAppServiceId());
         Long userId = DetailsHelper.getUserDetails().getUserId();
         checkUserPermission(ciCdPipelineVO.getAppServiceId(), userId);
         // 校验自定义任务格式

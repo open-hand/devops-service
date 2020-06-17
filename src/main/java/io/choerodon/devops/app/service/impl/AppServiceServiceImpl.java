@@ -2922,6 +2922,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
     }
 
+    @Override
+    public void checkResourceBelongToProject(Long projectId, Long appServiceId) {
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+    }
 
     /**
      * set project hook id for application
