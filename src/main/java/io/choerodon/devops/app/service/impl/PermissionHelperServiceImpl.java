@@ -8,10 +8,6 @@ import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
-import io.choerodon.devops.infra.mapper.AppServiceMapper;
-import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
-import io.choerodon.devops.infra.mapper.DevopsClusterProPermissionMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -146,14 +142,16 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     }
 
     @Override
-    public void checkEnvBelongToProject(Long projectId, Long envId) {
+    public DevopsEnvironmentDTO checkEnvBelongToProject(Long projectId, Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
         CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        return devopsEnvironmentDTO;
     }
 
     @Override
-    public void checkAppServiceBelongToProject(Long projectId, Long appServiceId) {
+    public AppServiceDTO checkAppServiceBelongToProject(Long projectId, Long appServiceId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        return appServiceDTO;
     }
 }

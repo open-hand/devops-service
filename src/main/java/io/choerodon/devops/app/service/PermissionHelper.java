@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 
 import javax.annotation.Nullable;
@@ -129,7 +131,7 @@ public interface PermissionHelper {
      * @param projectId 项目id
      * @param envId     环境id
      */
-    void checkEnvBelongToProject(Long projectId, Long envId);
+    DevopsEnvironmentDTO checkEnvBelongToProject(Long projectId, Long envId);
 
     /**
      * 检查应用是否属于指定项目
@@ -138,5 +140,5 @@ public interface PermissionHelper {
      * @param appServiceId 应用id
      * @return 校验结果
      */
-    void checkAppServiceBelongToProject(Long projectId, Long appServiceId);
+    AppServiceDTO checkAppServiceBelongToProject(Long projectId, Long appServiceId);
 }

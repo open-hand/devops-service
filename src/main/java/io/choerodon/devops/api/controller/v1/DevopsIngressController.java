@@ -144,7 +144,7 @@ public class DevopsIngressController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名ID", required = true)
             @Encrypt(DevopsIngressDTO.ENCRYPT_KEY) @PathVariable Long id) {
-        devopsIngressService.deleteIngress(id);
+        devopsIngressService.deleteIngress(projectId, id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
