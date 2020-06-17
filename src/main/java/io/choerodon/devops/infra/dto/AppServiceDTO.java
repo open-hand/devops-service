@@ -158,8 +158,9 @@ public class AppServiceDTO extends AuditDomain {
         return gitlabProjectId;
     }
 
-    public void setGitlabProjectId(Integer gitlabProjectId) {
+    public AppServiceDTO setGitlabProjectId(Integer gitlabProjectId) {
         this.gitlabProjectId = gitlabProjectId;
+        return this;
     }
 
     public Boolean getActive() {
