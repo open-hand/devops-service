@@ -1,11 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -19,6 +13,11 @@ import io.choerodon.devops.infra.mapper.DevopsDeployValueMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import java.util.*;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -60,6 +59,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public DevopsDeployValueVO createOrUpdate(Long projectId, DevopsDeployValueVO devopsDeployValueVO) {
+        devopsEnvironmentService.checkEnvBelongToProject(projectId, devopsDeployValueVO.getEnvId());
 
         FileUtil.checkYamlFormat(devopsDeployValueVO.getValue());
 
@@ -71,6 +71,8 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public void delete(Long projectId, Long valueId) {
+        DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueMapper.selectByPrimaryKey(valueId);
+        devopsEnvironmentService.checkEnvBelongToProject(projectId, devopsDeployValueDTO.getEnvId());
         baseDelete(valueId);
     }
 
@@ -130,6 +132,8 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public Boolean checkDelete(Long projectId, Long valueId) {
+        DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueMapper.selectByPrimaryKey(valueId);
+        devopsEnvironmentService.checkEnvBelongToProject(projectId, devopsDeployValueDTO.getEnvId());
         List<PipelineAppServiceDeployDTO> pipelineAppServiceDeployDTOS = pipelineAppDeployService.baseQueryByValueId(valueId);
         if (pipelineAppServiceDeployDTOS == null || pipelineAppServiceDeployDTOS.isEmpty()) {
             List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceService.baseListByValueId(valueId);

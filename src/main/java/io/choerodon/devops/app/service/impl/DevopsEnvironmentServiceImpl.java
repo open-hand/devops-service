@@ -1,26 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -37,6 +20,7 @@ import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
@@ -52,6 +36,22 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
+import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Created by younger on 2018/4/9.
@@ -1407,7 +1407,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             List<String> namespaces = JSONArray.parseArray(devopsClusterDTO.getNamespaces(), String.class);
             namespaces.remove(devopsEnvironmentDTO.getCode());
             devopsClusterDTO.setNamespaces((JSONArray.toJSONString(namespaces)));
-            devopsClusterService.baseUpdate(null,devopsClusterDTO);
+            devopsClusterService.baseUpdate(null, devopsClusterDTO);
         }
 
 
@@ -1858,5 +1858,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
         environmentMsgVO.setCheckResources(check);
         return environmentMsgVO;
+    }
+
+    @Override
+    public void checkEnvBelongToProject(Long projectId, Long envId) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
     }
 }

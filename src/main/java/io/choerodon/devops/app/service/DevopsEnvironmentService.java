@@ -1,10 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-import javax.annotation.Nullable;
-
-import org.apache.ibatis.annotations.Param;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
@@ -12,6 +7,10 @@ import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.apache.ibatis.annotations.Param;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 
 /**
@@ -371,4 +370,12 @@ public interface DevopsEnvironmentService {
      * @return 数量
      */
     Long countEnvByOption(Long projectId, @Nullable Long clusterId, @Nullable Boolean isFailed);
+
+    /**
+     * 检查环境是否属于指定项目
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     */
+    void checkEnvBelongToProject(Long projectId, Long envId);
 }
