@@ -101,14 +101,14 @@ public class DevopsEnvPodController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除环境下的pod")
     @DeleteMapping("/{pod_id}")
-    public ResponseEntity deleteEnvPod(
+    public ResponseEntity<Void> deleteEnvPod(
             @ApiParam(value = "项目id")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "podId")
             @Encrypt(DevopsEnvPodDTO.ENCRYPT_KEY) @PathVariable(value = "pod_id") Long podId,
             @ApiParam(value = "环境id", required = true)
             @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @RequestParam(value = "env_id") Long envId) {
-        devopsEnvPodService.deleteEnvPodById(envId, podId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        devopsEnvPodService.deleteEnvPodById(projectId, envId, podId);
+        return ResponseEntity.noContent().build();
     }
 }
