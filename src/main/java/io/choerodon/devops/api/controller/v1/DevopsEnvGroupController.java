@@ -131,7 +131,7 @@ public class DevopsEnvGroupController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境组ID", required = true)
             @Encrypt(DevopsEnvGroupDTO.ENCRYPT_KEY) @PathVariable(value = "group_id") Long groupId) {
-        devopsEnvGroupService.delete(groupId);
+        devopsEnvGroupService.delete(projectId, groupId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
