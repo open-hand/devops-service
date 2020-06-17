@@ -1,4 +1,3 @@
-
 export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, projectId, AddTaskUseStore) => {
   function checkImage(value, name, record) {
     const pa = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}(\/.+)*:.+$/;
