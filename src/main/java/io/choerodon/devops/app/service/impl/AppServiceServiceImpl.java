@@ -321,9 +321,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         //添加harbor的配置信息
         HarborRepoDTO selectedHarborConfig = rdupmClient.queryHarborRepoConfig(projectId, appServiceId).getBody();
-        appServiceRepVO.setHarborRepoDTO(selectedHarborConfig);
-        List<HarborCustomRepo> customRepos = rdupmClient.listAllCustomRepoByProject(projectId).getBody();
-        appServiceRepVO.setHarborCustomRepos(customRepos);
+        if (!Objects.isNull(selectedHarborConfig) && !Objects.isNull(selectedHarborConfig.getHarborRepoConfig())) {
+            selectedHarborConfig.getHarborRepoConfig().setType(selectedHarborConfig.getRepoType());
+            appServiceRepVO.setHarborRepoConfigDTO(selectedHarborConfig.getHarborRepoConfig());
+        }
         return appServiceRepVO;
     }
 
@@ -456,14 +457,15 @@ public class AppServiceServiceImpl implements AppServiceService {
         //处理helm仓库的配置
         devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
         //保存应用服务与harbor仓库的关系
-        if (!Objects.isNull(appServiceUpdateDTO.getHarborRepoDTO())) {
-            if (HarborRepoDTO.DEFAULT_REPO.equals(appServiceUpdateDTO.getHarborRepoDTO().getRepoType())) {
+        if (!Objects.isNull(appServiceUpdateDTO.getHarborRepoConfigDTO())) {
+
+            if (HarborRepoDTO.DEFAULT_REPO.equals(appServiceUpdateDTO.getHarborRepoConfigDTO().getType())) {
                 HarborRepoDTO beforeRepo = rdupmClient.queryHarborRepoConfig(projectId, appServiceId).getBody();
                 if (!HarborRepoDTO.DEFAULT_REPO.equals(beforeRepo.getRepoType())) {
                     deleteHarborAppServiceRel(projectId, appServiceDTO.getId());
                 }
             }
-            if (HarborRepoDTO.CUSTOM_REPO.equals((appServiceUpdateDTO.getHarborRepoDTO().getRepoType()))) {
+            if (HarborRepoDTO.CUSTOM_REPO.equals((appServiceUpdateDTO.getHarborRepoConfigDTO().getType()))) {
                 deleteHarborAppServiceRel(projectId, appServiceDTO.getId());
                 rdupmClient.saveRelationByService(projectId, appServiceDTO.getId(), appServiceUpdateDTO.getCustomRepoId());
             }

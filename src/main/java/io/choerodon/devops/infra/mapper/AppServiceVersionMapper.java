@@ -123,4 +123,11 @@ public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO
     void updateVersionDefaultBatch(@Param("appServiceVersionDefault") List<AppServiceVersionDTO> appServiceVersionDefault);
 
     void updateVersionCustomBatch(@Param("appServiceVersionDCustom")List<AppServiceVersionDTO> appServiceVersionDCustom);
+
+    void updateVersionAppServiceId(@Param("appServiceId") Long appServiceId,
+                                   @Param("configId") Long configId,
+                                   @Param("customRepo") String customRepo);
+
+    void updateVersionOrgId(@Param("appServiceId") Long appServiceId,
+                            @Param("customRepo") String defaultRepo);
 }

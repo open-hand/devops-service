@@ -27,6 +27,17 @@ public class HarborRepoConfigDTO {
     @ApiModelProperty(value = "邮箱")
     private String email;
 
+    @ApiModelProperty(value = "仓库的类型")
+    private String type;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public Long getRepoId() {
         return repoId;
     }

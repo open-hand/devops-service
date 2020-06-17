@@ -655,10 +655,29 @@
             update devops_app_service_version
             <set>
                 helm_config_id = ${item.harborConfigId} ,
-                repo_type =  '${item.repoType}'
+                repo_type = '${item.repoType}'
             </set>
             WHERE id = #{item.id}
         </foreach>
+    </update>
+
+
+    <update id="updateVersionAppServiceId">
+        update
+        devops_app_service_version dasv
+        set
+        dasv.helm_config_id = #{configId},
+        dasv.repo_type = #{customRepo}
+        where dasv.app_service_id = #{appServiceId}
+    </update>
+
+    <update id="updateVersionOrgId">
+        update
+        devops_app_service_version dasv
+        set
+        dasv.helm_config_id = null,
+        dasv.repo_type = #{customRepo}
+        where dasv.app_service_id = #{appServiceId}
     </update>
 
 </mapper>
