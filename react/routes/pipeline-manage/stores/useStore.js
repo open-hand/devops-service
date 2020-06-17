@@ -64,8 +64,8 @@ export default function useStore() {
       }
     },
 
-    checkLinkToGitlab(projectId, appServiceId) {
-      return axios.get(`/devops/v1/projects/${projectId}/member-check/${appServiceId}?type=CI_PIPELINE_DETAIL`);
+    checkLinkToGitlab(projectId, appServiceId, type) {
+      return axios.get(`/devops/v1/projects/${projectId}/member-check/${appServiceId}?type=${type || 'CI_PIPELINE_DETAIL'}`);
     },
   }));
 }
