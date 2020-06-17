@@ -1,13 +1,13 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-import javax.annotation.Nullable;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 public interface DevopsClusterService {
     /**
@@ -42,7 +42,7 @@ public interface DevopsClusterService {
      * @param clusterId             集群id
      * @param devopsClusterUpdateVO 集群信息
      */
-    void updateCluster(Long clusterId, DevopsClusterUpdateVO devopsClusterUpdateVO);
+    void updateCluster(Long projectId, Long clusterId, DevopsClusterUpdateVO devopsClusterUpdateVO);
 
     /**
      * 判断集群名唯一性
@@ -93,7 +93,7 @@ public interface DevopsClusterService {
      *
      * @param devopsClusterPermissionUpdateVO 集群权限信息
      */
-    void assignPermission(DevopsClusterPermissionUpdateVO devopsClusterPermissionUpdateVO);
+    void assignPermission(Long projectId, DevopsClusterPermissionUpdateVO devopsClusterPermissionUpdateVO);
 
     /**
      * 删除该项目对该集群的权限
@@ -101,7 +101,7 @@ public interface DevopsClusterService {
      * @param clusterId        集群id
      * @param relatedProjectId 项目id
      */
-    void deletePermissionOfProject(Long clusterId, Long relatedProjectId);
+    void deletePermissionOfProject(Long projectId, Long clusterId, Long relatedProjectId);
 
     /**
      * 查询项目下的集群以及所有节点信息
@@ -127,7 +127,7 @@ public interface DevopsClusterService {
      *
      * @param clusterId 集群id
      */
-    void deleteCluster(Long clusterId);
+    void deleteCluster(Long projectId, Long clusterId);
 
     /**
      * 查询单个集群信息
@@ -172,7 +172,7 @@ public interface DevopsClusterService {
 
     DevopsClusterDTO baseQuery(Long clusterId);
 
-    void baseUpdate(DevopsClusterDTO devopsClusterDTO);
+    void baseUpdate(Long projectId, DevopsClusterDTO devopsClusterDTO);
 
     Page<DevopsClusterDTO> basePageClustersByOptions(Long organizationId, Boolean doPage, PageRequest pageable, String params);
 

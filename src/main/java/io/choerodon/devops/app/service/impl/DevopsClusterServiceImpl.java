@@ -1,13 +1,22 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSONObject;
-import com.google.gson.Gson;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.MiscConstants;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.PolarisScopeType;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
+import io.choerodon.devops.infra.mapper.DevopsPvProPermissionMapper;
+import io.choerodon.devops.infra.util.*;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,21 +32,11 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.PolarisScopeType;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
-import io.choerodon.devops.infra.mapper.DevopsPvProPermissionMapper;
-import io.choerodon.devops.infra.util.*;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DevopsClusterServiceImpl implements DevopsClusterService {
@@ -189,11 +188,11 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     @Transactional
-    public void updateCluster(Long clusterId, DevopsClusterUpdateVO devopsClusterUpdateVO) {
+    public void updateCluster(Long projectId, Long clusterId, DevopsClusterUpdateVO devopsClusterUpdateVO) {
         if (StringUtils.isEmpty(devopsClusterUpdateVO.getName())) {
             devopsClusterUpdateVO.setName(null);
         }
-        baseUpdate(ConvertUtils.convertObject(devopsClusterUpdateVO, DevopsClusterDTO.class));
+        baseUpdate(projectId, ConvertUtils.convertObject(devopsClusterUpdateVO, DevopsClusterDTO.class));
     }
 
     @Override
@@ -297,11 +296,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Transactional
     @Override
-    public void assignPermission(DevopsClusterPermissionUpdateVO update) {
+    public void assignPermission(Long projectId, DevopsClusterPermissionUpdateVO update) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(update.getClusterId());
         if (devopsClusterDTO == null) {
             throw new CommonException(ERROR_CLUSTER_NOT_EXIST, update.getClusterId());
         }
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         if (devopsClusterDTO.getSkipCheckProjectPermission()) {
             // 原来跳过，现在也跳过，不处理
@@ -363,7 +363,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public void deletePermissionOfProject(Long clusterId, Long relatedProjectId) {
+    public void deletePermissionOfProject(Long projectId, Long clusterId, Long relatedProjectId) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         if (clusterId == null || relatedProjectId == null) {
             return;
         }
@@ -474,8 +476,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-    public void deleteCluster(Long clusterId) {
+    public void deleteCluster(Long projectId, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         if (devopsClusterDTO == null) {
             return;
         }
@@ -572,8 +575,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public void baseUpdate(DevopsClusterDTO inputClusterDTO) {
+    public void baseUpdate(Long projectId, DevopsClusterDTO inputClusterDTO) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(inputClusterDTO.getId());
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         inputClusterDTO.setObjectVersionNumber(devopsClusterDTO.getObjectVersionNumber());
         devopsClusterMapper.updateByPrimaryKeySelective(inputClusterDTO);
     }
