@@ -1407,7 +1407,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             List<String> namespaces = JSONArray.parseArray(devopsClusterDTO.getNamespaces(), String.class);
             namespaces.remove(devopsEnvironmentDTO.getCode());
             devopsClusterDTO.setNamespaces((JSONArray.toJSONString(namespaces)));
-            devopsClusterService.baseUpdate(devopsClusterDTO);
+            devopsClusterService.baseUpdate(null,devopsClusterDTO);
         }
 
 

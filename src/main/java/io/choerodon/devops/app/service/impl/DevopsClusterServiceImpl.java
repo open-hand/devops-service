@@ -577,7 +577,10 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     public void baseUpdate(Long projectId, DevopsClusterDTO inputClusterDTO) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(inputClusterDTO.getId());
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        // 内部调用不需要校验
+        if (projectId != null) {
+            CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        }
         inputClusterDTO.setObjectVersionNumber(devopsClusterDTO.getObjectVersionNumber());
         devopsClusterMapper.updateByPrimaryKeySelective(inputClusterDTO);
     }
