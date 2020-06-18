@@ -51,9 +51,10 @@
 
     <select id="listToBeAuditedByThisUserUnderProjectIds"
             resultType="io.choerodon.devops.infra.dto.DevopsMergeRequestDTO">
-        SELECT dmr.*
+        SELECT dmr.*, das.project_id
         FROM devops_merge_request dmr
                      LEFT JOIN devops_user du ON dmr.assignee_id = du.gitlab_user_id
+                     LEFT JOIN devops_app_service das ON dmr.gitlab_project_id = das.gitlab_project_id
                 WHERE du.iam_user_id = #{iamUserId}
                   AND dmr.state = 'opened'
                   AND dmr.gitlab_project_id IN

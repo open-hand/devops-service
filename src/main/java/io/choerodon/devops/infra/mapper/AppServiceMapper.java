@@ -171,5 +171,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
      * @return 应用id和最后更新时间
      */
     List<LatestAppServiceVO> listLatestUseAppServiceIdAndDate(@Param("projectIds") List<Long> projectIds, @Param("userId") Long userId);
+
+    List<AppServiceDTO> listByActiveAndProjects(@Param("projectIds") List<Long> projectIds);
 }
 

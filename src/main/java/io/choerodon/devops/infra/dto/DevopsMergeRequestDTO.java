@@ -1,13 +1,12 @@
 package io.choerodon.devops.infra.dto;
 
-import java.util.Date;
-import javax.persistence.*;
-
-import io.swagger.annotations.ApiModelProperty;
-
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+import io.swagger.annotations.ApiModelProperty;
+
+import javax.persistence.*;
+import java.util.Date;
 
 
 /**
@@ -59,6 +58,9 @@ public class DevopsMergeRequestDTO extends AuditDomain {
     private Long opened;
 
     @Transient
+    private Long projectId;
+
+    @Transient
     @ApiModelProperty("待这个用户审核的merge request的数量")
     private Long auditCount;
 
@@ -68,9 +70,9 @@ public class DevopsMergeRequestDTO extends AuditDomain {
     /**
      * constructor a new merge request item
      *
-     * @param gitlabProjectId    devops application ID
-     * @param sourceBranch source branch to merge
-     * @param targetBranch target merge branch
+     * @param gitlabProjectId devops application ID
+     * @param sourceBranch    source branch to merge
+     * @param targetBranch    target merge branch
      */
     public DevopsMergeRequestDTO(Long gitlabProjectId, String sourceBranch, String targetBranch) {
         this.gitlabProjectId = gitlabProjectId;
@@ -205,5 +207,13 @@ public class DevopsMergeRequestDTO extends AuditDomain {
 
     public void setAuditCount(Long auditCount) {
         this.auditCount = auditCount;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

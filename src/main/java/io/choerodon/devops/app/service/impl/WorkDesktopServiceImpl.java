@@ -70,33 +70,29 @@ public class WorkDesktopServiceImpl implements WorkDesktopService {
     @Override
     public List<ApprovalVO> listApproval(Long organizationId, Long projectId) {
         Tenant tenant = baseServiceClientOperator.queryOrganizationById(organizationId);
-
-        if (projectId != null) {
-            return listApprovalVOByProject(tenant, projectId);
+        List<ProjectDTO> projectDTOList;
+        if (projectId == null) {
+            projectDTOList = baseServiceClientOperator.listIamProjectByOrgId(tenant.getTenantId());
         } else {
-            List<ApprovalVO> approvalVOList = new ArrayList<>();
-            List<ProjectDTO> projectList = baseServiceClientOperator.listIamProjectByOrgId(tenant.getTenantId());
-            projectList.forEach(projectDTO -> {
-                approvalVOList.addAll(listApprovalVOByProject(tenant, projectDTO.getId()));
-            });
-            return approvalVOList;
+            projectDTOList = Collections.singletonList(baseServiceClientOperator.queryIamProjectById(projectId));
         }
+        return listApprovalVOByProject(tenant, projectDTOList);
     }
 
-    private List<ApprovalVO> listApprovalVOByProject(Tenant tenant, Long projectId) {
+    private List<ApprovalVO> listApprovalVOByProject(Tenant tenant, List<ProjectDTO> projectDTOList) {
         List<ApprovalVO> approvalVOList = new ArrayList<>();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        String organizationAndProjectName = String.format(ORGANIZATION_NAME_AND_PROJECT_NAME, tenant.getTenantName(), projectDTO.getName());
+        List<Long> projectIds = projectDTOList.stream().map(ProjectDTO::getId).collect(Collectors.toList());
+        Map<Long, String> organizationAndProjectNameGroupByIdMap = projectDTOList.stream().collect(Collectors.toMap(ProjectDTO::getId, projectDTO -> String.format(ORGANIZATION_NAME_AND_PROJECT_NAME, tenant.getTenantName(), projectDTO.getName())));
         // 1.查询合并请求
-        List<AppServiceDTO> appServiceDTOList = appServiceMapper.listByActive(projectId);
-        approvalVOList.addAll(listMergeRequestApproval(organizationAndProjectName, appServiceDTOList));
+        List<AppServiceDTO> appServiceDTOList = appServiceMapper.listByActiveAndProjects(projectIds);
+        approvalVOList.addAll(listMergeRequestApproval(organizationAndProjectNameGroupByIdMap, appServiceDTOList));
 
         // 2.查出流水线请求
-        approvalVOList.addAll(listPipelineApproval(organizationAndProjectName, projectId));
+        approvalVOList.addAll(listPipelineApproval(organizationAndProjectNameGroupByIdMap, projectIds));
         return approvalVOList;
     }
 
-    private List<ApprovalVO> listMergeRequestApproval(String organizationAndProjectName, List<AppServiceDTO> appServiceDTOList) {
+    private List<ApprovalVO> listMergeRequestApproval(Map<Long, String> organizationAndProjectNameGroupByIdMap, List<AppServiceDTO> appServiceDTOList) {
         List<ApprovalVO> approvalVOList = new ArrayList<>();
         List<Integer> gitlabProjectIds = appServiceDTOList.stream().map(AppServiceDTO::getGitlabProjectId).collect(Collectors.toList());
         Map<Integer, String> gitlabProjectAndAppNameMap = appServiceDTOList.stream().collect(Collectors.toMap(AppServiceDTO::getGitlabProjectId, AppServiceDTO::getName));
@@ -116,7 +112,7 @@ public class WorkDesktopServiceImpl implements WorkDesktopService {
             ApprovalVO approvalVO = new ApprovalVO()
                     .setImageUrl(iamUserDTO.getImageUrl())
                     .setType(ApprovalTypeEnum.MERGE_REQUEST.getType())
-                    .setOrganizationNameAndProjectName(organizationAndProjectName)
+                    .setOrganizationNameAndProjectName(organizationAndProjectNameGroupByIdMap.get(devopsMergeRequestDTO.getProjectId()))
                     .setGitlabProjectId(devopsMergeRequestDTO.getGitlabProjectId().intValue())
                     .setContent(String.format(MERGE_REQUEST_CONTENT_FORMAT, iamUserDTO.getRealName(), iamUserDTO.getId(), gitlabProjectAndAppNameMap.get(devopsMergeRequestDTO.getGitlabProjectId().intValue())));
             approvalVOList.add(approvalVO);
@@ -125,19 +121,19 @@ public class WorkDesktopServiceImpl implements WorkDesktopService {
         return approvalVOList;
     }
 
-    private List<ApprovalVO> listPipelineApproval(String organizationAndProjectName, Long projectId) {
+    private List<ApprovalVO> listPipelineApproval(Map<Long, String> organizationAndProjectNameGroupByIdMap, List<Long> projectIds) {
         List<ApprovalVO> approvalVOList = new ArrayList<>();
 
         Long userId = DetailsHelper.getUserDetails().getUserId() == null ? 0 : DetailsHelper.getUserDetails().getUserId();
         // 查出该用户待审批的流水线阶段
-        List<PipelineRecordDTO> pipelineRecordDTOList = pipelineStageRecordMapper.listToBeAuditedByProjectIds(Collections.singletonList(projectId), userId);
+        List<PipelineRecordDTO> pipelineRecordDTOList = pipelineStageRecordMapper.listToBeAuditedByProjectIds(projectIds, userId);
         List<PipelineRecordDTO> pipelineRecordDTOAuditByThisUserList = pipelineRecordDTOList.stream()
                 .filter(pipelineRecordDTO -> pipelineRecordDTO.getAuditUser() != null && pipelineRecordDTO.getAuditUser().contains(String.valueOf(userId)))
                 .collect(Collectors.toList());
         pipelineRecordDTOAuditByThisUserList.forEach(pipelineRecordDTO -> {
             ApprovalVO approvalVO = new ApprovalVO()
                     .setType(ApprovalTypeEnum.PIPE_LINE.getType())
-                    .setOrganizationNameAndProjectName(organizationAndProjectName)
+                    .setOrganizationNameAndProjectName(organizationAndProjectNameGroupByIdMap.get(pipelineRecordDTO.getProjectId()))
                     .setContent(String.format(PIPELINE_CONTENT_FORMAT, pipelineRecordDTO.getPipelineName(), pipelineRecordDTO.getStageName()))
                     .setPipelineId(pipelineRecordDTO.getPipelineId())
                     .setPipelineRecordId(pipelineRecordDTO.getId())

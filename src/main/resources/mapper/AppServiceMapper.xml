@@ -94,7 +94,7 @@
                     AND NOT EXISTS(SELECT 1 FROM devops_app_service_version dav WHERE dav.app_service_id = da.id)
                 </if>
             </if>
-            <if test="appServiceIds!=null and appServiceIds.size>0">
+            <if test="appServiceIds != null and appServiceIds.size > 0">
                 and da.id in
                 <foreach collection="appServiceIds" item="appServiceId" index="index"
                          open="(" close=")" separator=",">
@@ -178,7 +178,7 @@
         WHERE da.is_active IS TRUE
         AND da.is_synchro IS TRUE
         AND da.gitlab_project_id IS NOT NULL
-        <if test="appServiceIds!=null and appServiceIds.size>0">
+        <if test="appServiceIds != null and appServiceIds.size > 0">
             and da.id in
             <foreach collection="appServiceIds" item="appServiceId" index="index"
                      open="(" close=")" separator=",">
@@ -739,13 +739,13 @@
                   AND das.is_skip_check_permission = TRUE
                   AND dcp.id IS NULL
                   AND db.branch_name = 'master'
-                <if test="appServiceIds!=null and appServiceIds.size>0">
-                    and das.id in
-                    <foreach collection="appServiceIds" item="appServiceId" index="index"
-                             open="(" close=")" separator=",">
-                        #{appServiceId}
-                    </foreach>
-                </if>
+        <if test="appServiceIds != null and appServiceIds.size > 0">
+            and das.id in
+            <foreach collection="appServiceIds" item="appServiceId" index="index"
+                     open="(" close=")" separator=",">
+                #{appServiceId}
+            </foreach>
+        </if>
         <include refid="appServiceCiSqlparams"/>
         UNION ALL
         SELECT das.id, das.name, das.code
@@ -762,13 +762,13 @@
                   AND das.is_skip_check_permission = FALSE
                   AND dcp.id IS NULL
                   AND db.branch_name = 'master'
-                <if test="appServiceIds!=null and appServiceIds.size>0">
-                    and das.id in
-                    <foreach collection="appServiceIds" item="appServiceId" index="index"
-                             open="(" close=")" separator=",">
-                        #{appServiceId}
-                    </foreach>
-                </if>
+        <if test="appServiceIds != null and appServiceIds.size > 0">
+            and das.id in
+            <foreach collection="appServiceIds" item="appServiceId" index="index"
+                     open="(" close=")" separator=",">
+                #{appServiceId}
+            </foreach>
+        </if>
         <include refid="appServiceCiSqlparams"/>
         ) tmp
     </select>
@@ -821,5 +821,17 @@
         GROUP BY id, last_update_date
         ORDER BY last_update_date DESC
         LIMIT 20
+    </select>
+
+    <select id="listByActiveAndProjects" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        SELECT das.*
+        FROM devops_app_service das
+                WHERE das.is_active IS TRUE
+                  AND das.is_synchro IS TRUE
+                  AND das.gitlab_project_id IS NOT NULL
+                  AND das.project_id IN
+        <foreach collection="projectIds" item="projectId" open="(" close=")" separator=",">
+            #{projectId}
+        </foreach>
     </select>
 </mapper>
