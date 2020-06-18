@@ -9,6 +9,7 @@ import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
+import io.choerodon.devops.infra.dto.GitlabProjectSimple;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -75,5 +76,5 @@ public interface DevopsProjectService {
 
     List<DevopsProjectDTO> listAll();
 
-    List<Long> queryGitlabGroups(List<Long> projectIds);
+    List<GitlabProjectSimple> queryGitlabGroups(List<Long> projectIds);
 }

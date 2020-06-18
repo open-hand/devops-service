@@ -25,6 +25,7 @@ import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
 import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
+import io.choerodon.devops.infra.dto.GitlabProjectSimple;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -205,7 +206,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     }
 
     @Override
-    public List<Long> queryGitlabGroups(List<Long> projectIds) {
+    public List<GitlabProjectSimple> queryGitlabGroups(List<Long> projectIds) {
        return devopsProjectMapper.selectByProjectIds(projectIds);
     }
 
