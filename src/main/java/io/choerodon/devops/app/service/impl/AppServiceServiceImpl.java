@@ -467,7 +467,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
             if (HarborRepoDTO.CUSTOM_REPO.equals((appServiceUpdateDTO.getHarborRepoConfigDTO().getType()))) {
                 deleteHarborAppServiceRel(projectId, appServiceDTO.getId());
-                rdupmClient.saveRelationByService(projectId, appServiceDTO.getId(), appServiceUpdateDTO.getCustomRepoId());
+                rdupmClient.saveRelationByService(projectId, appServiceDTO.getId(), appServiceUpdateDTO.getHarborRepoConfigDTO().getRepoId());
             }
         }
         if (appServiceUpdateDTO.getChart() != null) {
