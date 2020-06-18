@@ -583,7 +583,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     public void cancel(Long projectId, Long gitlabPipelineId, Long gitlabProjectId) {
         Assert.notNull(gitlabPipelineId, ERROR_GITLAB_PIPELINE_ID_IS_NULL);
         Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
-        AppServiceDTO appServiceDTO = appServiceMapper.listByGitLabProjectIds(Collections.singletonList(gitlabProjectId)).get(0);
+        AppServiceDTO appServiceDTO = appServiceMapper.selectOne(new AppServiceDTO().setGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId)));
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceDTO.getId(), AppServiceEvent.CI_PIPELINE_CANCEL);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
