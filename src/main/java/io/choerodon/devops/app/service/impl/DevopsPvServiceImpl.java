@@ -86,6 +86,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     DevopsEnvUserPermissionService devopsEnvUserPermissionService;
     @Autowired
     DevopsPrometheusMapper devopsPrometheusMapper;
+    @Autowired
+    PermissionHelper permissionHelper;
 
     private final Gson gson = new Gson();
 
@@ -132,7 +134,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             devopsClusterService.baseUpdate(null, devopsClusterDTO);
         }
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsClusterDTO.getSystemEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, devopsClusterDTO.getSystemEnvId());
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         //校验环境信息
@@ -153,7 +155,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         permissionUpdateVO.setProjectIds(devopsPvReqVo.getProjectIds());
         permissionUpdateVO.setSkipCheckProjectPermission(devopsPvReqVo.getSkipCheckProjectPermission());
         permissionUpdateVO.setObjectVersionNumber(devopsPvReqVo.getObjectVersionNumber());
-        assignPermission(permissionUpdateVO);
+        assignPermission(null, permissionUpdateVO);
     }
 
     private void checkEnv(DevopsEnvironmentDTO devopsEnvironmentDTO) {
@@ -167,7 +169,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean deletePvById(Long pvId) {
+    public Boolean deletePvById(Long projectId, Long pvId) {
 
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
 
@@ -184,7 +186,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         // 创建pv的环境是所选集群关联的系统环境
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsPvDTO.getClusterId());
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsClusterDTO.getSystemEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, devopsClusterDTO.getSystemEnvId());
 
 
         //校验环境信息
@@ -253,8 +255,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             v1ObjectMeta.setName(devopsPvDTO.getName());
             v1PersistentVolume.setMetadata(v1ObjectMeta);
             resourceConvertToYamlHandler.setType(v1PersistentVolume);
-            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
-            resourceConvertToYamlHandler.operationEnvGitlabFile(null, projectId, DELETE, (long) GitUserNameUtil.getAdminId(), pvId,
+            Integer gitlabEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
+            resourceConvertToYamlHandler.operationEnvGitlabFile(null, gitlabEnvProjectId, DELETE, (long) GitUserNameUtil.getAdminId(), pvId,
                     PERSISTENTVOLUME, null, false, devopsEnvironmentDTO.getId(), path);
         }
         return true;
@@ -270,8 +272,13 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
     @Override
     @Transactional
-    public void assignPermission(DevopsPvPermissionUpdateVO update) {
-        DevopsPvDTO devopsPvDTO = devopsPvMapper.selectByPrimaryKey(update.getPvId());
+    public void assignPermission(Long projectId, DevopsPvPermissionUpdateVO update) {
+
+        DevopsPvDTO devopsPvDTO = devopsPvMapper.queryWithEnvByPrimaryKey(update.getPvId());
+        // 内部调用时，projectId为null，不校验
+        if (projectId != null) {
+            permissionHelper.checkEnvBelongToProject(projectId, devopsPvDTO.getEnvId());
+        }
 
         if (devopsPvDTO.getSkipCheckProjectPermission()) {
             // 原来对组织下所有项目公开,更新之后依然公开，则不做任何处理
@@ -377,7 +384,9 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     }
 
     @Override
-    public void deleteRelatedProjectById(Long pvId, Long relatedProjectId) {
+    public void deleteRelatedProjectById(Long projectId, Long pvId, Long relatedProjectId) {
+        DevopsPvDTO devopsPvDTO = devopsPvMapper.queryWithEnvByPrimaryKey(pvId);
+        permissionHelper.checkEnvBelongToProject(projectId, devopsPvDTO.getEnvId());
         DevopsPvProPermissionDTO devopsPvProPermissionDTO = new DevopsPvProPermissionDTO();
         devopsPvProPermissionDTO.setPvId(pvId);
         devopsPvProPermissionDTO.setProjectId(relatedProjectId);
