@@ -356,7 +356,7 @@ const ListView = withRouter(observer((props) => {
               history,
               location,
             } = props;
-            history.push(`/infra/code-lib-management${location.search}`);
+            history.push(`/rducm/code-lib-management/assign${location.search}`);
           }}
         >
           权限管理

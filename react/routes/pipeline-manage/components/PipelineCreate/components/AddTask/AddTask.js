@@ -180,7 +180,7 @@ const AddTask = observer(() => {
             dockerArtifactFileName,
             nexusMavenRepoIds,
             zpk,
-            triggerValue: jobDetail.triggerValue && jobDetail.triggerValue.split(','),
+            triggerValue: jobDetail.triggerValue && jobDetail.triggerType !== 'regex' ? jobDetail.triggerValue.split(',') : jobDetail.triggerValue,
             configType,
             // triggerRefs: jobDetail.triggerRefs ? jobDetail.triggerRefs.split(',') : [],
             glyyfw: appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')),
@@ -253,7 +253,7 @@ const AddTask = observer(() => {
       let data = AddTaskFormDataSet.toData()[0];
       data = {
         ...data,
-        triggerValue: data.triggerValue && data.triggerValue.join(','),
+        triggerValue: data.triggerValue && data.triggerType !== 'regex' ? data.triggerValue.join(',') : data.triggerValue,
         image: data.selectImage === '1' ? data.image : null,
         // triggerRefs: data.triggerRefs.join(','),
         metadata: (function () {
