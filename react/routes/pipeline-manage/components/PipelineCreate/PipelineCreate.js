@@ -1,5 +1,5 @@
 import { axios } from '@choerodon/boot';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Form, TextField, Select, SelectBox, Modal, Button, DataSet } from 'choerodon-ui/pro';
 import { message, Icon } from 'choerodon-ui';
 import { observer } from 'mobx-react-lite';
@@ -87,7 +87,13 @@ const PipelineCreate = observer(() => {
     }
   };
 
+  const handelCancel = () => {
+    refreshTree();
+  };
+
   modal.handleOk(handleCreate);
+
+  modal.handleCancel(handelCancel);
 
   // const handleChangeImage = (data) => {
   //   if (data === '0') {
