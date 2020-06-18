@@ -11,5 +11,9 @@ export default function useStore() {
       return this.isEmpty;
     },
 
+    checkCreate(projectId, appServiceId) {
+      return axios.get(`/devops/v1/projects/${projectId}/member-check/${appServiceId}?type=BRANCH_CREATE`);
+    },
+
   }));
 }
