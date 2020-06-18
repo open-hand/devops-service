@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
+import { withRouter } from 'react-router-dom';
 import useStore from './useStore';
 import AppServiceDs from './AppServiceDataSet';
 import SelectAppDataSet from './SelectAppDataSet';
@@ -13,13 +14,14 @@ export function useCodeManagerStore() {
   return useContext(Store);
 }
 
-export const StoreProvider = injectIntl(inject('AppState')(
+export const StoreProvider = withRouter(injectIntl(inject('AppState')(
   (props) => {
     const {
       children,
       AppState: {
         currentMenuType: { id: projectId },
       },
+      location: { state },
     } = props;
 
     const checkHasApp = (value, recentApp) => recentApp.some(e => e.id === value);
@@ -95,7 +97,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
       });
       const recentAppList = localStorage.getItem('recent-app') && JSON.parse(localStorage.getItem('recent-app'));
       appServiceDs.query().then((res) => {
-        if (recentAppList !== null && recentAppList[projectId]) {
+        if (state && state.appServiceId) {
+          selectAppDs.current && selectAppDs.current.set('appServiceId', state.appServiceId);
+        } else if (recentAppList !== null && recentAppList[projectId]) {
           selectAppDs.current && selectAppDs.current.set('appServiceId', recentAppList[projectId][0].id);
         } else if (res && res.length && res.length > 0) {
           selectAppDs.current.set('appServiceId', res[0].id);
@@ -122,4 +126,4 @@ export const StoreProvider = injectIntl(inject('AppState')(
       </Store.Provider>
     );
   },
-));
+)));
