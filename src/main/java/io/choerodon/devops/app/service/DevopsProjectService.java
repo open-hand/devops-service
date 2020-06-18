@@ -74,4 +74,6 @@ public interface DevopsProjectService {
     Page<UserVO> listAllOwnerAndMembers(Long projectId, PageRequest pageable, String params);
 
     List<DevopsProjectDTO> listAll();
+
+    List<Long> queryGitlabGroups(List<Long> projectIds);
 }

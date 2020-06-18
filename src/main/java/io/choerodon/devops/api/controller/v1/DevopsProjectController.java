@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
 import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
@@ -92,5 +93,24 @@ public class DevopsProjectController {
         return Optional.ofNullable(devopsProjectService.listAllOwnerAndMembers(projectId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.users.all.list"));
+    }
+
+
+    /**
+     * 查询项目Gitlab Group是否创建成功
+     * 用作Demo数据初始化时查询状态
+     *
+     * @param projectId 项目id
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION,permissionWithin = true)
+    @ApiOperation(value = "查询项目gitlab group信息")
+    @PostMapping("/gitlab_groups")
+    public ResponseEntity<List<Long>> queryGitlabGroups(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "项目Ids")
+            @RequestBody List<Long> projectIds) {
+        return new ResponseEntity<>(devopsProjectService.queryGitlabGroups(projectIds), HttpStatus.OK);
+
     }
 }
