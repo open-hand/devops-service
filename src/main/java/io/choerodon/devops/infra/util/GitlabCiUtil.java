@@ -234,6 +234,6 @@ public class GitlabCiUtil {
     }
 
     public static String generateCreateCacheDir(String cacheDir) {
-        return "mkdir -p" + Objects.requireNonNull(cacheDir);
+        return "mkdir -p " + Objects.requireNonNull(cacheDir);
     }
 }
