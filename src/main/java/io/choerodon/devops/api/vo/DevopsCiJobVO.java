@@ -44,10 +44,10 @@ public class DevopsCiJobVO {
     private String metadata;
 
     @ApiModelProperty("是否上传共享目录的内容 / 默认为false")
-    private Boolean toUpload = Boolean.FALSE;
+    private Boolean toUpload;
 
     @ApiModelProperty("是否下载共享目录的内容 / 默认为false")
-    private Boolean toDownload = Boolean.FALSE;
+    private Boolean toDownload;
 
     private Long objectVersionNumber;
 
