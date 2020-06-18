@@ -22,7 +22,7 @@
     "clean-install": "rm -rf node_modules && rm package-lock.json && npm i --registry https://nexus.choerodon.com.cn/repository/choerodon-npm"
   },
   "peerDependencies": {
-    "@choerodon/boot": "0.21.5",
+    "@choerodon/boot": "0.21.4",
     "@choerodon/master": "0.23.0"
   },
   "dependencies": {
@@ -52,7 +52,7 @@
     "xterm": "^3.12.0"
   },
   "devDependencies": {
-    "@choerodon/boot": "0.21.5",
+    "@choerodon/boot": "0.21.4",
     "@choerodon/master": "0.23.0",
     "del": "^4.1.1",
     "eslint-plugin-react-hooks": "^1.7.0",
