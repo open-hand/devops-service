@@ -8,7 +8,10 @@ import io.swagger.annotations.ApiModelProperty;
 public class ApprovalVO {
 
     @ApiModelProperty("项目名称")
-    private String organizationNameAndProjectName;
+    private String projectName;
+
+    @ApiModelProperty("项目id")
+    private Long projectId;
 
     @ApiModelProperty("用户头像")
     private String imageUrl;
@@ -34,12 +37,21 @@ public class ApprovalVO {
     @ApiModelProperty("pripeline task id")
     private Long taskRecordId;
 
-    public String getOrganizationNameAndProjectName() {
-        return organizationNameAndProjectName;
+    public String getProjectName() {
+        return projectName;
     }
 
-    public ApprovalVO setOrganizationNameAndProjectName(String organizationNameAndProjectName) {
-        this.organizationNameAndProjectName = organizationNameAndProjectName;
+    public ApprovalVO setProjectName(String projectName) {
+        this.projectName = projectName;
+        return this;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public ApprovalVO setProjectId(Long projectId) {
+        this.projectId = projectId;
         return this;
     }
 
@@ -118,7 +130,8 @@ public class ApprovalVO {
     @Override
     public String toString() {
         return "ApprovalVO{" +
-                "organizationNameAndProjectName='" + organizationNameAndProjectName + '\'' +
+                "projectName='" + projectName + '\'' +
+                ", projectId=" + projectId +
                 ", imageUrl='" + imageUrl + '\'' +
                 ", content='" + content + '\'' +
                 ", type='" + type + '\'' +

@@ -64,7 +64,7 @@ public class WorkDesktopServiceImpl implements WorkDesktopService {
         } else {
             projectDTOList = Collections.singletonList(baseServiceClientOperator.queryIamProjectById(projectId));
         }
-        return listLatestUserAppServiceDTO(organizationId, projectDTOList);
+        return listLatestUserAppServiceDTO(projectDTOList);
     }
 
     @Override
@@ -76,23 +76,23 @@ public class WorkDesktopServiceImpl implements WorkDesktopService {
         } else {
             projectDTOList = Collections.singletonList(baseServiceClientOperator.queryIamProjectById(projectId));
         }
-        return listApprovalVOByProject(tenant, projectDTOList);
+        return listApprovalVOByProject(projectDTOList);
     }
 
-    private List<ApprovalVO> listApprovalVOByProject(Tenant tenant, List<ProjectDTO> projectDTOList) {
+    private List<ApprovalVO> listApprovalVOByProject(List<ProjectDTO> projectDTOList) {
         List<ApprovalVO> approvalVOList = new ArrayList<>();
         List<Long> projectIds = projectDTOList.stream().map(ProjectDTO::getId).collect(Collectors.toList());
-        Map<Long, String> organizationAndProjectNameGroupByIdMap = projectDTOList.stream().collect(Collectors.toMap(ProjectDTO::getId, projectDTO -> String.format(ORGANIZATION_NAME_AND_PROJECT_NAME, tenant.getTenantName(), projectDTO.getName())));
+        Map<Long, String> projectNameMap = projectDTOList.stream().collect(Collectors.toMap(ProjectDTO::getId, ProjectDTO::getName));
         // 1.查询合并请求
         List<AppServiceDTO> appServiceDTOList = appServiceMapper.listByActiveAndProjects(projectIds);
-        approvalVOList.addAll(listMergeRequestApproval(organizationAndProjectNameGroupByIdMap, appServiceDTOList));
+        approvalVOList.addAll(listMergeRequestApproval(projectNameMap, appServiceDTOList));
 
         // 2.查出流水线请求
-        approvalVOList.addAll(listPipelineApproval(organizationAndProjectNameGroupByIdMap, projectIds));
+        approvalVOList.addAll(listPipelineApproval(projectNameMap, projectIds));
         return approvalVOList;
     }
 
-    private List<ApprovalVO> listMergeRequestApproval(Map<Long, String> organizationAndProjectNameGroupByIdMap, List<AppServiceDTO> appServiceDTOList) {
+    private List<ApprovalVO> listMergeRequestApproval(Map<Long, String> projectNameMap, List<AppServiceDTO> appServiceDTOList) {
         List<ApprovalVO> approvalVOList = new ArrayList<>();
         List<Integer> gitlabProjectIds = appServiceDTOList.stream().map(AppServiceDTO::getGitlabProjectId).collect(Collectors.toList());
         Map<Integer, String> gitlabProjectAndAppNameMap = appServiceDTOList.stream().collect(Collectors.toMap(AppServiceDTO::getGitlabProjectId, AppServiceDTO::getName));
@@ -112,7 +112,8 @@ public class WorkDesktopServiceImpl implements WorkDesktopService {
             ApprovalVO approvalVO = new ApprovalVO()
                     .setImageUrl(iamUserDTO.getImageUrl())
                     .setType(ApprovalTypeEnum.MERGE_REQUEST.getType())
-                    .setOrganizationNameAndProjectName(organizationAndProjectNameGroupByIdMap.get(devopsMergeRequestDTO.getProjectId()))
+                    .setProjectId(devopsMergeRequestDTO.getProjectId())
+                    .setProjectName(projectNameMap.get(devopsMergeRequestDTO.getProjectId()))
                     .setGitlabProjectId(devopsMergeRequestDTO.getGitlabProjectId().intValue())
                     .setContent(String.format(MERGE_REQUEST_CONTENT_FORMAT, iamUserDTO.getRealName(), iamUserDTO.getId(), gitlabProjectAndAppNameMap.get(devopsMergeRequestDTO.getGitlabProjectId().intValue())));
             approvalVOList.add(approvalVO);
@@ -121,7 +122,7 @@ public class WorkDesktopServiceImpl implements WorkDesktopService {
         return approvalVOList;
     }
 
-    private List<ApprovalVO> listPipelineApproval(Map<Long, String> organizationAndProjectNameGroupByIdMap, List<Long> projectIds) {
+    private List<ApprovalVO> listPipelineApproval(Map<Long, String> projectNameMap, List<Long> projectIds) {
         List<ApprovalVO> approvalVOList = new ArrayList<>();
 
         Long userId = DetailsHelper.getUserDetails().getUserId() == null ? 0 : DetailsHelper.getUserDetails().getUserId();
@@ -133,7 +134,8 @@ public class WorkDesktopServiceImpl implements WorkDesktopService {
         pipelineRecordDTOAuditByThisUserList.forEach(pipelineRecordDTO -> {
             ApprovalVO approvalVO = new ApprovalVO()
                     .setType(ApprovalTypeEnum.PIPE_LINE.getType())
-                    .setOrganizationNameAndProjectName(organizationAndProjectNameGroupByIdMap.get(pipelineRecordDTO.getProjectId()))
+                    .setProjectId(pipelineRecordDTO.getProjectId())
+                    .setProjectName(projectNameMap.get(pipelineRecordDTO.getProjectId()))
                     .setContent(String.format(PIPELINE_CONTENT_FORMAT, pipelineRecordDTO.getPipelineName(), pipelineRecordDTO.getStageName()))
                     .setPipelineId(pipelineRecordDTO.getPipelineId())
                     .setPipelineRecordId(pipelineRecordDTO.getId())
@@ -144,7 +146,7 @@ public class WorkDesktopServiceImpl implements WorkDesktopService {
         return approvalVOList;
     }
 
-    private List<LatestAppServiceVO> listLatestUserAppServiceDTO(Long organizationId, List<ProjectDTO> projectDTOList) {
+    private List<LatestAppServiceVO> listLatestUserAppServiceDTO(List<ProjectDTO> projectDTOList) {
         List<Long> projectIds = projectDTOList.stream().map(ProjectDTO::getId).collect(Collectors.toList());
         Map<Long, List<ProjectDTO>> projectDTOMap = projectDTOList.stream().collect(Collectors.groupingBy(ProjectDTO::getId));
         Long userId = DetailsHelper.getUserDetails().getUserId() == null ? 0 : DetailsHelper.getUserDetails().getUserId();
