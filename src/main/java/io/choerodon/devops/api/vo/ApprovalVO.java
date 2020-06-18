@@ -25,6 +25,9 @@ public class ApprovalVO {
     @ApiModelProperty("gitlab项目id")
     private Integer gitlabProjectId;
 
+    @ApiModelProperty("合并请求gitlab项目地址")
+    private String mergeRequestUrl;
+
     @ApiModelProperty("pipeline id")
     private Long pipelineId;
 
@@ -127,6 +130,15 @@ public class ApprovalVO {
         return this;
     }
 
+    public String getMergeRequestUrl() {
+        return mergeRequestUrl;
+    }
+
+    public ApprovalVO setMergeRequestUrl(String mergeRequestUrl) {
+        this.mergeRequestUrl = mergeRequestUrl;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "ApprovalVO{" +
@@ -136,6 +148,7 @@ public class ApprovalVO {
                 ", content='" + content + '\'' +
                 ", type='" + type + '\'' +
                 ", gitlabProjectId=" + gitlabProjectId +
+                ", mergeRequestUrl='" + mergeRequestUrl + '\'' +
                 ", pipelineId=" + pipelineId +
                 ", pipelineRecordId=" + pipelineRecordId +
                 ", stageRecordId=" + stageRecordId +
