@@ -12,9 +12,8 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
- *
  * @author wanghao
- * @Date 2020/4/2 17:00
+ * @since 2020/4/2 17:00
  */
 @ModifyAudit
 @VersionAudit
@@ -36,8 +35,14 @@ public class DevopsCiJobDTO extends AuditDomain {
     private Long ciPipelineId;
     @ApiModelProperty("任务类型")
     private String type;
-    @ApiModelProperty("触发分支")
-    private String triggerRefs;
+    @ApiModelProperty("触发类型对应的值")
+    private String triggerValue;
+
+    /**
+     * {@link io.choerodon.devops.infra.enums.CiTriggerType}
+     */
+    @ApiModelProperty("触发类型")
+    private String triggerType;
     @ApiModelProperty("详细信息")
     private String metadata;
 
@@ -81,12 +86,20 @@ public class DevopsCiJobDTO extends AuditDomain {
         this.type = type;
     }
 
-    public String getTriggerRefs() {
-        return triggerRefs;
+    public String getTriggerValue() {
+        return triggerValue;
     }
 
-    public void setTriggerRefs(String triggerRefs) {
-        this.triggerRefs = triggerRefs;
+    public void setTriggerValue(String triggerValue) {
+        this.triggerValue = triggerValue;
+    }
+
+    public String getTriggerType() {
+        return triggerType;
+    }
+
+    public void setTriggerType(String triggerType) {
+        this.triggerType = triggerType;
     }
 
     public String getMetadata() {

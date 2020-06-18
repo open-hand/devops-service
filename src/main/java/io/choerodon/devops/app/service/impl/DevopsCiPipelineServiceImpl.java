@@ -602,14 +602,25 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      * @param ciJob    ci文件的job对象
      */
     private void processOnlyAndExcept(DevopsCiJobVO metadata, CiJob ciJob) {
-        if (!StringUtils.isEmpty(metadata.getTriggerRefs())) {
-            GitlabCiUtil.processTriggerRefs(ciJob, metadata.getTriggerRefs());
-        } else if (!StringUtils.isEmpty(metadata.getRegexMatch())) {
-            GitlabCiUtil.processRegexMatch(ciJob, metadata.getRegexMatch());
-        } else if (!StringUtils.isEmpty(metadata.getExactMatch())) {
-            GitlabCiUtil.processExactMatch(ciJob, metadata.getExactMatch());
-        } else if (!StringUtils.isEmpty(metadata.getExactExclude())) {
-            GitlabCiUtil.processExactExclude(ciJob, metadata.getExactExclude());
+        if (StringUtils.isNotBlank(metadata.getTriggerType())) {
+            CiTriggerType ciTriggerType = CiTriggerType.forValue(metadata.getTriggerType());
+            if (ciTriggerType != null) {
+                String triggerValue = metadata.getTriggerValue();
+                switch (ciTriggerType) {
+                    case REFS:
+                        GitlabCiUtil.processTriggerRefs(ciJob, triggerValue);
+                        break;
+                    case EXACT_MATCH:
+                        GitlabCiUtil.processExactMatch(ciJob, triggerValue);
+                        break;
+                    case REGEX_MATCH:
+                        GitlabCiUtil.processRegexMatch(ciJob, triggerValue);
+                        break;
+                    case EXACT_EXCLUDE:
+                        GitlabCiUtil.processExactExclude(ciJob, triggerValue);
+                        break;
+                }
+            }
         }
     }
 
