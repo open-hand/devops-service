@@ -47,19 +47,6 @@ function handleInitialValue(record, isCustom, data, item) {
 
 function getRequestData(data, res) {
   const { chartUrl, harborCustom, chartCustom } = data;
-  if (harborCustom === 'custom') {
-    if (isEmpty(res.harbor)) {
-      res.harbor = {
-        type: 'harbor',
-        custom: true,
-        config: {},
-      };
-    }
-    res.harbor.custom = true;
-    res.harbor.config = pick(data, ['url', 'userName', 'password', 'email', 'project']);
-  } else {
-    res.harbor = null;
-  }
   if (chartCustom === 'custom') {
     if (isEmpty(res.chart)) {
       res.chart = {
@@ -89,13 +76,14 @@ export default ((intlPrefix, formatMessage, url) => {
     selection: false,
     paging: false,
     dataKey: null,
+    autoQueryAfterSubmit: false,
     transport: {
       read: {
         url,
         method: 'get',
       },
       update: ({ data: [data] }) => {
-        const res = pick(data, ['chart', 'harbor', 'harborPrivate']);
+        const res = pick(data, ['chart']);
         getRequestData(data, res);
 
         return ({
@@ -107,7 +95,7 @@ export default ((intlPrefix, formatMessage, url) => {
     },
     fields: [
       { name: 'harborCustom', type: 'string', defaultValue: 'default', label: formatMessage({ id: `${intlPrefix}.harbor.config` }) },
-      { name: 'chartCustom', type: 'string', defaultValue: 'default', label: formatMessage({ id: `${intlPrefix}.chart.config` }) },
+      { name: 'chartCustom', type: 'string', defaultValue: 'default' },
       { name: 'harbor', type: 'object' },
       { name: 'chart', type: 'object' },
       { name: 'chartUrl', type: 'url', label: formatMessage({ id: 'address' }) },

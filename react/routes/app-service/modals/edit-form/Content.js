@@ -4,14 +4,13 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Icon, Input } from 'choerodon-ui';
 import { axios, Choerodon } from '@choerodon/boot';
-import pick from 'lodash/pick';
 import includes from 'lodash/includes';
 import { handlePromptError } from '../../../../utils';
 import Settings from './Settings';
 import { useEditAppServiceStore } from './stores';
+import Loading from '../../../../components/loading';
 
 import './index.less';
-import Loading from '../../../../components/loading';
 
 const FILE_TYPE = 'image/png, image/jpeg, image/gif, image/jpg';
 
@@ -32,17 +31,15 @@ const CreateForm = injectIntl(observer((props) => {
   }
 
   modal.handleOk(async () => {
-    if (record.get('harborStatus') === 'failed' || record.get('chartStatus') === 'failed') return false;
+    if (record.get('chartStatus') === 'failed') return false;
     try {
-      const harborTestFailed = record.get('harborType') === 'custom' && !record.get('harborStatus') && !await handleTestHarbor();
       const chartTestFailed = record.get('chartType') === 'custom' && !record.get('chartStatus') && !await handleTestChart();
-      if (!harborTestFailed && !chartTestFailed && (await formDs.submit()) !== false) {
+      if (!chartTestFailed && (await formDs.submit()) !== false) {
         refresh();
       } else {
         return false;
       }
     } catch (e) {
-      Choerodon.handleResponseError(e);
       return false;
     }
   });
@@ -80,28 +77,6 @@ const CreateForm = injectIntl(observer((props) => {
       }
     } catch (err) {
       Choerodon.handleResponseError(e);
-    }
-  }
-
-  async function handleTestHarbor() {
-    if (record.get('url') && record.get('userName') && record.get('password') && record.get('email')) {
-      try {
-        const postData = pick(record.toData(), ['url', 'userName', 'password', 'email', 'project']);
-        const res = await store.checkHarbor(projectId, postData);
-        if (handlePromptError(res, false)) {
-          record.set('harborStatus', 'success');
-          return true;
-        } else {
-          record.set('harborStatus', 'failed');
-          return false;
-        }
-      } catch (e) {
-        record.set('harborStatus', 'failed');
-        return false;
-      }
-    } else {
-      record.set('harborStatus', 'failed');
-      return false;
     }
   }
 
@@ -154,7 +129,7 @@ const CreateForm = injectIntl(observer((props) => {
     <Form record={record}>
       <TextField name="name" autoFocus />
     </Form>
-    <Settings record={record} handleTestHarbor={handleTestHarbor} handleTestChart={handleTestChart} />
+    <Settings record={record} handleTestChart={handleTestChart} />
   </div>);
 }));
 
