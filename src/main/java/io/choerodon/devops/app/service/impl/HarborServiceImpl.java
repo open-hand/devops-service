@@ -119,6 +119,9 @@ public class HarborServiceImpl implements HarborService {
     @Override
     public DevopsConfigDTO queryRepoConfigToDevopsConfig(Long projectId, Long appServiceId, String operateType) {
         HarborRepoDTO harborRepoDTO = rdupmClient.queryHarborRepoConfig(projectId, appServiceId).getBody();
+        if (Objects.isNull(harborRepoDTO)) {
+            throw new CommonException("no custom or default warehouse configuration exists");
+        }
         return repoDTOToDevopsConfigDTO(harborRepoDTO, operateType);
     }
 
