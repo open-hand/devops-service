@@ -1004,8 +1004,8 @@ const AddTask = observer(() => {
         newLine
       />
       <SelectBox name="share" newLine colSpan={2}>
-        <Option value="toUpload">上传共享目录choerodon-ui-cache</Option>
-        <Option value="toDownload">下载共享目录choerodon-ui-cache</Option>
+        <Option value="toUpload">上传共享目录choerodon-ci-cache</Option>
+        <Option value="toDownload">下载共享目录choerodon-ci-cache</Option>
       </SelectBox>
     </div>
   ) : null);
