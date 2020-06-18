@@ -141,11 +141,22 @@ public class HarborServiceImpl implements HarborService {
 //        configVO.setUserName(harborRepoConfig.getLoginName());
 //        configVO.setPassword(harborRepoConfig.getPassword());
         if (AUTHTYPE.equals(operateType)) {
-            configVO.setUserName(harborRepoDTO.getPullRobot().getName());
-            configVO.setPassword(harborRepoDTO.getPullRobot().getToken());
+            if (CUSTOM_REPO.equals(harborRepoDTO.getRepoType())) {
+                configVO.setUserName(harborRepoConfig.getLoginName());
+                configVO.setPassword(harborRepoConfig.getPassword());
+            } else {
+                configVO.setUserName(harborRepoDTO.getPullRobot().getName());
+                configVO.setPassword(harborRepoDTO.getPullRobot().getToken());
+            }
+
         } else {
-            configVO.setUserName(harborRepoDTO.getPushRobot().getName());
-            configVO.setPassword(harborRepoDTO.getPushRobot().getToken());
+            if (CUSTOM_REPO.equals(harborRepoDTO.getRepoType())) {
+                configVO.setUserName(harborRepoConfig.getLoginName());
+                configVO.setPassword(harborRepoConfig.getPassword());
+            } else {
+                configVO.setUserName(harborRepoDTO.getPushRobot().getName());
+                configVO.setPassword(harborRepoDTO.getPushRobot().getToken());
+            }
         }
         configVO.setProject(harborRepoConfig.getRepoName());
         configVO.setPrivate(Boolean.TRUE.toString().equals(harborRepoConfig.getIsPrivate()));
