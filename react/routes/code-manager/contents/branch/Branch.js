@@ -89,16 +89,21 @@ function Branch(props) {
     }
   }
   // 打开创建分支模态框
-  function openCreateBranchModal() {
-    ProModal.open({
-      key: branchCreateModalKey,
-      title: <FormattedMessage id="branch.create" />,
-      drawer: true,
-      children: <BranchCreate intl={intl} appServiceId={appServiceId} handleRefresh={handleRefresh} />,
-      style: branchCreateModalStyle,
-      okText: <FormattedMessage id="create" />,
-      cancelText: <FormattedMessage id="cancel" />,
-    });
+  async function openCreateBranchModal() {
+    try {
+      await branchStore.checkCreate(projectId, appServiceId);
+      ProModal.open({
+        key: branchCreateModalKey,
+        title: <FormattedMessage id="branch.create" />,
+        drawer: true,
+        children: <BranchCreate intl={intl} appServiceId={appServiceId} handleRefresh={handleRefresh} />,
+        style: branchCreateModalStyle,
+        okText: <FormattedMessage id="create" />,
+        cancelText: <FormattedMessage id="cancel" />,
+      });
+    } catch (e) {
+      // return
+    }
   }
 
   /**

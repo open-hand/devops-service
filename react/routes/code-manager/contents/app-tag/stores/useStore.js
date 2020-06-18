@@ -28,5 +28,9 @@ export default function useStore() {
     editTag(projectId, tag, release, appServiceId) {
       return axios.put(`/devops/v1/projects/${projectId}/app_service/${appServiceId}/git/tags?tag=${tag}`, release); 
     },
+
+    checkCreate(projectId, appServiceId) {
+      return axios.get(`/devops/v1/projects/${projectId}/member-check/${appServiceId}?type=TAG_CREATE`);
+    },
   }));
 }

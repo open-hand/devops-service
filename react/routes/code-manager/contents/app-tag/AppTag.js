@@ -92,26 +92,31 @@ export default observer((props) => {
     });
   }
 
-  const openCreate = () => {
-    tagStore.queryBranchData({ projectId, appServiceId });
-    const createProps = {
-      appTagStore,
-      tagStore,
-      projectId,
-      appServiceId,
-    };
-    Modal.open({
-      key: appTagCreateKey,
-      title: formatMessage({ id: 'apptag.create' }),
-      children: <AppTagCreate {...createProps} />,
-      drawer: true,
-      style: bigModelStyle,
-      okText: formatMessage({ id: 'create' }),
-      onCancel: () => {
-        appTagCreateDs.reset();
-      },
-      onOk: handleCreate,
-    });
+  const openCreate = async () => {
+    try {
+      await tagStore.checkCreate(projectId, appServiceId);
+      tagStore.queryBranchData({ projectId, appServiceId });
+      const createProps = {
+        appTagStore,
+        tagStore,
+        projectId,
+        appServiceId,
+      };
+      Modal.open({
+        key: appTagCreateKey,
+        title: formatMessage({ id: 'apptag.create' }),
+        children: <AppTagCreate {...createProps} />,
+        drawer: true,
+        style: bigModelStyle,
+        okText: formatMessage({ id: 'create' }),
+        onCancel: () => {
+          appTagCreateDs.reset();
+        },
+        onOk: handleCreate,
+      });
+    } catch (e) {
+      // return;
+    }
   };
 
   const openEdit = (tag, release) => {
