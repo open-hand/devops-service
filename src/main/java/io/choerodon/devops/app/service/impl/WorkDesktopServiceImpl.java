@@ -64,7 +64,7 @@ public class WorkDesktopServiceImpl implements WorkDesktopService {
         } else {
             projectDTOList = Collections.singletonList(baseServiceClientOperator.queryIamProjectById(projectId));
         }
-        return listLatestUserAppServiceDTO(projectDTOList);
+        return listLatestUserAppServiceDTO(tenant, projectDTOList);
     }
 
     @Override
@@ -147,7 +147,8 @@ public class WorkDesktopServiceImpl implements WorkDesktopService {
         return approvalVOList;
     }
 
-    private List<LatestAppServiceVO> listLatestUserAppServiceDTO(List<ProjectDTO> projectDTOList) {
+    private List<LatestAppServiceVO> listLatestUserAppServiceDTO(Tenant tenant, List<ProjectDTO> projectDTOList) {
+        String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         List<Long> projectIds = projectDTOList.stream().map(ProjectDTO::getId).collect(Collectors.toList());
         Map<Long, ProjectDTO> projectDTOMap = projectDTOList.stream().collect(Collectors.toMap(ProjectDTO::getId, v -> v));
         Long userId = DetailsHelper.getUserDetails().getUserId() == null ? 0 : DetailsHelper.getUserDetails().getUserId();
@@ -175,6 +176,8 @@ public class WorkDesktopServiceImpl implements WorkDesktopService {
             latestAppServiceVO.setProjectName(projectDTO.getName())
                     .setProjectId(appServiceDTO.getProjectId())
                     .setCode(appServiceDTO.getCode())
+                    .setRepoUrl(gitlabUrl + urlSlash + tenant.getTenantNum() + "-" + projectDTO.getCode() + "/"
+                            + appServiceDTO.getCode() + ".git")
                     .setName(appServiceDTO.getName());
         });
         return latestTenAppServiceList;
