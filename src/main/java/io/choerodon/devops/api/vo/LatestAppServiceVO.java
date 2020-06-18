@@ -11,6 +11,7 @@ public class LatestAppServiceVO {
     private String code;
     private Long projectId;
     private String projectName;
+    private String repoUrl;
     private Date lastUpdateDate;
 
     public Long getId() {
@@ -67,6 +68,15 @@ public class LatestAppServiceVO {
         return this;
     }
 
+    public String getRepoUrl() {
+        return repoUrl;
+    }
+
+    public LatestAppServiceVO setRepoUrl(String repoUrl) {
+        this.repoUrl = repoUrl;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "LatestAppServiceVO{" +
@@ -75,6 +85,7 @@ public class LatestAppServiceVO {
                 ", code='" + code + '\'' +
                 ", projectId=" + projectId +
                 ", projectName='" + projectName + '\'' +
+                ", gitlabUrl='" + repoUrl + '\'' +
                 ", lastUpdateDate=" + lastUpdateDate +
                 '}';
     }
