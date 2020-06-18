@@ -39,6 +39,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
             column(name: 'trigger_type', type: 'VARCHAR(255)', remarks: '触发方式', afterColumn: 'trigger_refs')
         }
         renameColumn(columnDataType: 'VARCHAR(255)', newColumnName: 'trigger_value', oldColumnName: 'trigger_refs', remarks: '触发方式对应的值', tableName: 'devops_ci_job')
-        sql("UPDATE devops_ci_job dcj SET dcj.trigger_type = 'branch' WHERE dcj.trigger_value IS NOT NULL")
+        sql("UPDATE devops_ci_job dcj SET dcj.trigger_type = 'refs' WHERE dcj.trigger_value IS NOT NULL")
     }
 }
