@@ -241,7 +241,7 @@ export default observer((props) => {
               title={formatMessage({ id: 'empty.title.prohibited' })}
               describe={formatMessage({ id: 'empty.title.code' })}
               btnText={formatMessage({ id: 'empty.link.code' })}
-              pathname="/rducm/code-lib-management"
+              pathname="/rducm/code-lib-management/apply"
             />
           ) : getContent()}
         </div>}
