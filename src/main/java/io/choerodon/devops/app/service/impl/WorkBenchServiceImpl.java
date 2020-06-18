@@ -6,7 +6,7 @@ import io.choerodon.devops.api.vo.LatestAppServiceVO;
 import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.app.service.UserAttrService;
-import io.choerodon.devops.app.service.WorkDesktopService;
+import io.choerodon.devops.app.service.WorkBenchService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
 import io.choerodon.devops.infra.dto.PipelineRecordDTO;
@@ -27,7 +27,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
-public class WorkDesktopServiceImpl implements WorkDesktopService {
+public class WorkBenchServiceImpl implements WorkBenchService {
     private static final String MERGE_REQUEST_CONTENT_FORMAT = "%s (%s)在应用服务“%s”中提交了合并请求";
     private static final String PIPELINE_CONTENT_FORMAT = "流水线 “%s” 目前暂停于【%s】阶段，需要您进行审核";
     private static final String MERGE_REQUEST_URL = "%s/%s-%s/%s/merge_requests/%d";

@@ -4,8 +4,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ApprovalVO;
 import io.choerodon.devops.api.vo.LatestAppServiceVO;
-import io.choerodon.devops.app.service.WorkDesktopService;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.app.service.WorkBenchService;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -27,10 +26,10 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/v1/desktop/{organization_id}")
-public class WorkDesktopController {
+public class WorkBenchController {
 
     @Autowired
-    WorkDesktopService workDesktopService;
+    WorkBenchService workBenchService;
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @RequestMapping("/approval")
@@ -39,7 +38,7 @@ public class WorkDesktopController {
                                                          @PathVariable("organization_id") Long organizationId,
                                                          @ApiParam(value = "项目id")
                                                          @RequestParam(value = "project_id", required = false) Long projectId) {
-        return Optional.ofNullable(workDesktopService.listApproval(organizationId, projectId))
+        return Optional.ofNullable(workBenchService.listApproval(organizationId, projectId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.approval"));
     }
@@ -48,10 +47,10 @@ public class WorkDesktopController {
     @RequestMapping("/latest_app_service")
     @ApiOperation("查看最近操作过的应用服务")
     public ResponseEntity<List<LatestAppServiceVO>> listLatestAppService(@ApiParam(value = "组织id", required = true)
-                                                                    @PathVariable("organization_id") Long organizationId,
+                                                                         @PathVariable("organization_id") Long organizationId,
                                                                          @ApiParam(value = "项目id")
-                                                                    @RequestParam(value = "project_id", required = false) Long projectId) {
-        return Optional.ofNullable(workDesktopService.listLatestAppService(organizationId, projectId))
+                                                                         @RequestParam(value = "project_id", required = false) Long projectId) {
+        return Optional.ofNullable(workBenchService.listLatestAppService(organizationId, projectId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.latest.app.service"));
     }
