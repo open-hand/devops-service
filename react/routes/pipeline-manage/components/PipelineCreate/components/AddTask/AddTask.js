@@ -126,7 +126,7 @@ const AddTask = observer(() => {
   useEffect(() => {
     async function initBranchs() {
       const value = AddTaskFormDataSet.current.get('triggerType');
-      if (!value.includes('exact')) {
+      if (value && !value.includes('exact')) {
         setBranchsList(originBranchs);
       } else {
         getBranchsList();
