@@ -111,6 +111,8 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
 
     private void setUserContext(String loginName) {
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(loginName);
-        CustomContextUtil.setUserContext(iamUserDTO.getId());
+        if (iamUserDTO != null) {
+            CustomContextUtil.setUserContext(iamUserDTO.getId());
+        }
     }
 }
