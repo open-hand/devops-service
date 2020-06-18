@@ -49,13 +49,13 @@ public class DevopsIngressController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建域名")
     @PostMapping
-    public ResponseEntity create(
+    public ResponseEntity<Void> create(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名信息", required = true)
             @RequestBody DevopsIngressVO devopsIngressVO) {
         devopsIngressService.createIngress(projectId, devopsIngressVO);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -70,7 +70,7 @@ public class DevopsIngressController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下更新域名")
     @PutMapping(value = "/{id}")
-    public ResponseEntity update(
+    public ResponseEntity<Void> update(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名ID", required = true)
@@ -78,7 +78,7 @@ public class DevopsIngressController {
             @ApiParam(value = "域名信息", required = true)
             @RequestBody DevopsIngressVO devopsIngressVO) {
         devopsIngressService.updateIngress(id, devopsIngressVO, projectId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
 
@@ -139,13 +139,13 @@ public class DevopsIngressController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下删除域名")
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity delete(
+    public ResponseEntity<Void> delete(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名ID", required = true)
             @Encrypt(DevopsIngressDTO.ENCRYPT_KEY) @PathVariable Long id) {
         devopsIngressService.deleteIngress(projectId, id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     /**

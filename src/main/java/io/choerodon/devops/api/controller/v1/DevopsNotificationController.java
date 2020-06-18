@@ -47,7 +47,7 @@ public class DevopsNotificationController {
             @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "资源对象类型")
             @RequestParam(value = "object_type") String objectType) {
-        return Optional.ofNullable(notificationService.checkResourceDelete(envId, objectType))
+        return Optional.ofNullable(notificationService.checkResourceDelete(projectId, envId, objectType))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.check.resource.delete"));
     }
@@ -77,7 +77,7 @@ public class DevopsNotificationController {
             @RequestParam(value = "notification_id") Long notificationId,
             @ApiParam(value = "资源对象类型")
             @RequestParam(value = "object_type") String objectType) {
-        notificationService.sendMessage(envId, notificationId, objectId, objectType);
+        notificationService.sendMessage(projectId, envId, notificationId, objectId, objectType);
     }
 
 
@@ -105,7 +105,7 @@ public class DevopsNotificationController {
             @RequestParam String captcha,
             @ApiParam(value = "资源对象类型")
             @RequestParam(value = "object_type") String objectType) {
-        notificationService.validateCaptcha(envId, objectId, objectType, captcha);
+        notificationService.validateCaptcha(projectId, envId, objectId, objectType, captcha);
     }
 
 //    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
