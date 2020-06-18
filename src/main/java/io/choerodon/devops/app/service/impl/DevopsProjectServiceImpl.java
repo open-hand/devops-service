@@ -204,6 +204,11 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         return devopsProjectMapper.selectAll();
     }
 
+    @Override
+    public List<Long> queryGitlabGroups(List<Long> projectIds) {
+       return devopsProjectMapper.selectByProjectIds(projectIds);
+    }
+
     private UserVO userDTOTOVO(IamUserDTO iamUserDTOList) {
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(iamUserDTOList, userVO);

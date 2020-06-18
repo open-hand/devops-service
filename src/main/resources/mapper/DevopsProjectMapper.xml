@@ -13,4 +13,14 @@
         SET object_version_number = 1
         WHERE iam_project_id = #{iamProjectId};
     </update>
+
+    <select id="selectByProjectIds" resultType="java.lang.Long">
+        SELECT devops_app_group_id
+        FROM devops_project
+        WHERE iam_project_id in
+        <foreach collection="projectIds" item="projectId" index="index"
+                 open="(" close=")" separator=",">
+            #{projectId}
+        </foreach>
+    </select>
 </mapper>
