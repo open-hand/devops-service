@@ -110,6 +110,20 @@ GOARCH=amd64
 # ./path/to/main.go  填上mian.go的路径
 # 更多用法请在本地执行\`go help build\`查看
 go build -x -i -o ./docker/app -v ./path/to/main.go`,
+      maven_deploy: `
+# 以下的两个变量 {CHOERODON_MAVEN_REPOSITORY_ID} {CHOERODON_MAVEN_REPO_URL} 会在选择制品库后替换为相应的值, 如果没有特别需求, 不建议更改
+mvn clean install -Dmaven.springboot.skip=true -DskipTests=true deploy -DaltDeploymentRepository={CHOERODON_MAVEN_REPOSITORY_ID}::default::{CHOERODON_MAVEN_REPO_URL}
+      `,
+    },
+
+    hasDefaultSonar: false,
+
+    get getHasDefaultSonar() {
+      return this.hasDefaultSonar;
+    },
+
+    setHasDefaultSonar(data) {
+      this.hasDefaultSonar = data;
     },
 
     get getYaml() {
@@ -132,6 +146,15 @@ go build -x -i -o ./docker/app -v ./path/to/main.go`,
 
     get getDefaultImage() {
       return this.defaultImage;
+    },
+
+    axiosGetHasDefaultSonar() {
+      return new Promise((resolve) => {
+        axios.get('/devops/ci/has_default_sonar').then((res) => {
+          this.setHasDefaultSonar(res);
+          resolve();
+        });
+      });
     },
   }));
 }

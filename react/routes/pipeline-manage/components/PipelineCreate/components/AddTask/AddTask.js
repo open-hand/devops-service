@@ -44,6 +44,7 @@ const obj = {
   docker: 'Docker构建',
   chart: 'Chart构建',
   go: 'Go语言构建',
+  maven_deploy: '上传软件包至制品库',
 };
 
 const checkField = {
@@ -76,6 +77,7 @@ const AddTask = observer(() => {
   const [customYaml, setCustomYaml] = useState(useStore.getYaml.custom);
   const [defaultImage, setDefaultImage] = useState('');
   const [expandIf, setExpandIf] = useState(false);
+  const [expandIfSetting, setExpandIfSetting] = useState(false);
   const [branchsList, setBranchsList] = useState(originBranchs);
 
   useEffect(() => {
@@ -139,12 +141,14 @@ const AddTask = observer(() => {
       useStore.setDefaultImage(res);
       if (jobDetail) {
         if (!['custom', 'chart'].includes(jobDetail.type)) {
-          const { config, authType, username, token, password, sonarUrl } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
+          const { config, authType, username, token, password, sonarUrl, configType } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
           let uploadFilePattern;
           let dockerContextDir;
           let dockerFilePath;
           let uploadArtifactFileName;
           let dockerArtifactFileName;
+          let nexusMavenRepoIds;
+          let zpk;
           config && config.forEach((c) => {
             if (c.type === 'upload') {
               uploadFilePattern = c.uploadFilePattern;
@@ -153,6 +157,14 @@ const AddTask = observer(() => {
               dockerContextDir = c.dockerContextDir;
               dockerFilePath = c.dockerFilePath;
               dockerArtifactFileName = c.artifactFileName;
+            } else if (c.type === 'Maven') {
+              if (c.nexusMavenRepoIds) {
+                nexusMavenRepoIds = c.nexusMavenRepoIds;
+              }
+            } else if (c.type === 'maven_deploy') {
+              if (c.mavenDeployRepoSettings) {
+                zpk = c.mavenDeployRepoSettings.nexusRepoIds;
+              }
             }
             if (c.mavenSettings) {
               c.mavenSettings = Base64.decode(c.mavenSettings);
@@ -162,7 +174,7 @@ const AddTask = observer(() => {
           const pplxResult = (function () {
             const arr = ['triggerRefs', 'regexMatch', 'exactMatch', 'exactExclude'];
             for (let i = 0; i < arr.length; i++) {
-              if (jobDetail[arr[i]]) {
+              if (Object.keys(jobDetail).includes(arr[i])) {
                 return arr[i];
               }
             }
@@ -174,8 +186,12 @@ const AddTask = observer(() => {
             dockerFilePath,
             uploadArtifactFileName,
             dockerArtifactFileName,
-            pplx: pplxResult,
-            branchs: pplxResult !== 'regexMatch' ? jobDetail[pplxResult].split(',') : jobDetail[pplxResult],
+            nexusMavenRepoIds,
+            zpk,
+            configType,
+            pplx: pplxResult || jobDetail.pplx,
+            // eslint-disable-next-line no-nested-ternary
+            branchs: pplxResult ? (pplxResult !== 'regexMatch' ? jobDetail[pplxResult] && jobDetail[pplxResult].split(',') : jobDetail[pplxResult]) : undefined,
             // triggerRefs: jobDetail.triggerRefs ? jobDetail.triggerRefs.split(',') : [],
             glyyfw: appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')),
             bzmc: newSteps.find(s => s.checked) ? newSteps.find(s => s.checked).name : '',
@@ -238,7 +254,7 @@ const AddTask = observer(() => {
   const handleAdd = async () => {
     const result = await AddTaskFormDataSet.validate();
     if (result) {
-      if (AddTaskFormDataSet.current.get('type') === 'sonar') {
+      if (AddTaskFormDataSet.current.get('type') === 'sonar' && AddTaskFormDataSet.current.get('configType') === 'custom') {
         const connet = await handleTestConnect();
         if (!connet) {
           return false;
@@ -246,7 +262,7 @@ const AddTask = observer(() => {
       }
       let data = AddTaskFormDataSet.toData()[0];
       const matchObj = {};
-      matchObj[data.pplx] = data.pplx !== 'regexMatch' ? data.branchs.join(',') : data.branchs;
+      matchObj[data.pplx] = data.pplx !== 'regexMatch' ? data.branchs && data.branchs.join(',') : data.branchs;
       data = {
         ...data,
         image: data.selectImage === '1' ? data.image : null,
@@ -267,6 +283,9 @@ const AddTask = observer(() => {
                     return p;
                   })];
                 }
+                if (data.nexusMavenRepoIds && s.type === 'Maven') {
+                  s.nexusMavenRepoIds = data.nexusMavenRepoIds;
+                }
                 if (s.mavenSettings) {
                   s.mavenSettings = Base64.encode(s.mavenSettings);
                 }
@@ -283,13 +302,17 @@ const AddTask = observer(() => {
                     s.artifactFileName = data.dockerArtifactFileName;
                   }
                 }
+                if (data.zpk && s.type === 'maven_deploy') {
+                  s.mavenDeployRepoSettings = {
+                    nexusRepoIds: data.zpk,
+                  };
+                }
                 return s;
               }),
             }).replace(/"/g, "'");
           } else if (data.type === 'sonar') {
             return JSON.stringify({
               ...data,
-              triggerRefs: data.triggerRefs.join(','),
               metadata: '',
             }).replace(/"/g, "'");
           } else if (data.type === 'custom') {
@@ -330,11 +353,25 @@ const AddTask = observer(() => {
   };
 
   useEffect(() => {
-    if (AddTaskFormDataSet.current.get('type') === 'sonar') {
-      if (AddTaskFormDataSet.current.get('authType') === 'username') {
+    async function useEffectByType() {
+      if (AddTaskFormDataSet.current.get('type') === 'sonar') {
+        if (AddTaskFormDataSet.current.get('authType') === 'username') {
+          modal.update({
+            okProps: {
+              disabled: !testConnect,
+            },
+          });
+        } else {
+          modal.update({
+            okProps: {
+              disabled: false,
+            },
+          });
+        }
+        await useStore.axiosGetHasDefaultSonar();
         modal.update({
           okProps: {
-            disabled: !testConnect,
+            disabled: !useStore.getHasDefaultSonar,
           },
         });
       } else {
@@ -344,23 +381,19 @@ const AddTask = observer(() => {
           },
         });
       }
-    } else {
-      modal.update({
-        okProps: {
-          disabled: false,
-        },
-      });
+      if (AddTaskFormDataSet.current.get('type') !== 'build') {
+        AddTaskFormDataSet.getField('uploadFilePattern').set('required', false);
+        AddTaskFormDataSet.getField('dockerContextDir').set('required', false);
+        AddTaskFormDataSet.getField('dockerFilePath').set('required', false);
+        AddTaskFormDataSet.getField('uploadArtifactFileName').set('required', false);
+      }
+      if (AddTaskFormDataSet.current.get('type') === 'custom') {
+        AddTaskFormDataSet.getField('name').set('required', false);
+        AddTaskFormDataSet.getField('glyyfw').set('required', false);
+      }
     }
-    if (AddTaskFormDataSet.current.get('type') !== 'build') {
-      AddTaskFormDataSet.getField('uploadFilePattern').set('required', false);
-      AddTaskFormDataSet.getField('dockerContextDir').set('required', false);
-      AddTaskFormDataSet.getField('dockerFilePath').set('required', false);
-      AddTaskFormDataSet.getField('uploadArtifactFileName').set('required', false);
-    }
-    if (AddTaskFormDataSet.current.get('type') === 'custom') {
-      AddTaskFormDataSet.getField('name').set('required', false);
-      AddTaskFormDataSet.getField('glyyfw').set('required', false);
-    }
+
+    useEffectByType();
   }, [testConnect, AddTaskFormDataSet.current.get('type'), AddTaskFormDataSet.current.get('authType')]);
 
   modal.handleOk(handleAdd);
@@ -555,6 +588,11 @@ const AddTask = observer(() => {
       let extra = [];
       if (value === 'Maven') {
         extra = [{
+          name: '上传软件包至制品库',
+          type: 'maven_deploy',
+          checked: false,
+          yaml: useStore.getYaml.maven_deploy,
+        }, {
           name: 'Docker构建',
           type: 'docker',
           checked: false,
@@ -895,91 +933,141 @@ const AddTask = observer(() => {
                 width: 339,
                 marginTop: 30,
                 marginBottom: 20,
+                marginRight: 8,
                 display: steps.length === 0 ? 'none' : 'block',
               }}
               // newLine
               name="bzmc"
             />
             {
-              steps.find(s => s.checked) && steps.find(s => s.checked).type === 'Maven' ? (<div>
-                <div className="c7ncd-pipeline-add-task-tips">
-                  <span>Setting配置</span>
-                  <Tooltip
-                    title="用于运行过程中，在项目根目录下生成settings文件；您可在脚本中加上 -s 或者 -gs 参数进行使用"
-                    theme="light"
-                  >
-                    <Icon type="help" />
-                  </Tooltip>
-                </div>
-                <SelectBox
-                  onChange={handleChangePrivate}
-                  name="private"
-                  // label={(
-                  //   <span>Setting配置
-                  //     <Tooltip
-                  //       title="123"
-                  //       theme="light"
-                  //     >
-                  //       <Icon type="help" />
-                  //     </Tooltip>
-                  //   </span>
-                  // )}
-                >
-                  <Option value="custom">
-                    <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-                      界面可视化定义
-                      <Button
-                        onClick={handleOpenRepo}
+              (function () {
+                if (steps.find(s => s.checked)) {
+                  const type = steps.find(s => s.checked).type;
+                  if (type === 'Maven') {
+                    return (
+                      <Select
+                        name="nexusMavenRepoIds"
                         style={{
-                          marginLeft: 8,
-                          display: (function () {
-                            const repo = steps.find(s => s.checked).repo;
-                            if (JSON.stringify(repo) && JSON.stringify(repo) !== '{}') {
-                              return 'inline-block';
-                            }
-                            return 'none';
-                          }()),
+                          width: 339,
+                          marginTop: 30,
+                          marginBottom: 20,
                         }}
-                      >
-                        <Icon
-                          style={{
-                            color: '#3F51B5',
-                          }}
-                          type="mode_edit"
-                        />
-                      </Button>
-                    </span>
-                  </Option>
-                  <Option value="copy">
-                    <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-                      粘贴XML内容
-                      <Button
-                        onClick={handleOpenXML}
+                      />
+                    );
+                  } else if (type === 'maven_deploy') {
+                    return (
+                      <Select
+                        name="zpk"
                         style={{
-                          marginLeft: 8,
-                          display: steps.find(s => s.checked).mavenSettings ? 'inline-block' : 'none',
+                          width: 339,
+                          marginTop: 30,
+                          marginBottom: 20,
                         }}
-                      >
-                        <Icon
-                          style={{
-                            color: '#3F51B5',
-                          }}
-                          type="mode_edit"
-                        />
-                      </Button>
-                    </span>
-                  </Option>
-                </SelectBox>
-              </div>) : ''
+                      />
+                    );
+                  }
+                }
+              }())
             }
           </div>
+          {
+            steps.find(s => s.checked) && steps.find(s => s.checked).type === 'Maven'
+              ? [
+                <div
+                  colSpan={2}
+                  newLine
+                  className="advanced_text"
+                  style={{
+                    cursor: 'pointer',
+                    borderTop: '1px solid #d8d8d8',
+                    paddingTop: '20px',
+                  }}
+                  onClick={() => setExpandIfSetting(!expandIfSetting)}
+                >
+                  高级设置<Icon style={{ fontSize: 18 }} type={expandIfSetting ? 'expand_less' : 'expand_more'} />
+                </div>,
+                expandIfSetting ? (
+                  <div newLine>
+                    <div className="c7ncd-pipeline-add-task-tips">
+                      <span>Setting配置</span>
+                      <Tooltip
+                        title="用于运行过程中，在项目根目录下生成settings文件；您可在脚本中加上 -s 或者 -gs 参数进行使用"
+                        theme="light"
+                      >
+                        <Icon type="help" />
+                      </Tooltip>
+                    </div>
+                    <SelectBox
+                      onChange={handleChangePrivate}
+                      name="private"
+                      style={{
+                        width: 339,
+                      }}
+                      className="addTask_authType"
+                    >
+                      <Option value="custom">
+                        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                          自定义仓库配置
+                          <Button
+                            onClick={handleOpenRepo}
+                            style={{
+                              marginLeft: 8,
+                              display: (function () {
+                                const repo = steps.find(s => s.checked).repo;
+                                if (JSON.stringify(repo) && JSON.stringify(repo) !== '{}') {
+                                  return 'inline-block';
+                                }
+                                return 'none';
+                              }()),
+                            }}
+                          >
+                            <Icon
+                              style={{
+                                color: '#3F51B5',
+                              }}
+                              type="mode_edit"
+                            />
+                          </Button>
+                        </span>
+                      </Option>
+                      <Option value="copy">
+                        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                          粘贴XML内容
+                          <Button
+                            onClick={handleOpenXML}
+                            style={{
+                              marginLeft: 8,
+                              display: steps.find(s => s.checked).mavenSettings ? 'inline-block' : 'none',
+                            }}
+                          >
+                            <Icon
+                              style={{
+                                color: '#3F51B5',
+                              }}
+                              type="mode_edit"
+                            />
+                          </Button>
+                        </span>
+                      </Option>
+                    </SelectBox>
+                  </div>
+                ) : '',
+                <div style={{ height: 20 }} />,
+              ]
+              : ''
+          }
           {
             (function () {
               if (steps.length > 0) {
                 const type = steps.find(s => s.checked).type;
-                if (type && ['Maven', 'npm', 'go'].includes(type)) {
+                if (type && ['Maven', 'npm', 'go', 'maven_deploy'].includes(type)) {
                   return (
-                    <div>
+                    <div
+                      style={{
+                        borderTop: '1px solid #d8d8d8',
+                        paddingTop: '20px',
+                      }}
+                    >
                       <YamlEditor
                         readOnly={false}
                         colSpan={2}
@@ -1048,12 +1136,22 @@ const AddTask = observer(() => {
         ];
       }
       return [
-        <SelectBox className="addTask_authType" name="authType">
-          <Option value="username">用户名与密码</Option>
-          <Option value="token">Token</Option>
+        <SelectBox
+          className="addTask_authType"
+          name="configType"
+          help={!useStore.getHasDefaultSonar ? '平台暂无默认的SonarQube配置，请在自定义配置中进行添加。' : ''}
+        >
+          <Option value="default">默认配置</Option>
+          <Option value="custom">自定义配置</Option>
         </SelectBox>,
-        ...extra,
-        renderTestConnect(),
+        AddTaskFormDataSet.current.get('configType') === 'custom' ? [
+          <SelectBox className="addTask_authType" name="authType">
+            <Option value="username">用户名与密码</Option>
+            <Option value="token">Token</Option>
+          </SelectBox>,
+          ...extra,
+          renderTestConnect(),
+        ] : '',
       ];
     }
   };

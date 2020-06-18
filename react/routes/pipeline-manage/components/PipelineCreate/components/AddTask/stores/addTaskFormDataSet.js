@@ -1,4 +1,4 @@
-export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, projectId, AddTaskUseStore) => {
+export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, projectId, AddTaskUseStore, organizationId) => {
   function checkImage(value, name, record) {
     const pa = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}(\/.+)*:.+$/;
     if (value && pa.test(value)) {
@@ -57,6 +57,17 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       type: 'string',
       label: '构建模板',
     }, {
+      name: 'nexusMavenRepoIds',
+      type: 'string',
+      label: '项目依赖仓库',
+      textField: 'name',
+      multiple: true,
+      valueField: 'repositoryId',
+      lookupAxiosConfig: ({ params }) => ({
+        method: 'get',
+        url: `/rdupm/v1/nexus-repositorys/${organizationId}/project/${projectId}/ci/repo/list?repoType=MAVEN`,
+      }),
+    }, {
       name: 'private',
       type: 'string',
       // label: 'Setting配置',
@@ -109,6 +120,24 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       required: true,
     },
     {
+      name: 'zpk',
+      type: 'string',
+      label: '制品库',
+      textField: 'name',
+      valueField: 'repositoryId',
+      multiple: true,
+      lookupAxiosConfig: ({ params }) => ({
+        method: 'get',
+        url: `/rdupm/v1/nexus-repositorys/${organizationId}/project/${projectId}/ci/repo/list?repoType=MAVEN&type=hosted`,
+      }),
+    },
+    {
+      name: 'configType',
+      type: 'string',
+      label: '配置方式',
+      defaultValue: 'default',
+    },
+    {
       name: 'authType',
       type: 'string',
       label: 'SonarQube',
@@ -121,21 +150,21 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       type: 'string',
       label: 'SonarQube用户名',
       dynamicProps: ({ record, name }) => ({
-        required: record.get('type') === 'sonar' && record.get('authType') === 'username',
+        required: record.get('type') === 'sonar' && record.get('configType') === 'custom' && record.get('authType') === 'username',
       }),
     }, {
       name: 'password',
       type: 'string',
       label: '密码',
       dynamicProps: ({ record, name }) => ({
-        required: record.get('type') === 'sonar' && record.get('authType') === 'username',
+        required: record.get('type') === 'sonar' && record.get('configType') === 'custom' && record.get('authType') === 'username',
       }),
     }, {
       name: 'sonarUrl',
       type: 'string',
       label: 'SonarQube地址',
       dynamicProps: ({ record, name }) => ({
-        required: record.get('type') === 'sonar',
+        required: record.get('type') === 'sonar' && record.get('configType') === 'custom',
       }),
     }, {
       name: 'token',
