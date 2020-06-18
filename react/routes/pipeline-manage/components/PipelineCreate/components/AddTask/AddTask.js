@@ -125,7 +125,7 @@ const AddTask = observer(() => {
 
   useEffect(() => {
     async function initBranchs() {
-      const value = AddTaskFormDataSet.current.get('pplx');
+      const value = AddTaskFormDataSet.current.get('triggerType');
       if (!value.includes('exact')) {
         setBranchsList(originBranchs);
       } else {
@@ -133,7 +133,7 @@ const AddTask = observer(() => {
       }
     }
     initBranchs();
-  }, [AddTaskFormDataSet.current.get('pplx')]);
+  }, [AddTaskFormDataSet.current.get('triggerType')]);
 
   useEffect(() => {
     const init = async () => {
@@ -171,14 +171,6 @@ const AddTask = observer(() => {
             }
           });
           const newSteps = config || [];
-          const pplxResult = (function () {
-            const arr = ['triggerRefs', 'regexMatch', 'exactMatch', 'exactExclude'];
-            for (let i = 0; i < arr.length; i++) {
-              if (Object.keys(jobDetail).includes(arr[i])) {
-                return arr[i];
-              }
-            }
-          }());
           const data = {
             ...jobDetail,
             uploadFilePattern,
@@ -188,10 +180,8 @@ const AddTask = observer(() => {
             dockerArtifactFileName,
             nexusMavenRepoIds,
             zpk,
+            triggerValue: jobDetail.triggerValue && jobDetail.triggerValue.split(','),
             configType,
-            pplx: pplxResult || jobDetail.pplx,
-            // eslint-disable-next-line no-nested-ternary
-            branchs: pplxResult ? (pplxResult !== 'regexMatch' ? jobDetail[pplxResult] && jobDetail[pplxResult].split(',') : jobDetail[pplxResult]) : undefined,
             // triggerRefs: jobDetail.triggerRefs ? jobDetail.triggerRefs.split(',') : [],
             glyyfw: appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')),
             bzmc: newSteps.find(s => s.checked) ? newSteps.find(s => s.checked).name : '',
@@ -261,12 +251,10 @@ const AddTask = observer(() => {
         }
       }
       let data = AddTaskFormDataSet.toData()[0];
-      const matchObj = {};
-      matchObj[data.pplx] = data.pplx !== 'regexMatch' ? data.branchs && data.branchs.join(',') : data.branchs;
       data = {
         ...data,
+        triggerValue: data.triggerValue && data.triggerValue.join(','),
         image: data.selectImage === '1' ? data.image : null,
-        ...matchObj,
         // triggerRefs: data.triggerRefs.join(','),
         metadata: (function () {
           if (data.type === 'build') {
@@ -1200,31 +1188,31 @@ const AddTask = observer(() => {
             <div style={{ display: 'inline-flex' }}>
               <Select
                 onChange={(value) => {
-                  const arr = ['triggerRefs', 'regexMatch', 'exactMatch', 'exactExclude'];
-                  arr.forEach((a) => {
-                    if (a !== value) {
-                      AddTaskFormDataSet.current.set(a, undefined);
-                    }
-                  });
+                  // const arr = ['triggerRefs', 'regexMatch', 'exactMatch', 'exactExclude'];
+                  // arr.forEach((a) => {
+                  //   if (a !== value) {
+                  //     AddTaskFormDataSet.current.set(a, undefined);
+                  //   }
+                  // });
                   AddTaskFormDataSet.current.set('branchs', undefined);
                 }}
                 combo={false}
                 style={{ marginRight: 8 }}
-                name="pplx"
+                name="triggerType"
               >
-                <Option value="triggerRefs">分支类型匹配</Option>
-                <Option value="regexMatch">正则匹配</Option>
-                <Option value="exactMatch">精确匹配</Option>
-                <Option value="exactExclude">精确排除</Option>
+                <Option value="refs">分支类型匹配</Option>
+                <Option value="regex">正则匹配</Option>
+                <Option value="exact_match">精确匹配</Option>
+                <Option value="exact_exclude">精确排除</Option>
               </Select>
-              {AddTaskFormDataSet.current.get('pplx') === 'regexMatch' ? (
-                <TextField name="branchs" />
+              {AddTaskFormDataSet.current.get('triggerType') === 'regex' ? (
+                <TextField name="triggerValue" />
               ) : (
                 <Select
                   combo
                   searchable
                   multiple
-                  name="branchs"
+                  name="triggerValue"
                   showHelp="tooltip"
                   help="您可以在此输入或选择触发该任务的分支类型，若不填写，则默认为所有分支或tag"
                   searchMatcher="branchName"
