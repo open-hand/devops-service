@@ -37,6 +37,7 @@ import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.MapperUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * 〈功能简述〉
@@ -190,7 +191,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     public void retryJob(Long projectId, Long gitlabProjectId, Long jobId) {
         Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
         Assert.notNull(jobId, ERROR_GITLAB_JOB_ID_IS_NULL);
-        AppServiceDTO appServiceDTO = appServiceMapper.listByGitLabProjectIds(Collections.singletonList(gitlabProjectId)).get(0);
+        AppServiceDTO appServiceDTO = appServiceMapper.selectOne(new AppServiceDTO().setGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId)));
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceDTO.getId(), AppServiceEvent.CI_PIPELINE_RETRY_TASK);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId().longValue());
