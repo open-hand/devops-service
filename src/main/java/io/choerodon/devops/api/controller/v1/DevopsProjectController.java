@@ -18,6 +18,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.service.DevopsProjectService;
+import io.choerodon.devops.infra.dto.GitlabProjectSimple;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -97,15 +98,14 @@ public class DevopsProjectController {
 
 
     /**
-     * 查询项目Gitlab Group是否创建成功
-     * 用作Demo数据初始化时查询状态
+     * 查询项目gitlab group信息
      *
      * @param projectId 项目id
      */
     @Permission(level = ResourceLevel.ORGANIZATION,permissionWithin = true)
     @ApiOperation(value = "查询项目gitlab group信息")
     @PostMapping("/gitlab_groups")
-    public ResponseEntity<List<Long>> queryGitlabGroups(
+    public ResponseEntity<List<GitlabProjectSimple>> queryGitlabGroups(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "项目Ids")
