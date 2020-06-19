@@ -161,6 +161,7 @@ function chart_build() {
   FILE_NAME=${TEMP##*/}
   # 通过Choerodon API上传chart包到devops-service
   result_upload_to_devops=$(curl -X POST \
+    -H 'Expect:' \
     -F "token=${Token}" \
     -F "harbor_config_id=${HARBOR_CONFIG_ID}" \
     -F "version=${CI_COMMIT_TAG}" \
