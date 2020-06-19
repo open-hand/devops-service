@@ -347,7 +347,7 @@ const ListView = withRouter(observer((props) => {
         </Tooltip>
       </Permission>
       <Permission
-        service={[]}
+        service={['choerodon.code.project.develop.app-service.ps.permission.update']}
       >
         <Button
           icon="authority"
