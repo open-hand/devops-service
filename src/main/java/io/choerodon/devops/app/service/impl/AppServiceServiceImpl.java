@@ -616,7 +616,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             if (CollectionUtils.isEmpty(appServiceIds)) {
                 return new ArrayList<>();
             }
-            applicationDTOServiceList = appServiceMapper.listProjectMembersAppServiceByActive(projectId, appServiceIds,userId);
+            applicationDTOServiceList = appServiceMapper.listProjectMembersAppServiceByActive(projectId, appServiceIds, userId);
         }
 
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
@@ -1156,14 +1156,15 @@ public class AppServiceServiceImpl implements AppServiceService {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setBaseUrl(url);
         configurationProperties.setType(CHART);
-        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-        ChartClient chartClient = retrofit.create(ChartClient.class);
-        chartClient.getHealth();
-        Call<Object> getHealth = chartClient.getHealth();
         try {
+            Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+            ChartClient chartClient = retrofit.create(ChartClient.class);
+            chartClient.getHealth();
+            Call<Object> getHealth = chartClient.getHealth();
             getHealth.execute();
-        } catch (IOException e) {
-            throw new CommonException("error.chart.check");
+        } catch (Exception e) {
+            LOGGER.error("chart.connection.failed", e);
+            return false;
         }
         return true;
     }
