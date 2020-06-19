@@ -142,6 +142,16 @@ public class GitOpsConstants {
      */
     public static final String CI_JOB_ARTIFACT_NAME_TEMPLATE = "%s-%s.tgz";
 
+    /**
+     * 在ci流水线中用于共享文件的目录
+     */
+    public static final String CHOERODON_CI_CACHE_DIR = "choerodon-ci-cache";
+
+    /**
+     * gitlab ci的 cache key, commit相同的流水线会共享
+     */
+    public static final String GITLAB_CI_DEFAULT_CACHE_KEY = "${CI_COMMIT_SHA}";
+
     public static final Pattern ARTIFACT_NAME_PATTERN = Pattern.compile("[0-9a-zA-Z._-]{6,30}");
 
 

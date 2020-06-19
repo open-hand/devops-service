@@ -40,7 +40,7 @@ const originBranchs = [{
 const obj = {
   Maven: 'Maven构建',
   npm: 'Npm构建',
-  upload: '上传软件包至存储库',
+  // upload: '上传软件包至存储库',
   docker: 'Docker构建',
   chart: 'Chart构建',
   go: 'Go语言构建',
@@ -69,6 +69,7 @@ const AddTask = observer(() => {
     appServiceId,
     PipelineCreateFormDataSet,
     image,
+    intl: { formatMessage },
   } = useAddTaskStore();
 
   const [steps, setSteps] = useState([]);
@@ -147,6 +148,7 @@ const AddTask = observer(() => {
           let dockerFilePath;
           let uploadArtifactFileName;
           let dockerArtifactFileName;
+          const share = [];
           let nexusMavenRepoIds;
           let zpk;
           config && config.forEach((c) => {
@@ -170,6 +172,11 @@ const AddTask = observer(() => {
               c.mavenSettings = Base64.decode(c.mavenSettings);
             }
           });
+          ['toUpload', 'toDownload'].forEach(item => {
+            if (jobDetail[item]) {
+              share.push(item);
+            }
+          });
           const newSteps = config || [];
           const data = {
             ...jobDetail,
@@ -191,6 +198,7 @@ const AddTask = observer(() => {
             password,
             sonarUrl,
             private: newSteps.length > 0 && newSteps.find(s => s.checked).repos ? ['custom'] : '',
+            share,
           };
           AddTaskFormDataSet.loadData([data]);
 
@@ -255,7 +263,10 @@ const AddTask = observer(() => {
         ...data,
         triggerValue: data.triggerValue && data.triggerType !== 'regex' ? data.triggerValue.join(',') : data.triggerValue,
         image: data.selectImage === '1' ? data.image : null,
-        // triggerRefs: data.triggerRefs.join(','),
+
+        toUpload: data.type === 'build' && data.share.includes('toUpload'),
+        toDownload: data.type === 'build' && data.share.includes('toDownload'),
+
         metadata: (function () {
           if (data.type === 'build') {
             return JSON.stringify({
@@ -1116,7 +1127,6 @@ const AddTask = observer(() => {
                     <div style={{ marginBottom: 20 }}>
                       <TextField className="dockerContextDir" style={{ width: 312 }} name="dockerContextDir" showHelp="tooltip" help="ContextPath为docker build命令执行上下文路径。填写相对于代码根目录的路径，如docker" />
                     </div>,
-                    <TextField style={{ width: 339 }} name="dockerArtifactFileName" />,
                   ];
                 }
               }
@@ -1168,6 +1178,7 @@ const AddTask = observer(() => {
     }
   };
 
+  
   const getImageDom = () => [
     <div colSpan={2} newLine className="advanced_text" style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
       高级设置<Icon style={{ fontSize: 18 }} type={expandIf ? 'expand_less' : 'expand_more'} />
@@ -1187,6 +1198,20 @@ const AddTask = observer(() => {
       </Select>
     ) : '',
   ];
+  
+  const getShareSettings = () => (expandIf && AddTaskFormDataSet.current.get('type') === 'build' ? (
+    <div newLine colSpan={2}>
+      <Tips
+        title={formatMessage({ id: 'c7ncd.pipelineManage.create.share.title' })}
+        helpText={formatMessage({ id: 'c7ncd.pipelineManage.create.share.tips' })}
+        newLine
+      />
+      <SelectBox name="share" newLine colSpan={2}>
+        <Option value="toUpload">上传共享目录choerodon-ci-cache</Option>
+        <Option value="toDownload">下载共享目录choerodon-ci-cache</Option>
+      </SelectBox>
+    </div>
+  ) : null);
 
   return (
     <React.Fragment>
@@ -1201,6 +1226,7 @@ const AddTask = observer(() => {
           AddTaskFormDataSet.current.get('type') !== 'custom' ? [
             <TextField name="name" />,
             <TextField name="glyyfw" />,
+
             <div className="matchType" style={{ display: 'inline-flex', position: 'relative' }}>
               <Select
                 onChange={(value) => {
@@ -1255,6 +1281,7 @@ const AddTask = observer(() => {
               )}
             </div>,
             getImageDom(),
+            getShareSettings(),
             AddTaskFormDataSet.current.get('type') !== 'chart' ? getMissionOther() : '',
           ] : [
             <YamlEditor

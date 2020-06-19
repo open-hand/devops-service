@@ -30,14 +30,11 @@ public class CiController {
 
     private final AppServiceService applicationService;
     private final AppServiceVersionService appServiceVersionService;
-    private final DevopsCiJobService devopsCiJobService;
 
     public CiController(AppServiceService applicationService,
-                        DevopsCiJobService devopsCiJobService,
                         AppServiceVersionService appServiceVersionService) {
         this.applicationService = applicationService;
         this.appServiceVersionService = appServiceVersionService;
-        this.devopsCiJobService = devopsCiJobService;
     }
 
     /**
@@ -95,70 +92,11 @@ public class CiController {
         return ResponseEntity.ok(defaultCiImage);
     }
 
+
     @Permission(permissionLogin = true)
     @ApiOperation(value = "判断平台是否有配置sonarqube")
     @GetMapping("/has_default_sonar")
     public ResponseEntity<Boolean> hasDefaultSonarqubeConfig() {
         return ResponseEntity.ok(!StringUtils.isEmpty(sonarqubeUrl));
-    }
-
-    /**
-     * CI校验上传软件包的信息
-     *
-     * @param token        应用服务token
-     * @param commit       ci的commit值
-     * @param ciPipelineId 流水线id
-     * @param ciJobId      流水线的job id
-     * @param artifactName 软件包名称
-     * @return true表示通过校验， 未通过校验则会抛出{@link io.choerodon.core.exception.FeignException}
-     */
-    @Permission(permissionWithin = true)
-    @ApiOperation("CI过程上传软件包校验信息, 大小不得大于200Mi")
-    @PostMapping("/check_artifact_info")
-    public ResponseEntity<Boolean> checkJobArtifactInfo(
-            @ApiParam(value = "应用服务token", required = true)
-            @RequestParam(value = "token") String token,
-            @ApiParam(value = "此次ci的commit", required = true)
-            @RequestParam(value = "commit") String commit,
-            @ApiParam(value = "gitlab内置的流水线id", required = true)
-            @RequestParam(value = "ci_pipeline_id") Long ciPipelineId,
-            @ApiParam(value = "gitlab内置的jobId", required = true)
-            @RequestParam(value = "ci_job_id") Long ciJobId,
-            @ApiParam(value = "ci流水线定义的软件包名称", required = true)
-            @RequestParam(value = "artifact_name") String artifactName,
-            @ApiParam(value = "文件字节数")
-            @RequestParam(value = "file_byte_size") Long fileByteSize) {
-        return ResponseEntity.ok(devopsCiJobService.checkJobArtifactInfo(token, commit, ciPipelineId, ciJobId, artifactName, fileByteSize));
-    }
-
-
-    /**
-     * CI过程保存软件包信息  200 表示ok， 400表示错误
-     *
-     * @param token        应用服务token
-     * @param commit       ci的commit值
-     * @param ciPipelineId 流水线id
-     * @param ciJobId      流水线的job id
-     * @param artifactName 软件包名称
-     * @param fileUrl      软件包文件地址
-     */
-    @Permission(permissionWithin = true)
-    @ApiOperation("CI过程保存软件包信息")
-    @PostMapping("/save_artifact")
-    @ResponseStatus(HttpStatus.OK)
-    public void saveJobArtifactInfo(
-            @ApiParam(value = "应用服务token", required = true)
-            @RequestParam(value = "token") String token,
-            @ApiParam(value = "此次ci的commit", required = true)
-            @RequestParam(value = "commit") String commit,
-            @ApiParam(value = "gitlab内置的流水线id", required = true)
-            @RequestParam(value = "ci_pipeline_id") Long ciPipelineId,
-            @ApiParam(value = "gitlab内置的jobId", required = true)
-            @RequestParam(value = "ci_job_id") Long ciJobId,
-            @ApiParam(value = "ci流水线定义的软件包名称", required = true)
-            @RequestParam(value = "artifact_name") String artifactName,
-            @ApiParam(value = "软件包地址", required = true)
-            @RequestParam(value = "file_url") String fileUrl) {
-        devopsCiJobService.saveArtifactInformation(token, commit, ciPipelineId, ciJobId, artifactName, fileUrl);
     }
 }

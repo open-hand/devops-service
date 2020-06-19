@@ -226,56 +226,14 @@ public class GitlabCiUtil {
     }
 
     /**
-     * 将mvn构建的jar包进行打包上传
-     *
-     * @param artifactFileName 软件包名称
-     * @param directory        要打包的文件路径pattern
-     * @param projectId        项目id
-     * @param organizationId   组织id
-     * @return 上传软件包的shell脚本
-     */
-    public static String generateUploadTgzScripts(Long projectId, String artifactFileName, String directory, Long organizationId) {
-        String rawCommand = "c7nCompressAndUploadArtifact %s %s %s %s";
-        return String.format(rawCommand, artifactFileName, directory, projectId, organizationId);
-    }
-
-    /**
-     * 生成用于下载从‘上传软件包’步骤中上传的软件包到本地并解压
-     *
-     * @param artifactFileName 需要下载的包名称
-     */
-    private static String generateDownloadTgzScripts(String artifactFileName, Long projectId) {
-        String rawCommand = "c7nDownloadArtifactAndUnCompress %s %s";
-        return String.format(rawCommand, artifactFileName, projectId);
-    }
-
-    /**
      * 生成docker构建需要的脚本
      *
      * @param dockerBuildContextDir docker构建上下文目录
      * @param dockerFilePath        dockerfile文件路径
      */
-    private static String generateDockerScripts(String dockerBuildContextDir, String dockerFilePath) {
+    public static String generateDockerScripts(String dockerBuildContextDir, String dockerFilePath) {
         String rawCommand = "kaniko -c $PWD/%s -f $PWD/%s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
         return String.format(rawCommand, dockerBuildContextDir, dockerFilePath);
-    }
-
-    /**
-     * 生成docker构建的步骤的脚本
-     *
-     * @param artifactFileName      需要下载的包名称
-     * @param dockerBuildContextDir docker构建上下文
-     * @param dockerFilePath        dockerfile路径
-     * @return 脚本
-     */
-    public static List<String> generateDockerScripts(Long projectId, String artifactFileName, String dockerBuildContextDir, String dockerFilePath) {
-        List<String> scripts = new ArrayList<>();
-        // 只有需要下载时才生成此步骤
-        if (!StringUtils.isEmpty(artifactFileName)) {
-            scripts.add(GitlabCiUtil.generateDownloadTgzScripts(artifactFileName, projectId));
-        }
-        scripts.add(GitlabCiUtil.generateDockerScripts(Objects.requireNonNull(dockerBuildContextDir), Objects.requireNonNull(dockerFilePath)));
-        return scripts;
     }
 
     /**
@@ -287,6 +245,11 @@ public class GitlabCiUtil {
         return GitOpsConstants.CHART_BUILD;
     }
 
+
+    public static String generateCreateCacheDir(String cacheDir) {
+        return "mkdir -p " + Objects.requireNonNull(cacheDir);
+    }
+    
     public static void processTriggerRefs(CiJob ciJob, String triggerRefs) {
         OnlyExceptPolicy onlyExceptPolicy = new OnlyExceptPolicy();
         List<String> refs = new ArrayList<>();

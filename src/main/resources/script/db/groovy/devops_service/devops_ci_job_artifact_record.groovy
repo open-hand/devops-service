@@ -36,4 +36,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_artifact_record.groovy') {
             column(name: "gitlab_job_id")
         }
     }
+
+    // TODO 0.23版本删除
 }

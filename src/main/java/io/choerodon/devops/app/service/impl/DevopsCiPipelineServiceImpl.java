@@ -7,6 +7,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -29,6 +34,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
+import io.choerodon.devops.infra.dto.gitlab.ci.*;
 import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
@@ -362,9 +368,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 删除job记录
         devopsCiJobRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
 
-        // 删除pipeline之前执行过程上传的软件包数据
-        devopsCiJobService.deleteArtifactsByGitlabProjectId(projectId, devopsCiPipelineRecordMapper.listGitlabPipelineIdsByPipelineId(ciPipelineId));
-
         // 删除pipeline记录
         devopsCiPipelineRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
 
@@ -572,6 +575,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         // 如果用户指定了就使用用户指定的，如果没有指定就使用默认的猪齿鱼提供的镜像
         gitlabCi.setImage(StringUtils.isEmpty(devopsCiPipelineVO.getImage()) ? defaultCiImage : devopsCiPipelineVO.getImage());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         gitlabCi.setStages(stages);
         devopsCiPipelineVO.getStageList().forEach(stageVO -> {
@@ -585,13 +589,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         ciJob.setImage(job.getImage());
                     }
                     ciJob.setStage(stageVO.getName());
+                    ciJob.setScript(buildScript(Objects.requireNonNull(projectDTO.getOrganizationId()), projectId, job));
+                    ciJob.setCache(buildJobCache(job));
                     processOnlyAndExcept(job, ciJob);
-                    ciJob.setScript(buildScript(projectId, job));
                     gitlabCi.addJob(job.getName(), ciJob);
                 });
             }
         });
-        gitlabCi.setBeforeScript(ArrayUtil.singleAsList(GitOpsConstants.CHOERODON_BEFORE_SCRIPT));
+        buildBeforeScript(gitlabCi);
         return gitlabCi;
     }
 
@@ -661,12 +666,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     /**
      * 把配置转换为gitlab-ci配置（maven,sonarqube）
      *
-     * @param projectId 项目id
-     * @param jobVO     生成脚本
+     * @param organizationId 组织id
+     * @param projectId      项目id
+     * @param jobVO          生成脚本
      * @return 生成的脚本列表
      */
-    private List<String> buildScript(final Long projectId, DevopsCiJobVO jobVO) {
+    private List<String> buildScript(final Long organizationId, final Long projectId, DevopsCiJobVO jobVO) {
         Assert.notNull(jobVO, "Job can't be null");
+        Assert.notNull(organizationId, "Organization id can't be null");
+        Assert.notNull(projectId, "project id can't be null");
         final Long jobId = jobVO.getId();
         Assert.notNull(jobId, "Ci job id is required.");
 
@@ -729,12 +737,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                 boolean hasSettings = buildAndSaveMavenSettings(projectId, jobId, config);
                                 result.addAll(buildMavenScripts(projectId, jobId, config, hasSettings));
                                 break;
-                            case UPLOAD:
-                                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-                                result.add(GitlabCiUtil.generateUploadTgzScripts(projectId, config.getArtifactFileName(), config.getUploadFilePattern(), Objects.requireNonNull(projectDTO.getOrganizationId())));
-                                break;
                             case DOCKER:
-                                result.addAll(GitlabCiUtil.generateDockerScripts(projectId, config.getArtifactFileName(), config.getDockerContextDir(), config.getDockerFilePath()));
+                                result.add(GitlabCiUtil.generateDockerScripts(config.getDockerContextDir(), config.getDockerFilePath()));
                                 break;
                             case MAVEN_DEPLOY:
                                 List<MavenRepoVO> repos = buildAndSaveMavenSettings(projectId, jobId, config.getSequence(), config.getMavenDeployRepoSettings());
@@ -742,6 +746,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                 break;
                         }
                     });
+
             return result;
         } else if (CiJobTypeEnum.CHART.value().equals(jobVO.getType())) {
             // 生成chart步骤
@@ -794,6 +799,38 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, ciConfigTemplateVO.getSequence(), settings);
         MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
         return true;
+    }
+
+    @Nullable
+    private Cache buildJobCache(DevopsCiJobVO jobConfig) {
+        boolean isToUpload = Boolean.TRUE.equals(jobConfig.getToUpload());
+        boolean isToDownload = Boolean.TRUE.equals(jobConfig.getToDownload());
+        if (isToUpload && isToDownload) {
+            return constructCache(CachePolicy.PULL_PUSH.getValue());
+        } else if (isToDownload) {
+            return constructCache(CachePolicy.PULL.getValue());
+        } else if (isToUpload) {
+            return constructCache(CachePolicy.PUSH.getValue());
+        } else {
+            return null;
+        }
+    }
+
+    private Cache constructCache(String policy) {
+        Cache cache = new Cache();
+        cache.setKey(GitOpsConstants.GITLAB_CI_DEFAULT_CACHE_KEY);
+        cache.setPaths(Collections.singletonList(GitOpsConstants.CHOERODON_CI_CACHE_DIR));
+        cache.setPolicy(policy);
+        return cache;
+    }
+
+    private void buildBeforeScript(GitlabCi gitlabCi) {
+        List<String> beforeScripts = ArrayUtil.singleAsList(GitOpsConstants.CHOERODON_BEFORE_SCRIPT);
+        // 如果有job启用了缓存设置, 就创建缓存目录
+        if (gitlabCi.getJobs().values().stream().anyMatch(j -> j.getCache() != null)) {
+            beforeScripts.add(GitlabCiUtil.generateCreateCacheDir(GitOpsConstants.CHOERODON_CI_CACHE_DIR));
+        }
+        gitlabCi.setBeforeScript(beforeScripts);
     }
 
     /**

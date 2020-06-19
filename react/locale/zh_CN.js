@@ -541,7 +541,9 @@ const appService = {
     '您可在此批量选择应用服务添加至导入列表。此处展示的均是有代码库的应用服务',
   'c7ncd.appService.import.tips':
     '导入至本项目下的应用服务的名称与编码具有唯一性。即在导入之前，请先确认服务的名称和编码与本项目下已有的应用服务不同',
-  'c7ncd.appService.address.tips':
+  'c7ncd.appService.address.gitlab.tips':
+    '此处支持HTTP或HTTPS地址',
+  'c7ncd.appService.address.github.tips':
     '此处仅支持HTTPS地址',
   'c7ncd.appService.detail.share.tips':
     '共享设置用于为该应用服务添加共享规则，并按照共享规则分别将其共享给范围内的项目',
@@ -802,6 +804,8 @@ const pipelineManage = {
   'c7ncd.pipelineManage.record.empty.des': '已跳过该流水线的首次执行。您可直接点击全新执行来重跑流水线',
   'c7ncd.pipelineManage.record.empty.title.other': '阶段信息为空',
   'c7ncd.pipelineManage.record.empty.des.other': '未获取到此次执行的阶段信息',
+  'c7ncd.pipelineManage.create.share.title': '共享目录设置',
+  'c7ncd.pipelineManage.create.share.tips': '若勾选上传共享目录，则会将此任务中产生的工件或其它文件上传至共享目录，供之后的任务下载使用。若勾选下载共享目录，则会在此任务中下载使用该条流水线中已上传至共享目录中的工件',
   'c7ncd.pipelineManage.settings.global': '全局变量配置',
   'c7ncd.pipelineManage.settings.local': '流水线变量配置',
   'c7ncd.pipelineManage.settings.add': '添加变量',

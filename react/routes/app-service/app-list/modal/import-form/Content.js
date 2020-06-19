@@ -127,7 +127,7 @@ const ImportForm = injectIntl(observer((props) => {
           <TextField
             name="repositoryUrl"
             disabled={record.get('platformType') === 'github' && record.get('isTemplate')}
-            addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.address.tips` })} />}
+            addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.address.${record.get('platformType')}.tips` })} />}
           />
           {record.get('platformType') === 'gitlab' && <TextField name="accessToken" />}
           <Select name="type" clearButton={false} />

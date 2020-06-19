@@ -189,7 +189,10 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       }),
       validator: checkImage,
       defaultValue: AddTaskUseStore.getDefaultImage,
-    },
-    ],
+    }, {
+      name: 'share',
+      type: 'string',
+      multiple: true,
+    }],
   });
 };

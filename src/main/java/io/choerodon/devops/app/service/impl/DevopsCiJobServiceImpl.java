@@ -63,18 +63,11 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private static final String SONAR_KEY = "%s-%s:%s";
     private static final String SONAR = "sonar";
 
-    /**
-     * ci的上传的最大文件字节数，默认200 * 1024 * 1024
-     */
-    @Value("${ci.max.file.bytes:209715200}")
-    private Long maxFileSize;
-
     private DevopsCiJobMapper devopsCiJobMapper;
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     private UserAttrService userAttrService;
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
     private AppServiceService appServiceService;
-    private DevopsCiJobArtifactRecordMapper devopsCiJobArtifactRecordMapper;
     private DevopsCiPipelineMapper devopsCiPipelineMapper;
     private DevopsCiPipelineService devopsCiPipelineService;
     private DevopsCiJobRecordService devopsCiJobRecordService;
@@ -87,7 +80,6 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper,
                                   GitlabServiceClientOperator gitlabServiceClientOperator,
                                   UserAttrService userAttrService,
-                                  DevopsCiJobArtifactRecordMapper devopsCiJobArtifactRecordMapper,
                                   AppServiceService appServiceService,
                                   DevopsCiPipelineMapper devopsCiPipelineMapper,
                                   DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
@@ -102,7 +94,6 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
         this.userAttrService = userAttrService;
         this.devopsCiMavenSettingsMapper = devopsCiMavenSettingsMapper;
-        this.devopsCiJobArtifactRecordMapper = devopsCiJobArtifactRecordMapper;
         this.appServiceService = appServiceService;
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
         this.devopsCiPipelineService = devopsCiPipelineService;
@@ -250,68 +241,5 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         }
 
         devopsCiMavenSettingsMapper.deleteByJobIds(jobIds);
-    }
-
-
-    @Override
-    public void saveArtifactInformation(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName, String fileUrl) {
-        try {
-            DevopsCiJobArtifactRecordDTO recordDTO = devopsCiJobArtifactRecordMapper.queryByPipelineIdAndName(ciPipelineId, artifactName);
-            if (recordDTO == null) {
-                // 插入纪录到数据库
-                DevopsCiJobArtifactRecordDTO devopsCiJobArtifactRecordDTO = new DevopsCiJobArtifactRecordDTO(ciPipelineId, ciJobId, artifactName, fileUrl);
-                MapperUtil.resultJudgedInsert(devopsCiJobArtifactRecordMapper, devopsCiJobArtifactRecordDTO, "error.insert.artifact.record");
-            } else {
-                // 更新数据库纪录
-                recordDTO.setFileUrl(fileUrl);
-                recordDTO.setGitlabPipelineId(ciPipelineId);
-                recordDTO.setGitlabJobId(ciJobId);
-                recordDTO.setName(artifactName);
-                devopsCiJobArtifactRecordMapper.updateByPrimaryKeySelective(recordDTO);
-            }
-        } catch (Exception e) {
-            throw new FeignException(e.getMessage(), e.getCause());
-        }
-    }
-
-    @Override
-    public Boolean checkJobArtifactInfo(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName, Long fileByteSize) {
-        // 这个方法暂时用不到的字段留待后用
-        AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
-        if (appServiceDTO == null) {
-            throw new FeignException(ERROR_TOKEN_MISMATCH);
-        }
-
-        if (!ARTIFACT_NAME_PATTERN.matcher(artifactName).matches()) {
-            throw new FeignException("error.artifact.name.invalid", artifactName);
-        }
-        if (fileByteSize > maxFileSize) {
-            throw new FeignException("error.artifact.too.big", fileByteSize, maxFileSize);
-        }
-        return Boolean.TRUE;
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public void deleteArtifactsByGitlabProjectId(Long projectId, List<Long> gitlabPipelineIds) {
-        if (CollectionUtils.isEmpty(gitlabPipelineIds)) {
-            return;
-        }
-        List<DevopsCiJobArtifactRecordDTO> artifacts = devopsCiJobArtifactRecordMapper.listByGitlabPipelineIds(gitlabPipelineIds);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        if (!artifacts.isEmpty()) {
-            fileClient.deleteFileByUrl(projectDTO.getOrganizationId(), GitOpsConstants.DEV_OPS_CI_ARTIFACT_FILE_BUCKET, artifacts.stream().map(DevopsCiJobArtifactRecordDTO::getFileUrl).collect(Collectors.toList()));
-            devopsCiJobArtifactRecordMapper.deleteByGitlabPipelineIds(gitlabPipelineIds);
-        }
-    }
-
-    @Override
-    public String queryArtifactUrl(String token, String commit, Long ciPipelineId, Long ciJobId, String artifactName) {
-        AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
-        if (appServiceDTO == null) {
-            throw new DevopsCiInvalidException(ERROR_TOKEN_MISMATCH);
-        }
-        DevopsCiJobArtifactRecordDTO recordDTO = devopsCiJobArtifactRecordMapper.queryByPipelineIdAndName(ciPipelineId, artifactName);
-        return recordDTO == null ? null : recordDTO.getFileUrl();
     }
 }

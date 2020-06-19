@@ -1,5 +1,5 @@
 import { axios } from '@choerodon/boot';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, Fragment, useRef } from 'react';
 import { Form, TextField, Select, SelectBox, Modal, Button, DataSet } from 'choerodon-ui/pro';
 import { message, Icon } from 'choerodon-ui';
 import { observer } from 'mobx-react-lite';
@@ -9,6 +9,7 @@ import { usePipelineManageStore } from '../../stores';
 import StageEditBlock from '../PipelineFlow/components/stageEditBlock';
 
 import './pipelineCreate.less';
+import Tips from '../../../../../lib/components/new-tips';
 
 const { Option } = Select;
 

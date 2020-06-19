@@ -31,11 +31,11 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.GitlabPipelineDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
-import io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.AppServiceEvent;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.JobStatusEnum;
+import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.SonarQubeType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -77,7 +77,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private final BaseServiceClientOperator baseServiceClientOperator;
     private final GitlabServiceClientOperator gitlabServiceClientOperator;
     private final DevopsGitlabCommitService devopsGitlabCommitService;
-    private final DevopsCiJobArtifactRecordMapper devopsCiJobArtifactRecordMapper;
     private final CiPipelineSyncHandler ciPipelineSyncHandler;
     private final CheckGitlabAccessLevelService checkGitlabAccessLevelService;
     private final AppServiceMapper appServiceMapper;
@@ -98,7 +97,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                              CheckGitlabAccessLevelService checkGitlabAccessLevelService,
                                              BaseServiceClientOperator baseServiceClientOperator,
                                              GitlabServiceClientOperator gitlabServiceClientOperator,
-                                             DevopsCiJobArtifactRecordMapper devopsCiJobArtifactRecordMapper,
                                              @Lazy CiPipelineSyncHandler ciPipelineSyncHandler,
                                              DevopsGitlabCommitService devopsGitlabCommitService) {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
@@ -112,7 +110,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         this.userAttrService = userAttrService;
         this.baseServiceClientOperator = baseServiceClientOperator;
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
-        this.devopsCiJobArtifactRecordMapper = devopsCiJobArtifactRecordMapper;
         this.devopsGitlabCommitService = devopsGitlabCommitService;
         this.ciPipelineSyncHandler = ciPipelineSyncHandler;
         this.checkGitlabAccessLevelService = checkGitlabAccessLevelService;
@@ -267,8 +264,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             devopsCiStageRecordVOS.forEach(stageRecord -> {
                 List<DevopsCiJobRecordDTO> ciJobRecordDTOS = jobRecordMap.get(stageRecord.getName());
                 if (!CollectionUtils.isEmpty(ciJobRecordDTOS)) {
-                    Map<String, List<DevopsCiJobRecordDTO>> statsuMap = ciJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStatus));
-                    calculateStageStatus(stageRecord, statsuMap);
+                    Map<String, List<DevopsCiJobRecordDTO>> statusMap = ciJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStatus));
+                    calculateStageStatus(stageRecord, statusMap);
                 }
 
             });
@@ -293,7 +290,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 GitUserNameUtil.getAdminId());
         List<JobDTO> jobDTOList = gitlabServiceClientOperator.listJobs(gitlabProjectId, gitlabPipelineId, GitUserNameUtil.getAdminId());
 
-        handUpdate(appServiceDTO, pipelineRecordId, TypeUtil.objToLong(gitlabPipelineId), pipelineDTO, jobDTOList);
+        Long gitlabPipelineIdLong = TypeUtil.objToLong(gitlabPipelineId);
+        handUpdate(appServiceDTO, pipelineRecordId, gitlabPipelineIdLong, pipelineDTO, jobDTOList);
     }
 
     private void handUpdate(AppServiceDTO appServiceDTO, Long pipelineRecordId, Long gitlabPipelineId, GitlabPipelineDTO gitlabPipelineDTO, List<JobDTO> jobs) {
@@ -415,7 +413,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsCiJobRecordDTOS = filterJobs(devopsCiJobRecordDTOS);
 
         // 添加job type
-        List<DevopsCiJobRecordVO> devopsCiJobRecordVOList = ConvertUtils.convertList(devopsCiJobRecordDTOS, this::convertJobRecord);
+        List<DevopsCiJobRecordVO> devopsCiJobRecordVOList = ConvertUtils.convertList(devopsCiJobRecordDTOS, DevopsCiJobRecordVO.class);
 
         // 添加sonar
         for (DevopsCiJobRecordVO devopsCiJobRecordVO : devopsCiJobRecordVOList) {
@@ -455,21 +453,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsCiPipelineRecordVO.setStageRecordVOList(devopsCiStageRecordVOS);
 
         return devopsCiPipelineRecordVO;
-    }
-
-    /**
-     * 将CiJob纪录进行转化和信息填充
-     *
-     * @param devopsCiJobRecordDTO 数据库中查出的纪录
-     * @return 接口需要的数据
-     */
-    private DevopsCiJobRecordVO convertJobRecord(DevopsCiJobRecordDTO devopsCiJobRecordDTO) {
-        DevopsCiJobRecordVO result = ConvertUtils.convertObject(devopsCiJobRecordDTO, DevopsCiJobRecordVO.class);
-        List<DevopsCiJobArtifactRecordDTO> artifacts = devopsCiJobArtifactRecordMapper.listByGitlabJobId(devopsCiJobRecordDTO.getGitlabJobId());
-        if (!artifacts.isEmpty()) {
-            result.setArtifacts(ConvertUtils.convertList(artifacts, artifact -> new DevopsCiArtifactVO(artifact.getName(), artifact.getFileUrl())));
-        }
-        return result;
     }
 
     /**

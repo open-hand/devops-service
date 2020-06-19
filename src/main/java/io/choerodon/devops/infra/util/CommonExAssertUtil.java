@@ -8,7 +8,10 @@ import io.choerodon.core.exception.CommonException;
  * @author zmf
  * @since 2020/5/26
  */
-public class CommonExAssertUtil {
+public final class CommonExAssertUtil {
+    private CommonExAssertUtil() {
+    }
+
     /**
      * 断言为true
      *

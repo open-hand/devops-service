@@ -45,6 +45,7 @@ rebel.xml
 ### native temp files
 /deployfile
 /tmp
+/temp
 
 ~$micro-service-init-data.xlsx
 

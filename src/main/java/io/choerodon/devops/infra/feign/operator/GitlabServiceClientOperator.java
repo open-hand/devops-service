@@ -1000,7 +1000,7 @@ public class GitlabServiceClientOperator {
             return responseEntity.getBody();
         } catch (Exception e) {
             LOGGER.info("Error occurred when check whether the user with gitlab id {} is root...", gitlabUserId);
-            LOGGER.info("The exception is {}", e);
+            LOGGER.info("The exception is: ", e);
             return false;
         }
     }
@@ -1028,7 +1028,7 @@ public class GitlabServiceClientOperator {
             gitlabServiceClient.denyAccessRequest(Objects.requireNonNull(groupId), Objects.requireNonNull(userIdToBeDenied));
         } catch (Exception e) {
             LOGGER.info("Swallow exception when denying access request of group id {}, userIdToBeDenied {}", groupId, userIdToBeDenied);
-            LOGGER.info("The exception is {}", e);
+            LOGGER.info("The exception is: ", e);
         }
     }
 

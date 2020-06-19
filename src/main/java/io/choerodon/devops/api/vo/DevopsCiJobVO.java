@@ -10,14 +10,14 @@ import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author wanghao
- * @Date 2020/4/2 17:00
+ * @since 2020/4/2 17:00
  */
-@Table(name = "devops_ci_job")
 public class DevopsCiJobVO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @ApiModelProperty("任务名称")
     @NotEmpty(message = "error.job.name.cannot.be.null")
     private String name;
@@ -27,8 +27,10 @@ public class DevopsCiJobVO {
 
     @ApiModelProperty("阶段id")
     private Long ciStageId;
+
     @ApiModelProperty("流水线id")
     private Long ciPipelineId;
+
     @ApiModelProperty("任务类型")
     @NotEmpty(message = "error.job.type.cannot.be.null")
     private String type;
@@ -45,6 +47,12 @@ public class DevopsCiJobVO {
     @ApiModelProperty("详细信息")
     @NotEmpty(message = "error.job.metadata.cannot.be.null")
     private String metadata;
+
+    @ApiModelProperty("是否上传共享目录的内容 / 默认为false")
+    private Boolean toUpload;
+
+    @ApiModelProperty("是否下载共享目录的内容 / 默认为false")
+    private Boolean toDownload;
 
     private Long objectVersionNumber;
 
@@ -126,5 +134,21 @@ public class DevopsCiJobVO {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public Boolean getToUpload() {
+        return toUpload;
+    }
+
+    public void setToUpload(Boolean toUpload) {
+        this.toUpload = toUpload;
+    }
+
+    public Boolean getToDownload() {
+        return toDownload;
+    }
+
+    public void setToDownload(Boolean toDownload) {
+        this.toDownload = toDownload;
     }
 }
