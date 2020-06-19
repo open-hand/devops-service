@@ -575,16 +575,18 @@ const AddTask = observer(() => {
       }] : [];
       let extra = [];
       if (value === 'Maven') {
-        extra = [{
-          name: '上传软件包至制品库',
-          type: 'maven_deploy',
-          checked: false,
-          yaml: useStore.getYaml.maven_deploy,
-        }, {
-          name: 'Docker构建',
-          type: 'docker',
-          checked: false,
-        }];
+        extra = [
+        //   {
+        //   name: '上传软件包至制品库',
+        //   type: 'maven_deploy',
+        //   checked: false,
+        //   yaml: useStore.getYaml.maven_deploy,
+        // },
+          {
+            name: 'Docker构建',
+            type: 'docker',
+            checked: false,
+          }];
       } else if (value === 'npm') {
         extra = [{
           name: 'Docker构建',
