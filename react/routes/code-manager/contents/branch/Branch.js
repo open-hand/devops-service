@@ -165,6 +165,16 @@ function Branch(props) {
       cancelText: <FormattedMessage id="cancel" />,
     });
   }
+
+  async function handleMergeRequest(record) {
+    try {
+      await branchStore.checkCreate(projectId, appServiceId, 'MERGE_REQUEST_CREATE');
+      window.open(`${record.get('commitUrl').split('/commit')[0]}/merge_requests/new?change_branches=true&merge_request[source_branch]=${record.get('branchName')}&merge_request[target_branch]=master`);
+    } catch (e) {
+      // return
+    }
+  }
+
   // 分支名称渲染函数
   function branchNameRenderer({ record, text }) {
     const status = record.get('status');
@@ -196,9 +206,7 @@ function Branch(props) {
           'choerodon.code.project.develop.code-management.ps.default',
         ],
         text: formatMessage({ id: 'branch.request' }),
-        action: () => {
-          window.open(`${record.get('commitUrl').split('/commit')[0]}/merge_requests/new?change_branches=true&merge_request[source_branch]=${record.get('branchName')}&merge_request[target_branch]=master`);
-        },
+        action: () => handleMergeRequest(record),
       },
       {
         service: [
