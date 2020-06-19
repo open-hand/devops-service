@@ -139,8 +139,9 @@ public class GitUtil {
     public static String getGitlabSshUrl(Pattern pattern, String url, String orgCode, String proCode, String envCode, EnvironmentType environmentType, String clusterCode) {
         final String groupSuffix = GitOpsUtil.getGroupSuffixByEnvType(environmentType);
         String result = "";
+        // 这里url分割有可能产生三段, 如: ssh://git@192.168.13.12:30022
+        String[] urls = url.split(":");
         if (url.contains("@")) {
-            String[] urls = url.split(":");
             if (urls.length == 1) {
                 result = String.format("%s:%s-%s%s/%s.git",
                         url, orgCode, proCode, groupSuffix, envCode);
@@ -148,10 +149,12 @@ public class GitUtil {
                 if (pattern.matcher(urls[1]).matches()) {
                     result = String.format("ssh://%s/%s-%s%s/%s.git",
                             url, orgCode, proCode, groupSuffix, envCode);
+                } else if (urls.length == 3) {
+                    result = String.format("%s/%s-%s%s/%s.git",
+                            url, orgCode, proCode, groupSuffix, envCode);
                 }
             }
         } else {
-            String[] urls = url.split(":");
             if (urls.length == 1) {
                 result = String.format("git@%s:%s-%s%s/%s.git",
                         url, orgCode, proCode, groupSuffix, envCode);
@@ -176,20 +179,21 @@ public class GitUtil {
      */
     public static String getAppServiceSshUrl(String sshUrl, String orgCode, String proCode, String appServiceCode) {
         String result = "";
+        // 这里url分割有可能产生三段, 如: ssh://git@192.168.13.12:30022
+        String[] urls = sshUrl.split(":");
         if (sshUrl.contains("@")) {
-            String[] urls = sshUrl.split(":");
             if (urls.length == 1) {
                 result = String.format("%s:%s-%s/%s.git", sshUrl, orgCode, proCode, appServiceCode);
             } else {
                 if (PATTERN.matcher(urls[1]).matches()) {
                     result = String.format("ssh://%s/%s-%s/%s.git",
                             sshUrl, orgCode, proCode, appServiceCode);
-                } else {
-                    LOGGER.debug("Unexpected case occurred when getting app-service ssh url: the gitlabSshUrl is {}, the orgCode is {}, the proCode is {} and the appServiceCode is {}", sshUrl, orgCode, proCode, appServiceCode);
+                } else if (urls.length == 3) {
+                    result = String.format("%s/%s-%s/%s.git",
+                            sshUrl, orgCode, proCode, appServiceCode);
                 }
             }
         } else {
-            String[] urls = sshUrl.split(":");
             if (urls.length == 1) {
                 result = String.format("git@%s:%s-%s/%s.git",
                         sshUrl, orgCode, proCode, appServiceCode);
