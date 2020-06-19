@@ -1,14 +1,21 @@
 package io.choerodon.devops.infra.dto;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.List;
 
 /**
  * @author zmf
  */
 public class DevopsEnvironmentViewDTO {
+    @ApiModelProperty("环境id")
     private Long id;
+    @ApiModelProperty("环境名称")
     private String name;
+    @ApiModelProperty("集群id")
     private Long clusterId;
+    @ApiModelProperty("环境code")
+    private String code;
     private List<DevopsApplicationViewDTO> apps;
 
     public Long getId() {
@@ -41,5 +48,14 @@ public class DevopsEnvironmentViewDTO {
 
     public void setApps(List<DevopsApplicationViewDTO> apps) {
         this.apps = apps;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public DevopsEnvironmentViewDTO setCode(String code) {
+        this.code = code;
+        return this;
     }
 }

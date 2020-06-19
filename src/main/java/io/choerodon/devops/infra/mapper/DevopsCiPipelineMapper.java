@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -21,6 +22,7 @@ public interface DevopsCiPipelineMapper extends BaseMapper<DevopsCiPipelineDTO> 
      * 查询项目下流水线集合
      */
     List<DevopsCiPipelineVO> queryByProjectIdAndName(@Param("projectId") Long projectId,
+                                                     @Param("appServiceIds") Set<Long> appServiceIds,
                                                      @Param("name") String name);
 
     /**

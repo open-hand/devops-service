@@ -160,7 +160,7 @@ export default function useStore() {
       this.setLoading(true);
       const postData = getTablePostData();
       try {
-        const res = await axios.post(`/devops/v1/projects/${projectId}/app_service/page_by_options`, JSON.stringify(postData));
+        const res = await axios.post(`/devops/v1/projects/${projectId}/app_service/page_by_options?checkMember=true`, JSON.stringify(postData));
         if (res && !res.failed) {
           const hasData = res.list && res.list.length;
           this.setHasApp(hasData);

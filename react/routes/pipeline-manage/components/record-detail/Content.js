@@ -11,9 +11,11 @@ import './index.less';
 export default observer(() => {
   const {
     intl: { formatMessage },
+    AppState: { currentMenuType: { projectId } },
     intlPrefix,
     prefixCls,
     detailDs,
+    store,
   } = useRecordDetailStore();
 
   const record = useMemo(() => detailDs.current, [detailDs.current]);
@@ -36,6 +38,16 @@ export default observer(() => {
     const { appServiceName: name } = record.get('devopsCiPipelineVO') || {};
     return name;
   }
+
+  async function linkToGitlab(url) {
+    try {
+      const { appServiceId } = record.get('devopsCiPipelineVO') || {};
+      await store.checkLinkToGitlab(projectId, appServiceId);
+      window.open(url);
+    } catch (e) {
+      // return;
+    }
+  }
   
   function renderCommit({ value }) {
     const { commitContent, commitSha, commitUrl, ref, userHeadUrl, userName, gitlabProjectUrl } = value || {};
@@ -43,34 +55,28 @@ export default observer(() => {
       <div className={`${prefixCls}-commit`}>
         <div className={`${prefixCls}-commit-title`}>
           <Icon type="branch" className={`${prefixCls}-commit-title-branch`} />
-          <a
-            href={`${gitlabProjectUrl}/commits/${ref}`}
-            target="_blank"
-            rel="nofollow me noopener noreferrer"
+          <span
+            onClick={() => linkToGitlab(`${gitlabProjectUrl}/commits/${ref}`)}
             className={`${prefixCls}-commit-title-ref`}
           >
             <span>{ref}</span>
-          </a>
+          </span>
           <Icon type="point" className={`${prefixCls}-commit-title-point`} />
-          <a
-            href={commitUrl}
-            target="_blank"
-            rel="nofollow me noopener noreferrer"
+          <span
+            onClick={() => linkToGitlab(commitUrl)}
             className={`${prefixCls}-commit-title-sha`}
           >
             <span>{commitSha ? commitSha.slice(0, 8) : null}</span>
-          </a>
+          </span>
         </div>
         <div className={`${prefixCls}-commit-content`}>
           <UserInfo name={userName || '?'} avatar={userHeadUrl} showName={false} />
-          <a
-            href={commitUrl}
-            target="_blank"
-            rel="nofollow me noopener noreferrer"
+          <span
+            onClick={() => linkToGitlab(commitUrl)}
             className={`${prefixCls}-commit-content-text`}
           >
             <span>{commitContent}</span>
-          </a>
+          </span>
         </div>
       </div>
     );

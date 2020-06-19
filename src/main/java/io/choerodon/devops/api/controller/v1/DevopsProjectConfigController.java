@@ -33,7 +33,7 @@ public class DevopsProjectConfigController {
     AppServiceService appServiceService;
 
     /**
-     * 项目下处理配置
+     * 项目下处理配置 （项目下配置库的接口不要了）
      *
      * @param projectId         项目id
      * @param devopsConfigRepVO 配置信息

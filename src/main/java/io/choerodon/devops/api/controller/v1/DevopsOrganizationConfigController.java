@@ -32,7 +32,7 @@ public class DevopsOrganizationConfigController {
     @Autowired
     private AppServiceService appServiceService;
 
-
+    //组织下创建配置harbor的逻辑不要了
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织下创建配置")
     @PostMapping

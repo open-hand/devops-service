@@ -7,6 +7,7 @@ import { DataSet } from 'choerodon-ui/pro';
 import { useCodeManagerStore } from '../../../stores';
 import getTablePostData from '../../../../../utils/getTablePostData';
 import TableDataset from './TableDataSet';
+import useStore from './useStore';
 
 const Store = createContext();
 
@@ -26,6 +27,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       children,
       intlPrefix,
     } = props;
+    const branchStore = useStore();
 
     const appServiceId = selectAppDs.current && selectAppDs.current.get('appServiceId');
     const tableDs = useMemo(() => new DataSet(TableDataset({ projectId, formatMessage, appServiceId })), []);
@@ -37,6 +39,20 @@ export const StoreProvider = injectIntl(inject('AppState')(
             url: `devops/v1/projects/${projectId}/app_service/${appServiceId}/git/page_branch_by_options`,
             method: 'post',
             data: JSON.stringify(getTablePostData(data)),
+            transformResponse: (response) => {
+              try {
+                if (!response) {
+                  branchStore.setIsEmpty(true);
+                  return response;
+                } else {
+                  branchStore.setIsEmpty(false);
+                }
+                const result = JSON.parse(response);
+                return result;
+              } catch (e) {
+                return response;
+              }
+            },
           }),
           destroy: ({ data: [data] }) => ({
             url: `/devops/v1/projects/${projectId}/app_service/${appServiceId}/git/branch?branch_name=${data.branchName}`,
@@ -55,6 +71,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       tableDs,
       appServiceDs,
       appServiceId,
+      branchStore,
     };
     return (
       <Store.Provider value={value}>

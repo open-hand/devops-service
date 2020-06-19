@@ -54,4 +54,15 @@ public class DevopsTask {
         logger.info("begin to upgrade 0.21.0 to 0.21.1 Pipeline data.");
         devopsCheckLogService.checkLog("0.21.1");
     }
+
+    /**
+     * 0.23.0修复harbor的数据
+     */
+    @JobTask(maxRetryCount = 3, code = "upgradeVersionTo23.0", description = "升级0.22.0-0.23，迁移数据")
+    @TimedTask(name = "upgradeVersionTo23.0", description = "升级0.22.0-0.23，迁移数据", oneExecution = true,
+            repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
+    public void fixAppServiceVersion(Map<String, Object> map) {
+        logger.info("begin to fix appservice version harbor data.");
+        devopsCheckLogService.checkLog("0.23.0");
+    }
 }

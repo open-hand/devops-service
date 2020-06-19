@@ -12,32 +12,19 @@ import PipelineCreate from './components/PipelineCreate';
 import RecordDetail from './components/record-detail';
 import EmptyPage from '../../components/empty-page';
 import { usePipelineManageStore } from './stores';
-import PipelineEdit from './components/PipelineFlow/StageEdit';
+import HeaderButtons from '../../components/header-buttons';
+import VariableSettings from './components/variable-settings';
 
 import './index.less';
 
 const recordDetailKey = Modal.key();
+const settingsKey = Modal.key();
 const modalStyle = {
   width: 380,
 };
-
-function beforeunload(e) {
-  const confirmationMessage = '您的修改尚未保存，确定要离开吗?';
-  (e || window.event).returnValue = confirmationMessage;
-  return confirmationMessage;
-}
-
-function debounce(fn, ms) {
-  let timeoutId;
-  // eslint-disable-next-line func-names
-  return function () {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      // eslint-disable-next-line prefer-rest-params
-      fn.apply(this, arguments);
-    }, ms);
-  };
-}
+const settingsModalStyle = {
+  width: 740,
+};
 
 const PipelineManage = observer((props) => {
   const {
@@ -58,22 +45,6 @@ const PipelineManage = observer((props) => {
     projectId,
   } = usePipelineManageStore();
 
-  const [promptChanged, setPromptChange] = useState();
-
-  useEffect(() => {
-    if (getHasModify(false)) {
-      window.addEventListener('beforeunload', beforeunload);
-    } else {
-      window.removeEventListener('beforeunload', beforeunload);
-    }
-  }, [getHasModify(false)]);
-
-  useEffect(() => {
-    if (promptChanged) {
-      window.removeEventListener('beforeunload', beforeunload);
-    }
-  }, [promptChanged]);
-
   const handleCreatePipeline = () => {
     Modal.open({
       key: Modal.key(),
@@ -91,19 +62,6 @@ const PipelineManage = observer((props) => {
 
   const { getSelectedMenu } = mainStore;
 
-  function checkHasModifyandRefresh() {
-    if (getHasModify(false)) {
-      Modal.open({
-        key: Modal.key(),
-        title: '保存提示',
-        children: '您的修改尚未保存，确定要离开吗?',
-        onOk: handleRefresh,
-      });
-    } else {
-      handleRefresh();
-    }
-  }
-
   async function handleRefresh() {
     setHasModify(false, false);
     await treeDs.query();
@@ -114,22 +72,6 @@ const PipelineManage = observer((props) => {
       id && loadData(projectId, id);
     } else {
       gitlabPipelineId && loadDetailData(projectId, gitlabPipelineId);
-    }
-  }
-
-  async function handleSaveEdit() {
-    const { id } = getMainData;
-    try {
-      const res = await axios.put(`/devops/v1/projects/${projectId}/ci_pipelines/${id}`, getMainData);
-      if (handlePromptError(res)) {
-        setHasModify(false, false);
-        loadData(projectId, id);
-        return res;
-      }
-      return false;
-    } catch (e) {
-      Choerodon.handleResponseError(e);
-      return false;
     }
   }
 
@@ -176,79 +118,98 @@ const PipelineManage = observer((props) => {
       handleRefresh();
     }
   }
+  
+  function openSettingsModal(type) {
+    const { id } = getMainData;
+    const { appServiceId, appServiceName } = getSelectedMenu;
+    Modal.open({
+      key: settingsKey,
+      style: settingsModalStyle,
+      title: formatMessage({ id: `${intlPrefix}.settings.${type}` }),
+      children: <VariableSettings
+        intlPrefix={intlPrefix}
+        appServiceId={type === 'global' ? null : appServiceId}
+        appServiceName={type === 'global' ? null : appServiceName}
+        store={mainStore}
+        refresh={handleRefresh}
+      />,
+      drawer: true,
+      okText: formatMessage({ id: 'save' }),
+    });
+  }
 
-  function getButtons() {
+  function getHeaderButtons() {
     const { parentId, status } = getSelectedMenu;
-    if (!parentId) {
-      return (
-        <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.update']}>
-          <Button
-            icon="mode_edit"
-            onClick={openEditModal}
-            // disabled={!getHasModify(false)}
-          >
-            {formatMessage({ id: 'edit' })}
-          </Button>
-        </Permission>
-      );
-    } else {
-      let btn;
-      switch (status) {
-        case 'running':
-        case 'pending':
-          btn = <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.cancel']}>
-            <Button
-              icon="power_settings_new"
-              onClick={() => changeRecordExecute('cancel')}
-            >
-              {formatMessage({ id: `${intlPrefix}.execute.cancel` })}
-            </Button>
-          </Permission>;
-          break;
-        case 'canceled':
-        case 'failed':
-          btn = <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.retry']}>
-            <Button
-              icon="refresh"
-              onClick={() => changeRecordExecute('retry')}
-            >
-              {formatMessage({ id: `${intlPrefix}.execute.retry` })}
-            </Button>
-          </Permission>;
-          break;
-        default:
-          break;
+    const buttons = [{
+      permissions: ['choerodon.code.project.develop.ci-pipeline.ps.create'],
+      name: formatMessage({ id: `${intlPrefix}.create` }),
+      icon: 'playlist_add',
+      handler: handleCreatePipeline,
+      display: true,
+      group: 1,
+    }, {
+      permissions: ['choerodon.code.project.develop.ci-pipeline.ps.variable.project'],
+      name: formatMessage({ id: `${intlPrefix}.settings.global` }),
+      icon: 'settings-o',
+      handler: () => openSettingsModal('global'),
+      display: true,
+      group: 1,
+    }];
+    if (treeDs.length && treeDs.status === 'ready') {
+      if (!parentId) {
+        buttons.push({
+          permissions: ['choerodon.code.project.develop.ci-pipeline.ps.update'],
+          name: formatMessage({ id: 'edit' }),
+          icon: 'mode_edit',
+          handler: openEditModal,
+          display: true,
+          group: 2,
+        }, {
+          permissions: ['choerodon.code.project.develop.ci-pipeline.ps.variable.app'],
+          name: formatMessage({ id: `${intlPrefix}.settings.local` }),
+          icon: 'settings-o',
+          handler: () => openSettingsModal('local'),
+          display: true,
+          group: 2,
+        });
+      } else {
+        buttons.push({
+          name: formatMessage({ id: `${intlPrefix}.record.detail` }),
+          icon: 'find_in_page-o',
+          handler: openRecordDetail,
+          display: true,
+          group: 2,
+        }, {
+          permissions: ['choerodon.code.project.develop.ci-pipeline.ps.cancel'],
+          name: formatMessage({ id: `${intlPrefix}.execute.cancel` }),
+          icon: 'power_settings_new',
+          handler: () => changeRecordExecute('cancel'),
+          display: status === 'pending',
+          group: 2,
+        }, {
+          permissions: ['choerodon.code.project.develop.ci-pipeline.ps.retry'],
+          name: formatMessage({ id: `${intlPrefix}.execute.retry` }),
+          icon: 'refresh',
+          handler: () => changeRecordExecute('retry'),
+          display: status === 'failed',
+          group: 2,
+        });
       }
-      return (<Fragment>
-        <Button
-          icon="find_in_page-o"
-          onClick={openRecordDetail}
-        >
-          {formatMessage({ id: `${intlPrefix}.record.detail` })}
-        </Button>
-        {btn}
-      </Fragment>);
     }
+    buttons.push({
+      name: formatMessage({ id: 'refresh' }),
+      icon: 'refresh',
+      handler: handleRefresh,
+      display: true,
+      group: 2,
+    });
+    return buttons;
   }
 
   return (
     <Page service={permissions} className="pipelineManage_page">
       <Header title="流水线">
-        <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.create']}>
-          <Button
-            onClick={handleCreatePipeline}
-            icon="playlist_add"
-          >
-            {formatMessage({ id: `${intlPrefix}.create` })}
-          </Button>
-        </Permission>
-        {!treeDs.length && treeDs.status === 'ready' ? null : getButtons()}
-        <Button
-          onClick={debounce(checkHasModifyandRefresh, 500)}
-          icon="refresh"
-        >
-          {formatMessage({ id: 'refresh' })}
-        </Button>
+        <HeaderButtons items={getHeaderButtons()} showClassName={false} />
       </Header>
       <Breadcrumb />
       <Content className={`${prefixCls}-content`}>
@@ -278,15 +239,8 @@ const PipelineManage = observer((props) => {
                 detailStore={detailStore}
                 handleRefresh={handleRefresh}
                 treeDs={treeDs}
+                mainStore={mainStore}
               />
-              <Prompt
-                message={() => {
-                  setPromptChange(true);
-                  return getHasModify && '您的修改尚未保存，确定要离开吗?';
-                }}
-                when={getHasModify(false)}
-              />
-
             </div>
           </div>
         )}

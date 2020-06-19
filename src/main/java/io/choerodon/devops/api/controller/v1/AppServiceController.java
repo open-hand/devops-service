@@ -4,6 +4,7 @@ import java.util.*;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -202,6 +203,8 @@ public class AppServiceController {
             @RequestParam(value = "app_market", required = false) Boolean appMarket,
             @ApiParam(value = "服务类型")
             @RequestParam(value = "type", required = false) String type,
+            @ApiParam(value = "是否校验团队成员权限")
+            @RequestParam(value = "checkMember", required = false, defaultValue = "false") Boolean checkMember,
             @ApiParam(value = "是否分页")
             @RequestParam(value = "doPage", required = false) Boolean doPage,
             @ApiParam(value = "分页参数")
@@ -209,7 +212,7 @@ public class AppServiceController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationServiceService.pageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params))
+                applicationServiceService.pageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params,checkMember))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.service.baseList"));
     }
@@ -276,7 +279,7 @@ public class AppServiceController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询所有已经启用的服务")
     @GetMapping("/list_by_active")
-    public ResponseEntity<List<AppServiceRepVO>> listByActive(
+        public ResponseEntity<List<AppServiceRepVO>> listByActive(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(applicationServiceService.listByActive(projectId))
@@ -549,9 +552,7 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId) {
-        return Optional.ofNullable(applicationServiceService.getSonarContent(projectId, appServiceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.service.sonarqube.content.get"));
+        return Results.success(applicationServiceService.getSonarContent(projectId, appServiceId));
     }
 
     /**
@@ -880,6 +881,13 @@ public class AppServiceController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return ResponseEntity.ok(applicationServiceService.pageAppServiceToCreateCiPipeline(projectId, pageRequest, params));
+    }
+
+    @GetMapping("/fix/data")
+    @ApiOperation(value = "手动调用接口进行数据修复")
+    @Permission(level = ResourceLevel.SITE)
+    public void fixData() {
+        applicationServiceService.fixAppServiceVersion();
     }
 }
 

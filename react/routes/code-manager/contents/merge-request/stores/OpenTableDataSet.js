@@ -15,6 +15,11 @@ export default ((projectId, formatMessage, mergedRequestStore, appId, tabKey) =>
         method: 'get',
         transformResponse: (response) => {
           try {
+            if (!response) {
+              mergedRequestStore.setIsEmpty(true);
+              return response;
+            }
+            mergedRequestStore.setIsEmpty(false);
             const data = JSON.parse(response);
             if (data && data.failed) {
               return data;

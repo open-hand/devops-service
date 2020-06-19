@@ -197,4 +197,6 @@ public interface AppServiceVersionService {
     Boolean isVersionUseConfig(Long configId, String configType);
 
     void deleteByAppServiceId(Long appServiceId);
+
+    void fixHarbor();
 }

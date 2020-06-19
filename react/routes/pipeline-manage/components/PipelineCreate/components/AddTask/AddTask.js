@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
+import { axios } from '@choerodon/boot';
 import { Form, Select, TextField, Modal, SelectBox, Button, Password } from 'choerodon-ui/pro';
+import _ from 'lodash';
 import { Icon, Spin, Tooltip } from 'choerodon-ui';
 import { Base64 } from 'js-base64';
 import Tips from '../../../../../../components/new-tips';
@@ -13,6 +15,28 @@ import './index.less';
 
 const { Option } = Select;
 
+let currentSize = 10;
+
+const originBranchs = [{
+  value: 'master',
+  name: 'master',
+}, {
+  value: 'feature',
+  name: 'feature',
+}, {
+  value: 'bugfix',
+  name: 'bugfix',
+}, {
+  value: 'hotfix',
+  name: 'hotfix',
+}, {
+  value: 'release',
+  name: 'release',
+}, {
+  value: 'tag',
+  name: 'tag',
+}];
+
 const obj = {
   Maven: 'Maven构建',
   npm: 'Npm构建',
@@ -20,6 +44,7 @@ const obj = {
   docker: 'Docker构建',
   chart: 'Chart构建',
   go: 'Go语言构建',
+  maven_deploy: '上传软件包至制品库',
 };
 
 const checkField = {
@@ -53,6 +78,8 @@ const AddTask = observer(() => {
   const [customYaml, setCustomYaml] = useState(useStore.getYaml.custom);
   const [defaultImage, setDefaultImage] = useState('');
   const [expandIf, setExpandIf] = useState(false);
+  const [expandIfSetting, setExpandIfSetting] = useState(false);
+  const [branchsList, setBranchsList] = useState(originBranchs);
 
   useEffect(() => {
     if (steps.length > 0) {
@@ -79,6 +106,35 @@ const AddTask = observer(() => {
     const decodeStr = atob(base64);
     return decodeURI(decodeStr);
   }
+  const getBranchsList = useCallback(async () => {
+    const url = `devops/v1/projects/${id}/app_service/${PipelineCreateFormDataSet.current.get('appServiceId')}/git/page_branch_by_options?page=1&size=${currentSize}`;
+    const res = await axios.post(url);
+    if (res.content.length % 10 === 0 && res.content.length !== 0) {
+      res.content.push({
+        name: '加载更多',
+        value: 'more',
+      });
+    }
+    setBranchsList(res.content.map((c) => {
+      if (c.branchName) {
+        c.name = c.branchName;
+        c.value = c.branchName;
+      }
+      return c;
+    }));
+  }, [currentSize]);
+
+  useEffect(() => {
+    async function initBranchs() {
+      const value = AddTaskFormDataSet.current.get('triggerType');
+      if (value && !value.includes('exact')) {
+        setBranchsList(originBranchs);
+      } else {
+        getBranchsList();
+      }
+    }
+    initBranchs();
+  }, [AddTaskFormDataSet.current.get('triggerType')]);
 
   useEffect(() => {
     const init = async () => {
@@ -86,13 +142,15 @@ const AddTask = observer(() => {
       useStore.setDefaultImage(res);
       if (jobDetail) {
         if (!['custom', 'chart'].includes(jobDetail.type)) {
-          const { config, authType, username, token, password, sonarUrl } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
+          const { config, authType, username, token, password, sonarUrl, configType } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
           let uploadFilePattern;
           let dockerContextDir;
           let dockerFilePath;
           let uploadArtifactFileName;
           let dockerArtifactFileName;
           const share = [];
+          let nexusMavenRepoIds;
+          let zpk;
           config && config.forEach((c) => {
             if (c.type === 'upload') {
               uploadFilePattern = c.uploadFilePattern;
@@ -101,6 +159,14 @@ const AddTask = observer(() => {
               dockerContextDir = c.dockerContextDir;
               dockerFilePath = c.dockerFilePath;
               dockerArtifactFileName = c.artifactFileName;
+            } else if (c.type === 'Maven') {
+              if (c.nexusMavenRepoIds) {
+                nexusMavenRepoIds = c.nexusMavenRepoIds;
+              }
+            } else if (c.type === 'maven_deploy') {
+              if (c.mavenDeployRepoSettings) {
+                zpk = c.mavenDeployRepoSettings.nexusRepoIds;
+              }
             }
             if (c.mavenSettings) {
               c.mavenSettings = Base64.decode(c.mavenSettings);
@@ -119,7 +185,11 @@ const AddTask = observer(() => {
             dockerFilePath,
             uploadArtifactFileName,
             dockerArtifactFileName,
-            triggerRefs: jobDetail.triggerRefs ? jobDetail.triggerRefs.split(',') : [],
+            nexusMavenRepoIds,
+            zpk,
+            triggerValue: jobDetail.triggerValue && jobDetail.triggerType !== 'regex' ? jobDetail.triggerValue.split(',') : jobDetail.triggerValue,
+            configType,
+            // triggerRefs: jobDetail.triggerRefs ? jobDetail.triggerRefs.split(',') : [],
             glyyfw: appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')),
             bzmc: newSteps.find(s => s.checked) ? newSteps.find(s => s.checked).name : '',
             authType,
@@ -182,7 +252,7 @@ const AddTask = observer(() => {
   const handleAdd = async () => {
     const result = await AddTaskFormDataSet.validate();
     if (result) {
-      if (AddTaskFormDataSet.current.get('type') === 'sonar') {
+      if (AddTaskFormDataSet.current.get('type') === 'sonar' && AddTaskFormDataSet.current.get('configType') === 'custom') {
         const connet = await handleTestConnect();
         if (!connet) {
           return false;
@@ -191,10 +261,12 @@ const AddTask = observer(() => {
       let data = AddTaskFormDataSet.toData()[0];
       data = {
         ...data,
+        triggerValue: data.triggerValue && data.triggerType !== 'regex' ? data.triggerValue.join(',') : data.triggerValue,
         image: data.selectImage === '1' ? data.image : null,
-        triggerRefs: data.triggerRefs.join(','),
+
         toUpload: data.type === 'build' && data.share.includes('toUpload'),
         toDownload: data.type === 'build' && data.share.includes('toDownload'),
+
         metadata: (function () {
           if (data.type === 'build') {
             return JSON.stringify({
@@ -209,6 +281,9 @@ const AddTask = observer(() => {
                     p.private = p.privateIf;
                     return p;
                   })];
+                }
+                if (data.nexusMavenRepoIds && s.type === 'Maven') {
+                  s.nexusMavenRepoIds = data.nexusMavenRepoIds;
                 }
                 if (s.mavenSettings) {
                   s.mavenSettings = Base64.encode(s.mavenSettings);
@@ -226,13 +301,17 @@ const AddTask = observer(() => {
                     s.artifactFileName = data.dockerArtifactFileName;
                   }
                 }
+                if (data.zpk && s.type === 'maven_deploy') {
+                  s.mavenDeployRepoSettings = {
+                    nexusRepoIds: data.zpk,
+                  };
+                }
                 return s;
               }),
             }).replace(/"/g, "'");
           } else if (data.type === 'sonar') {
             return JSON.stringify({
               ...data,
-              triggerRefs: data.triggerRefs.join(','),
               metadata: '',
             }).replace(/"/g, "'");
           } else if (data.type === 'custom') {
@@ -273,11 +352,25 @@ const AddTask = observer(() => {
   };
 
   useEffect(() => {
-    if (AddTaskFormDataSet.current.get('type') === 'sonar') {
-      if (AddTaskFormDataSet.current.get('authType') === 'username') {
+    async function useEffectByType() {
+      if (AddTaskFormDataSet.current.get('type') === 'sonar') {
+        if (AddTaskFormDataSet.current.get('authType') === 'username') {
+          modal.update({
+            okProps: {
+              disabled: !testConnect,
+            },
+          });
+        } else {
+          modal.update({
+            okProps: {
+              disabled: false,
+            },
+          });
+        }
+        await useStore.axiosGetHasDefaultSonar();
         modal.update({
           okProps: {
-            disabled: !testConnect,
+            disabled: !useStore.getHasDefaultSonar,
           },
         });
       } else {
@@ -287,23 +380,19 @@ const AddTask = observer(() => {
           },
         });
       }
-    } else {
-      modal.update({
-        okProps: {
-          disabled: false,
-        },
-      });
+      if (AddTaskFormDataSet.current.get('type') !== 'build') {
+        AddTaskFormDataSet.getField('uploadFilePattern').set('required', false);
+        AddTaskFormDataSet.getField('dockerContextDir').set('required', false);
+        AddTaskFormDataSet.getField('dockerFilePath').set('required', false);
+        AddTaskFormDataSet.getField('uploadArtifactFileName').set('required', false);
+      }
+      if (AddTaskFormDataSet.current.get('type') === 'custom') {
+        AddTaskFormDataSet.getField('name').set('required', false);
+        AddTaskFormDataSet.getField('glyyfw').set('required', false);
+      }
     }
-    if (AddTaskFormDataSet.current.get('type') !== 'build') {
-      AddTaskFormDataSet.getField('uploadFilePattern').set('required', false);
-      AddTaskFormDataSet.getField('dockerContextDir').set('required', false);
-      AddTaskFormDataSet.getField('dockerFilePath').set('required', false);
-      AddTaskFormDataSet.getField('uploadArtifactFileName').set('required', false);
-    }
-    if (AddTaskFormDataSet.current.get('type') === 'custom') {
-      AddTaskFormDataSet.getField('name').set('required', false);
-      AddTaskFormDataSet.getField('glyyfw').set('required', false);
-    }
+
+    useEffectByType();
   }, [testConnect, AddTaskFormDataSet.current.get('type'), AddTaskFormDataSet.current.get('authType')]);
 
   modal.handleOk(handleAdd);
@@ -497,11 +586,18 @@ const AddTask = observer(() => {
       }] : [];
       let extra = [];
       if (value === 'Maven') {
-        extra = [{
-          name: 'Docker构建',
-          type: 'docker',
-          checked: false,
-        }];
+        extra = [
+        //   {
+        //   name: '上传软件包至制品库',
+        //   type: 'maven_deploy',
+        //   checked: false,
+        //   yaml: useStore.getYaml.maven_deploy,
+        // },
+          {
+            name: 'Docker构建',
+            type: 'docker',
+            checked: false,
+          }];
       } else if (value === 'npm') {
         extra = [{
           name: 'Docker构建',
@@ -798,6 +894,17 @@ const AddTask = observer(() => {
     // }
   };
 
+  const renderderBranchs = ({ text }) => (text === '加载更多' ? (
+    <a
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        currentSize += 10;
+        getBranchsList();
+      }}
+    >{text}</a>
+  ) : text);
+
   const getMissionOther = () => {
     if (AddTaskFormDataSet.current.get('type') === 'build') {
       return [
@@ -827,102 +934,166 @@ const AddTask = observer(() => {
                 width: 339,
                 marginTop: 30,
                 marginBottom: 20,
+                marginRight: 8,
                 display: steps.length === 0 ? 'none' : 'block',
               }}
               // newLine
               name="bzmc"
             />
             {
-              steps.find(s => s.checked) && steps.find(s => s.checked).type === 'Maven' ? (<div>
-                <div className="c7ncd-pipeline-add-task-tips">
-                  <span>Setting配置</span>
-                  <Tooltip
-                    title="用于运行过程中，在项目根目录下生成settings文件；您可在脚本中加上 -s 或者 -gs 参数进行使用"
-                    theme="light"
-                  >
-                    <Icon type="help" />
-                  </Tooltip>
-                </div>
-                <SelectBox
-                  onChange={handleChangePrivate}
-                  name="private"
-                  // label={(
-                  //   <span>Setting配置
-                  //     <Tooltip
-                  //       title="123"
-                  //       theme="light"
-                  //     >
-                  //       <Icon type="help" />
-                  //     </Tooltip>
-                  //   </span>
-                  // )}
-                >
-                  <Option value="custom">
-                    <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-                      界面可视化定义
-                      <Button
-                        onClick={handleOpenRepo}
+              (function () {
+                if (steps.find(s => s.checked)) {
+                  const type = steps.find(s => s.checked).type;
+                  if (type === 'Maven') {
+                    return (
+                      <Select
+                        name="nexusMavenRepoIds"
                         style={{
-                          marginLeft: 8,
-                          display: (function () {
-                            const repo = steps.find(s => s.checked).repo;
-                            if (JSON.stringify(repo) && JSON.stringify(repo) !== '{}') {
-                              return 'inline-block';
-                            }
-                            return 'none';
-                          }()),
+                          width: 339,
+                          marginTop: 30,
+                          marginBottom: 20,
                         }}
-                      >
-                        <Icon
-                          style={{
-                            color: '#3F51B5',
-                          }}
-                          type="mode_edit"
-                        />
-                      </Button>
-                    </span>
-                  </Option>
-                  <Option value="copy">
-                    <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-                      粘贴XML内容
-                      <Button
-                        onClick={handleOpenXML}
+                      />
+                    );
+                  } else if (type === 'maven_deploy') {
+                    return (
+                      <Select
+                        name="zpk"
                         style={{
-                          marginLeft: 8,
-                          display: steps.find(s => s.checked).mavenSettings ? 'inline-block' : 'none',
+                          width: 339,
+                          marginTop: 30,
+                          marginBottom: 20,
                         }}
-                      >
-                        <Icon
-                          style={{
-                            color: '#3F51B5',
-                          }}
-                          type="mode_edit"
-                        />
-                      </Button>
-                    </span>
-                  </Option>
-                </SelectBox>
-              </div>) : ''
+                      />
+                    );
+                  }
+                }
+              }())
             }
           </div>
+          {
+            steps.find(s => s.checked) && steps.find(s => s.checked).type === 'Maven'
+              ? [
+                <div style={{
+                  marginLeft: '-16px',
+                  height: '1px',
+                  width: 'calc(100% + 32px)',
+                  background: '#d8d8d8',
+                }}
+                />,
+                <div
+                  colSpan={2}
+                  newLine
+                  className="advanced_text"
+                  style={{
+                    cursor: 'pointer',
+                    // borderTop: '1px solid #d8d8d8',
+                    paddingTop: '20px',
+                  }}
+                  onClick={() => setExpandIfSetting(!expandIfSetting)}
+                >
+                  高级设置<Icon style={{ fontSize: 18 }} type={expandIfSetting ? 'expand_less' : 'expand_more'} />
+                </div>,
+                expandIfSetting ? (
+                  <div newLine>
+                    <div className="c7ncd-pipeline-add-task-tips">
+                      <span>Setting配置</span>
+                      <Tooltip
+                        title="用于运行过程中，在项目根目录下生成settings文件；您可在脚本中加上 -s 或者 -gs 参数进行使用"
+                        theme="light"
+                      >
+                        <Icon type="help" />
+                      </Tooltip>
+                    </div>
+                    <SelectBox
+                      onChange={handleChangePrivate}
+                      name="private"
+                      style={{
+                        width: 339,
+                      }}
+                      className="addTask_authType"
+                    >
+                      <Option value="custom">
+                        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                          自定义仓库配置
+                          <Button
+                            onClick={handleOpenRepo}
+                            style={{
+                              marginLeft: 8,
+                              display: (function () {
+                                const repo = steps.find(s => s.checked).repo;
+                                if (JSON.stringify(repo) && JSON.stringify(repo) !== '{}') {
+                                  return 'inline-block';
+                                }
+                                return 'none';
+                              }()),
+                            }}
+                          >
+                            <Icon
+                              style={{
+                                color: '#3F51B5',
+                              }}
+                              type="mode_edit"
+                            />
+                          </Button>
+                        </span>
+                      </Option>
+                      <Option value="copy">
+                        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                          粘贴XML内容
+                          <Button
+                            onClick={handleOpenXML}
+                            style={{
+                              marginLeft: 8,
+                              display: steps.find(s => s.checked).mavenSettings ? 'inline-block' : 'none',
+                            }}
+                          >
+                            <Icon
+                              style={{
+                                color: '#3F51B5',
+                              }}
+                              type="mode_edit"
+                            />
+                          </Button>
+                        </span>
+                      </Option>
+                    </SelectBox>
+                  </div>
+                ) : '',
+                <div style={{ height: 20 }} />,
+              ]
+              : ''
+          }
           {
             (function () {
               if (steps.length > 0) {
                 const type = steps.find(s => s.checked).type;
-                if (type && ['Maven', 'npm', 'go'].includes(type)) {
-                  return (
-                    <div>
-                      <YamlEditor
-                        readOnly={false}
-                        colSpan={2}
-                        newLine
-                        value={steps.length > 0 ? steps.find(s => s.checked).yaml : ''}
-                        onValueChange={(valueYaml) => handleChangeValue(valueYaml)}
-                        modeChange={false}
-                        showError={false}
-                      />
-                    </div>
-                  );
+                if (type && ['Maven', 'npm', 'go', 'maven_deploy'].includes(type)) {
+                  return [
+                    <div style={{
+                      marginLeft: '-16px',
+                      height: '1px',
+                      width: 'calc(100% + 32px)',
+                      background: '#d8d8d8',
+                    }}
+                    />,
+                    (
+                      <div
+                        style={{
+                          paddingTop: '20px',
+                        }}
+                      >
+                        <YamlEditor
+                          readOnly={false}
+                          colSpan={2}
+                          newLine
+                          value={steps.length > 0 ? steps.find(s => s.checked).yaml : ''}
+                          onValueChange={(valueYaml) => handleChangeValue(valueYaml)}
+                          modeChange={false}
+                          showError={false}
+                        />
+                      </div>
+                    )];
                 } else if (type === 'upload') {
                   return [
                     <TextField
@@ -935,10 +1106,26 @@ const AddTask = observer(() => {
                 } else if (type === 'docker') {
                   return [
                     <div style={{ marginBottom: 20 }}>
-                      <TextField className="dockerContextDir" style={{ width: 312 }} name="dockerContextDir" showHelp="tooltip" help="ContextPath为docker build命令执行上下文路径。填写相对于代码根目录的路径，如docker" />
+                      <TextField
+                        onChange={(value) => {
+                          let res;
+                          const arrValue = value.split('');
+                          const lastIndex = _.findLastIndex(arrValue, (o) => o === '/');
+                          if (lastIndex !== -1) {
+                            res = arrValue.slice(0, lastIndex).join('');
+                          } else {
+                            res = '.';
+                          }
+                          AddTaskFormDataSet.current.set('dockerContextDir', res);
+                        }}
+                        style={{ width: 312 }}
+                        name="dockerFilePath"
+                        showHelp="tooltip"
+                        help="Dockerfile路径为Dockerfile文件相对于代码库根目录所在路径，如docker/Dockerfile或Dockerfile"
+                      />
                     </div>,
                     <div style={{ marginBottom: 20 }}>
-                      <TextField style={{ width: 312 }} name="dockerFilePath" showHelp="tooltip" help="Dockerfile路径为Dockerfile文件相对于代码库根目录所在路径，如docker/Dockerfile或Dockerfile" />
+                      <TextField className="dockerContextDir" style={{ width: 312 }} name="dockerContextDir" showHelp="tooltip" help="ContextPath为docker build命令执行上下文路径。填写相对于代码根目录的路径，如docker" />
                     </div>,
                   ];
                 }
@@ -963,12 +1150,22 @@ const AddTask = observer(() => {
         ];
       }
       return [
-        <SelectBox className="addTask_authType" name="authType">
-          <Option value="username">用户名与密码</Option>
-          <Option value="token">Token</Option>
+        <SelectBox
+          className="addTask_authType"
+          name="configType"
+          help={!useStore.getHasDefaultSonar ? '平台暂无默认的SonarQube配置，请在自定义配置中进行添加。' : ''}
+        >
+          <Option value="default">默认配置</Option>
+          <Option value="custom">自定义配置</Option>
         </SelectBox>,
-        ...extra,
-        renderTestConnect(),
+        AddTaskFormDataSet.current.get('configType') === 'custom' ? [
+          <SelectBox className="addTask_authType" name="authType">
+            <Option value="username">用户名与密码</Option>
+            <Option value="token">Token</Option>
+          </SelectBox>,
+          ...extra,
+          renderTestConnect(),
+        ] : '',
       ];
     }
   };
@@ -981,21 +1178,27 @@ const AddTask = observer(() => {
     }
   };
 
-  const getImageDom = () => (expandIf ? (
-    <Select
-      // disabled={
-      //     !!(AddTaskFormDataSet.current && AddTaskFormDataSet.current.get('selectImage') === '0')
-      //   }
-      onChange={handleChangeImage}
-      newLine
-      combo
-      colSpan={2}
-      name="image"
-    >
-      <Option value={defaultImage}>{`${defaultImage}${defaultImage === useStore.getDefaultImage ? '(默认)' : ''}`}</Option>
-    </Select>
-  ) : null);
-
+  
+  const getImageDom = () => [
+    <div colSpan={2} newLine className="advanced_text" style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
+      高级设置<Icon style={{ fontSize: 18 }} type={expandIf ? 'expand_less' : 'expand_more'} />
+    </div>,
+    expandIf ? (
+      <Select
+          // disabled={
+          //     !!(AddTaskFormDataSet.current && AddTaskFormDataSet.current.get('selectImage') === '0')
+          //   }
+        onChange={handleChangeImage}
+        newLine
+        combo
+        colSpan={2}
+        name="image"
+      >
+        <Option value={defaultImage}>{`${defaultImage}${defaultImage === useStore.getDefaultImage ? '(默认)' : ''}`}</Option>
+      </Select>
+    ) : '',
+  ];
+  
   const getShareSettings = () => (expandIf && AddTaskFormDataSet.current.get('type') === 'build' ? (
     <div newLine colSpan={2}>
       <Tips
@@ -1023,22 +1226,59 @@ const AddTask = observer(() => {
           AddTaskFormDataSet.current.get('type') !== 'custom' ? [
             <TextField name="name" />,
             <TextField name="glyyfw" />,
-            <Select combo searchable name="triggerRefs" showHelp="tooltip" help="您可以在此输入或选择触发该任务的分支类型，若不填写，则默认为所有分支或tag">
-              <Option value="master">master</Option>
-              <Option value="feature">feature</Option>
-              <Option value="bugfix">bugfix</Option>
-              <Option value="hotfix">hotfix</Option>
-              <Option value="release">release</Option>
-              <Option value="tag">tag</Option>
-            </Select>,
-            <div
-              className="advanced_text"
-              newLine
-              colSpan={2}
-              onClick={() => setExpandIf(!expandIf)}
-            >
-              <span>高级设置</span>
-              <Icon style={{ fontSize: 18, marginLeft: 10 }} type={expandIf ? 'expand_less' : 'expand_more'} />
+
+            <div className="matchType" style={{ display: 'inline-flex', position: 'relative' }}>
+              <Select
+                onChange={(value) => {
+                  // const arr = ['triggerRefs', 'regexMatch', 'exactMatch', 'exactExclude'];
+                  // arr.forEach((a) => {
+                  //   if (a !== value) {
+                  //     AddTaskFormDataSet.current.set(a, undefined);
+                  //   }
+                  // });
+                  AddTaskFormDataSet.current.set('branchs', undefined);
+                }}
+                combo={false}
+                style={{ marginRight: 8 }}
+                name="triggerType"
+                allowClear={false}
+              >
+                <Option value="refs">分支类型匹配</Option>
+                <Option value="regex">正则匹配</Option>
+                <Option value="exact_match">精确匹配</Option>
+                <Option value="exact_exclude">精确排除</Option>
+              </Select>
+              {AddTaskFormDataSet.current.get('triggerType') === 'regex' ? (
+                <TextField name="triggerValue" />
+              ) : (
+                <Select
+                  combo
+                  searchable
+                  multiple
+                  name="triggerValue"
+                  showHelp="tooltip"
+                  help="您可以在此输入或选择触发该任务的分支类型，若不填写，则默认为所有分支或tag"
+                  searchMatcher="branchName"
+                  optionRenderer={({ text }) => renderderBranchs({ text })}
+                  maxTagCount={1}
+                  maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
+                    {`+${omittedValues.length}`}
+                  </Tooltip>}
+                  renderer={renderderBranchs}
+                >
+                  {
+                    branchsList.map(b => (
+                      <Option value={b.value}>{b.name}</Option>
+                    ))
+                  }
+                  {/* <Option value="master">master</Option> */}
+                  {/* <Option value="feature">feature</Option> */}
+                  {/* <Option value="bugfix">bugfix</Option> */}
+                  {/* <Option value="hotfix">hotfix</Option> */}
+                  {/* <Option value="release">release</Option> */}
+                  {/* <Option value="tag">tag</Option> */}
+                </Select>
+              )}
             </div>,
             getImageDom(),
             getShareSettings(),

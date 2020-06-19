@@ -28,7 +28,7 @@ export DOCKER_CONFIG=$PWD/.choerodon/.docker
 # 创建docekr认证配置文件目录
 mkdir -p $DOCKER_CONFIG
 # 设成docekr认证配置文件
-echo "{\"auths\":{\"$DOCKER_REGISTRY\":{\"auth\":\"$(echo -n $DOCKER_USERNAME:$DOCKER_PASSWORD | base64)\"}}}" >$DOCKER_CONFIG/config.json
+echo "{\"auths\":{\"$DOCKER_REGISTRY\":{\"auth\":\"$(echo -n $DOCKER_USERNAME:$DOCKER_PASSWORD | base64)\"}}}" | tr -d '\n' > $DOCKER_CONFIG/config.json
 
 # 获取commit时间
 C7N_COMMIT_TIMESTAMP=$(git log -1 --pretty=format:"%ci" | awk '{print $1$2}' | sed 's/[-:]//g')
@@ -161,6 +161,7 @@ function chart_build() {
   FILE_NAME=${TEMP##*/}
   # 通过Choerodon API上传chart包到devops-service
   result_upload_to_devops=$(curl -X POST \
+    -H 'Expect:' \
     -F "token=${Token}" \
     -F "harbor_config_id=${HARBOR_CONFIG_ID}" \
     -F "version=${CI_COMMIT_TAG}" \

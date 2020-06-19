@@ -8,11 +8,26 @@ import javax.annotation.Nullable;
  * ci job的 脚本类型 枚举类
  */
 public enum CiJobScriptTypeEnum {
+    /**
+     * npm构建
+     */
     NPM("npm"),
+    /**
+     * maven构建
+     */
     MAVEN("maven"),
+    /**
+     * 上传软件包到存储库
+     */
     UPLOAD("upload"),
+    /**
+     * docker构建
+     */
     DOCKER("docker"),
-    CHART("chart");
+    /**
+     * 上传软件包到制品库
+     */
+    MAVEN_DEPLOY("maven_deploy");
 
     private final String type;
     private static final Map<String, CiJobScriptTypeEnum> enumMap;

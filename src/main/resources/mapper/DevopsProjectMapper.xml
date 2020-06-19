@@ -13,4 +13,15 @@
         SET object_version_number = 1
         WHERE iam_project_id = #{iamProjectId};
     </update>
+
+    <select id="selectByProjectIds" resultType="io.choerodon.devops.infra.dto.GitlabProjectSimple">
+        SELECT devops_app_group_id as gitlabGroupId,
+        iam_project_id as projectId
+        FROM devops_project
+        WHERE iam_project_id in
+        <foreach collection="projectIds" item="projectId" index="index"
+                 open="(" close=")" separator=",">
+            #{projectId}
+        </foreach>
+    </select>
 </mapper>

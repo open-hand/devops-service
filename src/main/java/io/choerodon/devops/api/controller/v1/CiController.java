@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,6 +24,9 @@ import io.choerodon.swagger.annotation.Permission;
 public class CiController {
     @Value("${devops.ci.default.image}")
     private String defaultCiImage;
+
+    @Value("${services.sonarqube.url:}")
+    private String sonarqubeUrl;
 
     private final AppServiceService applicationService;
     private final AppServiceVersionService appServiceVersionService;
@@ -86,5 +90,13 @@ public class CiController {
     @GetMapping("/default_image")
     public ResponseEntity<String> queryDefaultCiImageUrl() {
         return ResponseEntity.ok(defaultCiImage);
+    }
+
+
+    @Permission(permissionLogin = true)
+    @ApiOperation(value = "判断平台是否有配置sonarqube")
+    @GetMapping("/has_default_sonar")
+    public ResponseEntity<Boolean> hasDefaultSonarqubeConfig() {
+        return ResponseEntity.ok(!StringUtils.isEmpty(sonarqubeUrl));
     }
 }

@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import static io.choerodon.devops.infra.constant.GitOpsConstants.ARTIFACT_NAME_PATTERN;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -26,6 +27,7 @@ import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.AppServiceEvent;
 import io.choerodon.devops.infra.enums.SonarAuthType;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.feign.SonarClient;
@@ -35,6 +37,7 @@ import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.MapperUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * 〈功能简述〉
@@ -69,6 +72,10 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private DevopsCiPipelineService devopsCiPipelineService;
     private DevopsCiJobRecordService devopsCiJobRecordService;
     private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
+    private FileClient fileClient;
+    private BaseServiceClientOperator baseServiceClientOperator;
+    private AppServiceMapper appServiceMapper;
+    private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
 
     public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper,
                                   GitlabServiceClientOperator gitlabServiceClientOperator,
@@ -78,6 +85,10 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
                                   DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
                                   @Lazy DevopsCiPipelineService devopsCiPipelineService,
                                   DevopsCiJobRecordService devopsCiJobRecordService,
+                                  FileClient fileClient,
+                                  AppServiceMapper appServiceMapper,
+                                  CheckGitlabAccessLevelService checkGitlabAccessLevelService,
+                                  BaseServiceClientOperator baseServiceClientOperator,
                                   DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper) {
         this.devopsCiJobMapper = devopsCiJobMapper;
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
@@ -88,6 +99,10 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         this.devopsCiPipelineService = devopsCiPipelineService;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
+        this.fileClient = fileClient;
+        this.appServiceMapper = appServiceMapper;
+        this.checkGitlabAccessLevelService = checkGitlabAccessLevelService;
+        this.baseServiceClientOperator = baseServiceClientOperator;
     }
 
     @Override
@@ -167,7 +182,8 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     public void retryJob(Long projectId, Long gitlabProjectId, Long jobId) {
         Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
         Assert.notNull(jobId, ERROR_GITLAB_JOB_ID_IS_NULL);
-
+        AppServiceDTO appServiceDTO = appServiceMapper.selectOne(new AppServiceDTO().setGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId)));
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceDTO.getId(), AppServiceEvent.CI_PIPELINE_RETRY_TASK);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId().longValue());
         DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(jobId);

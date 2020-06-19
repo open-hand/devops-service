@@ -62,7 +62,6 @@ const ICONS = {
   },
 };
 
-
 const { Column } = Table;
 
 export default injectIntl(observer(() => {
@@ -74,11 +73,12 @@ export default injectIntl(observer(() => {
     },
     organizationId,
     intl: { formatMessage },
+    AppState: { currentMenuType: { projectId } },
+    pipelineActionStore,
   } = usePipelineStore();
 
   const { appServiceDs, selectAppDs } = useCodeManagerStore();
   const appServiceId = selectAppDs.current.get('appServiceId');
-
 
   handleMapStore.setCodeManagerCiPipelineManage({
     refresh: handleRefresh,
@@ -93,20 +93,27 @@ export default injectIntl(observer(() => {
     ciTableDS.query();
   }
 
+  async function linkToNewMerge(url) {
+    try {
+      const res = await pipelineActionStore.checkLinkToGitlab(projectId, appServiceId);
+      window.open(url);
+    } catch (e) {
+      // return;
+    }
+  }
+
   function renderStatus({ value, record }) {
     const gitlabUrl = record && record.get('gitlabUrl');
     const pipelineId = record && record.get('pipelineId');
     if (value) {
       return (<div className="c7n-status">
-        <a
-          href={gitlabUrl ? `${gitlabUrl.slice(0, -4)}/pipelines/${pipelineId}` : null}
-          target="_blank"
-          rel="nofollow me noopener noreferrer"
+        <span
+          onClick={() => linkToNewMerge(gitlabUrl ? `${gitlabUrl.slice(0, -4)}/pipelines/${pipelineId}` : null)}
           className="c7n-status-link"
         >
           <i className={`icon ${ICONS[value].icon} c7n-icon-${value} c7n-icon-lg`} />
           <span className="c7n-text-status black">{ICONS[value].display}</span>
-        </a>
+        </span>
       </div>);
     } else {
       return 'Null';
@@ -124,16 +131,14 @@ export default injectIntl(observer(() => {
       <div className="c7n-cipip-sign">
         <div className="c7n-des-sign">
           <span>
-            <a
+            <span
               className="c7n-link-decoration"
-              href={gitlabUrl ? `${gitlabUrl.slice(0, -4)}/pipelines/${pipelineId}` : null}
-              target="_blank"
-              rel="nofollow me noopener noreferrer"
+              onClick={() => linkToNewMerge(gitlabUrl ? `${gitlabUrl.slice(0, -4)}/pipelines/${pipelineId}` : null)}
             >
               <span className="mr7 black">
                 #{pipelineId}
               </span>
-            </a>
+            </span>
             by
           </span>
           <Tooltip
@@ -208,14 +213,12 @@ export default injectIntl(observer(() => {
         <div className="c7n-title-commit">
           <i className="icon icon-branch mr7" />
           <MouserOverWrapper text={ref} width={0.1}>
-            <a
+            <span
               className="c7n-link-decoration"
-              href={gitlabUrl ? `${gitlabUrl.slice(0, -4)}/commits/${ref}` : null}
-              target="_blank"
-              rel="nofollow me noopener noreferrer"
+              onClick={() => linkToNewMerge(gitlabUrl ? `${gitlabUrl.slice(0, -4)}/commits/${ref}` : null)}
             >
               <span className="black">{ref}</span>
-            </a>
+            </span>
           </MouserOverWrapper>
           <i className="icon icon-point m8" />
           <Tooltip
@@ -223,16 +226,14 @@ export default injectIntl(observer(() => {
             title={commit}
             trigger="hover"
           >
-            <a
+            <span
               className="c7n-link-decoration"
-              href={gitlabUrl ? `${gitlabUrl.slice(0, -4)}/commit/${commit}` : null}
-              target="_blank"
-              rel="nofollow me noopener noreferrer"
+              onClick={() => linkToNewMerge(gitlabUrl ? `${gitlabUrl.slice(0, -4)}/commit/${commit}` : null)}
             >
               <span>
                 {commit ? commit.slice(0, 8) : ''}
               </span>
-            </a>
+            </span>
           </Tooltip>
         </div>
         <div className="c7n-des-commit">
@@ -248,16 +249,14 @@ export default injectIntl(observer(() => {
             }
           </Tooltip>
           <MouserOverWrapper text={commitContent} width={0.2}>
-            <a
+            <span
               className="c7n-link-decoration"
-              href={gitlabUrl ? `${gitlabUrl.slice(0, -4)}/commit/${commit}` : null}
-              target="_blank"
-              rel="nofollow me noopener noreferrer"
+              onClick={() => linkToNewMerge(gitlabUrl ? `${gitlabUrl.slice(0, -4)}/commit/${commit}` : null)}
             >
               <span className="gray">
                 {commitContent}
               </span>
-            </a>
+            </span>
           </MouserOverWrapper>
         </div>
       </div>
@@ -283,17 +282,15 @@ export default injectIntl(observer(() => {
             {stages[i].name === 'sonarqube' ? <i
               className={`icon ${ICONS[stages[i].status || 'skipped'].icon || ''}
                 c7n-icon-${stages[i].status} c7n-icon-lg`}
-            /> : <a
-              className=""
-              href={gitlabUrl ? `${gitlabUrl.slice(0, -4)}/-/jobs/${stages[i].id}` : null}
-              target="_blank"
-              rel="nofollow me noopener noreferrer"
+            /> : <span
+              className="c7n-link-icon"
+              onClick={() => linkToNewMerge(gitlabUrl ? `${gitlabUrl.slice(0, -4)}/-/jobs/${stages[i].id}` : null)}
             >
               <i
                 className={`icon ${ICONS[stages[i].status || 'skipped'].icon || ''}
                 c7n-icon-${stages[i].status} c7n-icon-lg`}
               />
-            </a>}
+            </span>}
           </Tooltip>
         </span>);
       }
@@ -361,7 +358,7 @@ export default injectIntl(observer(() => {
           >
             <Column name="status" renderer={renderStatus} width={100} />
             <Column name="pipelineId" renderer={renderSign} />
-            <Column name="gitlabProjectId" renderer={renderAction} width={40} />
+            <Column name="gitlabProjectId" renderer={renderAction} width={50} />
             <Column name="commit" renderer={renderCommit} />
             <Column name="stages" renderer={renderStages} />
             <Column name="pipelineTime" renderer={renderTimeSpan} width={120} />

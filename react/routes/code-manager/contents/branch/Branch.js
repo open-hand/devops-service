@@ -13,6 +13,7 @@ import Loading from '../../../../components/loading';
 import StatusIcon from '../../../../components/StatusIcon/StatusIcon';
 import handleMapStore from '../../main-view/store/handleMapStore';
 import { useTableStore } from './stores';
+import EmptyPage from '../../components/empty-page';
 
 import '../../../main.less';
 import './Branch.less';
@@ -37,6 +38,7 @@ function Branch(props) {
     appServiceDs,
     appServiceId,
     formatMessage,
+    branchStore,
   } = useTableStore();
 
   const [isOPERATIONS, setIsOPERATIONS] = useState(false);
@@ -87,16 +89,21 @@ function Branch(props) {
     }
   }
   // 打开创建分支模态框
-  function openCreateBranchModal() {
-    ProModal.open({
-      key: branchCreateModalKey,
-      title: <FormattedMessage id="branch.create" />,
-      drawer: true,
-      children: <BranchCreate intl={intl} appServiceId={appServiceId} handleRefresh={handleRefresh} />,
-      style: branchCreateModalStyle,
-      okText: <FormattedMessage id="create" />,
-      cancelText: <FormattedMessage id="cancel" />,
-    });
+  async function openCreateBranchModal() {
+    try {
+      await branchStore.checkCreate(projectId, appServiceId);
+      ProModal.open({
+        key: branchCreateModalKey,
+        title: <FormattedMessage id="branch.create" />,
+        drawer: true,
+        children: <BranchCreate intl={intl} appServiceId={appServiceId} handleRefresh={handleRefresh} />,
+        style: branchCreateModalStyle,
+        okText: <FormattedMessage id="create" />,
+        cancelText: <FormattedMessage id="cancel" />,
+      });
+    } catch (e) {
+      // return
+    }
   }
 
   /**
@@ -326,6 +333,16 @@ function Branch(props) {
 
   // 获取分支正文列表
   function tableBranch() {
+    if (branchStore.getIsEmpty) {
+      return (
+        <EmptyPage
+          title={formatMessage({ id: 'empty.title.prohibited' })}
+          describe={formatMessage({ id: 'empty.title.code' })}
+          btnText={formatMessage({ id: 'empty.link.code' })}
+          pathname="/rducm/code-lib-management/apply"
+        />
+      );
+    }
     return (
       <div className="c7ncd-tab-table">
         <Table className="c7n-branch-main-table" queryBar="bar" dataSet={tableDs}>
@@ -338,7 +355,6 @@ function Branch(props) {
       </div>
     );
   }
-
 
   return (
     <Page

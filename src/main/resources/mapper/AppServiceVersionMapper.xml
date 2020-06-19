@@ -116,11 +116,11 @@
     </select>
     <select id="queryByCommitSha" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT
-            dav.*
+        dav.*
         FROM
-            devops_app_service_version dav
+        devops_app_service_version dav
         WHERE
-            dav.app_service_id = #{appServiceId}
+        dav.app_service_id = #{appServiceId}
         AND dav.version LIKE CONCAT(CONCAT('%', #{ref}))
         AND dav.`commit` = #{commit}
         AND dav.repository IS NOT NULL
@@ -386,7 +386,8 @@
         FROM
         devops_app_service_version
         WHERE
-        app_service_id = #{appServiceId} and commit is not null and version LIKE CONCAT(CONCAT('%', #{branch, jdbcType=VARCHAR}),'%')
+        app_service_id = #{appServiceId} and commit is not null and version LIKE CONCAT(CONCAT('%',
+        #{branch, jdbcType=VARCHAR}),'%')
         AND devops_app_service_version.repository IS NOT NULL
         order by id desc limit
         10
@@ -420,11 +421,11 @@
     </select>
 
     <update id="updateRepository">
-     update devops_app_service_version set repository = CONCAT(#{helmUrl},repository);
+        update devops_app_service_version set repository = CONCAT(#{helmUrl},repository);
     </update>
 
     <update id="updateObjectVersionNumber">
-     update devops_app_service_version set object_version_number = 1 where id = #{versionId};
+        update devops_app_service_version set object_version_number = 1 where id = #{versionId};
     </update>
 
     <update id="updatePublishTime">
@@ -587,7 +588,7 @@
         END
     </select>
     <delete id="deleteByIds">
-        DELETE  FROM devops_app_service_version
+        DELETE FROM devops_app_service_version
         where id in
         <foreach collection="versionIds" item="versionId"
                  open="(" separator="," close=")">
@@ -596,37 +597,87 @@
     </delete>
 
     <select id="queryByShareVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
-         select * from ((SELECT version.*
-               FROM devops_app_service_share_rule dassr
-               LEFT JOIN devops_app_service_version version ON dassr.app_service_id = version.app_service_id
-               WHERE
-							 dassr.app_service_id = #{appServiceId}
-							 AND
-               (
-							  dassr.share_level = 'organization'
-								or (
-								dassr.share_level = 'project'
-								and dassr.project_id = #{projectId}) )
-               AND dassr.version IS NOT NULL
-               AND dassr.version = version.version
-               )
-               UNION
-               (
-               SELECT version.*
-               FROM devops_app_service_share_rule dassr
-               LEFT JOIN devops_app_service_version version ON dassr.app_service_id = version.app_service_id
-               WHERE
-							  dassr.app_service_id = #{appServiceId}
-							 AND
-               (
-							  dassr.share_level = 'organization'
-								or (
-								dassr.share_level = 'project'
-								and dassr.project_id = #{projectId}) )
-               AND dassr.version IS NULL
-               AND version.version LIKE CONCAT('%', CONCAT(dassr.version_type,'%'))
-               ))   vss
-	order BY vss.id desc
-	LIMIT 1
+        select * from ((SELECT version.*
+        FROM devops_app_service_share_rule dassr
+        LEFT JOIN devops_app_service_version version ON dassr.app_service_id = version.app_service_id
+        WHERE
+        dassr.app_service_id = #{appServiceId}
+        AND
+        (
+        dassr.share_level = 'organization'
+        or (
+        dassr.share_level = 'project'
+        and dassr.project_id = #{projectId}) )
+        AND dassr.version IS NOT NULL
+        AND dassr.version = version.version
+        )
+        UNION
+        (
+        SELECT version.*
+        FROM devops_app_service_share_rule dassr
+        LEFT JOIN devops_app_service_version version ON dassr.app_service_id = version.app_service_id
+        WHERE
+        dassr.app_service_id = #{appServiceId}
+        AND
+        (
+        dassr.share_level = 'organization'
+        or (
+        dassr.share_level = 'project'
+        and dassr.project_id = #{projectId}) )
+        AND dassr.version IS NULL
+        AND version.version LIKE CONCAT('%', CONCAT(dassr.version_type,'%'))
+        )) vss
+        order BY vss.id desc
+        LIMIT 1
     </select>
+
+    <select id="selectAllAppServiceId" resultType="long">
+        SELECT
+	       dasv.app_service_id
+        FROM
+	       devops_app_service_version dasv
+        GROUP BY
+	      dasv.app_service_id
+    </select>
+
+    <update id="updateVersionDefaultBatch" parameterType="list" keyProperty="id" useGeneratedKeys="true">
+        <foreach collection="appServiceVersionDefault" index="index" item="item" open="" separator=";" close="">
+            update devops_app_service_version
+            <set>
+                helm_config_id = null ,
+                repo_type = '${item.repoType}'
+            </set>
+            WHERE id = ${item.id}
+        </foreach>
+    </update>
+    <update id="updateVersionCustomBatch" parameterType="list" keyProperty="id" useGeneratedKeys="true">
+        <foreach collection="appServiceVersionDCustom" index="index" item="item" open="" separator=";" close="">
+            update devops_app_service_version
+            <set>
+                helm_config_id = ${item.harborConfigId} ,
+                repo_type = '${item.repoType}'
+            </set>
+            WHERE id = #{item.id}
+        </foreach>
+    </update>
+
+
+    <update id="updateVersionAppServiceId">
+        update
+        devops_app_service_version dasv
+        set
+        dasv.helm_config_id = #{configId},
+        dasv.repo_type = #{customRepo}
+        where dasv.app_service_id = #{appServiceId}
+    </update>
+
+    <update id="updateVersionOrgId">
+        update
+        devops_app_service_version dasv
+        set
+        dasv.helm_config_id = null,
+        dasv.repo_type = #{customRepo}
+        where dasv.app_service_id = #{appServiceId}
+    </update>
+
 </mapper>
