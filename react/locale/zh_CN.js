@@ -803,7 +803,7 @@ const pipelineManage = {
   'c7ncd.pipelineManage.record.empty.title.other': '阶段信息为空',
   'c7ncd.pipelineManage.record.empty.des.other': '未获取到此次执行的阶段信息',
   'c7ncd.pipelineManage.settings.global': '全局变量配置',
-  'c7ncd.pipelineManage.settings.local': '环境变量配置',
+  'c7ncd.pipelineManage.settings.local': '流水线变量配置',
   'c7ncd.pipelineManage.settings.add': '添加变量',
   'c7ncd.pipelineManage.settings.values.reveal': '显示所有值',
   'c7ncd.pipelineManage.settings.values.hide': '隐藏所有值',

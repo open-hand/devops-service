@@ -148,7 +148,7 @@ const PipelineManage = observer((props) => {
       display: true,
       group: 1,
     }, {
-      permissions: [],
+      permissions: ['choerodon.code.project.develop.ci-pipeline.ps.variable.project'],
       name: formatMessage({ id: `${intlPrefix}.settings.global` }),
       icon: 'settings-o',
       handler: () => openSettingsModal('global'),
@@ -165,7 +165,7 @@ const PipelineManage = observer((props) => {
           display: true,
           group: 2,
         }, {
-          permissions: [],
+          permissions: ['choerodon.code.project.develop.ci-pipeline.ps.variable.app'],
           name: formatMessage({ id: `${intlPrefix}.settings.local` }),
           icon: 'settings-o',
           handler: () => openSettingsModal('local'),
