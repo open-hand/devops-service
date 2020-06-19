@@ -297,7 +297,15 @@ const CodeQuality = withRouter(observer(() => {
   >
     <Header
       title={formatMessage({ id: 'report.code-quality.head' })}
-      backPath={`${backPath}${search}`}
+      backPath={(function () {
+        const params = new URLSearchParams(search);
+        if (params.get('from') === 'ci') {
+          params.delete('from');
+          return `/devops/pipeline-manage?${params.toString()}`;
+        } else {
+          return `${backPath}${search}`;
+        }
+      }())}
     >
       <ChartSwitch
         history={history}
