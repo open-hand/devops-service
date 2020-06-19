@@ -114,12 +114,16 @@ const Allocation = withRouter(observer((props) => {
     //     title={isStop ? <FormattedMessage id={`${intlPrefix}.button.disabled`} /> : ''}
     //     placement="bottom"
     //   >
-      <Button
-        icon="authority"
-        onClick={() => openDetail(props.match.params.id)}
+      <Permission
+        service={['choerodon.code.project.develop.app-service.ps.permission.update']}
       >
-        <FormattedMessage id={`${intlPrefix}.permission.manage`} />
-      </Button>
+        <Button
+          icon="authority"
+          onClick={() => openDetail(props.match.params.id)}
+        >
+          <FormattedMessage id={`${intlPrefix}.permission.manage`} />
+        </Button>
+      </Permission>
     //   </Tooltip>
     // </Permission>
     );

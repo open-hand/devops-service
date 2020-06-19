@@ -961,13 +961,20 @@ const AddTask = observer(() => {
           {
             steps.find(s => s.checked) && steps.find(s => s.checked).type === 'Maven'
               ? [
+                <div style={{
+                  marginLeft: '-16px',
+                  height: '1px',
+                  width: 'calc(100% + 32px)',
+                  background: '#d8d8d8',
+                }}
+                />,
                 <div
                   colSpan={2}
                   newLine
                   className="advanced_text"
                   style={{
                     cursor: 'pointer',
-                    borderTop: '1px solid #d8d8d8',
+                    // borderTop: '1px solid #d8d8d8',
                     paddingTop: '20px',
                   }}
                   onClick={() => setExpandIfSetting(!expandIfSetting)}
@@ -1049,24 +1056,31 @@ const AddTask = observer(() => {
               if (steps.length > 0) {
                 const type = steps.find(s => s.checked).type;
                 if (type && ['Maven', 'npm', 'go', 'maven_deploy'].includes(type)) {
-                  return (
-                    <div
-                      style={{
-                        borderTop: '1px solid #d8d8d8',
-                        paddingTop: '20px',
-                      }}
-                    >
-                      <YamlEditor
-                        readOnly={false}
-                        colSpan={2}
-                        newLine
-                        value={steps.length > 0 ? steps.find(s => s.checked).yaml : ''}
-                        onValueChange={(valueYaml) => handleChangeValue(valueYaml)}
-                        modeChange={false}
-                        showError={false}
-                      />
-                    </div>
-                  );
+                  return [
+                    <div style={{
+                      marginLeft: '-16px',
+                      height: '1px',
+                      width: 'calc(100% + 32px)',
+                      background: '#d8d8d8',
+                    }}
+                    />,
+                    (
+                      <div
+                        style={{
+                          paddingTop: '20px',
+                        }}
+                      >
+                        <YamlEditor
+                          readOnly={false}
+                          colSpan={2}
+                          newLine
+                          value={steps.length > 0 ? steps.find(s => s.checked).yaml : ''}
+                          onValueChange={(valueYaml) => handleChangeValue(valueYaml)}
+                          modeChange={false}
+                          showError={false}
+                        />
+                      </div>
+                    )];
                 } else if (type === 'upload') {
                   return [
                     <TextField
@@ -1185,7 +1199,7 @@ const AddTask = observer(() => {
           AddTaskFormDataSet.current.get('type') !== 'custom' ? [
             <TextField name="name" />,
             <TextField name="glyyfw" />,
-            <div style={{ display: 'inline-flex' }}>
+            <div className="matchType" style={{ display: 'inline-flex', position: 'relative' }}>
               <Select
                 onChange={(value) => {
                   // const arr = ['triggerRefs', 'regexMatch', 'exactMatch', 'exactExclude'];
@@ -1199,6 +1213,7 @@ const AddTask = observer(() => {
                 combo={false}
                 style={{ marginRight: 8 }}
                 name="triggerType"
+                allowClear={false}
               >
                 <Option value="refs">分支类型匹配</Option>
                 <Option value="regex">正则匹配</Option>
@@ -1217,6 +1232,10 @@ const AddTask = observer(() => {
                   help="您可以在此输入或选择触发该任务的分支类型，若不填写，则默认为所有分支或tag"
                   searchMatcher="branchName"
                   optionRenderer={({ text }) => renderderBranchs({ text })}
+                  maxTagCount={1}
+                  maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
+                    {`+${omittedValues.length}`}
+                  </Tooltip>}
                   renderer={renderderBranchs}
                 >
                   {
