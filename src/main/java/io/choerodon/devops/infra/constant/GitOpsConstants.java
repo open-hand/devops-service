@@ -143,9 +143,9 @@ public class GitOpsConstants {
     public static final String CHOERODON_CI_CACHE_DIR = "choerodon-ci-cache";
 
     /**
-     * 打包后的软件包名称(不含.tgz后缀)
+     * gitlab ci的 cache key, commit相同的流水线会共享
      */
-    public static final String CHOERODON_ARTIFACT_NAME = "choerodon-ci-cache-pkg";
+    public static final String GITLAB_CI_DEFAULT_CACHE_KEY = "${CI_COMMIT_SHA}";
 
     public static final Pattern ARTIFACT_NAME_PATTERN = Pattern.compile("[0-9a-zA-Z._-]{6,30}");
 

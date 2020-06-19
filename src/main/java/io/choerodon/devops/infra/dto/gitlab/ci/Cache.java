@@ -9,8 +9,11 @@ import io.swagger.annotations.ApiModelProperty;
  * @since 20-4-2
  */
 public class Cache {
+    /**
+     * 这里不使用{@link Key}, key这个结构从gitlab 12.5 版本才引入. 目前猪齿鱼gitlab版本是11.x
+     */
     @ApiModelProperty("Cache key used to define a cache affinity.")
-    private Key key;
+    private String key;
     @ApiModelProperty("Specify which paths should be cached across builds.")
     private List<String> paths;
     @ApiModelProperty("Set untracked: true to cache all files that are untracked in your Git repository")
@@ -21,11 +24,11 @@ public class Cache {
     @ApiModelProperty("should be pull-push, push, or pull")
     private String policy;
 
-    public Key getKey() {
+    public String getKey() {
         return key;
     }
 
-    public void setKey(Key key) {
+    public void setKey(String key) {
         this.key = key;
     }
 

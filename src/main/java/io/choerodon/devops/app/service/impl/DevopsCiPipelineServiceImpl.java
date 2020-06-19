@@ -5,6 +5,7 @@ import static io.choerodon.devops.infra.constant.GitOpsConstants.DEFAULT_PIPELIN
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
@@ -28,10 +29,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
-import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
-import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
-import io.choerodon.devops.infra.dto.gitlab.ci.OnlyExceptPolicy;
-import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
+import io.choerodon.devops.infra.dto.gitlab.ci.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.maven.Repository;
 import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
@@ -334,9 +332,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 删除job记录
         devopsCiJobRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
 
-        // 删除pipeline之前执行过程上传的软件包数据
-        devopsCiJobService.deleteArtifactsByGitlabPipelineIds(projectId, devopsCiPipelineRecordMapper.listGitlabPipelineIdsByPipelineId(ciPipelineId));
-
         // 删除pipeline记录
         devopsCiPipelineRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
 
@@ -555,11 +550,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     ciJob.setStage(stageVO.getName());
                     ciJob.setOnly(buildOnlyExceptPolicyObject(job.getTriggerRefs()));
                     ciJob.setScript(buildScript(Objects.requireNonNull(projectDTO.getOrganizationId()), projectId, job));
+                    ciJob.setCache(buildJobCache(job));
                     gitlabCi.addJob(job.getName(), ciJob);
                 });
             }
         });
-        gitlabCi.setBeforeScript(ArrayUtil.singleAsList(GitOpsConstants.CHOERODON_BEFORE_SCRIPT));
+        buildBeforeScript(gitlabCi);
         return gitlabCi;
     }
 
@@ -605,11 +601,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 最后生成的所有script集合
             List<String> result = new ArrayList<>();
 
-            // 添加下载命令
-            if (Boolean.TRUE.equals(jobVO.getToDownload())) {
-                result.add(GitlabCiUtil.generateUploadTgzScripts(projectId, GitOpsConstants.CHOERODON_ARTIFACT_NAME, GitOpsConstants.CHOERODON_CI_CACHE_DIR, organizationId));
-            }
-
             // 同一个job中的所有step要按照sequence顺序来
             // 将每一个step都转为一个List<String>并将所有的list合并为一个
             ciConfigVO.getConfig()
@@ -637,11 +628,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                 break;
                         }
                     });
-
-            // 上传共享目录的内容
-            if (Boolean.TRUE.equals(jobVO.getToUpload())) {
-                result.add(GitlabCiUtil.generateDownloadTgzScripts(GitOpsConstants.CHOERODON_ARTIFACT_NAME, projectId));
-            }
 
             return result;
         } else if (CiJobTypeEnum.CHART.value().equals(jobVO.getType())) {
@@ -695,6 +681,37 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return true;
     }
 
+    @Nullable
+    private Cache buildJobCache(DevopsCiJobVO jobConfig) {
+        boolean isToUpload = Boolean.TRUE.equals(jobConfig.getToUpload());
+        boolean isToDownload = Boolean.TRUE.equals(jobConfig.getToDownload());
+        if (isToUpload && isToDownload) {
+            return constructCache(CachePolicy.PULL_PUSH.getValue());
+        } else if (isToDownload) {
+            return constructCache(CachePolicy.PULL.getValue());
+        } else if (isToUpload) {
+            return constructCache(CachePolicy.PUSH.getValue());
+        } else {
+            return null;
+        }
+    }
+
+    private Cache constructCache(String policy) {
+        Cache cache = new Cache();
+        cache.setKey(GitOpsConstants.GITLAB_CI_DEFAULT_CACHE_KEY);
+        cache.setPaths(Collections.singletonList(GitOpsConstants.CHOERODON_CI_CACHE_DIR));
+        cache.setPolicy(policy);
+        return cache;
+    }
+
+    private void buildBeforeScript(GitlabCi gitlabCi) {
+        List<String> beforeScripts = ArrayUtil.singleAsList(GitOpsConstants.CHOERODON_BEFORE_SCRIPT);
+        // 如果有job启用了缓存设置, 就创建缓存目录
+        if (gitlabCi.getJobs().values().stream().anyMatch(j -> j.getCache() != null)) {
+            beforeScripts.add(GitlabCiUtil.generateCreateCacheDir(GitOpsConstants.CHOERODON_CI_CACHE_DIR));
+        }
+        gitlabCi.setBeforeScript(beforeScripts);
+    }
 
     private OnlyExceptPolicy buildOnlyExceptPolicyObject(String triggerRefs) {
         OnlyExceptPolicy onlyExceptPolicy = new OnlyExceptPolicy();

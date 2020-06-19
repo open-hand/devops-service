@@ -214,30 +214,6 @@ public class GitlabCiUtil {
     }
 
     /**
-     * 将mvn构建的jar包进行打包上传
-     *
-     * @param artifactFileName 软件包名称
-     * @param directory        要打包的文件路径pattern
-     * @param projectId        项目id
-     * @param organizationId   组织id
-     * @return 上传软件包的shell脚本
-     */
-    public static String generateUploadTgzScripts(Long projectId, String artifactFileName, String directory, Long organizationId) {
-        String rawCommand = "c7nCompressAndUploadArtifact %s %s %s %s";
-        return String.format(rawCommand, artifactFileName, directory, projectId, organizationId);
-    }
-
-    /**
-     * 生成用于下载从‘上传软件包’步骤中上传的软件包到本地并解压
-     *
-     * @param artifactFileName 需要下载的包名称
-     */
-    public static String generateDownloadTgzScripts(String artifactFileName, Long projectId) {
-        String rawCommand = "c7nDownloadArtifactAndUnCompress %s %s";
-        return String.format(rawCommand, artifactFileName, projectId);
-    }
-
-    /**
      * 生成docker构建需要的脚本
      *
      * @param dockerBuildContextDir docker构建上下文目录
@@ -255,5 +231,9 @@ public class GitlabCiUtil {
      */
     public static String generateChartBuildScripts() {
         return GitOpsConstants.CHART_BUILD;
+    }
+
+    public static String generateCreateCacheDir(String cacheDir) {
+        return "mkdir -p " + Objects.requireNonNull(cacheDir);
     }
 }
