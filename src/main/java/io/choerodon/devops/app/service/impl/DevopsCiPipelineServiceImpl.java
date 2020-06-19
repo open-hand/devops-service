@@ -602,7 +602,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      * @param ciJob    ci文件的job对象
      */
     private void processOnlyAndExcept(DevopsCiJobVO metadata, CiJob ciJob) {
-        if (StringUtils.isNotBlank(metadata.getTriggerType())) {
+        if (StringUtils.isNotBlank(metadata.getTriggerType())
+                && StringUtils.isNotBlank(metadata.getTriggerValue())) {
             CiTriggerType ciTriggerType = CiTriggerType.forValue(metadata.getTriggerType());
             if (ciTriggerType != null) {
                 String triggerValue = metadata.getTriggerValue();
@@ -678,7 +679,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
                 CommonExAssertUtil.assertTrue(sonarConfig != null, "error.default.sonar.not.exist");
                 scripts.add(GitlabCiUtil.getDefaultSonarCommand());
-            } else if (CiSonarConfigType.CUSTOM.value().equals(sonarQubeConfigVO.getConfigType())){
+            } else if (CiSonarConfigType.CUSTOM.value().equals(sonarQubeConfigVO.getConfigType())) {
                 if (Objects.isNull(sonarQubeConfigVO.getSonarUrl())) {
                     throw new CommonException("error.sonar.url.is.null");
                 }
