@@ -128,6 +128,9 @@ public class HarborServiceImpl implements HarborService {
     @Override
     public DevopsConfigDTO queryRepoConfigByIdToDevopsConfig(Long projectId, Long harborConfigId, String repoType, String operateType) {
         HarborRepoDTO harborRepoDTO = rdupmClient.queryHarborRepoConfigById(projectId, harborConfigId, repoType).getBody();
+        if (Objects.isNull(harborRepoDTO)) {
+            throw new CommonException("query.repo.config.is null.by.configId");
+        }
         return repoDTOToDevopsConfigDTO(harborRepoDTO, operateType);
     }
 
@@ -137,9 +140,6 @@ public class HarborServiceImpl implements HarborService {
         ConfigVO configVO = new ConfigVO();
         configVO.setUrl(harborRepoConfig.getRepoUrl());
         //自定义仓库才有默认的邮箱
-//        configVO.setEmail(harborRepoConfig.getEmail());
-//        configVO.setUserName(harborRepoConfig.getLoginName());
-//        configVO.setPassword(harborRepoConfig.getPassword());
         if (AUTHTYPE.equals(operateType)) {
             if (CUSTOM_REPO.equals(harborRepoDTO.getRepoType())) {
                 configVO.setUserName(harborRepoConfig.getLoginName());
