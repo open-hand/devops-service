@@ -43,6 +43,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.util.CollectionUtils;
 import org.yaml.snakeyaml.Yaml;
 
 import javax.annotation.PostConstruct;
@@ -326,6 +327,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchService.basePageBranch(appServiceId, pageable, params);
         Page<BranchVO> devopsBranchVOPageInfo = ConvertUtils.convertPage(devopsBranchDTOPageInfo, BranchVO.class);
 
+        if (CollectionUtils.isEmpty(devopsBranchVOPageInfo.getContent())) {
+            return devopsBranchVOPageInfo;
+        }
         List<Long> userIds = devopsBranchDTOPageInfo.getContent().stream().map(DevopsBranchDTO::getUserId).collect(Collectors.toList());
         List<Long> lastCommitUserIds = devopsBranchDTOPageInfo.getContent().stream().map(DevopsBranchDTO::getLastCommitUser).collect(Collectors.toList());
         List<Long> issuedIds = devopsBranchDTOPageInfo.getContent().stream().map(DevopsBranchDTO::getIssueId).collect(Collectors.toList());
