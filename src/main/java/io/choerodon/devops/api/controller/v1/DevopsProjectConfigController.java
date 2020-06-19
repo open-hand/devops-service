@@ -127,11 +127,14 @@ public class DevopsProjectConfigController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验chart配置信息是否正确")
     @GetMapping(value = "/check_chart")
-    public void checkChart(
+    public ResponseEntity<Boolean> checkChart(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "chartmusume地址", required = true)
             @RequestParam String url) {
-        appServiceService.checkChart(url);
+        return Optional.ofNullable(
+                appServiceService.checkChart(url))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.connection.failed"));
     }
 }
