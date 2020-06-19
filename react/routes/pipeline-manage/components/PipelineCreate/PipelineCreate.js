@@ -9,7 +9,6 @@ import { usePipelineManageStore } from '../../stores';
 import StageEditBlock from '../PipelineFlow/components/stageEditBlock';
 
 import './pipelineCreate.less';
-import Tips from '../../../../../lib/components/new-tips';
 
 const { Option } = Select;
 
