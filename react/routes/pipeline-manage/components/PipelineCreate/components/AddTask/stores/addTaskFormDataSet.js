@@ -53,7 +53,7 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       // name: 'branchs',
       name: 'triggerValue',
       type: 'string',
-      label: '触发分支类型',
+      label: '触发分支',
     }, {
       name: 'gjmb',
       type: 'string',

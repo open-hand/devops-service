@@ -1177,7 +1177,6 @@ const AddTask = observer(() => {
       AddTaskFormDataSet.current.set('selectImage', '1');
     }
   };
-
   
   const getImageDom = () => [
     <div colSpan={2} newLine className="advanced_text" style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
@@ -1256,7 +1255,7 @@ const AddTask = observer(() => {
                   searchable
                   multiple
                   name="triggerValue"
-                  showHelp="tooltip"
+                  showHelp={AddTaskFormDataSet.current.get('triggerType') !== 'exact_exclude' ? 'tooltip' : 'none'}
                   help="您可以在此输入或选择触发该任务的分支类型，若不填写，则默认为所有分支或tag"
                   searchMatcher="branchName"
                   optionRenderer={({ text }) => renderderBranchs({ text })}
