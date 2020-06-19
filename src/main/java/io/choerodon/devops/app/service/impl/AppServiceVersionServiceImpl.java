@@ -139,7 +139,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         }
         FileUtil.unTarGZ(path, destFilePath);
 
-        File valuesFile = FileUtil.queryFileFromFiles(new File(destFilePath), "values.yaml");
+        // 使用深度优先遍历查找文件, 避免查询到子chart的values值
+        File valuesFile = FileUtil.queryFileFromFilesBFS(new File(destFilePath), "values.yaml");
 
         if (valuesFile == null) {
             FileUtil.deleteDirectories(storeFilePath, destFilePath);

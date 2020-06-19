@@ -313,6 +313,31 @@ public class FileUtil {
         return null;
     }
 
+    /**
+     * 从文件夹中查找指定文件, 广度优先遍历
+     */
+    public static File queryFileFromFilesBFS(File file, String fileName) {
+        File[] files = file.listFiles();
+        if (files != null) {
+            Queue<File> fileQueue = new ArrayDeque<>();
+            // 将当前目录下的文件先加入队列
+            ArrayUtil.offerAllToQueue(fileQueue, files);
+
+            File current;
+            // 遍历队列, 取出队列中元素
+            while ((current = fileQueue.poll()) != null) {
+                if (current.isDirectory()) {
+                    // 如果是目录, 将目录下的文件加入队列尾部
+                    ArrayUtil.offerAllToQueue(fileQueue, current.listFiles());
+                }
+                if (current.getName().equals(fileName)) {
+                    return current;
+                }
+            }
+        }
+        return null;
+    }
+
     public static List<String> getFilesPath(String filepath) {
         File file = new File(filepath);
         List<String> filepaths = getFilesPath(file);
