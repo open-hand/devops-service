@@ -458,7 +458,7 @@ public class GitlabServiceClientOperator {
         try {
             return gitlabServiceClient.listAppServiceVariable(projectId, userId).getBody();
         } catch (FeignException e) {
-            throw new CommonException(e);
+            throw new CommonException("error.devops.ci.variable.key.list");
         }
     }
 
@@ -466,7 +466,7 @@ public class GitlabServiceClientOperator {
         try {
             return gitlabServiceClient.listProjectVariable(projectId, userId).getBody();
         } catch (FeignException e) {
-            throw new CommonException(e);
+            throw new CommonException("error.devops.ci.variable.key.list");
         }
     }
 
