@@ -564,7 +564,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //校验环境相关信息
-        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+//        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
         //校验values
         FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
