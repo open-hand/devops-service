@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.Objects;
+
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -65,5 +67,24 @@ public class SonarQubeConfigVO {
 
     public void setConfigType(String configType) {
         this.configType = configType;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SonarQubeConfigVO that = (SonarQubeConfigVO) o;
+        return Objects.equals(sonarUrl, that.sonarUrl) &&
+                Objects.equals(username, that.username) &&
+                Objects.equals(password, that.password) &&
+                Objects.equals(authType, that.authType) &&
+                Objects.equals(token, that.token) &&
+                Objects.equals(configType, that.configType);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(sonarUrl, username, password, authType, token, configType);
     }
 }

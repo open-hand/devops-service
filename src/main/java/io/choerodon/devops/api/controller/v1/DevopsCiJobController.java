@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.ResponseEntity;
@@ -7,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.app.service.DevopsCiJobService;
 import io.choerodon.swagger.annotation.Permission;
@@ -36,6 +39,20 @@ public class DevopsCiJobController {
             @RequestBody SonarQubeConfigVO sonarQubeConfigVO) {
         return ResponseEntity.ok(devopsCiJobService.sonarConnect(projectId, sonarQubeConfigVO));
     }
+
+    /**
+     * 返回应用服务对应的sonar配置（给质量管理团队使用）
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @PostMapping("/sonar/config")
+    @ApiOperation("返回应用服务对应的sonar配置（给质量管理团队使用）")
+    public ResponseEntity<SonarInfoVO> getSonarConfig(
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam(name = "appServiceId", required = false) Long appServiceId,
+            @RequestParam(name = "appServiceCode", required = false) String code) {
+        return ResponseEntity.ok(devopsCiJobService.getSonarConfig(projectId, appServiceId, code));
+    }
+
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询job日志")
