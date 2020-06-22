@@ -625,10 +625,10 @@ public interface GitlabServiceClient {
 
 
     @PostMapping(value = "/v1/projects/{projectId}/variables")
-    ResponseEntity<List<CiVariableVO>> addProjectVariable(@PathVariable("projectId") Integer projectId,
-                                                          @RequestBody GitlabTransferDTO gitlabTransferDTO,
-                                                          @RequestParam("protecteds") Boolean protecteds,
-                                                          @RequestParam("userId") Integer userId);
+    ResponseEntity<CiVariableVO> addProjectVariable(@PathVariable("projectId") Integer projectId,
+                                                    @RequestBody GitlabTransferDTO gitlabTransferDTO,
+                                                    @RequestParam("protecteds") Boolean protecteds,
+                                                    @RequestParam("userId") Integer userId);
 
     @PutMapping(value = "/v1/projects/{projectId}/variables")
     ResponseEntity<List<CiVariableVO>> batchSaveProjectVariable(@PathVariable("projectId") Integer projectId,
