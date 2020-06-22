@@ -67,7 +67,7 @@ export default withRouter(injectIntl(observer(({
   async function handleTestChart() {
     try {
       const res = await store.checkChart(id, record.get('chartUrl'));
-      if (handlePromptError(res, false)) {
+      if (handlePromptError(res)) {
         record.set('chartStatus', 'success');
         return true;
       } else {
