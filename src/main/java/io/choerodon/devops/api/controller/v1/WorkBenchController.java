@@ -31,7 +31,7 @@ public class WorkBenchController {
     @Autowired
     WorkBenchService workBenchService;
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(permissionLogin = true, level = ResourceLevel.ORGANIZATION)
     @RequestMapping("/approval")
     @ApiOperation("查询个人待审核事件")
     public ResponseEntity<List<ApprovalVO>> listApproval(@ApiParam(value = "组织id", required = true)
@@ -43,7 +43,7 @@ public class WorkBenchController {
                 .orElseThrow(() -> new CommonException("error.list.approval"));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(permissionLogin = true, level = ResourceLevel.ORGANIZATION)
     @RequestMapping("/latest_app_service")
     @ApiOperation("查看最近操作过的应用服务")
     public ResponseEntity<List<LatestAppServiceVO>> listLatestAppService(@ApiParam(value = "组织id", required = true)
