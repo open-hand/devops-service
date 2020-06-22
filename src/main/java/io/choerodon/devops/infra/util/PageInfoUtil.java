@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -23,7 +24,7 @@ public class PageInfoUtil {
     public static <T> Page<T> listAsPage(List<T> all) {
         Page<T> result = new Page<>();
         result.setContent(all);
-        result.setTotalPages(1);
+        result.setTotalPages(GitOpsConstants.FIRST_PAGE_INDEX);
         result.setTotalElements(all.size());
         result.setNumber(1);
         result.setNumberOfElements(all.size());
@@ -47,8 +48,8 @@ public class PageInfoUtil {
         result.setNumber(pageable.getPage());
         //总共的大小
         result.setTotalElements(all.size());
-        //总页数
-        result.setTotalPages(queryAll ? 1 : (int) (Math.ceil(all.size() / (pageable.getSize() * 1.0))));
+        //总页数 从0开始
+        result.setTotalPages(queryAll ? GitOpsConstants.FIRST_PAGE_INDEX : (int) (Math.floor(all.size() / (pageable.getSize() * 1.0))));
         //元素起始索引
         // 第一页从0开始
         int fromIndex = pageable.getSize() * pageable.getPage();
