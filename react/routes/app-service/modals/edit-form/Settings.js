@@ -15,7 +15,7 @@ const Settings = injectIntl(observer(({ record, handleTestChart }) => {
 
   function renderOption({ record: optionRecord, value, text }) {
     if (optionRecord.get('type') === 'DEFAULT_REPO') {
-      return `${text} (默认)`;
+      return `${text} (默认Docker仓库)`;
     } else {
       return text;
     }
@@ -23,7 +23,7 @@ const Settings = injectIntl(observer(({ record, handleTestChart }) => {
 
   function renderInput({ value, text }) {
     if (value && value.type === 'DEFAULT_REPO') {
-      return `${text} (默认)`;
+      return `${text} (默认Docker仓库)`;
     } else {
       return text;
     }
