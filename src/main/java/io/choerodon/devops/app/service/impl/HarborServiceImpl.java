@@ -144,7 +144,7 @@ public class HarborServiceImpl implements HarborService {
         if (!Objects.isNull(appServiceShareRuleDTO)) {
             AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServcieId);
             harborRepoDTO = rdupmClient.queryHarborRepoConfigById(appServiceDTO.getProjectId(),
-                    appServiceShareRuleDTO.getAppServiceId(), repoType).getBody();
+                    harborConfigId, repoType).getBody();
         } else {
             harborRepoDTO = rdupmClient.queryHarborRepoConfigById(projectId, harborConfigId, repoType).getBody();
         }
