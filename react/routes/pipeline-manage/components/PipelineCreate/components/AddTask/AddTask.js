@@ -1177,7 +1177,7 @@ const AddTask = observer(() => {
       AddTaskFormDataSet.current.set('selectImage', '1');
     }
   };
-  
+
   const getImageDom = () => [
     <div colSpan={2} newLine className="advanced_text" style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
       高级设置<Icon style={{ fontSize: 18 }} type={expandIf ? 'expand_less' : 'expand_more'} />
@@ -1197,7 +1197,7 @@ const AddTask = observer(() => {
       </Select>
     ) : '',
   ];
-  
+
   const getShareSettings = () => (expandIf && AddTaskFormDataSet.current.get('type') === 'build' ? (
     <div newLine colSpan={2}>
       <Tips
@@ -1235,7 +1235,7 @@ const AddTask = observer(() => {
                   //     AddTaskFormDataSet.current.set(a, undefined);
                   //   }
                   // });
-                  AddTaskFormDataSet.current.set('branchs', undefined);
+                  AddTaskFormDataSet.current.set('triggerValue', undefined);
                 }}
                 combo={false}
                 style={{ marginRight: 8 }}
