@@ -48,8 +48,9 @@ public class PageInfoUtil {
         result.setNumber(pageable.getPage());
         //总共的大小
         result.setTotalElements(all.size());
+        int ceilTotal = (int) (Math.ceil(all.size() / (pageable.getSize() * 1.0)));
         //总页数 从0开始
-        result.setTotalPages(queryAll ? GitOpsConstants.FIRST_PAGE_INDEX : (int) (Math.floor(all.size() / (pageable.getSize() * 1.0))));
+        result.setTotalPages(queryAll ? GitOpsConstants.FIRST_PAGE_INDEX : Math.max(0, ceilTotal - 1));
         //元素起始索引
         // 第一页从0开始
         int fromIndex = pageable.getSize() * pageable.getPage();
