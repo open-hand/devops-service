@@ -110,9 +110,13 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
     }
 
     private void setUserContext(String loginName) {
-        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(loginName);
-        if (iamUserDTO != null) {
-            CustomContextUtil.setUserContext(iamUserDTO.getId());
+        try {
+            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(loginName);
+            if (iamUserDTO != null) {
+                CustomContextUtil.setUserContext(iamUserDTO.getId());
+            }
+        } catch (Exception ex) {
+            LOGGER.info("Failed to query user by login name {}", loginName);
         }
     }
 }
