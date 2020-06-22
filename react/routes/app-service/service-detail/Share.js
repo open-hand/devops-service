@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { TabPage, Content, Permission, Breadcrumb, Action } from '@choerodon/boot';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
+import { withRouter } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import { useAppTopStore } from '../stores';
 import { useServiceDetailStore } from './stores';
@@ -16,7 +17,7 @@ const modalStyle = {
   width: 380,
 };
 
-const Share = () => {
+const Share = withRouter((props) => {
   const {
     intlPrefix,
     prefixCls,
@@ -99,9 +100,38 @@ const Share = () => {
     shareDs.delete(record, modalProps);
   }
 
+  function openDetail(appServiceIds) {
+    const {
+      history,
+      location,
+    } = props;
+    history.push(`/rducm/code-lib-management/assign${location.search}&appServiceIds=${appServiceIds}`);
+    // Modal.open({
+    //   key: modalKey1,
+    //   title: <Tips
+    //     helpText={formatMessage({ id: `${intlPrefix}.detail.allocation.tips` })}
+    //     title={formatMessage({ id: `${intlPrefix}.permission.manage` })}
+    //   />,
+    //   children: <ServicePermission
+    //     dataSet={permissionDs}
+    //     baseDs={detailDs}
+    //     store={appServiceStore}
+    //     nonePermissionDs={nonePermissionDs}
+    //     intlPrefix="c7ncd.deployment"
+    //     prefixCls={prefixCls}
+    //     formatMessage={formatMessage}
+    //     projectId={id}
+    //     refresh={refresh}
+    //   />,
+    //   drawer: true,
+    //   style: modalStyle,
+    //   okText: formatMessage({ id: 'save' }),
+    // });
+  }
+
   function renderButtons() {
     const isStop = detailDs.current && !detailDs.current.get('active');
-    return (
+    return [
       <Permission
         service={['choerodon.code.project.develop.app-service.ps.share.add']}
       >
@@ -117,8 +147,18 @@ const Share = () => {
             <FormattedMessage id={`${intlPrefix}.share.rule.add`} />
           </Button>
         </Tooltip>
-      </Permission>
-    );
+      </Permission>,
+      <Permission
+        service={['choerodon.code.project.develop.app-service.ps.permission.update']}
+      >
+        <Button
+          icon="authority"
+          onClick={() => openDetail(props.match.params.id)}
+        >
+          权限管理
+        </Button>
+      </Permission>,
+    ];
   }
 
   function handleTableFilter(record) {
@@ -156,6 +196,6 @@ const Share = () => {
       </Content>
     </TabPage>
   );
-};
+});
 
 export default Share;

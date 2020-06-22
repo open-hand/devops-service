@@ -49,7 +49,7 @@ export default observer((props) => {
         {formatMessage({ id: 'apptag.create' })}
       </Button>
     </Permission>);
-    
+
   useEffect(() => {
     handleMapStore.setCodeManagerAppTag({
       refresh,
@@ -168,7 +168,7 @@ export default observer((props) => {
               <Action data={[
                 {
                   service: [
-                    'choerodon.code.project.develop.code-management.ps.tag.delete',
+                    // 'choerodon.code.project.develop.code-management.ps.tag.delete',
                   ],
                   text: formatMessage({ id: 'delete' }),
                   action: () => { openRemove(release.tagName); },
