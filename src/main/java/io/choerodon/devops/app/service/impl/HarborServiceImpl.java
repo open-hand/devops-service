@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
+import io.choerodon.devops.infra.dto.AppServiceShareRuleDTO;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
 import io.choerodon.devops.infra.feign.RdupmClient;
 
@@ -39,6 +40,7 @@ import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
+import io.choerodon.devops.infra.mapper.AppServiceShareRuleMapper;
 
 /**
  * Created with IntelliJ IDEA.
@@ -69,6 +71,8 @@ public class HarborServiceImpl implements HarborService {
     @Autowired
     @Lazy
     private RdupmClient rdupmClient;
+    @Autowired
+    private AppServiceShareRuleMapper appServiceShareRuleMapper;
 
     @Value("${services.harbor.baseUrl}")
     private String baseUrl;
@@ -118,7 +122,13 @@ public class HarborServiceImpl implements HarborService {
 
     @Override
     public DevopsConfigDTO queryRepoConfigToDevopsConfig(Long projectId, Long appServiceId, String operateType) {
-        HarborRepoDTO harborRepoDTO = rdupmClient.queryHarborRepoConfig(projectId, appServiceId).getBody();
+        HarborRepoDTO harborRepoDTO = new HarborRepoDTO();
+        AppServiceShareRuleDTO appServiceShareRuleDTO = queryShareAppService(appServiceId);
+        if (!Objects.isNull(appServiceShareRuleDTO)) {
+            harborRepoDTO = rdupmClient.queryHarborRepoConfig(appServiceShareRuleDTO.getProjectId(), appServiceId).getBody();
+        } else {
+            harborRepoDTO = rdupmClient.queryHarborRepoConfig(projectId, appServiceId).getBody();
+        }
         if (Objects.isNull(harborRepoDTO)) {
             throw new CommonException("no custom or default warehouse configuration exists");
         }
@@ -126,12 +136,27 @@ public class HarborServiceImpl implements HarborService {
     }
 
     @Override
-    public DevopsConfigDTO queryRepoConfigByIdToDevopsConfig(Long projectId, Long harborConfigId, String repoType, String operateType) {
-        HarborRepoDTO harborRepoDTO = rdupmClient.queryHarborRepoConfigById(projectId, harborConfigId, repoType).getBody();
+    public DevopsConfigDTO queryRepoConfigByIdToDevopsConfig(Long appServcieId, Long projectId, Long harborConfigId, String repoType, String operateType) {
+        //查询应用服务是否为共享，如果是共享则从原来的的项目下拿仓库
+        HarborRepoDTO harborRepoDTO = new HarborRepoDTO();
+        AppServiceShareRuleDTO appServiceShareRuleDTO = queryShareAppService(appServcieId);
+        if (!Objects.isNull(appServiceShareRuleDTO)) {
+            harborRepoDTO = rdupmClient.queryHarborRepoConfigById(appServiceShareRuleDTO.getProjectId(),
+                    appServiceShareRuleDTO.getAppServiceId(), repoType).getBody();
+        } else {
+            harborRepoDTO = rdupmClient.queryHarborRepoConfigById(projectId, harborConfigId, repoType).getBody();
+        }
         if (Objects.isNull(harborRepoDTO)) {
             throw new CommonException("query.repo.config.is null.by.configId");
         }
         return repoDTOToDevopsConfigDTO(harborRepoDTO, operateType);
+    }
+
+    private AppServiceShareRuleDTO queryShareAppService(Long appServiceId) {
+        AppServiceShareRuleDTO appServiceShareRuleDTO = new AppServiceShareRuleDTO();
+        appServiceShareRuleDTO.setAppServiceId(appServiceId);
+        AppServiceShareRuleDTO serviceShareRuleDTO = appServiceShareRuleMapper.selectOne(appServiceShareRuleDTO);
+        return serviceShareRuleDTO;
     }
 
     private DevopsConfigDTO repoDTOToDevopsConfigDTO(HarborRepoDTO harborRepoDTO, String operateType) {
