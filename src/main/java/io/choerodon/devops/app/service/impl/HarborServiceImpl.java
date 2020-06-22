@@ -7,8 +7,7 @@ import com.google.gson.Gson;
 
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
-import io.choerodon.devops.infra.dto.AppServiceShareRuleDTO;
-import io.choerodon.devops.infra.dto.DevopsConfigDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.feign.RdupmClient;
 
 import org.slf4j.Logger;
@@ -32,14 +31,13 @@ import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
-import io.choerodon.devops.infra.dto.DevopsProjectDTO;
-import io.choerodon.devops.infra.dto.HarborUserDTO;
 import io.choerodon.devops.infra.dto.harbor.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
+import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.AppServiceShareRuleMapper;
 
 /**
@@ -73,6 +71,8 @@ public class HarborServiceImpl implements HarborService {
     private RdupmClient rdupmClient;
     @Autowired
     private AppServiceShareRuleMapper appServiceShareRuleMapper;
+    @Autowired
+    private AppServiceMapper appServiceMapper;
 
     @Value("${services.harbor.baseUrl}")
     private String baseUrl;
@@ -125,7 +125,8 @@ public class HarborServiceImpl implements HarborService {
         HarborRepoDTO harborRepoDTO = new HarborRepoDTO();
         AppServiceShareRuleDTO appServiceShareRuleDTO = queryShareAppService(appServiceId);
         if (!Objects.isNull(appServiceShareRuleDTO)) {
-            harborRepoDTO = rdupmClient.queryHarborRepoConfig(appServiceShareRuleDTO.getProjectId(), appServiceId).getBody();
+            AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+            harborRepoDTO = rdupmClient.queryHarborRepoConfig(appServiceDTO.getProjectId(), appServiceId).getBody();
         } else {
             harborRepoDTO = rdupmClient.queryHarborRepoConfig(projectId, appServiceId).getBody();
         }
@@ -141,7 +142,8 @@ public class HarborServiceImpl implements HarborService {
         HarborRepoDTO harborRepoDTO = new HarborRepoDTO();
         AppServiceShareRuleDTO appServiceShareRuleDTO = queryShareAppService(appServcieId);
         if (!Objects.isNull(appServiceShareRuleDTO)) {
-            harborRepoDTO = rdupmClient.queryHarborRepoConfigById(appServiceShareRuleDTO.getProjectId(),
+            AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServcieId);
+            harborRepoDTO = rdupmClient.queryHarborRepoConfigById(appServiceDTO.getProjectId(),
                     appServiceShareRuleDTO.getAppServiceId(), repoType).getBody();
         } else {
             harborRepoDTO = rdupmClient.queryHarborRepoConfigById(projectId, harborConfigId, repoType).getBody();
