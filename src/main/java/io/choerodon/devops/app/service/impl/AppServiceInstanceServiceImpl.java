@@ -564,7 +564,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //校验环境相关信息
-//        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
         //校验values
         FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
@@ -1604,7 +1604,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceVersionId);
         DevopsConfigDTO devopsConfigDTO;
         if (appServiceVersionDTO.getHarborConfigId() != null) {
-            devopsConfigDTO = harborService.queryRepoConfigByIdToDevopsConfig(appServiceDTO.getProjectId(),
+            devopsConfigDTO = harborService.queryRepoConfigByIdToDevopsConfig(appServiceDTO.getId(),appServiceDTO.getProjectId(),
                     appServiceVersionDTO.getHarborConfigId(), appServiceVersionDTO.getRepoType(),null);
         } else {
             //查询harbor的用户名密码

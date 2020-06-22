@@ -25,5 +25,5 @@ public interface HarborService {
 
     DevopsConfigDTO queryRepoConfigToDevopsConfig(Long projectId, Long id,String operateType);
 
-    DevopsConfigDTO queryRepoConfigByIdToDevopsConfig(Long projectId, Long harborConfigId, String repoType,String operateType);
+    DevopsConfigDTO queryRepoConfigByIdToDevopsConfig(Long appServiceId,Long projectId, Long harborConfigId, String repoType,String operateType);
 }
