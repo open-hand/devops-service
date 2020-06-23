@@ -782,6 +782,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         DevopsConfigDTO devopsConfigDTO = queryConfigByAppServiceId(appServiceId);
         if (!Objects.isNull(devopsConfigDTO)) {
             //自定义仓库 ，配置和appService一样
+            LOGGER.info("Custom config {} found for app-service with id {} in app service", devopsConfigDTO.getId(), appServiceId);
             appServiceVersionMapper.updateNullHarborVersionToCustomType(appServiceId, devopsConfigDTO.getId());
         } else {
             // 找项目的
@@ -790,6 +791,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                 devopsConfigDTO = queryConfigByProjectId(appServiceDTO.getProjectId());
                 if (!Objects.isNull(devopsConfigDTO)) {
                     //自定义仓库 ，配置和project一样
+                    LOGGER.info("Custom config {} found for app-service with id {} in project with id {}", devopsConfigDTO.getId(), appServiceId, appServiceDTO.getProjectId());
                     appServiceVersionMapper.updateNullHarborVersionToCustomType(appServiceId, devopsConfigDTO.getId());
                 } else {
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
@@ -797,9 +799,11 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                         devopsConfigDTO = queryConfigByOrgId(projectDTO.getOrganizationId());
                         if (!Objects.isNull(devopsConfigDTO)) {
                             //自定义仓库 ，配置和Org一样
+                            LOGGER.info("Custom config {} found for app-service with id {} in organization with id {}", devopsConfigDTO.getId(), appServiceId, projectDTO.getOrganizationId());
                             appServiceVersionMapper.updateNullHarborVersionToCustomType(appServiceId, devopsConfigDTO.getId());
                         } else {
                             //默认仓库
+                            LOGGER.info("No custom config Found for app-service with id {}, set to default", appServiceId);
                             appServiceVersionMapper.updateNullHarborVersionToDefaultType(appServiceId);
                         }
                     }
