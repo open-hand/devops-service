@@ -1107,8 +1107,22 @@ const AddTask = observer(() => {
                   return [
                     <div style={{ marginBottom: 20 }}>
                       <TextField
-                        onChange={(value) => {
+                        style={{ width: 312 }}
+                        name="dockerFilePath"
+                        showHelp="tooltip"
+                        help="Dockerfile路径为Dockerfile文件相对于代码库根目录所在路径，如docker/Dockerfile或Dockerfile"
+                      />
+                    </div>,
+                    <div style={{ marginBottom: 20 }}>
+                      <TextField
+                        className="dockerContextDir"
+                        style={{ width: 312 }}
+                        name="dockerContextDir"
+                        showHelp="tooltip"
+                        help="ContextPath为docker build命令执行上下文路径。填写相对于代码根目录的路径，如docker"
+                        onFocus={() => {
                           let res;
+                          const value = AddTaskFormDataSet.current.get('dockerFilePath');
                           const arrValue = value.split('');
                           const lastIndex = _.findLastIndex(arrValue, (o) => o === '/');
                           if (lastIndex !== -1) {
@@ -1118,14 +1132,7 @@ const AddTask = observer(() => {
                           }
                           AddTaskFormDataSet.current.set('dockerContextDir', res);
                         }}
-                        style={{ width: 312 }}
-                        name="dockerFilePath"
-                        showHelp="tooltip"
-                        help="Dockerfile路径为Dockerfile文件相对于代码库根目录所在路径，如docker/Dockerfile或Dockerfile"
                       />
-                    </div>,
-                    <div style={{ marginBottom: 20 }}>
-                      <TextField className="dockerContextDir" style={{ width: 312 }} name="dockerContextDir" showHelp="tooltip" help="ContextPath为docker build命令执行上下文路径。填写相对于代码根目录的路径，如docker" />
                     </div>,
                   ];
                 }
