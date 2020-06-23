@@ -122,6 +122,12 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       required: true,
     },
     {
+      name: 'skipDockerTlsVerify',
+      type: 'boolean',
+      label: '是否进行证书校验',
+      defaultValue: false,
+    },
+    {
       name: 'zpk',
       type: 'number',
       label: '制品库',

@@ -297,6 +297,7 @@ const AddTask = observer(() => {
                 if (s.type === 'docker') {
                   s.dockerContextDir = data.dockerContextDir;
                   s.dockerFilePath = data.dockerFilePath;
+                  s.skipDockerTlsVerify = data.skipDockerTlsVerify;
                   if (data.dockerArtifactFileName) {
                     s.artifactFileName = data.dockerArtifactFileName;
                   }
@@ -1134,6 +1135,15 @@ const AddTask = observer(() => {
                         }}
                       />
                     </div>,
+                    <SelectBox
+                      style={{
+                        marginTop: 20,
+                      }}
+                      name="skipDockerTlsVerify"
+                    >
+                      <Option value>是</Option>
+                      <Option value={false}>否</Option>
+                    </SelectBox>,
                   ];
                 }
               }
