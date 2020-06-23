@@ -41,6 +41,15 @@ public class PipelineRecordDTO extends AuditDomain {
     @Transient
     private String env;
 
+    @Transient
+    private String recordAudit;
+
+    @Transient
+    private String stageAudit;
+
+    @Transient
+    private String taskAudit;
+
     public PipelineRecordDTO(Long pipelineId, String triggerType, Long projectId, String status, String pipelineName) {
         this.pipelineId = pipelineId;
         this.triggerType = triggerType;
@@ -172,5 +181,29 @@ public class PipelineRecordDTO extends AuditDomain {
 
     public void setTaskRecordId(Long taskRecordId) {
         this.taskRecordId = taskRecordId;
+    }
+
+    public String getRecordAudit() {
+        return recordAudit;
+    }
+
+    public void setRecordAudit(String recordAudit) {
+        this.recordAudit = recordAudit;
+    }
+
+    public String getStageAudit() {
+        return stageAudit;
+    }
+
+    public void setStageAudit(String stageAudit) {
+        this.stageAudit = stageAudit;
+    }
+
+    public String getTaskAudit() {
+        return taskAudit;
+    }
+
+    public void setTaskAudit(String taskAudit) {
+        this.taskAudit = taskAudit;
     }
 }
