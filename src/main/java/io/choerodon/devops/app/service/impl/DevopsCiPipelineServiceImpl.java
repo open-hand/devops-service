@@ -731,7 +731,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                 result.addAll(buildMavenScripts(projectId, jobId, config, hasSettings));
                                 break;
                             case DOCKER:
-                                result.add(GitlabCiUtil.generateDockerScripts(config.getDockerContextDir(), config.getDockerFilePath()));
+                                result.add(GitlabCiUtil.generateDockerScripts(config.getDockerContextDir(), config.getDockerFilePath(), true));
                                 break;
                             case MAVEN_DEPLOY:
                                 List<MavenRepoVO> repos = buildAndSaveMavenSettings(projectId, jobId, config.getSequence(), config.getMavenDeployRepoSettings());
