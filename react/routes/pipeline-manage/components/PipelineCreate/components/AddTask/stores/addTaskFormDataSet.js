@@ -1,4 +1,3 @@
-
 export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, projectId, AddTaskUseStore) => {
   function checkImage(value, name, record) {
     const pa = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}(\/.+)*:.+$/;
@@ -103,6 +102,12 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       type: 'string',
       label: 'Dockerfile文件路径',
       required: true,
+    },
+    {
+      name: 'skipDockerTlsVerify',
+      type: 'boolean',
+      label: '是否进行证书校验',
+      defaultValue: false,
     },
     {
       name: 'authType',

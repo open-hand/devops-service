@@ -222,6 +222,7 @@ const AddTask = observer(() => {
                 if (s.type === 'docker') {
                   s.dockerContextDir = data.dockerContextDir;
                   s.dockerFilePath = data.dockerFilePath;
+                  s.skipDockerTlsVerify = data.skipDockerTlsVerify;
                   if (data.dockerArtifactFileName) {
                     s.artifactFileName = data.dockerArtifactFileName;
                   }
@@ -940,6 +941,15 @@ const AddTask = observer(() => {
                     <div style={{ marginBottom: 20 }}>
                       <TextField style={{ width: 312 }} name="dockerFilePath" showHelp="tooltip" help="Dockerfile路径为Dockerfile文件相对于代码库根目录所在路径，如docker/Dockerfile或Dockerfile" />
                     </div>,
+                    <SelectBox
+                      style={{
+                        marginTop: 20,
+                      }}
+                      name="skipDockerTlsVerify"
+                    >
+                      <Option value>是</Option>
+                      <Option value={false}>否</Option>
+                    </SelectBox>,
                   ];
                 }
               }
