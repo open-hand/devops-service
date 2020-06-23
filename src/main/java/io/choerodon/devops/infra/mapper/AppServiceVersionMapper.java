@@ -118,7 +118,7 @@ public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO
 
     AppServiceVersionDTO queryByShareVersion(@Param("appServiceId") Long appServiceId, @Param("projectId") Long projectId);
 
-    List<Long> selectAllAppServiceId();
+    List<Long> selectAllAppServiceIdWithNullHarborConfig();
 
     void updateVersionDefaultBatch(@Param("appServiceVersionDefault") List<AppServiceVersionDTO> appServiceVersionDefault);
 
@@ -130,4 +130,12 @@ public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO
 
     void updateVersionOrgId(@Param("appServiceId") Long appServiceId,
                             @Param("customRepo") String defaultRepo);
+
+    void updateNullHarborVersionToDefaultType(@Param("appServiceId") Long appServiceId);
+
+    void updateNullHarborVersionToCustomType(@Param("appServiceId") Long appServiceId, @Param("configId") Long harborConfigId);
+
+    void updateDefaultHarborRecords(@Param("defaultHarborId") Long defaultHarborId);
+
+    void updateCustomHarborRecords(@Param("defaultHarborId") Long defaultHarborId);
 }

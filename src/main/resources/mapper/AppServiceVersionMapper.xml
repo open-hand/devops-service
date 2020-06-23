@@ -631,11 +631,12 @@
         LIMIT 1
     </select>
 
-    <select id="selectAllAppServiceId" resultType="long">
+    <select id="selectAllAppServiceIdWithNullHarborConfig" resultType="long">
         SELECT
 	       dasv.app_service_id
         FROM
 	       devops_app_service_version dasv
+        WHERE dasv.harbor_config_id IS NULL
         GROUP BY
 	      dasv.app_service_id
     </select>
@@ -666,7 +667,7 @@
         update
         devops_app_service_version dasv
         set
-        dasv.helm_config_id = #{configId},
+        dasv.harbor_config_id = #{configId},
         dasv.repo_type = #{customRepo}
         where dasv.app_service_id = #{appServiceId}
     </update>
@@ -678,6 +679,36 @@
         dasv.helm_config_id = null,
         dasv.repo_type = #{customRepo}
         where dasv.app_service_id = #{appServiceId}
+    </update>
+
+    <update id="updateDefaultHarborRecords">
+        UPDATE
+        devops_app_service_version
+        SET harbor_config_id = NULL,
+            repo_type = 'DEFAULT_REPO'
+        WHERE harbor_config_id = #{defaultHarborId}
+    </update>
+
+    <update id="updateCustomHarborRecords">
+        UPDATE
+        devops_app_service_version
+        SET repo_type = 'CUSTOM_REPO'
+        WHERE harbor_config_id IS NOT NULL AND harbor_config_id != #{defaultHarborId}
+    </update>
+
+    <update id="updateNullHarborVersionToDefaultType">
+        UPDATE
+        devops_app_service_version
+        SET repo_type = 'DEFAULT_REPO'
+        WHERE app_service_id = #{appServiceId,jdbcType=BIGINT} AND harbor_config_id IS NULL
+    </update>
+
+    <update id="updateNullHarborVersionToCustomType">
+        UPDATE
+        devops_app_service_version
+        SET repo_type = 'CUSTOM_REPO'
+        AND harbor_config_id = #{configId,jdbcType=BIGINT}
+        WHERE app_service_id = #{appServiceId,jdbcType=BIGINT} AND harbor_config_id IS NULL
     </update>
 
 </mapper>

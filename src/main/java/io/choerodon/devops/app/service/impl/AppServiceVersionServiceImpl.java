@@ -9,13 +9,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 import com.google.gson.Gson;
-
-import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
-import io.choerodon.devops.infra.feign.RdupmClient;
-import io.choerodon.devops.infra.mapper.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -29,13 +25,17 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.ProjectConfigType;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
+import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -692,88 +692,37 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         }
     }
 
+    private Long queryDefaultHarborId() {
+        DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
+        devopsConfigDTO.setName(MiscConstants.DEFAULT_HARBOR_NAME);
+        return devopsConfigMapper.selectOne(devopsConfigDTO).getId();
+    }
+
     @Override
     public void fixHarbor() {
         //修复appVsersion表，register_secret表
         LOGGER.info("start fix appVsersion table");
         //根据appServiceID 进行分组
-        AppServiceVersionDTO record = new AppServiceVersionDTO();
-        List<Long> longList = appServiceVersionMapper.selectAllAppServiceId();
+
+        Long defaultHarborConfigId = queryDefaultHarborId();
+
+        LOGGER.info("Default harbor config id is {}", defaultHarborConfigId);
+
+        List<Long> longList = appServiceVersionMapper.selectAllAppServiceIdWithNullHarborConfig();
+        LOGGER.info("Start to fix null harbor config id versions. the app-service id size is {}", longList.size());
         for (Long appServiceId : longList) {
             handlerVersion(appServiceId);
         }
+        LOGGER.info("End to fix null harbor config id versions");
 
+        // 修harbor config id 非null的
+        LOGGER.info("Start to fix default harbor config id versions");
+        appServiceVersionMapper.updateDefaultHarborRecords(defaultHarborConfigId);
+        LOGGER.info("Finish to fix default harbor config id versions");
 
-//        do {
-//            PageRequest pageable = new PageRequest();
-//            pageable.setPage(pageNum);
-//            pageable.setSize(size);
-//            pageable.setSort(new Sort("id"));
-//            Page<AppServiceVersionDTO> page = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
-//                    () -> appServiceVersionMapper.selectAll());
-//            if (!CollectionUtils.isEmpty(page.getContent())) {
-//                LOGGER.info("fix page {}  data", page);
-//                List<AppServiceVersionDTO> appServiceVersionDefault = new ArrayList<>();
-//                List<AppServiceVersionDTO> appServiceVersionDCustom = new ArrayList<>();
-//                List<AppServiceVersionDTO> appServiceVersionDTOS = page.getContent();
-//                for (AppServiceVersionDTO appServiceVersionDTO : appServiceVersionDTOS) {
-//                    //看看config是否为null,如果不为null,查询devops_config表。判断config_name
-//                    if (appServiceVersionDTO.getHarborConfigId() != null) {
-//                        //除了default-harbor 是默认配置,其他都是自定义配置
-//                        DevopsConfigDTO devopsConfigDTO = devopsConfigMapper.selectByPrimaryKey(appServiceVersionDTO.getHarborConfigId());
-//                        if (!Objects.isNull(devopsConfigDTO) && HARBOR_DEFAULT.equals(devopsConfigDTO.getName())) {
-//                            appServiceVersionDTO.setRepoType(DEFAULT_REPO);
-//                            appServiceVersionDTO.setHarborConfigId(null);
-//                            appServiceVersionDefault.add(appServiceVersionDTO);
-//                        } else {
-//                            appServiceVersionDTO.setRepoType(CUSTOM_REPO);
-//                            appServiceVersionDCustom.add(appServiceVersionDTO);
-//                        }
-//                    } else {
-//                        //如果configID为null
-//                        DevopsConfigDTO appConfig = new DevopsConfigDTO();
-//                        appConfig.setAppServiceId(appServiceVersionDTO.getAppServiceId());
-//                        DevopsConfigDTO devopsConfigDTO = devopsConfigMapper.selectOne(appConfig);
-//                        if (!Objects.isNull(devopsConfigDTO)) {
-//                            appServiceVersionDTO.setHarborConfigId(devopsConfigDTO.getId());
-//                            appServiceVersionDTO.setRepoType(CUSTOM_REPO);
-//                            appServiceVersionDCustom.add(appServiceVersionDTO);
-//                        } else {
-//                            AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceVersionDTO.getAppServiceId());
-//                            appConfig.setProjectId(appServiceDTO.getProjectId());
-//                            DevopsConfigDTO devopsConfigDTOProject = devopsConfigMapper.selectOne(appConfig);
-//                            if (!Objects.isNull(devopsConfigDTOProject)) {
-//                                appServiceVersionDTO.setRepoType(CUSTOM_REPO);
-//                                appServiceVersionDTO.setHarborConfigId(devopsConfigDTOProject.getId());
-//                                appServiceVersionDCustom.add(appServiceVersionDTO);
-//                            } else {
-//                                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
-//                                appConfig.setOrganizationId(projectDTO.getOrganizationId());
-//                                DevopsConfigDTO devopsConfigDTOOrg = devopsConfigMapper.selectOne(appConfig);
-//                                if (!Objects.isNull(devopsConfigDTOOrg)) {
-//                                    appServiceVersionDTO.setRepoType(CUSTOM_REPO);
-//                                    appServiceVersionDTO.setHarborConfigId(devopsConfigDTOOrg.getId());
-//                                    appServiceVersionDCustom.add(appServiceVersionDTO);
-//                                } else {
-//                                    appServiceVersionDTO.setRepoType(DEFAULT_REPO);
-//                                    appServiceVersionDTO.setHarborConfigId(null);
-//                                    appServiceVersionDefault.add(appServiceVersionDTO);
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//                //批量修改数据库
-//                //默认仓库的config Id 置为null,然后将其类型编程DEFAULT_REPO
-//                if (!CollectionUtils.isEmpty(appServiceVersionDefault)) {
-//                    appServiceVersionMapper.updateVersionDefaultBatch(appServiceVersionDefault);
-//                }
-//                if (CollectionUtils.isEmpty(appServiceVersionDCustom)) {
-//                    appServiceVersionMapper.updateVersionCustomBatch(appServiceVersionDCustom);
-//                }
-//            }
-//            pageNum++;
-//        } while (pageNum <= totalPage);
+        LOGGER.info("Start to fix non default harbor config id versions");
+        appServiceVersionMapper.updateCustomHarborRecords(defaultHarborConfigId);
+        LOGGER.info("Finish to fix non default harbor config id versions");
 
         LOGGER.info("end fix appVsersion table");
         LOGGER.info("start fix register_secret");
@@ -807,35 +756,51 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         LOGGER.info("end fix register_secret");
     }
 
+    @Nullable
+    private DevopsConfigDTO queryConfigByAppServiceId(Long appServiceId) {
+        DevopsConfigDTO configDTO = new DevopsConfigDTO();
+        configDTO.setAppServiceId(appServiceId);
+        return devopsConfigMapper.selectOne(configDTO);
+    }
+
+    @Nullable
+    private DevopsConfigDTO queryConfigByProjectId(Long projectId) {
+        DevopsConfigDTO configDTO = new DevopsConfigDTO();
+        configDTO.setProjectId(projectId);
+        return devopsConfigMapper.selectOne(configDTO);
+    }
+
+    @Nullable
+    private DevopsConfigDTO queryConfigByOrgId(Long orgId) {
+        DevopsConfigDTO configDTO = new DevopsConfigDTO();
+        configDTO.setOrganizationId(orgId);
+        return devopsConfigMapper.selectOne(configDTO);
+    }
+
     private void handlerVersion(Long appServiceId) {
         LOGGER.info("fix app service id is {} data", appServiceId);
-        DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
-        devopsConfigDTO.setAppServiceId(appServiceId);
-        DevopsConfigDTO devopsConfigDTOApp = devopsConfigMapper.selectOne(devopsConfigDTO);
-        if (!Objects.isNull(devopsConfigDTOApp)) {
+        DevopsConfigDTO devopsConfigDTO = queryConfigByAppServiceId(appServiceId);
+        if (!Objects.isNull(devopsConfigDTO)) {
             //自定义仓库 ，配置和appService一样
-            appServiceVersionMapper.updateVersionAppServiceId(appServiceId, devopsConfigDTOApp.getId(), CUSTOM_REPO);
+            appServiceVersionMapper.updateNullHarborVersionToCustomType(appServiceId, devopsConfigDTO.getId());
         } else {
+            // 找项目的
             AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
             if (!Objects.isNull(appServiceDTO)) {
-                DevopsConfigDTO configDTO = new DevopsConfigDTO();
-                configDTO.setProjectId(appServiceDTO.getProjectId());
-                DevopsConfigDTO devopsConfigDTOPro = devopsConfigMapper.selectOne(devopsConfigDTO);
-                if (!Objects.isNull(devopsConfigDTOPro)) {
+                devopsConfigDTO = queryConfigByProjectId(appServiceDTO.getProjectId());
+                if (!Objects.isNull(devopsConfigDTO)) {
                     //自定义仓库 ，配置和project一样
-                    appServiceVersionMapper.updateVersionAppServiceId(appServiceId, devopsConfigDTOPro.getId(), CUSTOM_REPO);
+                    appServiceVersionMapper.updateNullHarborVersionToCustomType(appServiceId, devopsConfigDTO.getId());
                 } else {
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                     if (!Objects.isNull(projectDTO)) {
-                        DevopsConfigDTO dto = new DevopsConfigDTO();
-                        dto.setProjectId(projectDTO.getOrganizationId());
-                        DevopsConfigDTO devopsConfigDTOOrg = devopsConfigMapper.selectOne(devopsConfigDTO);
-                        if (!Objects.isNull(devopsConfigDTOOrg)) {
+                        devopsConfigDTO = queryConfigByOrgId(projectDTO.getOrganizationId());
+                        if (!Objects.isNull(devopsConfigDTO)) {
                             //自定义仓库 ，配置和Org一样
-                            appServiceVersionMapper.updateVersionAppServiceId(appServiceId, devopsConfigDTOOrg.getId(), CUSTOM_REPO);
+                            appServiceVersionMapper.updateNullHarborVersionToCustomType(appServiceId, devopsConfigDTO.getId());
                         } else {
                             //默认仓库
-                            appServiceVersionMapper.updateVersionOrgId(appServiceId, DEFAULT_REPO);
+                            appServiceVersionMapper.updateNullHarborVersionToDefaultType(appServiceId);
                         }
                     }
                 }
