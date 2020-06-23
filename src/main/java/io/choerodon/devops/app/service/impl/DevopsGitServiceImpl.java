@@ -330,21 +330,34 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (CollectionUtils.isEmpty(devopsBranchVOPageInfo.getContent())) {
             return devopsBranchVOPageInfo;
         }
-        List<Long> userIds = devopsBranchDTOPageInfo.getContent().stream().map(DevopsBranchDTO::getUserId).collect(Collectors.toList());
-        List<Long> lastCommitUserIds = devopsBranchDTOPageInfo.getContent().stream().map(DevopsBranchDTO::getLastCommitUser).collect(Collectors.toList());
+        Set<Long> branchCreaterGitlabUserIds = devopsBranchDTOPageInfo.getContent().stream().map(DevopsBranchDTO::getUserId).collect(Collectors.toSet());
+        Set<Long> lastCommitGitlabUserIds = devopsBranchDTOPageInfo.getContent().stream().map(DevopsBranchDTO::getLastCommitUser).collect(Collectors.toSet());
+
+        List<UserAttrVO> creater = userAttrService.listUsersByGitlabUserIds(branchCreaterGitlabUserIds);
+        List<Long> createIamUserIds = creater.stream().map(UserAttrVO::getIamUserId).collect(Collectors.toList());
+        Map<Long, Long> createrIamUserIdAndGitlabUserIdMap = creater.stream().collect(Collectors.toMap(UserAttrVO::getGitlabUserId, UserAttrVO::getIamUserId));
+
+
+        List<UserAttrVO> lastCommitUser = userAttrService.listUsersByGitlabUserIds(lastCommitGitlabUserIds);
+        List<Long> lastCommitIamUserIds = lastCommitUser.stream().map(UserAttrVO::getIamUserId).collect(Collectors.toList());
+        Map<Long, Long> lastCommitIamUserIdAndGitlabUserIdMap = lastCommitUser.stream().collect(Collectors.toMap(UserAttrVO::getGitlabUserId, UserAttrVO::getIamUserId));
+
         List<Long> issuedIds = devopsBranchDTOPageInfo.getContent().stream().map(DevopsBranchDTO::getIssueId).collect(Collectors.toList());
 
-        Map<Long, List<IamUserDTO>> iamUserDTOMap = baseServiceClientOperator.listUsersByIds(userIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
-        Map<Long, List<IamUserDTO>> lastCommitUserDTOMap = baseServiceClientOperator.listUsersByIds(lastCommitUserIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
-        Map<Long, List<IssueDTO>> issues = agileServiceClientOperator.listIssueByIds(projectId, issuedIds).stream().collect(Collectors.groupingBy(IssueDTO::getIssueId));
+        Map<Long, IamUserDTO> iamUserDTOMap = baseServiceClientOperator.listUsersByIds(createIamUserIds).stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
+        Map<Long, IamUserDTO> lastCommitUserDTOMap = baseServiceClientOperator.listUsersByIds(lastCommitIamUserIds).stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
+        Map<Long, IssueDTO> issues = agileServiceClientOperator.listIssueByIds(projectId, issuedIds).stream().collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
 
         devopsBranchVOPageInfo.setContent(devopsBranchDTOPageInfo.getContent().stream().map(t -> {
             IssueDTO issueDTO = null;
             if (t.getIssueId() != null) {
-                issueDTO = issues.get(t.getIssueId()) == null ? null : issues.get(t.getIssueId()).get(0);
+                issueDTO = issues.get(t.getIssueId());
             }
-            IamUserDTO userDTO = iamUserDTOMap.get(t.getUserId()) == null ? null : iamUserDTOMap.get(t.getUserId()).get(0);
-            IamUserDTO commitUserDTO = lastCommitUserDTOMap.get(t.getLastCommitUser()) == null ? null : lastCommitUserDTOMap.get(t.getLastCommitUser()).get(0);
+            Long createUserId = createrIamUserIdAndGitlabUserIdMap.get(t.getUserId());
+            IamUserDTO userDTO = createUserId == null ? null : iamUserDTOMap.get(createUserId);
+
+            Long lastCommitUserId = lastCommitIamUserIdAndGitlabUserIdMap.get(t.getLastCommitUser());
+            IamUserDTO commitUserDTO = lastCommitUserId == null ? null : lastCommitUserDTOMap.get(lastCommitUserId);
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
             return getBranchVO(t, commitUrl, commitUserDTO, userDTO, issueDTO);
         }).collect(Collectors.toList()));
