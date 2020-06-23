@@ -440,6 +440,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 calculateStageStatus(stageRecord, statusMap);
                 // 计算stage耗时
                 stageRecord.setDurationSeconds(calculateStageDuration(devopsCiJobRecordVOS));
+                // 按照gitlab job id正序排序
+                devopsCiJobRecordVOS.sort(Comparator.comparingLong(DevopsCiJobRecordVO::getGitlabJobId));
                 stageRecord.setJobRecordVOList(devopsCiJobRecordVOS);
             }
         });
