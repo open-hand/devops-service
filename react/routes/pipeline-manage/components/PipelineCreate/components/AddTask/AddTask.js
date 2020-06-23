@@ -144,6 +144,7 @@ const AddTask = observer(() => {
           let dockerFilePath;
           let uploadArtifactFileName;
           let dockerArtifactFileName;
+          let skipDockerTlsVerify;
           const share = [];
           let nexusMavenRepoIds;
           let zpk;
@@ -154,6 +155,7 @@ const AddTask = observer(() => {
             } else if (c.type === 'docker') {
               dockerContextDir = c.dockerContextDir;
               dockerFilePath = c.dockerFilePath;
+              skipDockerTlsVerify = c.skipDockerTlsVerify;
               dockerArtifactFileName = c.artifactFileName;
             } else if (c.type === 'Maven') {
               if (c.nexusMavenRepoIds) {
@@ -183,6 +185,7 @@ const AddTask = observer(() => {
             dockerArtifactFileName,
             nexusMavenRepoIds,
             zpk,
+            skipDockerTlsVerify,
             triggerValue: jobDetail.triggerValue && jobDetail.triggerType !== 'regex' ? jobDetail.triggerValue.split(',') : jobDetail.triggerValue,
             configType,
             // triggerRefs: jobDetail.triggerRefs ? jobDetail.triggerRefs.split(',') : [],
