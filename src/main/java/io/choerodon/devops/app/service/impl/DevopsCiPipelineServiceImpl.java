@@ -250,7 +250,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 封装对象
         Map<Long, List<DevopsCiJobVO>> jobMap = devopsCiJobVOS.stream().collect(Collectors.groupingBy(DevopsCiJobVO::getCiStageId));
         devopsCiStageVOS.forEach(devopsCiStageVO -> {
-            List<DevopsCiJobVO> ciJobVOS = jobMap.get(devopsCiStageVO.getId());
+            List<DevopsCiJobVO> ciJobVOS = jobMap.getOrDefault(devopsCiStageVO.getId(), Collections.emptyList());
+            ciJobVOS.sort(Comparator.comparingLong(DevopsCiJobVO::getId));
             devopsCiStageVO.setJobList(ciJobVOS);
         });
         // stage排序
