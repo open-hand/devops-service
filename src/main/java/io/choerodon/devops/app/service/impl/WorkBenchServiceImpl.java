@@ -16,6 +16,7 @@ import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.ApprovalTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -62,9 +63,15 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         if (projectId == null) {
             projectDTOList = baseServiceClientOperator.listIamProjectByOrgId(tenant.getTenantId());
         } else {
-            projectDTOList = Collections.singletonList(baseServiceClientOperator.queryIamProjectById(projectId));
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            CommonExAssertUtil.assertNotNull(projectDTO, "error.project.query");
+            projectDTOList = Collections.singletonList(projectDTO);
         }
-        return listLatestUserAppServiceDTO(tenant, projectDTOList);
+        if (projectDTOList.size() == 0) {
+            return new ArrayList<>();
+        } else {
+            return listLatestUserAppServiceDTO(tenant, projectDTOList);
+        }
     }
 
     @Override
@@ -74,9 +81,15 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         if (projectId == null) {
             projectDTOList = baseServiceClientOperator.listIamProjectByOrgId(tenant.getTenantId());
         } else {
-            projectDTOList = Collections.singletonList(baseServiceClientOperator.queryIamProjectById(projectId));
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            CommonExAssertUtil.assertNotNull(projectDTO, "error.project.query");
+            projectDTOList = Collections.singletonList(projectDTO);
         }
-        return listApprovalVOByProject(tenant, projectDTOList);
+        if (projectDTOList.size() == 0) {
+            return new ArrayList<>();
+        } else {
+            return listApprovalVOByProject(tenant, projectDTOList);
+        }
     }
 
     private List<ApprovalVO> listApprovalVOByProject(Tenant tenant, List<ProjectDTO> projectDTOList) {
@@ -100,6 +113,9 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         List<DevopsMergeRequestDTO> mergeRequestDTOList = new ArrayList<>();
         if (gitlabProjectIds.size() != 0) {
             mergeRequestDTOList = devopsMergeRequestMapper.listToBeAuditedByThisUserUnderProjectIds(gitlabProjectIds, DetailsHelper.getUserDetails() == null ? 0L : DetailsHelper.getUserDetails().getUserId());
+            if (mergeRequestDTOList.size() == 0) {
+                return approvalVOList;
+            }
         }
         // 根据authorId查出合并请求发起者信息
         Set<Long> authorIds = mergeRequestDTOList.stream().map(DevopsMergeRequestDTO::getAuthorId).collect(Collectors.toSet());
@@ -127,8 +143,12 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         List<ApprovalVO> approvalVOList = new ArrayList<>();
 
         Long userId = DetailsHelper.getUserDetails().getUserId() == null ? 0 : DetailsHelper.getUserDetails().getUserId();
+        CommonExAssertUtil.assertNotNull(userId, "error.user.get");
         // 查出该用户待审批的流水线阶段
         List<PipelineRecordDTO> pipelineRecordDTOList = pipelineStageRecordMapper.listToBeAuditedByProjectIds(projectIds, userId);
+        if (pipelineRecordDTOList.size() == 0) {
+            return approvalVOList;
+        }
         List<PipelineRecordDTO> pipelineRecordDTOAuditByThisUserList = pipelineRecordDTOList.stream()
                 .filter(pipelineRecordDTO -> pipelineRecordDTO.getAuditUser() != null && pipelineRecordDTO.getAuditUser().contains(String.valueOf(userId)))
                 .collect(Collectors.toList());
@@ -157,6 +177,10 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         latestAppServiceVOList.addAll(devopsBranchMapper.listLatestUseAppServiceIdAndDate(projectIds, userId));
         latestAppServiceVOList.addAll(devopsGitlabCommitMapper.listLatestUseAppServiceIdAndDate(projectIds, userId));
         latestAppServiceVOList.addAll(devopsMergeRequestMapper.listLatestUseAppServiceIdAndDate(projectIds, userId));
+
+        if (latestAppServiceVOList.size() == 0) {
+            return latestAppServiceVOList;
+        }
 
         // 去掉重复的appService,只保留最近使用的
         List<LatestAppServiceVO> latestAppServiceVOListWithoutRepeatService = latestAppServiceVOList.stream().sorted(Comparator.comparing(LatestAppServiceVO::getLastUpdateDate).reversed())
