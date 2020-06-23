@@ -637,6 +637,7 @@
         FROM
 	       devops_app_service_version dasv
         WHERE dasv.harbor_config_id IS NULL
+          AND repo_type IS NULL
         GROUP BY
 	      dasv.app_service_id
     </select>
@@ -666,8 +667,8 @@
     <update id="updateNullHarborVersionToCustomType">
         UPDATE
         devops_app_service_version
-        SET repo_type = 'CUSTOM_REPO'
-        AND harbor_config_id = #{configId,jdbcType=BIGINT}
+        SET repo_type = 'CUSTOM_REPO',
+            harbor_config_id = #{configId,jdbcType=BIGINT}
         WHERE app_service_id = #{appServiceId,jdbcType=BIGINT} AND harbor_config_id IS NULL
     </update>
 
