@@ -22,6 +22,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     AppState: {
       menuType: {
         projectId,
+        organizationId,
       },
     },
   } = props;
@@ -30,7 +31,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
 
   const AppServiceOptionsDs = useMemo(() => new DataSet(appServiceOptionsDs(projectId)), []);
 
-  const AddTaskFormDataSet = useMemo(() => new DataSet(addTaskFormDataSet(props.PipelineCreateFormDataSet || '', AppServiceOptionsDs, props.appServiceId || '', projectId, AddTaskUseStore)), []);
+  const AddTaskFormDataSet = useMemo(() => new DataSet(addTaskFormDataSet(props.PipelineCreateFormDataSet || '', AppServiceOptionsDs, props.appServiceId || '', projectId, AddTaskUseStore, organizationId)), []);
   const AddTaskStepFormDataSet = useMemo(() => new DataSet(addTaskStepFormDataSet()), []);
   const DependRepoDataSet = useMemo(() => new DataSet(dependRepoDataSet()), []);
 

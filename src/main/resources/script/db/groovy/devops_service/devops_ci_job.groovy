@@ -34,6 +34,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
         }
     }
 
+
     changeSet(author: 'zmf', id: '2020-06-15-job-add-upload-and-download') {
         addColumn(tableName: 'devops_ci_job') {
             column(name: 'is_to_upload', type: 'TINYINT(1) UNSIGNED', defaultValue: "0", remarks: '是否上传共享目录的内容, 默认为false', afterColumn: 'trigger_refs') {
@@ -43,5 +44,14 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
                 constraints(nullable: false)
             }
         }
+    }
+
+    changeSet(author: 'zmf', id: '2020-06-18-job-add-trigger') {
+        addColumn(tableName: 'devops_ci_job') {
+            column(name: 'trigger_type', type: 'VARCHAR(255)', remarks: '触发方式', afterColumn: 'trigger_refs', defaultValue: 'refs')
+        }
+        renameColumn(columnDataType: 'VARCHAR(255)', newColumnName: 'trigger_value', oldColumnName: 'trigger_refs', remarks: '触发方式对应的值', tableName: 'devops_ci_job')
+        sql("UPDATE devops_ci_job dcj SET dcj.trigger_type = 'refs' WHERE dcj.trigger_value IS NOT NULL")
+        sql("UPDATE devops_ci_job dcj SET dcj.trigger_type = 'refs' WHERE dcj.trigger_type IS NULL")
     }
 }

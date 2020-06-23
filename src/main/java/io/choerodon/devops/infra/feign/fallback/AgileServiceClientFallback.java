@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class AgileServiceClientFallback implements AgileServiceClient {
     @Override
@@ -19,5 +21,10 @@ public class AgileServiceClientFallback implements AgileServiceClient {
     @Override
     public ResponseEntity<ProjectInfoDTO> queryProjectInfo(Long projectId) {
         throw new CommonException("error.projectinfo.get");
+    }
+
+    @Override
+    public ResponseEntity<List<IssueDTO>> queryIssues(Long projectId, List<Long> issueIds) {
+        throw new CommonException("error.issue.get");
     }
 }

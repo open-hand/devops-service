@@ -11,6 +11,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
+
+import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
+import io.choerodon.devops.infra.feign.RdupmClient;
+import io.choerodon.devops.infra.mapper.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -31,9 +36,6 @@ import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.ProjectConfigType;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.AppServiceMapper;
-import io.choerodon.devops.infra.mapper.AppServiceVersionMapper;
-import io.choerodon.devops.infra.mapper.AppServiceVersionReadmeMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -48,7 +50,9 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private static final String APP_SERVICE = "appService";
     private static final String CHART = "chart";
     private static final String AUTHTYPE_PULL = "pull";
-
+    private static final String HARBOR_DEFAULT = "harbor_default";
+    private static final String DEFAULT_REPO = "DEFAULT_REPO";
+    private static final String CUSTOM_REPO = "CUSTOM_REPO";
     private static final String ERROR_VERSION_INSERT = "error.version.insert";
 
     @Value("${services.gitlab.url}")
@@ -88,6 +92,12 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private DevopsConfigService devopsConfigService;
     @Autowired
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private RdupmClient rdupmClient;
+    @Autowired
+    private DevopsConfigMapper devopsConfigMapper;
+    @Autowired
+    private DevopsRegistrySecretMapper devopsRegistrySecretMapper;
 
 
     private Gson gson = new Gson();
@@ -120,7 +130,10 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         appServiceVersionDTO.setImage(image);
         appServiceVersionDTO.setCommit(commit);
         appServiceVersionDTO.setVersion(version);
-        appServiceVersionDTO.setHarborConfigId(harborConfigId);
+        //根据配置id 查询仓库是自定义还是默认
+        HarborRepoDTO harborRepoDTO = rdupmClient.queryHarborRepoConfig(appServiceDTO.getProjectId(), appServiceDTO.getId()).getBody();
+        appServiceVersionDTO.setHarborConfigId(harborRepoDTO.getHarborRepoConfig().getRepoId());
+        appServiceVersionDTO.setRepoType(harborRepoDTO.getRepoType());
 
         DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART, AUTHTYPE_PULL);
         String helmUrl = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class).getUrl();
@@ -679,5 +692,155 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         }
     }
 
+    @Override
+    public void fixHarbor() {
+        //修复appVsersion表，register_secret表
+        LOGGER.info("start fix appVsersion table");
+        //根据appServiceID 进行分组
+        AppServiceVersionDTO record = new AppServiceVersionDTO();
+        List<Long> longList = appServiceVersionMapper.selectAllAppServiceId();
+        for (Long appServiceId : longList) {
+            handlerVersion(appServiceId);
+        }
 
+
+//        do {
+//            PageRequest pageable = new PageRequest();
+//            pageable.setPage(pageNum);
+//            pageable.setSize(size);
+//            pageable.setSort(new Sort("id"));
+//            Page<AppServiceVersionDTO> page = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
+//                    () -> appServiceVersionMapper.selectAll());
+//            if (!CollectionUtils.isEmpty(page.getContent())) {
+//                LOGGER.info("fix page {}  data", page);
+//                List<AppServiceVersionDTO> appServiceVersionDefault = new ArrayList<>();
+//                List<AppServiceVersionDTO> appServiceVersionDCustom = new ArrayList<>();
+//                List<AppServiceVersionDTO> appServiceVersionDTOS = page.getContent();
+//                for (AppServiceVersionDTO appServiceVersionDTO : appServiceVersionDTOS) {
+//                    //看看config是否为null,如果不为null,查询devops_config表。判断config_name
+//                    if (appServiceVersionDTO.getHarborConfigId() != null) {
+//                        //除了default-harbor 是默认配置,其他都是自定义配置
+//                        DevopsConfigDTO devopsConfigDTO = devopsConfigMapper.selectByPrimaryKey(appServiceVersionDTO.getHarborConfigId());
+//                        if (!Objects.isNull(devopsConfigDTO) && HARBOR_DEFAULT.equals(devopsConfigDTO.getName())) {
+//                            appServiceVersionDTO.setRepoType(DEFAULT_REPO);
+//                            appServiceVersionDTO.setHarborConfigId(null);
+//                            appServiceVersionDefault.add(appServiceVersionDTO);
+//                        } else {
+//                            appServiceVersionDTO.setRepoType(CUSTOM_REPO);
+//                            appServiceVersionDCustom.add(appServiceVersionDTO);
+//                        }
+//                    } else {
+//                        //如果configID为null
+//                        DevopsConfigDTO appConfig = new DevopsConfigDTO();
+//                        appConfig.setAppServiceId(appServiceVersionDTO.getAppServiceId());
+//                        DevopsConfigDTO devopsConfigDTO = devopsConfigMapper.selectOne(appConfig);
+//                        if (!Objects.isNull(devopsConfigDTO)) {
+//                            appServiceVersionDTO.setHarborConfigId(devopsConfigDTO.getId());
+//                            appServiceVersionDTO.setRepoType(CUSTOM_REPO);
+//                            appServiceVersionDCustom.add(appServiceVersionDTO);
+//                        } else {
+//                            AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceVersionDTO.getAppServiceId());
+//                            appConfig.setProjectId(appServiceDTO.getProjectId());
+//                            DevopsConfigDTO devopsConfigDTOProject = devopsConfigMapper.selectOne(appConfig);
+//                            if (!Objects.isNull(devopsConfigDTOProject)) {
+//                                appServiceVersionDTO.setRepoType(CUSTOM_REPO);
+//                                appServiceVersionDTO.setHarborConfigId(devopsConfigDTOProject.getId());
+//                                appServiceVersionDCustom.add(appServiceVersionDTO);
+//                            } else {
+//                                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+//                                appConfig.setOrganizationId(projectDTO.getOrganizationId());
+//                                DevopsConfigDTO devopsConfigDTOOrg = devopsConfigMapper.selectOne(appConfig);
+//                                if (!Objects.isNull(devopsConfigDTOOrg)) {
+//                                    appServiceVersionDTO.setRepoType(CUSTOM_REPO);
+//                                    appServiceVersionDTO.setHarborConfigId(devopsConfigDTOOrg.getId());
+//                                    appServiceVersionDCustom.add(appServiceVersionDTO);
+//                                } else {
+//                                    appServiceVersionDTO.setRepoType(DEFAULT_REPO);
+//                                    appServiceVersionDTO.setHarborConfigId(null);
+//                                    appServiceVersionDefault.add(appServiceVersionDTO);
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//                //批量修改数据库
+//                //默认仓库的config Id 置为null,然后将其类型编程DEFAULT_REPO
+//                if (!CollectionUtils.isEmpty(appServiceVersionDefault)) {
+//                    appServiceVersionMapper.updateVersionDefaultBatch(appServiceVersionDefault);
+//                }
+//                if (CollectionUtils.isEmpty(appServiceVersionDCustom)) {
+//                    appServiceVersionMapper.updateVersionCustomBatch(appServiceVersionDCustom);
+//                }
+//            }
+//            pageNum++;
+//        } while (pageNum <= totalPage);
+
+        LOGGER.info("end fix appVsersion table");
+        LOGGER.info("start fix register_secret");
+        int count = devopsRegistrySecretMapper.selectCount(null);
+        int pageSize = 100;
+        int total = (count + pageSize - 1) / pageSize;
+        int pageNumber = 0;
+        do {
+            PageRequest pageable = new PageRequest();
+            pageable.setPage(pageNumber);
+            pageable.setSize(pageSize);
+            pageable.setSort(new Sort("id"));
+            Page<DevopsRegistrySecretDTO> doPageAndSort = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
+                    () -> devopsRegistrySecretMapper.selectAll());
+            if (!CollectionUtils.isEmpty(doPageAndSort.getContent())) {
+                for (DevopsRegistrySecretDTO devopsRegistrySecretDTO : doPageAndSort) {
+                    DevopsConfigDTO devopsConfigDTO = devopsConfigMapper.selectByPrimaryKey(devopsRegistrySecretDTO.getConfigId());
+                    if (!Objects.isNull(devopsConfigDTO) && HARBOR_DEFAULT.equals(devopsConfigDTO.getName())) {
+                        devopsRegistrySecretDTO.setConfigId(null);
+                        devopsRegistrySecretDTO.setRepoType(DEFAULT_REPO);
+                        devopsRegistrySecretMapper.updateByPrimaryKey(devopsRegistrySecretDTO);
+                    } else {
+                        devopsRegistrySecretDTO.setRepoType(CUSTOM_REPO);
+                        devopsRegistrySecretMapper.updateByPrimaryKey(devopsRegistrySecretDTO);
+                    }
+                }
+            }
+            pageNumber++;
+        } while (pageNumber <= total);
+
+        LOGGER.info("end fix register_secret");
+    }
+
+    private void handlerVersion(Long appServiceId) {
+        LOGGER.info("fix app service id is {} data", appServiceId);
+        DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
+        devopsConfigDTO.setAppServiceId(appServiceId);
+        DevopsConfigDTO devopsConfigDTOApp = devopsConfigMapper.selectOne(devopsConfigDTO);
+        if (!Objects.isNull(devopsConfigDTOApp)) {
+            //自定义仓库 ，配置和appService一样
+            appServiceVersionMapper.updateVersionAppServiceId(appServiceId, devopsConfigDTOApp.getId(), CUSTOM_REPO);
+        } else {
+            AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+            if (!Objects.isNull(appServiceDTO)) {
+                DevopsConfigDTO configDTO = new DevopsConfigDTO();
+                configDTO.setProjectId(appServiceDTO.getProjectId());
+                DevopsConfigDTO devopsConfigDTOPro = devopsConfigMapper.selectOne(devopsConfigDTO);
+                if (!Objects.isNull(devopsConfigDTOPro)) {
+                    //自定义仓库 ，配置和project一样
+                    appServiceVersionMapper.updateVersionAppServiceId(appServiceId, devopsConfigDTOPro.getId(), CUSTOM_REPO);
+                } else {
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+                    if (!Objects.isNull(projectDTO)) {
+                        DevopsConfigDTO dto = new DevopsConfigDTO();
+                        dto.setProjectId(projectDTO.getOrganizationId());
+                        DevopsConfigDTO devopsConfigDTOOrg = devopsConfigMapper.selectOne(devopsConfigDTO);
+                        if (!Objects.isNull(devopsConfigDTOOrg)) {
+                            //自定义仓库 ，配置和Org一样
+                            appServiceVersionMapper.updateVersionAppServiceId(appServiceId, devopsConfigDTOOrg.getId(), CUSTOM_REPO);
+                        } else {
+                            //默认仓库
+                            appServiceVersionMapper.updateVersionOrgId(appServiceId, DEFAULT_REPO);
+                        }
+                    }
+                }
+            }
+
+        }
+    }
 }

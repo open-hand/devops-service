@@ -1,5 +1,5 @@
 import { axios } from '@choerodon/boot';
-import React, { useEffect, useState, Fragment } from 'react';
+import React, { useEffect, useState, Fragment, useRef } from 'react';
 import { Form, TextField, Select, SelectBox, Modal, Button, DataSet } from 'choerodon-ui/pro';
 import { message, Icon } from 'choerodon-ui';
 import { observer } from 'mobx-react-lite';
@@ -86,7 +86,13 @@ const PipelineCreate = observer(() => {
     }
   };
 
+  const handelCancel = () => {
+    refreshTree();
+  };
+
   modal.handleOk(handleCreate);
+
+  modal.handleCancel(handelCancel);
 
   // const handleChangeImage = (data) => {
   //   if (data === '0') {
@@ -156,24 +162,25 @@ const PipelineCreate = observer(() => {
           help="此处仅能看到您有开发权限的启用状态的应用服务，并要求该应用服务必须有master分支，且尚未有关联的CI流水线"
         />
         <TextField style={{ display: 'none' }} />
-        <div className="advanced_text" onClick={() => setExpandIf(!expandIf)}>
-          <span>高级设置</span>
-          <Icon style={{ fontSize: 18, marginLeft: 10 }} type={expandIf ? 'expand_less' : 'expand_more'} />
+        <div className="advanced_text" style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
+          高级设置<Icon style={{ fontSize: 18 }} type={expandIf ? 'expand_less' : 'expand_more'} />
         </div>
-        { expandIf ? (
-          <Select
-            // disabled={
-            //   !!(PipelineCreateFormDataSet.current && PipelineCreateFormDataSet.current.get('selectImage') === '0')
-            // }
-            combo
-            newLine
-            colSpan={2}
-            name="image"
-            onChange={handleChangeSelectImage}
-          >
-            <Option value={createUseStore.getDefaultImage}>{createUseStore.getDefaultImage}</Option>
-          </Select>
-        ) : null}
+        {
+          expandIf ? (
+            <Select
+              // disabled={
+              //   !!(PipelineCreateFormDataSet.current && PipelineCreateFormDataSet.current.get('selectImage') === '0')
+              // }
+              combo
+              newLine
+              colSpan={2}
+              name="image"
+              onChange={handleChangeSelectImage}
+            >
+              <Option value={createUseStore.getDefaultImage}>{createUseStore.getDefaultImage}</Option>
+            </Select>
+          ) : ''
+        }
         {/* <SelectBox name="triggerType"> */}
         {/*  <Option value="auto">自动触发</Option> */}
         {/*  <Option disabled value="F">手动触发</Option> */}
@@ -183,6 +190,7 @@ const PipelineCreate = observer(() => {
         editBlockStore={editBlockStore}
         edit
         image={PipelineCreateFormDataSet.current.get('image')}
+        appServiceId={PipelineCreateFormDataSet.current.get('appServiceId')}
       />
       <p className="pipeline_createInfo"><Icon style={{ color: 'red', verticalAlign: 'text-bottom' }} type="error" />此页面定义了阶段与任务后，GitLab仓库中的.gitlab-ci.yml文件也会同步修改。</p>
     </div>

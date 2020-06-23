@@ -35,9 +35,14 @@ public class DevopsCiJobVO {
     @NotEmpty(message = "error.job.type.cannot.be.null")
     private String type;
 
-    @ApiModelProperty("触发分支")
-    @NotEmpty(message = "error.job.triggerRefs.cannot.be.null")
-    private String triggerRefs;
+    @ApiModelProperty("触发类型对应的值")
+    private String triggerValue;
+
+    /**
+     * {@link io.choerodon.devops.infra.enums.CiTriggerType}
+     */
+    @ApiModelProperty("触发类型")
+    private String triggerType;
 
     @ApiModelProperty("详细信息")
     @NotEmpty(message = "error.job.metadata.cannot.be.null")
@@ -91,12 +96,20 @@ public class DevopsCiJobVO {
         this.type = type;
     }
 
-    public String getTriggerRefs() {
-        return triggerRefs;
+    public String getTriggerValue() {
+        return triggerValue;
     }
 
-    public void setTriggerRefs(String triggerRefs) {
-        this.triggerRefs = triggerRefs;
+    public void setTriggerValue(String triggerValue) {
+        this.triggerValue = triggerValue;
+    }
+
+    public String getTriggerType() {
+        return triggerType;
+    }
+
+    public void setTriggerType(String triggerType) {
+        this.triggerType = triggerType;
     }
 
     public String getMetadata() {

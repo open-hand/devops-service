@@ -13,7 +13,6 @@ import Rating from '../../../../../../components/rating/Rating';
 
 import { QUALITY_LIST, OBJECT_TYPE } from './components/Constants';
 
-
 import { useCodeQualityStore } from './stores';
 
 import './index.less';
@@ -73,7 +72,7 @@ export default withRouter(observer((props) => {
                         <Link
                           to={{
                             pathname: '/devops/reports/code-quality',
-                            search,
+                            search: `${search}&from=ci`,
                             state: { appId: appServiceId, type: OBJECT_TYPE[objKey] },
                           }}
                         >

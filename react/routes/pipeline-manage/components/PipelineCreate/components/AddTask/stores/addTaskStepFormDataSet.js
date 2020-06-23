@@ -11,6 +11,9 @@ const optionDs = new DataSet({
   }, {
     name: 'Docker构建',
     value: 'docker',
+  }, {
+    name: '上传软件包至制品库',
+    value: 'maven_deploy',
   }],
 });
 

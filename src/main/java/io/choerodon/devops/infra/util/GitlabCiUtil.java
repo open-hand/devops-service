@@ -11,7 +11,10 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
 
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
+import io.choerodon.devops.infra.dto.gitlab.ci.OnlyExceptPolicy;
+import io.choerodon.devops.infra.enums.DefaultTriggerRefTypeEnum;
 
 /**
  * @author zmf
@@ -165,6 +168,15 @@ public class GitlabCiUtil {
     }
 
     /**
+     * 获取默认的sonar命令
+     *
+     * @return 命令
+     */
+    public static String getDefaultSonarCommand() {
+        return DEFAULT_SONAR_TEMPLATE;
+    }
+
+    /**
      * 获取用于CI的sonar的命令
      *
      * @param sonarUrl sonar服务地址
@@ -235,7 +247,55 @@ public class GitlabCiUtil {
         return GitOpsConstants.CHART_BUILD;
     }
 
+
     public static String generateCreateCacheDir(String cacheDir) {
         return "mkdir -p " + Objects.requireNonNull(cacheDir);
+    }
+    
+    public static void processTriggerRefs(CiJob ciJob, String triggerRefs) {
+        OnlyExceptPolicy onlyExceptPolicy = new OnlyExceptPolicy();
+        List<String> refs = new ArrayList<>();
+        for (String ref : triggerRefs.split(",")) {
+            if (!DefaultTriggerRefTypeEnum.contains(ref)) {
+                if ("tag".equals(ref)) {
+                    ref = DefaultTriggerRefTypeEnum.TAGS.value();
+                } else {
+                    ref = "/^.*" + ref + ".*$/";
+                }
+
+            }
+
+            refs.add(ref);
+        }
+        onlyExceptPolicy.setRefs(refs);
+        ciJob.setOnly(onlyExceptPolicy);
+    }
+
+    public static void processRegexMatch(CiJob ciJob, String regexMatch) {
+        OnlyExceptPolicy onlyExceptPolicy = new OnlyExceptPolicy();
+        List<String> refs = new ArrayList<>();
+        refs.add("/" + regexMatch + "/");
+        onlyExceptPolicy.setRefs(refs);
+        ciJob.setOnly(onlyExceptPolicy);
+    }
+
+    public static void processExactMatch(CiJob ciJob, String exactMatch) {
+        String[] items = exactMatch.split(COMMA);
+        for (int i = 0; i < items.length; i++) {
+            items[i] = "/^" + items[i] + "$/";
+        }
+        OnlyExceptPolicy onlyExceptPolicy = new OnlyExceptPolicy();
+        onlyExceptPolicy.setRefs(Arrays.asList(items));
+        ciJob.setOnly(onlyExceptPolicy);
+    }
+
+    public static void processExactExclude(CiJob ciJob, String exactExclude) {
+        String[] items = exactExclude.split(COMMA);
+        for (int i = 0; i < items.length; i++) {
+            items[i] = "/^" + items[i] + "$/";
+        }
+        OnlyExceptPolicy onlyExceptPolicy = new OnlyExceptPolicy();
+        onlyExceptPolicy.setRefs(Arrays.asList(items));
+        ciJob.setExcept(onlyExceptPolicy);
     }
 }

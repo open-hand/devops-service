@@ -13,5 +13,9 @@ export default function useStore() {
       return axios.post(`/devops/v1/projects/${id}/gitlab_projects/${gitlabProjectId}/pipelines/${pipelineId}/retry`)
         .then((datas) => handlePromptError(datas, false));
     },
+
+    checkLinkToGitlab(projectId, appServiceId) {
+      return axios.get(`/devops/v1/projects/${projectId}/member-check/${appServiceId}?type=CICD_DETAIL`);
+    },
   }));
 }

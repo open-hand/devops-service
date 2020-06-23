@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -117,8 +118,6 @@ public class DevopsGitlabPipelineController {
             @RequestParam(required = false, value = "start_time") Date startTime,
             @ApiParam(value = "end_time")
             @RequestParam(required = false, value = "end_time") Date endTime) {
-        return Optional.ofNullable(devopsGitlabPipelineService.pageByOptions(appServiceId, branch, pageable, startTime, endTime))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.frequency.get"));
+        return Results.success(devopsGitlabPipelineService.pageByOptions(appServiceId, branch, pageable, startTime, endTime));
     }
 }

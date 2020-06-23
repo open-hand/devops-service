@@ -9,7 +9,7 @@ export default ((intlPrefix, formatMessage, projectId, dataKey) => ({
       const postData = getTablePostData(data);
 
       return {
-        url: `/devops/v1/projects/${projectId}/app_service/page_by_options`,
+        url: `/devops/v1/projects/${projectId}/app_service/page_by_options?checkMember=true`,
         method: 'post',
         data: postData,
       };

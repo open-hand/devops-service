@@ -23,6 +23,7 @@ export default observer((props) => {
   const {
     intl: { formatMessage },
     intlPrefix,
+    mainStore,
   } = usePipelineManageStore();
 
   const {
@@ -84,10 +85,12 @@ export default observer((props) => {
           gitlabPipelineId={gitlabPipelineId}
           parentName={devopsCiPipelineVO && devopsCiPipelineVO.name}
           appServiceName={devopsCiPipelineVO && devopsCiPipelineVO.appServiceName}
+          appServiceId={devopsCiPipelineVO && devopsCiPipelineVO.appServiceId}
           aHref={commit && commit.gitlabProjectUrl}
           triggerRef={gitlabTriggerRef}
-
           status={status}
+          mainStore={mainStore}
+          projectId={projectId}
         />
         <div className="c7n-piplineManage-detail">
           {renderStage()}

@@ -2,20 +2,16 @@ import React, { useEffect, Fragment, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { withRouter, Link } from 'react-router-dom';
 import _ from 'lodash';
-
 import { Icon } from 'choerodon-ui/pro';
 import { Page } from '@choerodon/boot';
-
 import EmptyPage from '../../../../../components/empty-page';
 import Loading from '../../../../../components/loading';
 import Percentage from '../../../../../components/percentage/Percentage';
 import Rating from '../../../../../components/rating/Rating';
-
 import { QUALITY_LIST, OBJECT_TYPE } from './components/Constants';
-
-
 import { useCodeQualityStore } from './stores';
 import { useCodeManagerStore } from '../../../stores';
+import NewEmptyPage from '../../../components/empty-page';
 
 import './index.less';
 
@@ -40,6 +36,16 @@ export default withRouter(observer((props) => {
   } } = props;
 
   function getDetail() {
+    if (codeQuality.getIsEmpty) {
+      return (
+        <NewEmptyPage
+          title={formatMessage({ id: 'empty.title.prohibited' })}
+          describe={formatMessage({ id: 'empty.title.code' })}
+          btnText={formatMessage({ id: 'empty.link.code' })}
+          pathname="/rducm/code-lib-management/apply"
+        />
+      );
+    }
     const { date, status, sonarContents } = codeQuality.data || {};
 
     // 合并数据，生成{key, value, icon, url, rate, hasReport}对象数组

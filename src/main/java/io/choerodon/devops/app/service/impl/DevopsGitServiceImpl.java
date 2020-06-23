@@ -1,30 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
-import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-
 import com.alibaba.fastjson.JSONObject;
-import io.kubernetes.client.models.V1Endpoints;
-import org.eclipse.jgit.api.Git;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.MessageSource;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
-import org.yaml.snakeyaml.Yaml;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -49,12 +25,37 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.infra.exception.GitlabAccessInvalidException;
 import io.choerodon.devops.infra.feign.operator.AgileServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.kubernetes.client.models.V1Endpoints;
+import org.eclipse.jgit.api.Git;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.util.CollectionUtils;
+import org.yaml.snakeyaml.Yaml;
+
+import javax.annotation.PostConstruct;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
+import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
 
 /**
  * Creator: Runge
@@ -120,6 +121,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private PermissionHelper permissionHelper;
     @Autowired
     private MessageSource messageSource;
+    @Autowired
+    private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
 
     @Autowired
     private List<HandlerObjectFileRelationsService> handlerObjectFileRelationsServices;
@@ -192,6 +195,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public void createTag(Long projectId, Long appServiceId, String tag, String ref, String msg, String releaseNotes) {
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.TAG_CREATE);
         appServiceService.baseCheckApp(projectId, appServiceId);
         AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
         gitlabServiceClientOperator.createTag(applicationDTO.getGitlabProjectId(), tag, ref, msg, releaseNotes, getGitlabUserId());
@@ -199,6 +203,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public TagVO updateTag(Long projectId, Long appServiceId, String tag, String releaseNotes) {
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.TAG_UPDATE);
         appServiceService.baseCheckApp(projectId, appServiceId);
         AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
         return ConvertUtils.convertObject(gitlabServiceClientOperator.updateTag(applicationDTO.getGitlabProjectId(), tag, releaseNotes, getGitlabUserId()), TagVO.class);
@@ -206,6 +211,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public void deleteTag(Long projectId, Long appServiceId, String tag) {
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.TAG_DELETE);
         appServiceService.baseCheckApp(projectId, appServiceId);
         AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
         gitlabServiceClientOperator.deleteTag(applicationDTO.getGitlabProjectId(), tag, getGitlabUserId());
@@ -215,6 +221,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_BRANCH,
             description = "devops创建分支", inputSchema = "{}")
     public void createBranch(Long projectId, Long appServiceId, DevopsBranchVO devopsBranchVO) {
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.BRANCH_CREATE);
 
         DevopsBranchDTO devopsBranchDTO = ConvertUtils.convertObject(devopsBranchVO, DevopsBranchDTO.class);
 
@@ -290,6 +297,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public Page<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageable, Long appServiceId, String params) {
+        try {
+            checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.BRANCH_LIST);
+        } catch (GitlabAccessInvalidException e) {
+            return null;
+        }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
@@ -315,15 +327,24 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchService.basePageBranch(appServiceId, pageable, params);
         Page<BranchVO> devopsBranchVOPageInfo = ConvertUtils.convertPage(devopsBranchDTOPageInfo, BranchVO.class);
 
+        if (CollectionUtils.isEmpty(devopsBranchVOPageInfo.getContent())) {
+            return devopsBranchVOPageInfo;
+        }
+        List<Long> userIds = devopsBranchDTOPageInfo.getContent().stream().map(DevopsBranchDTO::getUserId).collect(Collectors.toList());
+        List<Long> lastCommitUserIds = devopsBranchDTOPageInfo.getContent().stream().map(DevopsBranchDTO::getLastCommitUser).collect(Collectors.toList());
+        List<Long> issuedIds = devopsBranchDTOPageInfo.getContent().stream().map(DevopsBranchDTO::getIssueId).collect(Collectors.toList());
+
+        Map<Long, List<IamUserDTO>> iamUserDTOMap = baseServiceClientOperator.listUsersByIds(userIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
+        Map<Long, List<IamUserDTO>> lastCommitUserDTOMap = baseServiceClientOperator.listUsersByIds(lastCommitUserIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
+        Map<Long, List<IssueDTO>> issues = agileServiceClientOperator.listIssueByIds(projectId, issuedIds).stream().collect(Collectors.groupingBy(IssueDTO::getIssueId));
+
         devopsBranchVOPageInfo.setContent(devopsBranchDTOPageInfo.getContent().stream().map(t -> {
             IssueDTO issueDTO = null;
             if (t.getIssueId() != null) {
-                issueDTO = agileServiceClientOperator.queryIssue(projectId, t.getIssueId(), organizationDTO.getTenantId());
+                issueDTO = issues.get(t.getIssueId()) == null ? null : issues.get(t.getIssueId()).get(0);
             }
-            IamUserDTO userDTO = baseServiceClientOperator.queryUserByUserId(
-                    userAttrService.queryUserIdByGitlabUserId(t.getUserId()));
-            IamUserDTO commitUserDTO = baseServiceClientOperator.queryUserByUserId(
-                    userAttrService.queryUserIdByGitlabUserId(t.getLastCommitUser()));
+            IamUserDTO userDTO = iamUserDTOMap.get(t.getUserId()) == null ? null : iamUserDTOMap.get(t.getUserId()).get(0);
+            IamUserDTO commitUserDTO = lastCommitUserDTOMap.get(t.getLastCommitUser()) == null ? null : lastCommitUserDTOMap.get(t.getLastCommitUser()).get(0);
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
             return getBranchVO(t, commitUrl, commitUserDTO, userDTO, issueDTO);
         }).collect(Collectors.toList()));
@@ -354,6 +375,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public void deleteBranch(Long appServiceId, String branchName) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+        checkGitlabAccessLevelService.checkGitlabPermission(appServiceDTO.getProjectId(), appServiceId, AppServiceEvent.BRANCH_DELETE);
+
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listBranch(appServiceDTO.getGitlabProjectId(),
                 TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
@@ -378,6 +401,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public MergeRequestTotalVO listMergeRequest(Long projectId, Long appServiceId, String state, PageRequest pageable) {
+        try {
+            checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.MERGE_REQUEST_LIST);
+        } catch (GitlabAccessInvalidException e) {
+            return null;
+        }
         appServiceService.baseCheckApp(projectId, appServiceId);
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         if (appServiceDTO.getGitlabProjectId() == null) {
@@ -418,6 +446,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public Page<TagVO> pageTagsByOptions(Long projectId, Long applicationId, String params, Integer page, Integer size) {
+        try {
+            checkGitlabAccessLevelService.checkGitlabPermission(projectId, applicationId, AppServiceEvent.TAG_LIST);
+        } catch (GitlabAccessInvalidException e) {
+            return null;
+        }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         AppServiceDTO applicationDTO = appServiceService.baseQuery(applicationId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
@@ -429,6 +462,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public List<TagVO> listTags(Long projectId, Long applicationId) {
+        try {
+            checkGitlabAccessLevelService.checkGitlabPermission(projectId, applicationId, AppServiceEvent.TAG_LIST);
+        } catch (GitlabAccessInvalidException e) {
+            return null;
+        }
         AppServiceDTO applicationDTO = appServiceService.baseQuery(applicationId);
         return ConvertUtils.convertList(gitlabServiceClientOperator.listTags(applicationDTO.getGitlabProjectId(), getGitlabUserId()), TagVO.class);
     }

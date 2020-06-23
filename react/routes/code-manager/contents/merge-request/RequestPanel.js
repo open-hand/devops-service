@@ -13,6 +13,7 @@ import TimePopover from '../../../../components/timePopover';
 import UserInfo from '../../../../components/userInfo';
 import handleMapStore from '../../main-view/store/handleMapStore';
 import { useCodeManagerStore } from '../../stores';
+import EmptyPage from '../../components/empty-page';
 
 import './index.less';
 import '../../../main.less';
@@ -68,7 +69,6 @@ const RequestPanel = withRouter(observer((props) => {
     mergedRequestStore.loadUser();
   }, []);
 
-
   function tabChange(key) {
     setTabKey(key);
     openTableDS.query();
@@ -99,9 +99,16 @@ const RequestPanel = withRouter(observer((props) => {
     );
   }
 
-  function linkToNewMerge() {
-    const url = `${mergedRequestStore.getUrl}/merge_requests/new`;
-    window.open(url);
+  async function linkToNewMerge() {
+    try {
+      const res = await mergedRequestStore.checkMerge(projectId, appId);
+      if (res) {
+        const url = `${mergedRequestStore.getUrl}/merge_requests/new`;
+        window.open(url);
+      }
+    } catch (e) {
+      // return;
+    }
   }
 
   function linkToMerge(iid) {
@@ -197,7 +204,7 @@ const RequestPanel = withRouter(observer((props) => {
     >
       {appServiceDs.status !== 'ready' || !appId
         ? <Loading display />
-        : <Fragment>
+        : (!mergedRequestStore.getIsEmpty ? (<Fragment>
           <Tabs
             activecKey={getTabKey}
             onChange={tabChange}
@@ -224,7 +231,14 @@ const RequestPanel = withRouter(observer((props) => {
               </TabPane>
             )}
           </Tabs>
-        </Fragment>}
+        </Fragment>) : (
+          <EmptyPage
+            title={formatMessage({ id: 'empty.title.prohibited' })}
+            describe={formatMessage({ id: 'empty.title.code' })}
+            btnText={formatMessage({ id: 'empty.link.code' })}
+            pathname="/rducm/code-lib-management/apply"
+          />
+        ))}
     </Page>
   );
 }));

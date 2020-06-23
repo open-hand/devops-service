@@ -1,18 +1,22 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button } from 'choerodon-ui';
-import { Choerodon } from '@choerodon/boot';
 import { Modal, Form, TextField } from 'choerodon-ui/pro';
-import './index.less';
 import { usePipelineStageEditStore } from '../stageEditBlock/stores';
 import AddTask from '../../../PipelineCreate/components/AddTask';
 import { usePipelineCreateStore } from '../../../PipelineCreate/stores';
+import ViewVariable from '../../../view-variables';
+
+import './index.less';
 
 const jobTask = {
   build: '构建',
   sonar: '代码检查',
   custom: '自定义',
   chart: '发布Chart',
+};
+const modalStyle = {
+  width: 380,
 };
 
 const EditItem = (props) => {
@@ -26,6 +30,7 @@ const EditItem = (props) => {
     appServiceId,
     appServiceName,
     image,
+    openVariableModal,
   } = props;
 
   const { type, name } = jobDetail;
@@ -45,7 +50,19 @@ const EditItem = (props) => {
   function openEditJobModal() {
     Modal.open({
       key: Modal.key(),
-      title: `编辑${name}任务`,
+      title: (
+        <Fragment>
+          <span className="c7n-piplineManage-edit-title-text">{`编辑${name}任务`}</span>
+          <Button
+            type="primary"
+            icon="find_in_page-o"
+            className="c7n-piplineManage-edit-title-btn"
+            onClick={openVariableModal}
+          >
+            查看流水线变量
+          </Button>
+        </Fragment>
+      ),
       children: <AddTask
         jobDetail={jobDetail}
         appServiceId={!edit && appServiceName}
@@ -161,6 +178,7 @@ export default observer((props) => {
           PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
           jobDetail={item}
           image={image}
+          openVariableModal={openVariableModal}
         />)
       }
     </div> : null
@@ -202,10 +220,36 @@ export default observer((props) => {
     newJob(sequence, data, edit);
   }
 
+  function openVariableModal() {
+    Modal.open({
+      key: Modal.key(),
+      style: modalStyle,
+      drawer: true,
+      title: '查看变量配置',
+      children: <ViewVariable
+        appServiceId={appServiceId}
+      />,
+      okCancel: false,
+      okText: '关闭',
+    });
+  }
+
   function openNewTaskModal() {
     Modal.open({
       key: Modal.key(),
-      title: '添加任务',
+      title: (
+        <Fragment>
+          <span className="c7n-piplineManage-edit-title-text">添加任务</span>
+          <Button
+            type="primary"
+            icon="find_in_page-o"
+            className="c7n-piplineManage-edit-title-btn"
+            onClick={openVariableModal}
+          >
+            查看流水线变量
+          </Button>
+        </Fragment>
+      ),
       children: <AddTask
         PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
         AppServiceOptionsDs={edit && AppServiceOptionsDs}

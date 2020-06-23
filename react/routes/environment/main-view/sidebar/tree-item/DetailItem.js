@@ -257,13 +257,13 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     switch (result) {
       case RUNNING:
         actionData = [{
-          service: ['choerodon.code.project.deploy.environment.ps.stop'],
-          text: formatMessage({ id: `${intlPrefix}.modal.detail.stop` }),
-          action: openEffectModal,
-        }, {
           service: ['choerodon.code.project.deploy.environment.ps.modify'],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.modify` }),
           action: openModifyModal,
+        }, {
+          service: ['choerodon.code.project.deploy.environment.ps.stop'],
+          text: formatMessage({ id: `${intlPrefix}.modal.detail.stop` }),
+          action: openEffectModal,
         }];
         break;
       case DISCONNECTED:

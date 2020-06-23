@@ -17,10 +17,19 @@ public class PushWebHookVO {
     private String ref;
     private String checkoutSha;
     private Integer userId;
+    private String userUserName;
     private Integer projectId;
     private List<CommitVO> commits;
     private Integer totalCommitsCount;
     private String token;
+
+    public String getUserUserName() {
+        return userUserName;
+    }
+
+    public void setUserUserName(String userUserName) {
+        this.userUserName = userUserName;
+    }
 
     public String getObjectKind() {
         return objectKind;

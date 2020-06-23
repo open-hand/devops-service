@@ -32,6 +32,7 @@ const commonField = {
   reset: '重置',
   install: '安装',
   uninstall: '卸载',
+  copy: '复制',
 
   // 通用描述
   app: '应用',
@@ -178,6 +179,7 @@ const commonField = {
   'search.placeholder': '请输入搜索条件',
   all_instance: '所有实例',
   appService: '应用服务',
+  copy_success: '复制成功',
 
   // 资源树名称
   instances: '实例',
@@ -453,6 +455,7 @@ const appService = {
   'c7ncd.appService.docker': 'Docker仓库配置',
   'c7ncd.appService.docker.default': '默认Docker仓库',
   'c7ncd.appService.docker.custom': '自定义Docker仓库',
+  'c7ncd.appService.docker.tips': '您可在此选择项目下制品库管理页面中已维护好的Docker仓库；选中后，该应用服务之后生成的镜像便会放于该仓库之中',
   'c7ncd.appService.helm': 'Helm仓库配置',
   'c7ncd.appService.helm.default': '默认Helm仓库',
   'c7ncd.appService.helm.custom': '自定义Helm仓库',
@@ -727,6 +730,9 @@ const repository = {
   'c7ncd.repository.tab.application': '应用配置',
   'c7ncd.repository.prompt.inform.title': '离开此页',
   'c7ncd.repository.prompt.inform.message': '此页面修改项尚未保存，确定要离开此页面？',
+  'c7ncd.repository.empty.title': 'Docker仓库配置',
+  'c7ncd.repository.empty.des': 'Docker仓库配置功能已迁移至【制品库管理】页面，请点击下方按钮跳转。',
+  'c7ncd.repository.empty.link': '跳转至制品库管理',
 };
 
 const pvManager = {
@@ -760,7 +766,6 @@ const pvManager = {
   'c7ncd.pv.permission.project.delete.des': '确定要删除该项目的权限吗？',
 };
 
-
 const codeManagement = {
   'code-management.branch': '分支',
   'code-management.merge-request': '合并请求',
@@ -776,7 +781,7 @@ const pipelineManage = {
   'c7ncd.pipelineManage.execute.cancel': '取消执行',
   'c7ncd.pipelineManage.execute.retry': '重试',
   'c7ncd.pipelineManage.delete.title': '删除流水线',
-  'c7ncd.pipelineManage.delete.des': '删除CI流水线后，之前上传至存储库的所有软件包也会随之清除；确定删除该条CI流水线吗？',
+  'c7ncd.pipelineManage.delete.des': '确定删除该条CI流水线吗？',
   'c7ncd.pipelineManage.stop.title': '停用流水线',
   'c7ncd.pipelineManage.stop.des': '确定停用该条流水线吗？',
   'c7ncd.pipelineManage.record.detail': '流水线记录详情',
@@ -796,11 +801,21 @@ const pipelineManage = {
   'c7ncd.pipelineManage.status.skipped': '最近执行结果：已跳过',
   'c7ncd.pipelineManage.status.canceled': '最近执行结果：已取消',
   'c7ncd.pipelineManage.record.empty.title': '流水线已跳过',
-  'c7ncd.pipelineManage.record.empty.des': '已跳过该流水线的首次执行。您可直接点击全新执行来重跑流水线',
+  'c7ncd.pipelineManage.record.empty.des': '已跳过流水线的此次执行。您可点击全新执行来重跑流水线',
   'c7ncd.pipelineManage.record.empty.title.other': '阶段信息为空',
   'c7ncd.pipelineManage.record.empty.des.other': '未获取到此次执行的阶段信息',
   'c7ncd.pipelineManage.create.share.title': '共享目录设置',
   'c7ncd.pipelineManage.create.share.tips': '若勾选上传共享目录，则会将此任务中产生的工件或其它文件上传至共享目录，供之后的任务下载使用。若勾选下载共享目录，则会在此任务中下载使用该条流水线中已上传至共享目录中的工件',
+  'c7ncd.pipelineManage.settings.global': '全局变量配置',
+  'c7ncd.pipelineManage.settings.local': '流水线变量配置',
+  'c7ncd.pipelineManage.settings.add': '添加变量',
+  'c7ncd.pipelineManage.settings.values.reveal': '显示所有值',
+  'c7ncd.pipelineManage.settings.values.hide': '隐藏所有值',
+  'c7ncd.pipelineManage.settings.check.exist': '键值重复',
+  'c7ncd.pipelineManage.settings.check.failed': '只能有字母、数字和_组成',
+  'c7ncd.pipelineManage.settings.check.empty': '此项不能为空',
+  'c7ncd.pipelineManage.settings.project': '项目层',
+  'c7ncd.pipelineManage.settings.app': '应用服务层',
 };
 
 const emptyPage = {
@@ -820,6 +835,13 @@ const emptyPage = {
   'empty.create.env': '创建环境',
   'empty.link.app': '跳转至应用服务',
   'empty.link.env': '跳转至环境配置',
+  'empty.link.code': '跳转至代码库管理',
+  'empty.title.code': '当前用户在该应用服务的GitLab权限为Guest，无法查看此页面。若想执行对应操作，请转至代码库管理界面申请更高的GitLab权限。',
+};
+
+const prompt = {
+  'prompt.inform.title': '离开此页',
+  'prompt.inform.message': '此页面修改项尚未保存，确定要离开此页面？',
 };
 
 // 文档地址前缀
@@ -1264,7 +1286,6 @@ const pageDetail = {
   'notification.edit.description': '您可在此修改该通知内的环境，触发事件，通知方式以及通知对象。',
   'notification.edit.link': `${docServer}/user-guide/system-configuration/project/devops-notifications`,
 };
-
 
 const cluster = {
   'c7ncd.cluster.node.list': '节点列表',
@@ -2726,7 +2747,6 @@ const zhCN = {
   'resource.required': '请上传YAML文件',
   'resource.one.file': '仅能上传一个文件',
 
-
   // 删除弹框确认信息
   'instance.delete': '删除实例',
   'secret.delete': '删除密文',
@@ -2769,6 +2789,7 @@ const zhCN = {
   ...emptyPage,
   ...pvManager,
   ...pipelineManage,
+  ...prompt,
 };
 
 export default zhCN;

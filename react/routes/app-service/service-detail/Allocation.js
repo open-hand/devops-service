@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { TabPage, Content, Permission, Breadcrumb, Action } from '@choerodon/boot';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
+import { withRouter } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
@@ -12,7 +13,6 @@ import TimePopover from '../../../components/timePopover/TimePopover';
 import ServicePermission from './modals/permission';
 import Tips from '../../../components/new-tips';
 
-
 const { Column } = Table;
 
 const modalKey1 = Modal.key();
@@ -21,7 +21,7 @@ const modalStyle = {
   width: 380,
 };
 
-const Allocation = observer(() => {
+const Allocation = withRouter(observer((props) => {
   const {
     intlPrefix,
     prefixCls,
@@ -63,28 +63,33 @@ const Allocation = observer(() => {
     return <Action data={actionData} />;
   }
 
-  function openDetail() {
-    Modal.open({
-      key: modalKey1,
-      title: <Tips
-        helpText={formatMessage({ id: `${intlPrefix}.detail.allocation.tips` })}
-        title={formatMessage({ id: `${intlPrefix}.permission.manage` })}
-      />,
-      children: <ServicePermission
-        dataSet={permissionDs}
-        baseDs={detailDs}
-        store={appServiceStore}
-        nonePermissionDs={nonePermissionDs}
-        intlPrefix="c7ncd.deployment"
-        prefixCls={prefixCls}
-        formatMessage={formatMessage}
-        projectId={id}
-        refresh={refresh}
-      />,
-      drawer: true,
-      style: modalStyle,
-      okText: formatMessage({ id: 'save' }),
-    });
+  function openDetail(appServiceIds) {
+    const {
+      history,
+      location,
+    } = props;
+    history.push(`/rducm/code-lib-management/assign${location.search}&appServiceIds=${appServiceIds}`);
+    // Modal.open({
+    //   key: modalKey1,
+    //   title: <Tips
+    //     helpText={formatMessage({ id: `${intlPrefix}.detail.allocation.tips` })}
+    //     title={formatMessage({ id: `${intlPrefix}.permission.manage` })}
+    //   />,
+    //   children: <ServicePermission
+    //     dataSet={permissionDs}
+    //     baseDs={detailDs}
+    //     store={appServiceStore}
+    //     nonePermissionDs={nonePermissionDs}
+    //     intlPrefix="c7ncd.deployment"
+    //     prefixCls={prefixCls}
+    //     formatMessage={formatMessage}
+    //     projectId={id}
+    //     refresh={refresh}
+    //   />,
+    //   drawer: true,
+    //   style: modalStyle,
+    //   okText: formatMessage({ id: 'save' }),
+    // });
   }
 
   function handleDelete() {
@@ -100,24 +105,27 @@ const Allocation = observer(() => {
   }
 
   function renderButtons() {
-    const isStop = detailDs.current && !detailDs.current.get('active');
+    // const isStop = detailDs.current && !detailDs.current.get('active');
     return (
+    // <Permission
+    //   service={['choerodon.code.project.develop.app-service.ps.permission.update']}
+    // >
+    //   <Tooltip
+    //     title={isStop ? <FormattedMessage id={`${intlPrefix}.button.disabled`} /> : ''}
+    //     placement="bottom"
+    //   >
       <Permission
         service={['choerodon.code.project.develop.app-service.ps.permission.update']}
       >
-        <Tooltip
-          title={isStop ? <FormattedMessage id={`${intlPrefix}.button.disabled`} /> : ''}
-          placement="bottom"
+        <Button
+          icon="authority"
+          onClick={() => openDetail(props.match.params.id)}
         >
-          <Button
-            icon="authority"
-            onClick={openDetail}
-            disabled={isStop}
-          >
-            <FormattedMessage id={`${intlPrefix}.permission.manage`} />
-          </Button>
-        </Tooltip>
+          <FormattedMessage id={`${intlPrefix}.permission.manage`} />
+        </Button>
       </Permission>
+    //   </Tooltip>
+    // </Permission>
     );
   }
 
@@ -156,6 +164,6 @@ const Allocation = observer(() => {
       </Content>
     </TabPage>
   );
-});
+}));
 
 export default Allocation;

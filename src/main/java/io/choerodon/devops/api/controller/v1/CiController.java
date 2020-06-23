@@ -7,12 +7,14 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.AppServiceVersionService;
-import io.choerodon.devops.app.service.DevopsCiJobService;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -23,6 +25,14 @@ import io.choerodon.swagger.annotation.Permission;
 public class CiController {
     @Value("${devops.ci.default.image}")
     private String defaultCiImage;
+
+    @Value("${services.sonarqube.url:#{null}}")
+    private String sonarqubeUrl;
+
+    @Value("${services.sonarqube.username:#{null}}")
+    private String userName;
+    @Value("${services.sonarqube.password:#{null}}")
+    private String password;
 
     private final AppServiceService applicationService;
     private final AppServiceVersionService appServiceVersionService;
@@ -86,5 +96,20 @@ public class CiController {
     @GetMapping("/default_image")
     public ResponseEntity<String> queryDefaultCiImageUrl() {
         return ResponseEntity.ok(defaultCiImage);
+    }
+
+
+    @Permission(permissionLogin = true)
+    @ApiOperation(value = "判断平台是否有配置sonarqube")
+    @GetMapping("/has_default_sonar")
+    public ResponseEntity<Boolean> hasDefaultSonarqubeConfig() {
+        return ResponseEntity.ok(!StringUtils.isEmpty(sonarqubeUrl));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+    @GetMapping("/sonar_default")
+    @ApiOperation("质量管理用/查询sonar默认配置 / 结果可能改为空的对象，字段值可能为空")
+    public ResponseEntity<SonarInfoVO> getSonarDefault() {
+        return ResponseEntity.ok(new SonarInfoVO(userName, password, sonarqubeUrl));
     }
 }

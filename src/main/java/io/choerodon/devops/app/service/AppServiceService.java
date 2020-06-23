@@ -87,7 +87,8 @@ public interface AppServiceService {
                                         String type,
                                         Boolean doPage,
                                         PageRequest pageable,
-                                        String params);
+                                        String params,
+                                        Boolean checkMember);
 
     /**
      * 处理服务创建逻辑
@@ -376,15 +377,25 @@ public interface AppServiceService {
 
     void setProjectHook(AppServiceDTO appServiceDTO, Integer projectId, String token, Integer userId);
 
+    /**
+     * 查询项目成员 项目下有权限的应用服务Id
+     *
+     * @param organizationId
+     * @param projectId
+     * @param userId
+     * @return
+     */
+    Set<Long> getMemberAppServiceIds(Long organizationId, Long projectId, Long userId);
+
+
     void baseCheckApp(Long projectId, Long appServiceId);
 
     AppServiceDTO baseUpdate(AppServiceDTO appServiceDTO);
 
     AppServiceDTO baseQuery(Long appServiceId);
 
-    Page<AppServiceDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean
-            appMarket,
-                                          String type, Boolean doPage, PageRequest pageable, String params);
+    Page<AppServiceDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean appMarket,
+                                          String type, Boolean doPage, PageRequest pageable, String params, Boolean checkMember);
 
     Page<AppServiceDTO> basePageCodeRepository(Long projectId, PageRequest pageable, String params,
                                                Boolean isProjectOwner, Long userId);
@@ -566,4 +577,6 @@ public interface AppServiceService {
      * @return 地址
      */
     String calculateGitlabProjectUrlWithSuffix(Long appServiceId);
+
+    void fixAppServiceVersion();
 }

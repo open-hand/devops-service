@@ -53,20 +53,25 @@ const TreeItem = observer(({ record, search }) => {
     treeDs.query();
   }
 
-  function handleExecute() {
-    Modal.open({
-      key: executeKey,
-      title: formatMessage({ id: `${intlPrefix}.execute` }),
-      children: <ExecuteContent
-        appServiceId={record.get('appServiceId')}
-        gitlabProjectId={record.get('gitlabProjectId')}
-        pipelineId={record.get('id')}
-        refresh={refresh}
-        prefixCls={prefixCls}
-      />,
-      okText: formatMessage({ id: 'execute' }),
-      movable: false,
-    });
+  async function handleExecute() {
+    try {
+      await mainStore.checkLinkToGitlab(projectId, record.get('appServiceId'), 'CI_PIPELINE_NEW_PERFORM');
+      Modal.open({
+        key: executeKey,
+        title: formatMessage({ id: `${intlPrefix}.execute` }),
+        children: <ExecuteContent
+          appServiceId={record.get('appServiceId')}
+          gitlabProjectId={record.get('gitlabProjectId')}
+          pipelineId={record.get('id')}
+          refresh={refresh}
+          prefixCls={prefixCls}
+        />,
+        okText: formatMessage({ id: 'execute' }),
+        movable: false,
+      });
+    } catch (e) {
+      //
+    }
   }
   function handleChangeActive() {
     if (record.get('enabled')) {

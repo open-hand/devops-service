@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.enums.MessageAdditionalType;
@@ -44,6 +45,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @since 12/5/19
  */
 @Service
+@Async
 public class SendNotificationServiceImpl implements SendNotificationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SendNotificationServiceImpl.class);
     private static final String PROJECT = "Project";
@@ -1097,6 +1099,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("Sender: {}", JsonHelper.marshalByJackson(sender));
                     }
+
                     messageClient.async().sendMessage(sender);
                 },
                 ex -> LOGGER.info("Failed to send message with code {}", sendSettingCode));

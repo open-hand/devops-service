@@ -117,4 +117,17 @@ public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO
     void deleteByIds(@Param("versionIds") Set<Long> versionIds);
 
     AppServiceVersionDTO queryByShareVersion(@Param("appServiceId") Long appServiceId, @Param("projectId") Long projectId);
+
+    List<Long> selectAllAppServiceId();
+
+    void updateVersionDefaultBatch(@Param("appServiceVersionDefault") List<AppServiceVersionDTO> appServiceVersionDefault);
+
+    void updateVersionCustomBatch(@Param("appServiceVersionDCustom")List<AppServiceVersionDTO> appServiceVersionDCustom);
+
+    void updateVersionAppServiceId(@Param("appServiceId") Long appServiceId,
+                                   @Param("configId") Long configId,
+                                   @Param("customRepo") String customRepo);
+
+    void updateVersionOrgId(@Param("appServiceId") Long appServiceId,
+                            @Param("customRepo") String defaultRepo);
 }

@@ -27,6 +27,7 @@ public class AppServiceVersionDTO extends AuditDomain {
     private String repository;
     private Long harborConfigId;
     private Long helmConfigId;
+    private String repoType;
 
     @Transient
     private String appServiceName;
@@ -42,6 +43,7 @@ public class AppServiceVersionDTO extends AuditDomain {
     private String values;
     @Transient
     private String chartName;
+
 
     public String getChartName() {
         return chartName;
@@ -177,5 +179,13 @@ public class AppServiceVersionDTO extends AuditDomain {
 
     public void setHelmConfigId(Long helmConfigId) {
         this.helmConfigId = helmConfigId;
+    }
+
+    public String getRepoType() {
+        return repoType;
+    }
+
+    public void setRepoType(String repoType) {
+        this.repoType = repoType;
     }
 }

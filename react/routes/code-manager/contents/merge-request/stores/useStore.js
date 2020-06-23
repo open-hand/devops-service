@@ -43,6 +43,15 @@ export default function useStore() {
     setUrl(data) {
       this.url = data;
     },
+
+    isEmpty: false,
+    setIsEmpty(flag) {
+      this.isEmpty = flag;
+    },
+    get getIsEmpty() {
+      return this.isEmpty;
+    },
+
     loadUrl(projectId, appId) {
       return axios.get(`/devops/v1/projects/${projectId}/app_service/${appId}/git/url`)
         .then((data) => {
@@ -55,6 +64,10 @@ export default function useStore() {
     },
     get getUrl() {
       return this.url;
+    },
+
+    checkMerge(projectId, appServiceId) {
+      return axios.get(`/devops/v1/projects/${projectId}/member-check/${appServiceId}?type=MERGE_REQUEST_CREATE`);
     },
 
   }));

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import { Form, TextField, Select } from 'choerodon-ui/pro';
+import { Form, TextField, Select, Tooltip } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Icon, Input } from 'choerodon-ui';
@@ -76,6 +76,14 @@ const CreateForm = injectIntl(observer((props) => {
     }
   }
 
+  function renderSourceOption({ text }) {
+    return (
+      <Tooltip title={text} placement="left">
+        {text}
+      </Tooltip>
+    );
+  }
+
   return (<div className={`${prefixCls}-create-wrap`}>
     <div
       style={{
@@ -126,7 +134,7 @@ const CreateForm = injectIntl(observer((props) => {
       />
     </div>
     <Form dataSet={formDs} columns={3}>
-      <Select name="appServiceSource" colSpan={1} />
+      <Select name="appServiceSource" colSpan={1} optionRenderer={renderSourceOption} />
       <Select
         name="templateAppServiceId"
         colSpan={2}

@@ -32,7 +32,7 @@ public class DevopsOrganizationConfigController {
     @Autowired
     private AppServiceService appServiceService;
 
-
+    //组织下创建配置harbor的逻辑不要了
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织下创建配置")
     @PostMapping
@@ -112,11 +112,14 @@ public class DevopsOrganizationConfigController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "校验chart配置信息是否正确")
     @GetMapping(value = "/check_chart")
-    public void checkChart(
+    public ResponseEntity<Boolean> checkChart(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "chartmusume地址", required = true)
             @RequestParam String url) {
-        appServiceService.checkChart(url);
+        return Optional.ofNullable(
+                appServiceService.checkChart(url))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.connection.failed"));
     }
 }
