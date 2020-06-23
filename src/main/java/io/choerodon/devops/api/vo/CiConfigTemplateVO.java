@@ -43,6 +43,9 @@ public class CiConfigTemplateVO {
     @ApiModelProperty("Dockerfile文件路径")
     private String dockerFilePath;
 
+    @ApiModelProperty("是否跳过harbor的证书校验 / true表示跳过")
+    private Boolean skipDockerTlsVerify;
+
     public String getName() {
         return name;
     }
@@ -105,5 +108,13 @@ public class CiConfigTemplateVO {
 
     public void setMavenSettings(String mavenSettings) {
         this.mavenSettings = mavenSettings;
+    }
+
+    public Boolean getSkipDockerTlsVerify() {
+        return skipDockerTlsVerify;
+    }
+
+    public void setSkipDockerTlsVerify(Boolean skipDockerTlsVerify) {
+        this.skipDockerTlsVerify = skipDockerTlsVerify;
     }
 }

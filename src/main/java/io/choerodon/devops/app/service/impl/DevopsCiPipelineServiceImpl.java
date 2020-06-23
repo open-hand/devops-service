@@ -624,7 +624,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                 result.addAll(buildMavenScripts(projectId, jobId, config, hasSettings));
                                 break;
                             case DOCKER:
-                                result.add(GitlabCiUtil.generateDockerScripts(config.getDockerContextDir(), config.getDockerFilePath(), true));
+                                // 不填skipDockerTlsVerify参数或者填TRUE都是跳过证书校验
+                                result.add(GitlabCiUtil.generateDockerScripts(
+                                        config.getDockerContextDir(),
+                                        config.getDockerFilePath(),
+                                        config.getSkipDockerTlsVerify() == null || config.getSkipDockerTlsVerify()));
                                 break;
                         }
                     });
