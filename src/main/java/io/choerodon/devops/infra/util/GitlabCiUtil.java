@@ -218,10 +218,12 @@ public class GitlabCiUtil {
      *
      * @param dockerBuildContextDir docker构建上下文目录
      * @param dockerFilePath        dockerfile文件路径
+     * @param skipTlsVerify         是否跳过证书校验
      */
-    public static String generateDockerScripts(String dockerBuildContextDir, String dockerFilePath) {
-        String rawCommand = "kaniko -c $PWD/%s -f $PWD/%s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
-        return String.format(rawCommand, dockerBuildContextDir, dockerFilePath);
+    public static String generateDockerScripts(String dockerBuildContextDir, String dockerFilePath, boolean skipTlsVerify) {
+        // 默认跳过证书校验， 之后可以进行配置, 因为自签名的证书不方便进行证书校验
+        String rawCommand = "kaniko %s-c $PWD/%s -f $PWD/%s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
+        return String.format(rawCommand, skipTlsVerify ? "--skip-tls-verify " : "", dockerBuildContextDir, dockerFilePath);
     }
 
     /**
