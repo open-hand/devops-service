@@ -59,4 +59,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_registry_secret.groovy') {
             column(name: 'repo_type', type: 'VARCHAR(64)', afterColumn: 'id', remarks: '仓库类型(DEFAULT_REPO、CUSTOM_REPO)')
         }
     }
+    changeSet(author: 'wx', id: '2020-6-23-update-column') {
+        sql("""
+              alter table 
+              devops_registry_secret 
+              modify secret_detail varchar(1500)
+            """)
+    }
 }

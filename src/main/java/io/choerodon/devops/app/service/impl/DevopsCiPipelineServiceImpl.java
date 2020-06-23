@@ -267,7 +267,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 封装对象
         Map<Long, List<DevopsCiJobVO>> jobMap = devopsCiJobVOS.stream().collect(Collectors.groupingBy(DevopsCiJobVO::getCiStageId));
         devopsCiStageVOS.forEach(devopsCiStageVO -> {
-            List<DevopsCiJobVO> ciJobVOS = jobMap.get(devopsCiStageVO.getId());
+            List<DevopsCiJobVO> ciJobVOS = jobMap.getOrDefault(devopsCiStageVO.getId(), Collections.emptyList());
+            ciJobVOS.sort(Comparator.comparingLong(DevopsCiJobVO::getId));
             devopsCiStageVO.setJobList(ciJobVOS);
         });
         // stage排序
@@ -731,7 +732,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                 result.addAll(buildMavenScripts(projectId, jobId, config, hasSettings));
                                 break;
                             case DOCKER:
-                                result.add(GitlabCiUtil.generateDockerScripts(config.getDockerContextDir(), config.getDockerFilePath()));
+                                // 不填skipDockerTlsVerify参数或者填TRUE都是跳过证书校验
+                                result.add(GitlabCiUtil.generateDockerScripts(
+                                        config.getDockerContextDir(),
+                                        config.getDockerFilePath(),
+                                        config.getSkipDockerTlsVerify() == null || config.getSkipDockerTlsVerify()));
                                 break;
                             case MAVEN_DEPLOY:
                                 List<MavenRepoVO> repos = buildAndSaveMavenSettings(projectId, jobId, config.getSequence(), config.getMavenDeployRepoSettings());

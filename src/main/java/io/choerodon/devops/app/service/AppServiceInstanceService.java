@@ -20,7 +20,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface AppServiceInstanceService {
     String INSTANCE_LABEL_RELEASE = "choerodon.io/release";
-    String INSTANCE_LABEL_APPLICATION = "choerodon.io/application";
     String INSTANCE_LABEL_APP_SERVICE_ID = "choerodon.io/app-service-id";
 
     /**

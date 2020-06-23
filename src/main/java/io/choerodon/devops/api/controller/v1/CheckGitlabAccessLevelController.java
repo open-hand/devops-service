@@ -14,8 +14,7 @@ import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author scp
- * @date 2020/6/17
- * @description
+ * @since 2020/6/17
  */
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/member-check")
@@ -27,15 +26,11 @@ public class CheckGitlabAccessLevelController {
 
     /**
      * 校验项目成员gitlab角色
-     *
-     * @param projectId
-     * @param appServiceId
-     * @return
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目下校验项目成员权限")
     @GetMapping(value = "/{app_service_id}")
-    public ResponseEntity create(
+    public ResponseEntity<Void> create(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用服务ID", required = true)

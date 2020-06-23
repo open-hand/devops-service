@@ -95,10 +95,6 @@ const AddTask = observer(() => {
       AddTaskFormDataSet.getField('dockerContextDir').set('required', steps.some(s => s.type === 'docker'));
       AddTaskFormDataSet.getField('dockerFilePath').set('required', steps.some(s => s.type === 'docker'));
       AddTaskFormDataSet.getField('uploadArtifactFileName').set('required', steps.some(s => s.type === 'upload'));
-
-      // else {
-      //   AddTaskFormDataSet.current.set('private', '');
-      // }
     }
   }, [steps]);
 
@@ -148,6 +144,7 @@ const AddTask = observer(() => {
           let dockerFilePath;
           let uploadArtifactFileName;
           let dockerArtifactFileName;
+          let skipDockerTlsVerify;
           const share = [];
           let nexusMavenRepoIds;
           let zpk;
@@ -158,6 +155,7 @@ const AddTask = observer(() => {
             } else if (c.type === 'docker') {
               dockerContextDir = c.dockerContextDir;
               dockerFilePath = c.dockerFilePath;
+              skipDockerTlsVerify = c.skipDockerTlsVerify;
               dockerArtifactFileName = c.artifactFileName;
             } else if (c.type === 'Maven') {
               if (c.nexusMavenRepoIds) {
@@ -187,6 +185,7 @@ const AddTask = observer(() => {
             dockerArtifactFileName,
             nexusMavenRepoIds,
             zpk,
+            skipDockerTlsVerify,
             triggerValue: jobDetail.triggerValue && jobDetail.triggerType !== 'regex' ? jobDetail.triggerValue.split(',') : jobDetail.triggerValue,
             configType,
             // triggerRefs: jobDetail.triggerRefs ? jobDetail.triggerRefs.split(',') : [],
@@ -297,6 +296,7 @@ const AddTask = observer(() => {
                 if (s.type === 'docker') {
                   s.dockerContextDir = data.dockerContextDir;
                   s.dockerFilePath = data.dockerFilePath;
+                  s.skipDockerTlsVerify = data.skipDockerTlsVerify;
                   if (data.dockerArtifactFileName) {
                     s.artifactFileName = data.dockerArtifactFileName;
                   }
@@ -1107,8 +1107,22 @@ const AddTask = observer(() => {
                   return [
                     <div style={{ marginBottom: 20 }}>
                       <TextField
-                        onChange={(value) => {
+                        style={{ width: 312 }}
+                        name="dockerFilePath"
+                        showHelp="tooltip"
+                        help="Dockerfile路径为Dockerfile文件相对于代码库根目录所在路径，如docker/Dockerfile或Dockerfile"
+                      />
+                    </div>,
+                    <div style={{ marginBottom: 20 }}>
+                      <TextField
+                        className="dockerContextDir"
+                        style={{ width: 312 }}
+                        name="dockerContextDir"
+                        showHelp="tooltip"
+                        help="ContextPath为docker build命令执行上下文路径。填写相对于代码根目录的路径，如docker"
+                        onFocus={() => {
                           let res;
+                          const value = AddTaskFormDataSet.current.get('dockerFilePath');
                           const arrValue = value.split('');
                           const lastIndex = _.findLastIndex(arrValue, (o) => o === '/');
                           if (lastIndex !== -1) {
@@ -1118,15 +1132,17 @@ const AddTask = observer(() => {
                           }
                           AddTaskFormDataSet.current.set('dockerContextDir', res);
                         }}
-                        style={{ width: 312 }}
-                        name="dockerFilePath"
-                        showHelp="tooltip"
-                        help="Dockerfile路径为Dockerfile文件相对于代码库根目录所在路径，如docker/Dockerfile或Dockerfile"
                       />
                     </div>,
-                    <div style={{ marginBottom: 20 }}>
-                      <TextField className="dockerContextDir" style={{ width: 312 }} name="dockerContextDir" showHelp="tooltip" help="ContextPath为docker build命令执行上下文路径。填写相对于代码根目录的路径，如docker" />
-                    </div>,
+                    <SelectBox
+                      style={{
+                        marginTop: 20,
+                      }}
+                      name="skipDockerTlsVerify"
+                    >
+                      <Option value>是</Option>
+                      <Option value={false}>否</Option>
+                    </SelectBox>,
                   ];
                 }
               }

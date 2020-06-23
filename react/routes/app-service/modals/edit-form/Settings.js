@@ -44,6 +44,7 @@ const Settings = injectIntl(observer(({ record, handleTestChart }) => {
       <Form record={record}>
         <Select
           searchable
+          clearButton={false}
           name="harborRepoConfigDTO"
           optionRenderer={renderOption}
           renderer={renderInput}

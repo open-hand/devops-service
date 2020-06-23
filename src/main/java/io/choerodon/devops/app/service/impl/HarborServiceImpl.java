@@ -130,7 +130,7 @@ public class HarborServiceImpl implements HarborService {
         } else {
             harborRepoDTO = rdupmClient.queryHarborRepoConfig(projectId, appServiceId).getBody();
         }
-        if (Objects.isNull(harborRepoDTO)) {
+        if (Objects.isNull(harborRepoDTO) || Objects.isNull(harborRepoDTO.getHarborRepoConfig())) {
             throw new CommonException("no custom or default warehouse configuration exists");
         }
         return repoDTOToDevopsConfigDTO(harborRepoDTO, operateType);
@@ -148,7 +148,7 @@ public class HarborServiceImpl implements HarborService {
         } else {
             harborRepoDTO = rdupmClient.queryHarborRepoConfigById(projectId, harborConfigId, repoType).getBody();
         }
-        if (Objects.isNull(harborRepoDTO)) {
+        if (Objects.isNull(harborRepoDTO) || Objects.isNull(harborRepoDTO.getHarborRepoConfig())) {
             throw new CommonException("query.repo.config.is null.by.configId");
         }
         return repoDTOToDevopsConfigDTO(harborRepoDTO, operateType);
