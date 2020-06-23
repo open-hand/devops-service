@@ -641,46 +641,6 @@
 	      dasv.app_service_id
     </select>
 
-    <update id="updateVersionDefaultBatch" parameterType="list" keyProperty="id" useGeneratedKeys="true">
-        <foreach collection="appServiceVersionDefault" index="index" item="item" open="" separator=";" close="">
-            update devops_app_service_version
-            <set>
-                helm_config_id = null ,
-                repo_type = '${item.repoType}'
-            </set>
-            WHERE id = ${item.id}
-        </foreach>
-    </update>
-    <update id="updateVersionCustomBatch" parameterType="list" keyProperty="id" useGeneratedKeys="true">
-        <foreach collection="appServiceVersionDCustom" index="index" item="item" open="" separator=";" close="">
-            update devops_app_service_version
-            <set>
-                helm_config_id = ${item.harborConfigId} ,
-                repo_type = '${item.repoType}'
-            </set>
-            WHERE id = #{item.id}
-        </foreach>
-    </update>
-
-
-    <update id="updateVersionAppServiceId">
-        update
-        devops_app_service_version dasv
-        set
-        dasv.harbor_config_id = #{configId},
-        dasv.repo_type = #{customRepo}
-        where dasv.app_service_id = #{appServiceId}
-    </update>
-
-    <update id="updateVersionOrgId">
-        update
-        devops_app_service_version dasv
-        set
-        dasv.helm_config_id = null,
-        dasv.repo_type = #{customRepo}
-        where dasv.app_service_id = #{appServiceId}
-    </update>
-
     <update id="updateDefaultHarborRecords">
         UPDATE
         devops_app_service_version
