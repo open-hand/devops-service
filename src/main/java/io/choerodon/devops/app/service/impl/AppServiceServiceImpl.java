@@ -946,7 +946,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{ HARBOR_CONFIG_ID }}", harborConfigDTO.getId().toString());
             return FileUtil.replaceReturnString(CI_FILE_TEMPLATE, params);
         } catch (CommonException e) {
-            LOGGER.warn("Error query ci.sh for app-service with token {} , the ex is ", token);
+            LOGGER.warn("Error query ci.sh for app-service with token {} , the ex is ", token, e);
             return null;
         }
     }
