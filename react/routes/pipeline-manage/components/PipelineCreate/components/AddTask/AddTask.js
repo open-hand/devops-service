@@ -207,6 +207,7 @@ const AddTask = observer(() => {
             [
               {
                 ...jobDetail,
+                triggerValue: jobDetail.triggerValue && jobDetail.triggerType !== 'regex' ? jobDetail.triggerValue.split(',') : jobDetail.triggerValue,
                 glyyfw: appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')),
               },
             ]
