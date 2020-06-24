@@ -335,12 +335,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         List<UserAttrVO> creater = userAttrService.listUsersByGitlabUserIds(branchCreaterGitlabUserIds);
         List<Long> createIamUserIds = creater.stream().map(UserAttrVO::getIamUserId).collect(Collectors.toList());
-        Map<Long, Long> createrIamUserIdAndGitlabUserIdMap = creater.stream().collect(Collectors.toMap(UserAttrVO::getGitlabUserId, UserAttrVO::getIamUserId));
+        Map<Long, Long> createrIamUserIdAndGitlabUserIdMap = creater.stream().filter(userAttrVO -> userAttrVO.getIamUserId() != null && userAttrVO.getGitlabUserId() != null).collect(Collectors.toMap(UserAttrVO::getGitlabUserId, UserAttrVO::getIamUserId));
 
 
         List<UserAttrVO> lastCommitUser = userAttrService.listUsersByGitlabUserIds(lastCommitGitlabUserIds);
         List<Long> lastCommitIamUserIds = lastCommitUser.stream().map(UserAttrVO::getIamUserId).collect(Collectors.toList());
-        Map<Long, Long> lastCommitIamUserIdAndGitlabUserIdMap = lastCommitUser.stream().collect(Collectors.toMap(UserAttrVO::getGitlabUserId, UserAttrVO::getIamUserId));
+        Map<Long, Long> lastCommitIamUserIdAndGitlabUserIdMap = lastCommitUser.stream().filter(userAttrVO -> userAttrVO.getIamUserId() != null && userAttrVO.getGitlabUserId() != null).collect(Collectors.toMap(UserAttrVO::getGitlabUserId, UserAttrVO::getIamUserId));
 
         List<Long> issuedIds = devopsBranchDTOPageInfo.getContent().stream().map(DevopsBranchDTO::getIssueId).collect(Collectors.toList());
 
