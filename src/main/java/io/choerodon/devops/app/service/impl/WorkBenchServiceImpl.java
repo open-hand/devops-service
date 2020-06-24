@@ -150,7 +150,9 @@ public class WorkBenchServiceImpl implements WorkBenchService {
             return approvalVOList;
         }
         List<PipelineRecordDTO> pipelineRecordDTOAuditByThisUserList = pipelineRecordDTOList.stream()
-                .filter(pipelineRecordDTO -> pipelineRecordDTO.getAuditUser() != null && pipelineRecordDTO.getAuditUser().contains(String.valueOf(userId)))
+                .filter(pipelineRecordDTO -> (pipelineRecordDTO.getRecordAudit() != null && pipelineRecordDTO.getRecordAudit().contains(String.valueOf(userId))) ||
+                        (pipelineRecordDTO.getStageAudit() != null && pipelineRecordDTO.getStageAudit().contains(String.valueOf(userId))) ||
+                        (pipelineRecordDTO.getTaskAudit() != null && pipelineRecordDTO.getTaskAudit().contains(String.valueOf(userId))))
                 .collect(Collectors.toList());
         pipelineRecordDTOAuditByThisUserList.forEach(pipelineRecordDTO -> {
             ApprovalVO approvalVO = new ApprovalVO()

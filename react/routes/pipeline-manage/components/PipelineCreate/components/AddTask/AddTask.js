@@ -203,7 +203,15 @@ const AddTask = observer(() => {
 
           setSteps(newSteps);
         } else {
-          AddTaskFormDataSet.loadData([jobDetail]);
+          AddTaskFormDataSet.loadData(
+            [
+              {
+                ...jobDetail,
+                triggerValue: jobDetail.triggerValue && jobDetail.triggerType !== 'regex' ? jobDetail.triggerValue.split(',') : jobDetail.triggerValue,
+                glyyfw: appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')),
+              },
+            ]
+          );
           if (jobDetail.type === 'custom') {
             setCustomYaml(jobDetail.metadata);
           }
@@ -260,7 +268,8 @@ const AddTask = observer(() => {
       let data = AddTaskFormDataSet.toData()[0];
       data = {
         ...data,
-        triggerValue: data.triggerValue && data.triggerType !== 'regex' ? data.triggerValue.join(',') : data.triggerValue,
+        // eslint-disable-next-line no-nested-ternary
+        triggerValue: data.triggerValue && data.triggerType !== 'regex' ? (typeof data.triggerValue === 'object' ? data.triggerValue.join(',') : data.triggerValue) : data.triggerValue,
         image: data.selectImage === '1' ? data.image : null,
 
         toUpload: data.type === 'build' && data.share.includes('toUpload'),
@@ -953,6 +962,11 @@ const AddTask = observer(() => {
                           marginTop: 30,
                           marginBottom: 20,
                         }}
+                        renderer={({ text }) => (
+                          <Tooltip title={text}>
+                            {text}
+                          </Tooltip>
+                        )}
                       />
                     );
                   } else if (type === 'maven_deploy') {
