@@ -961,6 +961,11 @@ const AddTask = observer(() => {
                           marginTop: 30,
                           marginBottom: 20,
                         }}
+                        renderer={({ text }) => (
+                          <Tooltip title={text}>
+                            {text}
+                          </Tooltip>
+                        )}
                       />
                     );
                   } else if (type === 'maven_deploy') {
