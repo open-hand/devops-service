@@ -569,7 +569,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         devopsCiPipelineDTO.setAppServiceId(appServiceId);
         devopsCiPipelineDTO.setProjectId(projectId);
         return DevopsCiPipelineMapper.selectCount(devopsCiPipelineDTO) > 0;
-
     }
 
     @Override
