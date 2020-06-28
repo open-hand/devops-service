@@ -235,7 +235,7 @@ public class ProjectCertificationController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书Id")
             @PathVariable(value = "cert_id") Long certId) {
-        devopsProjectCertificationService.deleteCert(certId);
+        devopsProjectCertificationService.deleteCert(projectId, certId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }
