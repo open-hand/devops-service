@@ -190,6 +190,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private PermissionHelper permissionHelper;
     @Autowired
     private DevopsCiPipelineService devopsCiPipelineService;
+    @Autowired
+    private DevopsCiPipelineMapper DevopsCiPipelineMapper;
 
 
     static {
@@ -339,6 +341,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (checkResult.getCheckRule()) {
             throw new CommonException("error.delete.application.service.due.to.resources");
         }
+        if (checkResult.getCheckCi()) {
+            throw new CommonException("error.delete.application.service.due.to.ci.pipeline");
+        }
 
         if (devopsCiPipelineService.selectCountByAppServiceId(appServiceId) != 0) {
             throw new CommonException("error.delete.app.service.due.to.ci.pipeline", appServiceId);
@@ -485,7 +490,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         // 如果不相等，且将停用应用服务，检查该应用服务是否可以被停用
         if (!toUpdateValue) {
             AppServiceMsgVO appServiceMsgVO = checkCanDisable(appServiceId, projectId);
-            if (!appServiceMsgVO.getCheckResources() && !appServiceMsgVO.getCheckRule()) {
+            if (!appServiceMsgVO.getCheckResources() && !appServiceMsgVO.getCheckRule() && !appServiceMsgVO.getCheckCi()) {
                 // 如果能停用，删除其和他所属项目下的环境之间的关联关系
                 devopsEnvAppServiceMapper.deleteRelevanceInProject(appServiceId, projectId);
             } else {
@@ -529,7 +534,16 @@ public class AppServiceServiceImpl implements AppServiceService {
                 || devopsEnvAppServiceMapper.countRelatedConfigMap(appServiceId, null, projectId) != 0) {
             appServiceMsgVO.setCheckResources(true);
         }
+        appServiceMsgVO.setCheckCi(appServiceIsExistsCi(projectId, appServiceId));
+
         return appServiceMsgVO;
+    }
+
+    private boolean appServiceIsExistsCi(Long projectId, Long appServiceId) {
+        DevopsCiPipelineDTO devopsCiPipelineDTO = new DevopsCiPipelineDTO();
+        devopsCiPipelineDTO.setAppServiceId(appServiceId);
+        devopsCiPipelineDTO.setProjectId(projectId);
+        return !Objects.isNull(DevopsCiPipelineMapper.selectOne(devopsCiPipelineDTO));
     }
 
     @Override

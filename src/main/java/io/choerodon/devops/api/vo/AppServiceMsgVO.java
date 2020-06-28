@@ -11,10 +11,8 @@ public class AppServiceMsgVO {
     private Boolean checkResources;
     @ApiModelProperty("该应用服务下是否存在共享规则")
     private Boolean checkRule;
-
-    public AppServiceMsgVO(){
-
-    }
+    @ApiModelProperty("该应用服务下是否存在ci流水线")
+    private Boolean checkCi;
 
     public AppServiceMsgVO(Boolean checkResources, Boolean checkRule) {
         this.checkResources = checkResources;
@@ -35,5 +33,13 @@ public class AppServiceMsgVO {
 
     public void setCheckRule(Boolean checkRule) {
         this.checkRule = checkRule;
+    }
+
+    public Boolean getCheckCi() {
+        return checkCi;
+    }
+
+    public void setCheckCi(Boolean checkCi) {
+        this.checkCi = checkCi;
     }
 }
