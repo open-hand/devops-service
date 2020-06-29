@@ -278,12 +278,14 @@ const ListView = withRouter(observer((props) => {
 
     appServiceStore.checkAppService(projectId, id).then((res) => {
       if (handlePromptError(res)) {
-        const { checkResources, checkRule } = res;
-        const status = checkResources || checkRule;
+        const { checkResources, checkRule, checkCi } = res;
+        const status = checkResources || checkRule || checkCi;
         let childrenContent;
 
         if (!status) {
           childrenContent = <FormattedMessage id={`${intlPrefix}.stop.tips`} />;
+        } else if (checkCi) {
+          childrenContent = '该应用服务下存在流水线资源，无法停用。';
         } else if (checkResources && !checkRule) {
           childrenContent = formatMessage({ id: `${intlPrefix}.has.resource` });
         } else if (!checkResources && checkRule) {
