@@ -2680,13 +2680,19 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Map<Long, Integer> countByProjectId(List<Long> longList) {
+    public Map<Long, Integer> countByProjectId(List<Long> projectIds) {
         Map<Long, Integer> map = new HashMap<>();
-        longList.forEach(projectId -> {
-            AppServiceDTO appServiceDTO = new AppServiceDTO();
-            appServiceDTO.setProjectId(projectId);
-            List<AppServiceDTO> select = appServiceMapper.select(appServiceDTO);
-            map.put(projectId, CollectionUtils.isEmpty(select) ? 0 : select.size());
+        if (CollectionUtils.isEmpty(projectIds)) {
+            return map;
+        }
+        List<ProjectAppSvcCountVO> projectAppSvcCountVOList = appServiceMapper.countByProjectIds(projectIds);
+        Map<Long, Integer> appSvcNumMap = projectAppSvcCountVOList.stream().collect(toMap(ProjectAppSvcCountVO::getProjectId, ProjectAppSvcCountVO::getAppSvcNum));
+        projectIds.forEach(id -> {
+            if (appSvcNumMap.get(id) == null) {
+                map.put(id, 0);
+            } else {
+                map.put(id, appSvcNumMap.get(id));
+            }
         });
         return map;
     }

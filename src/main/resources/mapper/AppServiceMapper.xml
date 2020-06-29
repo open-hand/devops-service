@@ -834,4 +834,13 @@
             #{projectId}
         </foreach>
     </select>
+    <select id="countByProjectIds" resultType="io.choerodon.devops.api.vo.ProjectAppSvcCountVO">
+        SELECT das.project_id, COUNT(*) AS app_svc_num
+        FROM devops_app_service das
+        WHERE das.project_id IN
+        <foreach collection="projectIds" item="id" open="(" separator="," close=")" index="i">
+            #{id}
+        </foreach>
+        GROUP BY das.project_id
+    </select>
 </mapper>
