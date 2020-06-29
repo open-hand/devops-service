@@ -1,8 +1,10 @@
 package io.choerodon.devops.infra.mapper;
 
 import io.choerodon.devops.api.vo.LatestAppServiceVO;
+import io.choerodon.devops.api.vo.ProjectAppSvcCountVO;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.mybatis.common.BaseMapper;
+
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -173,5 +175,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
     List<LatestAppServiceVO> listLatestUseAppServiceIdAndDate(@Param("projectIds") List<Long> projectIds, @Param("userId") Long userId);
 
     List<AppServiceDTO> listByActiveAndProjects(@Param("projectIds") List<Long> projectIds);
+
+    List<ProjectAppSvcCountVO> countByProjectIds(@Param("projectIds") List<Long> projectIds);
 }
 
