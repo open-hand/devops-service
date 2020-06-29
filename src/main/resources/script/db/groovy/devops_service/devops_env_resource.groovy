@@ -46,4 +46,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_resource.groovy') {
         addUniqueConstraint(tableName: 'devops_env_resource',
                 constraintName: 'uk_devops_env_resource_env_id_kind_name', columnNames: 'env_id,kind,name')
     }
+
+    changeSet(author: 'younger', id: '2020-06-29-devops_env_resource-add-index') {
+        createIndex(indexName: "idx_devops_env_resource_name_kind_creationdate", tableName: "devops_env_resource") {
+            column(name: "name")
+            column(name: "kind")
+            column(name: "creation_date")
+        }
+    }
 }
