@@ -17,7 +17,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * 〈〉
  *
  * @author wanghao
- * @Date 2020/4/2 17:25
+ * @since 2020/4/2 17:25
  */
 @ModifyAudit
 @VersionAudit
