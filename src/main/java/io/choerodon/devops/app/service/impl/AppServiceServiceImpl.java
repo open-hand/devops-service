@@ -2704,12 +2704,21 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Map<Long, Integer> countByProjectId(List<Long> longList) {
-        List<ProjectAppSvcCountVO> projectAppSvcCountVOList = appServiceMapper.countByProjectIds(longList);
-        if (CollectionUtils.isEmpty(projectAppSvcCountVOList)) {
-            return new HashMap<>();
+    public Map<Long, Integer> countByProjectId(List<Long> projectIds) {
+        Map<Long, Integer> map = new HashMap<>();
+        if (CollectionUtils.isEmpty(projectIds)) {
+            return map;
         }
-        return projectAppSvcCountVOList.stream().collect(toMap(ProjectAppSvcCountVO::getProjectId, ProjectAppSvcCountVO::getAppSvcNum));
+        List<ProjectAppSvcCountVO> projectAppSvcCountVOList = appServiceMapper.countByProjectIds(projectIds);
+        Map<Long, Integer> appSvcNumMap = projectAppSvcCountVOList.stream().collect(toMap(ProjectAppSvcCountVO::getProjectId, ProjectAppSvcCountVO::getAppSvcNum));
+        projectIds.forEach(id -> {
+            if (appSvcNumMap.get(id) == null) {
+                map.put(id, 0);
+            } else {
+                map.put(id, appSvcNumMap.get(id));
+            }
+        });
+        return map;
     }
 
     private Boolean checkEnableCreateAppSvcWithSize(Long projectId, int appSize) {
