@@ -20,7 +20,6 @@
         <powermock.version>2.0.0-beta.5</powermock.version>
         <choerodon.serviceBuild>true</choerodon.serviceBuild>
         <choerodon.mainClass>io.choerodon.devops.DevopsServiceApplication</choerodon.mainClass>
-        <choerodon.starter.version>0.16.2-SNAPSHOT</choerodon.starter.version>
     </properties>
 
 
