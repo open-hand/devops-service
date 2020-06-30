@@ -39,6 +39,18 @@ public class AppServiceController {
         this.applicationServiceService = applicationServiceService;
     }
 
+    @ApiOperation("内部查询项目下的应用服务 / 不区分权限")
+    @PostMapping("page_by_options_internal")
+    @Permission(permissionWithin = true)
+    @CustomPageRequest
+    public ResponseEntity<Page<AppServiceRepVO>> internalListAll(
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageable,
+            @RequestBody(required = false) String params) {
+        return Results.success(applicationServiceService.internalListAllInProject(projectId, params,pageable));
+    }
+
     /**
      * 项目下创建应用服务
      *
