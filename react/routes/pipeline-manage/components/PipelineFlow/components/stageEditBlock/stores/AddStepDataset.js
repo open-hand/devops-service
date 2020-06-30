@@ -5,5 +5,6 @@ export default () => ({
     type: 'string',
     label: '名称',
     required: true,
+    maxLength: 15,
   }],
 });
