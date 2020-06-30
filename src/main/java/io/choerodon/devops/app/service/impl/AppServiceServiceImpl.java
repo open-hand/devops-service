@@ -191,6 +191,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private SendNotificationService sendNotificationService;
     @Autowired
     private PermissionHelper permissionHelper;
+    @Lazy
     @Autowired
     private DevopsCiPipelineService devopsCiPipelineService;
     @Autowired
