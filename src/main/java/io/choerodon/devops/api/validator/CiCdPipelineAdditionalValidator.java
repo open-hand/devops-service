@@ -1,10 +1,9 @@
 package io.choerodon.devops.api.validator;
 
+import com.alibaba.fastjson.JSONObject;
 import java.util.*;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
-
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.Yaml;
@@ -13,7 +12,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.annotation.WillDeleted;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
-import io.choerodon.devops.infra.enums.CiJobScriptTypeEnum;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.util.Base64Util;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
@@ -24,7 +22,7 @@ import io.choerodon.devops.infra.util.MavenSettingsUtil;
  * @since 20-4-20
  */
 @WillDeleted
-public class DevopsCiPipelineAdditionalValidator {
+public class CiCdPipelineAdditionalValidator {
     private static final Pattern MAVEN_REPO_NAME_REGEX = Pattern.compile("[0-9a-zA-Z-]{6,30}");
 
     private static final String ERROR_STAGES_EMPTY = "error.stages.empty";
@@ -45,27 +43,27 @@ public class DevopsCiPipelineAdditionalValidator {
     private static final String ERROR_BOTH_REPOS_AND_SETTINGS_EXIST = "error.both.repos.and.settings.exist";
     private static final String ERROR_MAVEN_SETTINGS_NOT_XML_FORMAT = "error.maven.settings.not.xml.format";
 
-    private DevopsCiPipelineAdditionalValidator() {
+    private CiCdPipelineAdditionalValidator() {
     }
 
     /**
      * 是对JSR303无法校验的部分进行补充性的校验
      *
-     * @param devopsCiPipelineVO 流水线数据
+     * @param ciCdPipelineVO 流水线数据
      */
-    public static void additionalCheckPipeline(DevopsCiPipelineVO devopsCiPipelineVO) {
-        if (CollectionUtils.isEmpty(devopsCiPipelineVO.getStageList())) {
+    public static void additionalCheckPipeline(CiCdPipelineVO ciCdPipelineVO) {
+        if (CollectionUtils.isEmpty(ciCdPipelineVO.getCiCdStageVOS())) {
             throw new CommonException(ERROR_STAGES_EMPTY);
         }
 
         List<String> jobNames = new ArrayList<>();
         List<String> stageNames = new ArrayList<>();
+        // TODO 纯cd不校验镜像地址
+        validateImage(ciCdPipelineVO.getImage());
 
-        validateImage(devopsCiPipelineVO.getImage());
-
-        devopsCiPipelineVO.getStageList()
+        ciCdPipelineVO.getCiCdStageVOS()
                 .stream()
-                .sorted(Comparator.comparingLong(DevopsCiStageVO::getSequence))
+                .sorted(Comparator.comparingLong(CiCdStageVO::getSequence))
                 .forEach(stage -> {
                     if (CollectionUtils.isEmpty(stage.getJobList())) {
                         return;
@@ -175,7 +173,7 @@ public class DevopsCiPipelineAdditionalValidator {
      * 校验自定义任务格式
      */
     @SuppressWarnings("unchecked")
-    private static void validateCustomJobFormat(String stageName, DevopsCiJobVO devopsCiJobVO) {
+    private static void validateCustomJobFormat(String stageName, CiCdJobVO devopsCiJobVO) {
         if (!CiJobTypeEnum.CUSTOM.value().equalsIgnoreCase(devopsCiJobVO.getType())) {
             return;
         }

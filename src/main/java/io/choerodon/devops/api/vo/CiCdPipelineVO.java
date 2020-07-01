@@ -1,0 +1,248 @@
+package io.choerodon.devops.api.vo;
+
+import io.swagger.annotations.ApiModelProperty;
+import java.util.Date;
+import java.util.List;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
+public class CiCdPipelineVO {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+    @ApiModelProperty("流水线名称")
+    @NotEmpty(message = "error.pipeline.name.cannot.be.null")
+    private String name;
+    @ApiModelProperty("项目id")
+    private Long projectId;
+    @ApiModelProperty("流水线关联应用服务id")
+    @NotNull(message = "error.pipeline.appSvc.id.cannot.be.null")
+    private Long appServiceId;
+    @ApiModelProperty("流水线关联应用服务名称/nullable")
+    private String appServiceName;
+    @ApiModelProperty("gitlab项目id/nullable")
+    private Long gitlabProjectId;
+    @ApiModelProperty("runner镜像地址")
+    private String image;
+    @ApiModelProperty("是否启用/nullable")
+    private Boolean enabled;
+    @ApiModelProperty("流水线触发方式")
+    @NotEmpty(message = "error.pipeline.triggerType.cannot.be.null")
+    private String triggerType;
+    @ApiModelProperty("最近执行时间/nullable")
+    private Date latestExecuteDate;
+    @ApiModelProperty("最近执行记录状态/nullable")
+    private String latestExecuteStatus;
+    @ApiModelProperty(name = "阶段信息")
+    @Valid
+    private List<CiCdStageVO> ciCdStageVOS;
+    private Boolean hasMoreRecords;
+    private List<CiCdPipelineRecordVO> pipelineRecordVOList;
+    private Long objectVersionNumber;
+
+    private Boolean edit;
+    private List<Long> pipelineUserRels;
+    private Date lastUpdateDate;
+    private String createUserUrl;
+    private String createUserName;
+    private String createUserRealName;
+    private Long createdBy;
+    private Boolean execute;
+    private String envName;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
+    }
+
+    public String getAppServiceName() {
+        return appServiceName;
+    }
+
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
+    }
+
+    public Long getGitlabProjectId() {
+        return gitlabProjectId;
+    }
+
+    public void setGitlabProjectId(Long gitlabProjectId) {
+        this.gitlabProjectId = gitlabProjectId;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public String getTriggerType() {
+        return triggerType;
+    }
+
+    public void setTriggerType(String triggerType) {
+        this.triggerType = triggerType;
+    }
+
+    public Date getLatestExecuteDate() {
+        return latestExecuteDate;
+    }
+
+    public void setLatestExecuteDate(Date latestExecuteDate) {
+        this.latestExecuteDate = latestExecuteDate;
+    }
+
+    public String getLatestExecuteStatus() {
+        return latestExecuteStatus;
+    }
+
+    public void setLatestExecuteStatus(String latestExecuteStatus) {
+        this.latestExecuteStatus = latestExecuteStatus;
+    }
+
+    public List<CiCdStageVO> getCiCdStageVOS() {
+        return ciCdStageVOS;
+    }
+
+    public void setCiCdStageVOS(List<CiCdStageVO> ciCdStageVOS) {
+        this.ciCdStageVOS = ciCdStageVOS;
+    }
+
+    public Boolean getHasMoreRecords() {
+        return hasMoreRecords;
+    }
+
+    public void setHasMoreRecords(Boolean hasMoreRecords) {
+        this.hasMoreRecords = hasMoreRecords;
+    }
+
+    public List<CiCdPipelineRecordVO> getPipelineRecordVOList() {
+        return pipelineRecordVOList;
+    }
+
+    public void setPipelineRecordVOList(List<CiCdPipelineRecordVO> pipelineRecordVOList) {
+        this.pipelineRecordVOList = pipelineRecordVOList;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public Boolean getEdit() {
+        return edit;
+    }
+
+    public void setEdit(Boolean edit) {
+        this.edit = edit;
+    }
+
+    public List<Long> getPipelineUserRels() {
+        return pipelineUserRels;
+    }
+
+    public void setPipelineUserRels(List<Long> pipelineUserRels) {
+        this.pipelineUserRels = pipelineUserRels;
+    }
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
+    }
+
+    public String getCreateUserUrl() {
+        return createUserUrl;
+    }
+
+    public void setCreateUserUrl(String createUserUrl) {
+        this.createUserUrl = createUserUrl;
+    }
+
+    public String getCreateUserName() {
+        return createUserName;
+    }
+
+    public void setCreateUserName(String createUserName) {
+        this.createUserName = createUserName;
+    }
+
+    public String getCreateUserRealName() {
+        return createUserRealName;
+    }
+
+    public void setCreateUserRealName(String createUserRealName) {
+        this.createUserRealName = createUserRealName;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Boolean getExecute() {
+        return execute;
+    }
+
+    public void setExecute(Boolean execute) {
+        this.execute = execute;
+    }
+
+    public String getEnvName() {
+        return envName;
+    }
+
+    public void setEnvName(String envName) {
+        this.envName = envName;
+    }
+}

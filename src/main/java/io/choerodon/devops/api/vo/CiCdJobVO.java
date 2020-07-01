@@ -1,43 +1,32 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+import java.util.Date;
+import java.util.List;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
-
-import io.swagger.annotations.ApiModelProperty;
-
-import io.choerodon.devops.infra.annotation.WillDeleted;
 
 /**
  * @author wanghao
  * @since 2020/4/2 17:00
  */
-@WillDeleted
-public class DevopsCiJobVO {
+public class CiCdJobVO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @ApiModelProperty("任务名称")
     @NotEmpty(message = "error.job.name.cannot.be.null")
     private String name;
-
     @ApiModelProperty("runner镜像地址")
     private String image;
-
     @ApiModelProperty("阶段id")
-    private Long ciStageId;
-
+    private Long ciCdStageId;
     @ApiModelProperty("流水线id")
-    private Long ciPipelineId;
-
+    private Long ciCdPipelineId;
     @ApiModelProperty("任务类型")
     @NotEmpty(message = "error.job.type.cannot.be.null")
     private String type;
-
     @ApiModelProperty("触发类型对应的值")
     private String triggerValue;
 
@@ -57,6 +46,12 @@ public class DevopsCiJobVO {
     @ApiModelProperty("是否下载共享目录的内容 / 默认为false")
     private Boolean toDownload;
 
+    private List<Long> cdAuditUserIds;
+    private Boolean countersigned;
+    private Long appServiceDeployId;
+    private PipelineAppServiceDeployVO pipelineAppServiceDeployVO;
+    private Long projectId;
+    private Date lastUpdateDate;
     private Long objectVersionNumber;
 
     public Long getId() {
@@ -75,20 +70,28 @@ public class DevopsCiJobVO {
         this.name = name;
     }
 
-    public Long getCiStageId() {
-        return ciStageId;
+    public String getImage() {
+        return image;
     }
 
-    public void setCiStageId(Long ciStageId) {
-        this.ciStageId = ciStageId;
+    public void setImage(String image) {
+        this.image = image;
     }
 
-    public Long getCiPipelineId() {
-        return ciPipelineId;
+    public Long getCiCdStageId() {
+        return ciCdStageId;
     }
 
-    public void setCiPipelineId(Long ciPipelineId) {
-        this.ciPipelineId = ciPipelineId;
+    public void setCiCdStageId(Long ciCdStageId) {
+        this.ciCdStageId = ciCdStageId;
+    }
+
+    public Long getCiCdPipelineId() {
+        return ciCdPipelineId;
+    }
+
+    public void setCiCdPipelineId(Long ciCdPipelineId) {
+        this.ciCdPipelineId = ciCdPipelineId;
     }
 
     public String getType() {
@@ -123,22 +126,6 @@ public class DevopsCiJobVO {
         this.metadata = metadata;
     }
 
-    public Long getObjectVersionNumber() {
-        return objectVersionNumber;
-    }
-
-    public void setObjectVersionNumber(Long objectVersionNumber) {
-        this.objectVersionNumber = objectVersionNumber;
-    }
-
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
-    }
-
     public Boolean getToUpload() {
         return toUpload;
     }
@@ -153,5 +140,61 @@ public class DevopsCiJobVO {
 
     public void setToDownload(Boolean toDownload) {
         this.toDownload = toDownload;
+    }
+
+    public List<Long> getCdAuditUserIds() {
+        return cdAuditUserIds;
+    }
+
+    public void setCdAuditUserIds(List<Long> cdAuditUserIds) {
+        this.cdAuditUserIds = cdAuditUserIds;
+    }
+
+    public Boolean getCountersigned() {
+        return countersigned;
+    }
+
+    public void setCountersigned(Boolean countersigned) {
+        this.countersigned = countersigned;
+    }
+
+    public Long getAppServiceDeployId() {
+        return appServiceDeployId;
+    }
+
+    public void setAppServiceDeployId(Long appServiceDeployId) {
+        this.appServiceDeployId = appServiceDeployId;
+    }
+
+    public PipelineAppServiceDeployVO getPipelineAppServiceDeployVO() {
+        return pipelineAppServiceDeployVO;
+    }
+
+    public void setPipelineAppServiceDeployVO(PipelineAppServiceDeployVO pipelineAppServiceDeployVO) {
+        this.pipelineAppServiceDeployVO = pipelineAppServiceDeployVO;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }
