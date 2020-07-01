@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.IAM_CREATE_USER;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,14 +49,16 @@ public class SyncServiceImpl implements SyncService {
                 queryDTO.setIamUserId(t.getId());
                 UserAttrDTO userAttrDTO = userAttrMapper.selectOne(queryDTO);
                 if (ObjectUtils.isEmpty(userAttrDTO) || userAttrDTO.getIamUserId() == null) {
+                    List<GitlabUserVO> list = new ArrayList<>();
                     GitlabUserVO gitlabUserVO = new GitlabUserVO();
                     gitlabUserVO.setEmail(t.getEmail());
                     gitlabUserVO.setName(t.getLoginName());
                     gitlabUserVO.setUsername(t.getRealName());
                     gitlabUserVO.setId(t.getId() + "");
+                    list.add(gitlabUserVO);
                     String input = null;
                     try {
-                        input = mapper.writeValueAsString(gitlabUserVO);
+                        input = mapper.writeValueAsString(list);
                         producer.apply(StartSagaBuilder.newBuilder()
                                         .withSagaCode(IAM_CREATE_USER)
                                         .withJson(input)
