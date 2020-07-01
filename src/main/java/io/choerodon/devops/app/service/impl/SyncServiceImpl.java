@@ -52,8 +52,8 @@ public class SyncServiceImpl implements SyncService {
                     List<GitlabUserVO> list = new ArrayList<>();
                     GitlabUserVO gitlabUserVO = new GitlabUserVO();
                     gitlabUserVO.setEmail(t.getEmail());
-                    gitlabUserVO.setName(t.getLoginName());
-                    gitlabUserVO.setUsername(t.getRealName());
+                    gitlabUserVO.setName(t.getRealName());
+                    gitlabUserVO.setUsername(t.getLoginName());
                     gitlabUserVO.setId(t.getId() + "");
                     list.add(gitlabUserVO);
                     String input = null;
