@@ -206,4 +206,5 @@ public class PipelineRecordDTO extends AuditDomain {
     public void setTaskAudit(String taskAudit) {
         this.taskAudit = taskAudit;
     }
+
 }
