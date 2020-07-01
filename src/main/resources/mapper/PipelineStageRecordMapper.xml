@@ -39,7 +39,7 @@
         FROM devops_pipeline_record dpr
                      JOIN devops_pipeline_stage_record dpsr ON dpsr.pipeline_record_id = dpr.id
                      JOIN devops_pipeline_task_record dptr ON dptr.stage_record_id = dpsr.id
-                WHERE dpr.status = 'pendingcheck'
+                WHERE dpr.status = 'pendingcheck' AND dpr.a
                   AND dpr.project_id IN
         <foreach collection="projectIds" item="projectId" separator="," open="(" close=")">
             #{projectId}

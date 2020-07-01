@@ -206,4 +206,8 @@ public interface BaseServiceClient {
     ResponseEntity<List<UserProjectLabelVO>> listRoleLabelsForUserInTheProject(
             @PathVariable("user_id") Long userId,
             @RequestBody Set<Long> projectIds);
+
+    @GetMapping("/choerodon/v1/organizations/{organization_id}/users/{user_id}/owned_projects")
+    ResponseEntity<List<ProjectDTO>> listOwnedProjects(@PathVariable("organization_id") Long organizationId,
+                                                       @PathVariable("user_id") Long userId);
 }

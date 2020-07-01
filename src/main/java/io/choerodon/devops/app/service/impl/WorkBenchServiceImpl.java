@@ -60,8 +60,9 @@ public class WorkBenchServiceImpl implements WorkBenchService {
     public List<LatestAppServiceVO> listLatestAppService(Long organizationId, Long projectId) {
         Tenant tenant = baseServiceClientOperator.queryOrganizationById(organizationId);
         List<ProjectDTO> projectDTOList;
+        Long userId = DetailsHelper.getUserDetails().getUserId();
         if (projectId == null) {
-            projectDTOList = baseServiceClientOperator.listIamProjectByOrgId(tenant.getTenantId());
+            projectDTOList = baseServiceClientOperator.listOwnedProjects(tenant.getTenantId(), userId);
         } else {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
             CommonExAssertUtil.assertNotNull(projectDTO, "error.project.query");
@@ -78,8 +79,9 @@ public class WorkBenchServiceImpl implements WorkBenchService {
     public List<ApprovalVO> listApproval(Long organizationId, Long projectId) {
         Tenant tenant = baseServiceClientOperator.queryOrganizationById(organizationId);
         List<ProjectDTO> projectDTOList;
+        Long userId = DetailsHelper.getUserDetails().getUserId();
         if (projectId == null) {
-            projectDTOList = baseServiceClientOperator.listIamProjectByOrgId(tenant.getTenantId());
+            projectDTOList = baseServiceClientOperator.listOwnedProjects(tenant.getTenantId(), userId);
         } else {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
             CommonExAssertUtil.assertNotNull(projectDTO, "error.project.query");

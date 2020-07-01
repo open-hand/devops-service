@@ -158,4 +158,9 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     public ResponseEntity<List<UserProjectLabelVO>> listRoleLabelsForUserInTheProject(Long userId, Set<Long> projectIds) {
         throw new CommonException("error.get.user.labels", userId, projectIds == null ? null : projectIds.toString());
     }
+
+    @Override
+    public ResponseEntity<List<ProjectDTO>> listOwnedProjects(Long organizationId, Long userId) {
+        throw new CommonException("error.query.project");
+    }
 }
