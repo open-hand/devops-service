@@ -1,9 +1,11 @@
 import React, { useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button } from 'choerodon-ui';
-import { Modal, Form, TextField } from 'choerodon-ui/pro';
+import { Modal, Form, TextField, Select, SelectBox } from 'choerodon-ui/pro';
 import { usePipelineStageEditStore } from '../stageEditBlock/stores';
 import AddTask from '../../../PipelineCreate/components/AddTask';
+import AddCDTask from '../../../PipelineCreate/components/AddCDTask';
+import AddStage from './AddStage';
 import { usePipelineCreateStore } from '../../../PipelineCreate/stores';
 import ViewVariable from '../../../view-variables';
 
@@ -116,7 +118,7 @@ const EditItem = (props) => {
 };
 
 export default observer((props) => {
-  const { jobList, sequence, name, columnIndex, edit, appServiceId, appServiceName, image } = props;
+  const { jobList, sequence, name, columnIndex, edit, appServiceId, appServiceName, image, type, isLast } = props;
 
   const {
     addStepDs,
@@ -142,9 +144,6 @@ export default observer((props) => {
   } catch (e) {
     window.console.log(e);
   }
-
-  useEffect(() => {
-  }, []);
 
   function createNewStage() {
     if (addStepDs.current && addStepDs.current.get('step')) {
@@ -184,8 +183,8 @@ export default observer((props) => {
     </div> : null
   );
 
-  function openAddStageModal(optType) {
-    const title = optType === 'create' ? '创建新阶段' : '修改阶段信息';
+  const openAddStageModal = (optType, curType) => {
+    const title = optType === 'create' ? '添加阶段' : '修改阶段信息';
     if (optType === 'edit') {
       addStepDs.current.set('step', name);
     }
@@ -197,15 +196,12 @@ export default observer((props) => {
       style: {
         width: 380,
       },
-      children: (
-        <Form dataSet={addStepDs}>
-          <TextField name="step" />
-        </Form>
-      ),
+      okText: '添加',
+      children: <AddStage curType={curType} optType={optType} addStepDs={addStepDs} />,
       onOk: optsFun,
       onCancel: () => addStepDs.reset(),
     });
-  }
+  };
 
   function deleteStep() {
     Modal.open({
@@ -250,14 +246,18 @@ export default observer((props) => {
           </Button>
         </Fragment>
       ),
-      children: <AddTask
-        PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
-        AppServiceOptionsDs={edit && AppServiceOptionsDs}
-        handleOk={hanleStepCreateOk}
-        appServiceId={!edit && appServiceName}
-        appServiceName={!edit && appServiceName}
-        image={image}
-      />,
+      children: type === 'ci' ? (
+        <AddTask
+          PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
+          AppServiceOptionsDs={edit && AppServiceOptionsDs}
+          handleOk={hanleStepCreateOk}
+          appServiceId={!edit && appServiceName}
+          appServiceName={!edit && appServiceName}
+          image={image}
+        />
+      ) : (
+        <AddCDTask />
+      ),
       style: {
         width: '740px',
       },
@@ -266,10 +266,24 @@ export default observer((props) => {
     });
   }
 
+  const getType = () => type === 'ci';
+
   return (
-    <div className="c7n-piplineManage-edit-column">
+    <div
+      className="c7n-piplineManage-edit-column"
+      style={{
+        background: getType() ? 'rgba(245, 246, 250, 1)' : 'rgba(245,248,250,1)',
+      }}
+    >
       <div className="c7n-piplineManage-edit-column-header">
         <span>{name}</span>
+        <span
+          className="c7n-piplineManage-edit-column-header-type"
+          style={{
+            color: getType() ? 'rgba(104, 135, 232, 1)' : 'rgba(63,178,233,1)',
+            background: getType() ? 'rgba(104, 135, 232, 0.1)' : 'rgba(63,178,233,0.1)',
+          }}
+        >{type.toUpperCase()}</span>
         <div
           className="c7n-piplineManage-edit-column-header-btnGroup"
         >
@@ -278,7 +292,7 @@ export default observer((props) => {
             shape="circle"
             size="small"
             icon="mode_edit"
-            onClick={openAddStageModal.bind(this, 'edit')}
+            onClick={() => openAddStageModal('edit')}
             className="c7n-piplineManage-edit-column-header-btnGroup-btn"
           />
           {stageLength > 1 && <Button
@@ -306,8 +320,16 @@ export default observer((props) => {
         shape="circle"
         size="small"
         className="c7n-piplineManage-edit-column-addBtn"
-        onClick={openAddStageModal.bind(this, 'create')}
+        onClick={openAddStageModal.bind(this, 'create', type)}
       />
+      <div
+        className="c7n-piplineManage-edit-column-arrow"
+        style={{
+          display: isLast ? 'none' : 'block',
+        }}
+      >
+        <span />
+      </div>
     </div>
   );
 });
