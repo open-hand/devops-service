@@ -21,6 +21,7 @@ import io.choerodon.devops.app.service.SyncService;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
+import io.choerodon.devops.infra.util.CustomContextUtil;
 
 /**
  * @author scp
@@ -43,6 +44,7 @@ public class SyncServiceImpl implements SyncService {
     public void userWithOutGitlabUser() {
         ResponseEntity<List<UserVO>> roleResponseEntity = baseServiceClient.listUserByCreationDate();
         List<UserVO> userVOList = roleResponseEntity.getBody();
+        CustomContextUtil.setUserContext(0L);
         if (roleResponseEntity.getStatusCode().is2xxSuccessful() && userVOList != null && userVOList.size() != 0) {
             userVOList.forEach(t -> {
                 UserAttrDTO queryDTO = new UserAttrDTO();
