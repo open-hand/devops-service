@@ -65,20 +65,17 @@
 
     <select id="listLatestUseAppServiceIdAndDate" resultType="io.choerodon.devops.api.vo.LatestAppServiceVO">
         SELECT id, max(last_update_date) AS last_update_date
-                FROM (SELECT das.id, dmr.last_update_date
-                      FROM devops_merge_request dmr
-                                   JOIN devops_app_service das
-                              ON dmr.gitlab_project_id = das.gitlab_project_id
-                WHERE dmr.last_updated_by = #{userId}
-                  AND das.project_id IN
+        FROM (SELECT das.id, dmr.last_update_date
+              FROM devops_merge_request dmr
+              JOIN devops_app_service das ON dmr.gitlab_project_id = das.gitlab_project_id
+        WHERE dmr.last_updated_by = #{userId} and dmr.last_update_date > #{time}
+          AND das.project_id IN
         <foreach collection="projectIds" item="projectId" open="(" close=")" separator=",">
             #{projectId}
         </foreach>
-        ORDER BY das.id
-                DESC) t
-                GROUP BY id, last_update_date
-                ORDER BY last_update_date DESC
-                LIMIT 20
+        ) t
+        GROUP BY id, last_update_date
+
     </select>
 </mapper>
 

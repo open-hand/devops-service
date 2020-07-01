@@ -7,6 +7,7 @@ import io.choerodon.mybatis.common.BaseMapper;
 
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -170,9 +171,12 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
      * 查询出指定项目下最近使用过的应用
      *
      * @param projectIds 项目ids
+     * @param time
      * @return 应用id和最后更新时间
      */
-    List<LatestAppServiceVO> listLatestUseAppServiceIdAndDate(@Param("projectIds") List<Long> projectIds, @Param("userId") Long userId);
+    List<LatestAppServiceVO> listLatestUseAppServiceIdAndDate(@Param("projectIds") List<Long> projectIds,
+                                                              @Param("userId") Long userId,
+                                                              @Param("time") Date time);
 
     List<AppServiceDTO> listByActiveAndProjects(@Param("projectIds") List<Long> projectIds);
 

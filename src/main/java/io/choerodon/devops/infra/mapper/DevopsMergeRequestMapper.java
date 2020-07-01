@@ -3,8 +3,10 @@ package io.choerodon.devops.infra.mapper;
 import io.choerodon.devops.api.vo.LatestAppServiceVO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
 import io.choerodon.mybatis.common.BaseMapper;
+
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -31,5 +33,7 @@ public interface DevopsMergeRequestMapper extends BaseMapper<DevopsMergeRequestD
     List<DevopsMergeRequestDTO> listToBeAuditedByThisUserUnderProjectIds(@Param("gitlabProjectIds") List<Integer> gitlabProjectIds,
                                                                          @Param("iamUserId") Long iamUserId);
 
-    List<LatestAppServiceVO> listLatestUseAppServiceIdAndDate(@Param("projectIds") List<Long> projectIds, @Param("userId") Long userId);
+    List<LatestAppServiceVO> listLatestUseAppServiceIdAndDate(@Param("projectIds") List<Long> projectIds,
+                                                              @Param("userId") Long userId,
+                                                              @Param("time") Date time);
 }

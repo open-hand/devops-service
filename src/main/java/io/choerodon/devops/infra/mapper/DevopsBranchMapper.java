@@ -3,8 +3,10 @@ package io.choerodon.devops.infra.mapper;
 import io.choerodon.devops.api.vo.LatestAppServiceVO;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.mybatis.common.BaseMapper;
+
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -26,5 +28,7 @@ public interface DevopsBranchMapper extends BaseMapper<DevopsBranchDTO> {
 
     void updateBranchById(@Param("devopsBranchDTO") DevopsBranchDTO devopsBranchDTO);
 
-    List<LatestAppServiceVO> listLatestUseAppServiceIdAndDate(@Param("projectIds") List<Long> projectIds, @Param("userId") Long userId);
+    List<LatestAppServiceVO> listLatestUseAppServiceIdAndDate(@Param("projectIds") List<Long> projectIds,
+                                                              @Param("userId") Long userId,
+                                                              @Param("time") Date time);
 }
