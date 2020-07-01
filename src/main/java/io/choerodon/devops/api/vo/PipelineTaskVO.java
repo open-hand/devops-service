@@ -3,11 +3,14 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import io.choerodon.devops.infra.annotation.WillDeleted;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  16:23 2019/4/8
  * Description:
  */
+@WillDeleted
 public class PipelineTaskVO {
     private Long id;
     private String name;

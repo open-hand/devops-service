@@ -26,6 +26,16 @@ public class DevopsCdAuditDTO extends AuditDomain {
     private Long cicdStageId;
     private Long cicdJobId;
 
+    public DevopsCdAuditDTO() {
+
+    }
+
+    public DevopsCdAuditDTO(Long cicdPipelineId, Long cicdStageId, Long cicdJobId) {
+        this.cicdPipelineId = cicdPipelineId;
+        this.cicdStageId = cicdStageId;
+        this.cicdJobId = cicdJobId;
+    }
+
     public Long getId() {
         return id;
     }

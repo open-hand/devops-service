@@ -1,4 +1,4 @@
-package io.choerodon.devops.infra;
+package io.choerodon.devops.infra.dto;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;

@@ -22,9 +22,9 @@ public class CiCdJobDTO extends AuditDomain {
     @ApiModelProperty("任务名称")
     private String name;
     @ApiModelProperty("流水线id")
-    private Long cicdPipelineIid;
+    private Long pipelineIid;
     @ApiModelProperty("阶段id")
-    private Long cicdStageId;
+    private Long stageId;
     @ApiModelProperty("任务类型")
     private String type;
     /**
@@ -68,20 +68,20 @@ public class CiCdJobDTO extends AuditDomain {
         this.name = name;
     }
 
-    public Long getCicdPipelineIid() {
-        return cicdPipelineIid;
+    public Long getPipelineIid() {
+        return pipelineIid;
     }
 
-    public void setCicdPipelineIid(Long cicdPipelineIid) {
-        this.cicdPipelineIid = cicdPipelineIid;
+    public void setPipelineIid(Long pipelineIid) {
+        this.pipelineIid = pipelineIid;
     }
 
-    public Long getCicdStageId() {
-        return cicdStageId;
+    public Long getStageId() {
+        return stageId;
     }
 
-    public void setCicdStageId(Long cicdStageId) {
-        this.cicdStageId = cicdStageId;
+    public void setStageId(Long stageId) {
+        this.stageId = stageId;
     }
 
     public String getType() {
@@ -164,23 +164,4 @@ public class CiCdJobDTO extends AuditDomain {
         this.projectId = projectId;
     }
 
-    @Override
-    public String toString() {
-        return "CiCdJobDTO{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", cicdPipelineIid=" + cicdPipelineIid +
-                ", cicdStageId=" + cicdStageId +
-                ", type='" + type + '\'' +
-                ", triggerType='" + triggerType + '\'' +
-                ", triggerRefs='" + triggerRefs + '\'' +
-                ", image='" + image + '\'' +
-                ", toUpload=" + toUpload +
-                ", toDownload=" + toDownload +
-                ", metadata='" + metadata + '\'' +
-                ", appServiceDeployId=" + appServiceDeployId +
-                ", countersigned=" + countersigned +
-                ", projectId=" + projectId +
-                '}';
-    }
 }

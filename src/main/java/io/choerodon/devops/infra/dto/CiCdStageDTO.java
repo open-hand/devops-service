@@ -23,7 +23,7 @@ public class CiCdStageDTO extends AuditDomain {
     @ApiModelProperty("阶段名称")
     private String name;
     @ApiModelProperty("阶段所属流水线id")
-    private Long ciPipelineId;
+    private Long pipelineId;
     @ApiModelProperty("阶段顺序")
     private Long sequence;
     @ApiModelProperty("阶段类型")
@@ -52,12 +52,12 @@ public class CiCdStageDTO extends AuditDomain {
         this.name = name;
     }
 
-    public Long getCiPipelineId() {
-        return ciPipelineId;
+    public Long getPipelineId() {
+        return pipelineId;
     }
 
-    public void setCiPipelineId(Long ciPipelineId) {
-        this.ciPipelineId = ciPipelineId;
+    public void setPipelineId(Long pipelineId) {
+        this.pipelineId = pipelineId;
     }
 
     public Long getSequence() {
@@ -98,20 +98,6 @@ public class CiCdStageDTO extends AuditDomain {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
-    }
-
-    @Override
-    public String toString() {
-        return "CiCdStageDTO{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", ciPipelineId=" + ciPipelineId +
-                ", sequence=" + sequence +
-                ", type='" + type + '\'' +
-                ", triggerType='" + triggerType + '\'' +
-                ", parallel=" + parallel +
-                ", projectId=" + projectId +
-                '}';
     }
 
 }
