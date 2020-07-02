@@ -71,7 +71,7 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
     @Autowired
     private CiCdPipelineMapper ciCdPipelineMapper;
     @Autowired
-    private CiCdStageMapper ciCdStageMapper;
+    private DevopsCdStageMapper devopsCdStageMapper;
     @Autowired
     private CiCdJobMapper ciCdJobMapper;
     @Autowired
@@ -82,7 +82,7 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
     @Autowired
     private AppServiceService appServiceService;
     @Autowired
-    private CiCdStageService ciCdStageService;
+    private DevopsCdStageService devopsCdStageService;
     @Autowired
     @Lazy
     private CiCdJobService ciCdJobService;
@@ -106,9 +106,11 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
     private DevopsCdAuditMapper devopsCdAuditMapper;
     @Autowired
     private AppServiceService applicationService;
+    @Autowired
+    private DevopsCiPipelineService devopsCiPipelineService;
 
     @Autowired
-    private CiCdPipelineRecordService ciCdPipelineRecordService;
+    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
     @Autowired
     private CiCdStageRecordService ciCdStageRecordService;
 
@@ -155,19 +157,19 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
 
         //2.保存stage信息
         ciCdPipelineVO.getCiCdStageVOS().forEach(ciCdStageVO -> {
-            CiCdStageDTO ciCdStageDTO = ConvertUtils.convertObject(ciCdStageVO, CiCdStageDTO.class);
-            ciCdStageDTO.setPipelineId(ciCdPipelineVO.getId());
+            DevopsCdStageDTO devopsCdStageDTO = ConvertUtils.convertObject(ciCdStageVO, DevopsCdStageDTO.class);
+            devopsCdStageDTO.setPipelineId(ciCdPipelineVO.getId());
             //保存stage的基本信息
-            CiCdStageDTO savedCiCdStageDTO = ciCdStageService.create(ciCdStageDTO);
+            DevopsCdStageDTO savedDevopsCdStageDTO = devopsCdStageService.create(devopsCdStageDTO);
             //CD阶段保存人工审核的关系
-            createUserRel(ciCdStageVO.getCdAuditUserIds(), null, savedCiCdStageDTO.getId(), null);
+            createUserRel(ciCdStageVO.getCdAuditUserIds(), null, savedDevopsCdStageDTO.getId(), null);
 
             // 3.保存job信息
             if (!CollectionUtils.isEmpty(ciCdStageVO.getJobList())) {
                 ciCdStageVO.getJobList().forEach(ciCdJobVO -> {
                     CiCdJobDTO ciCdJobDTO = ConvertUtils.convertObject(ciCdJobVO, CiCdJobDTO.class);
                     ciCdJobDTO.setPipelineIid(ciCdPipelineVO.getId());
-                    ciCdJobDTO.setStageId(savedCiCdStageDTO.getId());
+                    ciCdJobDTO.setStageId(savedDevopsCdStageDTO.getId());
                     //保存JOB的基本信息
                     if (StageType.CI.getType().equals(ciCdStageVO.getType())) {
                         ciCdJobVO.setId(ciCdJobService.create(ciCdJobDTO).getId());
@@ -196,7 +198,7 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
         // 根据pipeline_id查询数据
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(ciCdPipelineId);
         CommonExAssertUtil.assertTrue(ciCdPipelineDTO != null, "error.ci.pipeline.not.exist", ciCdPipelineId);
-        List<CiCdStageDTO> devopsCiStageDTOList = ciCdStageService.listByPipelineId(ciCdPipelineId);
+        List<DevopsCdStageDTO> devopsCiStageDTOList = devopsCdStageService.listByPipelineId(ciCdPipelineId);
 
         List<CiCdJobDTO> devopsCiJobDTOS = ciCdJobService.listByPipelineId(ciCdPipelineId);
         // dto转vo
@@ -237,8 +239,8 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
         // 查询数据库中原有stage列表,并和新的stage列表作比较。
         // 差集：要删除的记录
         // 交集：要更新的记录
-        List<CiCdStageDTO> ciCdStageDTOS = ciCdStageService.listByPipelineId(ciCdPipelineId);
-        Set<Long> oldStageIds = ciCdStageDTOS.stream().map(CiCdStageDTO::getId).collect(Collectors.toSet());
+        List<DevopsCdStageDTO> devopsCdStageDTOS = devopsCdStageService.listByPipelineId(ciCdPipelineId);
+        Set<Long> oldStageIds = devopsCdStageDTOS.stream().map(DevopsCdStageDTO::getId).collect(Collectors.toSet());
 
         Set<Long> updateIds = ciCdPipelineVO.getCiCdStageVOS().stream()
                 .filter(devopsCiStageVO -> devopsCiStageVO.getId() != null)
@@ -247,7 +249,7 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
         // 去掉要更新的记录，剩下的为要删除的记录
         oldStageIds.removeAll(updateIds);
         oldStageIds.forEach(stageId -> {
-            ciCdStageService.deleteById(stageId);
+            devopsCdStageService.deleteById(stageId);
             ciCdJobService.deleteByStageId(stageId);
             // 删除cd阶段审核人员关系
             if (stageIsCdAndManual(stageId)) {
@@ -258,7 +260,7 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
         ciCdPipelineVO.getCiCdStageVOS().forEach(ciCdStageVO -> {
             if (ciCdStageVO.getId() != null) {
                 // 更新
-                ciCdStageService.update(ciCdStageVO);
+                devopsCdStageService.update(ciCdStageVO);
                 //cd阶段审核人员关系
                 if (stageIsCdAndManual(ciCdStageVO.getId())) {
                     updateCdAuditUser(ciCdStageVO);
@@ -283,8 +285,8 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
             } else {
                 // 新增
                 ciCdStageVO.setCiCdPipelineId(ciCdPipelineId);
-                CiCdStageDTO ciCdStageDTO = ConvertUtils.convertObject(ciCdStageVO, CiCdStageDTO.class);
-                CiCdStageDTO savedDevopsCiStageDTO = ciCdStageService.create(ciCdStageDTO);
+                DevopsCdStageDTO devopsCdStageDTO = ConvertUtils.convertObject(ciCdStageVO, DevopsCdStageDTO.class);
+                DevopsCdStageDTO savedDevopsCiStageDTO = devopsCdStageService.create(devopsCdStageDTO);
                 // 保存job信息
                 if (!CollectionUtils.isEmpty(ciCdStageVO.getJobList())) {
                     ciCdStageVO.getJobList().forEach(ciCdJobVO -> {
@@ -304,23 +306,31 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
     @Override
     @Transactional
     public void handleCiPipelineStatusUpdate(PipelineWebHookVO pipelineWebHookVO) {
+        AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(pipelineWebHookVO.getToken());
+        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
+
+        // 查询流水线是否有cd阶段, 没有cd阶段不做处理
+        List<DevopsCdStageDTO> devopsCdStageDTOList = devopsCdStageService.queryByPipelineId(devopsCiPipelineDTO.getId());
+        if (CollectionUtils.isEmpty(devopsCdStageDTOList)) {
+            return;
+        }
 
         String status = pipelineWebHookVO.getObjectAttributes().getStatus();
         if (PipelineStatus.PENDING.toValue().equals(status)
                 || PipelineStatus.RUNNING.toValue().equals(status)) {
             // 校验CD流水线记录是否已经创建，未创建才创建记录，并将记录的初始状态设置为pending
             // 1. 查询流水线记录
-            CiCdPipelineRecordDTO ciCdPipelineRecordDTO = ciCdPipelineRecordService.queryByGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
+            DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
 
-            //
-            if (ciCdPipelineRecordDTO != null) {
-                // 查询cd阶段记录
-                List<CiCdStageRecordDTO> ciCdStageRecordDTOS = ciCdStageRecordService.queryByPipelineRecordId(ciCdPipelineRecordDTO.getId());
-                if (CollectionUtils.isEmpty(ciCdStageRecordDTOS)) {
-                    // 创建cd流水线记录
-                    // 查询cd流水线定义
+            if (devopsCdPipelineRecordDTO == null) {
+                // 创建cd阶段记录
+                devopsCdStageDTOList.forEach(stage -> {
+                    DevopsCdStageRecordDTO devopsCdStageRecordDTO = new DevopsCdStageRecordDTO();
+                    devopsCdStageRecordDTO.setStageId(stage.getId());
+                    devopsCdStageRecordDTO.setStatus(PipelineStatus.PENDING.toValue());
 
-                }
+                });
+
             }
 
 
@@ -372,7 +382,7 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
         // 删除content file
         ciCdJobValuesServcie.deleteByPipelineId(ciCdPipelineId);
         // 删除stage
-        ciCdStageService.deleteByPipelineId(ciCdPipelineId);
+        devopsCdStageService.deleteByPipelineId(ciCdPipelineId);
         //   todo
         // 删除CD stage记录 CI无阶段记录
 
@@ -969,8 +979,8 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
     }
 
     private Boolean stageIsCdAndManual(Long stageId) {
-        CiCdStageDTO ciCdStageDTO = ciCdStageMapper.selectByPrimaryKey(stageId);
-        return !Objects.isNull(ciCdStageDTO) && DeployType.MANUAL.getType().equals(ciCdStageDTO.getTriggerType());
+        DevopsCdStageDTO devopsCdStageDTO = devopsCdStageMapper.selectByPrimaryKey(stageId);
+        return !Objects.isNull(devopsCdStageDTO) && DeployType.MANUAL.getType().equals(devopsCdStageDTO.getTriggerType());
     }
 
     private void updateUserRel(List<Long> relDTOList, Long pipelineId, Long stageId, Long jobId) {
