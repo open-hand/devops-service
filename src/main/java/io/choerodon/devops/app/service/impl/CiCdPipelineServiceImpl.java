@@ -2,12 +2,12 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
 
-import com.alibaba.fastjson.JSONObject;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,7 +104,13 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
     private PipelineAppDeployService pipelineAppDeployService;
     @Autowired
     private DevopsCdAuditMapper devopsCdAuditMapper;
+    @Autowired
+    private AppServiceService applicationService;
 
+    @Autowired
+    private CiCdPipelineRecordService ciCdPipelineRecordService;
+    @Autowired
+    private CiCdStageRecordService ciCdStageRecordService;
 
     private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
         List<Server> servers = new ArrayList<>();
@@ -289,6 +295,39 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
         saveCiContent(projectId, ciCdPipelineId, ciCdPipelineVO);
         return ciCdPipelineMapper.selectByPrimaryKey(ciCdPipelineId);
     }
+
+    @Override
+    @Transactional
+    public void handleCiPipelineStatusUpdate(PipelineWebHookVO pipelineWebHookVO) {
+
+        String status = pipelineWebHookVO.getObjectAttributes().getStatus();
+        if (PipelineStatus.PENDING.toValue().equals(status)
+                || PipelineStatus.RUNNING.toValue().equals(status)) {
+            // 校验CD流水线记录是否已经创建，未创建才创建记录，并将记录的初始状态设置为pending
+            // 1. 查询流水线记录
+            CiCdPipelineRecordDTO ciCdPipelineRecordDTO = ciCdPipelineRecordService.queryByGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
+
+            //
+            if (ciCdPipelineRecordDTO != null) {
+                // 查询cd阶段记录
+                List<CiCdStageRecordDTO> ciCdStageRecordDTOS = ciCdStageRecordService.queryByPipelineRecordId(ciCdPipelineRecordDTO.getId());
+                if (CollectionUtils.isEmpty(ciCdStageRecordDTOS)) {
+                    // 创建cd流水线记录
+                    // 查询cd流水线定义
+
+                }
+            }
+
+
+        }
+    }
+
+    @Override
+    public CiCdPipelineDTO queryByAppId(Long appId) {
+
+        return null;
+    }
+
 
     @Override
     @Transactional
