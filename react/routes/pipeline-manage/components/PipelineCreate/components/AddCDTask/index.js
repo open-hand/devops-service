@@ -1,8 +1,9 @@
 import React from 'react';
-import { observer } from 'mobx-react-lite';
+import { StoreProvider } from './stores';
+import AddCDTask from './AddCDTask';
 
-export default observer(() => (
-  <div>
-    123
-  </div>
-));
+export default (props) => (
+  <StoreProvider {...props}>
+    <AddCDTask />
+  </StoreProvider>
+);
