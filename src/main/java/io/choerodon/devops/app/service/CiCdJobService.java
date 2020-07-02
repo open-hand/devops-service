@@ -23,4 +23,6 @@ public interface CiCdJobService {
     void deleteMavenSettingsRecordByJobIds(List<Long> jobIds);
 
     void deleteByStageId(Long stageId);
+
+    void deleteByPipelineId(Long ciCdPipelineId);
 }

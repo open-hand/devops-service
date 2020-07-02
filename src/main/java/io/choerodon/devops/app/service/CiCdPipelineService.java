@@ -29,4 +29,6 @@ public interface CiCdPipelineService {
      * @return
      */
     CiCdPipelineDTO queryByAppId(Long appId);
+    void deletePipeline(Long projectId, Long ciCdPipelineId);
+
 }

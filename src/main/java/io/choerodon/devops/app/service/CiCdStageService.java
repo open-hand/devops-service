@@ -18,4 +18,6 @@ public interface CiCdStageService {
     void deleteById(Long stageId);
 
     void update(CiCdStageVO ciCdStageVO);
+
+    void deleteByPipelineId(Long ciCdPipelineId);
 }

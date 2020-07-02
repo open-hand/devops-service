@@ -76,4 +76,15 @@ public class CiCdPipelineController {
             @PathVariable(value = "cicd_pipeline_id") Long ciCdPipelineId) {
         return ResponseEntity.ok(ciCdPipelineService.enablePipeline(projectId, ciCdPipelineId));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "删除流水线")
+    @DeleteMapping("/{cicd_pipeline_id}")
+    public ResponseEntity<Void> deletePipeline(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "cicd_pipeline_id") Long ciCdPipelineId) {
+        ciCdPipelineService.deletePipeline(projectId, ciCdPipelineId);
+        return ResponseEntity.noContent().build();
+    }
 }

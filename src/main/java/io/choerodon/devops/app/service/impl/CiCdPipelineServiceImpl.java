@@ -55,6 +55,7 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
     private static final String UPDATE_PIPELINE_FAILED = "update.pipeline.failed";
     private static final String DISABLE_PIPELINE_FAILED = "disable.pipeline.failed";
     private static final String ENABLE_PIPELINE_FAILED = "enable.pipeline.failed";
+    private static final String DELETE_PIPELINE_FAILED = "delete.pipeline.failed";
 
 
     private static final String MANUAL = "manual";
@@ -85,7 +86,6 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
     @Autowired
     @Lazy
     private CiCdJobService ciCdJobService;
-
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
@@ -137,7 +137,7 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
     @Override
     @Transactional
     public CiCdPipelineDTO create(Long projectId, CiCdPipelineVO ciCdPipelineVO) {
-        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CI_PIPELINE_CREATE);
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_CREATE);
         Long iamUserId = TypeUtil.objToLong(GitUserNameUtil.getUserId());
         checkUserPermission(ciCdPipelineVO.getAppServiceId(), iamUserId);
         ciCdPipelineVO.setProjectId(projectId);
@@ -169,9 +169,14 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
                     ciCdJobDTO.setPipelineIid(ciCdPipelineVO.getId());
                     ciCdJobDTO.setStageId(savedCiCdStageDTO.getId());
                     //保存JOB的基本信息
-                    ciCdJobVO.setId(ciCdJobService.create(ciCdJobDTO).getId());
+                    if (StageType.CI.getType().equals(ciCdStageVO.getType())) {
+                        ciCdJobVO.setId(ciCdJobService.create(ciCdJobDTO).getId());
+                    }
                     //CD阶段下的job 需要保存审核人员的关系
-                    createPipelineJob(ciCdJobVO, projectId, ciCdStageVO.getId());
+                    if (StageType.CD.getType().equals(ciCdStageVO.getType())) {
+                        createPipelineJob(ciCdJobVO, projectId, ciCdStageVO.getId());
+                    }
+
                 });
             }
         });
@@ -219,7 +224,7 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
     @Override
     @Transactional
     public CiCdPipelineDTO update(Long projectId, Long ciCdPipelineId, CiCdPipelineVO ciCdPipelineVO) {
-        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CI_PIPELINE_UPDATE);
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_UPDATE);
         Long userId = DetailsHelper.getUserDetails().getUserId();
         checkUserPermission(ciCdPipelineVO.getAppServiceId(), userId);
         // 校验自定义任务格式
@@ -333,7 +338,7 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
     @Transactional
     public CiCdPipelineDTO disablePipeline(Long projectId, Long ciCdPipelineId) {
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(ciCdPipelineId);
-        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CI_PIPELINE_STATUS_UPDATE);
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_STATUS_UPDATE);
         if (ciCdPipelineMapper.disablePipeline(ciCdPipelineId) != 1) {
             throw new CommonException(DISABLE_PIPELINE_FAILED);
         }
@@ -344,11 +349,65 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
     @Transactional
     public CiCdPipelineDTO enablePipeline(Long projectId, Long ciPipelineId) {
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(ciPipelineId);
-        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CI_PIPELINE_STATUS_UPDATE);
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_STATUS_UPDATE);
         if (ciCdPipelineMapper.enablePipeline(ciPipelineId) != 1) {
             throw new CommonException(ENABLE_PIPELINE_FAILED);
         }
         return ciCdPipelineMapper.selectByPrimaryKey(ciPipelineId);
+    }
+
+    @Override
+    @Transactional
+    public void deletePipeline(Long projectId, Long ciCdPipelineId) {
+        CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(ciCdPipelineId);
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_DELETE);
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
+        // 校验用户是否有应用服务权限
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        checkUserPermission(appServiceDTO.getId(), userId);
+        // 删除流水线
+        if (ciCdPipelineMapper.deleteByPrimaryKey(ciCdPipelineId) != 1) {
+            throw new CommonException(DELETE_PIPELINE_FAILED);
+        }
+        // 删除content file
+        ciCdJobValuesServcie.deleteByPipelineId(ciCdPipelineId);
+        // 删除stage
+        ciCdStageService.deleteByPipelineId(ciCdPipelineId);
+        //   todo
+        // 删除CD stage记录 CI无阶段记录
+
+        //删除CD阶段手动流转的审核人员关系
+
+
+        // 删除job
+        ciCdJobService.deleteByPipelineId(ciCdPipelineId);
+        // 删除job记录
+//        devopsCiJobRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
+        //删除审核人员关系表
+
+
+        // 删除pipeline记录
+//        devopsCiPipelineRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
+
+        // 删除.gitlab-ci.yaml文件
+        deleteGitlabCiFile(appServiceDTO.getGitlabProjectId());
+    }
+
+    private void deleteGitlabCiFile(Integer gitlabProjectId) {
+        RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(gitlabProjectId, GitOpsConstants.MASTER, GitOpsConstants.GITLAB_CI_FILE_NAME);
+        if (repositoryFile != null) {
+            try {
+                LOGGER.info("deleteGitlabCiFile: delete .gitlab-ci.yaml for gitlab project with id {}", gitlabProjectId);
+                gitlabServiceClientOperator.deleteFile(
+                        gitlabProjectId,
+                        GitOpsConstants.GITLAB_CI_FILE_NAME,
+                        GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
+                        GitUserNameUtil.getAdminId());
+            } catch (Exception e) {
+                throw new CommonException("error.delete.gitlab-ci.file", e);
+            }
+
+        }
     }
 
     private void updateCdAuditUser(CiCdJobVO ciCdJobVO) {
@@ -888,14 +947,14 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
         t.setProjectId(projectId);
         t.setCiCdStageId(stageId);
         if (AUTO.equals(t.getType())) {
-            //如果JOB是自动类型的
+            //如果JOB是自动类型的,插入部署表中一条记录
             PipelineAppServiceDeployDTO appDeployDTO = deployVoToDto(t.getPipelineAppServiceDeployVO());
             appDeployDTO.setProjectId(projectId);
             t.setAppServiceDeployId(pipelineAppDeployService.baseCreate(appDeployDTO).getId());
         }
         Long jobId = ciCdJobService.create(ConvertUtils.convertObject(t, CiCdJobDTO.class)).getId();
         if (MANUAL.equals(t.getType())) {
-            //如果Job是手动类型的
+            //如果Job是手动类型的，创建审核人员关系
             createUserRel(t.getCdAuditUserIds(), null, null, jobId);
         }
     }

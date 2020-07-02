@@ -13,7 +13,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
  */
 @ModifyAudit
 @VersionAudit
-@Table(name = "cicd_job")
+@Table(name = "devops_cd_job")
 public class CiCdJobDTO extends AuditDomain {
 
     @Id
