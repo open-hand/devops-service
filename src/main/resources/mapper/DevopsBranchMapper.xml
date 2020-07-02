@@ -77,13 +77,11 @@
         SELECT db.app_service_id AS id, max(db.last_update_date) AS last_update_date
         FROM devops_branch db
                      JOIN devops_app_service das ON db.app_service_id = das.id
-                WHERE db.last_updated_by = #{userId}
+                WHERE db.last_updated_by = #{userId} AND db.last_update_date > #{time}
                   AND das.project_id IN
         <foreach collection="projectIds" item="projectId" open="(" close=")" separator=",">
             #{projectId}
         </foreach>
         GROUP BY db.app_service_id, db.last_update_date
-        ORDER BY db.last_update_date DESC
-        LIMIT 20
     </select>
 </mapper>

@@ -61,13 +61,11 @@
         SELECT dgc.app_service_id AS id, max(dgc.last_update_date) AS last_update_date
         FROM devops_gitlab_commit dgc
                      JOIN devops_app_service das ON dgc.app_service_id = das.id
-                WHERE dgc.last_updated_by = #{userId}
+                WHERE dgc.last_updated_by = #{userId} AND dgc.commit_date > #{time}
                   AND das.project_id IN
         <foreach collection="projectIds" item="projectId" open="(" close=")" separator=",">
             #{projectId}
         </foreach>
         GROUP BY dgc.app_service_id, dgc.last_update_date
-        ORDER BY dgc.last_update_date DESC
-        LIMIT 20
     </select>
 </mapper>

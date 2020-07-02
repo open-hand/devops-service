@@ -24,8 +24,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -102,6 +100,9 @@ public class BaseServiceClientOperator {
 
     public List<ProjectDTO> listIamProjectByOrgId(Long organizationId) {
         return listIamProjectByOrgId(organizationId, null, null, null);
+    }
+    public List<ProjectDTO> listOwnedProjects(Long organizationId, Long userId) {
+        return baseServiceClient.listOwnedProjects(organizationId, userId).getBody();
     }
 
 

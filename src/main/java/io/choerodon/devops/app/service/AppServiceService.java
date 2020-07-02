@@ -31,6 +31,15 @@ public interface AppServiceService {
      */
     AppServiceRepVO create(Long projectId, AppServiceReqVO applicationReqDTO);
 
+    /**
+     * 内部查询项目下所有应用服务 / 不区分权限
+     *
+     * @param projectId 项目id
+     * @param params    查询参数
+     * @param pageable  分页参数
+     * @return 应用服务列表
+     */
+    Page<AppServiceRepVO> internalListAllInProject(Long projectId, String params, PageRequest pageable);
 
     /**
      * 项目下查询单个服务信息

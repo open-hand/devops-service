@@ -60,8 +60,9 @@ public class WorkBenchServiceImpl implements WorkBenchService {
     public List<LatestAppServiceVO> listLatestAppService(Long organizationId, Long projectId) {
         Tenant tenant = baseServiceClientOperator.queryOrganizationById(organizationId);
         List<ProjectDTO> projectDTOList;
+        Long userId = DetailsHelper.getUserDetails().getUserId();
         if (projectId == null) {
-            projectDTOList = baseServiceClientOperator.listIamProjectByOrgId(tenant.getTenantId());
+            projectDTOList = baseServiceClientOperator.listOwnedProjects(tenant.getTenantId(), userId);
         } else {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
             CommonExAssertUtil.assertNotNull(projectDTO, "error.project.query");
@@ -78,8 +79,9 @@ public class WorkBenchServiceImpl implements WorkBenchService {
     public List<ApprovalVO> listApproval(Long organizationId, Long projectId) {
         Tenant tenant = baseServiceClientOperator.queryOrganizationById(organizationId);
         List<ProjectDTO> projectDTOList;
+        Long userId = DetailsHelper.getUserDetails().getUserId();
         if (projectId == null) {
-            projectDTOList = baseServiceClientOperator.listIamProjectByOrgId(tenant.getTenantId());
+            projectDTOList = baseServiceClientOperator.listOwnedProjects(tenant.getTenantId(), userId);
         } else {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
             CommonExAssertUtil.assertNotNull(projectDTO, "error.project.query");
@@ -175,23 +177,26 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         Map<Long, ProjectDTO> projectDTOMap = projectDTOList.stream().collect(Collectors.toMap(ProjectDTO::getId, v -> v));
         Long userId = DetailsHelper.getUserDetails().getUserId() == null ? 0 : DetailsHelper.getUserDetails().getUserId();
         List<LatestAppServiceVO> latestAppServiceVOList = new ArrayList<>();
-        latestAppServiceVOList.addAll(appServiceMapper.listLatestUseAppServiceIdAndDate(projectIds, userId));
-        latestAppServiceVOList.addAll(devopsBranchMapper.listLatestUseAppServiceIdAndDate(projectIds, userId));
-        latestAppServiceVOList.addAll(devopsGitlabCommitMapper.listLatestUseAppServiceIdAndDate(projectIds, userId));
-        latestAppServiceVOList.addAll(devopsMergeRequestMapper.listLatestUseAppServiceIdAndDate(projectIds, userId));
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DATE, -7);
+        Date time = calendar.getTime();
+        latestAppServiceVOList.addAll(appServiceMapper.listLatestUseAppServiceIdAndDate(projectIds, userId, time));
+        latestAppServiceVOList.addAll(devopsBranchMapper.listLatestUseAppServiceIdAndDate(projectIds, userId, time));
+        latestAppServiceVOList.addAll(devopsGitlabCommitMapper.listLatestUseAppServiceIdAndDate(projectIds, userId, time));
+        latestAppServiceVOList.addAll(devopsMergeRequestMapper.listLatestUseAppServiceIdAndDate(projectIds, userId, time));
 
         if (latestAppServiceVOList.size() == 0) {
             return latestAppServiceVOList;
         }
 
         // 去掉重复的appService,只保留最近使用的
-        List<LatestAppServiceVO> latestAppServiceVOListWithoutRepeatService = latestAppServiceVOList.stream().sorted(Comparator.comparing(LatestAppServiceVO::getLastUpdateDate).reversed())
-                .filter(distinctByKey(LatestAppServiceVO::getId))
+        List<LatestAppServiceVO> latestTenAppServiceList = latestAppServiceVOList.stream().sorted(Comparator.comparing(LatestAppServiceVO::getLastUpdateDate).reversed())
+                .filter(distinctByKey(LatestAppServiceVO::getId)).limit(10)
                 .collect(Collectors.toList());
 
-        int end = Math.min(latestAppServiceVOListWithoutRepeatService.size(), 10);
-
-        List<LatestAppServiceVO> latestTenAppServiceList = latestAppServiceVOListWithoutRepeatService.subList(0, end);
+//        int end = Math.min(latestAppServiceVOListWithoutRepeatService.size(), 10);
+//
+//        List<LatestAppServiceVO> latestTenAppServiceList = latestAppServiceVOListWithoutRepeatService.subList(0, end);
 
         Set<Long> appServiceIds = latestTenAppServiceList.stream().map(LatestAppServiceVO::getId).collect(Collectors.toSet());
         Map<Long, AppServiceDTO> appServiceDTOMap = appServiceMapper.listAppServiceByIds(appServiceIds, null, null).stream().collect(Collectors.toMap(AppServiceDTO::getId, v -> v));

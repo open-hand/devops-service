@@ -4,6 +4,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
+import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
 
@@ -206,4 +207,11 @@ public interface BaseServiceClient {
     ResponseEntity<List<UserProjectLabelVO>> listRoleLabelsForUserInTheProject(
             @PathVariable("user_id") Long userId,
             @RequestBody Set<Long> projectIds);
+
+    @GetMapping("/choerodon/v1/organizations/{organization_id}/users/{user_id}/owned_projects")
+    ResponseEntity<List<ProjectDTO>> listOwnedProjects(@PathVariable("organization_id") Long organizationId,
+                                                       @PathVariable("user_id") Long userId);
+
+    @GetMapping("/choerodon/v1/sync/user")
+    ResponseEntity<List<UserVO>> listUserByCreationDate();
 }

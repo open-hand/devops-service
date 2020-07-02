@@ -80,6 +80,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     LOGGER.info("修复数据开始!");
                     appServiceVersionService.fixHarbor();
                     LOGGER.info("修复数据完成!!!!!!");
+                } else if("0.23.0-alpha.4".equals(version)){
+
                 } else {
                     LOGGER.info("version not matched");
                 }
