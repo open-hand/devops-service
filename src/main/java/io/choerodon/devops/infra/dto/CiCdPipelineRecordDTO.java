@@ -24,7 +24,7 @@ public class CiCdPipelineRecordDTO extends AuditDomain {
     @ApiModelProperty(name = "流水线名字")
     private String pipelineName;
     @ApiModelProperty(name = "gitlab流水线记录id")
-    private String gitlabPipelineId;
+    private Long gitlabPipelineId;
     @ApiModelProperty(name = "commit_sha")
     private String commitSha;
     @ApiModelProperty(name = "触发分支")
@@ -76,11 +76,11 @@ public class CiCdPipelineRecordDTO extends AuditDomain {
         this.pipelineName = pipelineName;
     }
 
-    public String getGitlabPipelineId() {
+    public Long getGitlabPipelineId() {
         return gitlabPipelineId;
     }
 
-    public void setGitlabPipelineId(String gitlabPipelineId) {
+    public void setGitlabPipelineId(Long gitlabPipelineId) {
         this.gitlabPipelineId = gitlabPipelineId;
     }
 

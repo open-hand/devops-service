@@ -93,6 +93,8 @@ public class DevopsSagaHandler {
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
+    @Autowired
+    private CiCdPipelineService ciCdPipelineService;
 
 
     /**
@@ -289,6 +291,20 @@ public class DevopsSagaHandler {
             seq = 1)
     public String gitlabCiPipeline(String data) {
         devopsCiPipelineRecordService.handleCreate(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
+        return data;
+    }
+
+    /**
+     * 监听gitlab ci pipeline事件，触发cd逻辑
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_GITLAB_CD_PIPELINE,
+            description = "gitlab pipeline事件",
+            sagaCode = DEVOPS_GITLAB_CI_PIPELINE,
+            maxRetryCount = 3,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            seq = 20)
+    public String gitlabCDPipeline(String data) {
+        ciCdPipelineService.handleCiPipelineStatusUpdate(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
         return data;
     }
 
