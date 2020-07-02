@@ -14,7 +14,6 @@ import io.choerodon.devops.api.vo.CiCdPipelineVO;
 
 import io.choerodon.devops.app.service.CiCdPipelineService;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
-import io.choerodon.devops.infra.dto.DevopsCiPipelineDTO;
 import io.choerodon.swagger.annotation.Permission;
 
 @RestController
@@ -22,7 +21,7 @@ import io.choerodon.swagger.annotation.Permission;
 public class CiCdPipelineController {
 
     @Autowired
-    private CiCdPipelineService ciCdPipelineService;
+    private CiCdPipelineService  ciCdPipelineService;
 
     @PostMapping
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -58,4 +57,23 @@ public class CiCdPipelineController {
         return ResponseEntity.ok(ciCdPipelineService.update(projectId, ciCdPipelineId, ciCdPipelineVO));
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "停用流水线")
+    @PutMapping("/{cicd_pipeline_id}/disable")
+    public ResponseEntity<CiCdPipelineDTO> disablePipeline(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "cicd_pipeline_id") Long ciCdPipelineId) {
+        return ResponseEntity.ok(ciCdPipelineService.disablePipeline(projectId, ciCdPipelineId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "启用流水线")
+    @PutMapping("/{cicd_pipeline_id}/enable")
+    public ResponseEntity<CiCdPipelineDTO> enablePipeline(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "cicd_pipeline_id") Long ciCdPipelineId) {
+        return ResponseEntity.ok(ciCdPipelineService.enablePipeline(projectId, ciCdPipelineId));
+    }
 }
