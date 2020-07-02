@@ -10,7 +10,6 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.CiCdJobService;
 import io.choerodon.devops.infra.dto.CiCdJobDTO;
-import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.mapper.CiCdJobMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 
@@ -76,4 +75,18 @@ public class CiCdJobServiceImpl implements CiCdJobService {
         }
         devopsCiMavenSettingsMapper.deleteByJobIds(jobIds);
     }
+
+    @Override
+    @Transactional
+    public void deleteByPipelineId(Long ciCdPipelineId) {
+        if (ciCdPipelineId == null) {
+            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+        }
+        // 删除maven settings
+        deleteMavenSettingsRecordByJobIds(listByPipelineId(ciCdPipelineId).stream().map(CiCdJobDTO::getId).collect(Collectors.toList()));
+        CiCdJobDTO ciCdJobDTO = new CiCdJobDTO();
+        ciCdJobDTO.setPipelineIid(ciCdPipelineId);
+        ciCdJobMapper.delete(ciCdJobDTO);
+    }
+
 }

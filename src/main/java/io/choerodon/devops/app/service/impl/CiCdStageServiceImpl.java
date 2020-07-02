@@ -9,6 +9,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiCdStageVO;
 import io.choerodon.devops.app.service.CiCdStageService;
 import io.choerodon.devops.infra.dto.CiCdStageDTO;
+import io.choerodon.devops.infra.dto.DevopsCiStageDTO;
 import io.choerodon.devops.infra.mapper.CiCdStageMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdAuditMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -63,5 +64,17 @@ public class CiCdStageServiceImpl implements CiCdStageService {
             throw new CommonException(UPDATE_STAGE_FAILED);
         }
     }
+
+    @Override
+    @Transactional
+    public void deleteByPipelineId(Long ciPipelineId) {
+        if (ciPipelineId == null) {
+            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+        }
+        CiCdStageDTO record = new CiCdStageDTO();
+        record.setPipelineId(ciPipelineId);
+        ciCdStageMapper.delete(record);
+    }
+
 
 }

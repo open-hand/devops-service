@@ -7,9 +7,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_audit.groovy') {
                 constraints(primaryKey: true)
             }
             column(name: 'user_id', type: 'BIGINT UNSIGNED', remarks: '用户Id')
-            column(name: 'cicd_pipeline_id', type: 'BIGINT UNSIGNED', remarks: '流水线id')
-            column(name: 'cicd_stage_id', type: 'BIGINT UNSIGNED', remarks: '阶段Id')
-            column(name: 'cicd_job_id', type: 'BIGINT UNSIGNED', remarks: '任务Id')
+            column(name: 'pipeline_id', type: 'BIGINT UNSIGNED', remarks: '流水线id')
+            column(name: 'cd_stage_id', type: 'BIGINT UNSIGNED', remarks: '阶段Id')
+            column(name: 'cd_job_id', type: 'BIGINT UNSIGNED', remarks: '任务Id')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")

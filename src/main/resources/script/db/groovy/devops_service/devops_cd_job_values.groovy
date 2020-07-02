@@ -1,8 +1,8 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/cicd_job_values.groovy') {
+databaseChangeLog(logicalFilePath: 'dba/devops_cd_job_values.groovy') {
     changeSet(author: 'wx', id: '2020-06-30-create-table') {
-        createTable(tableName: "cicd_job_values", remarks: 'cicd_job_values') {
+        createTable(tableName: "devops_cd_job_values", remarks: 'devops_cd_job_values') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
