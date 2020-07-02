@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -52,6 +53,8 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
     private static final String ERROR_CI_MAVEN_REPOSITORY_TYPE = "error.ci.maven.repository.type";
     private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "error.maven.settings.insert";
     private static final String UPDATE_PIPELINE_FAILED = "update.pipeline.failed";
+    private static final String DISABLE_PIPELINE_FAILED = "disable.pipeline.failed";
+    private static final String ENABLE_PIPELINE_FAILED = "enable.pipeline.failed";
 
 
     private static final String MANUAL = "manual";
@@ -80,6 +83,7 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
     @Autowired
     private CiCdStageService ciCdStageService;
     @Autowired
+    @Lazy
     private CiCdJobService ciCdJobService;
 
     @Autowired
@@ -284,6 +288,28 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
         });
         saveCiContent(projectId, ciCdPipelineId, ciCdPipelineVO);
         return ciCdPipelineMapper.selectByPrimaryKey(ciCdPipelineId);
+    }
+
+    @Override
+    @Transactional
+    public CiCdPipelineDTO disablePipeline(Long projectId, Long ciCdPipelineId) {
+        CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(ciCdPipelineId);
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CI_PIPELINE_STATUS_UPDATE);
+        if (ciCdPipelineMapper.disablePipeline(ciCdPipelineId) != 1) {
+            throw new CommonException(DISABLE_PIPELINE_FAILED);
+        }
+        return ciCdPipelineMapper.selectByPrimaryKey(ciCdPipelineId);
+    }
+
+    @Override
+    @Transactional
+    public CiCdPipelineDTO enablePipeline(Long projectId, Long ciPipelineId) {
+        CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(ciPipelineId);
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CI_PIPELINE_STATUS_UPDATE);
+        if (ciCdPipelineMapper.enablePipeline(ciPipelineId) != 1) {
+            throw new CommonException(ENABLE_PIPELINE_FAILED);
+        }
+        return ciCdPipelineMapper.selectByPrimaryKey(ciPipelineId);
     }
 
     private void updateCdAuditUser(CiCdJobVO ciCdJobVO) {

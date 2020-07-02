@@ -10,4 +10,8 @@ public interface CiCdPipelineService {
     CiCdPipelineVO query(Long projectId, Long ciCdPipelineId);
 
     CiCdPipelineDTO update(Long projectId, Long ciCdPipelineId, CiCdPipelineVO ciCdPipelineVO);
+
+    CiCdPipelineDTO disablePipeline(Long projectId, Long ciCdPipelineId);
+
+    CiCdPipelineDTO enablePipeline(Long projectId, Long ciCdPipelineId);
 }
