@@ -1,9 +1,10 @@
 export default () => ({
   autoCreate: true,
   fields: [{
-    name: 'jdsx',
+    name: 'type',
     type: 'string',
     label: '阶段属性',
+    required: true,
   }, {
     name: 'step',
     type: 'string',
@@ -11,13 +12,17 @@ export default () => ({
     required: true,
     maxLength: 15,
   }, {
-    name: 'lzzcjd',
+    name: 'triggerType',
     type: 'string',
     label: '流转至此阶段',
+    defaultValue: 'auto',
   }, {
-    name: 'shry',
+    name: 'cdAuditUserIds',
     type: 'string',
     label: '审核人员',
     multiple: true,
+    dynamicProps: {
+      required: ({ record }) => record.get('triggerType') === 'manual',
+    },
   }],
 });

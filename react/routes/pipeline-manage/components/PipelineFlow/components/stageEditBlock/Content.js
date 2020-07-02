@@ -10,12 +10,12 @@ const defaultData = [
     name: '构建',
     sequence: 1,
     jobList: [],
-    type: 'ci',
+    type: 'CI',
   }, {
     name: '部署',
     sequence: 2,
     jobList: [],
-    type: 'cd',
+    type: 'CD',
   },
 ];
 

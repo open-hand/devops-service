@@ -55,14 +55,18 @@ const EditItem = (props) => {
       title: (
         <Fragment>
           <span className="c7n-piplineManage-edit-title-text">{`编辑${name}任务`}</span>
-          <Button
-            type="primary"
-            icon="find_in_page-o"
-            className="c7n-piplineManage-edit-title-btn"
-            onClick={openVariableModal}
-          >
-            查看流水线变量
-          </Button>
+          {
+            type === 'CI' && (
+              <Button
+                type="primary"
+                icon="find_in_page-o"
+                className="c7n-piplineManage-edit-title-btn"
+                onClick={openVariableModal}
+              >
+                查看流水线变量
+              </Button>
+            )
+          }
         </Fragment>
       ),
       children: <AddTask
@@ -145,13 +149,14 @@ export default observer((props) => {
     window.console.log(e);
   }
 
-  function createNewStage() {
-    if (addStepDs.current && addStepDs.current.get('step')) {
-      addNewStep(columnIndex, addStepDs.current.get('step'), edit);
-    } else {
-      return false;
+  async function createNewStage() {
+    const res = await addStepDs.validate();
+    if (res) {
+      addNewStep(columnIndex, addStepDs.toData()[0], edit);
+      addStepDs.reset();
+      return true;
     }
-    addStepDs.reset();
+    return false;
   }
 
   async function editStage() {
@@ -236,17 +241,21 @@ export default observer((props) => {
       title: (
         <Fragment>
           <span className="c7n-piplineManage-edit-title-text">添加任务</span>
-          <Button
-            type="primary"
-            icon="find_in_page-o"
-            className="c7n-piplineManage-edit-title-btn"
-            onClick={openVariableModal}
-          >
-            查看流水线变量
-          </Button>
+          {
+            type === 'CI' && (
+            <Button
+              type="primary"
+              icon="find_in_page-o"
+              className="c7n-piplineManage-edit-title-btn"
+              onClick={openVariableModal}
+            >
+              查看流水线变量
+            </Button>
+            )
+          }
         </Fragment>
       ),
-      children: type === 'ci' ? (
+      children: type === 'CI' ? (
         <AddTask
           PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
           AppServiceOptionsDs={edit && AppServiceOptionsDs}
@@ -256,7 +265,11 @@ export default observer((props) => {
           image={image}
         />
       ) : (
-        <AddCDTask />
+        <AddCDTask
+          appServiceId={!edit && appServiceName}
+          appServiceName={!edit && appServiceName}
+          PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
+        />
       ),
       style: {
         width: '740px',
@@ -266,7 +279,7 @@ export default observer((props) => {
     });
   }
 
-  const getType = () => type === 'ci';
+  const getType = () => type === 'CI';
 
   return (
     <div
@@ -283,7 +296,7 @@ export default observer((props) => {
             color: getType() ? 'rgba(104, 135, 232, 1)' : 'rgba(63,178,233,1)',
             background: getType() ? 'rgba(104, 135, 232, 0.1)' : 'rgba(63,178,233,0.1)',
           }}
-        >{type.toUpperCase()}</span>
+        >{type?.toUpperCase()}</span>
         <div
           className="c7n-piplineManage-edit-column-header-btnGroup"
         >

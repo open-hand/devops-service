@@ -70,9 +70,10 @@ export default function useStore() {
       return this.dataSource2.slice();
     },
 
-    addNewStep(index, name, edit) {
+    addNewStep(index, data, edit) {
       const stepObj = {
-        name,
+        ...data,
+        name: data.step,
         jobList: [],
       };
       this.setHasModify(true, edit);
