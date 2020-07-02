@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dto.CiCdStageRecordDTO;
+import io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
 /**
@@ -10,5 +10,5 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @author wanghao
  * @since 2020/7/2 11:08
  */
-public interface CiCdStageRecordMapper extends BaseMapper<CiCdStageRecordDTO> {
+public interface DevopsCdStageRecordMapper extends BaseMapper<DevopsCdStageRecordDTO> {
 }

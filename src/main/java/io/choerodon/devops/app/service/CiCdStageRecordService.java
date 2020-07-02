@@ -1,9 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
-import io.choerodon.devops.infra.dto.CiCdStageRecordDTO;
-
 /**
  * 〈功能简述〉
  * 〈〉
@@ -13,5 +9,5 @@ import io.choerodon.devops.infra.dto.CiCdStageRecordDTO;
  */
 public interface CiCdStageRecordService {
 
-    List<CiCdStageRecordDTO> queryByPipelineRecordId(Long pipelineRecordId);
+//    List<DevopsCdStageRecordDTO> queryByPipelineRecordId(Long pipelineRecordId);
 }
