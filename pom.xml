@@ -308,6 +308,12 @@
             <artifactId>groovy</artifactId>
         </dependency>
 
+        <!--sshj 依赖-->
+        <dependency>
+            <groupId>com.hierynomus</groupId>
+            <artifactId>sshj</artifactId>
+            <version>0.24.0</version>
+        </dependency>
     </dependencies>
 
     <build>
