@@ -1,6 +1,8 @@
 package io.choerodon.devops.infra.constant;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -216,4 +218,6 @@ public class GitOpsConstants {
      * 发布jar包的命令的变量锚点, 仓库地址
      */
     public static final String CHOERODON_MAVEN_REPO_URL = "${CHOERODON_MAVEN_REPO_URL}";
+
+    public static final List<String> IGNORE_RESOURCES = Arrays.asList("ChoerodonIstioOperator", "IstioOperator", "VirtualService");
 }
