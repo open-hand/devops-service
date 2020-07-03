@@ -21,9 +21,9 @@ public class DevopsCdJobVO {
     @ApiModelProperty("runner镜像地址")
     private String image;
     @ApiModelProperty("阶段id")
-    private Long ciCdStageId;
+    private Long cdStageId;
     @ApiModelProperty("流水线id")
-    private Long ciCdPipelineId;
+    private Long pipelineId;
     @ApiModelProperty("任务类型")
     @NotEmpty(message = "error.job.type.cannot.be.null")
     private String type;
@@ -78,20 +78,20 @@ public class DevopsCdJobVO {
         this.image = image;
     }
 
-    public Long getCiCdStageId() {
-        return ciCdStageId;
+    public Long getCdStageId() {
+        return cdStageId;
     }
 
-    public void setCiCdStageId(Long ciCdStageId) {
-        this.ciCdStageId = ciCdStageId;
+    public void setCdStageId(Long cdStageId) {
+        this.cdStageId = cdStageId;
     }
 
-    public Long getCiCdPipelineId() {
-        return ciCdPipelineId;
+    public Long getPipelineId() {
+        return pipelineId;
     }
 
-    public void setCiCdPipelineId(Long ciCdPipelineId) {
-        this.ciCdPipelineId = ciCdPipelineId;
+    public void setPipelineId(Long pipelineId) {
+        this.pipelineId = pipelineId;
     }
 
     public String getType() {

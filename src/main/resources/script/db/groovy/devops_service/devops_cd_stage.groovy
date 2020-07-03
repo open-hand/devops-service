@@ -7,7 +7,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_stage.groovy') {
                 constraints(primaryKey: true)
             }
             column(name: 'name', type: 'VARCHAR(255)', remarks: '阶段名称')
-            column(name: 'cicd_pipeline_id', type: 'BIGINT UNSIGNED', remarks: '流水线id')
+            column(name: 'pipeline_id', type: 'BIGINT UNSIGNED', remarks: '流水线id')
             column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '阶段顺序')
             column(name: 'type', type: 'VARCHAR(32)', remarks: 'ci的还是cd的阶段')
 
