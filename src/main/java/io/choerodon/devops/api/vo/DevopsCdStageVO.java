@@ -6,7 +6,7 @@ import java.util.List;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-public class CiCdStageVO {
+public class DevopsCdStageVO {
     private Long id;
     @ApiModelProperty("阶段名称")
     @NotEmpty(message = "error.stage.name.cannot.be.null")
@@ -16,7 +16,7 @@ public class CiCdStageVO {
     @ApiModelProperty("阶段顺序")
     @NotNull(message = "error.stage.sequence.cannot.be.null")
     private Long sequence;
-    private List<CiCdJobVO> jobList;
+    private List<DevopsCdJobVO> jobList;
     private Long projectId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;
@@ -65,11 +65,11 @@ public class CiCdStageVO {
         this.sequence = sequence;
     }
 
-    public List<CiCdJobVO> getJobList() {
+    public List<DevopsCdJobVO> getJobList() {
         return jobList;
     }
 
-    public void setJobList(List<CiCdJobVO> jobList) {
+    public void setJobList(List<DevopsCdJobVO> jobList) {
         this.jobList = jobList;
     }
 

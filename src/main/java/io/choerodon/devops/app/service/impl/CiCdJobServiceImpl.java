@@ -9,7 +9,7 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.CiCdJobService;
-import io.choerodon.devops.infra.dto.CiCdJobDTO;
+import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
 import io.choerodon.devops.infra.mapper.CiCdJobMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 
@@ -27,26 +27,26 @@ public class CiCdJobServiceImpl implements CiCdJobService {
 
     @Override
     @Transactional
-    public CiCdJobDTO create(CiCdJobDTO ciCdJobDTO) {
-        if (ciCdJobMapper.insertSelective(ciCdJobDTO) != 1) {
+    public DevopsCdJobDTO create(DevopsCdJobDTO devopsCdJobDTO) {
+        if (ciCdJobMapper.insertSelective(devopsCdJobDTO) != 1) {
             throw new CommonException(CREATE_JOB_FAILED);
         }
-        return ciCdJobMapper.selectByPrimaryKey(ciCdJobDTO.getId());
+        return ciCdJobMapper.selectByPrimaryKey(devopsCdJobDTO.getId());
     }
 
     @Override
-    public List<CiCdJobDTO> listByPipelineId(Long ciCdPipelineId) {
+    public List<DevopsCdJobDTO> listByPipelineId(Long ciCdPipelineId) {
         if (ciCdPipelineId == null) {
             throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
         }
-        CiCdJobDTO ciCdJobDTO = new CiCdJobDTO();
-        ciCdJobDTO.setPipelineIid(ciCdPipelineId);
-        return ciCdJobMapper.select(ciCdJobDTO);
+        DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
+        devopsCdJobDTO.setPipelineIid(ciCdPipelineId);
+        return ciCdJobMapper.select(devopsCdJobDTO);
     }
 
     @Override
-    public List<CiCdJobDTO> listByStageId(Long stageId) {
-        CiCdJobDTO devopsCiJobDTO = new CiCdJobDTO();
+    public List<DevopsCdJobDTO> listByStageId(Long stageId) {
+        DevopsCdJobDTO devopsCiJobDTO = new DevopsCdJobDTO();
         devopsCiJobDTO.setStageId(Objects.requireNonNull(stageId));
         return ciCdJobMapper.select(devopsCiJobDTO);
     }
@@ -56,13 +56,13 @@ public class CiCdJobServiceImpl implements CiCdJobService {
             throw new CommonException(ERROR_STAGE_ID_IS_NULL);
         }
 
-        List<Long> jobIds = listByStageId(stageId).stream().map(CiCdJobDTO::getId).collect(Collectors.toList());
+        List<Long> jobIds = listByStageId(stageId).stream().map(DevopsCdJobDTO::getId).collect(Collectors.toList());
         if (!jobIds.isEmpty()) {
             deleteMavenSettingsRecordByJobIds(jobIds);
 
-            CiCdJobDTO ciCdJobDTO = new CiCdJobDTO();
-            ciCdJobDTO.setStageId(stageId);
-            ciCdJobMapper.delete(ciCdJobDTO);
+            DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
+            devopsCdJobDTO.setStageId(stageId);
+            ciCdJobMapper.delete(devopsCdJobDTO);
         }
     }
 
@@ -83,10 +83,10 @@ public class CiCdJobServiceImpl implements CiCdJobService {
             throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
         }
         // 删除maven settings
-        deleteMavenSettingsRecordByJobIds(listByPipelineId(ciCdPipelineId).stream().map(CiCdJobDTO::getId).collect(Collectors.toList()));
-        CiCdJobDTO ciCdJobDTO = new CiCdJobDTO();
-        ciCdJobDTO.setPipelineIid(ciCdPipelineId);
-        ciCdJobMapper.delete(ciCdJobDTO);
+        deleteMavenSettingsRecordByJobIds(listByPipelineId(ciCdPipelineId).stream().map(DevopsCdJobDTO::getId).collect(Collectors.toList()));
+        DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
+        devopsCdJobDTO.setPipelineIid(ciCdPipelineId);
+        ciCdJobMapper.delete(devopsCdJobDTO);
     }
 
 }

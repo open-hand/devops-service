@@ -6,9 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.CiCdJobValuesServcie;
-import io.choerodon.devops.infra.dto.CiCdJobDTO;
-import io.choerodon.devops.infra.dto.CiCdJobValuesDTO;
-import io.choerodon.devops.infra.dto.DevopsCiContentDTO;
+import io.choerodon.devops.infra.dto.DevopsCdJobValuesDTO;
 import io.choerodon.devops.infra.mapper.CiCdJobValuesMapper;
 
 @Service
@@ -22,8 +20,8 @@ public class CiCdJobValuesServcieImpl implements CiCdJobValuesServcie {
     private CiCdJobValuesMapper ciCdJobValuesMapper;
 
     @Override
-    public void create(CiCdJobValuesDTO ciCdJobValuesDTO) {
-        if (ciCdJobValuesMapper.insertSelective(ciCdJobValuesDTO) != 1) {
+    public void create(DevopsCdJobValuesDTO devopsCdJobValuesDTO) {
+        if (ciCdJobValuesMapper.insertSelective(devopsCdJobValuesDTO) != 1) {
             throw new CommonException(CREATE_CICD_CONTENT_FAILED);
         }
     }

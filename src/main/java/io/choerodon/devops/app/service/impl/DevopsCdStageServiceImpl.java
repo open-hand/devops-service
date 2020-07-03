@@ -7,12 +7,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.CiCdStageVO;
 import io.choerodon.devops.app.service.DevopsCdStageService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdStageDTO;
-import io.choerodon.devops.infra.mapper.DevopsCdStageMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdAuditMapper;
+import io.choerodon.devops.infra.mapper.DevopsCdStageMapper;
+import io.choerodon.devops.api.vo.DevopsCdStageVO;
+import io.choerodon.devops.app.service.CiCdStageService;
+import io.choerodon.devops.infra.dto.DevopsCdStageDTO;
+import io.choerodon.devops.infra.mapper.CiCdStageMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 
 @Service
@@ -45,7 +48,7 @@ public class DevopsCdStageServiceImpl implements DevopsCdStageService {
         }
         DevopsCdStageDTO devopsCdStageDTO = new DevopsCdStageDTO();
         devopsCdStageDTO.setPipelineId(ciCdPipelineId);
-        List<DevopsCdStageDTO> devopsCdStageDTOS = devopsCdStageMapper.select(devopsCdStageDTO);
+        List<DevopsCdStageDTO> devopsCdStageDTOS = ciCdStageMapper.select(devopsCdStageDTO);
         return devopsCdStageDTOS;
     }
 
@@ -59,9 +62,9 @@ public class DevopsCdStageServiceImpl implements DevopsCdStageService {
 
     @Override
     @Transactional
-    public void update(CiCdStageVO ciCdStageVO) {
-        DevopsCdStageDTO devopsCdStageDTO = ConvertUtils.convertObject(ciCdStageVO, DevopsCdStageDTO.class);
-        if (devopsCdStageMapper.updateByPrimaryKeySelective(devopsCdStageDTO) != 1) {
+    public void update(DevopsCdStageVO devopsCdStageVO) {
+        DevopsCdStageDTO devopsCdStageDTO = ConvertUtils.convertObject(devopsCdStageVO, DevopsCdStageDTO.class);
+        if (ciCdStageMapper.updateByPrimaryKeySelective(devopsCdStageDTO) != 1) {
             throw new CommonException(UPDATE_STAGE_FAILED);
         }
     }

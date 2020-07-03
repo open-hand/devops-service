@@ -18,7 +18,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @ModifyAudit
 @VersionAudit
 @Table(name= "devops_cd_job_values")
-public class CiCdJobValuesDTO extends AuditDomain {
+public class DevopsCdJobValuesDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

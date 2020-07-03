@@ -51,34 +51,34 @@ public class CiCdPipelineAdditionalValidator {
      *
      * @param ciCdPipelineVO 流水线数据
      */
-    public static void additionalCheckPipeline(CiCdPipelineVO ciCdPipelineVO) {
-        if (CollectionUtils.isEmpty(ciCdPipelineVO.getCiCdStageVOS())) {
-            throw new CommonException(ERROR_STAGES_EMPTY);
-        }
-
-        List<String> jobNames = new ArrayList<>();
-        List<String> stageNames = new ArrayList<>();
-        // TODO 纯cd不校验镜像地址
-        validateImage(ciCdPipelineVO.getImage());
-
-        ciCdPipelineVO.getCiCdStageVOS()
-                .stream()
-                .sorted(Comparator.comparingLong(CiCdStageVO::getSequence))
-                .forEach(stage -> {
-                    if (CollectionUtils.isEmpty(stage.getJobList())) {
-                        return;
-                    }
-
-                    // 校验stage名称唯一
-                    validateStageNameUniqueInPipeline(stage.getName(), stageNames);
-
-                    stage.getJobList().forEach(job -> {
-                        validateImage(job.getImage());
-                        validateCustomJobFormat(Objects.requireNonNull(stage.getName()), job);
-                        validateJobNameUniqueInPipeline(job.getName(), jobNames);
-                    });
-                });
-    }
+//    public static void additionalCheckPipeline(CiCdPipelineVO ciCdPipelineVO) {
+//        if (CollectionUtils.isEmpty(ciCdPipelineVO.getCiCdStageVOS())) {
+//            throw new CommonException(ERROR_STAGES_EMPTY);
+//        }
+//
+//        List<String> jobNames = new ArrayList<>();
+//        List<String> stageNames = new ArrayList<>();
+//        // TODO 纯cd不校验镜像地址
+//        validateImage(ciCdPipelineVO.getImage());
+//
+//        ciCdPipelineVO.getCiCdStageVOS()
+//                .stream()
+//                .sorted(Comparator.comparingLong(DevopsCdStageVO::getSequence))
+//                .forEach(stage -> {
+//                    if (CollectionUtils.isEmpty(stage.getJobList())) {
+//                        return;
+//                    }
+//
+//                    // 校验stage名称唯一
+//                    validateStageNameUniqueInPipeline(stage.getName(), stageNames);
+//
+//                    stage.getJobList().forEach(job -> {
+//                        validateImage(job.getImage());
+//                        validateCustomJobFormat(Objects.requireNonNull(stage.getName()), job);
+//                        validateJobNameUniqueInPipeline(job.getName(), jobNames);
+//                    });
+//                });
+//    }
 
     /**
      * 校验sequence不为null也不重复
@@ -173,7 +173,7 @@ public class CiCdPipelineAdditionalValidator {
      * 校验自定义任务格式
      */
     @SuppressWarnings("unchecked")
-    private static void validateCustomJobFormat(String stageName, CiCdJobVO devopsCiJobVO) {
+    private static void validateCustomJobFormat(String stageName, DevopsCdJobVO devopsCiJobVO) {
         if (!CiJobTypeEnum.CUSTOM.value().equalsIgnoreCase(devopsCiJobVO.getType())) {
             return;
         }
