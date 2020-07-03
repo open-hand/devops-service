@@ -38,6 +38,8 @@ public class DevopsCdJobDTO extends AuditDomain {
     private String metadata;
     @ApiModelProperty("项目ID")
     private Long projectId;
+    @ApiModelProperty("是否会签")
+    private Integer countersigned;
 
     public Long getId() {
         return id;
@@ -110,5 +112,13 @@ public class DevopsCdJobDTO extends AuditDomain {
 
     public void setTriggerValue(String triggerValue) {
         this.triggerValue = triggerValue;
+    }
+
+    public Integer getCountersigned() {
+        return countersigned;
+    }
+
+    public void setCountersigned(Integer countersigned) {
+        this.countersigned = countersigned;
     }
 }

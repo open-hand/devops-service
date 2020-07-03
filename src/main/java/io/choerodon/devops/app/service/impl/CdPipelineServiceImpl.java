@@ -19,6 +19,7 @@ import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineTaskDTO;
 import io.choerodon.devops.infra.enums.DeployType;
+import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -37,6 +38,7 @@ public class CdPipelineServiceImpl implements CdPipelineService {
 
     @Autowired
     private DevopsCdJobRecordService devopsCdJobRecordService;
+
     @Override
     public void cdHostImageDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
 
@@ -54,44 +56,55 @@ public class CdPipelineServiceImpl implements CdPipelineService {
 
         // 2.
         List<DevopsPipelineStageDTO> devopsPipelineStageDTOS = new ArrayList<>();
-        List<DevopsCdStageRecordDTO> stageRecordDTOList=stageRecordService.queryByPipelineRecordId(pipelineRecordId);
+        List<DevopsCdStageRecordDTO> stageRecordDTOList = stageRecordService.queryByPipelineRecordId(pipelineRecordId);
         if (CollectionUtils.isEmpty(stageRecordDTOList)) {
             return null;
         }
 
         for (int i = 0; i < stageRecordDTOList.size(); i++) {
+            // 3.
             DevopsPipelineStageDTO stageDTO = new DevopsPipelineStageDTO();
             DevopsCdStageRecordDTO stageRecordDTO = stageRecordDTOList.get(i);
             stageDTO.setStageRecordId(stageRecordDTO.getId());
             if (stageRecordDTO.getTriggerType().equals(DeployType.MANUAL.getType())) {
-                List<DevopsCdAuditRecordDTO> auditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(stageRecordDTO.getId());
-                if (CollectionUtils.isEmpty(auditRecordDTOS)) {
-                    throw new CommonException("error.audit.job.noUser");
+                List<DevopsCdAuditRecordDTO> stageAuditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(stageRecordDTO.getId());
+                if (CollectionUtils.isEmpty(stageAuditRecordDTOS)) {
+                    throw new CommonException("error.audit.stage.noUser");
                 }
-                List<String> users = auditRecordDTOS.stream().map(t -> TypeUtil.objToString(t.getUserId())).collect(Collectors.toList());
+                List<String> users = stageAuditRecordDTOS.stream().map(t -> TypeUtil.objToString(t.getUserId())).collect(Collectors.toList());
                 stageDTO.setUsernames(users);
                 stageDTO.setMultiAssign(users.size() > 1);
             }
-            List<DevopsCdJobRecordDTO> jobRecordDTOList=devopsCdJobRecordService.queryByStageRecordId(stageRecordDTO.getId());
-            if(!CollectionUtils.isEmpty(jobRecordDTOList)){
-                jobRecordDTOList.forEach(jobRecordDTO->{
-                    DevopsPipelineTaskDTO devopsPipelineTaskDTO=new DevopsPipelineTaskDTO();
-                    devopsPipelineTaskDTO.setTaskRecordId(jobRecordDTO.getId());
-                    devopsPipelineTaskDTO.setTaskName(jobRecordDTO.getName());
-                    if (jobRecordDTO.getType().equals(DeployType.MANUAL.getType())) {
-                        List<DevopsCdAuditRecordDTO> auditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(stageRecordDTO.getId());
-                        if (CollectionUtils.isEmpty(auditRecordDTOS)) {
+            // 4.
+            List<DevopsCdJobRecordDTO> jobRecordDTOList = devopsCdJobRecordService.queryByStageRecordId(stageRecordDTO.getId());
+            List<DevopsPipelineTaskDTO> taskDTOList = new ArrayList<>();
+            if (!CollectionUtils.isEmpty(jobRecordDTOList)) {
+                jobRecordDTOList.forEach(jobRecordDTO -> {
+                    DevopsPipelineTaskDTO taskDTO = new DevopsPipelineTaskDTO();
+                    taskDTO.setTaskRecordId(jobRecordDTO.getId());
+                    taskDTO.setTaskName(jobRecordDTO.getName());
+                    if (jobRecordDTO.getType().equals(JobTypeEnum.CD_AUDIT.value())) {
+                        List<DevopsCdAuditRecordDTO> jobAuditRecordDTOS = devopsCdAuditRecordService.queryByJobRecordId(jobRecordDTO.getId());
+                        if (CollectionUtils.isEmpty(jobAuditRecordDTOS)) {
                             throw new CommonException("error.audit.job.noUser");
                         }
-                        List<String> users = auditRecordDTOS.stream().map(t -> TypeUtil.objToString(t.getUserId())).collect(Collectors.toList());
-                        stageDTO.setUsernames(users);
-                        stageDTO.setMultiAssign(users.size() > 1);
+                        List<String> taskUsers = jobAuditRecordDTOS.stream().map(t -> TypeUtil.objToString(t.getUserId())).collect(Collectors.toList());
+                        taskDTO.setUsernames(taskUsers);
+                        taskDTO.setMultiAssign(taskUsers.size() > 1);
                     }
+                    taskDTO.setTaskType(jobRecordDTO.getType());
+                    if (jobRecordDTO.getCountersigned() != null) {
+                        taskDTO.setSign(jobRecordDTO.getCountersigned().longValue());
+                    }
+                    taskDTOList.add(taskDTO);
                 });
-
+            }
+            stageDTO.setTasks(taskDTOList);
+            // 5.
+            if (i != stageRecordDTOList.size() - 1) {
+                stageDTO.setNextStageTriggerType(stageRecordDTOList.get(i + 1).getTriggerType());
             }
         }
-
         devopsPipelineDTO.setStages(devopsPipelineStageDTOS);
         return devopsPipelineDTO;
     }

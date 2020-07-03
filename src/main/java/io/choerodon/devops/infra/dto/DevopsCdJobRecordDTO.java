@@ -5,6 +5,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -24,6 +26,8 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
     private String triggerValue;
     private Long projectId;
     private String metadata;
+    @ApiModelProperty("是否会签")
+    private Integer countersigned;
 
     public Long getId() {
         return id;
@@ -97,6 +101,14 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
         this.metadata = metadata;
     }
 
+    public Integer getCountersigned() {
+        return countersigned;
+    }
+
+    public void setCountersigned(Integer countersigned) {
+        this.countersigned = countersigned;
+    }
+
     @Override
     public String toString() {
         return "DevopsCdJobRecordDTO{" +
@@ -109,6 +121,7 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
                 ", triggerValue='" + triggerValue + '\'' +
                 ", projectId=" + projectId +
                 ", metadata='" + metadata + '\'' +
+                ", countersigned='" + countersigned + '\'' +
                 '}';
     }
 }
