@@ -6,7 +6,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_stage_record.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'pipeline_record_id', type: 'BIGINT UNSIGNED', remarks: '工作台记录Id')
+            column(name: 'pipeline_record_id', type: 'BIGINT UNSIGNED', remarks: '流水线记录Id')
             column(name: 'stage_id', type: 'BIGINT UNSIGNED', remarks: '阶段Id')
             column(name: 'stage_name', type: 'VARCHAR(50)', remarks: '阶段名称')
             column(name: 'status', type: 'VARCHAR(20)', remarks: '状态')
