@@ -12,4 +12,11 @@ import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
 public interface DevopsCdJobRecordService {
 
     List<DevopsCdJobRecordDTO> queryByStageRecordId(Long stageRecordId);
+
+
+    /**
+     * 保存cd job执行记录
+     * @param devopsCdJobRecordDTO
+     */
+    void save(DevopsCdJobRecordDTO devopsCdJobRecordDTO);
 }

@@ -94,7 +94,7 @@ public class DevopsSagaHandler {
     @Autowired
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     @Autowired
-    private CiCdPipelineService ciCdPipelineService;
+    private DevopsCdPipelineService devopsCdPipelineService;
 
 
     /**
@@ -304,7 +304,7 @@ public class DevopsSagaHandler {
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 20)
     public String gitlabCDPipeline(String data) {
-        ciCdPipelineService.handleCiPipelineStatusUpdate(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
+        devopsCdPipelineService.handleCiPipelineStatusUpdate(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
         return data;
     }
 

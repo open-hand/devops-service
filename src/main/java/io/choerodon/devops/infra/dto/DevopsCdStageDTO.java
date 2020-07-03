@@ -30,9 +30,6 @@ public class DevopsCdStageDTO extends AuditDomain {
     private String type;
     @ApiModelProperty("触发方式")
     private String triggerType;
-    @ApiModelProperty("是否并行")
-    @Column(name = "is_parallel")
-    private Boolean parallel;
     @ApiModelProperty("项目ID")
     private Long projectId;
 
@@ -82,14 +79,6 @@ public class DevopsCdStageDTO extends AuditDomain {
 
     public void setTriggerType(String triggerType) {
         this.triggerType = triggerType;
-    }
-
-    public Boolean getParallel() {
-        return parallel;
-    }
-
-    public void setParallel(Boolean parallel) {
-        this.parallel = parallel;
     }
 
     public Long getProjectId() {

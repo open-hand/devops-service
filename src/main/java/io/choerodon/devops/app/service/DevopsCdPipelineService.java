@@ -1,10 +1,9 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.vo.CiCdPipelineVO;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 
-public interface CiCdPipelineService {
+public interface DevopsCdPipelineService {
 
     /**
      * 处理ci流水线状态变更
@@ -14,11 +13,5 @@ public interface CiCdPipelineService {
      */
     void handleCiPipelineStatusUpdate(PipelineWebHookVO pipelineWebHookVO);
 
-    /**
-     * 根据应用服务id，查询流水线
-     * @param appId
-     * @return
-     */
-    CiCdPipelineDTO queryByAppId(Long appId);
 
 }

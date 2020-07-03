@@ -12,4 +12,6 @@ import io.choerodon.devops.infra.dto.DevopsCdPipelineRecordDTO;
 public interface DevopsCdPipelineRecordService {
 
     DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId);
+
+    void save(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO);
 }
