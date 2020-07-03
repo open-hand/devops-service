@@ -991,7 +991,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 //        }
 
         Long jobId = devopsCdJobService.create(ConvertUtils.convertObject(t, DevopsCdJobDTO.class)).getId();
-        if (JobTypeEnum.MANUAL.value().equals(t.getType())) {
+        if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
             createUserRel(t.getCdAuditUserIds(), null, null, jobId);
         }
     }
