@@ -47,26 +47,26 @@ public class DevopsCiPipelineController {
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下更新ci流水线")
-    @PutMapping("/{ci_pipeline_id}")
+    @PutMapping("/{pipeline_id}")
     public ResponseEntity<DevopsCiPipelineDTO> update(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = true)
-            @PathVariable(value = "ci_pipeline_id") Long ciPipelineId,
+            @PathVariable(value = "pipeline_id") Long pipelineId,
             @RequestBody @Valid DevopsCiPipelineVO devopsCiPipelineVO) {
 //        DevopsCiPipelineAdditionalValidator.additionalCheckPipeline(devopsCiPipelineVO);
-        return ResponseEntity.ok(devopsCiPipelineService.update(projectId, ciPipelineId, devopsCiPipelineVO));
+        return ResponseEntity.ok(devopsCiPipelineService.update(projectId, pipelineId, devopsCiPipelineVO));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询cicd流水线配置")
-    @GetMapping("/{cicd_pipeline_id}")
-    public ResponseEntity<DevopsCiPipelineVO> query(
+    @GetMapping("/{pipeline_id}")
+    public ResponseEntity<CiCdPipelineVO> query(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = true)
-            @PathVariable(value = "cicd_pipeline_id") Long ciPipelineId) {
-        return ResponseEntity.ok(devopsCiPipelineService.query(projectId, ciPipelineId));
+            @PathVariable(value = "pipeline_id") Long pipelineId) {
+        return ResponseEntity.ok(devopsCiPipelineService.query(projectId, pipelineId));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})

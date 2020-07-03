@@ -13,8 +13,6 @@ import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
 import io.choerodon.devops.infra.mapper.DevopsCdJobMapper;
 
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
-import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
-import io.choerodon.devops.infra.mapper.DevopsCdJobMapper;
 
 @Service
 public class DevopsCdJobServiceImpl implements DevopsCdJobService {
