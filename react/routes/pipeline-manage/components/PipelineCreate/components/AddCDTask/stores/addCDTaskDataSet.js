@@ -5,7 +5,7 @@ export default (projectId) => ({
     type: 'string',
     label: '任务类型',
     required: true,
-    defaultValue: 'auto',
+    defaultValue: 'cdDeploy',
   }, {
     name: 'name',
     type: 'string',

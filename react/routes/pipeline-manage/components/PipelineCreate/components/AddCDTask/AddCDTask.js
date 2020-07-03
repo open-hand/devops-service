@@ -60,7 +60,7 @@ export default observer(() => {
       return result[ADDCDTaskDataSet?.current?.get('mode')];
     }
     const obj = {
-      auto: [
+      cdDeploy: [
         <div className="addcdTask-divided" />,
         <p className="addcdTask-title">配置信息</p>,
         <Form className="addcdTask-form2" columns={3} dataSet={ADDCDTaskDataSet}>
@@ -73,7 +73,7 @@ export default observer(() => {
           />
         </Form>,
       ],
-      host: [
+      cdHost: [
         <div className="addcdTask-divided" />,
         <p className="addcdTask-title">主机设置</p>,
         <Form columns={2} dataSet={ADDCDTaskDataSet}>
@@ -113,9 +113,9 @@ export default observer(() => {
     <div className="addcdTask">
       <Form columns={3} dataSet={ADDCDTaskDataSet}>
         <Select colSpan={1} name="type">
-          <Option value="auto">部署</Option>
-          <Option value="host">主机部署</Option>
-          <Option value="manual">人工卡点</Option>
+          <Option value="cdDeploy">部署</Option>
+          <Option value="cdHost">主机部署</Option>
+          <Option value="cdAudit">人工卡点</Option>
         </Select>
         <TextField colSpan={2} name="name" />
         <TextField colSpan={1} name="glyyfw" />
@@ -132,7 +132,7 @@ export default observer(() => {
           <TextField className="addcdTask-triggerValue" name="triggerValue" />
         </div>
         {
-          ADDCDTaskDataSet?.current?.get('type') === 'auto' && [
+          ADDCDTaskDataSet?.current?.get('type') === 'cdDeploy' && [
             <Select colSpan={1} name="envId" />,
             <SelectBox className="addcdTask-mode" newLine colSpan={1} name="bsms">
               <Option value="new">新建实例</Option>
@@ -147,7 +147,7 @@ export default observer(() => {
           ]
         }
         {
-          ADDCDTaskDataSet?.current?.get('type') === 'manual' && (
+          ADDCDTaskDataSet?.current?.get('type') === 'cdAudit' && (
             <div colSpan={3} style={{ display: 'flex' }}>
               <div style={{ width: '51.1%', marginRight: 8 }}>
                 <Select style={{ width: '100%' }} name="shry" />
