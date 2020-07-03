@@ -37,9 +37,14 @@ public class CiCdPipelineVO {
     private Date latestExecuteDate;
     @ApiModelProperty("最近执行记录状态/nullable")
     private String latestExecuteStatus;
-    @ApiModelProperty(name = "阶段信息")
+    @ApiModelProperty(name = "ci阶段信息")
     @Valid
-    private List<CiCdStageVO> ciCdStageVOS;
+    private List<DevopsCiStageVO> devopsCiStageVOS;
+
+    @ApiModelProperty(name = "cd阶段信息")
+    @Valid
+    private List<DevopsCdStageVO> devopsCdStageVOS;
+
     private Boolean hasMoreRecords;
     private List<CiCdPipelineRecordVO> pipelineRecordVOList;
     private Long objectVersionNumber;
@@ -142,12 +147,20 @@ public class CiCdPipelineVO {
         this.latestExecuteStatus = latestExecuteStatus;
     }
 
-    public List<CiCdStageVO> getCiCdStageVOS() {
-        return ciCdStageVOS;
+    public List<DevopsCiStageVO> getDevopsCiStageVOS() {
+        return devopsCiStageVOS;
     }
 
-    public void setCiCdStageVOS(List<CiCdStageVO> ciCdStageVOS) {
-        this.ciCdStageVOS = ciCdStageVOS;
+    public void setDevopsCiStageVOS(List<DevopsCiStageVO> devopsCiStageVOS) {
+        this.devopsCiStageVOS = devopsCiStageVOS;
+    }
+
+    public List<DevopsCdStageVO> getDevopsCdStageVOS() {
+        return devopsCdStageVOS;
+    }
+
+    public void setDevopsCdStageVOS(List<DevopsCdStageVO> devopsCdStageVOS) {
+        this.devopsCdStageVOS = devopsCdStageVOS;
     }
 
     public Boolean getHasMoreRecords() {

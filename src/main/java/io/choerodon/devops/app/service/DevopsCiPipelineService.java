@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.CiCdPipelineVO;
 import io.choerodon.devops.api.vo.DevopsCiPipelineVO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineDTO;
 
@@ -16,11 +17,11 @@ public interface DevopsCiPipelineService {
     /**
      * 创建流水线
      *
-     * @param projectId          项目id
-     * @param devopsCiPipelineVO 流水线数据
+     * @param projectId      项目id
+     * @param ciCdPipelineVO 流水线数据
      * @return 创建的流水线
      */
-    DevopsCiPipelineDTO create(Long projectId, DevopsCiPipelineVO devopsCiPipelineVO);
+    DevopsCiPipelineDTO create(Long projectId, CiCdPipelineVO ciCdPipelineVO, Long piplineId);
 
     /**
      * 更新流水线

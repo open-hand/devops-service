@@ -33,16 +33,16 @@ public class DevopsCiPipelineController {
         this.devopsCiPipelineService = devopsCiPipelineService;
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下创建ci流水线")
-    @PostMapping
-    public ResponseEntity<DevopsCiPipelineDTO> create(
-            @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @RequestBody @Valid DevopsCiPipelineVO devopsCiPipelineVO) {
-        DevopsCiPipelineAdditionalValidator.additionalCheckPipeline(devopsCiPipelineVO);
-        return ResponseEntity.ok(devopsCiPipelineService.create(projectId, devopsCiPipelineVO));
-    }
+//    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+//    @ApiOperation(value = "项目下创建ci流水线")
+//    @PostMapping
+//    public ResponseEntity<DevopsCiPipelineDTO> create(
+//            @ApiParam(value = "项目Id", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @RequestBody @Valid DevopsCiPipelineVO devopsCiPipelineVO) {
+//        DevopsCiPipelineAdditionalValidator.additionalCheckPipeline(devopsCiPipelineVO);
+//        return ResponseEntity.ok(devopsCiPipelineService.create(projectId, devopsCiPipelineVO));
+//    }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下更新ci流水线")

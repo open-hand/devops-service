@@ -12,7 +12,7 @@ import javax.validation.constraints.NotEmpty;
  * @author wanghao
  * @since 2020/4/2 17:00
  */
-public class CiCdJobVO {
+public class DevopsCdJobVO {
 
     private Long id;
     @ApiModelProperty("任务名称")

@@ -5,15 +5,6 @@ import io.choerodon.devops.api.vo.PipelineWebHookVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 
 public interface CiCdPipelineService {
-    CiCdPipelineDTO create(Long projectId, CiCdPipelineVO ciCdPipelineVO);
-
-    CiCdPipelineVO query(Long projectId, Long ciCdPipelineId);
-
-    CiCdPipelineDTO update(Long projectId, Long ciCdPipelineId, CiCdPipelineVO ciCdPipelineVO);
-
-    CiCdPipelineDTO disablePipeline(Long projectId, Long ciCdPipelineId);
-
-    CiCdPipelineDTO enablePipeline(Long projectId, Long ciCdPipelineId);
 
     /**
      * 处理ci流水线状态变更
@@ -29,6 +20,5 @@ public interface CiCdPipelineService {
      * @return
      */
     CiCdPipelineDTO queryByAppId(Long appId);
-    void deletePipeline(Long projectId, Long ciCdPipelineId);
 
 }
