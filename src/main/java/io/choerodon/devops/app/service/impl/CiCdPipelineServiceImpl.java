@@ -76,9 +76,6 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
     @Autowired
     private CiCdJobMapper ciCdJobMapper;
     @Autowired
-    private CiCdJobValuesMapper ciCdJobValuesMapper;
-
-    @Autowired
     private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
     @Autowired
     private AppServiceService appServiceService;
@@ -95,8 +92,6 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
     private RdupmClientOperator rdupmClientOperator;
     @Autowired
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
-    @Autowired
-    private CiCdJobValuesServcie ciCdJobValuesServcie;
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
@@ -151,16 +146,16 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
                     String triggerType = job.getTriggerType();
                     // 根据匹配规则，计算出要执行的job
                     if (CiTriggerType.REFS.value().equals(triggerType)
-                            && job.getTriggerRefs().contains(ref)) {
+                            && job.getTriggerValue().contains(ref)) {
                             return true;
                     } else if (CiTriggerType.EXACT_MATCH.value().equals(triggerType)
-                            && job.getTriggerRefs().equals(ref)) {
+                            && job.getTriggerValue().equals(ref)) {
                             return true;
                     } else if (CiTriggerType.EXACT_EXCLUDE.value().equals(triggerType)
-                            && job.getTriggerRefs().equals(ref)) {
+                            && job.getTriggerValue().equals(ref)) {
                             return false;
                     } else if (CiTriggerType.REGEX_MATCH.value().equals(triggerType)) {
-                        Pattern pattern = Pattern.compile(job.getTriggerRefs());
+                        Pattern pattern = Pattern.compile(job.getTriggerValue());
                         return pattern.matcher(ref).matches();
                     }
                     return false;
