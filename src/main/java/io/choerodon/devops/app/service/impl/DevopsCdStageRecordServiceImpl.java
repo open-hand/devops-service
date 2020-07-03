@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,5 +32,12 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
         if (devopsCdStageRecordMapper.insert(devopsCdStageRecordDTO) != 1) {
             throw new CommonException(SAVE_STAGE_RECORD_FAILED);
         }
+    }
+
+    @Override
+    public List<DevopsCdStageRecordDTO> queryByPipelineRecordId(Long pipelineRecordId) {
+        DevopsCdStageRecordDTO recordDTO = new DevopsCdStageRecordDTO();
+        recordDTO.setPipelineRecordId(pipelineRecordId);
+        return devopsCdStageRecordMapper.select(recordDTO);
     }
 }

@@ -539,7 +539,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 拼接自定义job
         if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS())) {
             List<DevopsCiJobVO> ciJobVOS = ciCdPipelineVO.getDevopsCiStageVOS().stream()
-                    .flatMap(v -> v.getJobList().stream()).filter(job -> CiJobTypeEnum.CUSTOM.value().equalsIgnoreCase(job.getType()))
+                    .flatMap(v -> v.getJobList().stream()).filter(job -> JobTypeEnum.CUSTOM.value().equalsIgnoreCase(job.getType()))
                     .collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(ciJobVOS)) {
                 for (DevopsCiJobVO job : ciJobVOS) {
@@ -556,11 +556,35 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCiContentService.create(devopsCiContentDTO);
     }
 
+//    private void saveCiContent(final Long projectId, Long pipelineId, CiCdPipelineVO ciCdPipelineVO) {
+//        GitlabCi gitlabCi = buildGitLabCiObject(projectId, ciCdPipelineVO);
+//        StringBuilder gitlabCiYaml = new StringBuilder(GitlabCiUtil.gitlabCi2yaml(gitlabCi));
+//
+//        // 拼接自定义job
+//        if (!CollectionUtils.isEmpty(ciCdPipelineVO.getc())) {
+//            List<DevopsCiJobVO> ciJobVOS = ciCdPipelineVO.getCiCdStageVOS().stream()
+//                    .flatMap(v -> v.getJobList().stream()).filter(job -> JobTypeEnum.CUSTOM.value().equalsIgnoreCase(job.getType()))
+//                    .collect(Collectors.toList());
+//            if (!CollectionUtils.isEmpty(ciJobVOS)) {
+//                for (DevopsCiJobVO job : ciJobVOS) {
+//                    gitlabCiYaml.append(GitOpsConstants.NEW_LINE).append(job.getMetadata());
+//                }
+//            }
+//
+//        }
+//
+//        //保存gitlab-ci配置文件
+//        DevopsCiContentDTO devopsCiContentDTO = new DevopsCiContentDTO();
+//        devopsCiContentDTO.setCiPipelineId(pipelineId);
+//        devopsCiContentDTO.setCiContentFile(gitlabCiYaml.toString());
+//        devopsCiContentService.create(devopsCiContentDTO);
+//    }
+
     /**
      * 构建gitlab-ci对象，用于转换为gitlab-ci.yaml
      *
      * @param projectId          项目id
-     * @param devopsCiPipelineVO 流水线数据
+     * @param ciCdPipelineVO 流水线数据
      * @return 构建完的CI文件对象
      */
     private GitlabCi buildGitLabCiObject(final Long projectId, CiCdPipelineVO ciCdPipelineVO) {
@@ -580,7 +604,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         ciCdPipelineVO.getDevopsCiStageVOS().forEach(stageVO -> {
             if (!CollectionUtils.isEmpty(stageVO.getJobList())) {
                 stageVO.getJobList().forEach(job -> {
-                    if (CiJobTypeEnum.CUSTOM.value().equals(job.getType())) {
+                    if (JobTypeEnum.CUSTOM.value().equals(job.getType())) {
                         return;
                     }
                     CiJob ciJob = new CiJob();
@@ -677,7 +701,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         final Long jobId = jobVO.getId();
         Assert.notNull(jobId, "Ci job id is required.");
 
-        if (CiJobTypeEnum.SONAR.value().equals(jobVO.getType())) {
+        if (JobTypeEnum.SONAR.value().equals(jobVO.getType())) {
             // sonar配置转化为gitlab-ci配置
             List<String> scripts = new ArrayList<>();
             SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(jobVO.getMetadata(), SonarQubeConfigVO.class);
@@ -700,7 +724,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
 
             return scripts;
-        } else if (CiJobTypeEnum.BUILD.value().equals(jobVO.getType())) {
+        } else if (JobTypeEnum.BUILD.value().equals(jobVO.getType())) {
             // 将构建类型的stage中的job的每个step进行解析和转化
             CiConfigVO ciConfigVO = JSONObject.parseObject(jobVO.getMetadata(), CiConfigVO.class);
             if (ciConfigVO == null || CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
@@ -751,7 +775,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     });
 
             return result;
-        } else if (CiJobTypeEnum.CHART.value().equals(jobVO.getType())) {
+        } else if (JobTypeEnum.CHART.value().equals(jobVO.getType())) {
             // 生成chart步骤
             return ArrayUtil.singleAsList(GitlabCiUtil.generateChartBuildScripts());
         }

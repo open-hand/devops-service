@@ -42,6 +42,17 @@ public class CdHostDeployConfigVO {
         @ApiModelProperty("匹配内容")
         private String matchContent;
 
+        @ApiModelProperty("部署values")
+        private String values;
+
+        public String getValues() {
+            return values;
+        }
+
+        public void setValues(String values) {
+            this.values = values;
+        }
+
         public String getRepoName() {
             return repoName;
         }
@@ -90,6 +101,17 @@ public class CdHostDeployConfigVO {
 
         @ApiModelProperty("版本正则")
         private String versionRegular;
+
+        @ApiModelProperty("部署values")
+        private String values;
+
+        public String getValues() {
+            return values;
+        }
+
+        public void setValues(String values) {
+            this.values = values;
+        }
 
         public String getServerName() {
             return serverName;

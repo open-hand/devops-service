@@ -7,7 +7,7 @@ package io.choerodon.devops.infra.enums;
  * @author wanghao
  * @since 2020/4/3 16:57
  */
-public enum CiJobTypeEnum {
+public enum JobTypeEnum {
     /**
      * 构建
      */
@@ -23,11 +23,27 @@ public enum CiJobTypeEnum {
     /**
      * 自定义任务
      */
-    CUSTOM("custom");
+    CUSTOM("custom"),
+
+    /**
+     * cd 部署任务
+     */
+    CD_DEPLOY("cdDeploy"),
+
+    /**
+     * cd 审核任务
+     */
+    CD_AUDIT("cdAudit"),
+
+    /**
+     * cd 主机部署任务
+     */
+    CD_HOST("cdHost");
+
 
     private final String value;
 
-    CiJobTypeEnum(String value) {
+    JobTypeEnum(String value) {
         this.value = value;
     }
 

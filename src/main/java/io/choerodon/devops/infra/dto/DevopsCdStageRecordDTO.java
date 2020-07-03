@@ -21,7 +21,6 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
     private String status;
     private String triggerType;
     private String triggerValue;
-    private Integer isParallel;
     private String executionTime;
     private Long projectId;
     private Long stageId;
@@ -57,14 +56,6 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
 
     public void setTriggerType(String triggerType) {
         this.triggerType = triggerType;
-    }
-
-    public Integer getIsParallel() {
-        return isParallel;
-    }
-
-    public void setIsParallel(Integer isParallel) {
-        this.isParallel = isParallel;
     }
 
     public String getExecutionTime() {
@@ -115,7 +106,6 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
                 ", status='" + status + '\'' +
                 ", triggerType='" + triggerType + '\'' +
                 ", triggerValue='" + triggerValue + '\'' +
-                ", isParallel=" + isParallel +
                 ", executionTime='" + executionTime + '\'' +
                 ", projectId=" + projectId +
                 ", stageId=" + stageId +
