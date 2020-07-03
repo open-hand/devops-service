@@ -1,51 +1,32 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
-
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 
-import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.PipelineWebHookVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.gitlab.ci.Cache;
-import io.choerodon.devops.infra.dto.gitlab.ci.CachePolicy;
-import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
-import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.maven.Repository;
-import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
-import io.choerodon.devops.infra.dto.maven.Server;
-import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.*;
-import io.choerodon.devops.infra.util.*;
+import io.choerodon.devops.infra.util.GenerateUUID;
 
 @Service
-public class CiCdPipelineServiceImpl implements CiCdPipelineService {
+public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private static final String CREATE_PIPELINE_FAILED = "create.pipeline.failed";
@@ -113,7 +94,8 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
     private DevopsCdStageRecordMapper devopsCdStageRecordMapper;
     @Autowired
     private DevopsCdJobService devopsCdJobService;
-
+    @Autowired
+    private DevopsCdJobRecordService devopsCdJobRecordService;
 
 
     @Override
@@ -131,14 +113,16 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
 
 
         String status = pipelineWebHookVO.getObjectAttributes().getStatus();
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
+
         if (PipelineStatus.PENDING.toValue().equals(status)
                 || PipelineStatus.RUNNING.toValue().equals(status)) {
             // 校验CD流水线记录是否已经创建，未创建才创建记录，并将记录的初始状态设置为pending
-            DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
+
 
             if (devopsCdPipelineRecordDTO == null) {
                 // 1. 根据流水线id,查询job列表
-                List<DevopsCdJobDTO> devopsCdJobDTOList = devopsCdJobService.listByPipelineId(devopsCdPipelineRecordDTO.getId());
+                List<DevopsCdJobDTO> devopsCdJobDTOList = devopsCdJobService.listByPipelineId(devopsCiPipelineDTO.getId());
 
                 // 2. 计算要执行的job
                 String ref = pipelineWebHookVO.getObjectAttributes().getRef();
@@ -168,35 +152,77 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
 
                 // 4. 如果有要执行的阶段、job，则初始化执行记录（初始化记录状态为pending）
                 if (!CollectionUtils.isEmpty(executeStageList)) {
+                    // 保存流水线记录
+                    devopsCdPipelineRecordDTO = new DevopsCdPipelineRecordDTO();
+                    devopsCdPipelineRecordDTO.setPipelineId(devopsCiPipelineDTO.getId());
+                    devopsCdPipelineRecordDTO.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
+                    devopsCdPipelineRecordDTO.setStatus(PipelineStatus.PENDING.toValue());
+                    devopsCdPipelineRecordDTO.setPipelineName(devopsCiPipelineDTO.getName());
+                    devopsCdPipelineRecordDTO.setBusinessKey(GenerateUUID.generateUUID());
+
+                    devopsCdPipelineRecordService.save(devopsCdPipelineRecordDTO);
+
                     // 创建cd阶段记录
+                    DevopsCdPipelineRecordDTO finalDevopsCdPipelineRecordDTO = devopsCdPipelineRecordDTO;
+
                     devopsCdStageDTOList.forEach(stage -> {
                         DevopsCdStageRecordDTO devopsCdStageRecordDTO = new DevopsCdStageRecordDTO();
+                        devopsCdStageRecordDTO.setPipelineRecordId(finalDevopsCdPipelineRecordDTO.getId());
                         devopsCdStageRecordDTO.setStageId(stage.getId());
                         devopsCdStageRecordDTO.setStatus(PipelineStatus.PENDING.toValue());
-
-
                         devopsCdStageRecordService.save(devopsCdStageRecordDTO);
+
+                        // 人工审核阶段，添加审核人员记录
+                        if (TriggerTypeEnum.MANUAL.value().equals(stage.getTriggerType())) {
+                            List<DevopsCdAuditDTO> devopsCdAuditDTOS = devopsCdAuditService.baseListByOptions(null, stage.getId(), null);
+                            devopsCdAuditDTOS.forEach(audit -> {
+                                DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = new DevopsCdAuditRecordDTO();
+                                devopsCdAuditRecordDTO.setStageRecordId(devopsCdStageRecordDTO.getId());
+                                devopsCdAuditRecordDTO.setUserId(audit.getUserId());
+                                devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.NOT_AUDIT.value());
+                            });
+                        }
+
                         // 保存job执行记录
                         List<DevopsCdJobDTO> devopsCdJobDTOS = executeJobMap.get(stage.getId());
                         devopsCdJobDTOS.forEach(job -> {
+                            DevopsCdJobRecordDTO devopsCdJobRecordDTO = new DevopsCdJobRecordDTO();
+                            devopsCdJobRecordDTO.setName(job.getName());
+                            devopsCdJobRecordDTO.setStageRecordId(devopsCdStageRecordDTO.getId());
+                            devopsCdJobRecordDTO.setType(job.getType());
+                            devopsCdJobRecordDTO.setStatus(PipelineStatus.PENDING.toValue() );
+                            devopsCdJobRecordDTO.setTriggerType(job.getTriggerType());
+                            devopsCdJobRecordDTO.setTriggerValue(job.getTriggerType());
+                            devopsCdJobRecordDTO.setMetadata(job.getMetadata());
 
+                            devopsCdJobRecordService.save(devopsCdJobRecordDTO);
+
+                            // 人工卡点任务，添加审核人员记录
+//                            if (JobTypeEnum.MANUAL.value().equals(job.getType())) {
+//                                List<DevopsCdAuditDTO> devopsCdAuditDTOS = devopsCdAuditService.baseListByOptions(null, null, job.getId());
+//                                devopsCdAuditDTOS.forEach(audit -> {
+//                                    DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = new DevopsCdAuditRecordDTO();
+//                                    devopsCdAuditRecordDTO.setJobRecordId(devopsCdJobRecordDTO.getId());
+//                                    devopsCdAuditRecordDTO.setUserId(audit.getUserId());
+//                                    devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.NOT_AUDIT.value());
+//                                });
+//                            }
                         });
 
                     });
                 }
-
-
-
             }
 
 
         }
-    }
 
-    @Override
-    public CiCdPipelineDTO queryByAppId(Long appId) {
+        // ci流水线执行成功， 开始执行cd流水线
+        if (PipelineStatus.SUCCESS.toValue().equals(status)) {
+            // 执行条件：cd流水线记录状态为pending
+            if (devopsCdPipelineRecordDTO  != null && PipelineStatus.PENDING.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
 
-        return null;
+            }
+        }
     }
 
 }
