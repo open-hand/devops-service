@@ -31,11 +31,11 @@ export default observer(() => {
             value="123"
           />
         ),
-        image: [
-          <Select newLine colSpan={3} name="imageRepo" />,
-          <Select colSpan={3} name="image" />,
-          <Select colSpan={3} name="triggerType" />,
-          <TextField colSpan={3} name="versionMatch" />,
+        imageDeploy: [
+          <Select newLine colSpan={3} name="repoName" />,
+          <Select colSpan={3} name="imageName" />,
+          <Select colSpan={3} name="matchType" />,
+          <TextField colSpan={3} name="matchContent" />,
           <YamlEditor
             colSpan={6}
             newLine
@@ -43,12 +43,12 @@ export default observer(() => {
             value="123"
           />,
         ],
-        jar: [
-          <Select newLine colSpan={3} name="nexus" />,
-          <Select colSpan={3} name="product" />,
+        jarDeploy: [
+          <Select newLine colSpan={3} name="serverName" />,
+          <Select colSpan={3} name="neRepositoryName" />,
           <Select colSpan={3} name="groupId" />,
           <TextField colSpan={3} name="artifactId" />,
-          <TextField colSpan={6} name="jarMatch" />,
+          <TextField colSpan={6} name="versionRegular" />,
           <YamlEditor
             colSpan={6}
             newLine
@@ -77,16 +77,16 @@ export default observer(() => {
         <div className="addcdTask-divided" />,
         <p className="addcdTask-title">主机设置</p>,
         <Form columns={2} dataSet={ADDCDTaskDataSet}>
-          <TextField colSpan={1} name="ip" />
-          <TextField colSpan={1} name="port" />
-          <SelectBox colSpan={1} name="accountConfig">
+          <TextField colSpan={1} name="hostIp" />
+          <TextField colSpan={1} name="hostPort" />
+          <SelectBox colSpan={1} name="accountType">
             <Option value="accountPassword">用户名与密码</Option>
             <Option value="accountKey">用户名与密钥</Option>
           </SelectBox>
-          <TextField colSpan={1} newLine name="account" />
+          <TextField colSpan={1} newLine name="userName" />
           {
-            ADDCDTaskDataSet?.current?.get('accountConfig') === 'accountPassword' ? (
-              <Password colSpan={1} name="accountPassword" />
+            ADDCDTaskDataSet?.current?.get('accountType') === 'accountPassword' ? (
+              <Password colSpan={1} name="password" />
             ) : (
               <Password colSpan={1} name="accountKey" />
             )
@@ -97,8 +97,8 @@ export default observer(() => {
         <Form style={{ marginTop: 20 }} columns={6} dataSet={ADDCDTaskDataSet}>
           <SelectBox className="addcdTask-mainMode" colSpan={5} name="mode">
             <Option value="customize">自定义命令</Option>
-            <Option value="image">镜像部署</Option>
-            <Option value="jar">jar包部署</Option>
+            <Option value="imageDeploy">镜像部署</Option>
+            <Option value="jarDeploy">jar包部署</Option>
           </SelectBox>,
           {
             getModeDom()
@@ -150,10 +150,10 @@ export default observer(() => {
           ADDCDTaskDataSet?.current?.get('type') === 'cdAudit' && (
             <div colSpan={3} style={{ display: 'flex' }}>
               <div style={{ width: '51.1%', marginRight: 8 }}>
-                <Select style={{ width: '100%' }} name="shry" />
+                <Select style={{ width: '100%' }} name="cdAuditUserIds" />
               </div>
               <div style={{ width: 'calc(100% - 51.1% - 8px)' }}>
-                <Select style={{ width: '100%' }} name="shms" />
+                <Select style={{ width: '100%' }} name="countersigned" />
               </div>
             </div>
           )
