@@ -12,7 +12,7 @@ public class DevopsCdStageVO {
     @NotEmpty(message = "error.stage.name.cannot.be.null")
     private String name;
     @ApiModelProperty("阶段所属流水线id")
-    private Long ciCdPipelineId;
+    private Long pipelineId;
     @ApiModelProperty("阶段顺序")
     @NotNull(message = "error.stage.sequence.cannot.be.null")
     private Long sequence;
@@ -49,12 +49,12 @@ public class DevopsCdStageVO {
         this.name = name;
     }
 
-    public Long getCiCdPipelineId() {
-        return ciCdPipelineId;
+    public Long getPipelineId() {
+        return pipelineId;
     }
 
-    public void setCiCdPipelineId(Long ciCdPipelineId) {
-        this.ciCdPipelineId = ciCdPipelineId;
+    public void setPipelineId(Long pipelineId) {
+        this.pipelineId = pipelineId;
     }
 
     public Long getSequence() {

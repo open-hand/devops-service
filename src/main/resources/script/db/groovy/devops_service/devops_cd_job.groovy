@@ -7,8 +7,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_job.groovy') {
                 constraints(primaryKey: true)
             }
             column(name: 'name', type: 'VARCHAR(50)', remarks: '任务job名称')
-            column(name: 'cicd_pipeline_id', type: 'BIGINT UNSIGNED', remarks: '流水线id')
-            column(name: 'cicd_stage_id', type: 'BIGINT UNSIGNED', remarks: '阶段id')
+            column(name: 'pipeline_id', type: 'BIGINT UNSIGNED', remarks: '流水线id')
+            column(name: 'stage_id', type: 'BIGINT UNSIGNED', remarks: '阶段id')
             column(name: 'type', type: 'VARCHAR(255)', remarks: '包含cicd所有的任务job类型')
             column(name: 'trigger_type', type: 'VARCHAR(255)', remarks: '触发方式', defaultValue: 'refs')
             column(name: 'trigger_value', type: 'VARCHAR(255)', remarks: '触发分支')

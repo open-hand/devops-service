@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCdStageService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdStageDTO;
@@ -18,7 +19,6 @@ public class DevopsCdStageServiceImpl implements DevopsCdStageService {
     private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
     private static final String DELETE_STAGE_FAILED = "delete.stage.failed";
     private static final String UPDATE_STAGE_FAILED = "update.stage.failed";
-
 
 
     @Autowired
@@ -34,5 +34,11 @@ public class DevopsCdStageServiceImpl implements DevopsCdStageService {
         return devopsCdStageMapper.select(devopsCdStageDTO);
     }
 
-
+    @Override
+    public DevopsCdStageDTO create(DevopsCdStageDTO devopsCdStageDTO) {
+        if (devopsCdStageMapper.insert(devopsCdStageDTO) != 1) {
+            throw new CommonException(CREATE_STAGE_FAILED);
+        }
+        return devopsCdStageMapper.selectByPrimaryKey(devopsCdStageDTO.getId());
+    }
 }

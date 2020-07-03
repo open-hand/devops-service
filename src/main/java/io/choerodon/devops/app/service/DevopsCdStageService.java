@@ -13,5 +13,6 @@ public interface DevopsCdStageService {
      */
     List<DevopsCdStageDTO> queryByPipelineId(Long pipelineId);
 
+    DevopsCdStageDTO create(DevopsCdStageDTO devopsCdStageDTO);
 
 }

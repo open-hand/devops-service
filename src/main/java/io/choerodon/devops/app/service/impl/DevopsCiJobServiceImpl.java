@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.api.vo.SonarInfoVO;
+
 import org.hzero.boot.file.FileClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
