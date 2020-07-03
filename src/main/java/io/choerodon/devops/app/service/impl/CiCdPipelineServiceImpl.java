@@ -4,6 +4,7 @@ import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAM
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -112,7 +113,10 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
     @Autowired
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
     @Autowired
-    private CiCdStageRecordService ciCdStageRecordService;
+    private DevopsCdStageRecordService devopsCdStageRecordService;
+    @Autowired
+    private DevopsCdStageRecordMapper devopsCdStageRecordMapper;
+
 
     @Autowired
     private DevopsCiPipelineService devopsCiPipelineService;
@@ -139,15 +143,42 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
         if (PipelineStatus.PENDING.toValue().equals(status)
                 || PipelineStatus.RUNNING.toValue().equals(status)) {
             // 校验CD流水线记录是否已经创建，未创建才创建记录，并将记录的初始状态设置为pending
-            // 1. 查询流水线记录
             DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
 
             if (devopsCdPipelineRecordDTO == null) {
+                // 1. 根据流水线id,查询job列表
+
+                // 2. 计算要执行的job
+                String ref = pipelineWebHookVO.getObjectAttributes().getRef();
+                String triggerType = "";
+                // 根据匹配规则，计算出要执行的job
+                if (CiTriggerType.REFS.value().equals(triggerType)) {
+
+                } else if (CiTriggerType.EXACT_MATCH.value().equals(triggerType)) {
+
+                } else if (CiTriggerType.EXACT_EXCLUDE.value().equals(triggerType)) {
+
+                } else if (CiTriggerType.REGEX_MATCH.value().equals(triggerType)) {
+                    Pattern pattern = Pattern.compile("regEx");
+
+                    if (pattern.matcher(ref).matches()) {
+
+                    }
+                }
+                // 3. 统计出要执行的阶段（要执行的job的所属阶段）
+
+                // 4. 如果有要执行的阶段、job，则初始化执行记录（初始化记录状态为pending）
+
                 // 创建cd阶段记录
                 devopsCdStageDTOList.forEach(stage -> {
                     DevopsCdStageRecordDTO devopsCdStageRecordDTO = new DevopsCdStageRecordDTO();
                     devopsCdStageRecordDTO.setStageId(stage.getId());
                     devopsCdStageRecordDTO.setStatus(PipelineStatus.PENDING.toValue());
+
+
+                    devopsCdStageRecordService.save(devopsCdStageRecordDTO);
+                    // 保存job执行记录
+
 
                 });
 
