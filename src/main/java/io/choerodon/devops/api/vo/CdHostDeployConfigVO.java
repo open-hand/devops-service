@@ -29,6 +29,9 @@ public class CdHostDeployConfigVO {
     @ApiModelProperty("jar部署详情")
     private JarDeploy jarDeploy;
 
+    @ApiModelProperty("自定义部署customize详情")
+    private Customize customize;
+
     public class IamgeDeploy {
         @ApiModelProperty("仓库名")
         private String repoName;
@@ -152,6 +155,28 @@ public class CdHostDeployConfigVO {
         public void setVersionRegular(String versionRegular) {
             this.versionRegular = versionRegular;
         }
+    }
+
+    public class Customize {
+
+        @ApiModelProperty("部署values")
+        private String values;
+
+        public String getValues() {
+            return values;
+        }
+
+        public void setValues(String values) {
+            this.values = values;
+        }
+    }
+
+    public Customize getCustomize() {
+        return customize;
+    }
+
+    public void setCustomize(Customize customize) {
+        this.customize = customize;
     }
 
     public String getHostIp() {

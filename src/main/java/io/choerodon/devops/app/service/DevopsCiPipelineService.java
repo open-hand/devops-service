@@ -31,7 +31,7 @@ public interface DevopsCiPipelineService {
     /**
      * 查询流水线详情（包含阶段和job信息）
      */
-    DevopsCiPipelineVO query(Long projectId, Long ciPipelineId);
+    CiCdPipelineVO query(Long projectId, Long pipelineId);
 
     /**
      * 根据应用服务id查询流水线

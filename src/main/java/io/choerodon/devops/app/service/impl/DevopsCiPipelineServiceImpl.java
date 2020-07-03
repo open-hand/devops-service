@@ -283,29 +283,47 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     @Override
-    public DevopsCiPipelineVO query(Long projectId, Long ciPipelineId) {
+    public CiCdPipelineVO query(Long projectId, Long pipelineId) {
         // 根据pipeline_id查询数据
-        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineMapper.selectByPrimaryKey(ciPipelineId);
-        CommonExAssertUtil.assertTrue(devopsCiPipelineDTO != null, "error.ci.pipeline.not.exist", ciPipelineId);
-        List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(ciPipelineId);
-        List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(ciPipelineId);
-        // dto转vo
-        DevopsCiPipelineVO devopsCiPipelineVO = ConvertUtils.convertObject(devopsCiPipelineDTO, DevopsCiPipelineVO.class);
+        CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
+        CommonExAssertUtil.assertTrue(ciCdPipelineDTO != null, "error.pipeline.not.exist", pipelineId);
+        CiCdPipelineVO ciCdPipelineVO = ConvertUtils.convertObject(ciCdPipelineDTO, CiCdPipelineVO.class);
+
+        //查询CI相关的阶段以及JOB
+        List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(pipelineId);
+        List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(pipelineId);
+
         List<DevopsCiStageVO> devopsCiStageVOS = ConvertUtils.convertList(devopsCiStageDTOList, DevopsCiStageVO.class);
         List<DevopsCiJobVO> devopsCiJobVOS = ConvertUtils.convertList(devopsCiJobDTOS, DevopsCiJobVO.class);
 
-        // 封装对象
-        Map<Long, List<DevopsCiJobVO>> jobMap = devopsCiJobVOS.stream().collect(Collectors.groupingBy(DevopsCiJobVO::getCiStageId));
+        // 封装CI对象
+        Map<Long, List<DevopsCiJobVO>> ciJobMap = devopsCiJobVOS.stream().collect(Collectors.groupingBy(DevopsCiJobVO::getCiStageId));
         devopsCiStageVOS.forEach(devopsCiStageVO -> {
-            List<DevopsCiJobVO> ciJobVOS = jobMap.getOrDefault(devopsCiStageVO.getId(), Collections.emptyList());
+            List<DevopsCiJobVO> ciJobVOS = ciJobMap.getOrDefault(devopsCiStageVO.getId(), Collections.emptyList());
             ciJobVOS.sort(Comparator.comparingLong(DevopsCiJobVO::getId));
             devopsCiStageVO.setJobList(ciJobVOS);
         });
-        // stage排序
+        // ci stage排序
         devopsCiStageVOS = devopsCiStageVOS.stream().sorted(Comparator.comparing(DevopsCiStageVO::getSequence)).collect(Collectors.toList());
-        devopsCiPipelineVO.setStageList(devopsCiStageVOS);
+        ciCdPipelineVO.setDevopsCiStageVOS(devopsCiStageVOS);
 
-        return devopsCiPipelineVO;
+        //查询CD相关的阶段以及JOB
+        List<DevopsCdStageDTO> devopsCdStageDTOS = devopsCdStageService.queryByPipelineId(pipelineId);
+        List<DevopsCdJobDTO> devopsCdJobDTOS = devopsCdJobService.listByPipelineId(pipelineId);
+
+        List<DevopsCdStageVO> devopsCdStageVOS = ConvertUtils.convertList(devopsCdStageDTOS, DevopsCdStageVO.class);
+        List<DevopsCdJobVO> devopsCdJobVOS = ConvertUtils.convertList(devopsCdJobDTOS, DevopsCdJobVO.class);
+        // 封装CD对象
+        Map<Long, List<DevopsCdJobVO>> cdJobMap = devopsCdJobVOS.stream().collect(Collectors.groupingBy(DevopsCdJobVO::getCdStageId));
+        devopsCdStageVOS.stream().forEach(devopsCdStageVO -> {
+            List<DevopsCdJobVO> jobMapOrDefault = cdJobMap.getOrDefault(devopsCdStageVO.getId(), Collections.emptyList());
+            jobMapOrDefault.sort(Comparator.comparing(DevopsCdJobVO::getId));
+            devopsCdStageVO.setJobList(jobMapOrDefault);
+        });
+        // cd stage排序
+        devopsCdStageVOS = devopsCdStageVOS.stream().sorted(Comparator.comparing(DevopsCdStageVO::getSequence)).collect(Collectors.toList());
+        ciCdPipelineVO.setDevopsCdStageVOS(devopsCdStageVOS);
+        return ciCdPipelineVO;
     }
 
     @Override
@@ -608,7 +626,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     /**
      * 构建gitlab-ci对象，用于转换为gitlab-ci.yaml
      *
-     * @param projectId          项目id
+     * @param projectId      项目id
      * @param ciCdPipelineVO 流水线数据
      * @return 构建完的CI文件对象
      */
