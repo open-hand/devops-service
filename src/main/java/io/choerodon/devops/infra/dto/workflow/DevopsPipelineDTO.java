@@ -9,6 +9,7 @@ import java.util.List;
 public class DevopsPipelineDTO {
 
     private Long pipelineRecordId;
+    private String pipelineName;
     private String businessKey;
     private List<DevopsPipelineStageDTO> stages;
 
@@ -34,5 +35,13 @@ public class DevopsPipelineDTO {
 
     public void setStages(List<DevopsPipelineStageDTO> stages) {
         this.stages = stages;
+    }
+
+    public String getPipelineName() {
+        return pipelineName;
+    }
+
+    public void setPipelineName(String pipelineName) {
+        this.pipelineName = pipelineName;
     }
 }

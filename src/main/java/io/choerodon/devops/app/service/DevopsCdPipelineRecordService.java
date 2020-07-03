@@ -14,4 +14,9 @@ public interface DevopsCdPipelineRecordService {
     DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId);
 
     void save(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO);
+
+    /**
+     * 主机模式 镜像部署
+     */
+    void cdHostImageDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 }
