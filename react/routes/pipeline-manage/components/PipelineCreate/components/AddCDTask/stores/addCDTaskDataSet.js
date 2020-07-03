@@ -138,5 +138,15 @@ export default (projectId) => ({
     type: 'string',
     label: 'jar包版本正则匹配',
     required: true,
+  }, {
+    name: 'shry',
+    type: 'string',
+    label: '审核人员',
+    required: true,
+  }, {
+    name: 'shms',
+    type: 'string',
+    label: '审核模式',
+    required: true,
   }],
 });
