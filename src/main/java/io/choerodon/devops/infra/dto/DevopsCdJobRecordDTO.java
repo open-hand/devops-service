@@ -1,8 +1,9 @@
 package io.choerodon.devops.infra.dto;
 
-import io.swagger.annotations.ApiModelProperty;
-import java.util.Date;
-import javax.persistence.*;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -15,22 +16,14 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private Long stageRecordId;
-    private String taskType;
-    private String status;
-    private String triggerVersion;
-    private Long appServiceId;
-    private Long envId;
-    private Long instanceId;
-    private Long versionId;
-    private Long projectId;
-    private Long appServiceDeployId;
-    private Integer isCountersigned;
-    private String value;
-    private Long taskId;
     private String name;
-    private String instanceName;
-    private Long valueId;
+    private Long stageRecordId;
+    private String type;
+    private String status;
+    private String triggerType;
+    private String triggerValue;
+    private Long projectId;
+    private String metadata;
 
     public Long getId() {
         return id;
@@ -38,110 +31,6 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getStageRecordId() {
-        return stageRecordId;
-    }
-
-    public void setStageRecordId(Long stageRecordId) {
-        this.stageRecordId = stageRecordId;
-    }
-
-    public String getTaskType() {
-        return taskType;
-    }
-
-    public void setTaskType(String taskType) {
-        this.taskType = taskType;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getTriggerVersion() {
-        return triggerVersion;
-    }
-
-    public void setTriggerVersion(String triggerVersion) {
-        this.triggerVersion = triggerVersion;
-    }
-
-    public Long getAppServiceId() {
-        return appServiceId;
-    }
-
-    public void setAppServiceId(Long appServiceId) {
-        this.appServiceId = appServiceId;
-    }
-
-    public Long getEnvId() {
-        return envId;
-    }
-
-    public void setEnvId(Long envId) {
-        this.envId = envId;
-    }
-
-    public Long getInstanceId() {
-        return instanceId;
-    }
-
-    public void setInstanceId(Long instanceId) {
-        this.instanceId = instanceId;
-    }
-
-    public Long getVersionId() {
-        return versionId;
-    }
-
-    public void setVersionId(Long versionId) {
-        this.versionId = versionId;
-    }
-
-    public Long getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
-    }
-
-    public Long getAppServiceDeployId() {
-        return appServiceDeployId;
-    }
-
-    public void setAppServiceDeployId(Long appServiceDeployId) {
-        this.appServiceDeployId = appServiceDeployId;
-    }
-
-    public Integer getIsCountersigned() {
-        return isCountersigned;
-    }
-
-    public void setIsCountersigned(Integer isCountersigned) {
-        this.isCountersigned = isCountersigned;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public Long getTaskId() {
-        return taskId;
-    }
-
-    public void setTaskId(Long taskId) {
-        this.taskId = taskId;
     }
 
     public String getName() {
@@ -152,42 +41,74 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
         this.name = name;
     }
 
-    public String getInstanceName() {
-        return instanceName;
+    public Long getStageRecordId() {
+        return stageRecordId;
     }
 
-    public void setInstanceName(String instanceName) {
-        this.instanceName = instanceName;
+    public void setStageRecordId(Long stageRecordId) {
+        this.stageRecordId = stageRecordId;
     }
 
-    public Long getValueId() {
-        return valueId;
+    public String getType() {
+        return type;
     }
 
-    public void setValueId(Long valueId) {
-        this.valueId = valueId;
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getTriggerType() {
+        return triggerType;
+    }
+
+    public void setTriggerType(String triggerType) {
+        this.triggerType = triggerType;
+    }
+
+    public String getTriggerValue() {
+        return triggerValue;
+    }
+
+    public void setTriggerValue(String triggerValue) {
+        this.triggerValue = triggerValue;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
     }
 
     @Override
     public String toString() {
         return "DevopsCdJobRecordDTO{" +
                 "id=" + id +
-                ", stageRecordId=" + stageRecordId +
-                ", taskType='" + taskType + '\'' +
-                ", status='" + status + '\'' +
-                ", triggerVersion='" + triggerVersion + '\'' +
-                ", appServiceId=" + appServiceId +
-                ", envId=" + envId +
-                ", instanceId=" + instanceId +
-                ", versionId=" + versionId +
-                ", projectId=" + projectId +
-                ", appServiceDeployId=" + appServiceDeployId +
-                ", isCountersigned=" + isCountersigned +
-                ", value='" + value + '\'' +
-                ", taskId=" + taskId +
                 ", name='" + name + '\'' +
-                ", instanceName='" + instanceName + '\'' +
-                ", valueId=" + valueId +
+                ", stageRecordId=" + stageRecordId +
+                ", type='" + type + '\'' +
+                ", status='" + status + '\'' +
+                ", triggerType='" + triggerType + '\'' +
+                ", triggerValue='" + triggerValue + '\'' +
+                ", projectId=" + projectId +
+                ", metadata='" + metadata + '\'' +
                 '}';
     }
 }

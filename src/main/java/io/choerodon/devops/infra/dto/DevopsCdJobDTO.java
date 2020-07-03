@@ -33,22 +33,9 @@ public class DevopsCdJobDTO extends AuditDomain {
     @ApiModelProperty("触发类型")
     private String triggerType;
     @ApiModelProperty("触发分支")
-    private String triggerRefs;
+    private String triggerValue;
     @ApiModelProperty("镜像地址")
-    private String image;
-    @ApiModelProperty("是否上传共享目录的内容 / 默认为false")
-    @Column(name = "is_to_upload")
-    private Boolean toUpload;
-    @ApiModelProperty("是否下载共享目录的内容 / 默认为false")
-    @Column(name = "is_to_download")
-    private Boolean toDownload;
-    @ApiModelProperty("详细信息")
     private String metadata;
-    @ApiModelProperty("应用部署Id")
-    private Long appServiceDeployId;
-    @ApiModelProperty("是否会签")
-    @Column(name = "is_countersigned")
-    private Boolean countersigned;
     @ApiModelProperty("项目ID")
     private Long projectId;
 
@@ -100,38 +87,6 @@ public class DevopsCdJobDTO extends AuditDomain {
         this.triggerType = triggerType;
     }
 
-    public String getTriggerRefs() {
-        return triggerRefs;
-    }
-
-    public void setTriggerRefs(String triggerRefs) {
-        this.triggerRefs = triggerRefs;
-    }
-
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
-    }
-
-    public Boolean getToUpload() {
-        return toUpload;
-    }
-
-    public void setToUpload(Boolean toUpload) {
-        this.toUpload = toUpload;
-    }
-
-    public Boolean getToDownload() {
-        return toDownload;
-    }
-
-    public void setToDownload(Boolean toDownload) {
-        this.toDownload = toDownload;
-    }
-
     public String getMetadata() {
         return metadata;
     }
@@ -140,21 +95,6 @@ public class DevopsCdJobDTO extends AuditDomain {
         this.metadata = metadata;
     }
 
-    public Long getAppServiceDeployId() {
-        return appServiceDeployId;
-    }
-
-    public void setAppServiceDeployId(Long appServiceDeployId) {
-        this.appServiceDeployId = appServiceDeployId;
-    }
-
-    public Boolean getCountersigned() {
-        return countersigned;
-    }
-
-    public void setCountersigned(Boolean countersigned) {
-        this.countersigned = countersigned;
-    }
 
     public Long getProjectId() {
         return projectId;
@@ -164,4 +104,11 @@ public class DevopsCdJobDTO extends AuditDomain {
         this.projectId = projectId;
     }
 
+    public String getTriggerValue() {
+        return triggerValue;
+    }
+
+    public void setTriggerValue(String triggerValue) {
+        this.triggerValue = triggerValue;
+    }
 }
