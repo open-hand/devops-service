@@ -51,19 +51,19 @@ public class DevopsCiPipelineAdditionalValidator {
     /**
      * 是对JSR303无法校验的部分进行补充性的校验
      *
-     * @param devopsCiPipelineVO 流水线数据
+     * @param ciCdPipelineVO 流水线数据
      */
-    public static void additionalCheckPipeline(DevopsCiPipelineVO devopsCiPipelineVO) {
-        if (CollectionUtils.isEmpty(devopsCiPipelineVO.getStageList())) {
+    public static void additionalCheckPipeline(CiCdPipelineVO ciCdPipelineVO) {
+        if (CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS()) && CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCdStageVOS())) {
             throw new CommonException(ERROR_STAGES_EMPTY);
         }
 
         List<String> jobNames = new ArrayList<>();
         List<String> stageNames = new ArrayList<>();
 
-        validateImage(devopsCiPipelineVO.getImage());
+        validateImage(ciCdPipelineVO.getImage());
 
-        devopsCiPipelineVO.getStageList()
+        ciCdPipelineVO.getDevopsCiStageVOS()
                 .stream()
                 .sorted(Comparator.comparingLong(DevopsCiStageVO::getSequence))
                 .forEach(stage -> {

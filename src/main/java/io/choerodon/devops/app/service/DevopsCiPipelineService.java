@@ -21,7 +21,7 @@ public interface DevopsCiPipelineService {
      * @param ciCdPipelineVO 流水线数据
      * @return 创建的流水线
      */
-    DevopsCiPipelineDTO create(Long projectId, CiCdPipelineVO ciCdPipelineVO, Long piplineId);
+    DevopsCiPipelineDTO create(Long projectId, CiCdPipelineVO ciCdPipelineVO);
 
     /**
      * 更新流水线

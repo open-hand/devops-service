@@ -12,4 +12,6 @@ public interface DevopsCdStageService {
      * @return
      */
     List<DevopsCdStageDTO> queryByPipelineId(Long pipelineId);
+
+
 }

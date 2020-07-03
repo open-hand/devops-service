@@ -16,10 +16,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_job_record.groovy') {
             column(name: 'instance_id', type: 'BIGINT UNSIGNED', remarks: '实例Id')
             column(name: 'version_id', type: 'BIGINT UNSIGNED', remarks: '版本Id')
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目ID')
-            column(name: 'name', type: 'VARCHAR(50)', remarks: '任务名称', afterColumn: "project_id")
+            column(name: 'name', type: 'VARCHAR(50)', remarks: '任务名称')
             column(name: 'instance_name', type: 'VARCHAR(100)', remarks: '实例名称')
             column(name: 'app_service_deploy_id', type: 'BIGINT UNSIGNED', remarks: '应用部署Id')
-            column(name: 'value_id', type: 'BIGINT UNSIGNED', remarks: 'value Id', afterColumn: "app_deploy_id")
+            column(name: 'value_id', type: 'BIGINT UNSIGNED', remarks: 'value Id')
             column(name: 'is_countersigned', type: 'TINYINT UNSIGNED', remarks: '是否会签')
             column(name: 'value', type: 'TEXT', remarks: '配置信息')
 
