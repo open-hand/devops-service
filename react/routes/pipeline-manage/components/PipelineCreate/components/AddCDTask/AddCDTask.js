@@ -115,6 +115,7 @@ export default observer(() => {
         <Select colSpan={1} name="type">
           <Option value="auto">部署</Option>
           <Option value="host">主机部署</Option>
+          <Option value="manual">人工卡点</Option>
         </Select>
         <TextField colSpan={2} name="name" />
         <TextField colSpan={1} name="glyyfw" />
@@ -144,6 +145,18 @@ export default observer(() => {
               <Select newLine colSpan={2} name="instanceId" />
             ),
           ]
+        }
+        {
+          ADDCDTaskDataSet?.current?.get('type') === 'manual' && (
+            <div colSpan={3} style={{ display: 'flex' }}>
+              <div style={{ width: '51.1%', marginRight: 8 }}>
+                <Select style={{ width: '100%' }} name="shry" />
+              </div>
+              <div style={{ width: 'calc(100% - 51.1% - 8px)' }}>
+                <Select style={{ width: '100%' }} name="shms" />
+              </div>
+            </div>
+          )
         }
       </Form>
       {getOtherConfig()}
