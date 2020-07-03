@@ -1,22 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCdStageService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdStageDTO;
 import io.choerodon.devops.infra.mapper.DevopsCdAuditMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdStageMapper;
-import io.choerodon.devops.api.vo.DevopsCdStageVO;
-import io.choerodon.devops.app.service.CiCdStageService;
-import io.choerodon.devops.infra.dto.DevopsCdStageDTO;
-import io.choerodon.devops.infra.mapper.CiCdStageMapper;
-import io.choerodon.devops.infra.util.ConvertUtils;
 
 @Service
 public class DevopsCdStageServiceImpl implements DevopsCdStageService {
@@ -31,54 +25,6 @@ public class DevopsCdStageServiceImpl implements DevopsCdStageService {
     private DevopsCdStageMapper devopsCdStageMapper;
     @Autowired
     private DevopsCdAuditMapper devopsCdAuditMapper;
-
-    @Override
-    @Transactional
-    public DevopsCdStageDTO create(DevopsCdStageDTO devopsCdStageDTO) {
-        if (devopsCdStageMapper.insert(devopsCdStageDTO) != 1) {
-            throw new CommonException(CREATE_STAGE_FAILED);
-        }
-        return devopsCdStageMapper.selectByPrimaryKey(devopsCdStageDTO.getId());
-    }
-
-    @Override
-    public List<DevopsCdStageDTO> listByPipelineId(Long ciCdPipelineId) {
-        if (ciCdPipelineId == null) {
-            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
-        }
-        DevopsCdStageDTO devopsCdStageDTO = new DevopsCdStageDTO();
-        devopsCdStageDTO.setPipelineId(ciCdPipelineId);
-        List<DevopsCdStageDTO> devopsCdStageDTOS = ciCdStageMapper.select(devopsCdStageDTO);
-        return devopsCdStageDTOS;
-    }
-
-    @Override
-    @Transactional
-    public void deleteById(Long stageId) {
-        if (devopsCdStageMapper.deleteByPrimaryKey(stageId) != 1) {
-            throw new CommonException(DELETE_STAGE_FAILED);
-        }
-    }
-
-    @Override
-    @Transactional
-    public void update(DevopsCdStageVO devopsCdStageVO) {
-        DevopsCdStageDTO devopsCdStageDTO = ConvertUtils.convertObject(devopsCdStageVO, DevopsCdStageDTO.class);
-        if (ciCdStageMapper.updateByPrimaryKeySelective(devopsCdStageDTO) != 1) {
-            throw new CommonException(UPDATE_STAGE_FAILED);
-        }
-    }
-
-    @Override
-    @Transactional
-    public void deleteByPipelineId(Long ciPipelineId) {
-        if (ciPipelineId == null) {
-            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
-        }
-        DevopsCdStageDTO record = new DevopsCdStageDTO();
-        record.setPipelineId(ciPipelineId);
-        devopsCdStageMapper.delete(record);
-    }
 
     @Override
     public List<DevopsCdStageDTO> queryByPipelineId(Long pipelineId) {

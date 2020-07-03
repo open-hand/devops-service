@@ -117,10 +117,6 @@ public class CiCdPipelineServiceImpl implements CiCdPipelineService {
     @Autowired
     private DevopsCdStageRecordMapper devopsCdStageRecordMapper;
 
-
-    @Autowired
-    private DevopsCiPipelineService devopsCiPipelineService;
-
     @Autowired
     private DevopsCiPipelineMapper devopsCiPipelineMapper;
     @Autowired
