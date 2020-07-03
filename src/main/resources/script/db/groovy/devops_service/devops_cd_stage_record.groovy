@@ -11,7 +11,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_stage_record.groovy') {
             column(name: 'stage_name', type: 'VARCHAR(50)', remarks: '阶段名称')
             column(name: 'status', type: 'VARCHAR(20)', remarks: '状态')
             column(name: 'trigger_type', type: 'VARCHAR(10)', remarks: '触发方式')
-            column(name: 'is_parallel', type: 'TINYINT UNSIGNED', remarks: '是否并行')
             column(name: 'execution_time', type: 'VARCHAR(255)', remarks: '执行时间')
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目Id')
 

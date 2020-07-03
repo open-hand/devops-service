@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO;
 
 /**
@@ -17,5 +19,5 @@ public interface DevopsCdStageRecordService {
     void save(DevopsCdStageRecordDTO devopsCdStageRecordDTO);
 
 
-//    List<DevopsCdStageRecordDTO> queryByPipelineRecordId(Long pipelineRecordId);
+    List<DevopsCdStageRecordDTO> queryByPipelineRecordId(Long pipelineRecordId);
 }
