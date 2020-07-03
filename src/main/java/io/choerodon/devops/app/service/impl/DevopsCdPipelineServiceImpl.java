@@ -118,8 +118,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         if (PipelineStatus.PENDING.toValue().equals(status)
                 || PipelineStatus.RUNNING.toValue().equals(status)) {
             // 校验CD流水线记录是否已经创建，未创建才创建记录，并将记录的初始状态设置为pending
-
-
             if (devopsCdPipelineRecordDTO == null) {
                 // 1. 根据流水线id,查询job列表
                 List<DevopsCdJobDTO> devopsCdJobDTOList = devopsCdJobService.listByPipelineId(devopsCiPipelineDTO.getId());
@@ -159,6 +157,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     devopsCdPipelineRecordDTO.setStatus(PipelineStatus.PENDING.toValue());
                     devopsCdPipelineRecordDTO.setPipelineName(devopsCiPipelineDTO.getName());
                     devopsCdPipelineRecordDTO.setBusinessKey(GenerateUUID.generateUUID());
+                    devopsCdPipelineRecordDTO.setProjectId(devopsCiPipelineDTO.getProjectId());
 
                     devopsCdPipelineRecordService.save(devopsCdPipelineRecordDTO);
 
@@ -198,22 +197,19 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                             devopsCdJobRecordService.save(devopsCdJobRecordDTO);
 
                             // 人工卡点任务，添加审核人员记录
-//                            if (JobTypeEnum.MANUAL.value().equals(job.getType())) {
-//                                List<DevopsCdAuditDTO> devopsCdAuditDTOS = devopsCdAuditService.baseListByOptions(null, null, job.getId());
-//                                devopsCdAuditDTOS.forEach(audit -> {
-//                                    DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = new DevopsCdAuditRecordDTO();
-//                                    devopsCdAuditRecordDTO.setJobRecordId(devopsCdJobRecordDTO.getId());
-//                                    devopsCdAuditRecordDTO.setUserId(audit.getUserId());
-//                                    devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.NOT_AUDIT.value());
-//                                });
-//                            }
+                            if (JobTypeEnum.CD_AUDIT.value().equals(job.getType())) {
+                                List<DevopsCdAuditDTO> devopsCdAuditDTOS = devopsCdAuditService.baseListByOptions(null, null, job.getId());
+                                devopsCdAuditDTOS.forEach(audit -> {
+                                    DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = new DevopsCdAuditRecordDTO();
+                                    devopsCdAuditRecordDTO.setJobRecordId(devopsCdJobRecordDTO.getId());
+                                    devopsCdAuditRecordDTO.setUserId(audit.getUserId());
+                                    devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.NOT_AUDIT.value());
+                                });
+                            }
                         });
-
                     });
                 }
             }
-
-
         }
 
         // ci流水线执行成功， 开始执行cd流水线
@@ -221,8 +217,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             // 执行条件：cd流水线记录状态为pending
             if (devopsCdPipelineRecordDTO  != null && PipelineStatus.PENDING.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
 
+
             }
         }
     }
+
 
 }

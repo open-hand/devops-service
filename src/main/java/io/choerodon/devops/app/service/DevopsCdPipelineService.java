@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
-import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 
 public interface DevopsCdPipelineService {
 
