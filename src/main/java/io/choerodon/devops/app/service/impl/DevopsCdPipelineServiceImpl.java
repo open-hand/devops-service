@@ -222,5 +222,112 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         }
     }
 
+    @Override
+    public void triggerCdPipeline(String token, String commit) {
+//        AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
+//        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
+//        if (devopsCiPipelineDTO != null) {
+//            List<DevopsCdStageDTO> devopsCdStageDTOList = devopsCdStageService.queryByPipelineId(devopsCiPipelineDTO.getId());
+//            if (CollectionUtils.isEmpty(devopsCdStageDTOList)) {
+//                return;
+//            }
+//            Map<Long, DevopsCdStageDTO> devopsCdStageDTOMap = devopsCdStageDTOList.stream().collect(Collectors.toMap(DevopsCdStageDTO::getId, v -> v));
+//
+//            // 1. 根据流水线id,查询job列表
+//            List<DevopsCdJobDTO> devopsCdJobDTOList = devopsCdJobService.listByPipelineId(devopsCiPipelineDTO.getId());
+//
+//            // 2. 计算要执行的job
+//
+//            String ref = pipelineWebHookVO.getObjectAttributes().getRef();
+//            List<DevopsCdJobDTO> executeJobList = devopsCdJobDTOList.stream().filter(job -> {
+//                String triggerType = job.getTriggerType();
+//                // 根据匹配规则，计算出要执行的job
+//                if (CiTriggerType.REFS.value().equals(triggerType)
+//                        && job.getTriggerValue().contains(ref)) {
+//                    return true;
+//                } else if (CiTriggerType.EXACT_MATCH.value().equals(triggerType)
+//                        && job.getTriggerValue().equals(ref)) {
+//                    return true;
+//                } else if (CiTriggerType.EXACT_EXCLUDE.value().equals(triggerType)
+//                        && job.getTriggerValue().equals(ref)) {
+//                    return false;
+//                } else if (CiTriggerType.REGEX_MATCH.value().equals(triggerType)) {
+//                    Pattern pattern = Pattern.compile(job.getTriggerValue());
+//                    return pattern.matcher(ref).matches();
+//                }
+//                return false;
+//            }).collect(Collectors.toList());
+//            Map<Long, List<DevopsCdJobDTO>> executeJobMap = executeJobList.stream().collect(Collectors.groupingBy(DevopsCdJobDTO::getStageId));
+//
+//            // 3. 统计出要执行的阶段（要执行的job的所属阶段）
+//            Set<Long> stageIds = executeJobList.stream().map(DevopsCdJobDTO::getStageId).collect(Collectors.toSet());
+//            List<DevopsCdStageDTO> executeStageList = stageIds.stream().map(devopsCdStageDTOMap::get).collect(Collectors.toList());
+//
+//            // 4. 如果有要执行的阶段、job，则初始化执行记录（初始化记录状态为pending）
+//            if (!CollectionUtils.isEmpty(executeStageList)) {
+//                // 保存流水线记录
+//                DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = new DevopsCdPipelineRecordDTO();
+//                devopsCdPipelineRecordDTO.setPipelineId(devopsCiPipelineDTO.getId());
+////                devopsCdPipelineRecordDTO.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
+//                devopsCdPipelineRecordDTO.setStatus(PipelineStatus.PENDING.toValue());
+//                devopsCdPipelineRecordDTO.setPipelineName(devopsCiPipelineDTO.getName());
+//                devopsCdPipelineRecordDTO.setBusinessKey(GenerateUUID.generateUUID());
+//                devopsCdPipelineRecordDTO.setProjectId(devopsCiPipelineDTO.getProjectId());
+//
+//                devopsCdPipelineRecordService.save(devopsCdPipelineRecordDTO);
+//
+//                // 创建cd阶段记录
+//                DevopsCdPipelineRecordDTO finalDevopsCdPipelineRecordDTO = devopsCdPipelineRecordDTO;
+//
+//                devopsCdStageDTOList.forEach(stage -> {
+//                    DevopsCdStageRecordDTO devopsCdStageRecordDTO = new DevopsCdStageRecordDTO();
+//                    devopsCdStageRecordDTO.setPipelineRecordId(finalDevopsCdPipelineRecordDTO.getId());
+//                    devopsCdStageRecordDTO.setStageId(stage.getId());
+//                    devopsCdStageRecordDTO.setStatus(PipelineStatus.PENDING.toValue());
+//                    devopsCdStageRecordService.save(devopsCdStageRecordDTO);
+//
+//                    // 人工审核阶段，添加审核人员记录
+//                    if (TriggerTypeEnum.MANUAL.value().equals(stage.getTriggerType())) {
+//                        List<DevopsCdAuditDTO> devopsCdAuditDTOS = devopsCdAuditService.baseListByOptions(null, stage.getId(), null);
+//                        devopsCdAuditDTOS.forEach(audit -> {
+//                            DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = new DevopsCdAuditRecordDTO();
+//                            devopsCdAuditRecordDTO.setStageRecordId(devopsCdStageRecordDTO.getId());
+//                            devopsCdAuditRecordDTO.setUserId(audit.getUserId());
+//                            devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.NOT_AUDIT.value());
+//                        });
+//                    }
+//
+//                    // 保存job执行记录
+//                    List<DevopsCdJobDTO> devopsCdJobDTOS = executeJobMap.get(stage.getId());
+//                    devopsCdJobDTOS.forEach(job -> {
+//                        DevopsCdJobRecordDTO devopsCdJobRecordDTO = new DevopsCdJobRecordDTO();
+//                        devopsCdJobRecordDTO.setName(job.getName());
+//                        devopsCdJobRecordDTO.setStageRecordId(devopsCdStageRecordDTO.getId());
+//                        devopsCdJobRecordDTO.setType(job.getType());
+//                        devopsCdJobRecordDTO.setStatus(PipelineStatus.PENDING.toValue() );
+//                        devopsCdJobRecordDTO.setTriggerType(job.getTriggerType());
+//                        devopsCdJobRecordDTO.setTriggerValue(job.getTriggerType());
+//                        devopsCdJobRecordDTO.setMetadata(job.getMetadata());
+//
+//                        devopsCdJobRecordService.save(devopsCdJobRecordDTO);
+//
+//                        // 人工卡点任务，添加审核人员记录
+//                        if (JobTypeEnum.CD_AUDIT.value().equals(job.getType())) {
+//                            List<DevopsCdAuditDTO> devopsCdAuditDTOS = devopsCdAuditService.baseListByOptions(null, null, job.getId());
+//                            devopsCdAuditDTOS.forEach(audit -> {
+//                                DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = new DevopsCdAuditRecordDTO();
+//                                devopsCdAuditRecordDTO.setJobRecordId(devopsCdJobRecordDTO.getId());
+//                                devopsCdAuditRecordDTO.setUserId(audit.getUserId());
+//                                devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.NOT_AUDIT.value());
+//                            });
+//                        }
+//                    });
+//                });
+//            }
+
+//        }
+
+    }
+
 
 }
