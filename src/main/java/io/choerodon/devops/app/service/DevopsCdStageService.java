@@ -15,4 +15,7 @@ public interface DevopsCdStageService {
 
     DevopsCdStageDTO create(DevopsCdStageDTO devopsCdStageDTO);
 
+    void deleteById(Long stageId);
+
+    void deleteByPipelineId(Long pipelineId);
 }

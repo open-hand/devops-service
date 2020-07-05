@@ -22,18 +22,18 @@ public class DevopsCdAuditDTO extends AuditDomain {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long userId;
-    private Long cicdPipelineId;
-    private Long cicdStageId;
-    private Long cicdJobId;
+    private Long pipelineId;
+    private Long cdStageId;
+    private Long cdJobId;
 
     public DevopsCdAuditDTO() {
 
     }
 
-    public DevopsCdAuditDTO(Long cicdPipelineId, Long cicdStageId, Long cicdJobId) {
-        this.cicdPipelineId = cicdPipelineId;
-        this.cicdStageId = cicdStageId;
-        this.cicdJobId = cicdJobId;
+    public DevopsCdAuditDTO( Long pipelineId, Long cdStageId, Long cdJobId) {
+        this.pipelineId = pipelineId;
+        this.cdStageId = cdStageId;
+        this.cdJobId = cdJobId;
     }
 
     public Long getId() {
@@ -52,28 +52,28 @@ public class DevopsCdAuditDTO extends AuditDomain {
         this.userId = userId;
     }
 
-    public Long getCicdPipelineId() {
-        return cicdPipelineId;
+    public Long getPipelineId() {
+        return pipelineId;
     }
 
-    public void setCicdPipelineId(Long cicdPipelineId) {
-        this.cicdPipelineId = cicdPipelineId;
+    public void setPipelineId(Long pipelineId) {
+        this.pipelineId = pipelineId;
     }
 
-    public Long getCicdStageId() {
-        return cicdStageId;
+    public Long getCdStageId() {
+        return cdStageId;
     }
 
-    public void setCicdStageId(Long cicdStageId) {
-        this.cicdStageId = cicdStageId;
+    public void setCdStageId(Long cdStageId) {
+        this.cdStageId = cdStageId;
     }
 
-    public Long getCicdJobId() {
-        return cicdJobId;
+    public Long getCdJobId() {
+        return cdJobId;
     }
 
-    public void setCicdJobId(Long cicdJobId) {
-        this.cicdJobId = cicdJobId;
+    public void setCdJobId(Long cdJobId) {
+        this.cdJobId = cdJobId;
     }
 
     @Override
@@ -81,9 +81,9 @@ public class DevopsCdAuditDTO extends AuditDomain {
         return "DevopsCdAuditDTO{" +
                 "id=" + id +
                 ", userId=" + userId +
-                ", cicdPipelineId=" + cicdPipelineId +
-                ", cicdStageId=" + cicdStageId +
-                ", cicdJobId=" + cicdJobId +
+                ", pipelineId=" + pipelineId +
+                ", cdStageId=" + cdStageId +
+                ", cdJobId=" + cdJobId +
                 '}';
     }
 }
