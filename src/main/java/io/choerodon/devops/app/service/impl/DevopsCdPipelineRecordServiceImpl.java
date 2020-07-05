@@ -96,6 +96,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
      * 准备workflow创建实例所需数据
      * 为此workflow下所有stage创建记录
      */
+    @Override
     public DevopsPipelineDTO createCDWorkFlowDTO(Long pipelineRecordId) {
         // 1.
         DevopsPipelineDTO devopsPipelineDTO = new DevopsPipelineDTO();
@@ -190,5 +191,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
         // 删除 stage 记录
         devopsCdPipelineRecordMapper.delete(devopsCdPipelineRecordDTO);
+    }
+
+    @Override
+    @Transactional
+    public void update(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO) {
+        devopsCdPipelineRecordDTO.setObjectVersionNumber(devopsCdPipelineRecordMapper.selectByPrimaryKey(devopsCdPipelineRecordDTO.getId()).getObjectVersionNumber());
+        if (devopsCdPipelineRecordMapper.updateByPrimaryKeySelective(devopsCdPipelineRecordDTO) != 1) {
+            throw new CommonException(ERROR_UPDATE_PIPELINE_RECORD_FAILED);
+        }
     }
 }

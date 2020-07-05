@@ -6,6 +6,13 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.google.gson.Gson;
+import io.reactivex.Emitter;
+import io.reactivex.Observable;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,15 +22,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
+import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.util.CustomContextUtil;
 import io.choerodon.devops.infra.util.GenerateUUID;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
 
 @Service
 public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
@@ -49,6 +63,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
     @Value("${services.gateway.url}")
     private String gatewayUrl;
+
+    private static final Gson gson = new Gson();
 
     @Autowired
     private CiCdPipelineMapper ciCdPipelineMapper;
@@ -96,7 +112,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private DevopsCdJobService devopsCdJobService;
     @Autowired
     private DevopsCdJobRecordService devopsCdJobRecordService;
-
+    @Autowired
+    private WorkFlowServiceOperator workFlowServiceOperator;
 
     @Override
     @Transactional
@@ -217,6 +234,23 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             // 执行条件：cd流水线记录状态为pending
             if (devopsCdPipelineRecordDTO  != null && PipelineStatus.PENDING.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
 
+                DevopsPipelineDTO devopsPipelineDTO = devopsCdPipelineRecordService.createCDWorkFlowDTO(devopsCdPipelineRecordDTO.getId());
+                devopsCdPipelineRecordDTO.setBpmDefinition(gson.toJson(devopsPipelineDTO));
+
+                // 更新流水线记录信息
+                devopsCdPipelineRecordService.update(devopsCdPipelineRecordDTO);
+
+                try {
+                    CustomUserDetails details = DetailsHelper.getUserDetails();
+                    createWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsPipelineDTO, details.getUsername(), details.getUserId(), details.getOrganizationId());
+//                    updateFirstStage(pipelineRecordDTO.getId());
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage());
+//                    sendFailedSiteMessage(pipelineRecordDTO.getId(), GitUserNameUtil.getUserId().longValue());
+//                    pipelineRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
+//                    pipelineRecordDTO.setErrorInfo(e.getMessage());
+//                    pipelineRecordService.baseUpdate(pipelineRecordDTO);
+                }
 
             }
         }
@@ -329,5 +363,32 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
     }
 
+    private void createWorkFlow(Long projectId, io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO devopsPipelineDTO, String loginName, Long userId, Long orgId) {
 
+        Observable.create((ObservableOnSubscribe<String>) Emitter::onComplete).subscribeOn(Schedulers.io())
+                .subscribe(new Observer<String>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                    }
+
+                    @Override
+                    public void onNext(String s) {
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        CustomContextUtil.setUserContext(loginName, userId, orgId);
+                        try {
+                            workFlowServiceOperator.createCiCdPipeline(projectId, devopsPipelineDTO);
+                        } catch (Exception e) {
+                            throw new CommonException(e);
+                        }
+                    }
+                });
+
+    }
 }
