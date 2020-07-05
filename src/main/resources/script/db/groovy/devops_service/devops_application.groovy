@@ -121,7 +121,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
             column(name: 'last_update_date')
         }
     }
-    changeSet(author: 'wanghao', id: '2020-07-05-app-service-add--index') {
+    changeSet(author: 'wanghao', id: '2020-07-06-app-service-add-index') {
         createIndex(indexName: "idx_gitlab_project_id", tableName: "devops_app_service") {
             column(name: 'gitlab_project_id')
         }
