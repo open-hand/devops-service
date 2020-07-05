@@ -14,6 +14,7 @@ import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
 import io.choerodon.devops.api.vo.CiCdPipelineVO;
 import io.choerodon.devops.api.vo.DevopsCiPipelineVO;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
+import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineDTO;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -37,7 +38,7 @@ public class DevopsCiPipelineController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建ci流水线")
     @PostMapping
-    public ResponseEntity<DevopsCiPipelineDTO> create(
+    public ResponseEntity<CiCdPipelineDTO> create(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody @Valid CiCdPipelineVO ciCdPipelineVO) {
@@ -48,14 +49,14 @@ public class DevopsCiPipelineController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下更新ci流水线")
     @PutMapping("/{pipeline_id}")
-    public ResponseEntity<DevopsCiPipelineDTO> update(
+    public ResponseEntity<CiCdPipelineDTO> update(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "pipeline_id") Long pipelineId,
-            @RequestBody @Valid DevopsCiPipelineVO devopsCiPipelineVO) {
-//        DevopsCiPipelineAdditionalValidator.additionalCheckPipeline(devopsCiPipelineVO);
-        return ResponseEntity.ok(devopsCiPipelineService.update(projectId, pipelineId, devopsCiPipelineVO));
+            @RequestBody @Valid CiCdPipelineVO ciCdPipelineVO) {
+        DevopsCiPipelineAdditionalValidator.additionalCheckPipeline(ciCdPipelineVO);
+        return ResponseEntity.ok(devopsCiPipelineService.update(projectId, pipelineId, ciCdPipelineVO));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -81,32 +82,32 @@ public class DevopsCiPipelineController {
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "停用流水线")
-    @PutMapping("/{ci_pipeline_id}/disable")
-    public ResponseEntity<DevopsCiPipelineDTO> disablePipeline(
+    @PutMapping("/{pipeline_id}/disable")
+    public ResponseEntity<CiCdPipelineDTO> disablePipeline(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @PathVariable(value = "ci_pipeline_id") Long ciPipelineId) {
-        return ResponseEntity.ok(devopsCiPipelineService.disablePipeline(projectId, ciPipelineId));
+            @PathVariable(value = "pipeline_id") Long pipelineId) {
+        return ResponseEntity.ok(devopsCiPipelineService.disablePipeline(projectId, pipelineId));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "启用流水线")
-    @PutMapping("/{ci_pipeline_id}/enable")
-    public ResponseEntity<DevopsCiPipelineDTO> enablePipeline(
+    @PutMapping("/{pipeline_id}/enable")
+    public ResponseEntity<CiCdPipelineDTO> enablePipeline(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @PathVariable(value = "ci_pipeline_id") Long ciPipelineId) {
-        return ResponseEntity.ok(devopsCiPipelineService.enablePipeline(projectId, ciPipelineId));
+            @PathVariable(value = "pipeline_id") Long pipelineId) {
+        return ResponseEntity.ok(devopsCiPipelineService.enablePipeline(projectId, pipelineId));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除流水线")
-    @DeleteMapping("/{ci_pipeline_id}")
+    @DeleteMapping("/{pipeline_id}")
     public ResponseEntity<Void> deletePipeline(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @PathVariable(value = "ci_pipeline_id") Long ciPipelineId) {
-        devopsCiPipelineService.deletePipeline(projectId, ciPipelineId);
+            @PathVariable(value = "pipeline_id") Long pipelineId) {
+        devopsCiPipelineService.deletePipeline(projectId, pipelineId);
         return ResponseEntity.noContent().build();
     }
 

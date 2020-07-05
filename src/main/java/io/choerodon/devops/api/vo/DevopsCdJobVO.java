@@ -40,14 +40,10 @@ public class DevopsCdJobVO {
     @NotEmpty(message = "error.job.metadata.cannot.be.null")
     private String metadata;
 
-    @ApiModelProperty("是否上传共享目录的内容 / 默认为false")
-    private Boolean toUpload;
-
-    @ApiModelProperty("是否下载共享目录的内容 / 默认为false")
-    private Boolean toDownload;
 
     private List<Long> cdAuditUserIds;
-    private Boolean countersigned;
+    //是否会签
+    private Integer countersigned;
     private Long appServiceDeployId;
     private PipelineAppServiceDeployVO pipelineAppServiceDeployVO;
     private Long projectId;
@@ -126,21 +122,6 @@ public class DevopsCdJobVO {
         this.metadata = metadata;
     }
 
-    public Boolean getToUpload() {
-        return toUpload;
-    }
-
-    public void setToUpload(Boolean toUpload) {
-        this.toUpload = toUpload;
-    }
-
-    public Boolean getToDownload() {
-        return toDownload;
-    }
-
-    public void setToDownload(Boolean toDownload) {
-        this.toDownload = toDownload;
-    }
 
     public List<Long> getCdAuditUserIds() {
         return cdAuditUserIds;
@@ -150,11 +131,11 @@ public class DevopsCdJobVO {
         this.cdAuditUserIds = cdAuditUserIds;
     }
 
-    public Boolean getCountersigned() {
+    public Integer getCountersigned() {
         return countersigned;
     }
 
-    public void setCountersigned(Boolean countersigned) {
+    public void setCountersigned(Integer countersigned) {
         this.countersigned = countersigned;
     }
 

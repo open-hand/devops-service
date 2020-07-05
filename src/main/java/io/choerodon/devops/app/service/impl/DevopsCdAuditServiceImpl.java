@@ -36,10 +36,10 @@ public class DevopsCdAuditServiceImpl implements DevopsCdAuditService {
     public void baseDelete(DevopsCdAuditDTO devopsCdAuditDTO) {
         if (TypeUtil.checkObjAllFieldsIsNull(devopsCdAuditDTO) ||
                 (devopsCdAuditDTO.getId() == null
-                        && devopsCdAuditDTO.getCicdStageId() == null
-                        && devopsCdAuditDTO.getCicdJobId() == null
+                        && devopsCdAuditDTO.getCdStageId() == null
+                        && devopsCdAuditDTO.getCdJobId() == null
                         && devopsCdAuditDTO.getUserId() == null
-                        && devopsCdAuditDTO.getCicdPipelineId() == null
+                        && devopsCdAuditDTO.getPipelineId() == null
                 )) {
             throw new CommonException("error.delete.pipeline.user.relation");
         }

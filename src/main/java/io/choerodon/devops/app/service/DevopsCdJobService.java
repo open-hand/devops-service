@@ -15,4 +15,9 @@ public interface DevopsCdJobService {
      * @return
      */
     List<DevopsCdJobDTO> listByPipelineId(Long pipelineId);
+
+
+    void deleteByStageId(Long stageId);
+
+    void deleteByPipelineId(Long pipelineId);
 }
