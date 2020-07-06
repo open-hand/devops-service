@@ -5,10 +5,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
+import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCdStageRecordService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.mapper.DevopsCdStageRecordMapper;
@@ -74,5 +75,11 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
         if (devopsCdStageRecordMapper.updateByPrimaryKey(recordDTO) != 1) {
             throw new CommonException(UPDATE_STAGE_RECORD_FAILED);
         }
+    }
+
+    @Override
+    public DevopsCdStageRecordDTO queryById(Long id) {
+        Assert.notNull(id, PipelineCheckConstant.ERROR_STAGE_RECORD_ID_IS_NULL);
+        return devopsCdStageRecordMapper.selectByPrimaryKey(id);
     }
 }

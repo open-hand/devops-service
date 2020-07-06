@@ -28,4 +28,6 @@ public interface DevopsCdJobRecordService {
     void deleteByStageRecordId(Long projectId);
 
     void updateStatusById(Long jobRecordId, String status);
+
+    DevopsCdJobRecordDTO queryById(Long id);
 }
