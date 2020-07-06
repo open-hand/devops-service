@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
+import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoVo;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.feign.RdupmClient;
 
@@ -46,6 +48,39 @@ public class RdupmClientOperator {
                 Objects.requireNonNull(organizationId), projectId, repositoryIds);
         if (response == null || response.getBody() == null) {
             throw new CommonException("error.query.nexus.repo.user.list", projectId, repositoryIds);
+        }
+        return response.getBody();
+    }
+
+    /**
+     * 根据项目id查询镜像仓库列表
+     *
+     * @param projectId
+     * @return
+     */
+    public List<HarborC7nRepoVo> listImageRepo(@Nullable Long projectId) {
+
+        ResponseEntity<List<HarborC7nRepoVo>> response = rdupmClient.listImageRepo(Objects.requireNonNull(projectId));
+        if (response == null || response.getBody() == null) {
+            throw new CommonException("error.query.nexus.repo.list", projectId);
+        }
+        return response.getBody();
+    }
+
+
+    /**
+     * 根据仓库类型和仓库id 镜像名
+     * 查询所有镜像
+     *
+     * @param repoType
+     * @param repoId
+     * @param imageName
+     * @return
+     */
+    public HarborC7nRepoImageTagVo listImageTag(String repoType, @Nullable Long repoId, String imageName) {
+        ResponseEntity<HarborC7nRepoImageTagVo> response = rdupmClient.listImageTag(repoType, repoId, imageName, "");
+        if (response == null || response.getBody() == null) {
+            throw new CommonException("error.query.nexus.repo.list.tag");
         }
         return response.getBody();
     }

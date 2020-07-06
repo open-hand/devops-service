@@ -6,6 +6,8 @@ import java.util.Set;
 import org.springframework.http.ResponseEntity;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
+import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoVo;
 import io.choerodon.devops.infra.dto.harbor.HarborAllRepoDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
@@ -78,5 +80,15 @@ public class RdupmClientFallback implements RdupmClient {
     @Override
     public ResponseEntity<List<C7nNexusRepoDTO>> getMavenRepoByConfig(Long organizationId, Long projectId, Long configId, String type) {
         throw new CommonException("error.query.nexus.repo.components");
+    }
+
+    @Override
+    public ResponseEntity<List<HarborC7nRepoVo>> listImageRepo(Long projectId) {
+        throw new CommonException("error.query.nexus.repo.list");
+    }
+
+    @Override
+    public ResponseEntity<HarborC7nRepoImageTagVo> listImageTag(String repoType, Long repoId, String imageName, String tagName) {
+        throw new CommonException("error.query.nexus.repo.list.tag");
     }
 }

@@ -6,6 +6,8 @@ import java.util.Set;
 import io.swagger.annotations.ApiOperation;
 
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
+import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
+import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoVo;
 import io.choerodon.devops.infra.dto.harbor.HarborAllRepoDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
@@ -14,6 +16,7 @@ import io.choerodon.devops.infra.dto.repo.C7nNexusServerDTO;
 import io.choerodon.devops.infra.feign.fallback.RdupmClientFallback;
 
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -152,5 +155,16 @@ public interface RdupmClient {
                                                                @RequestParam(name = "configId") Long configId, String type);
 
 
+    @ApiOperation(value = "根据项目ID获取镜像仓库列表")
+    @GetMapping("/v1/harbor-choerodon-repos/listImageRepo")
+    ResponseEntity<List<HarborC7nRepoVo>> listImageRepo(@ApiParam(value = "猪齿鱼项目ID", required = true) @RequestParam("projectId") Long projectId);
+
+
+    @ApiOperation(value = "根据仓库类型+仓库ID+镜像名称获取获取镜像版本")
+    @GetMapping("/listImageTag")
+    ResponseEntity<HarborC7nRepoImageTagVo> listImageTag(@ApiParam(value = "仓库类型", required = true) @RequestParam(value = "repoType") String repoType,
+                                                         @ApiParam(value = "仓库ID", required = true) @RequestParam("repoId") Long repoId,
+                                                         @ApiParam(value = "镜像名称", required = true) @RequestParam("imageName") String imageName,
+                                                         @ApiParam(value = "镜像版本号,模糊查询") @RequestParam(required = false, value = "tagName") String tagName);
 
 }
