@@ -175,7 +175,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     @Override
     public void cdHostImageDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
         LOGGER.info("========================================");
-        LOGGER.info("start deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+        LOGGER.info("start image deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
         SSHClient ssh = new SSHClient();
         Session session = null;
         try {
@@ -184,16 +184,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             // 1.
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, WorkFlowStatus.RUNNING.toValue());
             // 2.
-            DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
-            CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
-            // 3.
-            ssh.loadKnownHosts();
-            ssh.connect(cdHostDeployConfigVO.getHostIp(), TypeUtil.objToInteger(cdHostDeployConfigVO.getHostPort()));
-            if (cdHostDeployConfigVO.getAccountType().equals(CdHostAccountType.PASSWORD.value())) {
-                ssh.authPassword(cdHostDeployConfigVO.getUserName(), cdHostDeployConfigVO.getPassword());
-            } else {
-                ssh.authPublickey(cdHostDeployConfigVO.getUserName());
-            }
+            sshConnect(cdJobRecordId,ssh);
 
             // 4.
             // 4.1
@@ -224,9 +215,46 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             }
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, WorkFlowStatus.SUCCESS.toValue());
         } catch (Exception e) {
-            devopsCdJobRecordService.updateStatusById(cdJobRecordId, WorkFlowStatus.FAILED.toValue());
-            devopsCdStageRecordService.updateStatusById(cdStageRecordId, WorkFlowStatus.FAILED.toValue());
-            updateStatusById(pipelineRecordId, WorkFlowStatus.FAILED.toValue());
+            jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
+        } finally {
+            closeSsh(ssh, session);
+        }
+    }
+
+    private void sshConnect(Long cdJobRecordId,SSHClient ssh) throws IOException {
+        // 2.
+        DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
+        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
+        // 3.
+        ssh.loadKnownHosts();
+        ssh.connect(cdHostDeployConfigVO.getHostIp(), TypeUtil.objToInteger(cdHostDeployConfigVO.getHostPort()));
+        if (cdHostDeployConfigVO.getAccountType().equals(CdHostAccountType.PASSWORD.value())) {
+            ssh.authPassword(cdHostDeployConfigVO.getUserName(), cdHostDeployConfigVO.getPassword());
+        } else {
+            ssh.authPublickey(cdHostDeployConfigVO.getUserName());
+        }
+    }
+
+    @Override
+    public void cdHostJarDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+        LOGGER.info("========================================");
+        LOGGER.info("start jar deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+        SSHClient ssh = new SSHClient();
+        Session session = null;
+        try {
+            // 0.1
+
+            // 1.
+            devopsCdJobRecordService.updateStatusById(cdJobRecordId, WorkFlowStatus.RUNNING.toValue());
+            sshConnect(cdJobRecordId,ssh);
+
+            // 4.
+            // 4.1
+            session = ssh.startSession();
+
+            devopsCdJobRecordService.updateStatusById(cdJobRecordId, WorkFlowStatus.SUCCESS.toValue());
+        } catch (Exception e) {
+            jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } finally {
             closeSsh(ssh, session);
         }
@@ -241,6 +269,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void jobFailed(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+        devopsCdJobRecordService.updateStatusById(cdJobRecordId, WorkFlowStatus.FAILED.toValue());
+        devopsCdStageRecordService.updateStatusById(cdStageRecordId, WorkFlowStatus.FAILED.toValue());
+        updateStatusById(pipelineRecordId, WorkFlowStatus.FAILED.toValue());
     }
 
     @Override
