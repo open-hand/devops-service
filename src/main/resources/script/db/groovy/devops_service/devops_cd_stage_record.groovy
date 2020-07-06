@@ -27,4 +27,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_stage_record.groovy') {
             column(name: "pipeline_record_id")
         }
     }
+    changeSet(author: 'wanghao', id: '2020-07-05-add-column') {
+        addColumn(tableName: 'devops_cd_stage_record') {
+            column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '阶段顺序')
+        }
+    }
 }

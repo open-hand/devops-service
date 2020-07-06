@@ -25,5 +25,8 @@ public interface DevopsCdPipelineRecordService {
      */
     void cdHostImageDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
+
+    void update(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO);
+
     void deleteByPipelineId(Long pipelineId);
 }

@@ -32,5 +32,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_job_record.groovy') {
             column(name: "stage_record_id")
         }
     }
+    changeSet(author: 'wanghao', id: '2020-07-06-add-column') {
+        addColumn(tableName: 'devops_cd_job_record') {
+            column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '任务顺序')
+        }
+    }
 
 }

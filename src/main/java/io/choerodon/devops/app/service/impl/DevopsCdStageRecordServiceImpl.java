@@ -46,6 +46,19 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
     }
 
     @Override
+    public DevopsCdStageRecordDTO queryFirstByPipelineRecordId(Long pipelineRecordId) {
+        return devopsCdStageRecordMapper.queryFirstByPipelineRecordId(pipelineRecordId);
+    }
+
+    @Override
+    @Transactional
+    public void update(DevopsCdStageRecordDTO devopsCdStageRecord) {
+        if (devopsCdStageRecordMapper.updateByPrimaryKeySelective(devopsCdStageRecord) != 1) {
+            throw new CommonException(UPDATE_STAGE_RECORD_FAILED);
+        }
+    }
+
+    @Override
     public void updateStatusById(Long stageRecordId, String status) {
         DevopsCdStageRecordDTO recordDTO = devopsCdStageRecordMapper.selectByPrimaryKey(stageRecordId);
         recordDTO.setStatus(status);

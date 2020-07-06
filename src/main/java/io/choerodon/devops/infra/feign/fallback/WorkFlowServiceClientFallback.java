@@ -28,4 +28,9 @@ public class WorkFlowServiceClientFallback implements WorkFlowServiceClient {
     public ResponseEntity stopInstance(Long projectId, String businessKey) {
         throw new CommonException("error.workflow.stop");
     }
+
+    @Override
+    public ResponseEntity<String> createCiCdPipeline(Long projectId, DevopsPipelineDTO devopsPipelineDTO) {
+        throw new CommonException("error.workflow.create");
+    }
 }

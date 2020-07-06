@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.feign;
 
+import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,4 +31,9 @@ public interface WorkFlowServiceClient {
     ResponseEntity stopInstance(
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam(value = "business_key") String businessKey);
+
+    @PostMapping(value = "/v1/projects/{project_id}/process_instances/cicd_pipeline")
+    ResponseEntity<String> createCiCdPipeline(
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestBody DevopsPipelineDTO devopsPipelineDTO);
 }

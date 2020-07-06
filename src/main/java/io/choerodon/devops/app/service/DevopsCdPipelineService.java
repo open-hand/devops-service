@@ -13,5 +13,5 @@ public interface DevopsCdPipelineService {
      */
     void handleCiPipelineStatusUpdate(PipelineWebHookVO pipelineWebHookVO);
 
-
+    void triggerCdPipeline(String token, String commit);
 }
