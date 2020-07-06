@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.dto.harbor.HarborAllRepoDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
+import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
+import io.choerodon.devops.infra.dto.repo.C7nNexusServerDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.infra.feign.RdupmClient;
@@ -60,5 +62,15 @@ public class RdupmClientFallback implements RdupmClient {
     @Override
     public ResponseEntity<HarborAllRepoDTO> queryAllHarborRepoConfig(Long projectId) {
         throw new CommonException("error.query.all.config");
+    }
+
+    @Override
+    public ResponseEntity<List<C7nNexusServerDTO>> getNexusServerByProject(Long organizationId, Long projectId) {
+        throw new CommonException("error.query.nexus.service.by.project");
+    }
+
+    @Override
+    public ResponseEntity<List<C7nNexusComponentDTO>> listMavenComponents(Long organizationId, Long projectId, Long repositoryId, String groupId, String artifactId, String versionRegular) {
+        throw new CommonException("error.query.maven.components");
     }
 }

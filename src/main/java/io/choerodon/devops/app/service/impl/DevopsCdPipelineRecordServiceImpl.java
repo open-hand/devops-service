@@ -27,6 +27,8 @@ import io.choerodon.devops.infra.dto.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineTaskDTO;
 import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.JobTypeEnum;
+import io.choerodon.devops.infra.mapper.DevopsCdJobMapper;
+import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.mapper.DevopsCdPipelineRecordMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -60,6 +62,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Autowired
     private DevopsCdStageRecordService devopsCdStageRecordService;
+
+    @Autowired
+    private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
 
 
     @Override
@@ -160,11 +165,30 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         LOGGER.info("start deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
         try {
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, WorkFlowStatus.RUNNING.toValue());
-            
+
         } catch (Exception e) {
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, WorkFlowStatus.FAILED.toValue());
             devopsCdStageRecordService.updateStatusById(cdStageRecordId, WorkFlowStatus.FAILED.toValue());
             updateStatusById(pipelineRecordId, WorkFlowStatus.FAILED.toValue());
         }
+    }
+
+    @Override
+    @Transactional
+    public void deleteByPipelineId(Long pipelineId) {
+        Assert.notNull(pipelineId, "error.pipeline.id.is.null");
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = new DevopsCdPipelineRecordDTO();
+        devopsCdPipelineRecordDTO.setPipelineId(pipelineId);
+        List<DevopsCdPipelineRecordDTO> devopsCdPipelineRecordDTOS = devopsCdPipelineRecordMapper.select(devopsCdPipelineRecordDTO);
+        //删除cd stage 下的job记录
+        if (!CollectionUtils.isEmpty(devopsCdPipelineRecordDTOS)) {
+            devopsCdPipelineRecordDTOS.forEach(cdPipelineRecordDTO -> {
+                DevopsCdJobRecordDTO devopsCdJobRecordDTO = new DevopsCdJobRecordDTO();
+                devopsCdJobRecordDTO.setStageRecordId(cdPipelineRecordDTO.getId());
+                devopsCdJobRecordMapper.delete(devopsCdJobRecordDTO);
+            });
+        }
+        // 删除 stage 记录
+        devopsCdPipelineRecordMapper.delete(devopsCdPipelineRecordDTO);
     }
 }

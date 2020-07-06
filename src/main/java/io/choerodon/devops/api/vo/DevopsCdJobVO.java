@@ -18,8 +18,6 @@ public class DevopsCdJobVO {
     @ApiModelProperty("任务名称")
     @NotEmpty(message = "error.job.name.cannot.be.null")
     private String name;
-    @ApiModelProperty("runner镜像地址")
-    private String image;
     @ApiModelProperty("阶段id")
     private Long cdStageId;
     @ApiModelProperty("流水线id")
@@ -44,8 +42,6 @@ public class DevopsCdJobVO {
     private List<Long> cdAuditUserIds;
     //是否会签
     private Integer countersigned;
-    private Long appServiceDeployId;
-    private PipelineAppServiceDeployVO pipelineAppServiceDeployVO;
     private Long projectId;
     private Date lastUpdateDate;
     private Long objectVersionNumber;
@@ -66,13 +62,6 @@ public class DevopsCdJobVO {
         this.name = name;
     }
 
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
-    }
 
     public Long getCdStageId() {
         return cdStageId;
@@ -137,22 +126,6 @@ public class DevopsCdJobVO {
 
     public void setCountersigned(Integer countersigned) {
         this.countersigned = countersigned;
-    }
-
-    public Long getAppServiceDeployId() {
-        return appServiceDeployId;
-    }
-
-    public void setAppServiceDeployId(Long appServiceDeployId) {
-        this.appServiceDeployId = appServiceDeployId;
-    }
-
-    public PipelineAppServiceDeployVO getPipelineAppServiceDeployVO() {
-        return pipelineAppServiceDeployVO;
-    }
-
-    public void setPipelineAppServiceDeployVO(PipelineAppServiceDeployVO pipelineAppServiceDeployVO) {
-        this.pipelineAppServiceDeployVO = pipelineAppServiceDeployVO;
     }
 
     public Long getProjectId() {

@@ -27,16 +27,16 @@ import io.choerodon.swagger.annotation.Permission;
  */
 @RestController
 @RequestMapping("/v1/projects/{project_id}/cicd_pipelines")
-public class DevopsCiPipelineController {
+public class CiCdPipelineController {
 
     private DevopsCiPipelineService devopsCiPipelineService;
 
-    public DevopsCiPipelineController(DevopsCiPipelineService devopsCiPipelineService) {
+    public CiCdPipelineController(DevopsCiPipelineService devopsCiPipelineService) {
         this.devopsCiPipelineService = devopsCiPipelineService;
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下创建ci流水线")
+    @ApiOperation(value = "项目下创建流水线")
     @PostMapping
     public ResponseEntity<CiCdPipelineDTO> create(
             @ApiParam(value = "项目Id", required = true)
@@ -47,7 +47,7 @@ public class DevopsCiPipelineController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下更新ci流水线")
+    @ApiOperation(value = "项目下更新流水线")
     @PutMapping("/{pipeline_id}")
     public ResponseEntity<CiCdPipelineDTO> update(
             @ApiParam(value = "项目Id", required = true)
@@ -113,15 +113,15 @@ public class DevopsCiPipelineController {
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "全新执行GitLab流水线")
-    @PostMapping(value = "/{ci_pipeline_id}/execute")
+    @PostMapping(value = "/{pipeline_id}/execute")
     public ResponseEntity<Boolean> executeNew(
-            @PathVariable(value = "ci_pipeline_id") Long ciPipelineId,
+            @PathVariable(value = "pipeline_id") Long pipelineId,
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam(value = "gitlab_project_id") Long gitlabProjectId,
             @ApiParam(value = "分支名", required = true)
             @RequestParam(value = "ref") String ref) {
-        devopsCiPipelineService.executeNew(projectId, ciPipelineId, gitlabProjectId, ref);
+        devopsCiPipelineService.executeNew(projectId, pipelineId, gitlabProjectId, ref);
         return ResponseEntity.noContent().build();
     }
 }
