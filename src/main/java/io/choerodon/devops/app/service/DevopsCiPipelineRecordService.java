@@ -67,4 +67,6 @@ public interface DevopsCiPipelineRecordService {
      * 查询流水线执行记录
      */
     DevopsCiPipelineRecordDTO queryById(Long ciPipelineRecordId);
+
+    DevopsCiPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId);
 }

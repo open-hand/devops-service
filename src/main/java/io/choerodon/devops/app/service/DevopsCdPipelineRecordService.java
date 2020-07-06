@@ -39,4 +39,6 @@ public interface DevopsCdPipelineRecordService {
 
     Page<DevopsCdPipelineRecordVO> pagingCdPipelineRecord(Long projectId, Long ciPipelineId, PageRequest pageable);
 
+
+    void updatePipelineStatusFailed(Long pipelineRecordId, String errorInfo);
 }

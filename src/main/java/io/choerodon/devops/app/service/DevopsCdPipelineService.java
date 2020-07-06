@@ -14,4 +14,13 @@ public interface DevopsCdPipelineService {
     void handleCiPipelineStatusUpdate(PipelineWebHookVO pipelineWebHookVO);
 
     void triggerCdPipeline(String token, String commit);
+
+    /**
+     * 执行环境部署任务
+     * @param pipelineRecordId
+     * @param stageRecordId
+     * @param jobRecordId
+     */
+    void envAutoDeploy(Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
+
 }

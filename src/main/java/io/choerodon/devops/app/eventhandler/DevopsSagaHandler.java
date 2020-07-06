@@ -3,6 +3,7 @@ package io.choerodon.devops.app.eventhandler;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -31,19 +32,16 @@ import io.choerodon.devops.app.service.impl.UpdateAppUserPermissionServiceImpl;
 import io.choerodon.devops.app.service.impl.UpdateEnvUserPermissionServiceImpl;
 import io.choerodon.devops.app.service.impl.UpdateUserPermissionService;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
-import io.choerodon.devops.infra.dto.PipelineTaskRecordDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.TypeUtil;
 
-//import io.choerodon.core.notify.NoticeSendDTO;
 
 
 /**
@@ -95,7 +93,12 @@ public class DevopsSagaHandler {
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     @Autowired
     private DevopsCdPipelineService devopsCdPipelineService;
-
+    @Autowired
+    private DevopsCdJobRecordService devopsCdJobRecordService;
+    @Autowired
+    private DevopsCdStageRecordService devopsCdStageRecordService;
+    @Autowired
+    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
 
     /**
      * devops创建环境
@@ -349,6 +352,42 @@ public class DevopsSagaHandler {
             pipelineStageRecordService.baseCreateOrUpdate(stageRecordDTO);
 
             pipelineService.updateStatus(pipelineRecordId, null, WorkFlowStatus.FAILED.toValue(), e.getMessage());
+            Long userId = GitUserNameUtil.getUserId().longValue();
+            sendNotificationService.sendPipelineNotice(pipelineRecordId,
+                    MessageCodeConstants.PIPELINE_FAILED,
+                    userId, GitUserNameUtil.getEmail(), new HashMap<>());
+            LOGGER.info("send pipeline failed message to the user. The user id is {}", userId);
+        }
+    }
+
+    /**
+     * 创建流水线环境自动部署实例
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_PIPELINE_CREATE_INSTANCE,
+            description = "创建流水线环境自动部署实例",
+            sagaCode = DEVOPS_PIPELINE_ENV_AUTO_DEPLOY_INSTANCE,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            maxRetryCount = 3,
+            seq = 1)
+    public void pipelineEnvAutoDeployInstance(String data) {
+        AppServiceDeployVO appServiceDeployVO = gson.fromJson(data, AppServiceDeployVO.class);
+        Long jobRecordId = appServiceDeployVO.getRecordId();
+        DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+        DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordService.queryById(devopsCdJobRecordDTO.getStageRecordId());
+        Long pipelineRecordId = devopsCdStageRecordDTO.getPipelineRecordId();
+        try {
+            AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(appServiceDeployVO, true);
+            // 更新job状态为success
+            devopsCdJobRecordDTO.setStatus(PipelineStatus.SUCCESS.toValue());
+            devopsCdJobRecordDTO.setFinishedDate(new Date());
+            devopsCdJobRecordService.update(devopsCdJobRecordDTO);
+            LOGGER.info("create pipeline auto deploy instance success");
+        } catch (Exception e) {
+            LOGGER.error("error create pipeline auto deploy instance {}", e);
+            devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);
+            devopsCdStageRecordService.updateStageStatusFailed(devopsCdStageRecordDTO.getId());
+            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, e.getMessage());
+
             Long userId = GitUserNameUtil.getUserId().longValue();
             sendNotificationService.sendPipelineNotice(pipelineRecordId,
                     MessageCodeConstants.PIPELINE_FAILED,

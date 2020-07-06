@@ -37,5 +37,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_job_record.groovy') {
             column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '任务顺序')
         }
     }
-
+    changeSet(author: 'wanghao', id: '2020-07-07-add-column') {
+        addColumn(tableName: 'devops_cd_job_record') {
+            column(name: "started_date", type: "DATETIME", remarks: 'job开始执行时间')
+            column(name: "finished_date", type: "DATETIME", remarks: 'job结束时间')
+        }
+    }
 }

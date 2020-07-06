@@ -34,10 +34,7 @@ import io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineTaskDTO;
-import io.choerodon.devops.infra.enums.CdHostAccountType;
-import io.choerodon.devops.infra.enums.DeployType;
-import io.choerodon.devops.infra.enums.JobTypeEnum;
-import io.choerodon.devops.infra.enums.WorkFlowStatus;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdPipelineRecordMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -306,6 +303,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     public DevopsCdPipelineRecordDTO queryById(Long id) {
         Assert.notNull(id, PipelineCheckConstant.ERROR_PIPELINE_RECORD_ID_IS_NULL);
         return devopsCdPipelineRecordMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
+    public void updatePipelineStatusFailed(Long pipelineRecordId, String errorInfo) {
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = queryById(pipelineRecordId);
+        devopsCdPipelineRecordDTO.setStatus(PipelineStatus.FAILED.toValue());
+        devopsCdPipelineRecordDTO.setErrorInfo(errorInfo);
+        update(devopsCdPipelineRecordDTO);
     }
 
     @Override

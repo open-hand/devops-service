@@ -63,5 +63,22 @@ public class DevopsCdPipelineController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * 触发环境自动部署
+     * @param pipelineRecordId
+     * @param stageRecordId
+     * @param jobRecordId
+     * @return
+     */
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "环境部署")
+    @PostMapping(value = "/env_auto_deploy")
+    public ResponseEntity<Void> envAutoDeploy(@RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+                                          @RequestParam(value = "stage_record_id") Long stageRecordId,
+                                          @RequestParam(value = "job_record_id") Long jobRecordId) {
+        devopsCdPipelineService.envAutoDeploy(pipelineRecordId, stageRecordId, jobRecordId);
+        return ResponseEntity.noContent().build();
+    }
+
 
 }
