@@ -30,6 +30,8 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
     private Integer countersigned;
     private String executionTime;
 
+    @ApiModelProperty("任务顺序")
+    private Long sequence;
     public Long getId() {
         return id;
     }
@@ -118,6 +120,14 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
         this.countersigned = countersigned;
     }
 
+    public Long getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(Long sequence) {
+        this.sequence = sequence;
+    }
+
     @Override
     public String toString() {
         return "DevopsCdJobRecordDTO{" +
@@ -130,7 +140,8 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
                 ", triggerValue='" + triggerValue + '\'' +
                 ", projectId=" + projectId +
                 ", metadata='" + metadata + '\'' +
-                ", countersigned='" + countersigned + '\'' +
+                ", countersigned=" + countersigned +
+                ", sequence=" + sequence +
                 '}';
     }
 }

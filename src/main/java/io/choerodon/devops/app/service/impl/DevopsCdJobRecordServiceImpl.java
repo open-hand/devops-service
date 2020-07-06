@@ -45,6 +45,19 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
     }
 
     @Override
+    public DevopsCdJobRecordDTO queryFirstByStageRecordId(Long stageRecordId) {
+        return devopsCdJobRecordMapper.queryFirstByStageRecordId(stageRecordId);
+    }
+
+    @Override
+    @Transactional
+    public void update(DevopsCdJobRecordDTO devopsCdJobRecordDTO) {
+        if (devopsCdJobRecordMapper.updateByPrimaryKeySelective(devopsCdJobRecordDTO) != 1) {
+            throw new CommonException(ERROR_UPDATE_JOB_RECORD_FAILED);
+        }
+    }
+
+    @Override
     public void deleteByStageRecordId(Long projectId) {
 
     }

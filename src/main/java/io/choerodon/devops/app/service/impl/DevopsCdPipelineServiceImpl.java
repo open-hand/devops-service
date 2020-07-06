@@ -1,8 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -13,6 +11,7 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import org.hzero.boot.message.entity.Receiver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,9 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -53,10 +54,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private static final String ENABLE_PIPELINE_FAILED = "enable.pipeline.failed";
     private static final String DELETE_PIPELINE_FAILED = "delete.pipeline.failed";
 
-
-    private static final String MANUAL = "manual";
-    private static final String AUTO = "auto";
-
+    private static final String STAGE_NAME = "stageName";
 
     @Value("${devops.ci.default.image}")
     private String defaultCiImage;
@@ -114,6 +112,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private DevopsCdJobRecordService devopsCdJobRecordService;
     @Autowired
     private WorkFlowServiceOperator workFlowServiceOperator;
+    @Autowired
+    private DevopsCdAuditRecordService devopsCdAuditRecordService;
+    @Autowired
+    private SendNotificationService sendNotificationService;
 
     @Override
     @Transactional
@@ -242,18 +244,117 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
                 try {
                     CustomUserDetails details = DetailsHelper.getUserDetails();
+                    // 执行流水线
                     createWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsPipelineDTO, details.getUsername(), details.getUserId(), details.getOrganizationId());
-//                    updateFirstStage(pipelineRecordDTO.getId());
+                    // 更新流水线执行状态
+                    updateFirstStage(devopsCdPipelineRecordDTO.getId());
                 } catch (Exception e) {
                     LOGGER.error(e.getMessage());
-//                    sendFailedSiteMessage(pipelineRecordDTO.getId(), GitUserNameUtil.getUserId().longValue());
-//                    pipelineRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
-//                    pipelineRecordDTO.setErrorInfo(e.getMessage());
-//                    pipelineRecordService.baseUpdate(pipelineRecordDTO);
+                    sendFailedSiteMessage(devopsCdPipelineRecordDTO.getId(), GitUserNameUtil.getUserId().longValue());
+                    devopsCdPipelineRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
+                    devopsCdPipelineRecordDTO.setErrorInfo(e.getMessage());
+                    devopsCdPipelineRecordService.update(devopsCdPipelineRecordDTO);
                 }
 
             }
         }
+    }
+
+    private void sendFailedSiteMessage(Long pipelineRecordId, Long userId) {
+        sendNotificationService.sendPipelineNotice(pipelineRecordId,
+                MessageCodeConstants.PIPELINE_FAILED, userId, null, null);
+    }
+
+    private void updateFirstStage(Long pipelineRecordId) {
+        DevopsCdStageRecordDTO devopsCdStageRecord = devopsCdStageRecordService.queryFirstByPipelineRecordId(pipelineRecordId);
+        if (TriggerTypeEnum.MANUAL.equals(devopsCdStageRecord.getTriggerType())) {
+            // 更新阶段状态为待审核
+            devopsCdStageRecord.setStatus(PipelineStatus.NOT_AUDIT.toValue());
+            devopsCdStageRecordService.update(devopsCdStageRecord);
+            // 给审核人员发送审核通知
+            sendStageAuditMessage(devopsCdStageRecord);
+        } else {
+            // 更新阶段状态为执行中
+            devopsCdStageRecord.setStatus(PipelineStatus.RUNNING.toValue());
+            devopsCdStageRecordService.update(devopsCdStageRecord);
+            // 更新第一个job的状态
+            updateFirstJob(pipelineRecordId, devopsCdStageRecord);
+        }
+    }
+
+    private void updateFirstJob(Long pipelineRecordId, DevopsCdStageRecordDTO devopsCdStageRecord) {
+        DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryFirstByStageRecordId(devopsCdStageRecord.getId());
+        if (devopsCdJobRecordDTO == null) {
+            return;
+        }
+        if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordDTO.getType())) {
+            // 更新job状态为待审核
+            devopsCdJobRecordDTO.setStatus(PipelineStatus.NOT_AUDIT.toValue());
+            devopsCdJobRecordService.update(devopsCdJobRecordDTO);
+            // 给审核人员发送审核通知
+            sendJobAuditMessage(pipelineRecordId, devopsCdJobRecordDTO);
+        } else {
+            // 更新job状态为running
+            // 更新job状态为待审核
+            devopsCdJobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
+            devopsCdJobRecordService.update(devopsCdJobRecordDTO);
+        }
+    }
+
+    private void sendStageAuditMessage(DevopsCdStageRecordDTO devopsCdStageRecord) {
+        // 查询审核人员
+        List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(devopsCdStageRecord.getId());
+        if (CollectionUtils.isEmpty(devopsCdAuditRecordDTOS)) {
+            return;
+        }
+        // 发送审核通知
+        List<Receiver> userList = new ArrayList<>();
+        List<Long> userIds = devopsCdAuditRecordDTOS.stream().map(DevopsCdAuditRecordDTO::getUserId).collect(Collectors.toList());
+        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryUsersByUserIds(userIds);
+        Map<Long, IamUserDTO> userDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
+
+        userIds.forEach(id -> {
+            IamUserDTO iamUserDTO = userDTOMap.get(id);
+            if (iamUserDTO != null) {
+                Receiver user = new Receiver();
+                user.setEmail(iamUserDTO.getEmail());
+                user.setUserId(iamUserDTO.getId());
+                user.setPhone(iamUserDTO.getPhone());
+                user.setTargetUserTenantId(iamUserDTO.getOrganizationId());
+                userList.add(user);
+            }
+        });
+        HashMap<String, String> params = new HashMap<>();
+        params.put(STAGE_NAME, devopsCdStageRecord.getStageName());
+        sendNotificationService.sendPipelineNotice(devopsCdStageRecord.getPipelineRecordId(), MessageCodeConstants.PIPELINE_AUDIT, userList, params);
+    }
+
+    private void sendJobAuditMessage(Long pipelineRecordId, DevopsCdJobRecordDTO devopsCdJobRecordDTO) {
+        // 查询审核人员
+        List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByJobRecordId(devopsCdJobRecordDTO.getId());
+        if (CollectionUtils.isEmpty(devopsCdAuditRecordDTOS)) {
+            return;
+        }
+        // 发送审核通知
+        List<Receiver> userList = new ArrayList<>();
+        List<Long> userIds = devopsCdAuditRecordDTOS.stream().map(DevopsCdAuditRecordDTO::getUserId).collect(Collectors.toList());
+        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryUsersByUserIds(userIds);
+        Map<Long, IamUserDTO> userDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
+
+        userIds.forEach(id -> {
+            IamUserDTO iamUserDTO = userDTOMap.get(id);
+            if (iamUserDTO != null) {
+                Receiver user = new Receiver();
+                user.setEmail(iamUserDTO.getEmail());
+                user.setUserId(iamUserDTO.getId());
+                user.setPhone(iamUserDTO.getPhone());
+                user.setTargetUserTenantId(iamUserDTO.getOrganizationId());
+                userList.add(user);
+            }
+        });
+        HashMap<String, String> params = new HashMap<>();
+        params.put(STAGE_NAME, devopsCdJobRecordDTO.getName());
+        sendNotificationService.sendPipelineNotice(pipelineRecordId, MessageCodeConstants.PIPELINE_AUDIT, userList, params);
     }
 
     @Override

@@ -14,9 +14,10 @@ public enum PipelineStatus {
     SUCCESS,
     FAILED,
     CANCELED,
+    NOT_AUDIT,
     SKIPPED;
 
-    private static final HashMap<String, PipelineStatus> valuesMap = new HashMap<>(6);
+    private static final HashMap<String, PipelineStatus> valuesMap = new HashMap<>(7);
 
     static {
         PipelineStatus[] var0 = values();

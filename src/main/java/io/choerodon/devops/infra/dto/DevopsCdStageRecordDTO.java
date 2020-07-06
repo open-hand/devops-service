@@ -18,9 +18,9 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long pipelineRecordId;
+    private Long sequence;
     private String status;
     private String triggerType;
-    private String triggerValue;
     private String executionTime;
     private Long projectId;
     private Long stageId;
@@ -90,12 +90,13 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
         this.stageName = stageName;
     }
 
-    public String getTriggerValue() {
-        return triggerValue;
+
+    public Long getSequence() {
+        return sequence;
     }
 
-    public void setTriggerValue(String triggerValue) {
-        this.triggerValue = triggerValue;
+    public void setSequence(Long sequence) {
+        this.sequence = sequence;
     }
 
     @Override
@@ -103,9 +104,9 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
         return "DevopsCdStageRecordDTO{" +
                 "id=" + id +
                 ", pipelineRecordId=" + pipelineRecordId +
+                ", sequence=" + sequence +
                 ", status='" + status + '\'' +
                 ", triggerType='" + triggerType + '\'' +
-                ", triggerValue='" + triggerValue + '\'' +
                 ", executionTime='" + executionTime + '\'' +
                 ", projectId=" + projectId +
                 ", stageId=" + stageId +
