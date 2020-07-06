@@ -29,4 +29,6 @@ public interface DevopsCdPipelineRecordService {
     void update(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO);
 
     void deleteByPipelineId(Long pipelineId);
+
+    DevopsCdPipelineRecordDTO queryById(Long id);
 }

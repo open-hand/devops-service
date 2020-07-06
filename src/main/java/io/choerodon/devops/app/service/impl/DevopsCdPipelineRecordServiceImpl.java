@@ -263,6 +263,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     @Override
+    public DevopsCdPipelineRecordDTO queryById(Long id) {
+        Assert.notNull(id, PipelineCheckConstant.ERROR_PIPELINE_RECORD_ID_IS_NULL);
+        return devopsCdPipelineRecordMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
     @Transactional
     public void update(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO) {
         devopsCdPipelineRecordDTO.setObjectVersionNumber(devopsCdPipelineRecordMapper.selectByPrimaryKey(devopsCdPipelineRecordDTO.getId()).getObjectVersionNumber());

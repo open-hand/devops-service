@@ -27,4 +27,6 @@ public interface DevopsCdStageRecordService {
 
 
     void updateStatusById(Long stageRecordId, String status);
+
+    DevopsCdStageRecordDTO queryById(Long id);
 }

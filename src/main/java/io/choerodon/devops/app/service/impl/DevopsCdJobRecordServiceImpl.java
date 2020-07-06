@@ -5,9 +5,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCdJobRecordService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
@@ -78,5 +80,11 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
         if (devopsCdJobRecordMapper.updateByPrimaryKey(cdJobRecordDTO) != 1) {
             throw new CommonException(ERROR_UPDATE_JOB_RECORD_FAILED);
         }
+    }
+
+    @Override
+    public DevopsCdJobRecordDTO queryById(Long id) {
+        Assert.notNull(id, PipelineCheckConstant.ERROR_JOB_RECORD_ID_IS_NULL);
+        return devopsCdJobRecordMapper.selectByPrimaryKey(id);
     }
 }
