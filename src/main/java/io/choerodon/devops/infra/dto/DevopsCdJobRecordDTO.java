@@ -28,6 +28,7 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
     private String metadata;
     @ApiModelProperty("是否会签")
     private Integer countersigned;
+    private String executionTime;
 
     public Long getId() {
         return id;
@@ -99,6 +100,14 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
 
     public void setMetadata(String metadata) {
         this.metadata = metadata;
+    }
+
+    public String getExecutionTime() {
+        return executionTime;
+    }
+
+    public void setExecutionTime(String executionTime) {
+        this.executionTime = executionTime;
     }
 
     public Integer getCountersigned() {
