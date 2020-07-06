@@ -37,7 +37,7 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
     public List<DevopsCdJobDTO> listByPipelineId(Long pipelineId) {
         Assert.notNull(pipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
         DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
-        devopsCdJobDTO.setPipelineIid(pipelineId);
+        devopsCdJobDTO.setPipelineId(pipelineId);
         return devopsCdJobMapper.select(devopsCdJobDTO);
     }
 
@@ -61,7 +61,7 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
     public void deleteByPipelineId(Long pipelineId) {
         Assert.notNull(pipelineId, "error.cd.job.pipeline.id.is.null");
         DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
-        devopsCdJobDTO.setPipelineIid(pipelineId);
+        devopsCdJobDTO.setPipelineId(pipelineId);
         List<DevopsCdJobDTO> devopsCdJobDTOS = devopsCdJobMapper.select(devopsCdJobDTO);
         if (!CollectionUtils.isEmpty(devopsCdJobDTOS)) {
             devopsCdJobDTOS.forEach(cdJobDTO -> {
