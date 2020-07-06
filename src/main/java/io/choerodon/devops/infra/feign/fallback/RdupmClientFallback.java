@@ -9,6 +9,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.dto.harbor.HarborAllRepoDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
+import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusServerDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
@@ -72,5 +73,10 @@ public class RdupmClientFallback implements RdupmClient {
     @Override
     public ResponseEntity<List<C7nNexusComponentDTO>> listMavenComponents(Long organizationId, Long projectId, Long repositoryId, String groupId, String artifactId, String versionRegular) {
         throw new CommonException("error.query.maven.components");
+    }
+
+    @Override
+    public ResponseEntity<List<C7nNexusRepoDTO>> getRepoByConfig(Long organizationId, Long projectId, Long configId) {
+        throw new CommonException("error.query.nexus.repo.components");
     }
 }
