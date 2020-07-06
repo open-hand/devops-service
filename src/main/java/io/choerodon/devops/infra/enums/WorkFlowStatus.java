@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  */
 public enum WorkFlowStatus {
     RUNNING,
+    SKIP,
     PENDINGCHECK,
     SUCCESS,
     FAILED,

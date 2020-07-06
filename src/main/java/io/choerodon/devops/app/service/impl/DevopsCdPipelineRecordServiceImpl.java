@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
@@ -21,7 +20,11 @@ import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.CdHostDeployConfigVO;
+import io.choerodon.devops.api.vo.DevopsCdJobRecordVO;
+import io.choerodon.devops.api.vo.DevopsCdPipelineRecordVO;
+import io.choerodon.devops.api.vo.DevopsCdStageRecordVO;
+import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.app.service.DevopsCdAuditRecordService;
 import io.choerodon.devops.app.service.DevopsCdJobRecordService;
 import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
@@ -35,6 +38,7 @@ import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineTaskDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdPipelineRecordMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -81,6 +85,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Autowired
     private DevopsCdStageRecordService devopsCdStageRecordService;
+
+    @Autowired
+    private RdupmClientOperator rdupmClientOperator;
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
@@ -182,12 +189,22 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         SSHClient ssh = new SSHClient();
         Session session = null;
         try {
+            // 2.
+            DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
+            CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
+            CdHostDeployConfigVO.ImageDeploy imageDeploy = cdHostDeployConfigVO.getImageDeploy();
             // 0.1
-
+            HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName());
+//            if(CollectionUtils.isEmpty(imageTagVo.getImageTagList())){
+//                devopsCdJobRecordService.updateStatusById(cdJobRecordId, WorkFlowStatus.SKIP.toValue());
+//                return;
+//            }else{
+//
+//            }
             // 1.
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, WorkFlowStatus.RUNNING.toValue());
             // 2.
-            sshConnect(cdJobRecordId,ssh);
+            sshConnect(cdHostDeployConfigVO, ssh);
 
             // 4.
             // 4.1
@@ -224,10 +241,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
     }
 
-    private void sshConnect(Long cdJobRecordId,SSHClient ssh) throws IOException {
-        // 2.
-        DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
-        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
+    private void sshConnect(CdHostDeployConfigVO cdHostDeployConfigVO, SSHClient ssh) throws IOException {
         // 3.
         ssh.loadKnownHosts();
         ssh.connect(cdHostDeployConfigVO.getHostIp(), TypeUtil.objToInteger(cdHostDeployConfigVO.getHostPort()));
@@ -236,6 +250,32 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         } else {
             ssh.authPublickey(cdHostDeployConfigVO.getUserName());
         }
+    }
+
+    private String getRegexStr(CdHostDeployConfigVO.ImageDeploy imageDeploy) {
+        String regexStr = null;
+        if (!StringUtils.isEmpty(imageDeploy.getMatchType())
+                && !StringUtils.isEmpty(imageDeploy.getMatchContent())) {
+            CiTriggerType ciTriggerType = CiTriggerType.forValue(imageDeploy.getMatchType());
+            if (ciTriggerType != null) {
+                String triggerValue = imageDeploy.getMatchContent();
+                switch (ciTriggerType) {
+                    case REFS:
+                        regexStr = "^.*" + triggerValue + ".*$";
+                        break;
+                    case EXACT_MATCH:
+                        regexStr = "^" + triggerValue + "$";
+                        break;
+                    case REGEX_MATCH:
+                        regexStr = triggerValue;
+                        break;
+                    case EXACT_EXCLUDE:
+                        regexStr = "^(?!.*" + triggerValue + ").*$";
+                        break;
+                }
+            }
+        }
+        return regexStr;
     }
 
     @Override
@@ -247,9 +287,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         try {
             // 0.1
 
+            // 2.
+            DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
+            CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
             // 1.
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, WorkFlowStatus.RUNNING.toValue());
-            sshConnect(cdJobRecordId,ssh);
+            sshConnect(cdHostDeployConfigVO, ssh);
 
             // 4.
             // 4.1
