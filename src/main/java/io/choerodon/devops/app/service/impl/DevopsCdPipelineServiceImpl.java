@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE;
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_PIPELINE_ENV_AUTO_DEPLOY_INSTANCE;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -48,7 +48,6 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.CustomContextUtil;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
 public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
@@ -209,7 +208,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
                 DevopsPipelineDTO devopsPipelineDTO = devopsCdPipelineRecordService.createCDWorkFlowDTO(devopsCdPipelineRecordDTO.getId());
                 devopsCdPipelineRecordDTO.setBpmDefinition(gson.toJson(devopsPipelineDTO));
-
+                devopsCdPipelineRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
                 // 更新流水线记录信息
                 devopsCdPipelineRecordService.update(devopsCdPipelineRecordDTO);
 
@@ -326,6 +325,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         } else {
             // 更新阶段状态为执行中
             devopsCdStageRecord.setStatus(PipelineStatus.RUNNING.toValue());
+            devopsCdStageRecord.setStartedDate(new Date());
             devopsCdStageRecordService.update(devopsCdStageRecord);
             // 更新第一个job的状态
             updateFirstJob(pipelineRecordId, devopsCdStageRecord);
@@ -345,7 +345,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             sendJobAuditMessage(pipelineRecordId, devopsCdJobRecordDTO);
         } else {
             // 更新job状态为running
-            // 更新job状态为待审核
+            devopsCdJobRecordDTO.setStartedDate(new Date());
             devopsCdJobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
             devopsCdJobRecordService.update(devopsCdJobRecordDTO);
         }
@@ -521,9 +521,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
         CustomContextUtil.setUserContext(devopsCdJobRecordDTO.getCreatedBy());
         CdPipelineEnvDeployVO cdPipelineEnvDeployVO = gson.fromJson(devopsCdJobRecordDTO.getMetadata(), CdPipelineEnvDeployVO.class);
-        AppServiceVersionDTO appServiceServiceE = getDeployVersion(pipelineRecordId, stageRecordId, cdPipelineEnvDeployVO);
-
-
+        AppServiceVersionDTO appServiceServiceE = getDeployVersion(pipelineRecordId);
 
         AppServiceDeployVO appServiceDeployVO =  new AppServiceDeployVO();
         try {
@@ -565,40 +563,44 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 String newTimestamp = newParams[1].trim();
                 String oldTimestamp = oldParams[1].trim();
 
-                // 如果现在部署的版本落后与已经部署的版本则跳过
-                if (newDate.equals(oldDate) && Long.valueOf(newTimestamp).compareTo(Long.valueOf(oldTimestamp)) < 0) {
-
-                } else if (sdf.parse(newDate).before(sdf.parse(oldDate))) {
-
+                // 如果现在部署的版本落后于已经部署的版本则跳过
+                if ((newDate.equals(oldDate) && Long.valueOf(newTimestamp).compareTo(Long.valueOf(oldTimestamp)) < 0)
+                        || sdf.parse(newDate).before(sdf.parse(oldDate))) {
+                    devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
+                    return;
                 }
-
-
-
             }
+
+            // 开始执行job
+            devopsCdJobRecordDTO.setStartedDate(new Date());
+            devopsCdJobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
+            devopsCdJobRecordService.update(devopsCdJobRecordDTO);
 
             String input = gson.toJson(appServiceDeployVO);
             producer.apply(
                     StartSagaBuilder.newBuilder()
                             .withJson(input)
-                            .withSagaCode(DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE)
+                            .withSagaCode(DEVOPS_PIPELINE_ENV_AUTO_DEPLOY_INSTANCE)
                             .withRefType("env")
                             .withRefId(cdPipelineEnvDeployVO.getEnvId().toString())
                             .withLevel(ResourceLevel.PROJECT)
                             .withSourceId(devopsCdJobRecordDTO.getProjectId()),
                     builder -> {
+
                     });
         } catch (Exception e) {
             sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId().longValue());
-            PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);
-            long time = System.currentTimeMillis() - TypeUtil.objToLong(stageRecordDTO.getExecutionTime());
-            stageRecordDTO.setExecutionTime(Long.toString(time));
-            pipelineStageRecordService.baseUpdate(stageRecordDTO);
-            setPipelineFailed(pipelineRecordId, stageRecordId, taskRecordDTO, e.getMessage());
+            devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
+            devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);
+            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, e.getMessage());
             throw new CommonException("error.create.pipeline.auto.deploy.instance", e);
         }
     }
 
-    private AppServiceVersionDTO getDeployVersion(Long pipelineRecordId, Long stageRecordId, CdPipelineEnvDeployVO cdPipelineEnvDeployVO) {
+
+
+
+    private AppServiceVersionDTO getDeployVersion(Long pipelineRecordId) {
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryByGitlabPipelineId(devopsCdPipelineRecordDTO.getGitlabPipelineId());
         return appServiceVersionService.queryByCommitShaAndRef(devopsCiPipelineRecordDTO.getCommitSha(), devopsCiPipelineRecordDTO.getGitlabTriggerRef());

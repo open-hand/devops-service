@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCdJobRecordService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
+import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -86,5 +88,14 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
     public DevopsCdJobRecordDTO queryById(Long id) {
         Assert.notNull(id, PipelineCheckConstant.ERROR_JOB_RECORD_ID_IS_NULL);
         return devopsCdJobRecordMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
+    @Transactional
+    public void updateJobStatusFailed(Long jobRecordId) {
+        DevopsCdJobRecordDTO devopsCdJobRecordDTO = queryById(jobRecordId);
+        devopsCdJobRecordDTO.setStatus(PipelineStatus.FAILED.toValue());
+        devopsCdJobRecordDTO.setFinishedDate(new Date());
+        update(devopsCdJobRecordDTO);
     }
 }

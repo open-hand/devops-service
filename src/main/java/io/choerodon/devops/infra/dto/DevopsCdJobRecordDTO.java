@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.Date;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -32,6 +33,10 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
 
     @ApiModelProperty("任务顺序")
     private Long sequence;
+
+    private Date startedDate;
+    private Date finishedDate;
+
     public Long getId() {
         return id;
     }
@@ -128,6 +133,22 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
         this.sequence = sequence;
     }
 
+    public Date getStartedDate() {
+        return startedDate;
+    }
+
+    public void setStartedDate(Date startedDate) {
+        this.startedDate = startedDate;
+    }
+
+    public Date getFinishedDate() {
+        return finishedDate;
+    }
+
+    public void setFinishedDate(Date finishedDate) {
+        this.finishedDate = finishedDate;
+    }
+
     @Override
     public String toString() {
         return "DevopsCdJobRecordDTO{" +
@@ -141,7 +162,10 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
                 ", projectId=" + projectId +
                 ", metadata='" + metadata + '\'' +
                 ", countersigned=" + countersigned +
+                ", executionTime='" + executionTime + '\'' +
                 ", sequence=" + sequence +
+                ", startedDate=" + startedDate +
+                ", finishedDate=" + finishedDate +
                 '}';
     }
 }

@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCdStageRecordService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO;
+import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.mapper.DevopsCdStageRecordMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -81,5 +83,14 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
     public DevopsCdStageRecordDTO queryById(Long id) {
         Assert.notNull(id, PipelineCheckConstant.ERROR_STAGE_RECORD_ID_IS_NULL);
         return devopsCdStageRecordMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
+    @Transactional
+    public void updateStageStatusFailed(Long stageRecordId) {
+        DevopsCdStageRecordDTO devopsCdStageRecordDTO = queryById(stageRecordId);
+        devopsCdStageRecordDTO.setStatus(PipelineStatus.FAILED.toValue());
+        devopsCdStageRecordDTO.setFinishedDate(new Date());
+        update(devopsCdStageRecordDTO);
     }
 }

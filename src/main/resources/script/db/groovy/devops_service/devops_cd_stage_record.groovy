@@ -32,4 +32,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_stage_record.groovy') {
             column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '阶段顺序')
         }
     }
+    changeSet(author: 'wanghao', id: '2020-07-07-add-column') {
+        addColumn(tableName: 'devops_cd_stage_record') {
+            column(name: "started_date", type: "DATETIME", remarks: 'stage开始执行时间')
+            column(name: "finished_date", type: "DATETIME", remarks: 'stage结束时间')
+        }
+    }
 }

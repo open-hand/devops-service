@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.Date;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -25,6 +26,8 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
     private Long projectId;
     private Long stageId;
     private String stageName;
+    private Date startedDate;
+    private Date finishedDate;
 
     public Long getId() {
         return id;
@@ -99,6 +102,22 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
         this.sequence = sequence;
     }
 
+    public Date getStartedDate() {
+        return startedDate;
+    }
+
+    public void setStartedDate(Date startedDate) {
+        this.startedDate = startedDate;
+    }
+
+    public Date getFinishedDate() {
+        return finishedDate;
+    }
+
+    public void setFinishedDate(Date finishedDate) {
+        this.finishedDate = finishedDate;
+    }
+
     @Override
     public String toString() {
         return "DevopsCdStageRecordDTO{" +
@@ -111,6 +130,8 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
                 ", projectId=" + projectId +
                 ", stageId=" + stageId +
                 ", stageName='" + stageName + '\'' +
+                ", startedDate=" + startedDate +
+                ", finishedDate=" + finishedDate +
                 '}';
     }
 }

@@ -30,4 +30,6 @@ public interface DevopsCdJobRecordService {
     void updateStatusById(Long jobRecordId, String status);
 
     DevopsCdJobRecordDTO queryById(Long id);
+
+    void updateJobStatusFailed(Long jobRecordId);
 }
