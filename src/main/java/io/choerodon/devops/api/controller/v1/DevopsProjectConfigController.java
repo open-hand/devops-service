@@ -42,7 +42,7 @@ public class DevopsProjectConfigController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建配置")
     @PostMapping
-    public ResponseEntity create(
+    public ResponseEntity<Void> create(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "配置信息", required = true)
