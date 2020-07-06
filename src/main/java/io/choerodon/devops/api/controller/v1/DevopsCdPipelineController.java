@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCdPipelineService;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -26,9 +28,12 @@ public class DevopsCdPipelineController {
 
     @Autowired
     private DevopsCdPipelineService devopsCdPipelineService;
+    @Autowired
+    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
 
     /**
      * 启动cd流水线
+     *
      * @param token
      * @return
      */
@@ -40,4 +45,23 @@ public class DevopsCdPipelineController {
         devopsCdPipelineService.triggerCdPipeline(token, commit);
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * 主机模式镜像部署接口
+     * @param pipelineRecordId
+     * @param stageRecordId
+     * @param jobRecordId
+     * @return
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "主机模式镜像部署接口")
+    @PostMapping(value = "/cd_host_image")
+    public ResponseEntity<Void> cdHostImageDeploy(@RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+                                                  @RequestParam(value = "stage_record_id") Long stageRecordId,
+                                                  @RequestParam(value = "job_record_id") Long jobRecordId) {
+        devopsCdPipelineRecordService.cdHostImageDeploy(pipelineRecordId, stageRecordId, jobRecordId);
+        return ResponseEntity.ok().build();
+    }
+
+
 }
