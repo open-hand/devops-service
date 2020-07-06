@@ -1,9 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.google.gson.Gson;
+import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.connection.channel.direct.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.CdHostDeployConfigVO;
 import io.choerodon.devops.app.service.DevopsCdAuditRecordService;
 import io.choerodon.devops.app.service.DevopsCdJobRecordService;
 import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
@@ -25,11 +32,11 @@ import io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineTaskDTO;
+import io.choerodon.devops.infra.enums.CdHostAccountType;
 import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.JobTypeEnum;
-import io.choerodon.devops.infra.mapper.DevopsCdJobMapper;
-import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
+import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdPipelineRecordMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -45,8 +52,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     private static final String ERROR_SAVE_PIPELINE_RECORD_FAILED = "error.save.pipeline.record.failed";
     private static final String ERROR_UPDATE_PIPELINE_RECORD_FAILED = "error.update.pipeline.record.failed";
+    private static final String ERROR_DOCKER_LOGIN = "error.docker.login";
+    private static final String ERROR_DOCKER_PULL = "error.docker.pull";
+    private static final String ERROR_DOCKER_RUN = "error.docker.run";
+    private static final String UNAUTHORIZED = "unauthorized";
 
     public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdPipelineRecordServiceImpl.class);
+
+    private static final Gson gson = new Gson();
 
     @Autowired
     private DevopsCdStageRecordService stageRecordService;
@@ -61,11 +74,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private DevopsCdPipelineRecordMapper devopsCdPipelineRecordMapper;
 
     @Autowired
-    private DevopsCdStageRecordService devopsCdStageRecordService;
-
-    @Autowired
     private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
 
+    @Autowired
+    private DevopsCdStageRecordService devopsCdStageRecordService;
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
@@ -164,13 +176,70 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     public void cdHostImageDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
         LOGGER.info("========================================");
         LOGGER.info("start deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+        SSHClient ssh = new SSHClient();
+        Session session = null;
         try {
-            devopsCdJobRecordService.updateStatusById(cdJobRecordId, WorkFlowStatus.RUNNING.toValue());
+            // 0.1
 
+            // 1.
+            devopsCdJobRecordService.updateStatusById(cdJobRecordId, WorkFlowStatus.RUNNING.toValue());
+            // 2.
+            DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
+            CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
+            // 3.
+            ssh.loadKnownHosts();
+            ssh.connect(cdHostDeployConfigVO.getHostIp(), TypeUtil.objToInteger(cdHostDeployConfigVO.getHostPort()));
+            if (cdHostDeployConfigVO.getAccountType().equals(CdHostAccountType.PASSWORD.value())) {
+                ssh.authPassword(cdHostDeployConfigVO.getUserName(), cdHostDeployConfigVO.getPassword());
+            } else {
+                ssh.authPublickey(cdHostDeployConfigVO.getUserName());
+            }
+
+            // 4.
+            // 4.1
+            session = ssh.startSession();
+            Session.Command cmd = session.exec("docker login");
+            String loggerStr = IOUtils.readFully(cmd.getInputStream()).toString();
+            LOGGER.info(loggerStr);
+            LOGGER.info("docker login status:{}", cmd.getExitStatus());
+            if (loggerStr.contains(UNAUTHORIZED) || !StringUtils.isEmpty(cmd.getExitErrorMessage())) {
+                throw new CommonException(ERROR_DOCKER_LOGIN);
+            }
+
+            // 4.2
+            cmd = session.exec("docker pull");
+            loggerStr = IOUtils.readFully(cmd.getInputStream()).toString();
+            LOGGER.info(loggerStr);
+            LOGGER.info("docker pull status:{}", cmd.getExitStatus());
+            if (!StringUtils.isEmpty(cmd.getExitErrorMessage())) {
+                throw new CommonException(ERROR_DOCKER_PULL);
+            }
+            // 4.3
+            cmd = session.exec("docker run");
+            loggerStr = IOUtils.readFully(cmd.getInputStream()).toString();
+            LOGGER.info(loggerStr);
+            LOGGER.info("docker run status:{}", cmd.getExitStatus());
+            if (!StringUtils.isEmpty(cmd.getExitErrorMessage())) {
+                throw new CommonException(ERROR_DOCKER_RUN);
+            }
+            devopsCdJobRecordService.updateStatusById(cdJobRecordId, WorkFlowStatus.SUCCESS.toValue());
         } catch (Exception e) {
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, WorkFlowStatus.FAILED.toValue());
             devopsCdStageRecordService.updateStatusById(cdStageRecordId, WorkFlowStatus.FAILED.toValue());
             updateStatusById(pipelineRecordId, WorkFlowStatus.FAILED.toValue());
+        } finally {
+            closeSsh(ssh, session);
+        }
+    }
+
+    private void closeSsh(SSHClient ssh, Session session) {
+        try {
+            if (session != null) {
+                session.close();
+            }
+            ssh.disconnect();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
