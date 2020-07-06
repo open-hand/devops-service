@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.*;
 
 import com.google.gson.Gson;
-import io.choerodon.devops.infra.feign.RdupmClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -34,6 +33,7 @@ import io.choerodon.devops.infra.dto.harbor.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.feign.HarborClient;
+import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.DevopsConfigMapper;
@@ -49,7 +49,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class DevopsConfigServiceImpl implements DevopsConfigService {
-    private static final String APP_SERVICE = "appService";
     private static final String HARBOR = "harbor";
     private static final String AUTHTYPE_PULL = "pull";
     private static final String AUTHTYPE_PUSH = "push";
@@ -282,7 +281,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     public DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType, String operateType) {
         //应用服务层次，先找应用配置，在找项目配置,最后找组织配置,项目和组织层次同理
         DevopsConfigDTO defaultConfig = baseQueryDefaultConfig(configType);
-        if (resourceType.equals(APP_SERVICE)) {
+        if (resourceType.equals(MiscConstants.APP_SERVICE)) {
             DevopsConfigDTO appServiceConfig = baseQueryByResourceAndType(resourceId, resourceType, configType);
             if (appServiceConfig != null) {
                 return appServiceConfig;

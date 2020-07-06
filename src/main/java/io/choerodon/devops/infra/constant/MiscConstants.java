@@ -20,4 +20,6 @@ public final class MiscConstants {
     public static final String DEFAULT_HARBOR_NAME = "harbor_default";
 
     public static final String DEFAULT_SONAR_NAME = "sonar_default";
+
+    public static final String APP_SERVICE = "appService";
 }
