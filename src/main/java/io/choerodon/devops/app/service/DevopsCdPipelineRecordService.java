@@ -24,4 +24,6 @@ public interface DevopsCdPipelineRecordService {
      * 主机模式 镜像部署
      */
     void cdHostImageDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
+
+    void deleteByPipelineId(Long pipelineId);
 }

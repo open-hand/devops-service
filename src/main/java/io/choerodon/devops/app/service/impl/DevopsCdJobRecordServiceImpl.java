@@ -45,6 +45,11 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
     }
 
     @Override
+    public void deleteByStageRecordId(Long projectId) {
+
+    }
+
+    @Override
     public void updateStatusById(Long jobRecordId, String status) {
         DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(jobRecordId);
         cdJobRecordDTO.setStatus(status);

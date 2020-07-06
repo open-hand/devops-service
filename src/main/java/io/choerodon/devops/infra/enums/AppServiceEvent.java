@@ -130,6 +130,11 @@ public enum AppServiceEvent {
      */
     CICD_PIPELINE_CANCEL(20),
 
+    /**
+     * cicd流水线 全新执行
+     */
+    CICD_PIPELINE_NEW_PERFORM(20),
+
     /********CICD*********/
 
     /**

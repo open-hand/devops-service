@@ -101,6 +101,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final PipelineAppDeployService pipelineAppDeployService;
     private final DevopsCdJobService devopsCdJobService;
     private final DevopsCdPipelineRecordService devopsCdPipelineRecordService;
+    private final DevopsCdJobRecordService devopsCDJobRecordService;
 
 
     public DevopsCiPipelineServiceImpl(
@@ -123,7 +124,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsConfigService devopsConfigService,
             PermissionHelper permissionHelper,
             AppServiceMapper appServiceMapper,
-            DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper, CiCdPipelineMapper ciCdPipelineMapper, DevopsCdStageService devopsCdStageService, DevopsCdAuditService devopsCdAuditService, PipelineAppDeployService pipelineAppDeployService, DevopsCdJobService devopsCdJobService, DevopsCdPipelineRecordService devopsCdPipelineRecordService) {
+            DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper, CiCdPipelineMapper ciCdPipelineMapper, DevopsCdStageService devopsCdStageService, DevopsCdAuditService devopsCdAuditService, PipelineAppDeployService pipelineAppDeployService, DevopsCdJobService devopsCdJobService, DevopsCdPipelineRecordService devopsCdPipelineRecordService, DevopsCdJobRecordService devopsCDJobRecordService) {
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
         this.devopsCiStageService = devopsCiStageService;
@@ -148,6 +149,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.pipelineAppDeployService = pipelineAppDeployService;
         this.devopsCdJobService = devopsCdJobService;
         this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
+        this.devopsCDJobRecordService = devopsCDJobRecordService;
     }
 
     private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
@@ -415,13 +417,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 删除job
         devopsCiJobService.deleteByPipelineId(pipelineId);
         devopsCdJobService.deleteByPipelineId(pipelineId);
+        //删除 cd stage记录 以及Job记录
+        devopsCdPipelineRecordService.deleteByPipelineId(pipelineId);
 
-        //删除 cd stage记录
-
-
-        // 删除job记录
+        // 删除 ci job记录
         devopsCiJobRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
-        //删除cdjob记录
 
         // 删除pipeline记录
         devopsCiPipelineRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
@@ -445,19 +445,20 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     @Override
-    public void executeNew(Long projectId, Long ciPipelineId, Long gitlabProjectId, String ref) {
-        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineMapper.selectByPrimaryKey(ciPipelineId);
-        checkGitlabAccessLevelService.checkGitlabPermission(projectId, devopsCiPipelineDTO.getAppServiceId(), AppServiceEvent.CI_PIPELINE_NEW_PERFORM);
+    public void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref) {
+        CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_NEW_PERFORM);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
         checkUserBranchPushPermission(projectId, userAttrDTO.getGitlabUserId(), gitlabProjectId, ref);
+        //触发ci流水线
         Pipeline pipeline = gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(), userAttrDTO.getGitlabUserId().intValue(), ref);
         // 保存执行记录
         try {
-            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.create(ciPipelineId, gitlabProjectId, pipeline);
+            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.create(pipelineId, gitlabProjectId, pipeline);
             List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), pipeline.getId(), userAttrDTO.getGitlabUserId().intValue());
             devopsCiJobRecordService.create(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
         } catch (Exception e) {
-            LOGGER.info("save pipeline Records failed， ciPipelineId {}.", ciPipelineId);
+            LOGGER.info("save pipeline Records failed， ciPipelineId {}.", pipelineId);
         }
     }
 
