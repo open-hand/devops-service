@@ -588,6 +588,14 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         return devopsCiPipelineRecordMapper.selectByPrimaryKey(ciPipelineRecordId);
     }
 
+    @Override
+    public DevopsCiPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
+        Assert.notNull(gitlabPipelineId, ERROR_GITLAB_PIPELINE_ID_IS_NULL);
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = new DevopsCiPipelineRecordDTO();
+        devopsCiPipelineRecordDTO.setGitlabPipelineId(gitlabPipelineId);
+        return devopsCiPipelineRecordMapper.selectOne(devopsCiPipelineRecordDTO);
+    }
+
     /**
      * 校验用户是否有分支权限
      */

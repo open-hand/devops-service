@@ -84,4 +84,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_versionion.groovy') {
             set object_version_number=1
             """)
     }
+    changeSet(author: 'wanghao', id: '2020-7-06-add-column') {
+        addColumn(tableName: 'devops_app_service_version') {
+            column(name: 'gitlab_pipeline_id', type: 'BIGINT UNSIGNED')
+        }
+    }
 }
