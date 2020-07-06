@@ -295,6 +295,11 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 return projectConfig;
             }
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+            Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            DevopsConfigDTO organizationConfig = baseQueryByResourceAndType(organizationDTO.getTenantId(), ResourceLevel.ORGANIZATION.value(), configType);
+            if (organizationConfig != null) {
+                return organizationConfig;
+            }
             return defaultConfig;
         } else if (resourceType.equals(ResourceLevel.PROJECT.value())) {
             DevopsConfigDTO projectConfig = baseQueryByResourceAndType(resourceId, ResourceLevel.PROJECT.value(), configType);
