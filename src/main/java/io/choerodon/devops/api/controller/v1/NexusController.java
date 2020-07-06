@@ -39,7 +39,7 @@ public class NexusController {
 
 
     @GetMapping("/{organizationId}/project/{projectId}/repo/maven/components")
-    @ApiOperation(value = "查询项目下所有的仓库配置")
+    @ApiOperation(value = "获取nexus服务下、项目下的maven仓库")
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     public ResponseEntity<List<C7nNexusComponentDTO>> listMavenComponents(@ApiParam(value = "组织ID", required = true)
                                                                           @PathVariable(name = "organizationId") Long organizationId,
@@ -57,7 +57,7 @@ public class NexusController {
     }
 
 
-    @ApiOperation(value = "choerodon-获取nexus服务下、项目下的maven仓库")
+    @ApiOperation(value = "choerodon-获取maven仓库下的包列表")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/choerodon/{organizationId}/project/{projectId}/repo/maven/list")
     public ResponseEntity<List<C7nNexusRepoDTO>> getMavenRepoByConfig(@ApiParam(value = "组织ID", required = true)

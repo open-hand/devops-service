@@ -22,7 +22,7 @@ public class DevopsCdJobDTO extends AuditDomain {
     @ApiModelProperty("任务名称")
     private String name;
     @ApiModelProperty("流水线id")
-    private Long pipelineIid;
+    private Long pipelineId;
     @ApiModelProperty("阶段id")
     private Long stageId;
     @ApiModelProperty("任务类型")
@@ -59,13 +59,6 @@ public class DevopsCdJobDTO extends AuditDomain {
         this.name = name;
     }
 
-    public Long getPipelineIid() {
-        return pipelineIid;
-    }
-
-    public void setPipelineIid(Long pipelineIid) {
-        this.pipelineIid = pipelineIid;
-    }
 
     public Long getStageId() {
         return stageId;
@@ -132,12 +125,20 @@ public class DevopsCdJobDTO extends AuditDomain {
         this.sequence = sequence;
     }
 
+    public Long getPipelineId() {
+        return pipelineId;
+    }
+
+    public void setPipelineId(Long pipelineId) {
+        this.pipelineId = pipelineId;
+    }
+
     @Override
     public String toString() {
         return "DevopsCdJobDTO{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", pipelineIid=" + pipelineIid +
+                ", pipelineId=" + pipelineId +
                 ", stageId=" + stageId +
                 ", type='" + type + '\'' +
                 ", triggerType='" + triggerType + '\'' +

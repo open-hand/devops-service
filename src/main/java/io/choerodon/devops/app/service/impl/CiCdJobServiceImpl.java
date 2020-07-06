@@ -40,7 +40,7 @@ public class CiCdJobServiceImpl implements CiCdJobService {
             throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
         }
         DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
-        devopsCdJobDTO.setPipelineIid(ciCdPipelineId);
+        devopsCdJobDTO.setPipelineId(ciCdPipelineId);
         return ciCdJobMapper.select(devopsCdJobDTO);
     }
 
@@ -85,7 +85,7 @@ public class CiCdJobServiceImpl implements CiCdJobService {
         // 删除maven settings
         deleteMavenSettingsRecordByJobIds(listByPipelineId(ciCdPipelineId).stream().map(DevopsCdJobDTO::getId).collect(Collectors.toList()));
         DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
-        devopsCdJobDTO.setPipelineIid(ciCdPipelineId);
+        devopsCdJobDTO.setPipelineId(ciCdPipelineId);
         ciCdJobMapper.delete(devopsCdJobDTO);
     }
 
