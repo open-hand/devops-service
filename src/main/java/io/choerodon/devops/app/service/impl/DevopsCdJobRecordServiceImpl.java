@@ -9,7 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCdJobRecordService;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
+import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * 〈功能简述〉
@@ -22,6 +24,7 @@ import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
 
     private static final String ERROR_SAVE_JOB_RECORD_FAILED = "error.save.job.record.failed";
+    private static final String ERROR_UPDATE_JOB_RECORD_FAILED = "error.update.job.record.failed";
 
     @Autowired
     private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
@@ -38,6 +41,24 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
     public void save(DevopsCdJobRecordDTO devopsCdJobRecordDTO) {
         if (devopsCdJobRecordMapper.insert(devopsCdJobRecordDTO) != 1) {
             throw new CommonException(ERROR_SAVE_JOB_RECORD_FAILED);
+        }
+    }
+
+    @Override
+    public void updateStatusById(Long jobRecordId, String status) {
+        DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(jobRecordId);
+        cdJobRecordDTO.setStatus(status);
+        if (status.equals(WorkFlowStatus.FAILED.toValue())
+                || status.equals(WorkFlowStatus.SUCCESS.toValue())
+                || status.equals(WorkFlowStatus.STOP.toValue())) {
+            long time = System.currentTimeMillis() - TypeUtil.objToLong(cdJobRecordDTO.getExecutionTime());
+            cdJobRecordDTO.setExecutionTime(Long.toString(time));
+        }
+        if (status.equals(WorkFlowStatus.RUNNING.toValue())) {
+            cdJobRecordDTO.setExecutionTime(Long.toString(System.currentTimeMillis()));
+        }
+        if (devopsCdJobRecordMapper.updateByPrimaryKey(cdJobRecordDTO) != 1) {
+            throw new CommonException(ERROR_UPDATE_JOB_RECORD_FAILED);
         }
     }
 }

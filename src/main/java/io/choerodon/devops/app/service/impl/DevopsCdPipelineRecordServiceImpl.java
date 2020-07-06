@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,7 @@ import io.choerodon.devops.infra.dto.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineTaskDTO;
 import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.JobTypeEnum;
+import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.mapper.DevopsCdPipelineRecordMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -39,6 +42,10 @@ import io.choerodon.devops.infra.util.TypeUtil;
 public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecordService {
 
     private static final String ERROR_SAVE_PIPELINE_RECORD_FAILED = "error.save.pipeline.record.failed";
+    private static final String ERROR_UPDATE_PIPELINE_RECORD_FAILED = "error.update.pipeline.record.failed";
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdPipelineRecordServiceImpl.class);
+
     @Autowired
     private DevopsCdStageRecordService stageRecordService;
 
@@ -50,6 +57,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Autowired
     private DevopsCdPipelineRecordMapper devopsCdPipelineRecordMapper;
+
+    @Autowired
+    private DevopsCdStageRecordService devopsCdStageRecordService;
 
 
     @Override
@@ -68,10 +78,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
     }
 
-
     @Override
-    public void cdHostImageDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
-
+    public void updateStatusById(Long pipelineRecordId, String status) {
+        DevopsCdPipelineRecordDTO pipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
+        pipelineRecordDTO.setStatus(status);
+        if (devopsCdPipelineRecordMapper.updateByPrimaryKey(pipelineRecordDTO) != 1) {
+            throw new CommonException(ERROR_UPDATE_PIPELINE_RECORD_FAILED);
+        }
     }
 
     /**
@@ -139,5 +152,19 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
         devopsPipelineDTO.setStages(devopsPipelineStageDTOS);
         return devopsPipelineDTO;
+    }
+
+    @Override
+    public void cdHostImageDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+        LOGGER.info("========================================");
+        LOGGER.info("start deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+        try {
+            devopsCdJobRecordService.updateStatusById(cdJobRecordId, WorkFlowStatus.RUNNING.toValue());
+            
+        } catch (Exception e) {
+            devopsCdJobRecordService.updateStatusById(cdJobRecordId, WorkFlowStatus.FAILED.toValue());
+            devopsCdStageRecordService.updateStatusById(cdStageRecordId, WorkFlowStatus.FAILED.toValue());
+            updateStatusById(pipelineRecordId, WorkFlowStatus.FAILED.toValue());
+        }
     }
 }
