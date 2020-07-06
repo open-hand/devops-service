@@ -368,22 +368,26 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 查询流水线
         List<CiCdPipelineVO> ciCdPipelineVOS = ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, name);
         // 封装流水线记录
-        PageRequest pageable = new PageRequest(GitOpsConstants.FIRST_PAGE_INDEX, DEFAULT_PIPELINE_RECORD_SIZE, new Sort(new Sort.Order(Sort.Direction.DESC, DevopsCiPipelineRecordDTO.FIELD_GITLAB_PIPELINE_ID)));
+        PageRequest ciPageable = new PageRequest(GitOpsConstants.FIRST_PAGE_INDEX, DEFAULT_PIPELINE_RECORD_SIZE, new Sort(new Sort.Order(Sort.Direction.DESC, DevopsCiPipelineRecordDTO.FIELD_GITLAB_PIPELINE_ID)));
+        PageRequest cdPpageable = new PageRequest(GitOpsConstants.FIRST_PAGE_INDEX, DEFAULT_PIPELINE_RECORD_SIZE, new Sort(new Sort.Order(Sort.Direction.DESC, DevopsCdPipelineRecordDTO.FIELD_ID)));
 
         ciCdPipelineVOS.forEach(ciCdPipelineVO -> {
-//
-//            Page<DevopsCiPipelineRecordVO> pipelineRecordVOPageInfo = devopsCiPipelineRecordService.pagingPipelineRecord(projectId, devopsCiPipelineVO.getId(), pageable);
-//            if (!CollectionUtils.isEmpty(pipelineRecordVOPageInfo.getContent())) {
-//                ciCdPipelineVO.setLatestExecuteDate(pipelineRecordVOPageInfo.getContent().get(0).getCreatedDate());
-//                ciCdPipelineVO.setLatestExecuteStatus(pipelineRecordVOPageInfo.getContent().get(0).getStatus());
-//            }
-//            ciCdPipelineVO.set(pipelineRecordVOPageInfo.getContent());
-//            ciCdPipelineVO.setHasMoreRecords(pipelineRecordVOPageInfo.getTotalElements() > DEFAULT_PIPELINE_RECORD_SIZE);
-
             //查询ci流水线记录
-
+            Page<DevopsCiPipelineRecordVO> pipelineCiRecordVOPageInfo = devopsCiPipelineRecordService.pagingPipelineRecord(projectId, ciCdPipelineVO.getId(), ciPageable);
+            if (!CollectionUtils.isEmpty(pipelineCiRecordVOPageInfo.getContent())) {
+                ciCdPipelineVO.setLatestExecuteDate(pipelineCiRecordVOPageInfo.getContent().get(0).getCreatedDate());
+                ciCdPipelineVO.setLatestExecuteStatus(pipelineCiRecordVOPageInfo.getContent().get(0).getStatus());
+            }
+            ciCdPipelineVO.setDevopsCiPipelineRecordVOS(pipelineCiRecordVOPageInfo.getContent());
             //查询cd流水线记录
+            Page<DevopsCdPipelineRecordVO> devopsCdPipelineRecordVOS = devopsCdPipelineRecordService.pagingCdPipelineRecord(projectId, ciCdPipelineVO.getId(), cdPpageable);
+            if (!CollectionUtils.isEmpty(devopsCdPipelineRecordVOS.getContent())) {
+                ciCdPipelineVO.setLatestExecuteDate(devopsCdPipelineRecordVOS.getContent().get(0).getCreatedDate());
+                ciCdPipelineVO.setLatestExecuteStatus(devopsCdPipelineRecordVOS.getContent().get(0).getStatus());
+            }
 
+            ciCdPipelineVO.setHasMoreRecords(pipelineCiRecordVOPageInfo.getTotalElements() > DEFAULT_PIPELINE_RECORD_SIZE);
+            ciCdPipelineVO.setDevopsCdPipelineRecordVOS(devopsCdPipelineRecordVOS.getContent());
 
         });
 

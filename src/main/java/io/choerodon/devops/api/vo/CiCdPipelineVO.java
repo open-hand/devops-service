@@ -49,10 +49,26 @@ public class CiCdPipelineVO {
 
     private Boolean hasMoreRecords;
 
-    private List<DevopsCiPipelineRecordVO> ciCdPipelineRecordVOS;
+    private List<DevopsCiPipelineRecordVO> devopsCiPipelineRecordVOS;
 
     private List<DevopsCdPipelineRecordVO> devopsCdPipelineRecordVOS;
 
+
+    public List<DevopsCiPipelineRecordVO> getDevopsCiPipelineRecordVOS() {
+        return devopsCiPipelineRecordVOS;
+    }
+
+    public void setDevopsCiPipelineRecordVOS(List<DevopsCiPipelineRecordVO> devopsCiPipelineRecordVOS) {
+        this.devopsCiPipelineRecordVOS = devopsCiPipelineRecordVOS;
+    }
+
+    public List<DevopsCdPipelineRecordVO> getDevopsCdPipelineRecordVOS() {
+        return devopsCdPipelineRecordVOS;
+    }
+
+    public void setDevopsCdPipelineRecordVOS(List<DevopsCdPipelineRecordVO> devopsCdPipelineRecordVOS) {
+        this.devopsCdPipelineRecordVOS = devopsCdPipelineRecordVOS;
+    }
 
     private Long objectVersionNumber;
 
