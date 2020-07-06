@@ -5,7 +5,6 @@ import java.util.Set;
 
 import io.swagger.annotations.ApiOperation;
 
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.infra.dto.harbor.HarborAllRepoDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
@@ -20,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * User: Mr.Wang
@@ -146,12 +144,12 @@ public interface RdupmClient {
 
     @ApiOperation(value = "choerodon-获取nexus服务下、项目下的maven仓库")
     @GetMapping("/v1/nexus-repositorys/choerodon/{organizationId}/project/{projectId}/repo/maven/list")
-    ResponseEntity<List<C7nNexusRepoDTO>> getRepoByConfig(@ApiParam(value = "组织ID", required = true)
-                                                          @PathVariable(name = "organizationId") Long organizationId,
-                                                          @ApiParam(value = "项目Id", required = true)
-                                                          @PathVariable(name = "projectId") Long projectId,
-                                                          @ApiParam(value = "服务配Id", required = true)
-                                                          @RequestParam(name = "configId") Long configId);
+    ResponseEntity<List<C7nNexusRepoDTO>> getMavenRepoByConfig(@ApiParam(value = "组织ID", required = true)
+                                                               @PathVariable(name = "organizationId") Long organizationId,
+                                                               @ApiParam(value = "项目Id", required = true)
+                                                               @PathVariable(name = "projectId") Long projectId,
+                                                               @ApiParam(value = "服务配Id", required = true)
+                                                               @RequestParam(name = "configId") Long configId, String type);
 
 
 

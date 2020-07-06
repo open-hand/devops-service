@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
@@ -18,8 +19,9 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.CdHostDeployConfigVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsCdAuditRecordService;
 import io.choerodon.devops.app.service.DevopsCdJobRecordService;
 import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
@@ -38,7 +40,11 @@ import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdPipelineRecordMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 〈功能简述〉
@@ -309,5 +315,30 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         if (devopsCdPipelineRecordMapper.updateByPrimaryKeySelective(devopsCdPipelineRecordDTO) != 1) {
             throw new CommonException(ERROR_UPDATE_PIPELINE_RECORD_FAILED);
         }
+    }
+
+    @Override
+    public Page<DevopsCdPipelineRecordVO> pagingCdPipelineRecord(Long projectId, Long pipelineId, PageRequest pageable) {
+        Page<DevopsCdPipelineRecordVO> pipelineRecordInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
+                () -> devopsCdPipelineRecordMapper.listByCiPipelineId(pipelineId));
+        List<DevopsCdPipelineRecordVO> pipelineRecordVOList = pipelineRecordInfo.getContent();
+        if (CollectionUtils.isEmpty(pipelineRecordVOList)) {
+            return pipelineRecordInfo;
+        }
+        pipelineRecordVOList.forEach(devopsCdPipelineRecordVO -> {
+            List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryByPipelineRecordId(devopsCdPipelineRecordVO.getPipelineId());
+            if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
+                List<DevopsCdStageRecordVO> devopsCdStageRecordVOS = ConvertUtils.convertList(devopsCdStageRecordDTOS, DevopsCdStageRecordVO.class);
+                devopsCdStageRecordVOS.forEach(devopsCdStageRecordVO -> {
+                    //查询Cd job
+                    List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
+                    List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
+                    devopsCdStageRecordVO.setDevopsCdJobRecordVOS(devopsCdJobRecordVOS);
+                });
+                devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
+            }
+
+        });
+        return pipelineRecordInfo;
     }
 }

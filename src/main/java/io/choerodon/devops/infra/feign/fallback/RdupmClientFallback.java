@@ -76,7 +76,7 @@ public class RdupmClientFallback implements RdupmClient {
     }
 
     @Override
-    public ResponseEntity<List<C7nNexusRepoDTO>> getRepoByConfig(Long organizationId, Long projectId, Long configId) {
+    public ResponseEntity<List<C7nNexusRepoDTO>> getMavenRepoByConfig(Long organizationId, Long projectId, Long configId, String type) {
         throw new CommonException("error.query.nexus.repo.components");
     }
 }
