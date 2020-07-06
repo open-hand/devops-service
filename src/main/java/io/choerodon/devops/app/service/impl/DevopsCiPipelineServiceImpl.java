@@ -346,7 +346,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     @Override
-    public List<DevopsCiPipelineVO> listByProjectIdAndAppName(Long projectId, String name) {
+    public List<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String name) {
         if (projectId == null) {
             throw new CommonException(ERROR_PROJECT_ID_IS_NULL);
         }
@@ -365,20 +365,29 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
         }
 
-        List<DevopsCiPipelineVO> devopsCiPipelineVOS = devopsCiPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, name);
+        // 查询流水线
+        List<CiCdPipelineVO> ciCdPipelineVOS = ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, name);
+        // 封装流水线记录
         PageRequest pageable = new PageRequest(GitOpsConstants.FIRST_PAGE_INDEX, DEFAULT_PIPELINE_RECORD_SIZE, new Sort(new Sort.Order(Sort.Direction.DESC, DevopsCiPipelineRecordDTO.FIELD_GITLAB_PIPELINE_ID)));
 
-        devopsCiPipelineVOS.forEach(devopsCiPipelineVO -> {
-            Page<DevopsCiPipelineRecordVO> pipelineRecordVOPageInfo = devopsCiPipelineRecordService.pagingPipelineRecord(projectId, devopsCiPipelineVO.getId(), pageable);
-            if (!CollectionUtils.isEmpty(pipelineRecordVOPageInfo.getContent())) {
-                devopsCiPipelineVO.setLatestExecuteDate(pipelineRecordVOPageInfo.getContent().get(0).getCreatedDate());
-                devopsCiPipelineVO.setLatestExecuteStatus(pipelineRecordVOPageInfo.getContent().get(0).getStatus());
-            }
-            devopsCiPipelineVO.setPipelineRecordVOList(pipelineRecordVOPageInfo.getContent());
-            devopsCiPipelineVO.setHasMoreRecords(pipelineRecordVOPageInfo.getTotalElements() > DEFAULT_PIPELINE_RECORD_SIZE);
+        ciCdPipelineVOS.forEach(ciCdPipelineVO -> {
+//
+//            Page<DevopsCiPipelineRecordVO> pipelineRecordVOPageInfo = devopsCiPipelineRecordService.pagingPipelineRecord(projectId, devopsCiPipelineVO.getId(), pageable);
+//            if (!CollectionUtils.isEmpty(pipelineRecordVOPageInfo.getContent())) {
+//                ciCdPipelineVO.setLatestExecuteDate(pipelineRecordVOPageInfo.getContent().get(0).getCreatedDate());
+//                ciCdPipelineVO.setLatestExecuteStatus(pipelineRecordVOPageInfo.getContent().get(0).getStatus());
+//            }
+//            ciCdPipelineVO.set(pipelineRecordVOPageInfo.getContent());
+//            ciCdPipelineVO.setHasMoreRecords(pipelineRecordVOPageInfo.getTotalElements() > DEFAULT_PIPELINE_RECORD_SIZE);
+
+            //查询ci流水线记录
+
+            //查询cd流水线记录
+
+
         });
 
-        return devopsCiPipelineVOS;
+        return ciCdPipelineVOS;
     }
 
     @Override
@@ -549,7 +558,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             devopsCdJobService.deleteByStageId(devopsCdStageDTO.getId());
         });
         //新增
-        saveCdPipeline(projectId,ciCdPipelineVO,ciCdPipelineDTO);
+        saveCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
     }
 
     private void updateCiPipeline(Long projectId, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {

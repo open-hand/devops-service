@@ -11,7 +11,6 @@ import io.choerodon.devops.infra.annotation.WillDeleted;
  * @author wanghao
  * @Date 2020/4/7 22:34
  */
-@WillDeleted
 public class DevopsCiStageRecordVO {
 
     private String name;

@@ -31,4 +31,6 @@ public interface DevopsCdPipelineRecordService {
     void deleteByPipelineId(Long pipelineId);
 
     DevopsCdPipelineRecordDTO queryById(Long id);
+
+
 }

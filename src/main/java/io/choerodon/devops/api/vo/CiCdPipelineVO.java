@@ -10,6 +10,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import io.choerodon.devops.infra.dto.DevopsCdPipelineRecordDTO;
+
 public class CiCdPipelineVO {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -46,7 +48,12 @@ public class CiCdPipelineVO {
     private List<DevopsCdStageVO> devopsCdStageVOS;
 
     private Boolean hasMoreRecords;
-    private List<CiCdPipelineRecordVO> pipelineRecordVOList;
+
+    private List<DevopsCiPipelineRecordVO> ciCdPipelineRecordVOS;
+
+    private List<DevopsCdPipelineRecordVO> devopsCdPipelineRecordVOS;
+
+
     private Long objectVersionNumber;
 
     private Boolean edit;
@@ -171,13 +178,6 @@ public class CiCdPipelineVO {
         this.hasMoreRecords = hasMoreRecords;
     }
 
-    public List<CiCdPipelineRecordVO> getPipelineRecordVOList() {
-        return pipelineRecordVOList;
-    }
-
-    public void setPipelineRecordVOList(List<CiCdPipelineRecordVO> pipelineRecordVOList) {
-        this.pipelineRecordVOList = pipelineRecordVOList;
-    }
 
     public Long getObjectVersionNumber() {
         return objectVersionNumber;
@@ -258,4 +258,5 @@ public class CiCdPipelineVO {
     public void setEnvName(String envName) {
         this.envName = envName;
     }
+
 }

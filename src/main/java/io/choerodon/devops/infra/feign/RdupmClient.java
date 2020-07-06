@@ -5,10 +5,12 @@ import java.util.Set;
 
 import io.swagger.annotations.ApiOperation;
 
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.infra.dto.harbor.HarborAllRepoDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
+import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusServerDTO;
 import io.choerodon.devops.infra.feign.fallback.RdupmClientFallback;
 
@@ -18,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * User: Mr.Wang
@@ -128,17 +131,27 @@ public interface RdupmClient {
     @ApiOperation(value = "choerodon-获取maven仓库下的包列表")
     @GetMapping("/v1/nexus-repositorys/choerodon/{organizationId}/project/{projectId}/repo/maven/components")
     ResponseEntity<List<C7nNexusComponentDTO>> listMavenComponents(@ApiParam(value = "组织ID", required = true)
-                                                                          @PathVariable(name = "organizationId") Long organizationId,
-                                                                          @ApiParam(value = "项目Id", required = true)
-                                                                          @PathVariable(name = "projectId") Long projectId,
-                                                                          @ApiParam(value = "仓库Id", required = true)
-                                                                          @RequestParam(name = "repositoryId") Long repositoryId,
-                                                                          @ApiParam(value = "groupId", required = false)
-                                                                          @RequestParam(name = "groupId", required = false) String groupId,
-                                                                          @ApiParam(value = "artifactId", required = false)
-                                                                          @RequestParam(name = "artifactId", required = false) String artifactId,
-                                                                          @ApiParam(value = "versionRegular", required = false)
-                                                                          @RequestParam(name = "versionRegular", required = false) String versionRegular);
+                                                                   @PathVariable(name = "organizationId") Long organizationId,
+                                                                   @ApiParam(value = "项目Id", required = true)
+                                                                   @PathVariable(name = "projectId") Long projectId,
+                                                                   @ApiParam(value = "仓库Id", required = true)
+                                                                   @RequestParam(name = "repositoryId") Long repositoryId,
+                                                                   @ApiParam(value = "groupId", required = false)
+                                                                   @RequestParam(name = "groupId", required = false) String groupId,
+                                                                   @ApiParam(value = "artifactId", required = false)
+                                                                   @RequestParam(name = "artifactId", required = false) String artifactId,
+                                                                   @ApiParam(value = "versionRegular", required = false)
+                                                                   @RequestParam(name = "versionRegular", required = false) String versionRegular);
+
+
+    @ApiOperation(value = "choerodon-获取nexus服务下、项目下的maven仓库")
+    @GetMapping("/v1/nexus-repositorys/choerodon/{organizationId}/project/{projectId}/repo/maven/list")
+    ResponseEntity<List<C7nNexusRepoDTO>> getRepoByConfig(@ApiParam(value = "组织ID", required = true)
+                                                          @PathVariable(name = "organizationId") Long organizationId,
+                                                          @ApiParam(value = "项目Id", required = true)
+                                                          @PathVariable(name = "projectId") Long projectId,
+                                                          @ApiParam(value = "服务配Id", required = true)
+                                                          @RequestParam(name = "configId") Long configId);
 
 
 

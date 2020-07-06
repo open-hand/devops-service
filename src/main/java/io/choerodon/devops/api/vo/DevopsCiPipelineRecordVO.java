@@ -16,7 +16,6 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
  * @author wanghao
  * @Date 2020/4/7 22:18
  */
-@WillDeleted
 public class DevopsCiPipelineRecordVO {
     private Long id;
     @ApiModelProperty("gitlab流水线记录id")

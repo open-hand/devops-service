@@ -11,27 +11,27 @@
     </update>
 
 
-<!--    <select id="queryByProjectIdAndName" resultType="io.choerodon.devops.api.vo.DevopsCiPipelineVO">-->
-<!--        SELECT-->
-<!--        dcp.id,dcp.`name`,dcp.is_enabled AS enabled, dcp.app_service_id,dcp.trigger_type,dcp.project_id,-->
-<!--        das.`name` AS app_service_name, das.gitlab_project_id, dcp.image-->
-<!--        FROM devops_ci_pipeline dcp-->
-<!--        INNER JOIN devops_app_service das ON dcp.app_service_id = das.id-->
-<!--        <where>-->
-<!--            dcp.project_id = #{projectId}-->
-<!--            <if test="name">-->
-<!--                and das.name like CONCAT(CONCAT('%', #{name}),'%')-->
-<!--            </if>-->
-<!--            <if test="appServiceIds!=null and appServiceIds.size>0">-->
-<!--                and dcp.app_service_id in-->
-<!--                <foreach collection="appServiceIds" item="appServiceId" index="index"-->
-<!--                         open="(" close=")" separator=",">-->
-<!--                    #{appServiceId}-->
-<!--                </foreach>-->
-<!--            </if>-->
-<!--        </where>-->
-<!--        ORDER BY dcp.id DESC-->
-<!--    </select>-->
+    <select id="queryByProjectIdAndName" resultType="io.choerodon.devops.api.vo.CiCdPipelineVO">
+        SELECT
+        dcp.id,dcp.`name`,dcp.is_enabled AS enabled, dcp.app_service_id,dcp.trigger_type,dcp.project_id,
+        das.`name` AS app_service_name, das.gitlab_project_id, dcp.image
+        FROM devops_ci_pipeline dcp
+        INNER JOIN devops_app_service das ON dcp.app_service_id = das.id
+        <where>
+            dcp.project_id = #{projectId}
+            <if test="name">
+                and das.name like CONCAT(CONCAT('%', #{name}),'%')
+            </if>
+            <if test="appServiceIds!=null and appServiceIds.size>0">
+                and dcp.app_service_id in
+                <foreach collection="appServiceIds" item="appServiceId" index="index"
+                         open="(" close=")" separator=",">
+                    #{appServiceId}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY dcp.id DESC
+    </select>
 
 <!--    <select id="queryByProjectIdAndNameForProjectMember" resultType="io.choerodon.devops.api.vo.DevopsCiPipelineVO">-->
 <!--        SELECT *-->

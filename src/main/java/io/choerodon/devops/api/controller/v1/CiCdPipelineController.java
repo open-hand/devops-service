@@ -73,7 +73,7 @@ public class CiCdPipelineController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目下流水线")
     @GetMapping
-    public ResponseEntity<List<DevopsCiPipelineVO>> listByProjectIdAndAppName(
+    public ResponseEntity<List<CiCdPipelineVO>> listByProjectIdAndAppName(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam(value = "name", required = false) String name) {
