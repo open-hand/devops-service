@@ -5,12 +5,16 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.service.DevopsCdAuditRecordService;
 import io.choerodon.devops.app.service.DevopsCdJobRecordService;
+import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
+import io.choerodon.devops.app.service.DevopsCdStageRecordService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
 import io.choerodon.devops.infra.enums.PipelineStatus;
@@ -33,6 +37,14 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
 
     @Autowired
     private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
+    @Autowired
+    @Lazy
+    private DevopsCdStageRecordService devopsCdStageRecordService;
+    @Autowired
+    @Lazy
+    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
+    @Autowired
+    private DevopsCdAuditRecordService devopsCdAuditRecordService;
 
     @Override
     public List<DevopsCdJobRecordDTO> queryByStageRecordId(Long stageRecordId) {
@@ -98,4 +110,21 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
         devopsCdJobRecordDTO.setFinishedDate(new Date());
         update(devopsCdJobRecordDTO);
     }
+
+    @Override
+    public void updateJobStatusNotAudit(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
+        DevopsCdJobRecordDTO devopsCdJobRecordDTO = queryById(jobRecordId);
+        // 更新job状态为待审核
+        devopsCdJobRecordDTO.setStartedDate(new Date());
+        devopsCdJobRecordDTO.setStatus(PipelineStatus.NOT_AUDIT.toValue());
+        update(devopsCdJobRecordDTO);
+        // 更新阶段状态为待审核
+        devopsCdStageRecordService.updateStatusById(stageRecordId, PipelineStatus.NOT_AUDIT.toValue());
+        // 同时更新流水线状态为待审核
+        devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.NOT_AUDIT.toValue());
+        // 通知审核人员
+        devopsCdAuditRecordService.sendJobAuditMessage(pipelineRecordId, devopsCdJobRecordDTO);
+    }
+
+
 }

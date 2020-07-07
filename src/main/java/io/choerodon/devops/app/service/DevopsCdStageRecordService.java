@@ -31,4 +31,12 @@ public interface DevopsCdStageRecordService {
     DevopsCdStageRecordDTO queryById(Long id);
 
     void updateStageStatusFailed(Long stageRecordId);
+
+    /**
+     * 更新stage状态为待审核，同时更新流水线状态为待审核，以及通知审核人员
+     *
+     * @param pipelineRecordId
+     * @param stageRecordId
+     */
+    void updateStageStatusNotAudit(Long pipelineRecordId, Long stageRecordId);
 }

@@ -32,4 +32,16 @@ public interface DevopsCdJobRecordService {
     DevopsCdJobRecordDTO queryById(Long id);
 
     void updateJobStatusFailed(Long jobRecordId);
+
+    /**
+     * 1. 更新job状态为待审核
+     * 2. 更新stage状态为待审核
+     * 3. 更新pipeline状态为待审核
+     * 4. 通知审核人员审核
+     *
+     * @param pipelineRecordId
+     * @param stageRecordId
+     * @param jobRecordId
+     */
+    void updateJobStatusNotAudit(Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
 }
