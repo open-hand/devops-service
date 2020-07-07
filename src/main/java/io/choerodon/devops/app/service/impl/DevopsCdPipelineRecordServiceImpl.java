@@ -412,15 +412,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = new DevopsCdPipelineRecordDTO();
         devopsCdPipelineRecordDTO.setPipelineId(pipelineId);
         List<DevopsCdPipelineRecordDTO> devopsCdPipelineRecordDTOS = devopsCdPipelineRecordMapper.select(devopsCdPipelineRecordDTO);
-        //删除cd stage 下的job记录
         if (!CollectionUtils.isEmpty(devopsCdPipelineRecordDTOS)) {
             devopsCdPipelineRecordDTOS.forEach(cdPipelineRecordDTO -> {
-                DevopsCdJobRecordDTO devopsCdJobRecordDTO = new DevopsCdJobRecordDTO();
-                devopsCdJobRecordDTO.setStageRecordId(cdPipelineRecordDTO.getId());
-                devopsCdJobRecordMapper.delete(devopsCdJobRecordDTO);
+                devopsCdStageRecordService.deleteByPipelineRecordId(cdPipelineRecordDTO.getId());
             });
         }
-        // 删除 stage 记录
+        //删除cd 流水线记录
         devopsCdPipelineRecordMapper.delete(devopsCdPipelineRecordDTO);
     }
 

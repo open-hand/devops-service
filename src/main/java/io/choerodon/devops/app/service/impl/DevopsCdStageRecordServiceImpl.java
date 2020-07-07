@@ -8,15 +8,20 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCdAuditRecordService;
 import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
+import io.choerodon.devops.api.vo.DevopsCdStageRecordVO;
 import io.choerodon.devops.app.service.DevopsCdStageRecordService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
+import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
+import io.choerodon.devops.infra.dto.DevopsCdPipelineRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
+import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdStageRecordMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -35,6 +40,8 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
 
     @Autowired
     private DevopsCdStageRecordMapper devopsCdStageRecordMapper;
+    @Autowired
+    private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
 
     @Autowired
     @Lazy
@@ -116,5 +123,24 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
         devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.NOT_AUDIT.toValue());
         // 通知审核人员
         devopsCdAuditRecordService.sendStageAuditMessage(devopsCdStageRecordDTO);
+    }
+
+    @Override
+    @Transactional
+    public void deleteByPipelineRecordId(Long pipelineRecordId) {
+        Assert.notNull(pipelineRecordId, PipelineCheckConstant.ERROR_STAGE_RECORD_ID_IS_NULL);
+        DevopsCdStageRecordDTO devopsCdStageRecordDTO = new DevopsCdStageRecordDTO();
+        devopsCdStageRecordDTO.setPipelineRecordId(pipelineRecordId);
+        List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordMapper.select(devopsCdStageRecordDTO);
+        if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
+            // 删除cd job记录
+            devopsCdStageRecordDTOS.forEach(cdStageRecordDTO -> {
+                DevopsCdJobRecordDTO devopsCdJobRecordDTO = new DevopsCdJobRecordDTO();
+                devopsCdJobRecordDTO.setStageRecordId(cdStageRecordDTO.getId());
+                devopsCdJobRecordMapper.delete(devopsCdJobRecordDTO);
+            });
+        }
+        //删除cd stage 记录
+        devopsCdStageRecordMapper.delete(devopsCdStageRecordDTO);
     }
 }

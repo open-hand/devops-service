@@ -102,6 +102,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final DevopsCdJobService devopsCdJobService;
     private final DevopsCdPipelineRecordService devopsCdPipelineRecordService;
     private final DevopsCdJobRecordService devopsCDJobRecordService;
+    private final DevopsCdStageRecordService devopsCdStageRecordService;
 
 
     public DevopsCiPipelineServiceImpl(
@@ -124,7 +125,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsConfigService devopsConfigService,
             PermissionHelper permissionHelper,
             AppServiceMapper appServiceMapper,
-            DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper, CiCdPipelineMapper ciCdPipelineMapper, DevopsCdStageService devopsCdStageService, DevopsCdAuditService devopsCdAuditService, PipelineAppDeployService pipelineAppDeployService, DevopsCdJobService devopsCdJobService, DevopsCdPipelineRecordService devopsCdPipelineRecordService, DevopsCdJobRecordService devopsCDJobRecordService) {
+            DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper, CiCdPipelineMapper ciCdPipelineMapper, DevopsCdStageService devopsCdStageService, DevopsCdAuditService devopsCdAuditService, PipelineAppDeployService pipelineAppDeployService, DevopsCdJobService devopsCdJobService, DevopsCdPipelineRecordService devopsCdPipelineRecordService, DevopsCdJobRecordService devopsCDJobRecordService, DevopsCdStageRecordService devopsCdStageRecordService) {
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
         this.devopsCiStageService = devopsCiStageService;
@@ -150,6 +151,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsCdJobService = devopsCdJobService;
         this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
         this.devopsCDJobRecordService = devopsCDJobRecordService;
+        this.devopsCdStageRecordService = devopsCdStageRecordService;
     }
 
     private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
@@ -430,14 +432,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 删除job
         devopsCiJobService.deleteByPipelineId(pipelineId);
         devopsCdJobService.deleteByPipelineId(pipelineId);
-        //删除 cd stage记录 以及Job记录
-        devopsCdPipelineRecordService.deleteByPipelineId(pipelineId);
 
         // 删除 ci job记录
         devopsCiJobRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
 
         // 删除pipeline记录
         devopsCiPipelineRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
+        //删除 cd  pipeline记录 stage记录 以及Job记录
+        devopsCdPipelineRecordService.deleteByPipelineId(pipelineId);
 
         // 删除content file
         devopsCiContentService.deleteByPipelineId(pipelineId);
