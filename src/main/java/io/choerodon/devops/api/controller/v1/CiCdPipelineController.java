@@ -12,10 +12,8 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
 import io.choerodon.devops.api.vo.CiCdPipelineVO;
-import io.choerodon.devops.api.vo.DevopsCiPipelineVO;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
-import io.choerodon.devops.infra.dto.DevopsCiPipelineDTO;
 import io.choerodon.swagger.annotation.Permission;
 
 /**

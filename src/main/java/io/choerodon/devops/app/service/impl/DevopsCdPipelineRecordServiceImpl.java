@@ -453,11 +453,19 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     //查询Cd job
                     List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
                     List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
+                    //计算job耗时
+                    devopsCdJobRecordVOS.forEach(devopsCdJobRecordVO -> {
+                        devopsCdJobRecordVO.setJobExecuteTime();
+                    });
                     devopsCdStageRecordVO.setDevopsCdJobRecordVOS(devopsCdJobRecordVOS);
                 });
+                //计算 stage耗时
+                devopsCdStageRecordVOS.forEach(devopsCdStageRecordVO -> {
+                    devopsCdStageRecordVO.setStageExecuteTime();
+                });
+                devopsCdPipelineRecordVO.setDurationSeconds(devopsCdStageRecordVOS.stream().map(DevopsCdStageRecordVO::getExecutionTime).reduce((aLong, aLong2) -> aLong + aLong2).get());
                 devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
             }
-
         });
         return pipelineRecordInfo;
     }
