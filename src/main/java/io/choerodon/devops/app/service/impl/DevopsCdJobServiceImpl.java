@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -71,5 +70,15 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
             });
             devopsCdJobMapper.delete(devopsCdJobDTO);
         }
+    }
+
+    @Override
+    public String queryTrace(Long gitlabProjectId, Long jobId) {
+        return null;
+    }
+
+    @Override
+    public void retryJob(Long projectId, Long gitlabProjectId, Long jobId) {
+
     }
 }

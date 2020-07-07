@@ -573,4 +573,34 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         });
         return pipelineRecordInfo;
     }
+
+    @Override
+    public DevopsCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId) {
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = new DevopsCdPipelineRecordDTO();
+        devopsCdPipelineRecordDTO.setGitlabPipelineId(gitlabPipelineId);
+        DevopsCdPipelineRecordDTO cdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectOne(devopsCdPipelineRecordDTO);
+        DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = ConvertUtils.convertObject(cdPipelineRecordDTO, DevopsCdPipelineRecordVO.class);
+
+        List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryByPipelineRecordId(devopsCdPipelineRecordVO.getPipelineId());
+        if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
+            List<DevopsCdStageRecordVO> devopsCdStageRecordVOS = ConvertUtils.convertList(devopsCdStageRecordDTOS, DevopsCdStageRecordVO.class);
+            devopsCdStageRecordVOS.forEach(devopsCdStageRecordVO -> {
+                //查询Cd job
+                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
+                List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
+                //计算job耗时
+                devopsCdJobRecordVOS.forEach(devopsCdJobRecordVO -> {
+                    devopsCdJobRecordVO.setJobExecuteTime();
+                });
+                devopsCdStageRecordVO.setDevopsCdJobRecordVOS(devopsCdJobRecordVOS);
+            });
+            //计算 stage耗时
+            devopsCdStageRecordVOS.forEach(devopsCdStageRecordVO -> {
+                devopsCdStageRecordVO.setStageExecuteTime();
+            });
+            devopsCdPipelineRecordVO.setDurationSeconds(devopsCdStageRecordVOS.stream().map(DevopsCdStageRecordVO::getExecutionTime).reduce((aLong, aLong2) -> aLong + aLong2).get());
+            devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
+        }
+        return devopsCdPipelineRecordVO;
+    }
 }
