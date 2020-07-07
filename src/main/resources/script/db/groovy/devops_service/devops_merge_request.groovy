@@ -68,5 +68,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_merge_request.groovy') {
     changeSet(author: 'zmf', id: '2019-08-06-rename-merge-request-project-id') {
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'gitlab_project_id', oldColumnName: 'project_id', tableName: 'devops_merge_request', remarks: 'gitlab项目Id')
     }
+    changeSet(author: 'wanghao', id: '2020-07-05-create-index') {
+        createIndex(indexName: "idx_assigneeid_state", tableName: "devops_merge_request") {
+            column(name: "assignee_id")
+            column(name: "state")
+        }
+    }
 
 }

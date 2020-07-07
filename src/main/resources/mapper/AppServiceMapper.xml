@@ -813,14 +813,13 @@
     </sql>
 
     <select id="listLatestUseAppServiceIdAndDate" resultType="io.choerodon.devops.api.vo.LatestAppServiceVO">
-        SELECT id, max(last_update_date) AS last_update_date
+        SELECT id, last_update_date
         FROM devops_app_service
                 WHERE last_updated_by = #{userId} AND last_update_date > #{time}
                   AND devops_app_service.project_id IN
         <foreach collection="projectIds" item="projectId" open="(" close=")" separator=",">
             #{projectId}
         </foreach>
-        GROUP BY id, last_update_date
     </select>
 
     <select id="listByActiveAndProjects" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
