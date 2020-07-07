@@ -68,11 +68,10 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
         if (status.equals(WorkFlowStatus.FAILED.toValue())
                 || status.equals(WorkFlowStatus.SUCCESS.toValue())
                 || status.equals(WorkFlowStatus.STOP.toValue())) {
-            long time = System.currentTimeMillis() - TypeUtil.objToLong(recordDTO.getExecutionTime());
-            recordDTO.setExecutionTime(Long.toString(time));
+            recordDTO.setFinishedDate(new Date());
         }
         if (status.equals(WorkFlowStatus.RUNNING.toValue())) {
-            recordDTO.setExecutionTime(Long.toString(System.currentTimeMillis()));
+            recordDTO.setStartedDate(new Date());
         }
         if (devopsCdStageRecordMapper.updateByPrimaryKey(recordDTO) != 1) {
             throw new CommonException(UPDATE_STAGE_RECORD_FAILED);

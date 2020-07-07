@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -73,11 +74,10 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
         if (status.equals(WorkFlowStatus.FAILED.toValue())
                 || status.equals(WorkFlowStatus.SUCCESS.toValue())
                 || status.equals(WorkFlowStatus.STOP.toValue())) {
-            long time = System.currentTimeMillis() - TypeUtil.objToLong(cdJobRecordDTO.getExecutionTime());
-            cdJobRecordDTO.setExecutionTime(Long.toString(time));
+            cdJobRecordDTO.setFinishedDate(new Date());
         }
         if (status.equals(WorkFlowStatus.RUNNING.toValue())) {
-            cdJobRecordDTO.setExecutionTime(Long.toString(System.currentTimeMillis()));
+            cdJobRecordDTO.setStartedDate(new Date());
         }
         if (devopsCdJobRecordMapper.updateByPrimaryKey(cdJobRecordDTO) != 1) {
             throw new CommonException(ERROR_UPDATE_JOB_RECORD_FAILED);
