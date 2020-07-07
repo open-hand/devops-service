@@ -13,6 +13,7 @@ import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +43,7 @@ import io.choerodon.devops.infra.dto.DevopsCdPipelineRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
+import io.choerodon.devops.infra.dto.repo.C7nNexusDeployDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineStageDTO;
@@ -227,8 +229,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 }
             }
 
-            // 1.
+            // 1. 更新状态 记录镜像信息
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
+            HarborC7nRepoImageTagVo imageTagVoRecord = new HarborC7nRepoImageTagVo();
+            BeanUtils.copyProperties(imageTagVo, imageTagVoRecord);
+            imageTagVoRecord.setImageTagList(Collections.singletonList(filterImageTagVoList.get(0)));
+            jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
+            jobRecordDTO.setDeployMetadata(gson.toJson(imageTagVoRecord));
+            devopsCdJobRecordService.update(jobRecordDTO);
             // 2.
             sshConnect(cdHostDeployConfigVO, ssh);
             // 3.
@@ -340,6 +348,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
             // 1.
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
+            C7nNexusDeployDTO c7nNexusDeployDTO=new C7nNexusDeployDTO();
+            c7nNexusDeployDTO.setC7nNexusComponentDTO(nexusComponentDTOList.get(0));
+            c7nNexusDeployDTO.setNexusMavenRepoDTO(mavenRepoDTOList.get(0));
+            jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
+            jobRecordDTO.setDeployMetadata(gson.toJson(c7nNexusDeployDTO));
+            devopsCdJobRecordService.update(jobRecordDTO);
+
             sshConnect(cdHostDeployConfigVO, ssh);
 
             // 2.1
