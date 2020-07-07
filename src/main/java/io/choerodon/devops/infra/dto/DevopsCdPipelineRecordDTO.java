@@ -29,6 +29,9 @@ public class DevopsCdPipelineRecordDTO extends AuditDomain {
     private Boolean edited;
     private String errorInfo;
 
+    private String commitSha;
+    private String ref;
+
     public Long getId() {
         return id;
     }
@@ -117,6 +120,22 @@ public class DevopsCdPipelineRecordDTO extends AuditDomain {
         this.gitlabPipelineId = gitlabPipelineId;
     }
 
+    public String getCommitSha() {
+        return commitSha;
+    }
+
+    public void setCommitSha(String commitSha) {
+        this.commitSha = commitSha;
+    }
+
+    public String getRef() {
+        return ref;
+    }
+
+    public void setRef(String ref) {
+        this.ref = ref;
+    }
+
     @Override
     public String toString() {
         return "DevopsCdPipelineRecordDTO{" +
@@ -131,6 +150,8 @@ public class DevopsCdPipelineRecordDTO extends AuditDomain {
                 ", businessKey='" + businessKey + '\'' +
                 ", edited=" + edited +
                 ", errorInfo='" + errorInfo + '\'' +
+                ", commitSha='" + commitSha + '\'' +
+                ", ref='" + ref + '\'' +
                 '}';
     }
 }

@@ -13,7 +13,7 @@ public interface DevopsCdPipelineService {
      */
     void handleCiPipelineStatusUpdate(PipelineWebHookVO pipelineWebHookVO);
 
-    void triggerCdPipeline(String token, String commit);
+    void triggerCdPipeline(String token, String commit, String ref, Long gitlabPipelineId);
 
     /**
      * 执行环境部署任务
