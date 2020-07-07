@@ -67,10 +67,10 @@ export default observer((props) => {
     setRightLineDom(rightList);
   }, [getStepData]);
 
-  function getJobTask(metadata) {
+  function getJobTask(type, metadata) {
     if (metadata) {
       const newData = JSON.parse(metadata.replace(/'/g, '"'));
-      const { type, sonarUrl, config, envName, branch, users, checkMode } = newData || {};
+      const { sonarUrl, config, envName, branch, users, checkMode } = newData || {};
       let content;
       switch (type) {
         case 'sonar':
@@ -94,16 +94,18 @@ export default observer((props) => {
             </div>
           );
           break;
-        default:
-          content = (
+        case 'build':
+          content = config ? (
             map(config, ({ name: taskName, sequence }) => (
               <div className="c7ncd-pipeline-detail-job-task-item" key={sequence}>
                 {taskName}
               </div>
             ))
-          );
+          ) : null;
+          break;
+        default:
       }
-      return <div className="c7ncd-pipeline-detail-job-task">{content}</div>;
+      return content && <div className="c7ncd-pipeline-detail-job-task">{content}</div>;
     }
   }
 
@@ -122,7 +124,7 @@ export default observer((props) => {
         <span className="c7ncd-pipeline-detail-title-appService">{appServiceName ? ` (${appServiceName}) ` : ''}</span>
       </div>
       <div className="c7ncd-pipeline-detail-content">
-        {map(getStepData, ({ id: stageId, name: stageName, jobList, type: stageType = 'CD' }, stageIndex) => (
+        {map(getStepData, ({ id: stageId, name: stageName, jobList, type: stageType = 'CI' }, stageIndex) => (
           <div className="c7ncd-pipeline-detail-stage" key={stageId}>
             <div className="c7ncd-pipeline-detail-stage-title">
               <span>{stageName}</span>
@@ -147,7 +149,7 @@ export default observer((props) => {
                 {index && leftLineDom[stageIndex] ? leftLineDom[stageIndex][index] : null}
                 <div className={`c7ncd-pipeline-detail-job c7ncd-pipeline-detail-job-${stageType}`} id={`${id}-${stageIndex}-job-${index}`}>
                   <div className="c7ncd-pipeline-detail-job-title">【{jobTask[jobType]}】{jobName}</div>
-                  {jobType !== 'custom' && getJobTask(metadata)}
+                  {jobType !== 'custom' && getJobTask(jobType, metadata)}
                 </div>
                 {index && stageIndex !== getStepData.length - 1 && rightLineDom[stageIndex] ? rightLineDom[stageIndex][index] : null}
               </div>
