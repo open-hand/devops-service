@@ -16,6 +16,8 @@ const jobTask = {
   sonar: '代码检查',
   custom: '自定义',
   chart: '发布Chart',
+  cdDeploy: '部署',
+  cdHost: '主机部署',
 };
 const modalStyle = {
   width: 380,
@@ -69,7 +71,7 @@ const EditItem = (props) => {
           }
         </Fragment>
       ),
-      children: <AddTask
+      children: type === 'CI' ? <AddTask
         jobDetail={jobDetail}
         appServiceId={!edit && appServiceName}
         appServiceName={!edit && appServiceName}
@@ -77,7 +79,15 @@ const EditItem = (props) => {
         PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
         AppServiceOptionsDs={edit && AppServiceOptionsDs}
         image={image}
-      />,
+      /> : (
+        <AddCDTask
+          jobDetail={jobDetail}
+          appServiceId={!edit && appServiceName}
+          appServiceName={!edit && appServiceName}
+          PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
+          handleOk={handleEditOk}
+        />
+      ),
       style: {
         width: '740px',
       },
@@ -269,6 +279,7 @@ export default observer((props) => {
           appServiceId={!edit && appServiceName}
           appServiceName={!edit && appServiceName}
           PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
+          handleOk={hanleStepCreateOk}
         />
       ),
       style: {
