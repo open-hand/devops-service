@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import retrofit2.Call;
 
 import io.choerodon.core.exception.CommonException;
@@ -42,8 +43,13 @@ public class DevopsCommandRunner implements CommandLineRunner {
 
     @Autowired
     private DevopsConfigService devopsConfigService;
+
     @Value("${services.helm.url}")
     private String servicesHelmUrl;
+    @Value("${services.helm.userName:#{null}}")
+    private String servicesHelmUserName;
+    @Value("${services.helm.password:#{null}}")
+    private String servicesHelmPassword;
     @Value("${services.harbor.baseUrl}")
     private String servicesHarborBaseUrl;
     @Value("${services.harbor.username}")
@@ -71,7 +77,14 @@ public class DevopsCommandRunner implements CommandLineRunner {
 
                 ConfigVO chartConfig = new ConfigVO();
                 chartConfig.setUrl(servicesHelmUrl);
+                // 只有helm的用户名密码都设置了, 才设置到数据库中
+                if (!StringUtils.isEmpty(servicesHelmUserName) && !StringUtils.isEmpty(servicesHelmPassword)) {
+                    chartConfig.setUserName(servicesHelmUserName);
+                    chartConfig.setPassword(servicesHelmPassword);
+                    chartConfig.setPrivate(Boolean.TRUE);
+                }
                 initConfig(chartConfig, DEFAULT_CHART_NAME, ProjectConfigType.CHART.getType());
+
                 if (sonarqubeUrl != null && !sonarqubeUrl.isEmpty()) {
                     createSonarToken();
                 }

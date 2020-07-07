@@ -55,6 +55,8 @@ env.open.SERVICES_GITLAB_URL|gitlab地址|http://git.choerodon.com.cn
 env.open.SERVICES_GITLAB_SSHURL|gitlab ssh地址|git@choerodon.com.cn
 env.open.SERVICES_GITLAB_PROJECTLIMIT|gitlab用户可以创建项目限制|100
 env.open.SERVICES_HELM_URL|helm地址|helm.example.com
+env.open.SERVICES_HELM_USERNAME|Helm chart 仓库 的用户名|
+env.open.SERVICES_HELM_PASSWORD|Helm chart 仓库 的密码|
 env.open.SERVICES_HARBOR_BASEURL|harbor地址|https://registry.choerodon.com.cn
 env.open.SERVICES_HARBOR_USERNAME|harbor用户名|admin
 env.open.SERVICES_HARBOR_PASSWORD|harbor密码|
