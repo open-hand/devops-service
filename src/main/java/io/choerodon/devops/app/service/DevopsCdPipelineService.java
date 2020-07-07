@@ -36,4 +36,13 @@ public interface DevopsCdPipelineService {
      * @param status
      */
     void setAppDeployStatus(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, Boolean status);
+
+    /**
+     * 查询Job状态
+     * @param pipelineRecordId
+     * @param stageRecordId
+     * @param jobRecordId
+     * @return
+     */
+    String getDeployStatus(Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
 }

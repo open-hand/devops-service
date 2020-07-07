@@ -23,6 +23,10 @@ public class CdHostDeployConfigVO {
     @ApiModelProperty("账号配置类型")
     private String accountType;
 
+    @ApiModelProperty("主机部署类型 image/jar/customize")
+    // HostDeployType
+    private String hostDeployType;
+
     @ApiModelProperty("镜像部署详情")
     private ImageDeploy imageDeploy;
 
@@ -202,6 +206,14 @@ public class CdHostDeployConfigVO {
         public void setValues(String values) {
             this.values = values;
         }
+    }
+
+    public String getHostDeployType() {
+        return hostDeployType;
+    }
+
+    public void setHostDeployType(String hostDeployType) {
+        this.hostDeployType = hostDeployType;
     }
 
     public Customize getCustomize() {
