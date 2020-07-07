@@ -14,6 +14,7 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoVo;
+import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.feign.RdupmClient;
 
@@ -81,6 +82,30 @@ public class RdupmClientOperator {
         ResponseEntity<HarborC7nRepoImageTagVo> response = rdupmClient.listImageTag(repoType, repoId, imageName, "");
         if (response == null || response.getBody() == null) {
             throw new CommonException("error.query.nexus.repo.list.tag");
+        }
+        return response.getBody();
+    }
+
+    /**
+     * mvn 仓库下的包列表
+     *
+     * @param organizationId
+     * @param projectId
+     * @param repositoryId
+     * @param groupId
+     * @param artifactId
+     * @param versionRegular
+     * @return
+     */
+    public List<C7nNexusComponentDTO> listMavenComponents(@Nullable Long organizationId,
+                                                          @Nullable Long projectId,
+                                                          @Nullable Long repositoryId,
+                                                          String groupId,
+                                                          String artifactId,
+                                                          String versionRegular) {
+        ResponseEntity<List<C7nNexusComponentDTO>> response = rdupmClient.listMavenComponents(organizationId, projectId, repositoryId, groupId, artifactId, versionRegular);
+        if (response == null || response.getBody() == null) {
+            throw new CommonException("error.query.nexus.maven.list");
         }
         return response.getBody();
     }

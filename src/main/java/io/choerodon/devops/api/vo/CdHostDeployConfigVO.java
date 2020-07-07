@@ -24,7 +24,7 @@ public class CdHostDeployConfigVO {
     private String accountType;
 
     @ApiModelProperty("镜像部署详情")
-    private IamgeDeploy iamgeDeploy;
+    private ImageDeploy imageDeploy;
 
     @ApiModelProperty("jar部署详情")
     private JarDeploy jarDeploy;
@@ -32,12 +32,18 @@ public class CdHostDeployConfigVO {
     @ApiModelProperty("自定义部署customize详情")
     private Customize customize;
 
-    public class IamgeDeploy {
+    public class ImageDeploy {
         @ApiModelProperty("仓库名")
         private String repoName;
 
+        @ApiModelProperty("仓库类型")
+        private String repoType;
+
+        @ApiModelProperty("仓库Id")
+        private String repoId;
+
         @ApiModelProperty("镜像名称")
-        private String iamgeName;
+        private String imageName;
 
         @ApiModelProperty("匹配类型")
         private String matchType;
@@ -56,6 +62,22 @@ public class CdHostDeployConfigVO {
             this.values = values;
         }
 
+        public String getRepoType() {
+            return repoType;
+        }
+
+        public void setRepoType(String repoType) {
+            this.repoType = repoType;
+        }
+
+        public String getRepoId() {
+            return repoId;
+        }
+
+        public void setRepoId(String repoId) {
+            this.repoId = repoId;
+        }
+
         public String getRepoName() {
             return repoName;
         }
@@ -64,12 +86,12 @@ public class CdHostDeployConfigVO {
             this.repoName = repoName;
         }
 
-        public String getIamgeName() {
-            return iamgeName;
+        public String getImageName() {
+            return imageName;
         }
 
-        public void setIamgeName(String iamgeName) {
-            this.iamgeName = iamgeName;
+        public void setImageName(String imageName) {
+            this.imageName = imageName;
         }
 
         public String getMatchType() {
@@ -95,6 +117,9 @@ public class CdHostDeployConfigVO {
         private String serverName;
         @ApiModelProperty("仓库名")
         private String neRepositoryName;
+
+        @ApiModelProperty("仓库id")
+        private Long repositoryId;
 
         @ApiModelProperty("groupId")
         private String groupId;
@@ -154,6 +179,14 @@ public class CdHostDeployConfigVO {
 
         public void setVersionRegular(String versionRegular) {
             this.versionRegular = versionRegular;
+        }
+
+        public Long getRepositoryId() {
+            return repositoryId;
+        }
+
+        public void setRepositoryId(Long repositoryId) {
+            this.repositoryId = repositoryId;
         }
     }
 
@@ -219,12 +252,12 @@ public class CdHostDeployConfigVO {
         this.accountType = accountType;
     }
 
-    public IamgeDeploy getIamgeDeploy() {
-        return iamgeDeploy;
+    public ImageDeploy getImageDeploy() {
+        return imageDeploy;
     }
 
-    public void setIamgeDeploy(IamgeDeploy iamgeDeploy) {
-        this.iamgeDeploy = iamgeDeploy;
+    public void setImageDeploy(ImageDeploy imageDeploy) {
+        this.imageDeploy = imageDeploy;
     }
 
     public JarDeploy getJarDeploy() {
