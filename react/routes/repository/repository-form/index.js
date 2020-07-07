@@ -1,9 +1,7 @@
 import React, { Fragment, useEffect } from 'react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import isEmpty from 'lodash/isEmpty';
-import forEach from 'lodash/forEach';
-import { SelectBox, Select, Form, UrlField, Icon } from 'choerodon-ui/pro';
+import { SelectBox, Select, Form, UrlField, Icon, TextField, Password } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui/pro';
 import { withRouter } from 'react-router-dom';
 import { handlePromptError } from '../../../utils';
@@ -25,33 +23,8 @@ export default withRouter(injectIntl(observer(({
   history,
   location: { search },
 }) => {
-  useEffect(() => {
-    handleDefault();
-  }, [dataSet.current]);
-
   async function refresh() {
     await dataSet.query();
-  }
-
-  function handleDefault() {
-    if (!isEmpty(record.get('harbor'))) {
-      record.init('harborCustom', 'custom');
-      forEach(record.get('harbor').config, (value, key) => {
-        if (key !== 'project' || isProject) {
-          record.init(key, value);
-        }
-      });
-      isProject && record.init('harborPrivate', record.get('harbor').harborPrivate);
-    } else {
-      record.init('harborCustom', 'default');
-    }
-    if (!isEmpty(record.get('chart'))) {
-      const { url } = record.get('chart').config || {};
-      record.init('chartCustom', 'custom');
-      record.init('chartUrl', url);
-    } else {
-      record.init('chartCustom', 'default');
-    }
   }
 
   async function handleSave() {
@@ -66,7 +39,15 @@ export default withRouter(injectIntl(observer(({
 
   async function handleTestChart() {
     try {
-      const res = await store.checkChart(id, record.get('chartUrl'));
+      if (!await record.validate()) {
+        return false;
+      }
+      const postData = {
+        url: record.get('url'),
+        userName: record.get('password') && record.get('userName') ? record.get('userName') : null,
+        password: record.get('password') && record.get('userName') ? record.get('password') : null,
+      };
+      const res = await store.checkChart(id, postData);
       if (handlePromptError(res)) {
         record.set('chartStatus', 'success');
         return true;
@@ -145,13 +126,13 @@ export default withRouter(injectIntl(observer(({
             <Option value="default">{formatMessage({ id: `${intlPrefix}.chart.default` })}</Option>
             <Option value="custom">{formatMessage({ id: `${intlPrefix}.chart.custom` })}</Option>
           </SelectBox>
+          {record.get('chartCustom') === 'custom' && ([
+            <UrlField name="url" />,
+            <TextField name="userName" />,
+            <Password name="password" />,
+            renderTestButton(record.get('chartStatus'), handleTestChart),
+          ])}
         </Form>
-        {record.get('chartCustom') === 'custom' && (<Fragment>
-          <Form record={record}>
-            <UrlField name="chartUrl" />
-          </Form>
-          {renderTestButton(record.get('chartStatus'), handleTestChart)}
-        </Fragment>)}
       </div>
       <div style={{ display: 'flex' }}>
         <Button

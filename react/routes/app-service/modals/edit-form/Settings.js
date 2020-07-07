@@ -58,7 +58,11 @@ const Settings = injectIntl(observer(({ record, handleTestChart }) => {
             {formatMessage({ id: `${intlPrefix}.helm.custom` })}
           </Option>
         </SelectBox>
-        {record.get('chartType') === 'custom' ? <UrlField name="chartUrl" /> : null}
+        {record.get('chartType') === 'custom' ? [
+          <UrlField name="url" />,
+          <TextField name="userName" />,
+          <Password name="password" />,
+        ] : null}
       </Form>
       {record.get('chartType') === 'custom' && (
         <div>
