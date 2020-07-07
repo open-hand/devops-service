@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCdPipelineService;
 import io.choerodon.swagger.annotation.Permission;
@@ -36,11 +35,13 @@ public class DevopsCdPipelineController {
      * @return
      */
     @Permission(permissionPublic = true)
-    @ApiOperation(value = "创建应用服务版本")
+    @ApiOperation(value = "启动cd流水线")
     @PostMapping
     public ResponseEntity<Void> triggerCdPipeline(@RequestParam(value = "token") String token,
-                                                  @RequestParam(value = "commit") String commit) {
-        devopsCdPipelineService.triggerCdPipeline(token, commit);
+                                                  @RequestParam(value = "commit") String commit,
+                                                  @RequestParam(value = "ref") String ref,
+                                                  @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId) {
+        devopsCdPipelineService.triggerCdPipeline(token, commit, ref, gitlabPipelineId);
         return Results.success();
     }
 
