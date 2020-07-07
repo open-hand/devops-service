@@ -118,6 +118,9 @@ public class CdHostDeployConfigVO {
         @ApiModelProperty("仓库名")
         private String neRepositoryName;
 
+        @ApiModelProperty("仓库id")
+        private Long repositoryId;
+
         @ApiModelProperty("groupId")
         private String groupId;
 
@@ -176,6 +179,14 @@ public class CdHostDeployConfigVO {
 
         public void setVersionRegular(String versionRegular) {
             this.versionRegular = versionRegular;
+        }
+
+        public Long getRepositoryId() {
+            return repositoryId;
+        }
+
+        public void setRepositoryId(Long repositoryId) {
+            this.repositoryId = repositoryId;
         }
     }
 

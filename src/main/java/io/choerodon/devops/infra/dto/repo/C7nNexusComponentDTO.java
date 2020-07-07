@@ -23,6 +23,8 @@ public class C7nNexusComponentDTO {
     private String name;
     @ApiModelProperty(value = "版本")
     private String version;
+    @ApiModelProperty(value = "下载地址")
+    private String downloadUrl;
 
 
     public String getId() {
@@ -73,6 +75,14 @@ public class C7nNexusComponentDTO {
         this.version = version;
     }
 
+    public String getDownloadUrl() {
+        return downloadUrl;
+    }
+
+    public void setDownloadUrl(String downloadUrl) {
+        this.downloadUrl = downloadUrl;
+    }
+
     @Override
     public String toString() {
         return "C7nNexusComponentDTO{" +
@@ -82,6 +92,7 @@ public class C7nNexusComponentDTO {
                 ", group='" + group + '\'' +
                 ", name='" + name + '\'' +
                 ", version='" + version + '\'' +
+                ", downloadUrl='" + downloadUrl + '\'' +
                 '}';
     }
 }
