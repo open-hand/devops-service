@@ -195,9 +195,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     @Override
-    public void cdHostImageDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+    public Boolean cdHostImageDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
         LOGGER.info("========================================");
         LOGGER.info("start image deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+        Boolean status = true;
         SSHClient ssh = new SSHClient();
         Session session = null;
         try {
@@ -211,14 +212,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
                 devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
                 LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-                return;
+                return status;
             } else {
                 String pattern = getRegexStr(imageDeploy);
                 filterImageTagVoList = imageTagVo.getImageTagList().stream().filter(t -> Pattern.matches(pattern, t.getTagName())).collect(Collectors.toList());
                 if (CollectionUtils.isEmpty(filterImageTagVoList)) {
                     devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
                     LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-                    return;
+                    return status;
                 }
             }
 
@@ -262,10 +263,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             LOGGER.info("========================================");
             LOGGER.info("image deploy cd host job success!!!,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } catch (Exception e) {
+            status = false;
             jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } finally {
             closeSsh(ssh, session);
         }
+        return status;
     }
 
     private void sshConnect(CdHostDeployConfigVO cdHostDeployConfigVO, SSHClient ssh) throws IOException {
@@ -306,10 +309,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     @Override
-    public void cdHostJarDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+    public Boolean cdHostJarDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
         LOGGER.info("========================================");
         LOGGER.info("start jar deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
         SSHClient ssh = new SSHClient();
+        Boolean status = true;
         Session session = null;
         String jarName = String.format("app-%s.jar", GenerateUUID.generateRandomString());
         try {
@@ -323,7 +327,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
                 devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
                 LOGGER.info("no jar to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-                return;
+                return status;
             }
             List<NexusMavenRepoDTO> mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), Collections.singleton(jarDeploy.getRepositoryId()));
             if (CollectionUtils.isEmpty(mavenRepoDTOList)) {
@@ -365,6 +369,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
         } catch (Exception e) {
+            status = false;
             jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } finally {
             try {
@@ -376,6 +381,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             }
             closeSsh(ssh, session);
         }
+        return status;
     }
 
     private void closeSsh(SSHClient ssh, Session session) {
