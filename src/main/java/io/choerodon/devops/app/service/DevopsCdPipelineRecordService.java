@@ -26,9 +26,9 @@ public interface DevopsCdPipelineRecordService {
     /**
      * 主机模式 镜像部署
      */
-    void cdHostImageDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
+    Boolean cdHostImageDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
-    void cdHostJarDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
+    Boolean cdHostJarDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
 
     void update(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO);

@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,28 +44,47 @@ public class DevopsCdPipelineController {
     public ResponseEntity<Void> triggerCdPipeline(@RequestParam(value = "token") String token,
                                                   @RequestParam(value = "commit") String commit) {
         devopsCdPipelineService.triggerCdPipeline(token, commit);
-        return ResponseEntity.ok().build();
+        return Results.success();
     }
 
     /**
      * 主机模式镜像部署接口
+     *
      * @param pipelineRecordId
      * @param stageRecordId
      * @param jobRecordId
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(permissionWithin = true)
     @ApiOperation(value = "主机模式镜像部署接口")
     @PostMapping(value = "/cd_host_image")
-    public ResponseEntity<Void> cdHostImageDeploy(@RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
-                                                  @RequestParam(value = "stage_record_id") Long stageRecordId,
-                                                  @RequestParam(value = "job_record_id") Long jobRecordId) {
-        devopsCdPipelineRecordService.cdHostImageDeploy(pipelineRecordId, stageRecordId, jobRecordId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Boolean> cdHostImageDeploy(@RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+                                                     @RequestParam(value = "stage_record_id") Long stageRecordId,
+                                                     @RequestParam(value = "job_record_id") Long jobRecordId) {
+        return Results.success(devopsCdPipelineRecordService.cdHostImageDeploy(pipelineRecordId, stageRecordId, jobRecordId));
+    }
+
+
+    /**
+     * 主机模式镜像部署接口
+     *
+     * @param pipelineRecordId
+     * @param stageRecordId
+     * @param jobRecordId
+     * @return
+     */
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "主机模式jar部署接口")
+    @PostMapping(value = "/cd_host_jar")
+    public ResponseEntity<Boolean> cdHostJarDeploy(@RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+                                                   @RequestParam(value = "stage_record_id") Long stageRecordId,
+                                                   @RequestParam(value = "job_record_id") Long jobRecordId) {
+        return Results.success(devopsCdPipelineRecordService.cdHostJarDeploy(pipelineRecordId, stageRecordId, jobRecordId));
     }
 
     /**
      * 触发环境自动部署
+     *
      * @param pipelineRecordId
      * @param stageRecordId
      * @param jobRecordId
@@ -74,10 +94,10 @@ public class DevopsCdPipelineController {
     @ApiOperation(value = "环境部署")
     @PostMapping(value = "/env_auto_deploy")
     public ResponseEntity<Void> envAutoDeploy(@RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
-                                          @RequestParam(value = "stage_record_id") Long stageRecordId,
-                                          @RequestParam(value = "job_record_id") Long jobRecordId) {
+                                              @RequestParam(value = "stage_record_id") Long stageRecordId,
+                                              @RequestParam(value = "job_record_id") Long jobRecordId) {
         devopsCdPipelineService.envAutoDeploy(pipelineRecordId, stageRecordId, jobRecordId);
-        return ResponseEntity.noContent().build();
+        return Results.success();
     }
 
 
