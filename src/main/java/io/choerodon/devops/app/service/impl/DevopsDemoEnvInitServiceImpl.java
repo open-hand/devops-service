@@ -26,6 +26,7 @@ import io.choerodon.devops.app.eventhandler.DevopsSagaHandler;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
 import io.choerodon.devops.app.eventhandler.payload.OrganizationRegisterEventPayload;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
@@ -346,9 +347,12 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         appServiceVersionDTO.setVersion(version);
         appServiceVersionDTO.setHarborConfigId(1L);
         appServiceVersionDTO.setRepoType(DEFAULT_REPO);
+        appServiceVersionDTO.setRef(GitOpsConstants.MASTER);
 
+        // 查询helm仓库配置id
         DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), MiscConstants.APP_SERVICE, ProjectConfigType.CHART.getType(), null);
-        String helmUrl = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class).getUrl();
+        ConfigVO helmConfig = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+        String helmUrl = helmConfig.getUrl();
         appServiceVersionDTO.setHelmConfigId(devopsConfigDTO.getId());
 
         appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getTenantNum() + "/" + projectDTO.getCode() + "/" : helmUrl + "/" + organization.getTenantNum() + "/" + projectDTO.getCode() + "/");
@@ -357,7 +361,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         String destFilePath = DESTINATION_PATH + version;
         String path = FileUtil.multipartFileToFile(storeFilePath, files);
         //上传chart包到chartmuseum
-        chartUtil.uploadChart(helmUrl, organization.getTenantNum(), projectDTO.getCode(), new File(path));
+        chartUtil.uploadChart(helmUrl, organization.getTenantNum(), projectDTO.getCode(), new File(path), helmConfig.getUserName(), helmConfig.getPassword());
 
         // 有需求让重新上传chart包，所以校验重复推后
         if (newApplicationVersion != null) {
