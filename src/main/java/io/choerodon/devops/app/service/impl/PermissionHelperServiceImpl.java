@@ -14,7 +14,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author zmf
@@ -145,7 +147,20 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     public DevopsEnvironmentDTO checkEnvBelongToProject(Long projectId, Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.queryByIdWithClusterCode(envId);
         if (devopsEnvironmentDTO == null) {
-            throw new CommonException("error.env.not.exists");
+            throw new CommonException("error.env.id.not.exist", envId);
+        }
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        return devopsEnvironmentDTO;
+    }
+
+    public DevopsEnvironmentDTO checkEnvBelongToProject(Long projectId, Long envId, Boolean throwException) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.queryByIdWithClusterCode(envId);
+        if (devopsEnvironmentDTO == null) {
+            if (throwException) {
+                throw new CommonException("error.env.id.not.exist", envId);
+            } else {
+                return devopsEnvironmentDTO;
+            }
         }
         CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         return devopsEnvironmentDTO;
@@ -159,5 +174,15 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
         }
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         return appServiceDTO;
+    }
+
+
+    @Override
+    public void checkAppServicesBelongToProject(Long projectId, List<Long> appServiceIds) {
+        List<Long> appServiceIdsBelongToProject = appServiceMapper.listByProjectId(projectId, null, null)
+                .stream()
+                .map(AppServiceDTO::getId)
+                .collect(Collectors.toList());
+        CommonExAssertUtil.assertTrue(appServiceIdsBelongToProject.containsAll(appServiceIds), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
     }
 }

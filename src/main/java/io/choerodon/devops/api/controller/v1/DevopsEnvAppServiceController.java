@@ -55,7 +55,7 @@ public class DevopsEnvAppServiceController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除指定环境-服务关联关系")
     @DeleteMapping
-    public ResponseEntity delete(
+    public ResponseEntity<Void> delete(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境Id", required = true)
             @RequestParam("env_id") Long envId,
@@ -63,7 +63,7 @@ public class DevopsEnvAppServiceController {
             @RequestParam("app_service_id") Long appServiceId) {
         validator.checkEnvIdAndAppIdsExist(projectId, envId, appServiceId);
         devopsEnvApplicationService.delete(envId, appServiceId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     /**

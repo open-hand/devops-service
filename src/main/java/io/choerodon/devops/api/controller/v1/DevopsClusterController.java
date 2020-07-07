@@ -225,7 +225,7 @@ public class DevopsClusterController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除集群下该项目的权限")
     @DeleteMapping(value = "/{cluster_id}/permission")
-    public ResponseEntity deletePermissionOfProject(
+    public ResponseEntity<Void> deletePermissionOfProject(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
@@ -233,7 +233,7 @@ public class DevopsClusterController {
             @ApiParam(value = "要删除权限的项目id", required = true)
             @RequestParam(value = "delete_project_id") Long projectToDelete) {
         devopsClusterService.deletePermissionOfProject(projectId, clusterId, projectToDelete);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
 

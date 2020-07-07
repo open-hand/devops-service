@@ -397,6 +397,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     public void deployTestApp(Long projectId, AppServiceDeployVO appServiceDeployVO) {
+        // 这里的environmentId就是集群id
         CommonExAssertUtil.assertTrue(permissionHelper.projectPermittedToCluster(appServiceDeployVO.getEnvironmentId(), projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         String versionValue = appServiceVersionService.baseQueryValue(appServiceDeployVO.getAppServiceVersionId());
@@ -1295,8 +1296,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public List<AppServiceInstanceVO> batchDeployment(Long projectId, List<AppServiceDeployVO> appServiceDeployVOS) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, appServiceDeployVOS.get(0).getEnvironmentId());
-
-        CommonExAssertUtil.assertTrue(devopsEnvironmentDTO != null, "error.env.id.not.exist", appServiceDeployVOS.get(0).getEnvironmentId());
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 

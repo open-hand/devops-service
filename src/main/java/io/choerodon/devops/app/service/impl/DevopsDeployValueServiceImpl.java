@@ -60,6 +60,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     @Override
     public DevopsDeployValueVO createOrUpdate(Long projectId, DevopsDeployValueVO devopsDeployValueVO) {
         permissionHelper.checkEnvBelongToProject(projectId, devopsDeployValueVO.getEnvId());
+        permissionHelper.checkAppServiceBelongToProject(projectId, devopsDeployValueVO.getAppServiceId());
 
         FileUtil.checkYamlFormat(devopsDeployValueVO.getValue());
 

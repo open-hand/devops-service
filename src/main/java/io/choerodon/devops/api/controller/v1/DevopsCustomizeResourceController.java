@@ -47,16 +47,16 @@ public class DevopsCustomizeResourceController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建其他k8s资源")
     @PostMapping
-    public ResponseEntity createResource(@PathVariable(value = "project_id") Long projectId,
-                                         @ModelAttribute @Valid DevopsCustomizeResourceReqVO devopsCustomizeResourceReqVO,
-                                         BindingResult bindingResult,
-                                         @RequestParam(value = "contentFile", required = false) MultipartFile contentFile) {
+    public ResponseEntity<Void> createResource(@PathVariable(value = "project_id") Long projectId,
+                                               @ModelAttribute @Valid DevopsCustomizeResourceReqVO devopsCustomizeResourceReqVO,
+                                               BindingResult bindingResult,
+                                               @RequestParam(value = "contentFile", required = false) MultipartFile contentFile) {
         // 底层不能捕获BindException异常，所以这里手动处理抛出CommonException
         if (bindingResult.hasErrors()) {
             throw new CommonException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
         devopsCustomizeResourceService.createOrUpdateResource(projectId, devopsCustomizeResourceReqVO, contentFile);
-        return new ResponseEntity(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -70,10 +70,10 @@ public class DevopsCustomizeResourceController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除其他k8s资源")
     @DeleteMapping
-    public ResponseEntity deleteResource(@PathVariable(value = "project_id") Long projectId,
-                                         @RequestParam(value = "resource_id") Long resourceId) {
+    public ResponseEntity<Void> deleteResource(@PathVariable(value = "project_id") Long projectId,
+                                               @RequestParam(value = "resource_id") Long resourceId) {
         devopsCustomizeResourceService.deleteResource(projectId, resourceId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     /**

@@ -5,6 +5,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * 校验权限相关
@@ -141,4 +142,11 @@ public interface PermissionHelper {
      * @return 校验结果
      */
     AppServiceDTO checkAppServiceBelongToProject(Long projectId, Long appServiceId);
+
+    /**
+     * 检查多个应用服务是否属于指定项目
+     * @param projectId
+     * @param appServiceIds
+     */
+    void checkAppServicesBelongToProject(Long projectId, List<Long> appServiceIds);
 }

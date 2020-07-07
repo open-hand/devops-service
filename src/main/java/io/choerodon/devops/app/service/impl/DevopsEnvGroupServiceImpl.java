@@ -85,11 +85,12 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
     @Override
     public void delete(Long projectId, Long id) {
         DevopsEnvGroupDTO devopsEnvGroupDTO = baseQuery(id);
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvGroupDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         if (devopsEnvGroupDTO == null) {
             return;
         }
+
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvGroupDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         baseDelete(id);
         //删除环境组，将原环境组内所有环境的env_group_id置为null

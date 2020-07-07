@@ -11,6 +11,7 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -53,8 +54,8 @@ public class EnvironmentApplicationValidator {
      *
      * @param appServiceIds 应用id
      */
-    public void checkAppIdsExist(Long[] appServiceIds) {
-        if (appServiceIds == null || appServiceIds.length == 0) {
+    public void checkAppIdsExist(List<Long> appServiceIds) {
+        if (appServiceIds == null || appServiceIds.size() == 0) {
             throw new CommonException("error.app.ids.null");
         }
 
@@ -69,13 +70,13 @@ public class EnvironmentApplicationValidator {
      * 校验环境id和应用id存在关联
      */
     public void checkEnvIdAndAppIdsExist(Long projectId, Long envId, Long appServiceId) {
-        permissionHelper.checkEnvBelongToProject(projectId, envId);
         if (envId == null) {
             throw new CommonException("error.env.id.null");
         }
         if (appServiceId == null) {
             throw new CommonException("error.app.id.null");
         }
+        permissionHelper.checkEnvBelongToProject(projectId, envId);
         DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO(appServiceId, envId);
         if (devopsEnvAppServiceMapper.selectOne(devopsEnvAppServiceDTO) == null) {
             throw new CommonException("error.envAndApp.not.exist", envId, appServiceId);

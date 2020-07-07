@@ -49,13 +49,13 @@ public class DevopsEnvironmentController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建环境")
     @PostMapping
-    public ResponseEntity create(
+    public ResponseEntity<Void> create(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境信息", required = true)
             @EncryptDTO @RequestBody @Valid DevopsEnvironmentReqVO devopsEnvironmentReqVO) {
         devopsEnvironmentService.create(projectId, devopsEnvironmentReqVO);
-        return new ResponseEntity(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
 
@@ -109,29 +109,6 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "是否启用", required = true)
             @RequestParam(value = "active") Boolean active) {
         return Optional.ofNullable(devopsEnvironmentService.listByProjectIdAndActive(projectId, active))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
-    }
-
-    // TODO 该接口未找到使用的地方，下次发版时去掉
-
-    /**
-     * 项目下环境流水线查询环境
-     *
-     * @param projectId 项目id
-     * @param active    是否启用
-     * @return List
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下环境流水线查询环境")
-    @GetMapping("/list_by_groups")
-    public ResponseEntity<List<DevopsEnvGroupEnvsVO>> listByProjectIdAndActiveWithGroup(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "是否启用", required = true)
-            @RequestParam Boolean active) {
-        return Optional.ofNullable(devopsEnvironmentService.listDevopsEnvGroupEnvs(projectId, active))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
     }
