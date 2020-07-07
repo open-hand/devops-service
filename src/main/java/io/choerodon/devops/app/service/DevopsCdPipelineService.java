@@ -39,10 +39,21 @@ public interface DevopsCdPipelineService {
 
     /**
      * 查询Job状态
+     *
      * @param pipelineRecordId
      * @param stageRecordId
      * @param jobRecordId
      * @return
      */
     String getDeployStatus(Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
+
+    /**
+     * 审核阶段
+     *
+     * @param projectId
+     * @param pipelineRecordId
+     * @param stageId
+     * @param result
+     */
+    void auditStage(Long projectId, Long pipelineRecordId, Long stageId, String result);
 }

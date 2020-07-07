@@ -505,6 +505,12 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         return PipelineStatus.FAILED.toValue();
     }
 
+    @Override
+    public void auditStage(Long projectId, Long pipelineRecordId, Long stageId, String result) {
+        // todo
+        // 1. 查询审核人员
+    }
+
     private DevopsCdJobRecordDTO getNextJob(Long stageRecordId, DevopsCdJobRecordDTO currentJob) {
         List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(stageRecordId);
         Optional<DevopsCdJobRecordDTO> optionalDevopsCdJobRecordDTO = devopsCdJobRecordDTOS.stream()
