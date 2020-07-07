@@ -18,7 +18,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_job_record.groovy') {
             column(name: 'metadata', type: 'VARCHAR(2000)', remarks: 'job详细信息，定义了job执行内容')
 
             column(name: 'countersigned', type: 'TINYINT UNSIGNED', remarks: '是否会签 1是会签,0 是或签')
-            column(name: 'execution_time', type: 'VARCHAR(255)', remarks: '执行时间')
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
@@ -41,6 +40,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_job_record.groovy') {
         addColumn(tableName: 'devops_cd_job_record') {
             column(name: "started_date", type: "DATETIME", remarks: 'job开始执行时间')
             column(name: "finished_date", type: "DATETIME", remarks: 'job结束时间')
+        }
+    }
+
+    changeSet(author: 'scp', id: '2020-07-07-add-column-2') {
+        addColumn(tableName: 'devops_cd_job_record') {
+            column(name: "deployMetadata", type: "VARCHAR(2000)", remarks: '主机部署 制品库提供信息')
         }
     }
 }

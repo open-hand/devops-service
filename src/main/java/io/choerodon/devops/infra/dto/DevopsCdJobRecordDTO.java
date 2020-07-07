@@ -37,6 +37,9 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
     private Date startedDate;
     private Date finishedDate;
 
+    @ApiModelProperty("主机部署 制品库详情")
+    private String deployMetadata;
+
     public Long getId() {
         return id;
     }
@@ -149,6 +152,14 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
         this.finishedDate = finishedDate;
     }
 
+    public String getDeployMetadata() {
+        return deployMetadata;
+    }
+
+    public void setDeployMetadata(String deployMetadata) {
+        this.deployMetadata = deployMetadata;
+    }
+
     @Override
     public String toString() {
         return "DevopsCdJobRecordDTO{" +
@@ -166,6 +177,7 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
                 ", sequence=" + sequence +
                 ", startedDate=" + startedDate +
                 ", finishedDate=" + finishedDate +
+                ", deployMetadata=" + deployMetadata +
                 '}';
     }
 }
