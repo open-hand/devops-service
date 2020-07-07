@@ -13,9 +13,9 @@ const jobTask = {
   sonar: '代码检查',
   custom: '自定义',
   chart: '发布Chart',
-  auto: '部署',
-  host: '主机部署',
-  check: '人工卡点',
+  cdDeploy: '部署',
+  cdHost: '主机部署',
+  cdAudit: '人工卡点',
 };
 
 export default observer((props) => {
@@ -76,8 +76,8 @@ export default observer((props) => {
         case 'sonar':
           content = <div className="c7ncd-pipeline-detail-job-task-sonar">{sonarUrl}</div>;
           break;
-        case 'auto':
-        case 'host':
+        case 'cdDeploy':
+        case 'cdHost':
           content = (
             <div className="c7ncd-pipeline-detail-job-task-deploy">
               {envName ? <span className="c7ncd-pipeline-detail-job-task-deploy-item">部署环境：{envName}</span> : null}
@@ -85,7 +85,7 @@ export default observer((props) => {
             </div>
           );
           break;
-        case 'check':
+        case 'cdAudit':
           content = (
             <div className="c7ncd-pipeline-detail-job-task-deploy">
               <span className="c7ncd-pipeline-detail-job-task-deploy-item">审核人员：{users}</span>
@@ -122,14 +122,14 @@ export default observer((props) => {
         <span className="c7ncd-pipeline-detail-title-appService">{appServiceName ? ` (${appServiceName}) ` : ''}</span>
       </div>
       <div className="c7ncd-pipeline-detail-content">
-        {map(getStepData, ({ id: stageId, name: stageName, jobList, type: stageType = 'CI' }, stageIndex) => (
+        {map(getStepData, ({ id: stageId, name: stageName, jobList, type: stageType = 'CD' }, stageIndex) => (
           <div className="c7ncd-pipeline-detail-stage" key={stageId}>
             <div className="c7ncd-pipeline-detail-stage-title">
               <span>{stageName}</span>
               <StageType type={stageType} />
             </div>
             <div className="c7ncd-pipeline-detail-stage-line" />
-            {stageIndex !== getStepData.length - 1 ? (
+            {stageIndex !== 0 ? (
               <div className="c7ncd-pipeline-detail-stage-arrow">
                 {stageType === 'CI' ? (
                   <svg xmlns="http://www.w3.org/2000/svg" width="28" height="9" viewBox="0 0 28 9">

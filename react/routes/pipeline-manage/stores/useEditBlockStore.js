@@ -28,7 +28,7 @@ export default function useStore() {
       this.setLoading(true);
       this.loadDetail(projectId, pipelineId).then((res) => {
         if (res) {
-          this.setStepData(res.stageList, false);
+          this.setStepData(res.devopsCiStageVOS.concat(res.devopsCdStageVOS), false);
           this.setMainData(res);
           this.setLoading(false);
         }
