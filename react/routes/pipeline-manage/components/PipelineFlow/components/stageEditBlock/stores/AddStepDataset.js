@@ -1,4 +1,4 @@
-export default () => ({
+export default (projectId) => ({
   autoCreate: true,
   fields: [{
     name: 'type',
@@ -24,5 +24,11 @@ export default () => ({
     dynamicProps: {
       required: ({ record }) => record.get('triggerType') === 'manual',
     },
+    textField: 'realName',
+    valueField: 'id',
+    lookupAxiosConfig: () => ({
+      method: 'post',
+      url: `/devops/v1/projects/${projectId}/users/list_users`,
+    }),
   }],
 });

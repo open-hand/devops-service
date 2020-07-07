@@ -1,11 +1,35 @@
-import React, { useEffect } from 'react';
-import { Form, Select, TextField, SelectBox, Password } from 'choerodon-ui/pro';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Form, Select, TextField, SelectBox, Password, Tooltip } from 'choerodon-ui/pro';
 import { Icon } from 'choerodon-ui';
+import { axios } from '@choerodon/boot';
+import { Base64 } from 'js-base64';
 import { observer } from 'mobx-react-lite';
 import { useAddCDTaskStore } from './stores';
 import YamlEditor from '../../../../../../components/yamlEditor';
 
 import './index.less';
+
+let currentSize = 10;
+
+const originBranchs = [{
+  value: 'master',
+  name: 'master',
+}, {
+  value: 'feature',
+  name: 'feature',
+}, {
+  value: 'bugfix',
+  name: 'bugfix',
+}, {
+  value: 'hotfix',
+  name: 'hotfix',
+}, {
+  value: 'release',
+  name: 'release',
+}, {
+  value: 'tag',
+  name: 'tag',
+}];
 
 const { Option } = Select;
 
@@ -14,11 +38,86 @@ export default observer(() => {
     ADDCDTaskDataSet,
     appServiceId,
     PipelineCreateFormDataSet,
+    AppState: { currentMenuType: { projectId } },
+    modal,
+    ADDCDTaskUseStore,
+    handleOk,
+    jobDetail,
   } = useAddCDTaskStore();
 
+  const [branchsList, setBranchsList] = useState([]);
+  const [valueIdValues, setValueIdValues] = useState('');
+  const [customValues, setCustomValues] = useState('');
+  const [imageDeployValues, setImageDeployValues] = useState('');
+
+  const handleAdd = async () => {
+    const result = await ADDCDTaskDataSet.validate();
+    if (result) {
+      const ds = JSON.parse(JSON.stringify(ADDCDTaskDataSet.toData()[0]));
+      const data = {
+        ...ds,
+        metadata: (function () {
+          if (ds.type === 'cdDeploy') {
+            ds.value = Base64.encode(valueIdValues);
+          }
+          if (ds.type === 'cdHost') {
+            if (ds.mode === 'customize') {
+              ds.customize = Base64.encode(customValues);
+            } else if (ds.mode === 'imageDeploy') {
+              ds.imageDeploy = {
+                repoName: ds.repoName,
+                imageName: ds.imageName,
+                matchType: ds.matchType,
+                matchContent: ds.matchContent,
+                value: Base64.encode(imageDeployValues),
+              };
+            }
+          }
+          return JSON.stringify(ds).replace(/"/g, "'");
+        }()),
+      };
+      handleOk(data);
+      return true;
+    }
+    return false;
+  };
+
+  modal.handleOk(handleAdd);
+
   useEffect(() => {
+    if (jobDetail) {
+      if (jobDetail.type === 'cdDeploy') {
+        const { value } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
+        setValueIdValues(Base64.decode(value));
+      } else if (jobDetail.type === 'cdHost') {
+        const metadata = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
+        const { mode } = metadata;
+        if (mode === 'customize') {
+          setCustomValues(Base64.decode(metadata.customize));
+        } else if (mode === 'imageDeploy') {
+          setImageDeployValues(Base64.decode(metadata.imageDeploy.value));
+        }
+      }
+      delete jobDetail.metadata;
+      const newJobDetail = {
+        ...jobDetail,
+      };
+      ADDCDTaskDataSet.loadData([newJobDetail]);
+    }
     ADDCDTaskDataSet.current.set('glyyfw', appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')));
   }, []);
+
+  useEffect(() => {
+    async function initBranchs() {
+      const value = ADDCDTaskDataSet.current.get('triggerType');
+      if (value && !value.includes('exact')) {
+        setBranchsList(originBranchs);
+      } else {
+        getBranchsList();
+      }
+    }
+    initBranchs();
+  }, [ADDCDTaskDataSet.current.get('triggerType')]);
 
   const getOtherConfig = () => {
     function getModeDom() {
@@ -27,20 +126,27 @@ export default observer(() => {
           <YamlEditor
             colSpan={6}
             newLine
-            readOnly
-            value="123"
+            readOnly={false}
+            value={customValues}
+            onValueChange={(data) => setCustomValues(data)}
           />
         ),
         imageDeploy: [
           <Select newLine colSpan={3} name="repoName" />,
           <Select colSpan={3} name="imageName" />,
-          <Select colSpan={3} name="matchType" />,
+          <Select colSpan={3} name="matchType">
+            <Option value="refs">模糊匹配</Option>
+            <Option value="regex">正则匹配</Option>
+            <Option value="exact_match">精确匹配</Option>
+            <Option value="exact_exclude">精确排除</Option>
+          </Select>,
           <TextField colSpan={3} name="matchContent" />,
           <YamlEditor
             colSpan={6}
             newLine
-            readOnly
-            value="123"
+            readOnly={false}
+            value={imageDeployValues}
+            onValueChange={(data) => setImageDeployValues(data)}
           />,
         ],
         jarDeploy: [
@@ -64,12 +170,22 @@ export default observer(() => {
         <div className="addcdTask-divided" />,
         <p className="addcdTask-title">配置信息</p>,
         <Form className="addcdTask-form2" columns={3} dataSet={ADDCDTaskDataSet}>
-          <Select colSpan={2} name="valueId" />
+          <Select
+            colSpan={2}
+            name="valueId"
+            onChange={(data) => {
+              const origin = ADDCDTaskUseStore.getValueIdList;
+              setValueIdValues(origin.find(i => i.id === data).value);
+            }}
+          />
           <YamlEditor
             colSpan={3}
             newLine
-            readOnly
-            value="123"
+            readOnly={false}
+            onValueChange={(data) => {
+              setValueIdValues(data);
+            }}
+            value={valueIdValues}
           />
         </Form>,
       ],
@@ -109,6 +225,35 @@ export default observer(() => {
     return obj[ADDCDTaskDataSet?.current?.get('type')];
   };
 
+  const getBranchsList = useCallback(async () => {
+    const url = `devops/v1/projects/${projectId}/app_service/${PipelineCreateFormDataSet.current.get('appServiceId')}/git/page_branch_by_options?page=1&size=${currentSize}`;
+    const res = await axios.post(url);
+    if (res.content.length % 10 === 0 && res.content.length !== 0) {
+      res.content.push({
+        name: '加载更多',
+        value: 'more',
+      });
+    }
+    setBranchsList(res.content.map((c) => {
+      if (c.branchName) {
+        c.name = c.branchName;
+        c.value = c.branchName;
+      }
+      return c;
+    }));
+  }, [currentSize]);
+
+  const renderderBranchs = ({ text }) => (text === '加载更多' ? (
+    <a
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        currentSize += 10;
+        getBranchsList();
+      }}
+    >{text}</a>
+  ) : text);
+
   return (
     <div className="addcdTask">
       <Form columns={3} dataSet={ADDCDTaskDataSet}>
@@ -123,13 +268,39 @@ export default observer(() => {
           <Select
             name="triggerType"
             className="addcdTask-triggerType"
+            onChange={() => ADDCDTaskDataSet.current.set('triggerValue', undefined)}
           >
             <Option value="refs">分支类型匹配</Option>
             <Option value="regex">正则匹配</Option>
             <Option value="exact_match">精确匹配</Option>
             <Option value="exact_exclude">精确排除</Option>
           </Select>
-          <TextField className="addcdTask-triggerValue" name="triggerValue" />
+          {
+            ADDCDTaskDataSet.current.get('triggerType') === 'regex' ? (
+              <TextField className="addcdTask-triggerValue" name="triggerValue" />
+            ) : (
+              <Select
+                combo
+                searchable
+                multiple
+                className="addcdTask-triggerValue"
+                name="triggerValue"
+                showHelp={ADDCDTaskDataSet.current.get('triggerType') !== 'exact_exclude' ? 'tooltip' : 'none'}
+                help="您可以在此输入或选择触发该任务的分支类型，若不填写，则默认为所有分支或tag"
+                searchMatcher="branchName"
+                optionRenderer={({ text }) => renderderBranchs({ text })}
+                maxTagCount={1}
+                maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
+                  {`+${omittedValues.length}`}
+                </Tooltip>}
+                renderer={renderderBranchs}
+              >
+                {branchsList.map(b => (
+                  <Option value={b.value}>{b.name}</Option>
+                ))}
+              </Select>
+            )
+          }
         </div>
         {
           ADDCDTaskDataSet?.current?.get('type') === 'cdDeploy' && [

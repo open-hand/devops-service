@@ -36,7 +36,7 @@ export default function useStore() {
     },
 
     loadDetail(projectId, pipelineId) {
-      return axios.get(`/devops/v1/projects/${projectId}/ci_pipelines/${pipelineId}`);
+      return axios.get(`/devops/v1/projects/${projectId}/cicd_pipelines/${pipelineId}`);
     },
     dataSource: [],
     dataSource2: [],
@@ -64,7 +64,7 @@ export default function useStore() {
       }
     },
     get getStepData() {
-      return this.dataSource.slice();
+      return this.dataSource?.slice();
     },
     get getStepData2() {
       return this.dataSource2.slice();

@@ -1,4 +1,4 @@
-export default (projectId) => ({
+export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) => ({
   autoCreate: true,
   fields: [{
     name: 'type',
@@ -34,6 +34,9 @@ export default (projectId) => ({
     required: true,
     textField: 'name',
     valueField: 'id',
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdDeploy',
+    },
     lookupAxiosConfig: () => ({
       method: 'get',
       url: `/devops/v1/projects/${projectId}/envs/list_by_active?active=true`,
@@ -47,27 +50,62 @@ export default (projectId) => ({
     name: 'instanceName',
     type: 'string',
     label: '实例名称',
-    required: true,
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdDeploy' && record.get('bsms') === 'new',
+    },
   }, {
     name: 'instanceId',
     type: 'string',
     label: '选择要替换的实例',
-    required: true,
+    textField: 'code',
+    valueField: 'id',
+    dynamicProps: {
+      required: ({ record }) => record.get('bsms') === 'update',
+      disabled: ({ record }) => !record.get('envId'),
+      lookupAxiosConfig: ({ record }) => ({
+        method: 'get',
+        url: `/devops/v1/projects/${projectId}/app_service_instances/list_running_and_failed?app_service_id=${PipelineCreateFormDataSet.current.get('appServiceId')}&env_id=${record.get('envId')}`,
+      }),
+    },
   }, {
     name: 'valueId',
     type: 'string',
     label: '部署配置',
-    required: true,
+    textField: 'name',
+    valueField: 'id',
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdDeploy',
+      disabled: ({ record }) => !record.get('envId'),
+      lookupAxiosConfig: ({ record }) => ({
+        method: 'get',
+        url: `/devops/v1/projects/${projectId}/deploy_value/list_by_env_and_app?app_service_id=${PipelineCreateFormDataSet.current.get('appServiceId')}&env_id=${record.get('envId')}`,
+        transformResponse: (res) => {
+          let newRes = res;
+          try {
+            newRes = JSON.parse(res);
+            useStore.setValueIdList(newRes);
+            return newRes;
+          } catch (e) {
+            useStore.setValueIdList(newRes);
+            return newRes;
+          }
+        },
+      }),
+    },
   }, {
     name: 'hostIp',
     type: 'string',
     label: 'IP',
-    required: true,
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdHost',
+    },
   }, {
     name: 'hostPort',
     type: 'string',
     label: '端口',
-    required: true,
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdHost',
+    },
   }, {
     name: 'accountType',
     type: 'string',
@@ -77,17 +115,23 @@ export default (projectId) => ({
     name: 'userName',
     type: 'string',
     label: '用户名',
-    required: true,
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdHost',
+    },
   }, {
     name: 'password',
     type: 'string',
     label: '密码',
-    required: true,
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('accountType') === 'accountPassword',
+    },
   }, {
     name: 'accountKey',
     type: 'string',
     label: '密钥',
-    required: true,
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('accountType') === 'accountKey',
+    },
   }, {
     name: 'mode',
     type: 'string',
@@ -97,56 +141,106 @@ export default (projectId) => ({
     name: 'repoName',
     type: 'string',
     label: '项目镜像仓库',
-    required: true,
+    textField: 'repoName',
+    valueField: 'repoId',
+    lookupAxiosConfig: () => ({
+      method: 'get',
+      url: `/rdupm/v1/harbor-choerodon-repos/listImageRepo?projectId=${projectId}`,
+    }),
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'imageDeploy',
+    },
   }, {
     name: 'imageName',
     type: 'string',
     label: '镜像',
-    required: true,
+    textField: 'imageName',
+    valueField: 'imageId',
+    dynamicProps: {
+      disabled: ({ record }) => !record.get('repoName'),
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'imageDeploy',
+      lookupAxiosConfig: ({ record }) => ({
+        method: 'get',
+        url: `rdupm/v1/harbor-choerodon-repos/listHarborImage?repoId=${record.get('repoName')}&repoType=${(function () {
+          const lookup = record.getField('repoName').lookup;
+          return lookup?.find(l => String(l.repoId) === String(record.get('repoName')))?.repoType;
+        }())}`,
+      }),
+    },
+
   }, {
     name: 'matchType',
     type: 'string',
     label: '匹配类型',
-    required: true,
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'imageDeploy',
+    },
   }, {
     name: 'matchContent',
     type: 'string',
     label: '镜像版本匹配',
-    required: true,
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'imageDeploy',
+    },
   }, {
     name: 'serverName',
     type: 'string',
     label: 'Nexus服务',
-    required: true,
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'jarDeploy',
+    },
+    textField: 'serverName',
+    valueField: 'configId',
+    lookupAxiosConfig: () => ({
+      method: 'get',
+      url: `/devops/v1/nexus/choerodon/${organizationId}/project/${projectId}/nexus/server/list`,
+    }),
   }, {
     name: 'neRepositoryName',
     type: 'string',
     label: '项目制品库',
-    required: true,
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'jarDeploy',
+      disabled: ({ record }) => !record.get('serverName'),
+      lookupAxiosConfig: ({ record }) => ({
+        method: 'get',
+        url: `rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/list?configId=${record.get('serverName')}`,
+      }),
+    },
   }, {
     name: 'groupId',
     type: 'string',
     label: 'groupID',
-    required: true,
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'jarDeploy',
+    },
   }, {
     name: 'artifactId',
     type: 'string',
     label: 'artifactID',
-    required: true,
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'jarDeploy',
+    },
   }, {
     name: 'versionRegular',
     type: 'string',
     label: 'jar包版本正则匹配',
-    required: true,
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'jarDeploy',
+    },
   }, {
     name: 'cdAuditUserIds',
     type: 'string',
     label: '审核人员',
-    required: true,
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdAudit',
+    },
   }, {
     name: 'countersigned',
     type: 'string',
     label: '审核模式',
-    required: true,
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdAudit',
+    },
   }],
 });

@@ -1,7 +1,6 @@
 import forEach from 'lodash/forEach';
 import isEmpty from 'lodash/isEmpty';
 
-
 function formatData({ data, expandsKeys }) {
   const newData = [];
   function flatData(value, gitlabProjectId) {
@@ -43,7 +42,7 @@ export default ({ projectId, mainStore, editBlockStore, handleSelect }) => ({
   expandField: 'expand',
   transport: {
     read: {
-      url: `devops/v1/projects/${projectId}/ci_pipelines`,
+      url: `devops/v1/projects/${projectId}/cicd_pipelines`,
       method: 'get',
       transformResponse(response) {
         try {
@@ -66,7 +65,7 @@ export default ({ projectId, mainStore, editBlockStore, handleSelect }) => ({
       },
     },
     destroy: ({ data: [data] }) => ({
-      url: `/devops/v1/projects/${projectId}/ci_pipelines/${data.id}`,
+      url: `/devops/v1/projects/${projectId}/cicd_pipelines/${data.id}`,
       method: 'delete',
     }),
   },

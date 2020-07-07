@@ -8,6 +8,7 @@ const config = {
     'primary-color': '#3f51b5',
     'icon-font-size-base': '16px',
   },
+  port: 8080,
   dashboard: {},
   modules: [
     '.',
