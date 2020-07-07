@@ -1194,13 +1194,20 @@ public class AppServiceServiceImpl implements AppServiceService {
         } catch (Exception e) {
             throw new CommonException("error.chart.not.available");
         }
+
+        // 验证用户名密码
+        Response<Void> response = null;
         try {
             // 获取首页html需要认证信息
-            Call<String> getHomePage = chartClient.getHomePage();
-            getHomePage.execute();
+            Call<Void> getHomePage = chartClient.getHomePage();
+            response = getHomePage.execute();
         } catch (Exception ex) {
             throw new CommonException("error.chart.authentication.failed");
         }
+        if (response != null && !response.isSuccessful()) {
+            throw new CommonException("error.chart.authentication.failed");
+        }
+
         return true;
     }
 

@@ -16,7 +16,7 @@ public interface ChartClient {
      * @return 首页的html内容
      */
     @GET("/")
-    Call<String> getHomePage();
+    Call<Void> getHomePage();
 
     @GET("{orgCode}/{proCode}/charts/{appServiceCode}-{appServiceVersion}.tgz")
     Call<ResponseBody> downloadTaz(@Path("orgCode") String orgCode, @Path("proCode") String proCode, @Path("appServiceCode") String appServiceCode, @Path("appServiceVersion") String appServiceVersion);
