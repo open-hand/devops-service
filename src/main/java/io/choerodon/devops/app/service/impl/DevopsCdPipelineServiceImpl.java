@@ -300,7 +300,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         } else {
             // 更新阶段状态为执行中
             devopsCdStageRecord.setStatus(PipelineStatus.RUNNING.toValue());
-            devopsCdStageRecord.setStartedDate(new Date());
             devopsCdStageRecordService.update(devopsCdStageRecord);
             // 更新第一个job的状态
             updateFirstJob(pipelineRecordId, devopsCdStageRecord);
@@ -529,7 +528,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         if (nextJob == null) {
             // 1. 更新当前阶段状态为success
             currentStage.setStatus(PipelineStatus.SUCCESS.toValue());
-            currentStage.setFinishedDate(new Date());
             devopsCdStageRecordService.update(currentStage);
             // 2. 执行下一个阶段
             // 2.1 如果下一个阶段为空，则说明已经执行到了最后一个阶段， 则需要更新流水线状态为success
@@ -562,7 +560,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         } else {
             // 已经是最后一个阶段了
             currentStage.setStatus(PipelineStatus.SUCCESS.toValue());
-            currentStage.setFinishedDate(new Date());
             devopsCdStageRecordService.update(currentStage);
 
             devopsCdPipelineRecordService.updateStatusById(devopsCdPipelineRecordDTO.getId(), PipelineStatus.SUCCESS.toValue());

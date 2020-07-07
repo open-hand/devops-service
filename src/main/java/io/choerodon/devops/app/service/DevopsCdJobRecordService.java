@@ -44,4 +44,16 @@ public interface DevopsCdJobRecordService {
      * @param jobRecordId
      */
     void updateJobStatusNotAudit(Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
+
+    /**
+     * 重试cd job
+     *
+     * @param projectId
+     * @param pipelineRecordId
+     * @param stageRecordId
+     * @param jobRecordId
+     */
+    void retryCdJob(Long projectId, Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
+
+    void updateJobStatusSuccess(Long jobRecordId);
 }

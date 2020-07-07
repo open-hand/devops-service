@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -17,10 +16,10 @@ import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCdStageRecordService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
+import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
-import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * 〈功能简述〉
@@ -108,6 +107,7 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = queryById(jobRecordId);
         devopsCdJobRecordDTO.setStatus(PipelineStatus.FAILED.toValue());
         devopsCdJobRecordDTO.setFinishedDate(new Date());
+        devopsCdJobRecordDTO.setDurationSeconds((new Date().getTime() - devopsCdJobRecordDTO.getStartedDate().getTime()) / 1000);
         update(devopsCdJobRecordDTO);
     }
 
@@ -124,6 +124,29 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
         devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.NOT_AUDIT.toValue());
         // 通知审核人员
         devopsCdAuditRecordService.sendJobAuditMessage(pipelineRecordId, devopsCdJobRecordDTO);
+    }
+
+    @Override
+    public void retryCdJob(Long projectId, Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
+        DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(jobRecordId);
+        if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobRecordDTO.getType())) {
+            // 更新流水线状态为执行中
+            // 更新阶段状态为执行中
+            // 更新任务状态为执行中
+
+        } else if (JobTypeEnum.CD_HOST.value().equals(devopsCdJobRecordDTO.getType())) {
+
+        }
+
+    }
+
+    @Override
+    public void updateJobStatusSuccess(Long jobRecordId) {
+        DevopsCdJobRecordDTO devopsCdJobRecordDTO = queryById(jobRecordId);
+        devopsCdJobRecordDTO.setStatus(PipelineStatus.SUCCESS.toValue());
+        devopsCdJobRecordDTO.setFinishedDate(new Date());
+        devopsCdJobRecordDTO.setDurationSeconds((new Date().getTime() - devopsCdJobRecordDTO.getStartedDate().getTime()) / 1000);
+        update(devopsCdJobRecordDTO);
     }
 
 
