@@ -10,13 +10,13 @@ public enum HostDeployType {
     JAR_DEPLOY("jar"),
     CUSTOMIZE_DEPLOY("customize");
 
-    private String status;
+    private String value;
 
-    HostDeployType(String status) {
-        this.status = status;
+    HostDeployType(String value) {
+        this.value = value;
     }
 
-    public String getStatus() {
-        return status;
+    public String getValue() {
+        return value;
     }
 }

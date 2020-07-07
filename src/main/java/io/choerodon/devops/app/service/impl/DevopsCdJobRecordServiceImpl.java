@@ -89,6 +89,7 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
         }
         if (status.equals(WorkFlowStatus.RUNNING.toValue())) {
             cdJobRecordDTO.setStartedDate(new Date());
+            cdJobRecordDTO.setFinishedDate(null);
         }
         if (devopsCdJobRecordMapper.updateByPrimaryKey(cdJobRecordDTO) != 1) {
             throw new CommonException(ERROR_UPDATE_JOB_RECORD_FAILED);
