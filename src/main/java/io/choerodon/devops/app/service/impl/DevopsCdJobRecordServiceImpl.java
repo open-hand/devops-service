@@ -10,10 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.service.DevopsCdAuditRecordService;
-import io.choerodon.devops.app.service.DevopsCdJobRecordService;
-import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
-import io.choerodon.devops.app.service.DevopsCdStageRecordService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
 import io.choerodon.devops.infra.enums.JobTypeEnum;
@@ -44,6 +41,9 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
     @Autowired
     private DevopsCdAuditRecordService devopsCdAuditRecordService;
+    @Autowired
+    private DevopsCdPipelineService devopsCdPipelineService;
+
 
     @Override
     public List<DevopsCdJobRecordDTO> queryByStageRecordId(Long stageRecordId) {
@@ -86,6 +86,7 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
                 || status.equals(WorkFlowStatus.SUCCESS.toValue())
                 || status.equals(WorkFlowStatus.STOP.toValue())) {
             cdJobRecordDTO.setFinishedDate(new Date());
+            cdJobRecordDTO.setDurationSeconds((new Date().getTime() - cdJobRecordDTO.getStartedDate().getTime()) / 1000);
         }
         if (status.equals(WorkFlowStatus.RUNNING.toValue())) {
             cdJobRecordDTO.setStartedDate(new Date());
@@ -130,11 +131,16 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
     @Override
     public void retryCdJob(Long projectId, Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(jobRecordId);
+        // 1. 更新流水线状态为执行中
+        devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.RUNNING.toValue());
+        // 2. 更新阶段状态为执行中
+        devopsCdStageRecordService.updateStatusById(stageRecordId, PipelineStatus.RUNNING.toValue());
+        // 3. 更新任务状态为执行中
+        updateStatusById(jobRecordId, PipelineStatus.RUNNING.toValue());
+        // 4 重试任务
         if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobRecordDTO.getType())) {
-            // 更新流水线状态为执行中
-            // 更新阶段状态为执行中
-            // 更新任务状态为执行中
-
+            // 4.1 重试环境部署任务
+            devopsCdPipelineService.envAutoDeploy(pipelineRecordId, stageRecordId, jobRecordId);
         } else if (JobTypeEnum.CD_HOST.value().equals(devopsCdJobRecordDTO.getType())) {
 
         }
