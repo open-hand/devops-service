@@ -8,6 +8,7 @@ import AddCDTask from '../../../PipelineCreate/components/AddCDTask';
 import AddStage from './AddStage';
 import { usePipelineCreateStore } from '../../../PipelineCreate/stores';
 import ViewVariable from '../../../view-variables';
+import StageType from '../stage-type';
 
 import './index.less';
 
@@ -301,13 +302,7 @@ export default observer((props) => {
     >
       <div className="c7n-piplineManage-edit-column-header">
         <span>{name}</span>
-        <span
-          className="c7n-piplineManage-edit-column-header-type"
-          style={{
-            color: getType() ? 'rgba(104, 135, 232, 1)' : 'rgba(63,178,233,1)',
-            background: getType() ? 'rgba(104, 135, 232, 0.1)' : 'rgba(63,178,233,0.1)',
-          }}
-        >{type?.toUpperCase()}</span>
+        <StageType type={type} />
         <div
           className="c7n-piplineManage-edit-column-header-btnGroup"
         >

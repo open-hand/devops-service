@@ -4,6 +4,7 @@ import map from 'lodash/map';
 import forEach from 'lodash/forEach';
 import { Spin, Icon } from 'choerodon-ui';
 import { usePipelineFlowStore } from '../stores';
+import StageType from '../components/stage-type';
 
 import './index.less';
 
@@ -12,8 +13,10 @@ const jobTask = {
   sonar: '代码检查',
   custom: '自定义',
   chart: '发布Chart',
+  auto: '部署',
+  host: '主机部署',
+  check: '人工卡点',
 };
-
 
 export default observer((props) => {
   const {
@@ -67,18 +70,38 @@ export default observer((props) => {
   function getJobTask(metadata) {
     if (metadata) {
       const newData = JSON.parse(metadata.replace(/'/g, '"'));
-      const { type, sonarUrl, config } = newData || {};
+      const { type, sonarUrl, config, envName, branch, users, checkMode } = newData || {};
       let content;
-      if (type === 'sonar') {
-        content = <div className="c7ncd-pipeline-detail-job-task-sonar">{sonarUrl}</div>;
-      } else {
-        content = (
-          map(config, ({ name: taskName, sequence }) => (
-            <div className="c7ncd-pipeline-detail-job-task-item" key={sequence}>
-              {taskName}
+      switch (type) {
+        case 'sonar':
+          content = <div className="c7ncd-pipeline-detail-job-task-sonar">{sonarUrl}</div>;
+          break;
+        case 'auto':
+        case 'host':
+          content = (
+            <div className="c7ncd-pipeline-detail-job-task-deploy">
+              {envName ? <span className="c7ncd-pipeline-detail-job-task-deploy-item">部署环境：{envName}</span> : null}
+              <span>触发分支：{branch}</span>
             </div>
-          ))
-        );
+          );
+          break;
+        case 'check':
+          content = (
+            <div className="c7ncd-pipeline-detail-job-task-deploy">
+              <span className="c7ncd-pipeline-detail-job-task-deploy-item">审核人员：{users}</span>
+              <span className="c7ncd-pipeline-detail-job-task-deploy-item">审核模式：{checkMode}</span>
+              <span>触发分支：{branch}</span>
+            </div>
+          );
+          break;
+        default:
+          content = (
+            map(config, ({ name: taskName, sequence }) => (
+              <div className="c7ncd-pipeline-detail-job-task-item" key={sequence}>
+                {taskName}
+              </div>
+            ))
+          );
       }
       return <div className="c7ncd-pipeline-detail-job-task">{content}</div>;
     }
@@ -99,21 +122,30 @@ export default observer((props) => {
         <span className="c7ncd-pipeline-detail-title-appService">{appServiceName ? ` (${appServiceName}) ` : ''}</span>
       </div>
       <div className="c7ncd-pipeline-detail-content">
-        {map(getStepData, ({ id: stageId, name: stageName, jobList }, stageIndex) => (
+        {map(getStepData, ({ id: stageId, name: stageName, jobList, type: stageType = 'CI' }, stageIndex) => (
           <div className="c7ncd-pipeline-detail-stage" key={stageId}>
-            <div className="c7ncd-pipeline-detail-stage-title">{stageName}</div>
+            <div className="c7ncd-pipeline-detail-stage-title">
+              <span>{stageName}</span>
+              <StageType type={stageType} />
+            </div>
             <div className="c7ncd-pipeline-detail-stage-line" />
             {stageIndex !== getStepData.length - 1 ? (
               <div className="c7ncd-pipeline-detail-stage-arrow">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="9" viewBox="0 0 28 9">
-                  <path fill="#6887E8" d="M511.5,131 L520.5,135.5 L511.5,140 L511.5,136 L493,136 L493,135 L511.5,135 L511.5,131 Z" transform="translate(-493 -131)" />
-                </svg>
+                {stageType === 'CI' ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="9" viewBox="0 0 28 9">
+                    <path fill="#6887E8" d="M511.5,131 L520.5,135.5 L511.5,140 L511.5,136 L493,136 L493,135 L511.5,135 L511.5,131 Z" transform="translate(-493 -131)" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="9" viewBox="0 0 26 9">
+                    <path fill="#F1B42D" d="M917.5,130 L926.5,134.5 L917.5,139 L917.5,135 L913.5,135 L913.5,134 L917.5,134 L917.5,130 Z M905.5,134 L905.5,135 L901.5,135 L901.5,134 L905.5,134 Z M911.5,134 L911.5,135 L907.5,135 L907.5,134 L911.5,134 Z" transform="translate(-901 -130)" />
+                  </svg>
+                )}
               </div>
             ) : null}
             {map(jobList, ({ id: jobId, type: jobType, name: jobName, metadata }, index) => (
               <div key={`${stageId}-${jobId}`}>
                 {index && leftLineDom[stageIndex] ? leftLineDom[stageIndex][index] : null}
-                <div className={`c7ncd-pipeline-detail-job ${jobType === 'custom' ? 'c7ncd-pipeline-detail-job-custom' : ''}`} id={`${id}-${stageIndex}-job-${index}`}>
+                <div className={`c7ncd-pipeline-detail-job c7ncd-pipeline-detail-job-${stageType}`} id={`${id}-${stageIndex}-job-${index}`}>
                   <div className="c7ncd-pipeline-detail-job-title">【{jobTask[jobType]}】{jobName}</div>
                   {jobType !== 'custom' && getJobTask(metadata)}
                 </div>

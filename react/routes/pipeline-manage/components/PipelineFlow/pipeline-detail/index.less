@@ -31,6 +31,7 @@
     }
 
     &-title {
+      font-family: PingFangSC-Medium, PingFang SC;
       font-size: .15rem;
       font-weight: 500;
       padding: .16rem .2rem;
@@ -79,6 +80,7 @@
       background-color: #fff;
       word-break: break-all;
       margin-top: .08rem;
+      line-height: .17rem;
 
       &-item {
         padding: .1rem;
@@ -93,10 +95,23 @@
       &-sonar {
         padding: .1rem;
       }
+
+      &-deploy {
+        padding: .1rem;
+
+        &-item {
+          display: block;
+        }
+      }
     }
 
-    &-custom {
-      background-color: #fff;
+    &-CD {
+      background: rgba(233, 242, 248, 1);
+      border: 1px solid rgba(63, 178, 233, 1);
+
+      .c7ncd-pipeline-detail-job-title {
+        color: #224a6b;
+      }
     }
 
     &-rect {
