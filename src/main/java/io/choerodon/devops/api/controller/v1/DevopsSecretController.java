@@ -1,17 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Optional;
-import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.hzero.starter.keyencrypt.mvc.EncryptDTO;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -27,6 +15,17 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.hzero.starter.keyencrypt.mvc.EncryptDTO;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.Optional;
 
 /**
  * Created by n!Ck
@@ -61,7 +60,7 @@ public class DevopsSecretController {
             @ApiParam(value = "请求体", required = true)
             @RequestBody @Valid SecretReqVO secretReqVO) {
         secretReqVO.setType("create");
-        return Optional.ofNullable(devopsSecretService.createOrUpdate(secretReqVO))
+        return Optional.ofNullable(devopsSecretService.createOrUpdate(projectId, secretReqVO))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.secret.create"));
     }
@@ -82,7 +81,7 @@ public class DevopsSecretController {
             @ApiParam(value = "请求体", required = true)
             @EncryptDTO @RequestBody @Valid SecretUpdateVO secretUpdateVO) {
         secretUpdateVO.setType("update");
-        return Optional.ofNullable(devopsSecretService.createOrUpdate(ConvertUtils.convertObject(secretUpdateVO, SecretReqVO.class)))
+        return Optional.ofNullable(devopsSecretService.createOrUpdate(projectId, ConvertUtils.convertObject(secretUpdateVO, SecretReqVO.class)))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.secret.update"));
     }
@@ -105,7 +104,7 @@ public class DevopsSecretController {
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "密钥id", required = true)
             @Encrypt(DevopsSecretDTO.ENCRYPT_KEY) @PathVariable(value = "secret_id") Long secretId) {
-        return Optional.ofNullable(devopsSecretService.deleteSecret(envId, secretId))
+        return Optional.ofNullable(devopsSecretService.deleteSecret(projectId, envId, secretId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.secret.delete"));
     }
