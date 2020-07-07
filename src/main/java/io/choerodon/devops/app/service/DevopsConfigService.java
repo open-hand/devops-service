@@ -19,21 +19,12 @@ public interface DevopsConfigService {
 
     /**
      * 项目下处理
-     *
-     * @param resourceId
-     * @param resourceType
-     * @param devopsConfigVO
-     * @return
      */
     void operate(Long resourceId, String resourceType, List<DevopsConfigVO> devopsConfigVO);
 
 
     /**
      * 项目下根据类型查询配置
-     *
-     * @param resourceId
-     * @param resourceType
-     * @return
      */
     List<DevopsConfigVO> queryByResourceId(Long resourceId, String resourceType);
 

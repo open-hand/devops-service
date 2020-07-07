@@ -461,19 +461,23 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         if (ObjectUtils.isEmpty(devopsConfigRepVO.getChart())) {
             chart = new DevopsConfigVO();
             chart.setCustom(false);
-            chart.setType(CHART);
         } else {
             chart = devopsConfigRepVO.getChart();
+            chart.setCustom(Boolean.TRUE);
             ConfigVO configVO = chart.getConfig();
             CommonExAssertUtil.assertNotNull(configVO, "error.chart.config.null");
             boolean usernameEmpty = StringUtils.isEmpty(configVO.getUserName());
-            configVO.setUserName(usernameEmpty ? null : configVO.getUserName());
             boolean passwordEmpty = StringUtils.isEmpty(configVO.getPassword());
-            configVO.setPassword(passwordEmpty ? null : configVO.getPassword());
+            if (!usernameEmpty && !passwordEmpty) {
+                configVO.setUserName(configVO.getUserName());
+                configVO.setPassword(configVO.getPassword());
+                configVO.setPrivate(Boolean.TRUE);
+            }
 
             // 用户名和密码要么都为空, 要么都有值
             CommonExAssertUtil.assertTrue(((usernameEmpty && passwordEmpty) || (!usernameEmpty && !passwordEmpty)), "error.chart.auth.invalid");
         }
+        chart.setType(CHART);
         configVOS.add(chart);
         operate(resourceId, resourceType, configVOS);
     }
