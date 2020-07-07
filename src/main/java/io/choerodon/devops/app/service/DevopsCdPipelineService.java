@@ -17,10 +17,23 @@ public interface DevopsCdPipelineService {
 
     /**
      * 执行环境部署任务
+     *
      * @param pipelineRecordId
      * @param stageRecordId
      * @param jobRecordId
      */
     void envAutoDeploy(Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
 
+    /**
+     * 执行下一个任务
+     * 1. 人工卡点任务更新为待审核
+     * 2. 当前阶段结束，则执行下一个阶段
+     * 3. 如果是，最后一个阶段的最后一个任务，则更新流水线状态为success
+     *
+     * @param pipelineRecordId
+     * @param stageRecordId
+     * @param jobRecordId
+     * @param status
+     */
+    void setAppDeployStatus(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, Boolean status);
 }

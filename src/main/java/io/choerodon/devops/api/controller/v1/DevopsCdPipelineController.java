@@ -4,12 +4,9 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
@@ -100,5 +97,26 @@ public class DevopsCdPipelineController {
         return Results.success();
     }
 
+    /**
+     * 接收任务状态
+     *
+     * @param pipelineRecordId 流水线记录Id
+     * @param stageRecordId    阶段记录Id
+     * @param jobRecordId      任务Id
+     */
+    @ApiOperation(value = "接收任务状态")
+    @PutMapping("/auto_deploy/status")
+    public ResponseEntity setAppDeployStatus(
+            @ApiParam(value = "流水线记录Id", required = true)
+            @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+            @ApiParam(value = "阶段记录Id", required = true)
+            @RequestParam(value = "stage_record_id") Long stageRecordId,
+            @ApiParam(value = "任务Id", required = true)
+            @RequestParam(value = "job_record_id") Long jobRecordId,
+            @ApiParam(value = "状态", required = true)
+            @RequestParam(value = "status") Boolean status) {
+        devopsCdPipelineService.setAppDeployStatus(pipelineRecordId, stageRecordId, jobRecordId, status);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
 
 }

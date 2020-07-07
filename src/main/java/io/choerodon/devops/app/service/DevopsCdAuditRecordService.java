@@ -3,6 +3,8 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import io.choerodon.devops.infra.dto.DevopsCdAuditRecordDTO;
+import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
+import io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO;
 
 /**
  * @author scp
@@ -15,4 +17,7 @@ public interface DevopsCdAuditRecordService {
 
     List<DevopsCdAuditRecordDTO> queryByJobRecordId(Long jobRecordId);
 
+    void sendStageAuditMessage(DevopsCdStageRecordDTO devopsCdStageRecordDTO);
+
+    void sendJobAuditMessage(Long pipelineRecordId, DevopsCdJobRecordDTO devopsCdJobRecordDTO);
 }

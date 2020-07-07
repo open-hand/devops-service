@@ -26,6 +26,10 @@ import io.choerodon.devops.api.vo.CdHostDeployConfigVO;
 import io.choerodon.devops.api.vo.DevopsCdJobRecordVO;
 import io.choerodon.devops.api.vo.DevopsCdPipelineRecordVO;
 import io.choerodon.devops.api.vo.DevopsCdStageRecordVO;
+import io.choerodon.devops.api.vo.CdHostDeployConfigVO;
+import io.choerodon.devops.api.vo.DevopsCdJobRecordVO;
+import io.choerodon.devops.api.vo.DevopsCdPipelineRecordVO;
+import io.choerodon.devops.api.vo.DevopsCdStageRecordVO;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.app.service.DevopsCdAuditRecordService;
 import io.choerodon.devops.app.service.DevopsCdJobRecordService;
@@ -427,6 +431,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     @Override
+    @Transactional
     public void updatePipelineStatusFailed(Long pipelineRecordId, String errorInfo) {
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = queryById(pipelineRecordId);
         devopsCdPipelineRecordDTO.setStatus(PipelineStatus.FAILED.toValue());

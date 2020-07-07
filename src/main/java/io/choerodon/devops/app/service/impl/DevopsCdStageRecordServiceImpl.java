@@ -4,11 +4,14 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.service.DevopsCdAuditRecordService;
+import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCdStageRecordService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO;
@@ -32,6 +35,14 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
 
     @Autowired
     private DevopsCdStageRecordMapper devopsCdStageRecordMapper;
+
+    @Autowired
+    @Lazy
+    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
+
+    @Autowired
+    private DevopsCdAuditRecordService devopsCdAuditRecordService;
+
 
     @Override
     @Transactional
@@ -91,5 +102,19 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
         devopsCdStageRecordDTO.setStatus(PipelineStatus.FAILED.toValue());
         devopsCdStageRecordDTO.setFinishedDate(new Date());
         update(devopsCdStageRecordDTO);
+    }
+
+    @Override
+    @Transactional
+    public void updateStageStatusNotAudit(Long pipelineRecordId, Long stageRecordId) {
+        // 更新阶段状态为待审核
+        DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordMapper.selectByPrimaryKey(stageRecordId);
+        devopsCdStageRecordDTO.setStatus(PipelineStatus.NOT_AUDIT.toValue());
+        devopsCdStageRecordDTO.setStartedDate(new Date());
+        update(devopsCdStageRecordDTO);
+        // 更新流水线状态为待审核0
+        devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.NOT_AUDIT.toValue());
+        // 通知审核人员
+        devopsCdAuditRecordService.sendStageAuditMessage(devopsCdStageRecordDTO);
     }
 }
