@@ -66,6 +66,7 @@ public enum HelmType {
     CERT_MANAGER_UNINSTALL("cert_manager_uninstall"),
     CRD_UNLOAD("crd_unload"),
     CRD_UNLOAD_STATUS("crd_unload_status"),
+    CHART_MUSEUM_AUTHENTICATION("chart_museum_authentication"),
     OPERATE_DOCKER_REGISTRY_SECRET_FAILED("operate_docker_registry_secret_failed"),
     OPERATE_DOCKER_REGISTRY_SECRET("operate_docker_registry_secret"),
     /**

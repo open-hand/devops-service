@@ -37,7 +37,7 @@ public class DevopsOrganizationConfigController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织下创建配置")
     @PostMapping
-    public ResponseEntity create(
+    public ResponseEntity<Void> create(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable("organization_id") Long organizationId,
             @ApiParam(value = "配置信息", required = true)
