@@ -530,7 +530,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Override
     public void setAppDeployStatus(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, Boolean status) {
         LOGGER.info("setAppDeployStatus:pipelineRecordId: {} stageRecordId: {} taskId: {}", pipelineRecordId, stageRecordId, jobRecordId);
-        if (status) {
+        if (Boolean.TRUE.equals(status)) {
             startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
         } else {
             DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
@@ -544,7 +544,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 .filter(v -> !v.getId().equals(currentJob.getId()))
                 .sorted(Comparator.comparing(DevopsCdJobRecordDTO::getSequence))
                 .filter(v -> v.getSequence() > currentJob.getSequence()).findFirst();
-        return optionalDevopsCdJobRecordDTO.orElseGet(null);
+        return optionalDevopsCdJobRecordDTO.orElse(null);
     }
 
     private void startNextTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
@@ -569,11 +569,12 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             // 2.2.1 自动流转：判断阶段的第一个任务是不是人工卡点任务， 人工卡点任务则更新任务状态为待审核，以及通知审核人员
             // 2.2.2 手动流转：更新任务状态为待审核，通知审核人员
             List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryByPipelineRecordId(pipelineRecordId);
-            Optional<DevopsCdStageRecordDTO> optionalNextStage = devopsCdStageRecordDTOS.stream().filter(v -> !v.getId().equals(currentStage.getId()))
+            Optional<DevopsCdStageRecordDTO> optionalNextStage = devopsCdStageRecordDTOS.stream()
+                    .filter(v -> !v.getId().equals(currentStage.getId()))
                     .sorted(Comparator.comparing(DevopsCdStageRecordDTO::getSequence))
                     .filter(v -> v.getSequence() > currentStage.getSequence())
                     .findFirst();
-            DevopsCdStageRecordDTO nextStage = optionalNextStage.orElseGet(null);
+            DevopsCdStageRecordDTO nextStage = optionalNextStage.orElse(null);
             // 存在下一个阶段
             if (nextStage != null) {
                 if (TriggerTypeEnum.MANUAL.value().equals(nextStage.getTriggerType())) {
