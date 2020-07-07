@@ -48,7 +48,7 @@ public class AppServiceController {
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable,
             @RequestBody(required = false) String params) {
-        return Results.success(applicationServiceService.internalListAllInProject(projectId, params,pageable));
+        return Results.success(applicationServiceService.internalListAllInProject(projectId, params, pageable));
     }
 
     /**
@@ -224,7 +224,7 @@ public class AppServiceController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationServiceService.pageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params,checkMember))
+                applicationServiceService.pageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params, checkMember))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.service.baseList"));
     }
@@ -291,7 +291,7 @@ public class AppServiceController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询所有已经启用的服务")
     @GetMapping("/list_by_active")
-        public ResponseEntity<List<AppServiceRepVO>> listByActive(
+    public ResponseEntity<List<AppServiceRepVO>> listByActive(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(applicationServiceService.listByActive(projectId))
@@ -512,17 +512,17 @@ public class AppServiceController {
     /**
      * 校验chart仓库配置信息是否正确
      *
-     * @param url chartmusume地址
+     * @param configVO chartMuseum信息
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验chart仓库配置信息是否正确")
-    @GetMapping(value = "/check_chart")
+    @PostMapping(value = "/check_chart")
     public void checkChart(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "chartmusume地址", required = true)
-            @RequestParam String url) {
-        applicationServiceService.checkChart(url);
+            @ApiParam(value = "chartMuseum信息", required = true)
+            @RequestBody ConfigVO configVO) {
+        applicationServiceService.checkChart(configVO.getUrl(), configVO.getUserName(), configVO.getPassword());
     }
 
     /**
