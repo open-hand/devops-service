@@ -138,6 +138,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
     private TransactionalProducer producer;
+    @Autowired
+    private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
+
     @Override
     @Transactional
     public void handleCiPipelineStatusUpdate(PipelineWebHookVO pipelineWebHookVO) {
@@ -202,7 +205,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         // ci流水线执行成功， 开始执行cd流水线
         if (PipelineStatus.SUCCESS.toValue().equals(status)) {
             // 执行条件：cd流水线记录状态为pending
-            if (devopsCdPipelineRecordDTO  != null && PipelineStatus.PENDING.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
+            if (devopsCdPipelineRecordDTO != null && PipelineStatus.PENDING.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
 
                 DevopsPipelineDTO devopsPipelineDTO = devopsCdPipelineRecordService.createCDWorkFlowDTO(devopsCdPipelineRecordDTO.getId());
                 devopsCdPipelineRecordDTO.setBpmDefinition(gson.toJson(devopsPipelineDTO));
@@ -256,7 +259,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         devopsCdJobRecordDTO.setName(job.getName());
         devopsCdJobRecordDTO.setStageRecordId(stageRecordId);
         devopsCdJobRecordDTO.setType(job.getType());
-        devopsCdJobRecordDTO.setStatus(PipelineStatus.PENDING.toValue() );
+        devopsCdJobRecordDTO.setStatus(PipelineStatus.PENDING.toValue());
         devopsCdJobRecordDTO.setTriggerType(job.getTriggerType());
         devopsCdJobRecordDTO.setTriggerValue(job.getTriggerType());
         devopsCdJobRecordDTO.setMetadata(job.getMetadata());
@@ -453,7 +456,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         CdPipelineEnvDeployVO cdPipelineEnvDeployVO = gson.fromJson(devopsCdJobRecordDTO.getMetadata(), CdPipelineEnvDeployVO.class);
         AppServiceVersionDTO appServiceServiceE = getDeployVersion(pipelineRecordId);
 
-        AppServiceDeployVO appServiceDeployVO =  new AppServiceDeployVO();
+        AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
         try {
             if (CommandType.CREATE.getType().equals(cdPipelineEnvDeployVO.getDeployType())) {
                 appServiceDeployVO.setAppServiceVersionId(appServiceServiceE.getId());
@@ -536,6 +539,15 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
             workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
         }
+    }
+
+    @Override
+    public String getDeployStatus(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
+        DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(jobRecordId);
+        if (jobRecordDTO != null) {
+            return jobRecordDTO.getStatus();
+        }
+        return PipelineStatus.FAILED.toValue();
     }
 
     private DevopsCdJobRecordDTO getNextJob(Long stageRecordId, DevopsCdJobRecordDTO currentJob) {

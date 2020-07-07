@@ -53,31 +53,14 @@ public class DevopsCdPipelineController {
      * @return
      */
     @Permission(permissionWithin = true)
-    @ApiOperation(value = "主机模式镜像部署接口")
-    @PostMapping(value = "/cd_host_image")
-    public ResponseEntity<Boolean> cdHostImageDeploy(@RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
-                                                     @RequestParam(value = "stage_record_id") Long stageRecordId,
-                                                     @RequestParam(value = "job_record_id") Long jobRecordId) {
-        return Results.success(devopsCdPipelineRecordService.cdHostImageDeploy(pipelineRecordId, stageRecordId, jobRecordId));
+    @ApiOperation(value = "主机模式部署接口")
+    @PostMapping(value = "/cd_host_deploy")
+    public ResponseEntity<Boolean> cdHostDeploy(@RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+                                                @RequestParam(value = "stage_record_id") Long stageRecordId,
+                                                @RequestParam(value = "job_record_id") Long jobRecordId) {
+        return Results.success(devopsCdPipelineRecordService.cdHostDeploy(pipelineRecordId, stageRecordId, jobRecordId));
     }
 
-
-    /**
-     * 主机模式镜像部署接口
-     *
-     * @param pipelineRecordId
-     * @param stageRecordId
-     * @param jobRecordId
-     * @return
-     */
-    @Permission(permissionWithin = true)
-    @ApiOperation(value = "主机模式jar部署接口")
-    @PostMapping(value = "/cd_host_jar")
-    public ResponseEntity<Boolean> cdHostJarDeploy(@RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
-                                                   @RequestParam(value = "stage_record_id") Long stageRecordId,
-                                                   @RequestParam(value = "job_record_id") Long jobRecordId) {
-        return Results.success(devopsCdPipelineRecordService.cdHostJarDeploy(pipelineRecordId, stageRecordId, jobRecordId));
-    }
 
     /**
      * 触发环境自动部署
@@ -117,6 +100,25 @@ public class DevopsCdPipelineController {
             @RequestParam(value = "status") Boolean status) {
         devopsCdPipelineService.setAppDeployStatus(pipelineRecordId, stageRecordId, jobRecordId, status);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * 接收任务状态
+     *
+     * @param pipelineRecordId 流水线记录Id
+     * @param stageRecordId    阶段记录Id
+     * @param jobRecordId      任务Id
+     */
+    @ApiOperation(value = "查询任务状态")
+    @GetMapping("/job/status")
+    public ResponseEntity<String> getJobStatus(
+            @ApiParam(value = "流水线记录Id", required = true)
+            @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+            @ApiParam(value = "阶段记录Id", required = true)
+            @RequestParam(value = "stage_record_id") Long stageRecordId,
+            @ApiParam(value = "任务Id", required = true)
+            @RequestParam(value = "job_record_id") Long jobRecordId) {
+        return Results.success(devopsCdPipelineService.getDeployStatus(pipelineRecordId, stageRecordId, jobRecordId));
     }
 
 }

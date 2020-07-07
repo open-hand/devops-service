@@ -406,6 +406,19 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     @Override
+    public Boolean cdHostDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+        DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
+        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
+        if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.IMAGED_DEPLOY.getStatus())) {
+            return cdHostImageDeploy(pipelineRecordId, cdStageRecordId, cdJobRecordId);
+        } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.JAR_DEPLOY.getStatus())) {
+            return cdHostJarDeploy(pipelineRecordId, cdStageRecordId, cdJobRecordId);
+        } else {
+            return true;
+        }
+    }
+
+    @Override
     @Transactional
     public void deleteByPipelineId(Long pipelineId) {
         Assert.notNull(pipelineId, "error.pipeline.id.is.null");
