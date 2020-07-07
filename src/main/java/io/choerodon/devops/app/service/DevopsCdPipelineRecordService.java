@@ -42,4 +42,6 @@ public interface DevopsCdPipelineRecordService {
 
 
     void updatePipelineStatusFailed(Long pipelineRecordId, String errorInfo);
+
+    DevopsCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId);
 }

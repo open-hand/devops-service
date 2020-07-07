@@ -20,4 +20,8 @@ public interface DevopsCdJobService {
     void deleteByStageId(Long stageId);
 
     void deleteByPipelineId(Long pipelineId);
+
+    String queryTrace(Long gitlabProjectId, Long jobId);
+
+    void retryJob(Long projectId, Long gitlabProjectId, Long jobId);
 }
