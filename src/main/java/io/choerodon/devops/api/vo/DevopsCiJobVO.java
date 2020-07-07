@@ -8,10 +8,13 @@ import javax.validation.constraints.NotEmpty;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.infra.annotation.WillDeleted;
+
 /**
  * @author wanghao
  * @since 2020/4/2 17:00
  */
+@WillDeleted
 public class DevopsCiJobVO {
 
     @Id

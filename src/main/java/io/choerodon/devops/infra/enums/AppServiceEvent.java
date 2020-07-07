@@ -99,6 +99,44 @@ public enum AppServiceEvent {
      */
     CI_PIPELINE_RETRY_TASK(20),
 
+    /********CICD*********/
+    /**
+     * cicd流水线 创建
+     */
+    CICD_PIPELINE_CREATE(20),
+    /**
+     * cicd 流水线 重试
+     */
+    CICD_PIPELINE_RETRY(20),
+    /**
+     * cicd 流水线 任务重试
+     */
+    CICD_PIPELINE_RETRY_TASK(20),
+
+    /**
+     * cicd 流水线 启用/停用
+     */
+    CICD_PIPELINE_STATUS_UPDATE(20),
+    /**
+     * cicd 流水线 删除
+     */
+    CICD_PIPELINE_DELETE(20),
+    /**
+     * cicd 流水线 更新
+     */
+    CICD_PIPELINE_UPDATE(20),
+    /**
+     * cicd 流水线 取消
+     */
+    CICD_PIPELINE_CANCEL(20),
+
+    /**
+     * cicd流水线 全新执行
+     */
+    CICD_PIPELINE_NEW_PERFORM(20),
+
+    /********CICD*********/
+
     /**
      * ci 流水线 取消
      */

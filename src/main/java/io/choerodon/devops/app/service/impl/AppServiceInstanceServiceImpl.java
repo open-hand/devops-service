@@ -10,11 +10,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.google.gson.Gson;
-import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
-import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
-import io.choerodon.devops.infra.feign.RdupmClient;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1beta1Ingress;
@@ -52,10 +48,10 @@ import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
 import io.choerodon.devops.app.eventhandler.payload.ServiceSagaPayLoad;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
-import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
@@ -1602,14 +1598,18 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String secretCode = null;
         //如果应用绑定了私有镜像库,则处理secret
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceVersionId);
+
+        // 先处理chart的认证信息
+        sendChartMuseumAuthentication(devopsEnvironmentDTO.getClusterId(), appServiceDTO, appServiceVersionDTO);
+
         DevopsConfigDTO devopsConfigDTO;
         if (appServiceVersionDTO.getHarborConfigId() != null) {
-            devopsConfigDTO = harborService.queryRepoConfigByIdToDevopsConfig(appServiceDTO.getId(),appServiceDTO.getProjectId(),
-                    appServiceVersionDTO.getHarborConfigId(), appServiceVersionDTO.getRepoType(),null);
+            devopsConfigDTO = harborService.queryRepoConfigByIdToDevopsConfig(appServiceDTO.getId(), appServiceDTO.getProjectId(),
+                    appServiceVersionDTO.getHarborConfigId(), appServiceVersionDTO.getRepoType(), null);
         } else {
             //查询harbor的用户名密码
             devopsConfigDTO = harborService.queryRepoConfigToDevopsConfig(appServiceDTO.getProjectId(),
-                    appServiceDTO.getId(),AUTHTYPE);
+                    appServiceDTO.getId(), AUTHTYPE);
         }
         LOGGER.debug("Docker config for app service with id {} and code {} and version id: {} is not null. And the config id is {}...", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId, devopsConfigDTO.getId());
 
@@ -1633,7 +1633,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
                 secretCode = String.format("%s%s", "secret-", GenerateUUID.generateUUID().substring(0, 20));
                 // 测试应用的secret是没有环境id的，此处环境id只是暂存，之后不使用，考虑后续版本删除此字段
-                devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), secretCode, gson.toJson(configVO), appServiceDTO.getProjectId(),devopsConfigDTO.getType());
+                devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), secretCode, gson.toJson(configVO), appServiceDTO.getProjectId(), devopsConfigDTO.getType());
                 devopsRegistrySecretService.createIfNonInDb(devopsRegistrySecretDTO);
                 agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, configVO, CREATE);
 
@@ -1660,6 +1660,25 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         LOGGER.debug("Got secret with code {} for app service with id {} and code {} and version id: {}", secretCode, appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId);
         return secretCode;
+    }
+
+    /**
+     * 发送chart museum的认证信息
+     *
+     * @param clusterId            集群id
+     * @param appServiceDTO        应用服务
+     * @param appServiceVersionDTO 应用服务版本
+     */
+    private void sendChartMuseumAuthentication(Long clusterId, AppServiceDTO appServiceDTO, AppServiceVersionDTO appServiceVersionDTO) {
+        if (appServiceVersionDTO.getHelmConfigId() != null) {
+            // 查询chart配置
+            DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, "chart", null);
+            ConfigVO helmConfig = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+            // 如果是私有的, 发送认证信息给agent
+            if (Boolean.TRUE.equals(helmConfig.getPrivate())) {
+                agentCommandService.sendChartMuseumAuthentication(clusterId, helmConfig);
+            }
+        }
     }
 
     /**

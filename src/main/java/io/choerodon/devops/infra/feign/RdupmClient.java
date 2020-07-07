@@ -5,19 +5,23 @@ import java.util.Set;
 
 import io.swagger.annotations.ApiOperation;
 
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
+import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
+import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoVo;
 import io.choerodon.devops.infra.dto.harbor.HarborAllRepoDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
+import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
+import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
+import io.choerodon.devops.infra.dto.repo.C7nNexusServerDTO;
 import io.choerodon.devops.infra.feign.fallback.RdupmClientFallback;
 
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * User: Mr.Wang
@@ -117,5 +121,51 @@ public interface RdupmClient {
     ResponseEntity<HarborAllRepoDTO> queryAllHarborRepoConfig(@ApiParam(value = "猪齿鱼项目ID", required = true)
                                                               @PathVariable("projectId") Long projectId);
 
+    @ApiOperation(value = "获取项目下nexus服务列表")
+    @GetMapping("/v1/nexus-repositorys/choerodon/{organizationId}/project/{projectId}/nexus/server/list")
+    ResponseEntity<List<C7nNexusServerDTO>> getNexusServerByProject(@ApiParam(value = "组织ID", required = true)
+                                                                    @PathVariable(name = "organizationId") Long organizationId,
+                                                                    @ApiParam(value = "项目Id", required = true)
+                                                                    @PathVariable(name = "projectId") Long projectId);
+
+
+    @ApiOperation(value = "choerodon-获取maven仓库下的包列表")
+    @GetMapping("/v1/nexus-repositorys/choerodon/{organizationId}/project/{projectId}/repo/maven/components")
+    ResponseEntity<List<C7nNexusComponentDTO>> listMavenComponents(@ApiParam(value = "组织ID", required = true)
+                                                                   @PathVariable(name = "organizationId") Long organizationId,
+                                                                   @ApiParam(value = "项目Id", required = true)
+                                                                   @PathVariable(name = "projectId") Long projectId,
+                                                                   @ApiParam(value = "仓库Id", required = true)
+                                                                   @RequestParam(name = "repositoryId") Long repositoryId,
+                                                                   @ApiParam(value = "groupId", required = false)
+                                                                   @RequestParam(name = "groupId", required = false) String groupId,
+                                                                   @ApiParam(value = "artifactId", required = false)
+                                                                   @RequestParam(name = "artifactId", required = false) String artifactId,
+                                                                   @ApiParam(value = "versionRegular", required = false)
+                                                                   @RequestParam(name = "versionRegular", required = false) String versionRegular);
+
+
+    @ApiOperation(value = "choerodon-获取nexus服务下、项目下的maven仓库")
+    @GetMapping("/v1/nexus-repositorys/choerodon/{organizationId}/project/{projectId}/repo/maven/list")
+    ResponseEntity<List<C7nNexusRepoDTO>> getMavenRepoByConfig(@ApiParam(value = "组织ID", required = true)
+                                                               @PathVariable(name = "organizationId") Long organizationId,
+                                                               @ApiParam(value = "项目Id", required = true)
+                                                               @PathVariable(name = "projectId") Long projectId,
+                                                               @ApiParam(value = "服务配Id", required = true)
+                                                               @RequestParam(name = "configId") Long configId,
+                                                               String type);
+
+
+    @ApiOperation(value = "根据项目ID获取镜像仓库列表")
+    @GetMapping("/v1/harbor-choerodon-repos/listImageRepo")
+    ResponseEntity<List<HarborC7nRepoVo>> listImageRepo(@ApiParam(value = "猪齿鱼项目ID", required = true) @RequestParam("projectId") Long projectId);
+
+
+    @ApiOperation(value = "根据仓库类型+仓库ID+镜像名称获取获取镜像版本")
+    @GetMapping("/listImageTag")
+    ResponseEntity<HarborC7nRepoImageTagVo> listImageTag(@ApiParam(value = "仓库类型", required = true) @RequestParam(value = "repoType") String repoType,
+                                                         @ApiParam(value = "仓库ID", required = true) @RequestParam("repoId") Long repoId,
+                                                         @ApiParam(value = "镜像名称", required = true) @RequestParam("imageName") String imageName,
+                                                         @ApiParam(value = "镜像版本号,模糊查询") @RequestParam(required = false, value = "tagName") String tagName);
 
 }

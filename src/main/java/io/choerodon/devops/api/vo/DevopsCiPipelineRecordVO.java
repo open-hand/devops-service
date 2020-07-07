@@ -6,6 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.infra.annotation.WillDeleted;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**

@@ -86,8 +86,9 @@ public class CiController {
             @ApiParam(value = "commit", required = true)
             @RequestParam String commit,
             @ApiParam(value = "taz包", required = true)
-            @RequestParam MultipartFile file) {
-        appServiceVersionService.create(image, harborConfigId, token, version, commit, file);
+            @RequestParam MultipartFile file,
+            @RequestParam String ref) {
+        appServiceVersionService.create(image, harborConfigId, token, version, commit, file, ref);
         return ResponseEntity.ok().build();
     }
 

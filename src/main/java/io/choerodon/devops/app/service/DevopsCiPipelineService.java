@@ -2,7 +2,9 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.CiCdPipelineVO;
 import io.choerodon.devops.api.vo.DevopsCiPipelineVO;
+import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineDTO;
 
 /**
@@ -16,21 +18,21 @@ public interface DevopsCiPipelineService {
     /**
      * 创建流水线
      *
-     * @param projectId          项目id
-     * @param devopsCiPipelineVO 流水线数据
+     * @param projectId      项目id
+     * @param ciCdPipelineVO 流水线数据
      * @return 创建的流水线
      */
-    DevopsCiPipelineDTO create(Long projectId, DevopsCiPipelineVO devopsCiPipelineVO);
+    CiCdPipelineDTO create(Long projectId, CiCdPipelineVO ciCdPipelineVO);
 
     /**
      * 更新流水线
      */
-    DevopsCiPipelineDTO update(Long projectId, Long ciPipelineId, DevopsCiPipelineVO devopsCiPipelineVO);
+    CiCdPipelineDTO update(Long projectId, Long ciPipelineId, CiCdPipelineVO ciCdPipelineVO);
 
     /**
      * 查询流水线详情（包含阶段和job信息）
      */
-    DevopsCiPipelineVO query(Long projectId, Long ciPipelineId);
+    CiCdPipelineVO query(Long projectId, Long pipelineId);
 
     /**
      * 根据应用服务id查询流水线
@@ -43,7 +45,7 @@ public interface DevopsCiPipelineService {
     /**
      * 查询项目下流水线列表（包含5条执行记录）
      */
-    List<DevopsCiPipelineVO> listByProjectIdAndAppName(Long projectId, String name);
+    List<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String name);
 
     /**
      * 查询流水线信息
@@ -53,7 +55,7 @@ public interface DevopsCiPipelineService {
     /**
      * 停用流水线
      */
-    DevopsCiPipelineDTO disablePipeline(Long projectId, Long ciPipelineId);
+    CiCdPipelineDTO disablePipeline(Long projectId, Long ciPipelineId);
 
     /**
      * 删除流水线
@@ -63,7 +65,7 @@ public interface DevopsCiPipelineService {
     /**
      * 启用流水线
      */
-    DevopsCiPipelineDTO enablePipeline(Long projectId, Long ciPipelineId);
+    CiCdPipelineDTO enablePipeline(Long projectId, Long ciPipelineId);
 
     /**
      * 全新执行流水线

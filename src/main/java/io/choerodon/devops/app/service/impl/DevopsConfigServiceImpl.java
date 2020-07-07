@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -38,6 +39,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.DevopsConfigMapper;
 import io.choerodon.devops.infra.mapper.HarborUserMapper;
+import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -92,9 +94,9 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     public void operate(Long resourceId, String resourceType, List<DevopsConfigVO> devopsConfigVOS) {
         devopsConfigVOS.forEach(devopsConfigVO -> {
             //根据每个配置的默认还是自定义执行不同逻辑
+            DevopsConfigDTO devopsConfigDTO = baseQueryByResourceAndType(resourceId, resourceType, devopsConfigVO.getType());
             if (devopsConfigVO.getCustom()) {
                 //根据配置所在的资源层级，查询出数据库中是否存在
-                DevopsConfigDTO devopsConfigDTO = baseQueryByResourceAndType(resourceId, resourceType, devopsConfigVO.getType());
                 DevopsConfigDTO newDevopsConfigDTO = voToDto(devopsConfigVO);
                 if (devopsConfigDTO != null) {
                     // 存在判断是否已经生成服务版本，无服务版本，直接覆盖更新；有服务版本，将原config对应的resourceId设置为null,新建config
@@ -115,7 +117,6 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 }
             } else {
                 //根据配置所在的资源层级，查询出数据库中是否存在，存在则删除
-                DevopsConfigDTO devopsConfigDTO = baseQueryByResourceAndType(resourceId, resourceType, devopsConfigVO.getType());
                 if (devopsConfigDTO != null) {
                     if (appServiceVersionService.isVersionUseConfig(devopsConfigDTO.getId(), devopsConfigVO.getType())) {
                         updateResourceId(devopsConfigDTO.getId());
@@ -460,14 +461,28 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     @Override
     public void operateConfig(Long resourceId, String resourceType, DevopsConfigRepVO devopsConfigRepVO) {
         List<DevopsConfigVO> configVOS = new ArrayList<>();
-        DevopsConfigVO chart = new DevopsConfigVO();
+        DevopsConfigVO chart;
         if (ObjectUtils.isEmpty(devopsConfigRepVO.getChart())) {
+            chart = new DevopsConfigVO();
             chart.setCustom(false);
-            chart.setType(CHART);
-            configVOS.add(chart);
         } else {
-            configVOS.add(devopsConfigRepVO.getChart());
+            chart = devopsConfigRepVO.getChart();
+            chart.setCustom(Boolean.TRUE);
+            ConfigVO configVO = chart.getConfig();
+            CommonExAssertUtil.assertNotNull(configVO, "error.chart.config.null");
+            boolean usernameEmpty = StringUtils.isEmpty(configVO.getUserName());
+            boolean passwordEmpty = StringUtils.isEmpty(configVO.getPassword());
+            if (!usernameEmpty && !passwordEmpty) {
+                configVO.setUserName(configVO.getUserName());
+                configVO.setPassword(configVO.getPassword());
+                configVO.setPrivate(Boolean.TRUE);
+            }
+
+            // 用户名和密码要么都为空, 要么都有值
+            CommonExAssertUtil.assertTrue(((usernameEmpty && passwordEmpty) || (!usernameEmpty && !passwordEmpty)), "error.chart.auth.invalid");
         }
+        chart.setType(CHART);
+        configVOS.add(chart);
         operate(resourceId, resourceType, configVOS);
     }
 

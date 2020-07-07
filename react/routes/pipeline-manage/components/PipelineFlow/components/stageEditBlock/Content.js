@@ -7,9 +7,15 @@ import Loading from '../../../../../../components/loading';
 
 const defaultData = [
   {
-    name: '阶段一',
+    name: '构建',
     sequence: 1,
     jobList: [],
+    type: 'CI',
+  }, {
+    name: '部署',
+    sequence: 2,
+    jobList: [],
+    type: 'CD',
   },
 ];
 
@@ -32,7 +38,6 @@ export default observer(() => {
     getLoading,
   } = editBlockStore || stepStore;
 
-
   useEffect(() => {
     pipelineId && !edit ? loadData(projectId, pipelineId) : setStepData(defaultData, edit);
   }, [pipelineId, projectId]);
@@ -43,6 +48,7 @@ export default observer(() => {
       return dataSource.map((item, index) => <EditColumn
         columnIndex={index}
         key={item.id}
+        isLast={String(index) === String(dataSource.length - 1)}
         {...item}
         edit={edit}
         pipelineId={pipelineId}

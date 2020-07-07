@@ -713,8 +713,9 @@
             resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT das.id, das.name, das.code
         FROM devops_app_service das
-                     LEFT JOIN devops_ci_pipeline dcp ON das.id = dcp.app_service_id
-                     INNER JOIN devops_branch db ON das.id = db.app_service_id
+                    LEFT JOIN devops_cicd_pipeline dcp ON das.id = dcp.app_service_id
+                    LEFT JOIN devops_ci_stage dcs on dcs.ci_pipeline_id=dcp.id
+                    INNER JOIN devops_branch db ON das.id = db.app_service_id
                 WHERE das.project_id = #{projectId,jdbcType=BIGINT}
                   AND das.is_failed = FALSE
                   AND das.is_synchro = TRUE
@@ -730,8 +731,9 @@
                 FROM (
                 SELECT das.id, das.name, das.code
                 FROM devops_app_service das
-                             LEFT JOIN devops_ci_pipeline dcp ON das.id = dcp.app_service_id
-                             INNER JOIN devops_branch db ON das.id = db.app_service_id
+                        LEFT JOIN devops_cicd_pipeline dcp ON das.id = dcp.app_service_id
+                        LEFT JOIN devops_ci_stage dcs on dcs.ci_pipeline_id=dcp.id
+                        INNER JOIN devops_branch db ON das.id = db.app_service_id
                 WHERE das.project_id = #{projectId,jdbcType=BIGINT}
                   AND das.is_failed = FALSE
                   AND das.is_synchro = TRUE

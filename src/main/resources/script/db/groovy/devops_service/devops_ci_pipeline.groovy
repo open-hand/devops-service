@@ -38,4 +38,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline.groovy') {
             }
         }
     }
+    changeSet(author: 'wx', id: '2020-04-28-update-devops_cicd_pipeline'){
+        renameTable(newTableName: 'devops_cicd_pipeline', oldTableName: 'devops_ci_pipeline')
+
+    }
 }

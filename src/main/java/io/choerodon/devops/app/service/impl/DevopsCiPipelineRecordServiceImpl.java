@@ -412,7 +412,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         // 添加sonar
         for (DevopsCiJobRecordVO devopsCiJobRecordVO : devopsCiJobRecordVOList) {
-            if (CiJobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
+            if (JobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
                 SonarContentsVO sonarContentsVO = applicationService.getSonarContent(ciPipelineVO.getProjectId(), ciPipelineVO.getAppServiceId());
                 if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
                     List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
@@ -586,6 +586,14 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     public DevopsCiPipelineRecordDTO queryById(Long ciPipelineRecordId) {
 
         return devopsCiPipelineRecordMapper.selectByPrimaryKey(ciPipelineRecordId);
+    }
+
+    @Override
+    public DevopsCiPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
+        Assert.notNull(gitlabPipelineId, ERROR_GITLAB_PIPELINE_ID_IS_NULL);
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = new DevopsCiPipelineRecordDTO();
+        devopsCiPipelineRecordDTO.setGitlabPipelineId(gitlabPipelineId);
+        return devopsCiPipelineRecordMapper.selectOne(devopsCiPipelineRecordDTO);
     }
 
     /**

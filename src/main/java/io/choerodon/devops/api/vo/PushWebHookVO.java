@@ -1,7 +1,8 @@
 package io.choerodon.devops.api.vo;
 
 import java.util.List;
-import java.util.stream.Collectors;
+
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Creator: Runge
@@ -22,6 +23,8 @@ public class PushWebHookVO {
     private List<CommitVO> commits;
     private Integer totalCommitsCount;
     private String token;
+    @ApiModelProperty("之前的解析是否有错")
+    private Boolean hasErrors;
 
     public String getUserUserName() {
         return userUserName;
@@ -119,21 +122,30 @@ public class PushWebHookVO {
         this.token = token;
     }
 
+    public Boolean getHasErrors() {
+        return hasErrors;
+    }
+
+    public void setHasErrors(Boolean hasErrors) {
+        this.hasErrors = hasErrors;
+    }
+
     @Override
     public String toString() {
-        return "PushWebHookVO{"
-                + "objectKind='" + objectKind + '\''
-                + ", eventName='" + eventName + '\''
-                + ", before='" + before + '\''
-                + ", after='" + after + '\''
-                + ", ref='" + ref + '\''
-                + ", checkoutSha='" + checkoutSha + '\''
-                + ", userId=" + userId
-                + ", projectId=" + projectId
-                + ", commits=" + String.join(" , ",
-                commits.stream().map(t -> t.getId() + " : " + t.getMessage()).collect(Collectors.toList()))
-                + ", totalCommitsCount=" + totalCommitsCount
-                + ", token='" + token + '\''
-                + '}';
+        return "PushWebHookVO{" +
+                "objectKind='" + objectKind + '\'' +
+                ", eventName='" + eventName + '\'' +
+                ", before='" + before + '\'' +
+                ", after='" + after + '\'' +
+                ", ref='" + ref + '\'' +
+                ", checkoutSha='" + checkoutSha + '\'' +
+                ", userId=" + userId +
+                ", userUserName='" + userUserName + '\'' +
+                ", projectId=" + projectId +
+                ", commits=" + commits +
+                ", totalCommitsCount=" + totalCommitsCount +
+                ", token='" + token + '\'' +
+                ", hasErrors=" + hasErrors +
+                '}';
     }
 }

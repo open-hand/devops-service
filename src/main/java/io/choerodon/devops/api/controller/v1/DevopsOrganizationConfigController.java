@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.api.vo.DevopsConfigRepVO;
 import io.choerodon.devops.app.service.AppServiceService;
@@ -36,7 +37,7 @@ public class DevopsOrganizationConfigController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织下创建配置")
     @PostMapping
-    public ResponseEntity create(
+    public ResponseEntity<Void> create(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable("organization_id") Long organizationId,
             @ApiParam(value = "配置信息", required = true)
@@ -107,18 +108,18 @@ public class DevopsOrganizationConfigController {
     /**
      * 校验chart配置信息是否正确
      *
-     * @param url chartmusume地址
+     * @param configVO chartMuseum信息
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "校验chart配置信息是否正确")
-    @GetMapping(value = "/check_chart")
+    @PostMapping(value = "/check_chart")
     public ResponseEntity<Boolean> checkChart(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
-            @ApiParam(value = "chartmusume地址", required = true)
-            @RequestParam String url) {
+            @ApiParam(value = "chartMuseum信息", required = true)
+            @RequestBody ConfigVO configVO) {
         return Optional.ofNullable(
-                appServiceService.checkChart(url))
+                appServiceService.checkChart(configVO.getUrl(), configVO.getUserName(), configVO.getPassword()))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.connection.failed"));
     }

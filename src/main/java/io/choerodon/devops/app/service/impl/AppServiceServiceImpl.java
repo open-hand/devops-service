@@ -465,11 +465,25 @@ public class AppServiceServiceImpl implements AppServiceService {
         DevopsConfigVO chart = new DevopsConfigVO();
         if (ObjectUtils.isEmpty(appServiceUpdateDTO.getChart())) {
             chart.setCustom(false);
-            chart.setType(CHART);
-            devopsConfigVOS.add(chart);
         } else {
-            devopsConfigVOS.add(appServiceUpdateDTO.getChart());
+            chart = appServiceUpdateDTO.getChart();
+            chart.setCustom(Boolean.TRUE);
+            ConfigVO configVO = chart.getConfig();
+            CommonExAssertUtil.assertNotNull(configVO, "error.chart.config.null");
+            boolean usernameEmpty = StringUtils.isEmpty(configVO.getUserName());
+            boolean passwordEmpty = StringUtils.isEmpty(configVO.getPassword());
+            if (!usernameEmpty && !passwordEmpty) {
+                configVO.setUserName(configVO.getUserName());
+                configVO.setPassword(configVO.getPassword());
+                configVO.setPrivate(Boolean.TRUE);
+            }
+
+            // 用户名和密码要么都为空, 要么都有值
+            CommonExAssertUtil.assertTrue(((usernameEmpty && passwordEmpty) || (!usernameEmpty && !passwordEmpty)), "error.chart.auth.invalid");
         }
+        chart.setType(CHART);
+        devopsConfigVOS.add(chart);
+
         //处理helm仓库的配置
         devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
         //保存应用服务与harbor仓库的关系
@@ -1177,20 +1191,37 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Boolean checkChart(String url) {
+    public Boolean checkChart(String url, @Nullable String username, @Nullable String password) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setBaseUrl(url);
         configurationProperties.setType(CHART);
+        if (username != null && password != null) {
+            configurationProperties.setUsername(username);
+            configurationProperties.setPassword(password);
+        }
+        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+        ChartClient chartClient = retrofit.create(ChartClient.class);
         try {
-            Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-            ChartClient chartClient = retrofit.create(ChartClient.class);
-            chartClient.getHealth();
+            // 获取健康检查信息是不需要认证信息的
             Call<Object> getHealth = chartClient.getHealth();
             getHealth.execute();
         } catch (Exception e) {
-            LOGGER.error("chart.connection.failed", e);
-            return false;
+            throw new CommonException("error.chart.not.available");
         }
+
+        // 验证用户名密码
+        Response<Void> response = null;
+        try {
+            // 获取首页html需要认证信息
+            Call<Void> getHomePage = chartClient.getHomePage();
+            response = getHomePage.execute();
+        } catch (Exception ex) {
+            throw new CommonException("error.chart.authentication.failed");
+        }
+        if (response != null && !response.isSuccessful()) {
+            throw new CommonException("error.chart.authentication.failed");
+        }
+
         return true;
     }
 

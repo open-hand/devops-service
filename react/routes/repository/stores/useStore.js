@@ -6,8 +6,8 @@ import { handlePromptError } from '../../../utils';
 export default function useStore() {
   return useLocalStore(() => ({
 
-    checkChart(organizationId, url) {
-      return axios.get(`/devops/v1/organizations/${organizationId}/organization_config/check_chart?url=${url}`);
+    checkChart(organizationId, data) {
+      return axios.post(`/devops/v1/organizations/${organizationId}/organization_config/check_chart`, JSON.stringify(data));
     },
 
     checkHarbor(organizationId, postData) {

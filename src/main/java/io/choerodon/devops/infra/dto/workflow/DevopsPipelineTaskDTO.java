@@ -9,9 +9,19 @@ import java.util.List;
 public class DevopsPipelineTaskDTO {
     private Long taskRecordId;
     private String taskName;
+    /**
+     * 审核人员 userIds
+     */
     private List<String> usernames;
     private String taskType;
+    /**
+     * 是否多人审核 审核人员>1 为true
+     */
     private Boolean multiAssign;
+
+    /**
+     * 是否会签
+     */
     private Long sign;
 
     public Long getTaskRecordId() {

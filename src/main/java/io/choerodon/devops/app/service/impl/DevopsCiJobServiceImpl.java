@@ -1,18 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.GitOpsConstants.ARTIFACT_NAME_PATTERN;
-
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import io.choerodon.devops.api.vo.SonarInfoVO;
 
-import com.alibaba.fastjson.JSON;
 import org.hzero.boot.file.FileClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,15 +18,12 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.AppServiceEvent;
-import io.choerodon.devops.infra.enums.CiJobTypeEnum;
+import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.enums.SonarAuthType;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.feign.SonarClient;
@@ -39,7 +33,6 @@ import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
-import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
@@ -270,7 +263,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         if (!Objects.isNull(ciPipelineDTO)) {
             DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
             devopsCiJobDTO.setCiPipelineId(ciPipelineDTO.getId());
-            devopsCiJobDTO.setType(CiJobTypeEnum.SONAR.value());
+            devopsCiJobDTO.setType(JobTypeEnum.SONAR.value());
             DevopsCiJobDTO ciJobDTO = devopsCiJobMapper.selectOne(devopsCiJobDTO);
             if (!Objects.isNull(ciJobDTO) & !StringUtils.isEmpty(ciJobDTO.getMetadata())) {
                 sonarInfoVO = JsonHelper.unmarshalByJackson(ciJobDTO.getMetadata(), SonarInfoVO.class);

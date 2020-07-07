@@ -167,6 +167,7 @@ function chart_build() {
     -F "version=${CI_COMMIT_TAG}" \
     -F "file=@${FILE_NAME}-${CI_COMMIT_TAG}.tgz" \
     -F "commit=${CI_COMMIT_SHA}" \
+    -F "ref=${CI_COMMIT_REF_NAME}" \
     -F "image=${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}" \
     "${CHOERODON_URL}/devops/ci" \
     -o "${CI_COMMIT_SHA}-ci.response" \
