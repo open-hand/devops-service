@@ -5,8 +5,8 @@ import map from 'lodash/map';
 export default function useStore() {
   return useLocalStore(() => ({
 
-    checkChart(projectId, url) {
-      return axios.get(`/devops/v1/projects/${projectId}/project_config/check_chart?url=${url}`);
+    checkChart(projectId, data) {
+      return axios.post(`/devops/v1/projects/${projectId}/project_config/check_chart`, JSON.stringify(data));
     },
 
     checkHarbor(projectId, postData) {

@@ -7,8 +7,8 @@ import getTablePostData from '../../../../../utils/getTablePostData';
 export default function useStore() {
   return useLocalStore(() => ({
 
-    checkChart(projectId, url) {
-      return axios.get(`/devops/v1/projects/${projectId}/app_service/check_chart?url=${url}`);
+    checkChart(projectId, data) {
+      return axios.post(`/devops/v1/projects/${projectId}/app_service/check_chart`, JSON.stringify(data));
     },
 
     checkHarbor(projectId, postData) {
