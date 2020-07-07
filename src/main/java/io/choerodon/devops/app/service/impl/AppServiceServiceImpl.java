@@ -1177,19 +1177,29 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Boolean checkChart(String url) {
+    public Boolean checkChart(String url, @Nullable String username, @Nullable String password) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setBaseUrl(url);
         configurationProperties.setType(CHART);
+        if (username != null && password != null) {
+            configurationProperties.setUsername(username);
+            configurationProperties.setPassword(password);
+        }
+        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+        ChartClient chartClient = retrofit.create(ChartClient.class);
         try {
-            Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-            ChartClient chartClient = retrofit.create(ChartClient.class);
-            chartClient.getHealth();
+            // 获取健康检查信息是不需要认证信息的
             Call<Object> getHealth = chartClient.getHealth();
             getHealth.execute();
         } catch (Exception e) {
-            LOGGER.error("chart.connection.failed", e);
-            return false;
+            throw new CommonException("error.chart.not.available");
+        }
+        try {
+            // 获取首页html需要认证信息
+            Call<String> getHomePage = chartClient.getHomePage();
+            getHomePage.execute();
+        } catch (Exception ex) {
+            throw new CommonException("error.chart.authentication.failed");
         }
         return true;
     }
