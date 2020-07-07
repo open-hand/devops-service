@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,17 +12,13 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCdAuditRecordService;
 import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
-import io.choerodon.devops.api.vo.DevopsCdStageRecordVO;
 import io.choerodon.devops.app.service.DevopsCdStageRecordService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
-import io.choerodon.devops.infra.dto.DevopsCdPipelineRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO;
 import io.choerodon.devops.infra.enums.PipelineStatus;
-import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdStageRecordMapper;
-import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * 〈功能简述〉
@@ -83,14 +78,6 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
     public void updateStatusById(Long stageRecordId, String status) {
         DevopsCdStageRecordDTO recordDTO = devopsCdStageRecordMapper.selectByPrimaryKey(stageRecordId);
         recordDTO.setStatus(status);
-        if (status.equals(WorkFlowStatus.FAILED.toValue())
-                || status.equals(WorkFlowStatus.SUCCESS.toValue())
-                || status.equals(WorkFlowStatus.STOP.toValue())) {
-            recordDTO.setFinishedDate(new Date());
-        }
-        if (status.equals(WorkFlowStatus.RUNNING.toValue())) {
-            recordDTO.setStartedDate(new Date());
-        }
         if (devopsCdStageRecordMapper.updateByPrimaryKey(recordDTO) != 1) {
             throw new CommonException(UPDATE_STAGE_RECORD_FAILED);
         }
@@ -107,7 +94,6 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
     public void updateStageStatusFailed(Long stageRecordId) {
         DevopsCdStageRecordDTO devopsCdStageRecordDTO = queryById(stageRecordId);
         devopsCdStageRecordDTO.setStatus(PipelineStatus.FAILED.toValue());
-        devopsCdStageRecordDTO.setFinishedDate(new Date());
         update(devopsCdStageRecordDTO);
     }
 
@@ -117,9 +103,8 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
         // 更新阶段状态为待审核
         DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordMapper.selectByPrimaryKey(stageRecordId);
         devopsCdStageRecordDTO.setStatus(PipelineStatus.NOT_AUDIT.toValue());
-        devopsCdStageRecordDTO.setStartedDate(new Date());
         update(devopsCdStageRecordDTO);
-        // 更新流水线状态为待审核0
+        // 更新流水线状态为待审核
         devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.NOT_AUDIT.toValue());
         // 通知审核人员
         devopsCdAuditRecordService.sendStageAuditMessage(devopsCdStageRecordDTO);

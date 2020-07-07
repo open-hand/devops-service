@@ -17,6 +17,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_job_record.groovy') {
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目ID')
             column(name: 'metadata', type: 'VARCHAR(2000)', remarks: 'job详细信息，定义了job执行内容')
 
+            column(name: "started_date", type: "DATETIME", remarks: 'job开始执行时间')
+            column(name: "finished_date", type: "DATETIME", remarks: 'job结束时间')
+            column(name: "duration_seconds", type: "BIGINT UNSIGNED", remarks: 'job执行时长')
+            column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '任务顺序')
+            column(name: "deployMetadata", type: "VARCHAR(2000)", remarks: '主机部署 制品库提供信息')
+
             column(name: 'countersigned', type: 'TINYINT UNSIGNED', remarks: '是否会签 1是会签,0 是或签')
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
@@ -29,23 +35,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_job_record.groovy') {
     changeSet(author: 'wanghao', id: '2020-07-02-idx-stage-record-id') {
         createIndex(indexName: "idx_stage_record_id ", tableName: "devops_cd_job_record") {
             column(name: "stage_record_id")
-        }
-    }
-    changeSet(author: 'wanghao', id: '2020-07-06-add-column') {
-        addColumn(tableName: 'devops_cd_job_record') {
-            column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '任务顺序')
-        }
-    }
-    changeSet(author: 'wanghao', id: '2020-07-07-add-column') {
-        addColumn(tableName: 'devops_cd_job_record') {
-            column(name: "started_date", type: "DATETIME", remarks: 'job开始执行时间')
-            column(name: "finished_date", type: "DATETIME", remarks: 'job结束时间')
-        }
-    }
-
-    changeSet(author: 'scp', id: '2020-07-07-add-column-2') {
-        addColumn(tableName: 'devops_cd_job_record') {
-            column(name: "deployMetadata", type: "VARCHAR(2000)", remarks: '主机部署 制品库提供信息')
         }
     }
 }

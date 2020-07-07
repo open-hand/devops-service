@@ -11,7 +11,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_stage_record.groovy') {
             column(name: 'stage_name', type: 'VARCHAR(50)', remarks: '阶段名称')
             column(name: 'status', type: 'VARCHAR(20)', remarks: '状态')
             column(name: 'trigger_type', type: 'VARCHAR(10)', remarks: '触发方式')
-            column(name: 'execution_time', type: 'VARCHAR(255)', remarks: '执行时间')
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目Id')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
@@ -30,12 +29,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_stage_record.groovy') {
     changeSet(author: 'wanghao', id: '2020-07-05-add-column') {
         addColumn(tableName: 'devops_cd_stage_record') {
             column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '阶段顺序')
-        }
-    }
-    changeSet(author: 'wanghao', id: '2020-07-07-add-column') {
-        addColumn(tableName: 'devops_cd_stage_record') {
-            column(name: "started_date", type: "DATETIME", remarks: 'stage开始执行时间')
-            column(name: "finished_date", type: "DATETIME", remarks: 'stage结束时间')
         }
     }
 }
