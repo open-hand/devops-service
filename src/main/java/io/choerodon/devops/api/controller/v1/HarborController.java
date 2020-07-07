@@ -28,8 +28,6 @@ public class HarborController {
 
     @Autowired
     private HarborService harborService;
-    @Autowired
-    private RdupmClient rdupmClient;
 
     @GetMapping("/{projectId}/repo/list")
     @ApiOperation(value = "查询项目下所有的仓库配置")
@@ -38,29 +36,4 @@ public class HarborController {
         List<HarborRepoConfigDTO> list = harborService.listAllCustomRepoByProject(projectId);
         return Results.success(list);
     }
-
-
-    @ApiOperation(value = "根据项目ID获取镜像仓库列表")
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @GetMapping("/listImageRepo")
-    public ResponseEntity<List<HarborC7nRepoVo>> listImageRepo(@ApiParam(value = "猪齿鱼项目ID", required = true)
-                                                               @RequestParam("projectId") Long projectId) {
-        return Results.success(rdupmClient.listImageRepo(projectId).getBody());
-    }
-
-    @ApiOperation(value = "根据仓库类型+仓库ID+镜像名称获取获取镜像版本")
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @GetMapping("/listImageTag")
-    public ResponseEntity<HarborC7nRepoImageTagVo> listImageTag(@ApiParam(value = "仓库类型", required = true)
-                                                                @RequestParam String repoType,
-                                                                @ApiParam(value = "仓库ID", required = true)
-                                                                @RequestParam Long repoId,
-                                                                @ApiParam(value = "镜像名称", required = true)
-                                                                @RequestParam String imageName,
-                                                                @ApiParam(value = "镜像版本号,模糊查询")
-                                                                @RequestParam(required = false) String tagName) {
-        return Results.success(rdupmClient.listImageTag(repoType, repoId, imageName, tagName).getBody());
-    }
-
-
 }

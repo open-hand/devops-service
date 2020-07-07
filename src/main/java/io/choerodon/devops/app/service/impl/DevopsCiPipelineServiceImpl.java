@@ -350,7 +350,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (projectId == null) {
             throw new CommonException(ERROR_PROJECT_ID_IS_NULL);
         }
-
         // 应用有权限的应用服务
         Long userId = DetailsHelper.getUserDetails().getUserId();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
@@ -377,16 +376,17 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             if (!CollectionUtils.isEmpty(pipelineCiRecordVOPageInfo.getContent())) {
                 ciCdPipelineVO.setLatestExecuteDate(pipelineCiRecordVOPageInfo.getContent().get(0).getCreatedDate());
                 ciCdPipelineVO.setLatestExecuteStatus(pipelineCiRecordVOPageInfo.getContent().get(0).getStatus());
+                ciCdPipelineVO.setHasMoreRecords(pipelineCiRecordVOPageInfo.getTotalElements() > DEFAULT_PIPELINE_RECORD_SIZE);
             }
+
             ciCdPipelineVO.setDevopsCiPipelineRecordVOS(pipelineCiRecordVOPageInfo.getContent());
             //查询cd流水线记录
             Page<DevopsCdPipelineRecordVO> devopsCdPipelineRecordVOS = devopsCdPipelineRecordService.pagingCdPipelineRecord(projectId, ciCdPipelineVO.getId(), cdPpageable);
             if (!CollectionUtils.isEmpty(devopsCdPipelineRecordVOS.getContent())) {
                 ciCdPipelineVO.setLatestExecuteDate(devopsCdPipelineRecordVOS.getContent().get(0).getCreatedDate());
                 ciCdPipelineVO.setLatestExecuteStatus(devopsCdPipelineRecordVOS.getContent().get(0).getStatus());
+                ciCdPipelineVO.setHasMoreRecords(pipelineCiRecordVOPageInfo.getTotalElements() > DEFAULT_PIPELINE_RECORD_SIZE);
             }
-
-            ciCdPipelineVO.setHasMoreRecords(pipelineCiRecordVOPageInfo.getTotalElements() > DEFAULT_PIPELINE_RECORD_SIZE);
             ciCdPipelineVO.setDevopsCdPipelineRecordVOS(devopsCdPipelineRecordVOS.getContent());
 
         });

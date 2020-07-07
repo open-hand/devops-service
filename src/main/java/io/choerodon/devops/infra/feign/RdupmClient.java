@@ -152,7 +152,8 @@ public interface RdupmClient {
                                                                @ApiParam(value = "项目Id", required = true)
                                                                @PathVariable(name = "projectId") Long projectId,
                                                                @ApiParam(value = "服务配Id", required = true)
-                                                               @RequestParam(name = "configId") Long configId, String type);
+                                                               @RequestParam(name = "configId") Long configId,
+                                                               String type);
 
 
     @ApiOperation(value = "根据项目ID获取镜像仓库列表")
