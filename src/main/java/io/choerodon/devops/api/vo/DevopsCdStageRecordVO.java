@@ -1,5 +1,9 @@
 package io.choerodon.devops.api.vo;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 
 public class DevopsCdStageRecordVO {
@@ -12,10 +16,33 @@ public class DevopsCdStageRecordVO {
     private String triggerType;
     private Long pipelineId;
     private Boolean parallel;
-    private String executionTime;
     private Long stageId;
     private List<PipelineUserVO> userDTOS;
     private Boolean index;
+
+    private Date startedDate;
+    private Date finishedDate;
+    private Long executionTime;
+
+    public Date getStartedDate() {
+        return startedDate;
+    }
+
+    public void setStartedDate(Date startedDate) {
+        this.startedDate = startedDate;
+    }
+
+    public Date getFinishedDate() {
+        return finishedDate;
+    }
+
+    public void setFinishedDate(Date finishedDate) {
+        this.finishedDate = finishedDate;
+    }
+
+    public void setExecutionTime(Long executionTime) {
+        this.executionTime = executionTime;
+    }
 
     public List<DevopsCdJobRecordVO> getDevopsCdJobRecordVOS() {
         return devopsCdJobRecordVOS;
@@ -89,12 +116,8 @@ public class DevopsCdStageRecordVO {
         this.parallel = parallel;
     }
 
-    public String getExecutionTime() {
+    public Long getExecutionTime() {
         return executionTime;
-    }
-
-    public void setExecutionTime(String executionTime) {
-        this.executionTime = executionTime;
     }
 
     public Long getStageId() {
@@ -119,5 +142,11 @@ public class DevopsCdStageRecordVO {
 
     public void setIndex(Boolean index) {
         this.index = index;
+    }
+
+    public void setStageExecuteTime() {
+        LocalDateTime start = startedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        LocalDateTime finished = finishedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        this.executionTime = Duration.between(start, finished).getSeconds();
     }
 }
