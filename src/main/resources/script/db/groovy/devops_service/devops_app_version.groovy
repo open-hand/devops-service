@@ -86,7 +86,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_versionion.groovy') {
     }
     changeSet(author: 'wanghao', id: '2020-7-07-add-column') {
         addColumn(tableName: 'devops_app_service_version') {
-            column(name: 'ref', type: 'VARCHAR(64)')
+            column(name: 'ref', type: 'VARCHAR(64)', afterColumn: 'commit', remarks: 'gitlab commit ref')
         }
     }
 }
