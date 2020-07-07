@@ -258,10 +258,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 //保存审核人员信息,手动流转才有审核人员信息
                 createUserRel(devopsCdStageVO.getCdAuditUserIds(), null, cdStageDTO.getId(), null);
                 // 保存cd job信息
-                if (CollectionUtils.isEmpty(devopsCdStageVO.getJobList())) {
+                if (!CollectionUtils.isEmpty(devopsCdStageVO.getJobList())) {
                     devopsCdStageVO.getJobList().forEach(devopsCdJobVO -> {
                         // 添加人工卡点的任务类型时才 保存审核人员信息
-                        createCdJob(devopsCdJobVO, projectId, devopsCdStageDTO.getId());
+                        createCdJob(devopsCdJobVO, projectId, devopsCdStageDTO.getId(), ciCdPipelineDTO.getId());
                     });
                 }
             });
@@ -325,7 +325,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         List<DevopsCdStageVO> devopsCdStageVOS = ConvertUtils.convertList(devopsCdStageDTOS, DevopsCdStageVO.class);
         List<DevopsCdJobVO> devopsCdJobVOS = ConvertUtils.convertList(devopsCdJobDTOS, DevopsCdJobVO.class);
         // 封装CD对象
-        Map<Long, List<DevopsCdJobVO>> cdJobMap = devopsCdJobVOS.stream().collect(Collectors.groupingBy(DevopsCdJobVO::getCdStageId));
+        Map<Long, List<DevopsCdJobVO>> cdJobMap = devopsCdJobVOS.stream().collect(Collectors.groupingBy(DevopsCdJobVO::getStageId));
         devopsCdStageVOS.stream().forEach(devopsCdStageVO -> {
             List<DevopsCdJobVO> jobMapOrDefault = cdJobMap.getOrDefault(devopsCdStageVO.getId(), Collections.emptyList());
             jobMapOrDefault.sort(Comparator.comparing(DevopsCdJobVO::getId));
@@ -1022,9 +1022,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
     }
 
-    private void createCdJob(DevopsCdJobVO t, Long projectId, Long stageId) {
+    private void createCdJob(DevopsCdJobVO t, Long projectId, Long stageId, Long pipelineId) {
         t.setProjectId(projectId);
-        t.setCdStageId(stageId);
+        t.setStageId(stageId);
+        t.setPipelineId(pipelineId);
         Long jobId = devopsCdJobService.create(ConvertUtils.convertObject(t, DevopsCdJobDTO.class)).getId();
         if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
             createUserRel(t.getCdAuditUserIds(), null, null, jobId);

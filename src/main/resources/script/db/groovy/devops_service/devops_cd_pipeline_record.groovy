@@ -33,5 +33,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_pipeline_record.groovy') {
             column(name: "project_id")
         }
     }
+    changeSet(author: 'wx', id: '2020-07-07-add-column') {
+        addColumn(tableName: 'devops_cd_pipeline_record') {
+            column(name: 'commit_sha', type: 'VARCHAR(255)', remarks: 'commitSha', afterColumn: 'error_info')
+            column(name: 'ref', type: 'VARCHAR(255)', remarks: 'ref', afterColumn: 'error_info')
+        }
+
+    }
 
 }
