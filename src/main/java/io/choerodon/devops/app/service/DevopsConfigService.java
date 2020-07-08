@@ -16,7 +16,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @since 2019/03/11
  */
 public interface DevopsConfigService {
-
     /**
      * 项目下处理
      */
@@ -76,8 +75,5 @@ public interface DevopsConfigService {
     void operateConfig(Long organizationId, String resourceType, DevopsConfigRepVO devopsConfigRepVO);
 
     void deleteByConfigIds(Set<Long> configIds);
-
-    Integer getHarborProjectId(List<ProjectDetail> projectDetailList, String harborProjectName);
-
 }
 
