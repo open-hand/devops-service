@@ -78,7 +78,7 @@ public class DevopsGitController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建标签")
     @PostMapping("/tags")
-    public ResponseEntity createTag(
+    public ResponseEntity<Void> createTag(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务id", required = true)
@@ -92,7 +92,7 @@ public class DevopsGitController {
             @ApiParam(value = "发布日志")
             @RequestBody(required = false) String releaseNotes) {
         devopsGitService.createTag(projectId, appServiceId, tag, ref, msg, releaseNotes);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -222,7 +222,7 @@ public class DevopsGitController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建分支")
     @PostMapping("/branch")
-    public ResponseEntity createBranch(
+    public ResponseEntity<Void> createBranch(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务id", required = true)
@@ -230,7 +230,7 @@ public class DevopsGitController {
             @ApiParam(value = "分支", required = true)
             @EncryptDTO @RequestBody DevopsBranchVO devopsBranchVO) {
         devopsGitService.createBranch(projectId, appServiceId, devopsBranchVO);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -293,7 +293,7 @@ public class DevopsGitController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "更新分支关联的问题")
     @PutMapping("/update_branch_issue")
-    public ResponseEntity updateBranchIssue(
+    public ResponseEntity<Void> updateBranchIssue(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务id", required = true)
@@ -301,7 +301,7 @@ public class DevopsGitController {
             @ApiParam(value = "分支更新信息", required = true)
             @EncryptDTO @RequestBody @Valid DevopsBranchUpdateVO devopsBranchUpdateVO) {
         devopsGitService.updateBranchIssue(projectId, appServiceId, devopsBranchUpdateVO);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
     /**

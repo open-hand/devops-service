@@ -199,8 +199,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public void createTag(Long projectId, Long appServiceId, String tag, String ref, String msg, String releaseNotes) {
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.TAG_CREATE);
         appServiceService.baseCheckApp(projectId, appServiceId);
-        permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
-        AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
+        AppServiceDTO applicationDTO = permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
         gitlabServiceClientOperator.createTag(applicationDTO.getGitlabProjectId(), tag, ref, msg, releaseNotes, getGitlabUserId());
     }
 
@@ -209,7 +208,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.TAG_UPDATE);
         appServiceService.baseCheckApp(projectId, appServiceId);
         permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
-        AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
+        AppServiceDTO applicationDTO = permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
         return ConvertUtils.convertObject(gitlabServiceClientOperator.updateTag(applicationDTO.getGitlabProjectId(), tag, releaseNotes, getGitlabUserId()), TagVO.class);
     }
 
@@ -218,7 +217,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.TAG_DELETE);
         appServiceService.baseCheckApp(projectId, appServiceId);
         permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
-        AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
+        AppServiceDTO applicationDTO = permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
         gitlabServiceClientOperator.deleteTag(applicationDTO.getGitlabProjectId(), tag, getGitlabUserId());
     }
 

@@ -153,19 +153,6 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
         return devopsEnvironmentDTO;
     }
 
-    public DevopsEnvironmentDTO checkEnvBelongToProject(Long projectId, Long envId, Boolean throwException) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.queryByIdWithClusterCode(envId);
-        if (devopsEnvironmentDTO == null) {
-            if (throwException) {
-                throw new CommonException("error.env.id.not.exist", envId);
-            } else {
-                return devopsEnvironmentDTO;
-            }
-        }
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-        return devopsEnvironmentDTO;
-    }
-
     @Override
     public AppServiceDTO checkAppServiceBelongToProject(Long projectId, Long appServiceId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);

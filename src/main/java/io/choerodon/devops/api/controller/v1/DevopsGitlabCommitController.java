@@ -62,7 +62,7 @@ public class DevopsGitlabCommitController {
                 .orElseThrow(() -> new CommonException("error.commits.get"));
     }
 
-    // TODO 李浩   这里的appServiceIds需要特殊处理，需要讨论
+    // TODO 李浩   这里的appServiceIds需要特殊处理，需要讨论 (主键加密逻辑)
     /**
      * 服务获取下最近的commit记录
      *

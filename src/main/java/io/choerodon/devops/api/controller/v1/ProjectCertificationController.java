@@ -1,19 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Objects;
-import java.util.Optional;
-import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -25,6 +11,19 @@ import io.choerodon.devops.app.service.DevopsProjectCertificationService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * 泛域名证书
@@ -45,7 +44,7 @@ public class ProjectCertificationController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建或更新证书")
     @PostMapping
-    public ResponseEntity createOrUpdate(
+    public ResponseEntity<Void> createOrUpdate(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书信息", required = true)
@@ -59,7 +58,7 @@ public class ProjectCertificationController {
             throw new CommonException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
         devopsProjectCertificationService.createOrUpdate(projectId, key, cert, projectCertificationVO);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -207,7 +206,7 @@ public class ProjectCertificationController {
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "证书下为项目分配权限")
     @PostMapping(value = "/{cert_id}/permission")
-    public ResponseEntity assignPermission(
+    public ResponseEntity<Void> assignPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书id", required = true)
@@ -215,7 +214,7 @@ public class ProjectCertificationController {
             @ApiParam(value = "权限分配信息")
             @RequestBody @Valid ProjectCertificationPermissionUpdateVO permissionUpdateVO) {
         devopsProjectCertificationService.assignPermission(permissionUpdateVO);
-        return new ResponseEntity(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -230,12 +229,12 @@ public class ProjectCertificationController {
     @ApiOperation(value = "删除证书")
     @CustomPageRequest
     @DeleteMapping("/{cert_id}")
-    public ResponseEntity<String> deleteOrgCert(
+    public ResponseEntity<Void> deleteOrgCert(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书Id")
             @PathVariable(value = "cert_id") Long certId) {
         devopsProjectCertificationService.deleteCert(projectId, certId);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 }
