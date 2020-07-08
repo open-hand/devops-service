@@ -199,6 +199,8 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
     name: 'neRepositoryName',
     type: 'string',
     label: '项目制品库',
+    textField: 'neRepositoryName',
+    valueField: 'repositoryId',
     dynamicProps: {
       required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'jarDeploy',
       disabled: ({ record }) => !record.get('serverName'),
@@ -211,15 +213,53 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
     name: 'groupId',
     type: 'string',
     label: 'groupID',
+    textField: 'name',
+    valueField: 'value',
     dynamicProps: {
+      disabled: ({ record }) => !record.get('neRepositoryName'),
+      lookupAxiosConfig: ({ record }) => ({
+        method: 'get',
+        url: `/rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/groupId?repositoryId=${record.get('neRepositoryName')}`,
+        transformResponse: (data) => {
+          try {
+            const array = JSON.parse(data);
+
+            return array.map((i) => ({
+              value: i,
+              name: i,
+            }));
+          } catch (e) {
+            return data;
+          }
+        },
+      }),
       required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'jarDeploy',
     },
   }, {
     name: 'artifactId',
     type: 'string',
     label: 'artifactID',
+    textField: 'name',
+    valueField: 'value',
     dynamicProps: {
+      disabled: ({ record }) => !record.get('neRepositoryName'),
       required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'jarDeploy',
+      lookupAxiosConfig: ({ record }) => ({
+        method: 'get',
+        url: `/rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/artifactId?repositoryId=${record.get('neRepositoryName')}`,
+        transformResponse: (data) => {
+          try {
+            const array = JSON.parse(data);
+
+            return array.map((i) => ({
+              value: i,
+              name: i,
+            }));
+          } catch (e) {
+            return data;
+          }
+        },
+      }),
     },
   }, {
     name: 'versionRegular',
@@ -230,17 +270,24 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
     },
   }, {
     name: 'cdAuditUserIds',
-    type: 'string',
+    type: 'number',
     label: '审核人员',
+    textField: 'realName',
+    multiple: true,
+    valueField: 'id',
+    lookupAxiosConfig: () => ({
+      method: 'post',
+      url: `/devops/v1/projects/${projectId}/users/list_users?page=0&size=20`,
+    }),
     dynamicProps: {
       required: ({ record }) => record.get('type') === 'cdAudit',
     },
   }, {
     name: 'countersigned',
-    type: 'string',
+    type: 'number',
     label: '审核模式',
     dynamicProps: {
-      required: ({ record }) => record.get('type') === 'cdAudit',
+      required: ({ record }) => record.get('type') === 'cdAudit' && record.get('cdAuditUserIds')?.length > 1,
     },
   }],
 });
