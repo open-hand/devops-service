@@ -8,20 +8,8 @@ import io.swagger.annotations.ApiModelProperty;
  * @description 主机部署配置信息
  */
 public class CdHostDeployConfigVO {
-    @ApiModelProperty("主机Ip")
-    private String hostIp;
-
-    @ApiModelProperty("主机port")
-    private String hostPort;
-
-    @ApiModelProperty("用户名")
-    private String userName;
-
-    @ApiModelProperty("密码")
-    private String password;
-
-    @ApiModelProperty("账号配置类型")
-    private String accountType;
+    @ApiModelProperty("主机详情")
+    private HostConnectionVO hostConnectionVO;
 
     @ApiModelProperty("主机部署类型 image/jar/customize")
     // HostDeployType
@@ -224,46 +212,6 @@ public class CdHostDeployConfigVO {
         this.customize = customize;
     }
 
-    public String getHostIp() {
-        return hostIp;
-    }
-
-    public void setHostIp(String hostIp) {
-        this.hostIp = hostIp;
-    }
-
-    public String getHostPort() {
-        return hostPort;
-    }
-
-    public void setHostPort(String hostPort) {
-        this.hostPort = hostPort;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getAccountType() {
-        return accountType;
-    }
-
-    public void setAccountType(String accountType) {
-        this.accountType = accountType;
-    }
-
     public ImageDeploy getImageDeploy() {
         return imageDeploy;
     }
@@ -278,5 +226,13 @@ public class CdHostDeployConfigVO {
 
     public void setJarDeploy(JarDeploy jarDeploy) {
         this.jarDeploy = jarDeploy;
+    }
+
+    public HostConnectionVO getHostConnectionVO() {
+        return hostConnectionVO;
+    }
+
+    public void setHostConnectionVO(HostConnectionVO hostConnectionVO) {
+        this.hostConnectionVO = hostConnectionVO;
     }
 }
