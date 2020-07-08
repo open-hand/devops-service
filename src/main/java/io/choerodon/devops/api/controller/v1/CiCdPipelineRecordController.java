@@ -37,17 +37,35 @@ public class CiCdPipelineRecordController {
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "重试整条流水线")
-    @GetMapping("/retry")
+    @GetMapping("{cd_pipeline_record_id}/retry")
     public ResponseEntity retryPipeline(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "cd流水线记录id", required = true)
-            @RequestParam(value = "cd_pipeline_record_id") Long pipelineRecordId,
+            @PathVariable(value = "cd_pipeline_record_id") Long pipelineRecordId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @RequestParam("gitlab_pipeline_id") Long gitlabPipelineId,
             @ApiParam(value = "流水线ID", required = true)
             @RequestParam("gitlab_project_id") Long gitlabProjectId) {
         ciCdPipelineRecordService.retryPipeline(projectId, pipelineRecordId, gitlabPipelineId, gitlabProjectId);
         return Results.success();
+    }
+
+    /**
+     * Cancel jobs in a pipeline
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "取消流水线")
+    @PostMapping(value = "/{cd_pipeline_record_id}/cancel")
+    public ResponseEntity<Boolean> cancel(
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "cd流水线记录id", required = true)
+            @PathVariable(value = "cd_pipeline_record_id") Long pipelineRecordId,
+            @ApiParam(value = "gitlab项目ID", required = true)
+            @RequestParam("gitlab_pipeline_id") Long gitlabPipelineId,
+            @ApiParam(value = "流水线ID", required = true)
+            @RequestParam("gitlab_project_id") Long gitlabProjectId) {
+        ciCdPipelineRecordService.cancel(projectId, pipelineRecordId, gitlabPipelineId, gitlabProjectId);
+        return ResponseEntity.noContent().build();
     }
 }

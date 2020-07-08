@@ -44,4 +44,15 @@
                 dcsr.pipeline_record_id = #{pipelineRecordId}
                 AND (dcsr.`status` = 'FAILED' or  dcsr.status='CANCELED')
     </select>
+
+    <select id="queryPendingAndRunning"
+            resultType="io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO">
+            SELECT
+                dcsr.*
+            FROM
+                devops_cd_stage_record dcsr
+            WHERE
+                dcsr.pipeline_record_id = #{pipelineRecordId}
+                AND (dcsr.`status` = 'PENDING' or  dcsr.status='RUNNING')
+    </select>
 </mapper>

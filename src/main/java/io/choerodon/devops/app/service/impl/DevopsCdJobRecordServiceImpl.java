@@ -3,6 +3,8 @@ package io.choerodon.devops.app.service.impl;
 import java.util.Date;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -15,7 +17,6 @@ import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
 import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.enums.PipelineStatus;
-import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 
 /**
@@ -27,6 +28,7 @@ import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
  */
 @Service
 public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
+    public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdJobRecordServiceImpl.class);
 
     private static final String ERROR_SAVE_JOB_RECORD_FAILED = "error.save.job.record.failed";
     private static final String ERROR_UPDATE_JOB_RECORD_FAILED = "error.update.job.record.failed";
@@ -81,17 +83,26 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
     @Override
     public void updateStatusById(Long jobRecordId, String status) {
         DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(jobRecordId);
-        cdJobRecordDTO.setStatus(status);
-        if (status.equals(WorkFlowStatus.FAILED.toValue())
-                || status.equals(WorkFlowStatus.SUCCESS.toValue())
-                || status.equals(WorkFlowStatus.STOP.toValue())) {
+        if (status.equals(PipelineStatus.FAILED.toValue())
+                || status.equals(PipelineStatus.SUCCESS.toValue())
+                || status.equals(PipelineStatus.STOP.toValue())) {
             cdJobRecordDTO.setFinishedDate(new Date());
             cdJobRecordDTO.setDurationSeconds((new Date().getTime() - cdJobRecordDTO.getStartedDate().getTime()) / 1000);
         }
-        if (status.equals(WorkFlowStatus.RUNNING.toValue())) {
+        if (status.equals(PipelineStatus.RUNNING.toValue())) {
             cdJobRecordDTO.setStartedDate(new Date());
             cdJobRecordDTO.setFinishedDate(null);
         }
+
+        // 已取消的任务 不能更新为成功、失败状态
+        if (cdJobRecordDTO.getStatus().equals(PipelineStatus.CANCELED.toValue())
+                && (status.equals(PipelineStatus.FAILED.toValue())
+                || status.equals(PipelineStatus.SUCCESS.toValue()))) {
+            LOGGER.info("cancel job can not update status!! job record Id {}", cdJobRecordDTO.getId());
+            return;
+        }
+
+        cdJobRecordDTO.setStatus(status);
         if (devopsCdJobRecordMapper.updateByPrimaryKey(cdJobRecordDTO) != 1) {
             throw new CommonException(ERROR_UPDATE_JOB_RECORD_FAILED);
         }

@@ -125,6 +125,15 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     @Transactional
     public void updateStatusById(Long pipelineRecordId, String status) {
         DevopsCdPipelineRecordDTO pipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
+
+        // 已取消的流水线 不能更新为成功、失败状态
+        if (pipelineRecordDTO.getStatus().equals(PipelineStatus.CANCELED.toValue())
+                && (status.equals(PipelineStatus.FAILED.toValue())
+                || status.equals(PipelineStatus.SUCCESS.toValue()))) {
+            LOGGER.info("cancel pipeline can not update status!! pipeline record Id {}", pipelineRecordDTO.getId());
+            return;
+        }
+
         pipelineRecordDTO.setStatus(status);
         if (devopsCdPipelineRecordMapper.updateByPrimaryKey(pipelineRecordDTO) != 1) {
             throw new CommonException(ERROR_UPDATE_PIPELINE_RECORD_FAILED);
