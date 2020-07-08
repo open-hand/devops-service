@@ -283,7 +283,7 @@ export default observer(() => {
             type: data,
             glyyfw: appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')),
             triggerType: 'refs',
-            bsms: 'new',
+            deployType: 'create',
             accountType: 'accountPassword',
             mode: 'customize',
           }])}
@@ -337,12 +337,12 @@ export default observer(() => {
         {
           ADDCDTaskDataSet?.current?.get('type') === 'cdDeploy' && [
             <Select colSpan={1} name="envId" />,
-            <SelectBox className="addcdTask-mode" newLine colSpan={1} name="bsms">
-              <Option value="new">新建实例</Option>
+            <SelectBox className="addcdTask-mode" newLine colSpan={1} name="deployType">
+              <Option value="create">新建实例</Option>
               <Option value="update">替换实例</Option>
             </SelectBox>,
             <p className="addcdTask-text" colSpan={2}><Icon style={{ color: '#F44336' }} type="error" />替换实例会更新该实例的镜像及配置信息，请确认要替换的实例选择无误。</p>,
-            ADDCDTaskDataSet?.current?.get('bsms') === 'new' ? (
+            ADDCDTaskDataSet?.current?.get('deployType') === 'create' ? (
               <TextField newLine colSpan={2} name="instanceName" />
             ) : (
               <Select newLine colSpan={2} name="instanceId" />
