@@ -118,12 +118,13 @@ export default function useStore() {
         });
       }
     },
-    eidtStep(sequence, newName, edit) {
+    eidtStep(sequence, newName, curType, edit) {
       this.setHasModify(true, edit);
       if (edit) {
         this.dataSource2.forEach((item, index) => {
           if (item.sequence === sequence) {
             this.dataSource2[index].name = newName;
+            this.dataSource2[index].type = curType;
             return true;
           }
         });
@@ -131,6 +132,7 @@ export default function useStore() {
         this.dataSource.forEach((item, index) => {
           if (item.sequence === sequence) {
             this.dataSource[index].name = newName;
+            this.dataSource[index].type = curType;
             return true;
           }
         });
