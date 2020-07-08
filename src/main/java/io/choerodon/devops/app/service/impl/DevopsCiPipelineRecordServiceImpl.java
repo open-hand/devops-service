@@ -254,12 +254,12 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             // 查询阶段信息
             List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(ciPipelineId);
             List<DevopsCiStageRecordVO> devopsCiStageRecordVOS = ConvertUtils.convertList(devopsCiStageDTOList, DevopsCiStageRecordVO.class);
-
             // 计算stage状态
             devopsCiStageRecordVOS.forEach(stageRecord -> {
                 List<DevopsCiJobRecordDTO> ciJobRecordDTOS = jobRecordMap.get(stageRecord.getName());
                 if (!CollectionUtils.isEmpty(ciJobRecordDTOS)) {
                     Map<String, List<DevopsCiJobRecordDTO>> statusMap = ciJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStatus));
+                    //计算stage状态
                     calculateStageStatus(stageRecord, statusMap);
                 }
 

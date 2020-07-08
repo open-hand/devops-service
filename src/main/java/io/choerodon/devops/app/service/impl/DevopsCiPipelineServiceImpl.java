@@ -20,8 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import org.yaml.snakeyaml.Yaml;
-import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -35,6 +33,7 @@ import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.*;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.maven.Repository;
 import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
@@ -109,6 +108,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final DevopsCdJobRecordService devopsCDJobRecordService;
     private final DevopsCdStageRecordService devopsCdStageRecordService;
     private final DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
+    private final DevopsEnvironmentMapper devopsEnvironmentMapper;
 
 
     public DevopsCiPipelineServiceImpl(
@@ -140,7 +140,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCdPipelineRecordService devopsCdPipelineRecordService,
             DevopsCdJobRecordService devopsCDJobRecordService,
             DevopsCdStageRecordService devopsCdStageRecordService,
-            DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService) {
+            DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService,
+            DevopsEnvironmentMapper devopsEnvironmentMapper) {
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
         this.devopsCiStageService = devopsCiStageService;
@@ -168,6 +169,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsCDJobRecordService = devopsCDJobRecordService;
         this.devopsCdStageRecordService = devopsCdStageRecordService;
         this.devopsCdEnvDeployInfoService = devopsCdEnvDeployInfoService;
+        this.devopsEnvironmentMapper = devopsEnvironmentMapper;
     }
 
     private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
@@ -340,9 +342,27 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         //查询CD相关的阶段以及JOB
         List<DevopsCdStageDTO> devopsCdStageDTOS = devopsCdStageService.queryByPipelineId(pipelineId);
         List<DevopsCdJobDTO> devopsCdJobDTOS = devopsCdJobService.listByPipelineId(pipelineId);
-
         List<DevopsCdStageVO> devopsCdStageVOS = ConvertUtils.convertList(devopsCdStageDTOS, DevopsCdStageVO.class);
         List<DevopsCdJobVO> devopsCdJobVOS = ConvertUtils.convertList(devopsCdJobDTOS, DevopsCdJobVO.class);
+        //给cd的job加上环境名称
+        if (!CollectionUtils.isEmpty(devopsCdJobVOS)) {
+            for (DevopsCdJobVO devopsCdJobVO : devopsCdJobVOS) {
+                //如果是自动部署添加环境名字
+                if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobVO.getType())) {
+                    DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = gson.fromJson(devopsCdJobVO.getMetadata(), DevopsCdEnvDeployInfoDTO.class);
+                    DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getEnvId());
+                    if (Objects.isNull(devopsEnvironmentDTO)) {
+                        devopsCdJobVO.setEnvName(devopsEnvironmentDTO.getName());
+                    }
+                }
+                //如果是人工审核，返回审核人员信息
+                if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobVO.getType())) {
+                    List<Long> longs = devopsCdAuditService.baseListByOptions(null, null, devopsCdJobVO.getId()).stream().map(DevopsCdAuditDTO::getUserId).collect(Collectors.toList());
+                    List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(longs);
+                    devopsCdJobVO.setIamUserDTOS(iamUserDTOS);
+                }
+            }
+        }
         // 封装CD对象
         Map<Long, List<DevopsCdJobVO>> cdJobMap = devopsCdJobVOS.stream().collect(Collectors.groupingBy(DevopsCdJobVO::getStageId));
         devopsCdStageVOS.stream().forEach(devopsCdStageVO -> {
@@ -377,7 +397,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         Set<Long> appServiceIds;
         if (projectOwner) {
-        appServiceIds = appServiceMapper.listByActive(projectId).stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
+            appServiceIds = appServiceMapper.listByActive(projectId).stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
         } else {
             appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
             if (CollectionUtils.isEmpty(appServiceIds)) {
@@ -411,7 +431,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 ciCdPipelineVO.setLatestExecuteDate(devopsCdPipelineRecordVOS.getContent().get(0).getCreatedDate());
                 ciCdPipelineVO.setLatestExecuteStatus(devopsCdPipelineRecordVOS.getContent().get(0).getStatus());
                 ciCdPipelineVO.setHasMoreRecords(pipelineCiRecordVOPageInfo.getTotalElements() > DEFAULT_PIPELINE_RECORD_SIZE);
-                cdPipielineMap = devopsCdPipelineRecordVOS.getContent().stream().collect(Collectors.groupingBy(DevopsCdPipelineRecordVO::getGitlabPipelineId));
+                cdPipielineMap = devopsCdPipelineRecordVOS.getContent().stream().collect(Collectors.groupingBy(DevopsCdPipelineRecordVO::getPipelineId));
             }
 
             //封装 CiCdPipelineRecordVO
@@ -455,7 +475,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = longListEntry.getValue().get(0);
                     ciCdPipelineRecordVO.setCiStatus(devopsCiPipelineRecordVO.getStatus());
                     ciCdPipelineRecordVO.setCreatedDate(devopsCiPipelineRecordVO.getCreatedDate());
-                    ciCdPipelineRecordVO.setCdRecordId(devopsCiPipelineRecordVO.getId());
+                    ciCdPipelineRecordVO.setCiRecordId(devopsCiPipelineRecordVO.getId());
                     ciCdPipelineRecordVO.setGitlabPipelineId(devopsCiPipelineRecordVO.getGitlabPipelineId());
 
                     stageRecordVOS.addAll(devopsCiPipelineRecordVO.getStageRecordVOList());
@@ -1001,7 +1021,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private void buildBeforeScript(GitlabCi gitlabCi) {
         List<String> beforeScripts = ArrayUtil.singleAsList(GitOpsConstants.CHOERODON_BEFORE_SCRIPT);
         // 如果有job启用了缓存设置, 就创建缓存目录
-        if (!CollectionUtils.isEmpty(gitlabCi.getJobs())){
+        if (!CollectionUtils.isEmpty(gitlabCi.getJobs())) {
             if (gitlabCi.getJobs().values().stream().anyMatch(j -> j.getCache() != null)) {
                 beforeScripts.add(GitlabCiUtil.generateCreateCacheDir(GitOpsConstants.CHOERODON_CI_CACHE_DIR));
             }
