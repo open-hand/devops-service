@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,7 @@ import io.choerodon.devops.infra.mapper.DevopsCdStageRecordMapper;
  */
 @Service
 public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordService {
+    public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdJobRecordServiceImpl.class);
 
     private static final String SAVE_STAGE_RECORD_FAILED = "save.stage.record.failed";
     private static final String UPDATE_STAGE_RECORD_FAILED = "update.stage.record.failed";
@@ -78,6 +81,14 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
     @Transactional
     public void updateStatusById(Long stageRecordId, String status) {
         DevopsCdStageRecordDTO recordDTO = devopsCdStageRecordMapper.selectByPrimaryKey(stageRecordId);
+        // 已取消的阶段 不能更新为成功、失败状态
+        if (recordDTO.getStatus().equals(PipelineStatus.CANCELED.toValue())
+                && (status.equals(PipelineStatus.FAILED.toValue())
+                || status.equals(PipelineStatus.SUCCESS.toValue()))) {
+            LOGGER.info("cancel stage can not update status!! stage record Id {}", recordDTO.getId());
+            return;
+        }
+
         recordDTO.setStatus(status);
         if (devopsCdStageRecordMapper.updateByPrimaryKey(recordDTO) != 1) {
             throw new CommonException(UPDATE_STAGE_RECORD_FAILED);

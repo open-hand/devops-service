@@ -13,6 +13,7 @@ public enum PipelineStatus {
     PENDING,
     SUCCESS,
     FAILED,
+    STOP,
     CANCELED,
     NOT_AUDIT,
     SKIPPED;

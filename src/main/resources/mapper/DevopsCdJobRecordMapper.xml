@@ -47,4 +47,15 @@
                     OR dcsr. STATUS = 'CANCELED'
                 )
     </select>
+
+    <select id="queryPendingAndRunning"
+            resultType="io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO">
+            SELECT
+                dcsr.*
+            FROM
+                devops_cd_job_record dcsr
+            WHERE
+                dcsr.stage_record_id = #{stageRecordId}
+                AND (dcsr.`status` = 'PENDING' or  dcsr.status='RUNNING')
+    </select>
 </mapper>

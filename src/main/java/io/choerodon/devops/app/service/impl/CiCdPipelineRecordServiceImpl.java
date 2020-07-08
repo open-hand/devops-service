@@ -19,6 +19,7 @@ import io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
+import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdStageRecordMapper;
 import io.choerodon.devops.infra.util.GenerateUUID;
@@ -48,6 +49,8 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     @Lazy
     private DevopsCdPipelineService devopsCdPipelineService;
 
+    @Autowired
+    private WorkFlowServiceOperator workFlowServiceOperator;
 
 
     @Override
@@ -95,5 +98,28 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             devopsCdPipelineRecordDTO.setErrorInfo(e.getMessage());
             devopsCdPipelineRecordService.update(devopsCdPipelineRecordDTO);
         }
+    }
+
+    @Override
+    public void cancel(Long projectId, Long pipelineRecordId, Long gitlabPipelineId, Long gitlabProjectId) {
+        DevopsCdStageRecordDTO cdStageRecordDTO = devopsCdStageRecordMapper.queryPendingAndRunning(pipelineRecordId);
+        if (cdStageRecordDTO == null || cdStageRecordDTO.getId() == null) {
+            devopsCiPipelineRecordService.cancel(projectId, gitlabPipelineId, gitlabProjectId);
+        } else {
+            cancelCdPipeline(pipelineRecordId);
+        }
+    }
+
+    @Transactional
+    public void cancelCdPipeline(Long pipelineRecordId) {
+        DevopsCdPipelineRecordDTO pipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
+
+        DevopsCdStageRecordDTO cdStageRecordDTO = devopsCdStageRecordMapper.queryPendingAndRunning(pipelineRecordId);
+        DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.queryPendingAndRunning(cdStageRecordDTO.getId());
+        devopsCdStageRecordService.updateStatusById(cdJobRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
+        devopsCdJobRecordService.updateStatusById(cdJobRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
+        devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.CANCELED.toValue());
+
+        workFlowServiceOperator.stopInstance(pipelineRecordDTO.getProjectId(), pipelineRecordDTO.getBusinessKey());
     }
 }
