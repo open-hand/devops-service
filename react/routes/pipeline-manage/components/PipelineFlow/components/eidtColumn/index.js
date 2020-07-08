@@ -40,7 +40,7 @@ const EditItem = (props) => {
     stageType,
   } = props;
 
-  const { type, name } = jobDetail;
+  const { name, type } = jobDetail;
 
   const {
     editBlockStore, stepStore,
@@ -61,7 +61,7 @@ const EditItem = (props) => {
         <Fragment>
           <span className="c7n-piplineManage-edit-title-text">{`编辑${name}任务`}</span>
           {
-            type === 'CI' && (
+            stageType === 'CI' && (
               <Button
                 type="primary"
                 icon="find_in_page-o"
@@ -74,7 +74,7 @@ const EditItem = (props) => {
           }
         </Fragment>
       ),
-      children: type === 'CI' ? <AddTask
+      children: stageType === 'CI' ? <AddTask
         jobDetail={jobDetail}
         appServiceId={!edit && appServiceName}
         appServiceName={!edit && appServiceName}

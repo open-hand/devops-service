@@ -69,7 +69,7 @@ const PipelineCreate = observer(() => {
         return false;
       }
       if (dataSource) {
-        await axios.put(`/devops/v1/projects/${projectId}/ci_pipelines/${dataSource.id}`, data);
+        await axios.put(`/devops/v1/projects/${projectId}/cicd_pipelines/${dataSource.id}`, data);
         editBlockStore.loadData(projectId, dataSource.id);
         refreshTree();
       } else {

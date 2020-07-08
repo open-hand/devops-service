@@ -115,12 +115,13 @@ export default observer(() => {
         const { cdAuditUserIds } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
         newCdAuditUserIds = cdAuditUserIds;
       }
-      delete jobDetail.metadata;
       const newJobDetail = {
         ...jobDetail,
+        ...JSON.parse(jobDetail.metadata.replace(/'/g, '"')),
         cdAuditUserIds: newCdAuditUserIds,
         triggerValue: jobDetail.triggerType === 'regex' ? jobDetail.triggerValue : jobDetail.triggerValue?.split(','),
       };
+      delete newJobDetail.metadata;
       ADDCDTaskDataSet.loadData([newJobDetail]);
     }
     ADDCDTaskDataSet.current.set('glyyfw', appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')));
@@ -277,7 +278,18 @@ export default observer(() => {
   return (
     <div className="addcdTask">
       <Form columns={3} dataSet={ADDCDTaskDataSet}>
-        <Select colSpan={1} name="type">
+        <Select
+          onChange={(data) => ADDCDTaskDataSet.loadData([{
+            type: data,
+            glyyfw: appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')),
+            triggerType: 'refs',
+            bsms: 'new',
+            accountType: 'accountPassword',
+            mode: 'customize',
+          }])}
+          colSpan={1}
+          name="type"
+        >
           <Option value="cdDeploy">部署</Option>
           <Option value="cdHost">主机部署</Option>
           <Option value="cdAudit">人工卡点</Option>
