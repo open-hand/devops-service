@@ -1,16 +1,10 @@
 package io.choerodon.devops.api.vo;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
-public class DevopsCdStageRecordVO {
+public class DevopsCdStageRecordVO extends StageRecordVO {
     private Long id;
-    private String name;
-    private Long sequence;
-    private String status;
     private Long durationSeconds;
     private List<DevopsCdJobRecordVO> devopsCdJobRecordVOS;
     private String triggerType;
@@ -20,25 +14,10 @@ public class DevopsCdStageRecordVO {
     private List<PipelineUserVO> userDTOS;
     private Boolean index;
 
-    private Date startedDate;
-    private Date finishedDate;
+
     private Long executionTime;
 
-    public Date getStartedDate() {
-        return startedDate;
-    }
 
-    public void setStartedDate(Date startedDate) {
-        this.startedDate = startedDate;
-    }
-
-    public Date getFinishedDate() {
-        return finishedDate;
-    }
-
-    public void setFinishedDate(Date finishedDate) {
-        this.finishedDate = finishedDate;
-    }
 
     public void setExecutionTime(Long executionTime) {
         this.executionTime = executionTime;
@@ -60,29 +39,7 @@ public class DevopsCdStageRecordVO {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
-    }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Long getSequence() {
-        return sequence;
-    }
-
-    public void setSequence(Long sequence) {
-        this.sequence = sequence;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
 
     public Long getDurationSeconds() {
         return durationSeconds;
@@ -144,9 +101,5 @@ public class DevopsCdStageRecordVO {
         this.index = index;
     }
 
-    public void setStageExecuteTime() {
-        LocalDateTime start = startedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        LocalDateTime finished = finishedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        this.executionTime = Duration.between(start, finished).getSeconds();
-    }
+
 }

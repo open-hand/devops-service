@@ -22,7 +22,7 @@
     <select id="queryGitlabProjectIdByRecordId" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT das.id, das.gitlab_project_id
         FROM devops_ci_pipeline_record dpr
-        LEFT JOIN devops_ci_pipeline dcp ON dpr.ci_pipeline_id = dcp.id
+        LEFT JOIN devops_cicd_pipeline dcp ON dpr.ci_pipeline_id = dcp.id
         LEFT JOIN devops_app_service das ON dcp.app_service_id = das.id
         WHERE dpr.id = #{pipelineRecordId,jdbcType=BIGINT}
     </select>

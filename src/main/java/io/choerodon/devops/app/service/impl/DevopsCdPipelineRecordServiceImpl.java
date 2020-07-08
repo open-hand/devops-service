@@ -573,7 +573,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             return pipelineRecordInfo;
         }
         pipelineRecordVOList.forEach(devopsCdPipelineRecordVO -> {
-            List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryByPipelineRecordId(devopsCdPipelineRecordVO.getPipelineId());
+            List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryByPipelineRecordId(devopsCdPipelineRecordVO.getId());
             if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
                 List<DevopsCdStageRecordVO> devopsCdStageRecordVOS = ConvertUtils.convertList(devopsCdStageRecordDTOS, DevopsCdStageRecordVO.class);
                 devopsCdStageRecordVOS.forEach(devopsCdStageRecordVO -> {
@@ -587,10 +587,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     devopsCdStageRecordVO.setDevopsCdJobRecordVOS(devopsCdJobRecordVOS);
                 });
                 //计算 stage耗时
-                devopsCdStageRecordVOS.forEach(devopsCdStageRecordVO -> {
-                    devopsCdStageRecordVO.setStageExecuteTime();
-                });
-                devopsCdPipelineRecordVO.setDurationSeconds(devopsCdStageRecordVOS.stream().map(DevopsCdStageRecordVO::getExecutionTime).reduce((aLong, aLong2) -> aLong + aLong2).get());
+//                devopsCdStageRecordVOS.forEach(devopsCdStageRecordVO -> {
+//                    devopsCdStageRecordVO.setStageExecuteTime();
+//                });
+//                devopsCdPipelineRecordVO.setDurationSeconds(devopsCdStageRecordVOS.stream().map(DevopsCdStageRecordVO::getExecutionTime).reduce((aLong, aLong2) -> aLong + aLong2).get());
                 devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
             }
         });
@@ -618,9 +618,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 devopsCdStageRecordVO.setDevopsCdJobRecordVOS(devopsCdJobRecordVOS);
             });
             //计算 stage耗时
-            devopsCdStageRecordVOS.forEach(devopsCdStageRecordVO -> {
-                devopsCdStageRecordVO.setStageExecuteTime();
-            });
+//            devopsCdStageRecordVOS.forEach(devopsCdStageRecordVO -> {
+//                devopsCdStageRecordVO.setStageExecuteTime();
+//            });
             devopsCdPipelineRecordVO.setDurationSeconds(devopsCdStageRecordVOS.stream().map(DevopsCdStageRecordVO::getExecutionTime).reduce((aLong, aLong2) -> aLong + aLong2).get());
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
         }
