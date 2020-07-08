@@ -58,4 +58,6 @@ public interface DevopsCdPipelineService {
     void auditStage(Long projectId, Long pipelineRecordId, Long stageRecordId, String result);
 
     void createWorkFlow(Long projectId, io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO devopsPipelineDTO, String loginName, Long userId, Long orgId);
+
+    void auditJob(Long projectId, Long pipelineRecordId, Long stageRecordId, Long jobRecordId, String result);
 }

@@ -1055,6 +1055,25 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         );
     }
 
+    @Override
+    public void sendPipelineAuditMassage(String type, List<Long> userIds, Long pipelineRecordId, String stageName, Long stageId) {
+        LOGGER.debug("Send pipeline audit message..., the type is {}, auditUser is {}, stageName is {}, stageId is {}", type, userIds, stageName, stageId);
+        doWithTryCatchAndLog(
+                () -> {
+                    List<Receiver> userList = new ArrayList<>();
+                    List<IamUserDTO> users = baseServiceClientOperator.queryUsersByUserIds(userIds);
+                    users.forEach(t -> userList.add(constructReceiver(t.getId(), t.getEmail(), t.getPhone(), t.getOrganizationId())));
+                    Map<String, String> params = new HashMap<>();
+                    params.put(STAGE_NAME, stageName);
+                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
+                    params.put("auditName", iamUserDTO.getLoginName());
+                    params.put("realName", iamUserDTO.getRealName());
+                    sendPipelineMessage(pipelineRecordId, type, userList, params, stageId, stageName);
+                },
+                ex -> LOGGER.info("Failed to sendPipelineAuditMassage.", ex)
+        );
+    }
+
     private Receiver constructReceiver(Long userId) {
         IamUserDTO user = baseServiceClientOperator.queryUserByUserId(userId);
         return constructReceiver(userId, user.getEmail(), user.getPhone(), user.getOrganizationId());

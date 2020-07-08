@@ -20,4 +20,6 @@ public interface DevopsCdAuditRecordService {
     void sendStageAuditMessage(DevopsCdStageRecordDTO devopsCdStageRecordDTO);
 
     void sendJobAuditMessage(Long pipelineRecordId, DevopsCdJobRecordDTO devopsCdJobRecordDTO);
+
+    void update(DevopsCdAuditRecordDTO devopsCdAuditRecordDTO);
 }

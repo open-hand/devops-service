@@ -13,6 +13,7 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCdAuditRecordService;
+import io.choerodon.devops.app.service.DevopsCdJobRecordService;
 import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCdStageRecordService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
@@ -48,6 +49,8 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
     @Autowired
     private DevopsCdAuditRecordService devopsCdAuditRecordService;
 
+    @Autowired
+    private DevopsCdJobRecordService devopsCdJobRecordService;
 
     @Override
     @Transactional
@@ -139,5 +142,18 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
         }
         //删除cd stage 记录
         devopsCdStageRecordMapper.delete(devopsCdStageRecordDTO);
+    }
+
+    @Override
+    @Transactional
+    public void updateStageStatusStop(Long stageRecordId) {
+        Assert.notNull(stageRecordId, PipelineCheckConstant.ERROR_STAGE_RECORD_ID_IS_NULL);
+        // 更新阶段状态为stop
+        DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordMapper.selectByPrimaryKey(stageRecordId);
+        devopsCdStageRecordDTO.setStatus(PipelineStatus.STOP.toValue());
+        update(devopsCdStageRecordDTO);
+
+        // 更新阶段中的所有任务状态为stop
+        devopsCdJobRecordService.updateJobStatusStopByStageRecordId(stageRecordId);
     }
 }
