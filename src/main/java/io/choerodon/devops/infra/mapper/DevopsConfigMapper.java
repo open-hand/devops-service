@@ -34,5 +34,11 @@ public interface DevopsConfigMapper extends BaseMapper<DevopsConfigDTO> {
 
     void updateResourceId(@Param("configId") Long configId);
 
+    /**
+     * 更新 name, app_service, project_id, organization_id 为null
+     * @param configId 配置id
+     */
+    void updateConfigFieldsNull(@Param("configId") Long configId);
+
     List<DevopsConfigDTO> listByConfigs(@Param("configIds") Set<Long> configIds);
 }
