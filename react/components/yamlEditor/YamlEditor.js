@@ -126,7 +126,7 @@ export default class YamlEditor extends Component {
           <CodeMirror
             modeChange={modeChange}
             options={this.options}
-            value={value}
+            value={value || ''}
             originValue={originValue}
             onChange={this.onChange}
             ref={(instance) => {
