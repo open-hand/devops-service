@@ -70,7 +70,7 @@ export default observer((props) => {
   function getJobTask(type, metadata) {
     if (metadata) {
       const newData = JSON.parse(metadata.replace(/'/g, '"'));
-      const { sonarUrl, config, envName, branch, users, checkMode } = newData || {};
+      const { sonarUrl, config, envName, triggerValue = [], triggerType, users, checkMode } = newData || {};
       let content;
       switch (type) {
         case 'sonar':
@@ -81,7 +81,11 @@ export default observer((props) => {
           content = (
             <div className="c7ncd-pipeline-detail-job-task-deploy">
               {envName ? <span className="c7ncd-pipeline-detail-job-task-deploy-item">部署环境：{envName}</span> : null}
-              <span>触发分支：{branch}</span>
+              <span>
+                触发分支：
+                {triggerType === 'exact_exclude' ? '精确排除<br/>' : ''}
+                {triggerValue.join()}
+              </span>
             </div>
           );
           break;
@@ -90,7 +94,11 @@ export default observer((props) => {
             <div className="c7ncd-pipeline-detail-job-task-deploy">
               <span className="c7ncd-pipeline-detail-job-task-deploy-item">审核人员：{users}</span>
               <span className="c7ncd-pipeline-detail-job-task-deploy-item">审核模式：{checkMode}</span>
-              <span>触发分支：{branch}</span>
+              <span>
+                触发分支：
+                {triggerType === 'exact_exclude' ? '精确排除<br/>' : ''}
+                {triggerValue.join()}
+              </span>
             </div>
           );
           break;
