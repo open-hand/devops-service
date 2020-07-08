@@ -12,7 +12,9 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
 import io.choerodon.devops.api.vo.CiCdPipelineVO;
+import io.choerodon.devops.api.vo.HostConnectionVO;
 import io.choerodon.devops.app.service.CiCdPipelineRecordService;
+import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.swagger.annotation.Permission;
@@ -30,10 +32,12 @@ public class CiCdPipelineController {
 
     private DevopsCiPipelineService devopsCiPipelineService;
     private CiCdPipelineRecordService ciCdPipelineRecordService;
+    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
 
-    public CiCdPipelineController(DevopsCiPipelineService devopsCiPipelineService, CiCdPipelineRecordService ciCdPipelineRecordService) {
+    public CiCdPipelineController(DevopsCiPipelineService devopsCiPipelineService, CiCdPipelineRecordService ciCdPipelineRecordService, DevopsCdPipelineRecordService devopsCdPipelineRecordService) {
         this.devopsCiPipelineService = devopsCiPipelineService;
         this.ciCdPipelineRecordService = ciCdPipelineRecordService;
+        this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -123,6 +127,18 @@ public class CiCdPipelineController {
             @ApiParam(value = "分支名", required = true)
             @RequestParam(value = "ref") String ref) {
         ciCdPipelineRecordService.executeNew(projectId, pipelineId, gitlabProjectId, ref);
+        return ResponseEntity.noContent().build();
+    }
+
+
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "测试主机连接")
+    @PostMapping(value = "/test_connection")
+    public ResponseEntity<Boolean> testConnection(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestBody HostConnectionVO hostConnectionVO) {
+        devopsCdPipelineRecordService.testConnection(hostConnectionVO);
         return ResponseEntity.noContent().build();
     }
 }

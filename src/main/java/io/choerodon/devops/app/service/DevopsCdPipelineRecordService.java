@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsCdPipelineRecordVO;
+import io.choerodon.devops.api.vo.HostConnectionVO;
 import io.choerodon.devops.infra.dto.DevopsCdPipelineRecordDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -48,4 +49,7 @@ public interface DevopsCdPipelineRecordService {
     void updatePipelineStatusFailed(Long pipelineRecordId, String errorInfo);
 
     DevopsCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId);
+
+
+    Boolean testConnection(HostConnectionVO hostConnectionVO);
 }
