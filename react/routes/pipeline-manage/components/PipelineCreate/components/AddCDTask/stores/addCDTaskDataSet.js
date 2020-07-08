@@ -42,7 +42,8 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
       url: `/devops/v1/projects/${projectId}/envs/list_by_active?active=true`,
     }),
   }, {
-    name: 'bsms',
+    // name: 'bsms',
+    name: 'deployType',
     type: 'string',
     label: '部署模式',
     defaultValue: 'new',
@@ -51,7 +52,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
     type: 'string',
     label: '实例名称',
     dynamicProps: {
-      required: ({ record }) => record.get('type') === 'cdDeploy' && record.get('bsms') === 'new',
+      required: ({ record }) => record.get('type') === 'cdDeploy' && record.get('deployType') === 'create',
     },
   }, {
     name: 'instanceId',
@@ -60,7 +61,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
     textField: 'code',
     valueField: 'id',
     dynamicProps: {
-      required: ({ record }) => record.get('bsms') === 'update',
+      required: ({ record }) => record.get('deployType') === 'update',
       disabled: ({ record }) => !record.get('envId'),
       lookupAxiosConfig: ({ record }) => ({
         method: 'get',
