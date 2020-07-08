@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
-<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper">
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCdStageRecordMapper">
 
-    <select id="queryFirstByStageRecordId"
-            resultType="io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO">
-        SELECT *
-        FROM devops_cd_job_record dcjr
-        WHERE dcjr.stage_record_id = #{stageRecordId}
-        ORDER BY dcjr.sequence ASC
+    <select id="queryFirstByPipelineRecordId"
+            resultType="io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO">
+        SELECT
+        id, pipeline_record_id, stage_id, stage_name,
+        status, trigger_type, execution_time, project_id,
+        object_version_number, created_by, creation_date, last_updated_by, last_update_date
+        FROM devops_cd_stage_record dcsr
+        WHERE dcsr.pipeline_record_id = #{pipelineRecordId}
+        ORDER BY dcsr.sequence ASC
         limit 1
     </select>
 </mapper>
