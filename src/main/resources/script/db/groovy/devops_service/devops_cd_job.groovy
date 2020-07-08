@@ -14,6 +14,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_job.groovy') {
             column(name: 'trigger_value', type: 'VARCHAR(255)', remarks: '触发分支')
 
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目ID')
+            column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '任务顺序')
+            column(name: 'deploy_info_id', type: 'BIGINT UNSIGNED', remarks: '环境部署任务关联的部署信息')
             column(name: 'metadata', type: 'TEXT', remarks: 'job详细信息，定义了job执行内容')
 
 
@@ -23,11 +25,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_job.groovy') {
             column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
             column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
-        }
-    }
-    changeSet(author: 'wanghao', id: '2020-07-06-add-column') {
-        addColumn(tableName: 'devops_cd_job') {
-            column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '任务顺序')
         }
     }
 }

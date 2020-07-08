@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,6 +80,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Value("${devops.ci.default.image}")
     private String defaultCiImage;
 
+    private static final Gson gson = new Gson();
+
     private final DevopsCiPipelineMapper devopsCiPipelineMapper;
     private final DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     private final DevopsCiStageService devopsCiStageService;
@@ -105,6 +108,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final DevopsCdPipelineRecordService devopsCdPipelineRecordService;
     private final DevopsCdJobRecordService devopsCDJobRecordService;
     private final DevopsCdStageRecordService devopsCdStageRecordService;
+    private final DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
 
 
     public DevopsCiPipelineServiceImpl(
@@ -127,7 +131,16 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsConfigService devopsConfigService,
             PermissionHelper permissionHelper,
             AppServiceMapper appServiceMapper,
-            DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper, CiCdPipelineMapper ciCdPipelineMapper, DevopsCdStageService devopsCdStageService, DevopsCdAuditService devopsCdAuditService, PipelineAppDeployService pipelineAppDeployService, DevopsCdJobService devopsCdJobService, DevopsCdPipelineRecordService devopsCdPipelineRecordService, DevopsCdJobRecordService devopsCDJobRecordService, DevopsCdStageRecordService devopsCdStageRecordService) {
+            DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
+            CiCdPipelineMapper ciCdPipelineMapper,
+            DevopsCdStageService devopsCdStageService,
+            DevopsCdAuditService devopsCdAuditService,
+            PipelineAppDeployService pipelineAppDeployService,
+            DevopsCdJobService devopsCdJobService,
+            DevopsCdPipelineRecordService devopsCdPipelineRecordService,
+            DevopsCdJobRecordService devopsCDJobRecordService,
+            DevopsCdStageRecordService devopsCdStageRecordService,
+            DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService) {
         this.devopsCiPipelineMapper = devopsCiPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
         this.devopsCiStageService = devopsCiStageService;
@@ -154,6 +167,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
         this.devopsCDJobRecordService = devopsCDJobRecordService;
         this.devopsCdStageRecordService = devopsCdStageRecordService;
+        this.devopsCdEnvDeployInfoService = devopsCdEnvDeployInfoService;
     }
 
     private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
@@ -1091,10 +1105,18 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         t.setProjectId(projectId);
         t.setStageId(stageId);
         t.setPipelineId(pipelineId);
-        Long jobId = devopsCdJobService.create(ConvertUtils.convertObject(t, DevopsCdJobDTO.class)).getId();
+        DevopsCdJobDTO devopsCdJobDTO = ConvertUtils.convertObject(t, DevopsCdJobDTO.class);
+        // 环境部署需要保存部署配置信息
+        if (JobTypeEnum.CD_DEPLOY.value().equals(t.getType())) {
+            DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.save(gson.fromJson(t.getMetadata(), DevopsCdEnvDeployInfoDTO.class));
+            devopsCdJobDTO.setDeployInfoId(devopsCdEnvDeployInfoDTO.getId());
+        }
+
+        Long jobId = devopsCdJobService.create(devopsCdJobDTO).getId();
         if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
             createUserRel(t.getCdAuditUserIds(), null, null, jobId);
         }
+
     }
 
     private PipelineAppServiceDeployDTO deployVoToDto(PipelineAppServiceDeployVO appServiceDeployVO) {

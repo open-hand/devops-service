@@ -4,8 +4,6 @@ import java.util.List;
 
 import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
 
-import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
-
 public interface DevopsCdJobService {
     DevopsCdJobDTO create(DevopsCdJobDTO devopsCdJobDTO);
 
@@ -24,4 +22,6 @@ public interface DevopsCdJobService {
     String queryTrace(Long gitlabProjectId, Long jobId);
 
     void retryJob(Long projectId, Long gitlabProjectId, Long jobId);
+
+    DevopsCdJobDTO queryById(Long stageId);
 }

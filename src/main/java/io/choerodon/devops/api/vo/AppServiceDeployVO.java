@@ -46,6 +46,8 @@ public class AppServiceDeployVO {
     @ApiModelProperty("记录id")
     private Long recordId;
 
+    private Long deployInfoId;
+
     private DevopsServiceReqVO devopsServiceReqVO;
     private DevopsIngressVO devopsIngressVO;
 
@@ -152,5 +154,13 @@ public class AppServiceDeployVO {
 
     public void setDevopsIngressVO(DevopsIngressVO devopsIngressVO) {
         this.devopsIngressVO = devopsIngressVO;
+    }
+
+    public Long getDeployInfoId() {
+        return deployInfoId;
+    }
+
+    public void setDeployInfoId(Long deployInfoId) {
+        this.deployInfoId = deployInfoId;
     }
 }

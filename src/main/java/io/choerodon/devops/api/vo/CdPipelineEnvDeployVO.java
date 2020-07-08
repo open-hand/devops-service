@@ -8,15 +8,13 @@ package io.choerodon.devops.api.vo;
  * @since 2020/7/6 15:44
  */
 public class CdPipelineEnvDeployVO {
-    private Long envId;
-
-    private String deployType;
-
     private Long appServiceId;
-
-    private String instanceName;
-
+    private Long envId;
     private Long valueId;
+    private Long projectId;
+    private String deployType;
+    private Long instanceId;
+    private String instanceName;
 
     public Long getEnvId() {
         return envId;
