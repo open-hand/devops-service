@@ -159,7 +159,19 @@ maven-deploy-snapshot:
   script:
     - mvn clean install -Dmaven.springboot.skip=true -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_SNAPSHOT_REPOSITORY_ID}::default::${CHOERODON_SNAPSHOT_URL} -Ddeploy.classifier=exec
   except:
-    - tags
+    changes:
+      - .editorconfig
+      - .eslintrc.json
+      - .stylelintrc.json
+      - gulpfile.js
+      - package.json
+      - react/**/*
+      - .gitignore
+      - .github/**/*
+      - .gitlab-ci.yml
+      - "*.md"
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /combine/
 
 maven-deploy-release:
   stage: build
