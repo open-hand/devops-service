@@ -8,6 +8,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotEmpty;
 
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+
 /**
  * @author wanghao
  * @since 2020/4/2 17:00
@@ -37,7 +39,9 @@ public class DevopsCdJobVO {
     @ApiModelProperty("详细信息")
     @NotEmpty(message = "error.job.metadata.cannot.be.null")
     private String metadata;
-
+    private String envName;
+    //审核人员的集合
+    private List<IamUserDTO> iamUserDTOS;
 
     private List<Long> cdAuditUserIds;
     //是否会签
@@ -45,6 +49,22 @@ public class DevopsCdJobVO {
     private Long projectId;
     private Date lastUpdateDate;
     private Long objectVersionNumber;
+
+    public String getEnvName() {
+        return envName;
+    }
+
+    public void setEnvName(String envName) {
+        this.envName = envName;
+    }
+
+    public List<IamUserDTO> getIamUserDTOS() {
+        return iamUserDTOS;
+    }
+
+    public void setIamUserDTOS(List<IamUserDTO> iamUserDTOS) {
+        this.iamUserDTOS = iamUserDTOS;
+    }
 
     public Long getId() {
         return id;
