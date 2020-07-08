@@ -136,5 +136,13 @@
         </foreach>
     </select>
 
+    <update id="updateConfigFieldsNull">
+        UPDATE devops_config
+        SET app_service_id=null,
+            project_id=null,
+            organization_id=null,
+            `name`=null
+        WHERE id = #{configId}
+    </update>
 
 </mapper>

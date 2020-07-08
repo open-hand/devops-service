@@ -21,11 +21,13 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.sonar.UserToken;
 import io.choerodon.devops.api.vo.sonar.UserTokens;
+import io.choerodon.devops.app.service.AppServiceVersionService;
 import io.choerodon.devops.app.service.DevopsConfigService;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
 import io.choerodon.devops.infra.enums.ProjectConfigType;
 import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
+import io.choerodon.devops.infra.mapper.DevopsConfigMapper;
 import io.choerodon.devops.infra.util.RetrofitCallExceptionParse;
 
 /**
@@ -43,6 +45,10 @@ public class DevopsCommandRunner implements CommandLineRunner {
 
     @Autowired
     private DevopsConfigService devopsConfigService;
+    @Autowired
+    private AppServiceVersionService appServiceVersionService;
+    @Autowired
+    private DevopsConfigMapper devopsConfigMapper;
 
     @Value("${services.helm.url}")
     private String servicesHelmUrl;
@@ -103,9 +109,17 @@ public class DevopsCommandRunner implements CommandLineRunner {
         if (oldConfigDTO == null) {
             devopsConfigService.baseCreate(newConfigDTO);
         } else if (!gson.toJson(configDTO).equals(oldConfigDTO.getConfig())) {
-            newConfigDTO.setId(oldConfigDTO.getId());
-            newConfigDTO.setObjectVersionNumber(oldConfigDTO.getObjectVersionNumber());
-            devopsConfigService.baseUpdate(newConfigDTO);
+            // 存在判断是否已经生成服务版本，无服务版本，直接覆盖更新；有服务版本，将原config对应的resourceId设置为null,新建config
+            if (appServiceVersionService.isVersionUseConfig(oldConfigDTO.getId(), oldConfigDTO.getType())) {
+                // 将原有配置的name, app_service, project_id, organization_id 字段置为null
+                devopsConfigMapper.updateConfigFieldsNull(oldConfigDTO.getId());
+                newConfigDTO.setId(null);
+                devopsConfigService.baseCreate(newConfigDTO);
+            } else {
+                newConfigDTO.setId(oldConfigDTO.getId());
+                newConfigDTO.setObjectVersionNumber(oldConfigDTO.getObjectVersionNumber());
+                devopsConfigService.baseUpdate(newConfigDTO);
+            }
         }
     }
 
