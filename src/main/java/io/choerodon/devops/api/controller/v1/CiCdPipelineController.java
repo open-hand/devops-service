@@ -12,6 +12,7 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
 import io.choerodon.devops.api.vo.CiCdPipelineVO;
+import io.choerodon.devops.app.service.CiCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.swagger.annotation.Permission;
@@ -28,9 +29,11 @@ import io.choerodon.swagger.annotation.Permission;
 public class CiCdPipelineController {
 
     private DevopsCiPipelineService devopsCiPipelineService;
+    private CiCdPipelineRecordService ciCdPipelineRecordService;
 
-    public CiCdPipelineController(DevopsCiPipelineService devopsCiPipelineService) {
+    public CiCdPipelineController(DevopsCiPipelineService devopsCiPipelineService, CiCdPipelineRecordService ciCdPipelineRecordService) {
         this.devopsCiPipelineService = devopsCiPipelineService;
+        this.ciCdPipelineRecordService = ciCdPipelineRecordService;
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -119,7 +122,7 @@ public class CiCdPipelineController {
             @RequestParam(value = "gitlab_project_id") Long gitlabProjectId,
             @ApiParam(value = "分支名", required = true)
             @RequestParam(value = "ref") String ref) {
-        devopsCiPipelineService.executeNew(projectId, pipelineId, gitlabProjectId, ref);
+        ciCdPipelineRecordService.executeNew(projectId, pipelineId, gitlabProjectId, ref);
         return ResponseEntity.noContent().build();
     }
 }
