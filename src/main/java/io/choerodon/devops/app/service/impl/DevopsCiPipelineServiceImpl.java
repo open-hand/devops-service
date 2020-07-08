@@ -332,6 +332,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         });
         // ci stage排序
         devopsCiStageVOS = devopsCiStageVOS.stream().sorted(Comparator.comparing(DevopsCiStageVO::getSequence)).collect(Collectors.toList());
+        for (DevopsCiStageVO devopsCiStageVO : devopsCiStageVOS) {
+            devopsCiStageVO.setType(StageType.CI.getType());
+        }
         ciCdPipelineVO.setDevopsCiStageVOS(devopsCiStageVOS);
 
         //查询CD相关的阶段以及JOB

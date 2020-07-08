@@ -16,7 +16,6 @@ import io.choerodon.devops.infra.annotation.WillDeleted;
  * @author wanghao
  * @Date 2020/4/2 17:00
  */
-@WillDeleted
 public class DevopsCiStageVO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,6 +32,15 @@ public class DevopsCiStageVO {
     private Long objectVersionNumber;
 
     private List<DevopsCiJobVO> jobList;
+    private String type;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public Long getId() {
         return id;
