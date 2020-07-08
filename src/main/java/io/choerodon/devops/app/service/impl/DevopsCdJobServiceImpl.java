@@ -1,20 +1,19 @@
 package io.choerodon.devops.app.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCdJobService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdAuditDTO;
 import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
 import io.choerodon.devops.infra.mapper.DevopsCdAuditMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdJobMapper;
-
-import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 
 @Service
 public class DevopsCdJobServiceImpl implements DevopsCdJobService {
@@ -80,5 +79,11 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
     @Override
     public void retryJob(Long projectId, Long gitlabProjectId, Long jobId) {
 
+    }
+
+    @Override
+    public DevopsCdJobDTO queryById(Long stageId) {
+        Assert.notNull(stageId, PipelineCheckConstant.ERROR_STAGE_ID_IS_NULL);
+        return devopsCdJobMapper.selectByPrimaryKey(stageId);
     }
 }

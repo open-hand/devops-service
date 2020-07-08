@@ -29,7 +29,10 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.AppServiceDeployVO;
+import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
+import io.choerodon.devops.api.vo.PipelineWebHookAttributesVO;
+import io.choerodon.devops.api.vo.PipelineWebHookVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.*;
@@ -140,6 +143,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private TransactionalProducer producer;
     @Autowired
     private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
+    @Autowired
+    private GitlabServiceClientOperator getGitlabServiceClientOperator;
+    @Autowired
+    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
 
     @Override
     @Transactional
@@ -244,6 +251,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         devopsCdJobRecordDTO.setTriggerType(job.getTriggerType());
         devopsCdJobRecordDTO.setTriggerValue(job.getTriggerType());
         devopsCdJobRecordDTO.setMetadata(job.getMetadata());
+        devopsCdJobRecordDTO.setJobId(job.getId());
+        devopsCdJobRecordDTO.setDeployInfoId(job.getDeployInfoId());
 
         devopsCdJobRecordService.save(devopsCdJobRecordDTO);
 
@@ -411,28 +420,29 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         //获取数据
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
         CustomContextUtil.setUserContext(devopsCdJobRecordDTO.getCreatedBy());
-        CdPipelineEnvDeployVO cdPipelineEnvDeployVO = gson.fromJson(devopsCdJobRecordDTO.getMetadata(), CdPipelineEnvDeployVO.class);
+        DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
         AppServiceVersionDTO appServiceServiceE = getDeployVersion(pipelineRecordId);
 
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
+        appServiceDeployVO.setDeployInfoId(devopsCdJobRecordDTO.getDeployInfoId());
         try {
-            if (CommandType.CREATE.getType().equals(cdPipelineEnvDeployVO.getDeployType())) {
+            if (CommandType.CREATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
                 appServiceDeployVO.setAppServiceVersionId(appServiceServiceE.getId());
-                appServiceDeployVO.setEnvironmentId(cdPipelineEnvDeployVO.getEnvId());
-                appServiceDeployVO.setValues(devopsDeployValueService.baseQueryById(cdPipelineEnvDeployVO.getValueId()).getValue());
-                appServiceDeployVO.setAppServiceId(cdPipelineEnvDeployVO.getAppServiceId());
+                appServiceDeployVO.setEnvironmentId(devopsCdEnvDeployInfoDTO.getEnvId());
+                appServiceDeployVO.setValues(devopsDeployValueService.baseQueryById(devopsCdEnvDeployInfoDTO.getValueId()).getValue());
+                appServiceDeployVO.setAppServiceId(devopsCdEnvDeployInfoDTO.getAppServiceId());
                 appServiceDeployVO.setType(CommandType.CREATE.getType());
                 appServiceDeployVO.setRecordId(devopsCdJobRecordDTO.getId());
-                appServiceDeployVO.setValueId(cdPipelineEnvDeployVO.getValueId());
-            } else if (CommandType.UPDATE.getType().equals(cdPipelineEnvDeployVO.getDeployType())) {
-                AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(cdPipelineEnvDeployVO.getInstanceName(), cdPipelineEnvDeployVO.getEnvId());
+                appServiceDeployVO.setValueId(devopsCdEnvDeployInfoDTO.getValueId());
+            } else if (CommandType.UPDATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
+                AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(devopsCdEnvDeployInfoDTO.getInstanceName(), devopsCdEnvDeployInfoDTO.getEnvId());
                 appServiceDeployVO.setAppServiceVersionId(appServiceServiceE.getId());
-                appServiceDeployVO.setEnvironmentId(cdPipelineEnvDeployVO.getEnvId());
-                appServiceDeployVO.setValues(devopsDeployValueService.baseQueryById(cdPipelineEnvDeployVO.getValueId()).getValue());
-                appServiceDeployVO.setAppServiceId(cdPipelineEnvDeployVO.getAppServiceId());
-                appServiceDeployVO.setType(CommandType.CREATE.getType());
+                appServiceDeployVO.setEnvironmentId(devopsCdEnvDeployInfoDTO.getEnvId());
+                appServiceDeployVO.setValues(devopsDeployValueService.baseQueryById(devopsCdEnvDeployInfoDTO.getValueId()).getValue());
+                appServiceDeployVO.setAppServiceId(devopsCdEnvDeployInfoDTO.getAppServiceId());
+                appServiceDeployVO.setType(CommandType.UPDATE.getType());
                 appServiceDeployVO.setRecordId(devopsCdJobRecordDTO.getId());
-                appServiceDeployVO.setValueId(cdPipelineEnvDeployVO.getValueId());
+                appServiceDeployVO.setValueId(devopsCdEnvDeployInfoDTO.getValueId());
                 appServiceDeployVO.setInstanceId(instanceE.getId());
                 appServiceDeployVO.setInstanceName(instanceE.getCode());
 
@@ -446,6 +456,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         return;
                     }
                 }
+                // todo
+                // 计算commitDate
+                // 如果要部署的版本的commitDate落后于环境中已经部署的版本，则跳过
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy.M.dd");
                 String[] oldParams = appServiceVersionRespVO.getVersion().split("-");
                 String[] newParams = appServiceServiceE.getVersion().split("-");
@@ -473,7 +486,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                             .withJson(input)
                             .withSagaCode(DEVOPS_PIPELINE_ENV_AUTO_DEPLOY_INSTANCE)
                             .withRefType("env")
-                            .withRefId(cdPipelineEnvDeployVO.getEnvId().toString())
+                            .withRefId(devopsCdEnvDeployInfoDTO.getEnvId().toString())
                             .withLevel(ResourceLevel.PROJECT)
                             .withSourceId(devopsCdJobRecordDTO.getProjectId()),
                     builder -> {

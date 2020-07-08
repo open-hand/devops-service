@@ -20,6 +20,7 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String name;
+    private Long jobId;
     private Long stageRecordId;
     private String type;
     private String status;
@@ -40,6 +41,7 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
 
     @ApiModelProperty("主机部署 制品库详情")
     private String deployMetadata;
+    private Long deployInfoId;
 
     public Long getId() {
         return id;
@@ -169,11 +171,28 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
         this.durationSeconds = durationSeconds;
     }
 
+    public Long getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(Long jobId) {
+        this.jobId = jobId;
+    }
+
+    public Long getDeployInfoId() {
+        return deployInfoId;
+    }
+
+    public void setDeployInfoId(Long deployInfoId) {
+        this.deployInfoId = deployInfoId;
+    }
+
     @Override
     public String toString() {
         return "DevopsCdJobRecordDTO{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", jobId=" + jobId +
                 ", stageRecordId=" + stageRecordId +
                 ", type='" + type + '\'' +
                 ", status='" + status + '\'' +
@@ -188,6 +207,7 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
                 ", finishedDate=" + finishedDate +
                 ", durationSeconds=" + durationSeconds +
                 ", deployMetadata='" + deployMetadata + '\'' +
+                ", deployInfoId=" + deployInfoId +
                 '}';
     }
 }

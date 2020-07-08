@@ -34,6 +34,7 @@ import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
@@ -97,6 +98,10 @@ public class DevopsSagaHandler {
     private DevopsCdStageRecordService devopsCdStageRecordService;
     @Autowired
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
+    @Autowired
+    private DevopsCdJobService devopsCdJobService;
+    @Autowired
+    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
 
     /**
      * devops创建环境
@@ -375,6 +380,8 @@ public class DevopsSagaHandler {
         Long pipelineRecordId = devopsCdStageRecordDTO.getPipelineRecordId();
         try {
             AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(appServiceDeployVO, true);
+            // 对于新建实例的部署任务，部署成功后修改为替换实例
+            updateDeployTypeToUpdate(appServiceDeployVO.getDeployInfoId(), appServiceInstanceVO);
             // 更新job状态为success
             devopsCdJobRecordService.updateJobStatusSuccess(devopsCdJobRecordDTO.getId());
             LOGGER.info("create pipeline auto deploy instance success");
@@ -390,6 +397,20 @@ public class DevopsSagaHandler {
                     userId, GitUserNameUtil.getEmail(), new HashMap<>());
             LOGGER.info("send pipeline failed message to the user. The user id is {}", userId);
         }
+    }
+
+    /**
+     * 更新部署配置为替换实例
+     *
+     * @param deployInfoId
+     * @param appServiceInstanceVO
+     */
+    private void updateDeployTypeToUpdate(Long deployInfoId, AppServiceInstanceVO appServiceInstanceVO) {
+        DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(deployInfoId);
+        devopsCdEnvDeployInfoDTO.setDeployType(CommandType.UPDATE.getType());
+        devopsCdEnvDeployInfoDTO.setInstanceId(appServiceInstanceVO.getId());
+        devopsCdEnvDeployInfoDTO.setInstanceName(appServiceInstanceVO.getCode());
+        devopsCdEnvDeployInfoService.update(devopsCdEnvDeployInfoDTO);
     }
 
     /**

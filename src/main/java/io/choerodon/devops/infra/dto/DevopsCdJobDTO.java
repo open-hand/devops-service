@@ -1,7 +1,11 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 import io.swagger.annotations.ApiModelProperty;
-import javax.persistence.*;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -42,6 +46,7 @@ public class DevopsCdJobDTO extends AuditDomain {
     private Integer countersigned;
     @ApiModelProperty("任务顺序")
     private Long sequence;
+    private Long deployInfoId;
 
     public Long getId() {
         return id;
@@ -131,6 +136,14 @@ public class DevopsCdJobDTO extends AuditDomain {
 
     public void setPipelineId(Long pipelineId) {
         this.pipelineId = pipelineId;
+    }
+
+    public Long getDeployInfoId() {
+        return deployInfoId;
+    }
+
+    public void setDeployInfoId(Long deployInfoId) {
+        this.deployInfoId = deployInfoId;
     }
 
     @Override
