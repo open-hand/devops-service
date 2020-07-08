@@ -154,6 +154,20 @@ tag combine:
   only:
     - tags
 
+maven-deploy-snapshot:
+  stage: build
+  script:
+    - mvn clean install -Dmaven.springboot.skip=true -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_SNAPSHOT_REPOSITORY_ID}::default::${CHOERODON_SNAPSHOT_URL} -Ddeploy.classifier=exec
+  except:
+    - tags
+
+maven-deploy-release:
+  stage: build
+  script:
+    - mvn clean install -Dmaven.springboot.skip=true -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_RELEASE_REPOSITORY_ID}::default::${CHOERODON_RELEASE_URL} -Ddeploy.classifier=exec
+  only:
+    - tags
+
 .auto_devops: &auto_devops |
   http_status_code=`curl -o .auto_devops.sh -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci?token=${Token}&type=microservice"`
   if [ "$http_status_code" != "200" ]; then
