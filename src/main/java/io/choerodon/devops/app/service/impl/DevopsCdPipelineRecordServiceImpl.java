@@ -11,6 +11,7 @@ import com.google.gson.Gson;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.connection.channel.direct.Session;
+import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -49,6 +50,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdPipelineRecordMapper;
+import io.choerodon.devops.infra.mapper.DevopsCdStageRecordMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.PageRequestUtil;
@@ -80,9 +82,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private static final Gson gson = new Gson();
 
     @Autowired
-    private DevopsCdStageRecordService stageRecordService;
-
-    @Autowired
     private DevopsCdAuditRecordService devopsCdAuditRecordService;
 
     @Autowired
@@ -96,6 +95,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Autowired
     private DevopsCdStageRecordService devopsCdStageRecordService;
+
+    @Autowired
+    private DevopsCdStageRecordMapper devopsCdStageRecordMapper;
 
     @Autowired
     private RdupmClientOperator rdupmClientOperator;
@@ -134,7 +136,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
      * 为此workflow下所有stage创建记录
      */
     @Override
-    public DevopsPipelineDTO createCDWorkFlowDTO(Long pipelineRecordId) {
+    public DevopsPipelineDTO createCDWorkFlowDTO(Long pipelineRecordId, Boolean isRetry) {
         // 1.
         DevopsPipelineDTO devopsPipelineDTO = new DevopsPipelineDTO();
         devopsPipelineDTO.setPipelineRecordId(pipelineRecordId);
@@ -144,7 +146,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
         // 2.
         List<DevopsPipelineStageDTO> devopsPipelineStageDTOS = new ArrayList<>();
-        List<DevopsCdStageRecordDTO> stageRecordDTOList = stageRecordService.queryByPipelineRecordId(pipelineRecordId);
+        List<DevopsCdStageRecordDTO> stageRecordDTOList;
+        if (BooleanUtils.isTrue(isRetry)) {
+            stageRecordDTOList = devopsCdStageRecordMapper.queryRetryStage(pipelineRecordId);
+        } else {
+            stageRecordDTOList = devopsCdStageRecordService.queryByPipelineRecordId(pipelineRecordId);
+        }
+
         if (CollectionUtils.isEmpty(stageRecordDTOList)) {
             return null;
         }
@@ -154,17 +162,24 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             DevopsPipelineStageDTO stageDTO = new DevopsPipelineStageDTO();
             DevopsCdStageRecordDTO stageRecordDTO = stageRecordDTOList.get(i);
             stageDTO.setStageRecordId(stageRecordDTO.getId());
-            if (stageRecordDTO.getTriggerType().equals(DeployType.MANUAL.getType())) {
-                List<DevopsCdAuditRecordDTO> stageAuditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(stageRecordDTO.getId());
-                if (CollectionUtils.isEmpty(stageAuditRecordDTOS)) {
-                    throw new CommonException("error.audit.stage.noUser");
+            if (!isRetry || i > 0) {
+                if (stageRecordDTO.getTriggerType().equals(DeployType.MANUAL.getType())) {
+                    List<DevopsCdAuditRecordDTO> stageAuditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(stageRecordDTO.getId());
+                    if (CollectionUtils.isEmpty(stageAuditRecordDTOS)) {
+                        throw new CommonException("error.audit.stage.noUser");
+                    }
+                    List<String> users = stageAuditRecordDTOS.stream().map(t -> TypeUtil.objToString(t.getUserId())).collect(Collectors.toList());
+                    stageDTO.setUsernames(users);
+                    stageDTO.setMultiAssign(users.size() > 1);
                 }
-                List<String> users = stageAuditRecordDTOS.stream().map(t -> TypeUtil.objToString(t.getUserId())).collect(Collectors.toList());
-                stageDTO.setUsernames(users);
-                stageDTO.setMultiAssign(users.size() > 1);
             }
             // 4.
-            List<DevopsCdJobRecordDTO> jobRecordDTOList = devopsCdJobRecordService.queryByStageRecordId(stageRecordDTO.getId());
+            List<DevopsCdJobRecordDTO> jobRecordDTOList;
+            if (!isRetry || i > 0) {
+                jobRecordDTOList = devopsCdJobRecordService.queryByStageRecordId(stageRecordDTO.getId());
+            } else {
+                jobRecordDTOList = devopsCdJobRecordMapper.queryRetryJob(stageRecordDTO.getId());
+            }
             List<DevopsPipelineTaskDTO> taskDTOList = new ArrayList<>();
             if (!CollectionUtils.isEmpty(jobRecordDTOList)) {
                 jobRecordDTOList.forEach(jobRecordDTO -> {
@@ -195,6 +210,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
         devopsPipelineDTO.setStages(devopsPipelineStageDTOS);
         return devopsPipelineDTO;
+    }
+
+    @Override
+    public DevopsPipelineDTO createCDWorkFlowDTO(Long pipelineRecordId) {
+        return createCDWorkFlowDTO(pipelineRecordId, false);
     }
 
     @Override
@@ -455,6 +475,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.JAR_DEPLOY.getValue())) {
             retryHostJarDeploy(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         }
+        devopsCdStageRecordService.updateStatusById(cdStageRecordId, PipelineStatus.SUCCESS.toValue());
+        updateStatusById(pipelineRecordId, PipelineStatus.SUCCESS.toValue());
     }
 
     private void retryHostImageDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
