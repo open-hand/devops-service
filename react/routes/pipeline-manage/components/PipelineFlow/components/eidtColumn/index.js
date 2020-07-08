@@ -19,6 +19,7 @@ const jobTask = {
   chart: '发布Chart',
   cdDeploy: '部署',
   cdHost: '主机部署',
+  cdAudit: '人工卡点',
 };
 const modalStyle = {
   width: 380,

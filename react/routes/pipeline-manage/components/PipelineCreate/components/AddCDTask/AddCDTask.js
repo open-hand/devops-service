@@ -49,6 +49,7 @@ export default observer(() => {
   const [valueIdValues, setValueIdValues] = useState('');
   const [customValues, setCustomValues] = useState('');
   const [imageDeployValues, setImageDeployValues] = useState('');
+  const [jarValues, setJarValues] = useState('');
 
   const handleAdd = async () => {
     const result = await ADDCDTaskDataSet.validate();
@@ -56,6 +57,7 @@ export default observer(() => {
       const ds = JSON.parse(JSON.stringify(ADDCDTaskDataSet.toData()[0]));
       const data = {
         ...ds,
+        triggerValue: typeof ds.triggerValue === 'object' ? ds.triggerValue?.join(',') : ds.triggerValue,
         metadata: (function () {
           if (ds.type === 'cdDeploy') {
             ds.value = Base64.encode(valueIdValues);
@@ -70,6 +72,15 @@ export default observer(() => {
                 matchType: ds.matchType,
                 matchContent: ds.matchContent,
                 value: Base64.encode(imageDeployValues),
+              };
+            } else if (ds.mode === 'jarDeploy') {
+              ds.jarDeploy = {
+                serverName: ds.serverName,
+                neRepositoryName: ds.neRepositoryName,
+                groupId: ds.groupId,
+                artifactId: ds.artifactId,
+                versionRegular: ds.versionRegular,
+                value: Base64.encode(jarValues),
               };
             }
           }
@@ -86,6 +97,7 @@ export default observer(() => {
 
   useEffect(() => {
     if (jobDetail) {
+      let newCdAuditUserIds;
       if (jobDetail.type === 'cdDeploy') {
         const { value } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
         setValueIdValues(Base64.decode(value));
@@ -96,11 +108,18 @@ export default observer(() => {
           setCustomValues(Base64.decode(metadata.customize));
         } else if (mode === 'imageDeploy') {
           setImageDeployValues(Base64.decode(metadata.imageDeploy.value));
+        } else if (mode === 'jarDeploy') {
+          setJarValues(Base64.decode(metadata.jarDeploy.value));
         }
+      } else if (jobDetail.type === 'cdAudit') {
+        const { cdAuditUserIds } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
+        newCdAuditUserIds = cdAuditUserIds;
       }
       delete jobDetail.metadata;
       const newJobDetail = {
         ...jobDetail,
+        cdAuditUserIds: newCdAuditUserIds,
+        triggerValue: jobDetail.triggerType === 'regex' ? jobDetail.triggerValue : jobDetail.triggerValue?.split(','),
       };
       ADDCDTaskDataSet.loadData([newJobDetail]);
     }
@@ -153,13 +172,14 @@ export default observer(() => {
           <Select newLine colSpan={3} name="serverName" />,
           <Select colSpan={3} name="neRepositoryName" />,
           <Select colSpan={3} name="groupId" />,
-          <TextField colSpan={3} name="artifactId" />,
+          <Select colSpan={3} name="artifactId" />,
           <TextField colSpan={6} name="versionRegular" />,
           <YamlEditor
             colSpan={6}
             newLine
-            readOnly
-            value="123"
+            readOnly={false}
+            value={jarValues}
+            onValueChange={(data) => setJarValues(data)}
           />,
         ],
       };
@@ -323,9 +343,16 @@ export default observer(() => {
               <div style={{ width: '51.1%', marginRight: 8 }}>
                 <Select style={{ width: '100%' }} name="cdAuditUserIds" />
               </div>
-              <div style={{ width: 'calc(100% - 51.1% - 8px)' }}>
-                <Select style={{ width: '100%' }} name="countersigned" />
-              </div>
+              {
+                ADDCDTaskDataSet?.current?.get('cdAuditUserIds')?.length > 1 && (
+                  <div style={{ width: 'calc(100% - 51.1% - 8px)' }}>
+                    <Select style={{ width: '100%' }} name="countersigned">
+                      <Option value={1}>会签</Option>
+                      <Option value={0}>或签</Option>
+                    </Select>
+                  </div>
+                )
+              }
             </div>
           )
         }
