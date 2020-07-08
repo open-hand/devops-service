@@ -8,6 +8,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_env_deploy_info.groovy') {
             }
             column(name: 'app_service_id', type: 'BIGINT UNSIGNED', remarks: '应用服务Id')
             column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境Id')
+            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id')
             column(name: 'value_id', type: 'BIGINT UNSIGNED', remarks: 'valueId')
             column(name: 'deploy_type', type: 'VARCHAR(100)', remarks: '部署类型：create 新建实例， update 替换实例')
             column(name: 'instance_id', type: 'BIGINT UNSIGNED', remarks: '实例ID')

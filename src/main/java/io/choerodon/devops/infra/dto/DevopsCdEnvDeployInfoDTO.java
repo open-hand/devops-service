@@ -26,6 +26,7 @@ public class DevopsCdEnvDeployInfoDTO extends AuditDomain {
     private Long appServiceId;
     private Long envId;
     private Long valueId;
+    private Long projectId;
     private String deployType;  // 部署类型：新建实例 create 替换实例 update
     private Long instanceId;    // 替换实例时需要
     private String instanceName;    // 新建实例时需要
@@ -86,13 +87,22 @@ public class DevopsCdEnvDeployInfoDTO extends AuditDomain {
         this.instanceName = instanceName;
     }
 
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
     @Override
     public String toString() {
-        return "DevopsCdEnvDeployInfo{" +
+        return "DevopsCdEnvDeployInfoDTO{" +
                 "id=" + id +
                 ", appServiceId=" + appServiceId +
                 ", envId=" + envId +
                 ", valueId=" + valueId +
+                ", projectId=" + projectId +
                 ", deployType='" + deployType + '\'' +
                 ", instanceId=" + instanceId +
                 ", instanceName='" + instanceName + '\'' +
