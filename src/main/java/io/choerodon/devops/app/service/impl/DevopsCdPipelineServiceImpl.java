@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_PIPELINE_ENV_AUTO_DEPLOY_INSTANCE;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -29,13 +28,11 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.vo.AppServiceDeployVO;
-import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
-import io.choerodon.devops.api.vo.PipelineWebHookAttributesVO;
-import io.choerodon.devops.api.vo.PipelineWebHookVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -62,7 +59,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private static final String DELETE_PIPELINE_FAILED = "delete.pipeline.failed";
 
     private static final String ERROR_PIPELINE_STATUS_CHANGED = "error.pipeline.status.changed";
-
+    private static final Integer ADMIN = 1;
 
     private static final String STAGE_NAME = "stageName";
 
@@ -143,8 +140,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private TransactionalProducer producer;
     @Autowired
     private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
-    @Autowired
-    private GitlabServiceClientOperator getGitlabServiceClientOperator;
     @Autowired
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
 
@@ -448,7 +443,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
                 AppServiceInstanceDTO preInstance = appServiceInstanceService.baseQuery(appServiceDeployVO.getInstanceId());
                 DevopsEnvCommandDTO preCommand = devopsEnvCommandService.baseQuery(preInstance.getCommandId());
-                AppServiceVersionRespVO appServiceVersionRespVO = appServiceVersionService.queryById(preCommand.getObjectVersionId());
+                AppServiceVersionRespVO deploydAppServiceVersion = appServiceVersionService.queryById(preCommand.getObjectVersionId());
                 if (preCommand.getObjectVersionId().equals(appServiceDeployVO.getAppServiceVersionId())) {
                     String oldValue = appServiceInstanceService.baseQueryValueByInstanceId(appServiceDeployVO.getInstanceId());
                     if (appServiceDeployVO.getValues().trim().equals(oldValue.trim())) {
@@ -456,20 +451,18 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         return;
                     }
                 }
-                // todo
+
+                AppServiceRepVO appServiceRepVO = appServiceService.query(devopsCdEnvDeployInfoDTO.getProjectId(), devopsCdEnvDeployInfoDTO.getAppServiceId());
+
+                // 要部署版本的commit
+                CommitDTO currentCommit = gitlabServiceClientOperator.queryCommit(appServiceRepVO.getGitlabProjectId().intValue(), appServiceServiceE.getCommit(), ADMIN);
+                // 已经部署版本的commit
+                CommitDTO deploydCommit = gitlabServiceClientOperator.queryCommit(appServiceRepVO.getGitlabProjectId().intValue(), deploydAppServiceVersion.getCommit(), ADMIN);
+
                 // 计算commitDate
                 // 如果要部署的版本的commitDate落后于环境中已经部署的版本，则跳过
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy.M.dd");
-                String[] oldParams = appServiceVersionRespVO.getVersion().split("-");
-                String[] newParams = appServiceServiceE.getVersion().split("-");
-                String newDate = newParams[0].trim();
-                String oldDate = oldParams[0].trim();
-                String newTimestamp = newParams[1].trim();
-                String oldTimestamp = oldParams[1].trim();
-
                 // 如果现在部署的版本落后于已经部署的版本则跳过
-                if ((newDate.equals(oldDate) && Long.valueOf(newTimestamp).compareTo(Long.valueOf(oldTimestamp)) < 0)
-                        || sdf.parse(newDate).before(sdf.parse(oldDate))) {
+                if (currentCommit.getCommittedDate().before(deploydCommit.getCommittedDate())) {
                     devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
                     return;
                 }
