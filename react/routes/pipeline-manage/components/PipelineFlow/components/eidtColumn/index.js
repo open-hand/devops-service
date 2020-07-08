@@ -134,7 +134,6 @@ const EditItem = (props) => {
 
 export default observer((props) => {
   const { jobList, sequence, name, columnIndex, edit, appServiceId, appServiceName, image, type, isLast } = props;
-
   const {
     addStepDs,
     editBlockStore, stepStore,
@@ -199,10 +198,11 @@ export default observer((props) => {
     </div> : null
   );
 
-  const openAddStageModal = (optType, curType) => {
+  const openAddStageModal = ({ optType, curType }) => {
     const title = optType === 'create' ? '添加阶段' : '修改阶段信息';
     if (optType === 'edit') {
       addStepDs.current.set('step', name);
+      addStepDs.current.set('type', curType || 'CI');
     }
     const optsFun = optType === 'create' ? createNewStage : editStage;
     Modal.open({
@@ -254,14 +254,14 @@ export default observer((props) => {
           <span className="c7n-piplineManage-edit-title-text">添加任务</span>
           {
             type === 'CI' && (
-            <Button
-              type="primary"
-              icon="find_in_page-o"
-              className="c7n-piplineManage-edit-title-btn"
-              onClick={openVariableModal}
-            >
-              查看流水线变量
-            </Button>
+              <Button
+                type="primary"
+                icon="find_in_page-o"
+                className="c7n-piplineManage-edit-title-btn"
+                onClick={openVariableModal}
+              >
+                查看流水线变量
+              </Button>
             )
           }
         </Fragment>
@@ -311,7 +311,9 @@ export default observer((props) => {
             shape="circle"
             size="small"
             icon="mode_edit"
-            onClick={() => openAddStageModal('edit')}
+            onClick={
+              () => openAddStageModal({ optType: 'edit', curType: type })
+            }
             className="c7n-piplineManage-edit-column-header-btnGroup-btn"
           />
           {stageLength > 1 && <Button
@@ -339,7 +341,7 @@ export default observer((props) => {
         shape="circle"
         size="small"
         className="c7n-piplineManage-edit-column-addBtn"
-        onClick={openAddStageModal.bind(this, 'create', type)}
+        onClick={() => openAddStageModal({ optType: 'create', curType: type })}
       />
       <div
         className="c7n-piplineManage-edit-column-arrow"
