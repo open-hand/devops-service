@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,5 +33,21 @@ public class CiCdPipelineRecordController {
             @ApiParam(value = "cd流水线记录id", required = true)
             @RequestParam(value = "cd_pipeline_record_id") Long pipelineRecordId) {
         return ResponseEntity.ok(ciCdPipelineRecordService.queryPipelineRecordDetails(projectId, gitlabPipelineId, pipelineRecordId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "重试整条流水线")
+    @GetMapping("/retry")
+    public ResponseEntity retryPipeline(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "cd流水线记录id", required = true)
+            @RequestParam(value = "cd_pipeline_record_id") Long pipelineRecordId,
+            @ApiParam(value = "gitlab项目ID", required = true)
+            @RequestParam("gitlab_pipeline_id") Long gitlabPipelineId,
+            @ApiParam(value = "流水线ID", required = true)
+            @RequestParam("gitlab_project_id") Long gitlabProjectId) {
+        ciCdPipelineRecordService.retryPipeline(projectId, pipelineRecordId, gitlabPipelineId, gitlabProjectId);
+        return Results.success();
     }
 }

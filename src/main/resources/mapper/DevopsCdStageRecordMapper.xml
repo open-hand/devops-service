@@ -14,4 +14,34 @@
         ORDER BY dcsr.sequence ASC
         limit 1
     </select>
+
+    <select id="queryRetryStage"
+            resultType="io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO">
+        SELECT
+            dcsr1.*
+        FROM
+            devops_cd_stage_record dcsr1
+        WHERE
+            dcsr1.pipeline_record_id = #{pipelineRecordId}
+            AND dcsr1.sequence >= (
+                SELECT
+                    dcsr.sequence
+                FROM
+                    devops_cd_stage_record dcsr
+                WHERE
+                    dcsr.pipeline_record_id = #{pipelineRecordId}
+                    AND (dcsr.`status` = 'FAILED' or  dcsr.status='CANCELED')
+            )
+    </select>
+
+    <select id="queryFailedOrCancelStage"
+            resultType="io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO">
+            SELECT
+                dcsr.*
+            FROM
+                devops_cd_stage_record dcsr
+            WHERE
+                dcsr.pipeline_record_id = #{pipelineRecordId}
+                AND (dcsr.`status` = 'FAILED' or  dcsr.status='CANCELED')
+    </select>
 </mapper>

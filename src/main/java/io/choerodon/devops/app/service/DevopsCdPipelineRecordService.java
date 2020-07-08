@@ -23,6 +23,8 @@ public interface DevopsCdPipelineRecordService {
 
     DevopsPipelineDTO createCDWorkFlowDTO(Long pipelineRecordId);
 
+    DevopsPipelineDTO createCDWorkFlowDTO(Long pipelineRecordId, Boolean isRetry);
+
     /**
      * 主机模式 镜像部署
      */
