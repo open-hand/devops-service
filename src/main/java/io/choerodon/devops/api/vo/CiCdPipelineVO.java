@@ -48,27 +48,9 @@ public class CiCdPipelineVO {
     private List<DevopsCdStageVO> devopsCdStageVOS;
 
     private Boolean hasMoreRecords;
-
-    private List<DevopsCiPipelineRecordVO> devopsCiPipelineRecordVOS;
-
-    private List<DevopsCdPipelineRecordVO> devopsCdPipelineRecordVOS;
-
-
-    public List<DevopsCiPipelineRecordVO> getDevopsCiPipelineRecordVOS() {
-        return devopsCiPipelineRecordVOS;
-    }
-
-    public void setDevopsCiPipelineRecordVOS(List<DevopsCiPipelineRecordVO> devopsCiPipelineRecordVOS) {
-        this.devopsCiPipelineRecordVOS = devopsCiPipelineRecordVOS;
-    }
-
-    public List<DevopsCdPipelineRecordVO> getDevopsCdPipelineRecordVOS() {
-        return devopsCdPipelineRecordVOS;
-    }
-
-    public void setDevopsCdPipelineRecordVOS(List<DevopsCdPipelineRecordVO> devopsCdPipelineRecordVOS) {
-        this.devopsCdPipelineRecordVOS = devopsCdPipelineRecordVOS;
-    }
+    //cicd 流水线下的执行记录
+    private List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS;
+    private CiCdPipelineRecordVO ciCdPipelineRecordVO;
 
     private Long objectVersionNumber;
 
@@ -81,6 +63,22 @@ public class CiCdPipelineVO {
     private Long createdBy;
     private Boolean execute;
     private String envName;
+
+    public List<CiCdPipelineRecordVO> getCiCdPipelineRecordVOS() {
+        return ciCdPipelineRecordVOS;
+    }
+
+    public void setCiCdPipelineRecordVOS(List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS) {
+        this.ciCdPipelineRecordVOS = ciCdPipelineRecordVOS;
+    }
+
+    public CiCdPipelineRecordVO getCiCdPipelineRecordVO() {
+        return ciCdPipelineRecordVO;
+    }
+
+    public void setCiCdPipelineRecordVO(CiCdPipelineRecordVO ciCdPipelineRecordVO) {
+        this.ciCdPipelineRecordVO = ciCdPipelineRecordVO;
+    }
 
     public Long getId() {
         return id;

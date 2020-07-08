@@ -152,6 +152,7 @@ public class DevopsCdJobRecordVO {
     }
 
     public void setJobExecuteTime() {
+        if (this.startedDate == null || this.finishedDate == null) return;
         LocalDateTime start = startedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         LocalDateTime finished = finishedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         this.executeTime = Duration.between(start, finished).getSeconds();
