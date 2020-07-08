@@ -40,4 +40,19 @@ public class DevopsCdPipelineAuditController {
         devopsCdPipelineService.auditStage(projectId, pipelineRecordId, stageRecordId, result);
         return Results.success();
     }
+
+    /**
+     * 审核人工卡点任务
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "审核人工卡点任务")
+    @PostMapping("/stage_records/{stage_record_id}/job_records/{job_record_id}/audit")
+    public ResponseEntity<Void> auditJob(@PathVariable(value = "project_id") Long projectId,
+                                         @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,
+                                         @PathVariable(value = "stage_record_id") Long stageRecordId,
+                                         @PathVariable(value = "job_record_id") Long jobRecordId,
+                                         @PathVariable(value = "result") String result) {
+        devopsCdPipelineService.auditJob(projectId, pipelineRecordId, stageRecordId, jobRecordId, result);
+        return Results.success();
+    }
 }

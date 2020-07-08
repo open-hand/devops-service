@@ -166,5 +166,17 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
         update(devopsCdJobRecordDTO);
     }
 
+    @Override
+    @Transactional
+    public void updateJobStatusStopByStageRecordId(Long stageRecordId) {
+        List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = queryByStageRecordId(stageRecordId);
+        devopsCdJobRecordDTOS.forEach(jobrecord -> {
+            jobrecord.setStatus(PipelineStatus.STOP.toValue());
+            if (devopsCdJobRecordMapper.updateByPrimaryKeySelective(jobrecord) != 1) {
+                throw new CommonException(ERROR_UPDATE_JOB_RECORD_FAILED);
+            }
+        });
+    }
+
 
 }

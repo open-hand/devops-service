@@ -9,8 +9,10 @@ import java.util.stream.Collectors;
 import org.hzero.boot.message.entity.Receiver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCdAuditRecordService;
 import io.choerodon.devops.app.service.SendNotificationService;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
@@ -30,6 +32,8 @@ import io.choerodon.devops.infra.mapper.DevopsCdAuditRecordMapper;
 public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordService {
 
     private static final String STAGE_NAME = "stageName";
+
+    private static final String ERROR_UPDATE_AUDIT_RECORD = "error.update.audit.record";
 
     @Autowired
     private DevopsCdAuditRecordMapper devopsCdAuditRecordMapper;
@@ -109,5 +113,13 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
         HashMap<String, String> params = new HashMap<>();
         params.put(STAGE_NAME, devopsCdJobRecordDTO.getName());
         sendNotificationService.sendPipelineNotice(pipelineRecordId, MessageCodeConstants.PIPELINE_AUDIT, userList, params);
+    }
+
+    @Override
+    @Transactional
+    public void update(DevopsCdAuditRecordDTO devopsCdAuditRecordDTO) {
+        if (devopsCdAuditRecordMapper.updateByPrimaryKeySelective(devopsCdAuditRecordDTO) != 1) {
+            throw new CommonException(ERROR_UPDATE_AUDIT_RECORD);
+        }
     }
 }

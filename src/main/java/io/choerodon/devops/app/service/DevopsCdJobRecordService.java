@@ -56,4 +56,12 @@ public interface DevopsCdJobRecordService {
     void retryCdJob(Long projectId, Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
 
     void updateJobStatusSuccess(Long jobRecordId);
+
+    /**
+     * 更新阶段下的所有job状态为stop
+     *
+     * @param stageRecordId
+     */
+    void updateJobStatusStopByStageRecordId(Long stageRecordId);
+
 }

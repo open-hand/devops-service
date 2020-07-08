@@ -218,4 +218,6 @@ public interface SendNotificationService {
     void sendPipelineNotice(Long pipelineRecordId, String type, List<Receiver> receivers, @Nullable Map<String, String> params);
 
     void sendPipelineAuditMassage(String type, String auditUser, Long pipelineRecordId, String stageName, Long stageId);
+
+    void sendPipelineAuditMassage(String type, List<Long> auditUser, Long pipelineRecordId, String stageName, Long stageId);
 }

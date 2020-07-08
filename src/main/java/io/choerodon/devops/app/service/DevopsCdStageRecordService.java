@@ -41,4 +41,6 @@ public interface DevopsCdStageRecordService {
     void updateStageStatusNotAudit(Long pipelineRecordId, Long stageRecordId);
 
     void deleteByPipelineRecordId(Long pipelineRecordId);
+
+    void updateStageStatusStop(Long stageRecordId);
 }
