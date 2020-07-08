@@ -37,6 +37,7 @@ const EditItem = (props) => {
     appServiceName,
     image,
     openVariableModal,
+    stageType,
   } = props;
 
   const { type, name } = jobDetail;
@@ -81,15 +82,13 @@ const EditItem = (props) => {
         PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
         AppServiceOptionsDs={edit && AppServiceOptionsDs}
         image={image}
-      /> : (
-        <AddCDTask
-          jobDetail={jobDetail}
-          appServiceId={!edit && appServiceName}
-          appServiceName={!edit && appServiceName}
-          PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
-          handleOk={handleEditOk}
-        />
-      ),
+      /> : (<AddCDTask
+        jobDetail={jobDetail}
+        appServiceId={!edit && appServiceName}
+        appServiceName={!edit && appServiceName}
+        PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
+        handleOk={handleEditOk}
+      />),
       style: {
         width: '740px',
       },
@@ -172,7 +171,7 @@ export default observer((props) => {
 
   async function editStage() {
     if (addStepDs.current && addStepDs.current.get('step')) {
-      eidtStep(sequence, addStepDs.current.get('step'), edit);
+      eidtStep(sequence, addStepDs.current.get('step'), addStepDs.current.get('type'), edit);
     } else {
       return false;
     }
@@ -194,13 +193,14 @@ export default observer((props) => {
           jobDetail={item}
           image={image}
           openVariableModal={openVariableModal}
+          stageType={type || 'CI'}
         />)
       }
     </div> : null
   );
-
   const openAddStageModal = ({ optType, curType }) => {
     const title = optType === 'create' ? '添加阶段' : '修改阶段信息';
+    const okText = optType === 'create' ? '添加' : '修改';
     if (optType === 'edit') {
       addStepDs.current.set('step', name);
       addStepDs.current.set('type', curType || 'CI');
@@ -213,7 +213,7 @@ export default observer((props) => {
       style: {
         width: 380,
       },
-      okText: '添加',
+      okText,
       children: <AddStage curType={curType} optType={optType} addStepDs={addStepDs} />,
       onOk: optsFun,
       onCancel: () => addStepDs.reset(),
@@ -276,14 +276,12 @@ export default observer((props) => {
           appServiceName={!edit && appServiceName}
           image={image}
         />
-      ) : (
-        <AddCDTask
-          appServiceId={!edit && appServiceName}
-          appServiceName={!edit && appServiceName}
-          PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
-          handleOk={hanleStepCreateOk}
-        />
-      ),
+      ) : (<AddCDTask
+        appServiceId={!edit && appServiceName}
+        appServiceName={!edit && appServiceName}
+        PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
+        handleOk={hanleStepCreateOk}
+      />),
       style: {
         width: '740px',
       },
