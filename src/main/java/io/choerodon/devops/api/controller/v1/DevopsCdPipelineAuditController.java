@@ -32,12 +32,12 @@ public class DevopsCdPipelineAuditController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "审核手动流转阶段")
-    @PostMapping("/stage_records/{stage_id}/audit")
+    @PostMapping("/stage_records/{stage_record_id}/audit")
     public ResponseEntity<Void> auditStage(@PathVariable(value = "project_id") Long projectId,
                                            @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,
-                                           @PathVariable(value = "stage_id") Long stageId,
+                                           @PathVariable(value = "stage_record_id") Long stageRecordId,
                                            @PathVariable(value = "result") String result) {
-        devopsCdPipelineService.auditStage(projectId, pipelineRecordId, stageId, result);
+        devopsCdPipelineService.auditStage(projectId, pipelineRecordId, stageRecordId, result);
         return Results.success();
     }
 }

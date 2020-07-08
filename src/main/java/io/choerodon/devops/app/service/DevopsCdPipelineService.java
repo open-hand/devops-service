@@ -52,8 +52,8 @@ public interface DevopsCdPipelineService {
      *
      * @param projectId
      * @param pipelineRecordId
-     * @param stageId
+     * @param stageRecordId
      * @param result
      */
-    void auditStage(Long projectId, Long pipelineRecordId, Long stageId, String result);
+    void auditStage(Long projectId, Long pipelineRecordId, Long stageRecordId, String result);
 }

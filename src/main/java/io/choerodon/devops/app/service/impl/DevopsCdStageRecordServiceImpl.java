@@ -75,6 +75,7 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
     }
 
     @Override
+    @Transactional
     public void updateStatusById(Long stageRecordId, String status) {
         DevopsCdStageRecordDTO recordDTO = devopsCdStageRecordMapper.selectByPrimaryKey(stageRecordId);
         recordDTO.setStatus(status);

@@ -58,6 +58,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private static final String ENABLE_PIPELINE_FAILED = "enable.pipeline.failed";
     private static final String DELETE_PIPELINE_FAILED = "delete.pipeline.failed";
 
+    private static final String ERROR_PIPELINE_STATUS_CHANGED = "error.pipeline.status.changed";
+
+
     private static final String STAGE_NAME = "stageName";
 
     @Value("${devops.ci.default.image}")
@@ -506,9 +509,136 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     }
 
     @Override
-    public void auditStage(Long projectId, Long pipelineRecordId, Long stageId, String result) {
-        // todo
+    @Transactional
+    public void auditStage(Long projectId, Long pipelineRecordId, Long stageRecordId, String result) {
+
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
         // 1. 查询审核人员
+        CustomUserDetails details = DetailsHelper.getUserDetails();
+        List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(stageRecordId);
+        DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordService.queryById(stageRecordId);
+        if (!PipelineStatus.NOT_AUDIT.toValue().equals(devopsCdStageRecordDTO.getStatus())) {
+            throw new CommonException(ERROR_PIPELINE_STATUS_CHANGED);
+        }
+        if (Boolean.TRUE.equals(result)) {
+            // 审核通过
+            // 1. 工作流任务审核通过
+            try {
+                approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), details.getUsername(), details.getUserId(), details.getOrganizationId());
+            } catch (Exception e) {
+                LOGGER.error("Approve stage failed: {}", e.getMessage());
+                // 更新阶段状态为失败
+                devopsCdStageRecordService.updateStatusById(stageRecordId, PipelineStatus.FAILED.toValue());
+                // 更新流水线状态为失败
+                devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.FAILED.toValue());
+                // 停止流水线
+                workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
+                // 发送失败通知
+                sendNotificationService.sendPipelineNotice(pipelineRecordId,
+                        MessageCodeConstants.PIPELINE_FAILED, details.getUserId(), null, null);
+            }
+            // 1. 更新阶段状态为执行中
+            devopsCdStageRecordService.updateStatusById(stageRecordId, PipelineStatus.RUNNING.toValue());
+            // 2. 更新流水线状态为执行中
+            devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.RUNNING.toValue());
+
+
+            // 4. 判断阶段的第一个任务是否是人工卡点任务，人工卡点任务则更新状态为待审核
+        } else {
+            // 审核不通过
+        }
+
+//        PipelineRecordDTO pipelineRecordE = pipelineRecordService.baseQueryById(recordRelDTO.getPipelineRecordId());
+//        PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(recordRelDTO.getStageRecordId());
+//        String auditUser = "";
+//        if ("task".equals(recordRelDTO.getType())) {
+//            auditUser = pipelineTaskRecordService.baseQueryRecordById(recordRelDTO.getTaskRecordId()).getAuditUser();
+//        } else {
+//            Optional<PipelineStageRecordDTO> optional = pipelineStageRecordService.baseListByRecordAndStageId(recordRelDTO.getPipelineRecordId(), null).stream()
+//                    .filter(t -> t.getId() < recordRelDTO.getStageRecordId()).max(Comparator.comparingLong(PipelineStageRecordDTO::getId));
+//            auditUser = optional.isPresent() ? optional.get().getAuditUser() : auditUser;
+//        }
+//        status = getAuditResult(recordRelDTO, pipelineRecordE, auditUser, stageRecordDTO);
+//        PipelineUserRecordRelationshipDTO userRelE = new PipelineUserRecordRelationshipDTO();
+//        userRelE.setUserId(DetailsHelper.getUserDetails().getUserId());
+//        switch (recordRelDTO.getType()) {
+//            case TASK: {
+//                userRelE.setTaskRecordId(recordRelDTO.getTaskRecordId());
+//                pipelineUserRecordRelationshipService.baseCreate(userRelE);
+//                PipelineTaskRecordDTO taskRecordDTO = pipelineTaskRecordService.baseQueryRecordById(recordRelDTO.getTaskRecordId());
+//                if (status.equals(WorkFlowStatus.SUCCESS.toValue())) {
+//                    //判断会签是否全部通过
+//                    if (taskRecordDTO.getIsCountersigned() == 1) {
+//                        if (!checkCouAllApprove(userDTOS, taskRecordDTO.getTaskId(), recordRelDTO.getTaskRecordId())) {
+//                            break;
+//                        }
+//                    } else {
+//                        sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_PASS, auditUser, recordRelDTO.getPipelineRecordId(), stageRecordDTO.getStageName(), stageRecordDTO.getStageId());
+//                    }
+//                    updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), WorkFlowStatus.RUNNING.toValue(), null);
+//                    startNextTask(taskRecordDTO.getId(), recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
+//                } else {
+//                    Long time = System.currentTimeMillis() - TypeUtil.objToLong(stageRecordDTO.getExecutionTime());
+//                    stageRecordDTO.setStatus(status);
+//                    stageRecordDTO.setExecutionTime(time.toString());
+//                    pipelineStageRecordService.baseCreateOrUpdate(stageRecordDTO);
+//                    updateStatus(recordRelDTO.getPipelineRecordId(), null, status, null);
+//                }
+//                taskRecordDTO.setStatus(status);
+//                pipelineTaskRecordService.baseCreateOrUpdateRecord(taskRecordDTO);
+//                break;
+//            }
+//            case STAGE: {
+//                userRelE.setStageRecordId(recordRelDTO.getStageRecordId());
+//                pipelineUserRecordRelationshipService.baseCreate(userRelE);
+//                if (status.equals(WorkFlowStatus.RUNNING.toValue())) {
+//                    updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), status, null);
+//                    if (!isEmptyStage(recordRelDTO.getStageRecordId())) {
+//                        List<PipelineTaskRecordDTO> taskRecordEList = pipelineTaskRecordService.baseQueryByStageRecordId(recordRelDTO.getStageRecordId(), null);
+//                        PipelineTaskRecordDTO taskRecordDTO = taskRecordEList.get(0);
+//                        if (MANUAL.equals(taskRecordDTO.getTaskType())) {
+//                            startNextTask(taskRecordDTO, recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
+//                        }
+//                    } else {
+//                        startEmptyStage(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
+//                    }
+//                    sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_PASS, auditUser, recordRelDTO.getPipelineRecordId(), stageRecordDTO.getStageName(), stageRecordDTO.getStageId());
+//                } else {
+//                    updateStatus(recordRelDTO.getPipelineRecordId(), null, status, null);
+//                }
+//                break;
+//            }
+//            default: {
+//                break;
+//            }
+//        }
+    }
+
+    private void approveWorkFlow(Long projectId, String businessKey, String loginName, Long userId, Long orgId) {
+        Observable.create((ObservableOnSubscribe<String>) Emitter::onComplete).subscribeOn(Schedulers.io())
+                .subscribe(new Observer<String>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                    }
+
+                    @Override
+                    public void onNext(String s) {
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        CustomContextUtil.setUserContext(loginName, userId, orgId);
+                        try {
+                            workFlowServiceOperator.approveUserTask(projectId, businessKey);
+                        } catch (Exception e) {
+                            throw new CommonException(e);
+                        }
+                    }
+                });
     }
 
     private DevopsCdJobRecordDTO getNextJob(Long stageRecordId, DevopsCdJobRecordDTO currentJob) {

@@ -120,6 +120,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     @Override
+    @Transactional
     public void updateStatusById(Long pipelineRecordId, String status) {
         DevopsCdPipelineRecordDTO pipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
         pipelineRecordDTO.setStatus(status);
