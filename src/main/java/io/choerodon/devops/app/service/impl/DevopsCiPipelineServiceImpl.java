@@ -498,7 +498,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     @Override
-    public DevopsCiPipelineVO queryById(Long ciPipelineId) {
+    public CiCdPipelineVO queryById(Long ciPipelineId) {
         return devopsCiCdPipelineMapper.queryById(ciPipelineId);
     }
 

@@ -24,13 +24,24 @@ public class CiCdPipelineRecordVO {
     private String cdStatus;
     //ci的流水线记录状态
     private String ciStatus;
+    //cicd 流水线的状态
+    private String status;
+
+    private CiCdPipelineVO ciCdPipelineVO;
 
     // ci和cd阶段记录的集合
     private List<StageRecordVO> stageRecordVOS;
 
-
     private DevopsCiPipelineRecordVO ciPipelineRecordVO;
     private DevopsCdPipelineRecordVO cdPipelineRecordVO;
+
+    public CiCdPipelineVO getCiCdPipelineVO() {
+        return ciCdPipelineVO;
+    }
+
+    public void setCiCdPipelineVO(CiCdPipelineVO ciCdPipelineVO) {
+        this.ciCdPipelineVO = ciCdPipelineVO;
+    }
 
     public DevopsCiPipelineRecordVO getCiPipelineRecordVO() {
         return ciPipelineRecordVO;
@@ -102,5 +113,13 @@ public class CiCdPipelineRecordVO {
 
     public void setStageRecordVOS(List<StageRecordVO> stageRecordVOS) {
         this.stageRecordVOS = stageRecordVOS;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

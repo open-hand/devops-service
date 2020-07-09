@@ -49,7 +49,7 @@ public interface DevopsCiPipelineService {
     /**
      * 查询流水线信息
      */
-    DevopsCiPipelineVO queryById(Long ciPipelineId);
+    CiCdPipelineVO queryById(Long ciPipelineId);
 
     /**
      * 停用流水线
