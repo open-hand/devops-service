@@ -53,7 +53,7 @@
   },
   "devDependencies": {
     "@choerodon/boot": "0.21.4",
-    "@choerodon/master": "0.23.0-alpha.1",
+    "@choerodon/master": "^0.23.0",
     "del": "^4.1.1",
     "eslint-plugin-react-hooks": "^1.7.0",
     "lodash": "latest"

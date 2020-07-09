@@ -63,9 +63,17 @@ export default observer(() => {
             ds.value = Base64.encode(valueIdValues);
           }
           if (ds.type === 'cdHost') {
-            if (ds.mode === 'customize') {
+            ds.hostConnectionVO = {
+              hostIp: ds.hostIp,
+              hostPort: ds.hostPort,
+              accountType: ds.accountType,
+              userName: ds.userName,
+              password: ds.password,
+              accountKey: ds.accountKey,
+            };
+            if (ds.hostDeployType === 'customize') {
               ds.customize = Base64.encode(customValues);
-            } else if (ds.mode === 'imageDeploy') {
+            } else if (ds.hostDeployType === 'image') {
               ds.imageDeploy = {
                 repoName: ds.repoName,
                 imageName: ds.imageName,
@@ -73,7 +81,7 @@ export default observer(() => {
                 matchContent: ds.matchContent,
                 value: Base64.encode(imageDeployValues),
               };
-            } else if (ds.mode === 'jarDeploy') {
+            } else if (ds.hostDeployType === 'jar') {
               ds.jarDeploy = {
                 serverName: ds.serverName,
                 neRepositoryName: ds.neRepositoryName,
@@ -104,12 +112,12 @@ export default observer(() => {
         setValueIdValues(Base64.decode(value));
       } else if (jobDetail.type === 'cdHost') {
         const metadata = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
-        const { mode } = metadata;
-        if (mode === 'customize') {
+        const { hostDeployType } = metadata;
+        if (hostDeployType === 'customize') {
           setCustomValues(Base64.decode(metadata.customize));
-        } else if (mode === 'imageDeploy') {
+        } else if (hostDeployType === 'image') {
           setImageDeployValues(Base64.decode(metadata.imageDeploy.value));
-        } else if (mode === 'jarDeploy') {
+        } else if (hostDeployType === 'jar') {
           setJarValues(Base64.decode(metadata.jarDeploy.value));
         }
       } else if (jobDetail.type === 'cdAudit') {
@@ -152,7 +160,7 @@ export default observer(() => {
             onValueChange={(data) => setCustomValues(data)}
           />
         ),
-        imageDeploy: [
+        image: [
           <Select newLine colSpan={3} name="repoName" />,
           <Select colSpan={3} name="imageName" />,
           <Select colSpan={3} name="matchType">
@@ -170,7 +178,7 @@ export default observer(() => {
             onValueChange={(data) => setImageDeployValues(data)}
           />,
         ],
-        jarDeploy: [
+        jar: [
           <Select newLine colSpan={3} name="serverName" />,
           <Select colSpan={3} name="neRepositoryName" />,
           <Select colSpan={3} name="groupId" />,
@@ -185,7 +193,7 @@ export default observer(() => {
           />,
         ],
       };
-      return result[ADDCDTaskDataSet?.current?.get('mode')];
+      return result[ADDCDTaskDataSet?.current?.get('hostDeployType')];
     }
     const obj = {
       cdDeploy: [
@@ -233,10 +241,10 @@ export default observer(() => {
         <div className="addcdTask-divided" />,
         <p className="addcdTask-title">主机部署</p>,
         <Form style={{ marginTop: 20 }} columns={6} dataSet={ADDCDTaskDataSet}>
-          <SelectBox className="addcdTask-mainMode" colSpan={5} name="mode">
+          <SelectBox className="addcdTask-mainMode" colSpan={5} name="hostDeployType">
             <Option value="customize">自定义命令</Option>
-            <Option value="imageDeploy">镜像部署</Option>
-            <Option value="jarDeploy">jar包部署</Option>
+            <Option value="image">镜像部署</Option>
+            <Option value="jar">jar包部署</Option>
           </SelectBox>,
           {
             getModeDom()
@@ -286,7 +294,7 @@ export default observer(() => {
             triggerType: 'refs',
             deployType: 'create',
             accountType: 'accountPassword',
-            mode: 'customize',
+            hostDeployType: 'customize',
           }])}
           colSpan={1}
           name="type"

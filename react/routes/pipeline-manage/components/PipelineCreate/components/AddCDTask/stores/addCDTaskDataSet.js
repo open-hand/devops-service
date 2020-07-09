@@ -134,7 +134,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
       required: ({ record }) => record.get('type') === 'cdHost' && record.get('accountType') === 'accountKey',
     },
   }, {
-    name: 'mode',
+    name: 'hostDeployType',
     type: 'string',
     label: '部署模式',
     defaultValue: 'customize',
