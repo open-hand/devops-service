@@ -28,7 +28,6 @@ public class AppServiceRepVO {
     private Long projectId;
 
     @ApiModelProperty("应用服务对应gitlab项目的id")
-    @Encrypt
     private Long gitlabProjectId;
 
     @ApiModelProperty("应用服务对应的gitlab仓库地址")

@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,9 +35,6 @@ public class DevopsCdPipelineController {
 
     /**
      * 启动cd流水线
-     *
-     * @param token
-     * @return
      */
     @Permission(permissionPublic = true)
     @ApiOperation(value = "启动cd流水线")
@@ -56,18 +54,17 @@ public class DevopsCdPipelineController {
 
     /**
      * 主机模式镜像部署接口
-     *
-     * @param pipelineRecordId
-     * @param stageRecordId
-     * @param jobRecordId
-     * @return
      */
     @Permission(permissionWithin = true)
     @ApiOperation(value = "主机模式部署接口")
     @PostMapping(value = "/cd_host_deploy")
-    public ResponseEntity cdHostDeploy(@RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
-                                       @RequestParam(value = "stage_record_id") Long stageRecordId,
-                                       @RequestParam(value = "job_record_id") Long jobRecordId) {
+    public ResponseEntity<Void> cdHostDeploy(
+            @Encrypt
+            @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+            @Encrypt
+            @RequestParam(value = "stage_record_id") Long stageRecordId,
+            @Encrypt
+            @RequestParam(value = "job_record_id") Long jobRecordId) {
         devopsCdPipelineRecordService.cdHostDeploy(pipelineRecordId, stageRecordId, jobRecordId);
         return Results.success();
     }
@@ -75,18 +72,17 @@ public class DevopsCdPipelineController {
 
     /**
      * 触发环境自动部署
-     *
-     * @param pipelineRecordId
-     * @param stageRecordId
-     * @param jobRecordId
-     * @return
      */
     @Permission(permissionWithin = true)
     @ApiOperation(value = "环境部署")
     @PostMapping(value = "/env_auto_deploy")
-    public ResponseEntity<Void> envAutoDeploy(@RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
-                                              @RequestParam(value = "stage_record_id") Long stageRecordId,
-                                              @RequestParam(value = "job_record_id") Long jobRecordId) {
+    public ResponseEntity<Void> envAutoDeploy(
+            @Encrypt
+            @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+            @Encrypt
+            @RequestParam(value = "stage_record_id") Long stageRecordId,
+            @Encrypt
+            @RequestParam(value = "job_record_id") Long jobRecordId) {
         devopsCdPipelineService.envAutoDeploy(pipelineRecordId, stageRecordId, jobRecordId);
         return Results.success();
     }
@@ -101,17 +97,20 @@ public class DevopsCdPipelineController {
     @Permission(permissionWithin = true)
     @ApiOperation(value = "接收任务状态")
     @PutMapping("/auto_deploy/status")
-    public ResponseEntity setAppDeployStatus(
+    public ResponseEntity<Void> setAppDeployStatus(
+            @Encrypt
             @ApiParam(value = "流水线记录Id", required = true)
             @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+            @Encrypt
             @ApiParam(value = "阶段记录Id", required = true)
             @RequestParam(value = "stage_record_id") Long stageRecordId,
+            @Encrypt
             @ApiParam(value = "任务Id", required = true)
             @RequestParam(value = "job_record_id") Long jobRecordId,
             @ApiParam(value = "状态", required = true)
             @RequestParam(value = "status") Boolean status) {
         devopsCdPipelineService.setAppDeployStatus(pipelineRecordId, stageRecordId, jobRecordId, status);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
@@ -125,10 +124,13 @@ public class DevopsCdPipelineController {
     @ApiOperation(value = "查询任务状态")
     @GetMapping("/job/status")
     public ResponseEntity<String> getJobStatus(
+            @Encrypt
             @ApiParam(value = "流水线记录Id", required = true)
             @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+            @Encrypt
             @ApiParam(value = "阶段记录Id", required = true)
             @RequestParam(value = "stage_record_id") Long stageRecordId,
+            @Encrypt
             @ApiParam(value = "任务Id", required = true)
             @RequestParam(value = "job_record_id") Long jobRecordId) {
         return Results.success(devopsCdPipelineService.getDeployStatus(pipelineRecordId, stageRecordId, jobRecordId));

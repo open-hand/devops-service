@@ -7,6 +7,7 @@ import io.choerodon.devops.app.service.DevopsCiVariableService;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,8 +39,10 @@ public class DevopsCiVariableController {
     @ApiOperation(value = "列举出ci变量")
     @GetMapping("/keys")
     public ResponseEntity<Map<String, List<CiVariableVO>>> listVariableKey(
+            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable("project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "应用Id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId) {
         return Optional.ofNullable(devopsCiVariableService.listKeys(projectId, appServiceId))
@@ -56,10 +59,12 @@ public class DevopsCiVariableController {
     @ApiOperation(value = "列举出指定key的value")
     @GetMapping("/values")
     public ResponseEntity<List<CiVariableVO>> listValues(
+            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "层级", required = true)
             @RequestParam("level") String level,
+            @Encrypt
             @ApiParam(value = "应用Id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId) {
         return Optional.ofNullable(devopsCiVariableService.listValues(projectId, level, appServiceId))
@@ -71,11 +76,13 @@ public class DevopsCiVariableController {
     @ApiOperation(value = "保存对key的修改")
     @PostMapping
     public ResponseEntity<Void> save(
+            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "层级", required = true)
             @RequestParam("level") String level,
             @ApiParam(value = "应用Id")
+            @Encrypt
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "变量列表")
             @RequestBody List<CiVariableVO> ciVariableVOList) {
