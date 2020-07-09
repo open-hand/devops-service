@@ -29,10 +29,8 @@ public class CiCdPipelineRecordController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab流水线Id", required = true)
-            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
-            @ApiParam(value = "cd流水线记录id", required = true)
-            @RequestParam(value = "cd_pipeline_record_id") Long pipelineRecordId) {
-        return ResponseEntity.ok(ciCdPipelineRecordService.queryPipelineRecordDetails(projectId, gitlabPipelineId, pipelineRecordId));
+            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId) {
+        return ResponseEntity.ok(ciCdPipelineRecordService.queryPipelineRecordDetails(projectId, gitlabPipelineId));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})

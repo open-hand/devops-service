@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -609,6 +610,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = new DevopsCdPipelineRecordDTO();
         devopsCdPipelineRecordDTO.setGitlabPipelineId(gitlabPipelineId);
         DevopsCdPipelineRecordDTO cdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectOne(devopsCdPipelineRecordDTO);
+        if (Objects.isNull(cdPipelineRecordDTO)) {
+            return null;
+        }
         DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = ConvertUtils.convertObject(cdPipelineRecordDTO, DevopsCdPipelineRecordVO.class);
 
         List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryByPipelineRecordId(devopsCdPipelineRecordVO.getPipelineId());
