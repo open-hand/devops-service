@@ -4,10 +4,7 @@ import io.swagger.annotations.ApiOperation;
 import org.hzero.core.util.Results;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.app.service.DevopsCdPipelineService;
@@ -36,7 +33,7 @@ public class DevopsCdPipelineAuditController {
     public ResponseEntity<Void> auditStage(@PathVariable(value = "project_id") Long projectId,
                                            @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,
                                            @PathVariable(value = "stage_record_id") Long stageRecordId,
-                                           @PathVariable(value = "result") String result) {
+                                           @RequestParam(value = "result") String result) {
         devopsCdPipelineService.auditStage(projectId, pipelineRecordId, stageRecordId, result);
         return Results.success();
     }
@@ -51,7 +48,7 @@ public class DevopsCdPipelineAuditController {
                                          @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,
                                          @PathVariable(value = "stage_record_id") Long stageRecordId,
                                          @PathVariable(value = "job_record_id") Long jobRecordId,
-                                         @PathVariable(value = "result") String result) {
+                                         @RequestParam(value = "result") String result) {
         devopsCdPipelineService.auditJob(projectId, pipelineRecordId, stageRecordId, jobRecordId, result);
         return Results.success();
     }
