@@ -10,52 +10,30 @@ import CodeQuality from '../codeQuality';
 import CodeLog from '../codeLog';
 import './index.less';
 import { handlePromptError } from '../../../../../../utils';
+import StageType from '../stage-type';
 
 const jobType = {
   build: {
     name: '构建',
-    children: [
-      {
-        name: '构建包名称：',
-        type: 'artifactName',
-      },
-      {
-        name: '构建包下载地址：',
-        type: 'artifactUrl',
-      },
-    ],
   },
   sonar: {
     name: '代码检查',
-    children: [
-      {
-        name: '检测Bugs数量：',
-        type: '',
-      },
-      {
-        name: '检测代码异味数量：',
-        type: '',
-      },
-      {
-        name: '安全漏洞数量：',
-        type: '',
-      },
-    ],
   },
   custom: {
     name: '自定义',
-    children: [],
   },
   chart: {
     name: '发布Chart',
-    children: [],
   },
-};
-
-const sonarText = {
-  new_bugs: '检测Bugs数量：',
-  code_smells: '检测代码异味数量：',
-  vulnerabilities: '安全漏洞数量：',
+  cdDeploy: {
+    name: '部署任务',
+  },
+  cdAudit: {
+    name: '人工卡点',
+  },
+  cdHost: {
+    name: '主机部署任务',
+  },
 };
 
 function renderDuration(value) {
@@ -100,70 +78,10 @@ const DetailItem = (props) => {
     handleRefresh,
   } = props;
 
-  const { gitlabProjectId, appServiceId } = getDetailData && getDetailData.devopsCiPipelineVO;
-
+  const { gitlabProjectId, appServiceId } = getDetailData && getDetailData.ciCdPipelineVO;
   function handleDropDown() {
     setExpand(!expand);
   }
-
-  const renderMainPanel = () => {
-    if (type === 'build' && artifacts) {
-      return artifacts.map((artItem, artkey) => {
-        const { artifactName, artifactUrl } = artItem;
-        return (<Fragment>
-          <div>
-            <span>构建包名称：</span>
-            <Tooltip title={artifactName}>
-              <span>{artifactName}</span>
-            </Tooltip>
-          </div>
-          <div>
-            <span>构建包下载地址：</span>
-            <Tooltip title={artifactUrl}>
-              <span>{artifactUrl}</span>
-            </Tooltip>
-          </div>
-        </Fragment>);
-      });
-    } else if (type === 'sonar' && sonarContentVOS) {
-      const arr = sonarContentVOS.filter(item => sonarText[item.key]);
-      return arr.map((item, key) => (
-        <div>
-          <span>{sonarText[item.key]}</span>
-          <Tooltip>
-            <span>{item.value}</span>
-          </Tooltip>
-        </div>
-      ));
-    }
-  };
-
-  const renderMain = () => (
-    <main style={{ display: expand ? 'block' : 'none' }}>
-      {renderMainPanel()}
-      {/* {
-        type === 'sonar' && sonarContentVOS && sonarContentVOS
-        && <Fragment>
-          <div>
-            <span>检测Bugs数量：</span>
-            <Tooltip>
-              <span>-</span>
-            </Tooltip>
-          </div>
-          <div>
-            <span>检测代码异味数量：</span>
-            <Tooltip>
-              <span>-</span>
-            </Tooltip>
-          </div>
-          <div>
-            <span>安全漏洞数量：</span>
-            <span>-</span>
-          </div>
-        </Fragment>
-      } */}
-    </main>
-  );
 
   function openDescModal() {
     Modal.open({
@@ -219,6 +137,7 @@ const DetailItem = (props) => {
     <div className="c7n-piplineManage-detail-column-item">
       <header>
         <StatusDot size={13} status={itemStatus} />
+
         <div className="c7n-piplineManage-detail-column-item-sub">
           <Tooltip title={name}>
             <span>{type && `【${jobType[type].name}】`}{name}</span>
@@ -229,17 +148,7 @@ const DetailItem = (props) => {
             </Tooltip>
           }
         </div>
-        {((type === 'build' && artifacts) || (type === 'sonar' && sonarContentVOS)) && <Button
-          className="c7n-piplineManage-detail-column-item-btn"
-          icon={!expand ? 'arrow_drop_down' : 'arrow_drop_up'}
-          shape="circle"
-          funcType="flat"
-          size="small"
-          onClick={handleDropDown}
-        />}
       </header>
-
-      {(type === 'build' || type === 'sonar') && renderMain()}
 
       <footer>
         <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.job.log']}>
@@ -295,7 +204,7 @@ const DetailItem = (props) => {
 
 export default observer((props) => {
   // 抛出piplineName
-  const { piplineName, piplineStatus, jobRecordVOList, seconds } = props;
+  const { piplineName, piplineStatus, jobRecordVOList, seconds, type } = props;
 
   useEffect(() => {
   }, []);
@@ -327,14 +236,15 @@ export default observer((props) => {
         <span>{piplineName}</span>
         {seconds ? <span>{renderDuration(seconds)}</span> : null}
       </div>
+      <div style={{ marginLeft: '.14rem', marginTop: '.1rem' }}>
+        <StageType type={type} />
+      </div>
       <div className="c7n-piplineManage-detail-column-lists">
         <h6>任务列表</h6>
         {renderItem()}
       </div>
       <div className="c7n-piplineManage-detail-column-type">
-        <Tooltip title="自动流转">
-          <span>A</span>
-        </Tooltip>
+        <span />
         <span />
       </div>
     </div>
