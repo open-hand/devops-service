@@ -2,15 +2,15 @@ package io.choerodon.devops.app.service.impl;
 
 import io.choerodon.devops.app.service.DevopsProjectOverview;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.agile.SprintDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.AgileServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.mapper.AppServiceMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
-import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper;
+import io.choerodon.devops.infra.mapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +26,7 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
 
     private static final String ENV_UP = "up";
     private static final String ENV_DOWN = "down";
+    private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
@@ -45,6 +46,12 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
 
     @Autowired
     private DevopsGitlabCommitMapper devopsGitlabCommitMapper;
+
+    @Autowired
+    private AppServiceInstanceMapper appServiceInstanceMapper;
+
+    @Autowired
+    private DevopsEnvCommandMapper devopsEnvCommandMapper;
 
     @Override
     public Map<String, Long> getEnvStatusCount(Long projectId) {
@@ -89,8 +96,43 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
         SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getOrganizationId());
         List<Date> dateList = devopsGitlabCommitMapper.queryCountByProjectIdAndCreationDate(projectId, sprintDTO.getStartDate());
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         return dateList.stream().map(simpleDateFormat::format)
+                .collect(Collectors.groupingBy(t -> t, Collectors.counting()));
+    }
+
+    @Override
+    public Map<String, Long> getDeployCount(Long projectId) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+
+        // 该项目下所有启用环境
+        List<Long> updatedClusterList = clusterConnectionHandler.getUpdatedClusterList();
+
+        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentMapper.listByProjectId(projectId);
+
+        List<Long> activeEnvIds = devopsEnvironmentDTOS.stream()
+                .filter(t -> isEnvUp(updatedClusterList, t))
+                .map(DevopsEnvironmentDTO::getId)
+                .collect(Collectors.toList());
+
+        // 查出本项目下的所有应用服务
+        Map<String, Object> searchParam = new HashMap<>();
+        searchParam.put("active", 1);
+        List<Long> appServiceIds = appServiceMapper.listByProjectId(projectId, searchParam, null).stream().map(AppServiceDTO::getId).collect(Collectors.toList());
+
+        // 根据启用环境查出所有instance
+
+        SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getOrganizationId());
+
+        List<Long> instanceIds = appServiceInstanceMapper.queryInstanceByAppServiceIdsAndStartDate(appServiceIds).stream()
+                .filter(i -> activeEnvIds.contains(i.getEnvId()))
+                .map(AppServiceInstanceDTO::getId)
+                .collect(Collectors.toList());
+
+        // 查询从自迭代开启到现在,每个实例的部署操作记录
+
+        List<DevopsEnvCommandDTO> instance = devopsEnvCommandMapper.listByInstanceIdsAndStartDate("instance", instanceIds, sprintDTO.getStartDate());
+
+        return instance.stream().map(simpleDateFormat::format)
                 .collect(Collectors.groupingBy(t -> t, Collectors.counting()));
     }
 

@@ -40,7 +40,7 @@ public class DevopsProjectOverviewController {
             @PathVariable("project_id") Long projectId) {
         return Optional.ofNullable(devopsProjectOverview.getEnvStatusCount(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.project.overview.env.quantity"));
+                .orElseThrow(() -> new CommonException("error.devops.project.overview.env.count"));
     }
 
     // 启用与停用应用服务数量
@@ -52,7 +52,7 @@ public class DevopsProjectOverviewController {
             @PathVariable("project_id") Long projectId) {
         return Optional.ofNullable(devopsProjectOverview.getAppServiceStatusCount(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.project.overview.appService.quantity"));
+                .orElseThrow(() -> new CommonException("error.devops.project.overview.appService.count"));
     }
 
     // 项目下代码提交次数统计
@@ -64,7 +64,18 @@ public class DevopsProjectOverviewController {
             @PathVariable("project_id") Long projectId) {
         return Optional.ofNullable(devopsProjectOverview.getCommitCount(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.project.overview.appService.quantity"));
+                .orElseThrow(() -> new CommonException("error.devops.project.overview.commit.count"));
     }
 
+    // 项目下应用服务迭代部署次数
+    @ApiOperation("项目下应用服务迭代部署次数")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/deploy_count")
+    public ResponseEntity<Map<String, Long>> getDeployCount(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId) {
+        return Optional.ofNullable(devopsProjectOverview.getDeployCount(projectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.devops.project.overview.deploy.count"));
+    }
 }

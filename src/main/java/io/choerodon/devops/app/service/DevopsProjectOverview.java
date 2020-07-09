@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import java.util.Date;
 import java.util.Map;
 
 public interface DevopsProjectOverview {
@@ -9,4 +8,6 @@ public interface DevopsProjectOverview {
     Map<String, Long> getAppServiceStatusCount(Long projectId);
 
     Map<String, Long> getCommitCount(Long projectId);
+
+    Map<String, Long> getDeployCount(Long projectId);
 }

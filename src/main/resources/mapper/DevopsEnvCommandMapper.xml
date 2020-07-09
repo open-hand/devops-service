@@ -2,77 +2,70 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper">
-
     <select id="queryByObject" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">
-        SELECT
-        d.*
-        FROM
-        devops_env_command d
-        WHERE
-        d.object = #{objectType} and d.object_id = #{objectId}
-        ORDER BY d.id DESC LIMIT 1
+        SELECT d.*
+        FROM devops_env_command d
+        WHERE d.object_id = #{objectId}
+          AND d.object = #{objectType}
+        ORDER BY d.id DESC
+        LIMIT 1
     </select>
 
 
     <select id="listByObject" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">
-        SELECT
-        d.*
-        FROM
-        devops_env_command d
-        WHERE
-        d.object = #{objectType} and d.object_id = #{objectId}
+        SELECT d.*
+        FROM devops_env_command d
+                WHERE
+                d.object_id = #{objectId}
+                  AND
+                d.object = #{objectType}
         <if test="startTime != null">
-            AND d.creation_date >= CONCAT('','${startTime}',' 00:00:00')
+            AND d.creation_date >= CONCAT('', '${startTime}', ' 00:00:00')
         </if>
         <if test="endTime != null">
-            AND d.creation_date <![CDATA[<=]]>  CONCAT('','${endTime}',' 23:59:59')
+            AND d.creation_date <![CDATA[<=]]> CONCAT('', '${endTime}', ' 23:59:59')
         </if>
         ORDER BY d.id DESC
     </select>
 
     <select id="listInstanceCommand" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">
-        SELECT
-        d.*
-        FROM
-        devops_env_command d
-        WHERE
-        d.object = #{objectType} AND d.object_id = #{objectId}
-        AND d.command_type IN ('update','create','delete')
+        SELECT d.*
+        FROM devops_env_command d
+        WHERE d.object_id = #{objectId}
+          AND d.object = #{objectType}
+          AND d.command_type IN ('update', 'create', 'delete')
         ORDER BY d.id DESC
         limit 30
     </select>
 
     <select id="listAllInstanceCommandToMigrate" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">
-   SELECT
-	dc.id,
-	dc.STATUS,
-	de.id envId,
-	de.project_id projectId,
-	dc.creation_date
-FROM
-	devops_env_command dc
-	LEFT JOIN devops_app_service_instance dai ON dc.object_id = dai.id
-	LEFT JOIN devops_env de ON de.id = dai.env_id
-    LEFT JOIN devops_deploy_record ddr ON dc.id = ddr.deploy_id AND ddr.deploy_type = 'manual'
-WHERE
-	dc.object = 'instance'
-	AND command_type IN ( 'update', 'create' )
-    AND ddr.id IS NULL
-    AND de.project_id IS NOT NULL
+        SELECT dc.id,
+               dc.STATUS,
+               de.id         envId,
+               de.project_id projectId,
+               dc.creation_date
+        FROM devops_env_command dc
+                     LEFT JOIN devops_app_service_instance dai ON dc.object_id = dai.id
+                     LEFT JOIN devops_env de ON de.id = dai.env_id
+                     LEFT JOIN devops_deploy_record ddr ON dc.id = ddr.deploy_id AND ddr.deploy_type = 'manual'
+        WHERE dc.object = 'instance'
+          AND command_type IN ('update', 'create')
+          AND ddr.id IS NULL
+          AND de.project_id IS NOT NULL
     </select>
 
     <update id="updateSha">
         UPDATE devops_env_command dc
-        SET dc.error = NULL ,
-         dc.sha = #{sha}
+        SET dc.error = NULL,
+            dc.sha   = #{sha}
         WHERE dc.id = #{id}
     </update>
 
     <delete id="deleteByObjectTypeAndObjectId">
         DELETE
         FROM devops_env_command
-        WHERE object = #{objectType,jdbcType=VARCHAR}
-        AND object_id = #{objectId,jdbcType=BIGINT}
+        WHERE object_id = #{objectId,jdbcType=BIGINT}
+          AND object = #{objectType,jdbcType=VARCHAR}
     </delete>
 
     <select id="listCommandsToSync" resultType="io.choerodon.devops.api.vo.kubernetes.Command">
@@ -151,5 +144,13 @@ WHERE
         WHERE command.status = 'operating'
         AND dasi.env_id = #{envId,jdbcType=BIGINT}
         AND command.last_update_date <![CDATA[<=]]> #{beforeDate})
+    </select>
+    <select id="listByInstanceIdsAndStartDate" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">
+        SELECT id, creation_date
+        FROM devops_env_command WHERE object_id IN
+        <foreach collection="objectIds" item="objectId" separator="," open="(" close=")">
+            #{objectId}
+        </foreach>
+        AND creation_date > #{startTime}
     </select>
 </mapper>
