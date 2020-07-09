@@ -29,9 +29,18 @@ public class DevopsCdPipelineRecordVO {
     @ApiModelProperty("执行耗时")
     private Long durationSeconds;
 
+    private CiCdPipelineVO ciCdPipelineVO;
+
 
     private List<DevopsCdStageRecordVO> devopsCdStageRecordVOS;
 
+    public CiCdPipelineVO getCiCdPipelineVO() {
+        return ciCdPipelineVO;
+    }
+
+    public void setCiCdPipelineVO(CiCdPipelineVO ciCdPipelineVO) {
+        this.ciCdPipelineVO = ciCdPipelineVO;
+    }
 
     public Long getId() {
         return id;

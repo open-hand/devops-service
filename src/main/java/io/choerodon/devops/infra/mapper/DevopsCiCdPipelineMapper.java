@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
+import io.choerodon.devops.api.vo.CiCdPipelineVO;
 import io.choerodon.devops.api.vo.DevopsCiPipelineVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.mybatis.common.BaseMapper;
@@ -35,7 +36,7 @@ public interface DevopsCiCdPipelineMapper extends BaseMapper<CiCdPipelineDTO> {
     /**
      * 根据id查询流水线（包含关联应用服务name,gitlab_project_id）
      */
-    DevopsCiPipelineVO queryById(@Param("ciPipelineId") Long ciPipelineId);
+    CiCdPipelineVO queryById(@Param("ciPipelineId") Long ciPipelineId);
 
     /**
      * 停用流水线

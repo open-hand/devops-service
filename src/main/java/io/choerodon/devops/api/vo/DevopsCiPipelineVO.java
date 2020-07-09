@@ -18,7 +18,6 @@ import io.choerodon.devops.infra.annotation.WillDeleted;
  * @author wanghao
  * @Date 2020/4/2 17:00
  */
-@WillDeleted
 public class DevopsCiPipelineVO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -69,7 +69,7 @@
         ORDER BY all_ci.id DESC
     </select>
 
-    <select id="queryById" resultType="io.choerodon.devops.api.vo.DevopsCiPipelineVO">
+    <select id="queryById" resultType="io.choerodon.devops.api.vo.CiCdPipelineVO">
         SELECT
         dcp.id,dcp.`name`,dcp.is_enabled AS enabled, dcp.app_service_id,dcp.trigger_type,dcp.project_id,
         das.`name` AS app_service_name, das.gitlab_project_id, dcp.image

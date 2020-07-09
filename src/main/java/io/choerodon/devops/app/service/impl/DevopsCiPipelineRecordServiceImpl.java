@@ -393,11 +393,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
 
         // 添加流水线信息
-        DevopsCiPipelineVO ciPipelineVO = devopsCiPipelineService.queryById(devopsCiPipelineRecordDTO.getCiPipelineId());
-        devopsCiPipelineRecordVO.setDevopsCiPipelineVO(ciPipelineVO);
+        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCiPipelineRecordDTO.getCiPipelineId());
+        devopsCiPipelineRecordVO.setDevopsCiPipelineVO(ciCdPipelineVO);
 
         // 添加提交信息
-        addCommitInfo(ciPipelineVO.getAppServiceId(), devopsCiPipelineRecordVO, devopsCiPipelineRecordDTO);
+        addCommitInfo(ciCdPipelineVO.getAppServiceId(), devopsCiPipelineRecordVO, devopsCiPipelineRecordDTO);
 
         // 查询流水线记录下的job记录
         DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
@@ -413,7 +413,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         // 添加sonar
         for (DevopsCiJobRecordVO devopsCiJobRecordVO : devopsCiJobRecordVOList) {
             if (JobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
-                SonarContentsVO sonarContentsVO = applicationService.getSonarContent(ciPipelineVO.getProjectId(), ciPipelineVO.getAppServiceId());
+                SonarContentsVO sonarContentsVO = applicationService.getSonarContent(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
                 if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
                     List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
                     List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> {
@@ -431,7 +431,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         // 查询阶段信息
         List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
         List<DevopsCiStageRecordVO> devopsCiStageRecordVOS = ConvertUtils.convertList(devopsCiStageDTOList, DevopsCiStageRecordVO.class);
-
+        devopsCiStageRecordVOS.forEach(devopsCiStageRecordVO -> {
+            devopsCiStageRecordVO.setType(StageType.CI.getType());
+        });
         // 计算stage状态
         devopsCiStageRecordVOS.forEach(stageRecord -> {
             List<DevopsCiJobRecordVO> devopsCiJobRecordVOS = jobRecordMap.get(stageRecord.getName());

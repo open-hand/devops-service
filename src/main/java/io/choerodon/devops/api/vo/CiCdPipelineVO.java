@@ -50,7 +50,7 @@ public class CiCdPipelineVO {
     private Boolean hasMoreRecords;
     //cicd 流水线下的执行记录
     private List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS;
-    private CiCdPipelineRecordVO ciCdPipelineRecordVO;
+
 
     private Long objectVersionNumber;
 
@@ -72,13 +72,6 @@ public class CiCdPipelineVO {
         this.ciCdPipelineRecordVOS = ciCdPipelineRecordVOS;
     }
 
-    public CiCdPipelineRecordVO getCiCdPipelineRecordVO() {
-        return ciCdPipelineRecordVO;
-    }
-
-    public void setCiCdPipelineRecordVO(CiCdPipelineRecordVO ciCdPipelineRecordVO) {
-        this.ciCdPipelineRecordVO = ciCdPipelineRecordVO;
-    }
 
     public Long getId() {
         return id;
