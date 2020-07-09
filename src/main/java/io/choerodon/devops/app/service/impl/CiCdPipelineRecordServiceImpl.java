@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
@@ -82,8 +83,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 
     @Override
     public void retryPipeline(Long projectId, Long cdPipelineRecordId, Long gitlabPipelineId, Long gitlabProjectId) {
-        DevopsCdStageRecordDTO cdStageRecordDTO = devopsCdStageRecordMapper.queryFailedOrCancelStage(cdPipelineRecordId);
-        if (cdStageRecordDTO == null || cdStageRecordDTO.getId() == null) {
+        if (ObjectUtils.isEmpty(cdPipelineRecordId)) {
             devopsCiPipelineRecordService.retry(projectId, gitlabPipelineId, gitlabProjectId);
         } else {
             retryCdPipeline(projectId, cdPipelineRecordId);
@@ -119,8 +119,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 
     @Override
     public void cancel(Long projectId, Long cdPipelineRecordId, Long gitlabPipelineId, Long gitlabProjectId) {
-        DevopsCdStageRecordDTO cdStageRecordDTO = devopsCdStageRecordMapper.queryPendingAndRunning(cdPipelineRecordId);
-        if (cdStageRecordDTO == null || cdStageRecordDTO.getId() == null) {
+        if (ObjectUtils.isEmpty(cdPipelineRecordId)) {
             devopsCiPipelineRecordService.cancel(projectId, gitlabPipelineId, gitlabProjectId);
         } else {
             cancelCdPipeline(cdPipelineRecordId);
