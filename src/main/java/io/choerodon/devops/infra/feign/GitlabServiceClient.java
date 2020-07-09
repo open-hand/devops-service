@@ -198,7 +198,7 @@ public interface GitlabServiceClient {
                                                            @RequestParam("sha") String sha,
                                                            @RequestParam("userId") Integer userId);
 
-    @GetMapping(value = "/v1/projects/{projectId}/repository/commits/branch")
+    @PostMapping(value = "/v1/projects/{projectId}/repository/commits/branch")
     ResponseEntity<List<CommitDTO>> getCommits(@PathVariable("projectId") Integer projectId,
                                                @RequestBody GitlabTransferDTO gitlabTransferDTO);
 

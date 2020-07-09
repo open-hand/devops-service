@@ -1,11 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,6 @@ import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GenerateUUID;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
@@ -70,6 +70,9 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
 
+    @Autowired
+    private DevopsGitlabCommitMapper devopsGitlabCommitMapper;
+
 
     @Override
     public CiCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId) {
@@ -89,11 +92,15 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             } else {
                 ciCdPipelineRecordVO.setStatus(devopsCdPipelineRecordVO.getStatus());
             }
+            ciCdPipelineRecordVO.setCommit(devopsCiPipelineRecordVO.getCommit());
+            ciCdPipelineRecordVO.setGitlabTriggerRef(devopsCiPipelineRecordVO.getGitlabTriggerRef());
             ciCdPipelineRecordVO.setCiCdPipelineVO(ConvertUtils.convertObject(devopsCiPipelineRecordVO.getDevopsCiPipelineVO(), CiCdPipelineVO.class));
         }
         //纯ci
         if (devopsCiPipelineRecordVO != null && devopsCdPipelineRecordVO == null) {
             stageRecordVOS.addAll(devopsCiPipelineRecordVO.getStageRecordVOList());
+            ciCdPipelineRecordVO.setCommit(devopsCiPipelineRecordVO.getCommit());
+            ciCdPipelineRecordVO.setGitlabTriggerRef(devopsCiPipelineRecordVO.getGitlabTriggerRef());
             ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
             ciCdPipelineRecordVO.setGitlabPipelineId(devopsCiPipelineRecordVO.getGitlabPipelineId());
             ciCdPipelineRecordVO.setStatus(devopsCiPipelineRecordVO.getStatus());
@@ -104,8 +111,9 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             stageRecordVOS.addAll(devopsCdPipelineRecordVO.getDevopsCdStageRecordVOS());
             ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
             ciCdPipelineRecordVO.setStatus(devopsCdPipelineRecordVO.getStatus());
-            ciCdPipelineRecordVO.setCiCdPipelineVO(ConvertUtils.convertObject(devopsCdPipelineRecordVO.getCiCdPipelineVO(),CiCdPipelineVO.class));
+            ciCdPipelineRecordVO.setCiCdPipelineVO(ConvertUtils.convertObject(devopsCdPipelineRecordVO.getCiCdPipelineVO(), CiCdPipelineVO.class));
         }
+        //commit 触发分支
         return ciCdPipelineRecordVO;
     }
 
@@ -162,7 +170,17 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         if (devopsCiStageMapper.selectCount(devopsCdStageDTO) == 0) {
             CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(pipelineId);
             AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(ciCdPipelineVO.getAppServiceId());
-            List<CommitDTO> commitDTOList = gitlabServiceClientOperator.getCommits(TypeUtil.objToInteger(gitlabProjectId), ref, null);
+            DevopsGitlabCommitDTO devopsGitlabCommitDTO = new DevopsGitlabCommitDTO();
+            devopsGitlabCommitDTO.setAppServiceId(appServiceDTO.getId());
+            devopsGitlabCommitDTO.setRef(ref);
+            List<DevopsGitlabCommitDTO> devopsGitlabCommitDTOS = devopsGitlabCommitMapper.select(devopsGitlabCommitDTO);
+            if (CollectionUtils.isEmpty(devopsGitlabCommitDTOS)) {
+                throw new CommonException("error.no.commit.information.under.the.application.service");
+            }
+            Date commitDate = devopsGitlabCommitDTOS.get(0).getCommitDate();
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss zzz");
+            String sinceDate = simpleDateFormat.format(commitDate);
+            List<CommitDTO> commitDTOList = gitlabServiceClientOperator.getCommits(TypeUtil.objToInteger(gitlabProjectId), ref, sinceDate);
             if (CollectionUtils.isEmpty(commitDTOList)) {
                 throw new CommonException("error.ref.no.commit");
             }
