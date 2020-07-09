@@ -135,7 +135,7 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
         AppServiceDTO fakeAppService = new AppServiceDTO();
         fakeAppService.setCode(appServiceVersionDTO.getChartName());
 
-        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), null, appServiceInstanceDTO.getCommandId().intValue());
+        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), null, appServiceInstanceDTO.getCommandId());
         instanceSagaPayload.setApplicationDTO(fakeAppService);
         instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
         instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
@@ -231,7 +231,7 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
         AppServiceDTO fakeAppService = new AppServiceDTO();
         fakeAppService.setCode(appServiceInstanceDTO.getComponentChartName());
 
-        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), null, appServiceInstanceDTO.getCommandId().intValue());
+        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), null, appServiceInstanceDTO.getCommandId());
         instanceSagaPayload.setApplicationDTO(fakeAppService);
         instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
         instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
@@ -300,7 +300,7 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
         appServiceDeployVO.setType(devopsEnvCommandDTO.getCommandType());
         appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
         appServiceDeployVO.setInstanceName(appServiceInstanceDTO.getCode());
-        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), null, devopsEnvCommandDTO.getId().intValue());
+        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), null, devopsEnvCommandDTO.getId());
         instanceSagaPayload.setApplicationDTO(fakeAppService);
         instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
         instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
