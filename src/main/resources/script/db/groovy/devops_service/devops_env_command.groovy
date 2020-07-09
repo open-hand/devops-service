@@ -51,6 +51,19 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_command.groovy') {
     changeSet(author: 'scp', id: '2019-06-05-idx-object-id') {
         createIndex(indexName: "idx_object_id ", tableName: "devops_env_command") {
             column(name: "object_id")
+            column(name: 'object')
         }
     }
+
+    changeSet(author: 'scp', id: '2019-06-05-modify-index') {
+
+        dropIndex(indexName: "idx_object_id", tableName: "devops_env_command")
+
+        createIndex(indexName: "idx_object_object_id ", tableName: "devops_env_command") {
+            column(name: "object_id")
+            column(name: 'object')
+        }
+    }
+
+
 }
