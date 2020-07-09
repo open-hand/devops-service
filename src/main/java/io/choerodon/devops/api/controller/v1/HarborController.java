@@ -12,6 +12,7 @@ import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +33,10 @@ public class HarborController {
     @GetMapping("/{projectId}/repo/list")
     @ApiOperation(value = "查询项目下所有的仓库配置")
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    public ResponseEntity<List<HarborRepoConfigDTO>> listAllCustomRepoByProject(@ApiParam(value = "猪齿鱼项目ID", required = true) @PathVariable("projectId") Long projectId) {
+    public ResponseEntity<List<HarborRepoConfigDTO>> listAllCustomRepoByProject(
+            @Encrypt
+            @ApiParam(value = "猪齿鱼项目ID", required = true)
+            @PathVariable("projectId") Long projectId) {
         List<HarborRepoConfigDTO> list = harborService.listAllCustomRepoByProject(projectId);
         return Results.success(list);
     }

@@ -17,6 +17,7 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -53,6 +54,7 @@ public class DevopsSecretController {
     @ApiOperation(value = "创建密钥")
     @PostMapping
     public ResponseEntity<SecretRespVO> create(
+            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "请求体", required = true)
@@ -74,6 +76,7 @@ public class DevopsSecretController {
     @ApiOperation(value = "更新密钥")
     @PutMapping
     public ResponseEntity<SecretRespVO> update(
+            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "请求体", required = true)
@@ -96,12 +99,14 @@ public class DevopsSecretController {
     @ApiOperation(value = "删除密钥")
     @DeleteMapping("/{env_id}/{secret_id}")
     public ResponseEntity<Boolean> deleteSecret(
+            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
+            @Encrypt
             @ApiParam(value = "密钥id", required = true)
-//            @Encrypt(DevopsSecretDTO.ENCRYPT_KEY)
             @PathVariable(value = "secret_id") Long secretId) {
         return Optional.ofNullable(devopsSecretService.deleteSecret(projectId, envId, secretId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
@@ -123,10 +128,13 @@ public class DevopsSecretController {
     @ApiOperation(value = "分页查询secret")
     @PostMapping("/page_by_options")
     public ResponseEntity<Page<SecretRespVO>> pageByOption(
+            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id")
             @RequestParam(value = "env_id", required = false) Long envId,
+            @Encrypt
             @ApiParam(value = "服务id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
@@ -152,10 +160,11 @@ public class DevopsSecretController {
     @ApiOperation(value = "根据密钥id查询密钥")
     @GetMapping("/{secret_id}")
     public ResponseEntity<SecretRespVO> querySecret(
+            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "密钥id", required = true)
-//            @Encrypt(DevopsSecretDTO.ENCRYPT_KEY)
             @PathVariable(value = "secret_id") Long secretId,
             @ApiParam(value = "是否解码值")
             @RequestParam(value = "to_decode", required = false, defaultValue = "false") boolean toDecode) {
@@ -175,8 +184,10 @@ public class DevopsSecretController {
     @ApiOperation(value = "校验名字唯一性")
     @GetMapping("/{env_id}/check_name")
     public ResponseEntity<Boolean> checkName(
+            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "密钥名")

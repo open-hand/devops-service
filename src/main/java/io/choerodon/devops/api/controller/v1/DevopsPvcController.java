@@ -15,6 +15,7 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,8 +48,10 @@ public class DevopsPvcController {
     @CustomPageRequest
     @PostMapping("/page_by_options")
     public ResponseEntity<Page<DevopsPvcRespVO>> pageByOptions(
+            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境ID")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "分页参数")
@@ -66,6 +69,7 @@ public class DevopsPvcController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建PVC")
     public ResponseEntity<DevopsPvcRespVO> create(
+            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "PVC信息", required = true)
@@ -87,12 +91,14 @@ public class DevopsPvcController {
     @ApiOperation(value = "删除PVC")
     @DeleteMapping("/{pvc_id}")
     public ResponseEntity<Boolean> deletePvc(
+            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId,
+            @Encrypt
             @ApiParam(value = "PVC id", required = true)
-//            @Encrypt(DevopsPvcDTO.ENCRYPT_KEY)
             @PathVariable(value = "pvc_id") Long pvcId) {
         return Optional.of(devopsPvcService.delete(projectId, envId, pvcId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
@@ -110,8 +116,10 @@ public class DevopsPvcController {
     @ApiOperation(value = "检查PVC名称的唯一性")
     @GetMapping("/check_name")
     public ResponseEntity<Boolean> checkName(
+            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "PVC名称", required = true)
