@@ -67,11 +67,11 @@ const PipelineManage = observer((props) => {
     await treeDs.query();
     const { id } = getMainData;
     const { parentId } = getSelectedMenu;
-    const { gitlabPipelineId, cdRecordId } = getDetailData;
+    const { gitlabPipelineId } = getDetailData;
     if (!parentId) {
       id && loadData(projectId, id);
     } else {
-      gitlabPipelineId && loadDetailData(projectId, gitlabPipelineId, cdRecordId);
+      gitlabPipelineId && loadDetailData(projectId, gitlabPipelineId);
     }
   }
 

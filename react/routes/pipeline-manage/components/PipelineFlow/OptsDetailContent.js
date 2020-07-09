@@ -34,7 +34,7 @@ export default observer((props) => {
   } = detailStore;
 
   useEffect(() => {
-    loadDetailData(projectId, gitlabPipelineId, cdRecordId);
+    loadDetailData(projectId, gitlabPipelineId);
   }, [projectId, gitlabPipelineId, cdRecordId]);
 
   // stageRecordVOList: 各个详情阶段记录
