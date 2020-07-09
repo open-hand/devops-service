@@ -11,11 +11,13 @@ const defaultData = [
     sequence: 1,
     jobList: [],
     type: 'CI',
+    parallel: 1,
   }, {
     name: '部署',
     sequence: 2,
     jobList: [],
     type: 'CD',
+    parallel: 0,
   },
 ];
 
