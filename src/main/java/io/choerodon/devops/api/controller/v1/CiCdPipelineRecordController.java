@@ -35,12 +35,12 @@ public class CiCdPipelineRecordController {
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "重试整条流水线")
-    @GetMapping("{cd_pipeline_record_id}/retry")
+    @GetMapping("/retry")
     public ResponseEntity retryPipeline(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "cd流水线记录id", required = true)
-            @PathVariable(value = "cd_pipeline_record_id") Long cdPipelineRecordId,
+            @RequestParam(value = "cd_pipeline_record_id") Long cdPipelineRecordId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @RequestParam("gitlab_pipeline_id") Long gitlabPipelineId,
             @ApiParam(value = "流水线ID", required = true)
@@ -54,11 +54,11 @@ public class CiCdPipelineRecordController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "取消流水线")
-    @PostMapping(value = "/{cd_pipeline_record_id}/cancel")
-    public ResponseEntity<Boolean> cancel(
+    @PostMapping(value = "/cancel")
+    public ResponseEntity cancel(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "cd流水线记录id", required = true)
-            @PathVariable(value = "cd_pipeline_record_id") Long cdPipelineRecordId,
+            @RequestParam(value = "cd_pipeline_record_id") Long cdPipelineRecordId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @RequestParam("gitlab_pipeline_id") Long gitlabPipelineId,
             @ApiParam(value = "流水线ID", required = true)
