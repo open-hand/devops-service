@@ -4,18 +4,18 @@
 
     <select id="listByCiPipelineId" resultType="io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO">
         SELECT *
-        FROM devops_cicd_pipeline_record dcpr
+        FROM devops_ci_pipeline_record dcpr
         WHERE dcpr.ci_pipeline_id = #{ciPipelineId}
     </select>
     <update id="updateStatusByGitlabPipelineId">
-        UPDATE devops_cicd_pipeline_record
+        UPDATE devops_ci_pipeline_record
         set status = #{status}
         WHERE gitlab_pipeline_id = #{gitlabPipelineId}
     </update>
 
     <select id="listGitlabPipelineIdsByPipelineId" resultType="java.lang.Long">
         SELECT dcpr.gitlab_pipeline_id
-        FROM devops_cicd_pipeline_record dcpr
+        FROM devops_ci_pipeline_record dcpr
         WHERE dcpr.ci_pipeline_id = #{ciPipelineId}
     </select>
 
