@@ -32,7 +32,7 @@ const statusObj = {
     icon: 'skipped_a',
     text: '已跳过',
   },
-  pendingcheck: {
+  not_audit: {
     icon: 'timelapse',
     text: '待审核',
   },

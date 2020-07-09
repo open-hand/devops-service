@@ -1,4 +1,4 @@
-export default ({ formatMessage, intlPrefix, projectId, pipelineRecordId, store, refresh }) => ({
+export default ({ formatMessage, intlPrefix, projectId, pipelineRecordId, store, refresh, cdRecordId }) => ({
   autoCreate: false,
   autoQuery: true,
   selection: false,
@@ -6,7 +6,7 @@ export default ({ formatMessage, intlPrefix, projectId, pipelineRecordId, store,
   dataKey: null,
   transport: {
     read: {
-      url: `devops/v1/projects/${projectId}/ci_pipeline_records/${pipelineRecordId}/details`,
+      url: `/devops/v1/projects/${projectId}/cicd_pipelines_record/details?gitlab_pipeline_id=${pipelineRecordId}${cdRecordId ? `&cd_pipeline_record_id=${cdRecordId}` : ''}`,
       method: 'get',
     },
   },

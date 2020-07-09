@@ -30,7 +30,6 @@ export default observer(() => {
     /> : <PipelineDetail />
   );
 
-
   return (
     <div className="c7ncd-pipelineManage_flow">
       {renderPipeline()}

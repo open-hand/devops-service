@@ -46,7 +46,7 @@ const tagObj = {
     color: 'rgba(216,216,216,1)',
     text: '未执行',
   },
-  pendingcheck: {
+  not_audit: {
     borderColor: 'rgba(255, 177, 0,.12)',
     backgroundColor: 'rgba(255, 177, 0,.12)',
     color: 'rgba(255, 177, 0,1)',
