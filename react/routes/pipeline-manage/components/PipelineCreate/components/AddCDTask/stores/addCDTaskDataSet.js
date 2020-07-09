@@ -46,7 +46,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
     name: 'deployType',
     type: 'string',
     label: '部署模式',
-    defaultValue: 'new',
+    defaultValue: 'create',
   }, {
     name: 'instanceName',
     type: 'string',

@@ -84,6 +84,7 @@ export default observer(() => {
               };
             }
           }
+          ds.appServiceId = PipelineCreateFormDataSet.current.get('appServiceId');
           return JSON.stringify(ds).replace(/"/g, "'");
         }()),
       };
