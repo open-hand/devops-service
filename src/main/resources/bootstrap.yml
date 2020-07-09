@@ -36,6 +36,6 @@ eureka:
   client:
     serviceUrl:
       # 注册中心地址
-      defaultZone: ${EUREKA_DEFAULT_ZONE:http://dev.hzero.org:8000/eureka}
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8000/eureka}
     registryFetchIntervalSeconds: 3
     disable-delta: true

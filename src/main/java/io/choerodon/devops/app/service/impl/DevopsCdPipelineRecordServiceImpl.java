@@ -29,15 +29,10 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.kubernetes.Stage;
-import io.choerodon.devops.app.service.DevopsCdAuditRecordService;
-import io.choerodon.devops.app.service.DevopsCdJobRecordService;
-import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
-import io.choerodon.devops.app.service.DevopsCdStageRecordService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
-import io.choerodon.devops.infra.dto.DevopsCdAuditRecordDTO;
-import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
-import io.choerodon.devops.infra.dto.DevopsCdPipelineRecordDTO;
-import io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusDeployDTO;
@@ -105,6 +100,21 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Autowired
     private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
+
+    @Autowired
+    private DevopsEnvironmentMapper devopsEnvironmentMapper;
+
+    @Autowired
+    private AppServiceMapper appServiceMapper;
+
+    @Autowired
+    private AppServiceVersionMapper appServiceVersionMapper;
+
+    @Autowired
+    private AppServiceInstanceMapper appServiceInstanceMapper;
+
+    @Autowired
+    private DevopsCdAuditService devopsCdAuditService;
 
 
     @Override
@@ -663,16 +673,69 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 //查询Cd job
                 List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
                 List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
-                //计算job耗时
-                devopsCdJobRecordVOS.forEach(devopsCdJobRecordVO -> {
-                    devopsCdJobRecordVO.setJobExecuteTime();
-                });
+                calculateJob(devopsCdJobRecordVOS);
                 devopsCdStageRecordVO.setDevopsCdJobRecordVOS(devopsCdJobRecordVOS);
             });
             devopsCdPipelineRecordVO.setDurationSeconds(devopsCdStageRecordVOS.stream().map(DevopsCdStageRecordVO::getExecutionTime).reduce((aLong, aLong2) -> aLong + aLong2).get());
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
         }
         return devopsCdPipelineRecordVO;
+    }
+
+    private void calculateJob(List<DevopsCdJobRecordVO> devopsCdJobRecordVOS) {
+        devopsCdJobRecordVOS.forEach(devopsCdJobRecordVO -> {
+            //计算job耗时
+            devopsCdJobRecordVO.setJobExecuteTime();
+            //如果是自动部署返回 能点击查看生成实例的相关信息
+            if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobRecordVO.getType())) {
+                DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = gson.fromJson(devopsCdJobRecordVO.getMetadata(), DevopsCdEnvDeployInfoDTO.class);
+                //部署环境 应用服务 生成版本 实例名称
+                DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
+                cdAuto.setEnvName(devopsEnvironmentMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getEnvId()).getName());
+                cdAuto.setAppServiceName(appServiceMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getAppServiceId()).getName());
+                AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
+                appServiceVersionDTO.setAppServiceId(devopsCdEnvDeployInfoDTO.getAppServiceId());
+                appServiceVersionDTO.setValueId(devopsCdEnvDeployInfoDTO.getValueId());
+                List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
+                if (CollectionUtils.isEmpty(appServiceVersionDTOS)) {
+                    cdAuto.setAppServiceVersion(appServiceVersionDTOS.get(0).getVersion());
+                }
+                //创建实例
+                if (CommandType.CREATE.equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
+                    cdAuto.setInstanceName(devopsCdEnvDeployInfoDTO.getInstanceName());
+                }
+                //替换实例
+                if (CommandType.CREATE.equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
+                    cdAuto.setAppServiceName(appServiceInstanceMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getInstanceId()).getCode());
+                }
+                devopsCdJobRecordVO.setCdAuto(cdAuto);
+
+            }
+            //如果是人工审核返回审核信息
+            if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordVO.getType())) {
+                // 指定审核人员 已审核人员 审核状态
+                DevopsCdJobRecordVO.Audit audit = devopsCdJobRecordVO.new Audit();
+                List<DevopsCdAuditDTO> devopsCdAuditDTOS = devopsCdAuditService.baseListByOptions(null, null, devopsCdJobRecordVO.getJobId());
+                if (!CollectionUtils.isEmpty(devopsCdAuditDTOS)) {
+                    List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(devopsCdAuditDTOS.stream().map(DevopsCdAuditDTO::getUserId).collect(Collectors.toList()));
+                    audit.setAppointUsers(iamUserDTOS);
+                }
+                List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByJobRecordId(devopsCdJobRecordVO.getId());
+                if (!CollectionUtils.isEmpty(devopsCdAuditRecordDTOS)) {
+                    List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(devopsCdAuditRecordDTOS.stream().map(DevopsCdAuditRecordDTO::getUserId).collect(Collectors.toList()));
+                    audit.setReviewedUsers(iamUserDTOS);
+                    for (DevopsCdAuditRecordDTO devopsCdAuditRecordDTO : devopsCdAuditRecordDTOS) {
+                        if (!AuditStatusEnum.PASSED.value().equals(devopsCdAuditRecordDTO.getStatus())) {
+                            audit.setStatus(devopsCdAuditRecordDTO.getStatus());
+                            break;
+                        }
+                        audit.setStatus(devopsCdAuditRecordDTO.getStatus());
+                    }
+                }
+                devopsCdJobRecordVO.setAudit(audit);
+            }
+        });
+
     }
 
     @Override

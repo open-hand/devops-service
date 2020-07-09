@@ -113,7 +113,6 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             ciCdPipelineRecordVO.setStatus(devopsCdPipelineRecordVO.getStatus());
             ciCdPipelineRecordVO.setCiCdPipelineVO(ConvertUtils.convertObject(devopsCdPipelineRecordVO.getCiCdPipelineVO(), CiCdPipelineVO.class));
         }
-        //commit 触发分支
         return ciCdPipelineRecordVO;
     }
 

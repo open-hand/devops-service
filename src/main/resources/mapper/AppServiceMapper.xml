@@ -704,7 +704,6 @@
     <select id="queryAppServicesHavingVersions" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT DISTINCT (das.id), das.name, das.code
         FROM devops_app_service das
-                     INNER JOIN devops_app_service_version dasv ON das.id = dasv.app_service_id
         WHERE das.project_id = #{projectId,jdbcType=BIGINT}
           AND das.is_active = TRUE
           AND das.type = 'normal'
