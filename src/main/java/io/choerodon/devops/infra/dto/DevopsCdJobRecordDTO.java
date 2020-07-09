@@ -42,6 +42,7 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
     @ApiModelProperty("主机部署 制品库详情")
     private String deployMetadata;
     private Long deployInfoId;
+    private Long commandId;
 
     public Long getId() {
         return id;
@@ -187,6 +188,14 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
         this.deployInfoId = deployInfoId;
     }
 
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
+    }
+
     @Override
     public String toString() {
         return "DevopsCdJobRecordDTO{" +
@@ -208,6 +217,7 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
                 ", durationSeconds=" + durationSeconds +
                 ", deployMetadata='" + deployMetadata + '\'' +
                 ", deployInfoId=" + deployInfoId +
+                ", commandId=" + commandId +
                 '}';
     }
 }

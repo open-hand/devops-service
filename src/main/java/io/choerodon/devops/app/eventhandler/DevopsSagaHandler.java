@@ -35,6 +35,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.CommandType;
+import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
@@ -383,7 +384,9 @@ public class DevopsSagaHandler {
             // 对于新建实例的部署任务，部署成功后修改为替换实例
             updateDeployTypeToUpdate(appServiceDeployVO.getDeployInfoId(), appServiceInstanceVO);
             // 更新job状态为success
-            devopsCdJobRecordService.updateJobStatusSuccess(devopsCdJobRecordDTO.getId());
+            devopsCdJobRecordDTO.setCommandId(appServiceInstanceVO.getCommandId());
+            devopsCdJobRecordDTO.setStatus(PipelineStatus.SUCCESS.toValue());
+            devopsCdJobRecordService.update(devopsCdJobRecordDTO);
             LOGGER.info("create pipeline auto deploy instance success");
         } catch (Exception e) {
             LOGGER.error("error create pipeline auto deploy instance {}", e);

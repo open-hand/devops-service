@@ -218,7 +218,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = new DevopsCdPipelineRecordDTO();
         devopsCdPipelineRecordDTO.setPipelineId(devopsCiPipelineDTO.getId());
         devopsCdPipelineRecordDTO.setGitlabPipelineId(gitlabPipelineId);
-        devopsCdPipelineRecordDTO.setStatus(PipelineStatus.PENDING.toValue());
+        devopsCdPipelineRecordDTO.setStatus(PipelineStatus.CREATED.toValue());
         devopsCdPipelineRecordDTO.setPipelineName(devopsCiPipelineDTO.getName());
         devopsCdPipelineRecordDTO.setBusinessKey(GenerateUUID.generateUUID());
         devopsCdPipelineRecordDTO.setProjectId(devopsCiPipelineDTO.getProjectId());
@@ -232,7 +232,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         DevopsCdStageRecordDTO devopsCdStageRecordDTO = new DevopsCdStageRecordDTO();
         devopsCdStageRecordDTO.setPipelineRecordId(pipelineRecordId);
         devopsCdStageRecordDTO.setStageId(stageId);
-        devopsCdStageRecordDTO.setStatus(PipelineStatus.PENDING.toValue());
+        devopsCdStageRecordDTO.setStatus(PipelineStatus.CREATED.toValue());
         devopsCdStageRecordService.save(devopsCdStageRecordDTO);
 
         return devopsCdStageRecordService.queryById(devopsCdStageRecordDTO.getId());
@@ -243,7 +243,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         devopsCdJobRecordDTO.setName(job.getName());
         devopsCdJobRecordDTO.setStageRecordId(stageRecordId);
         devopsCdJobRecordDTO.setType(job.getType());
-        devopsCdJobRecordDTO.setStatus(PipelineStatus.PENDING.toValue());
+        devopsCdJobRecordDTO.setStatus(PipelineStatus.CREATED.toValue());
         devopsCdJobRecordDTO.setTriggerType(job.getTriggerType());
         devopsCdJobRecordDTO.setTriggerValue(job.getTriggerType());
         devopsCdJobRecordDTO.setMetadata(job.getMetadata());

@@ -1,14 +1,14 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.PodEventVO;
 import io.choerodon.devops.app.service.DevopsCdJobRecordService;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -44,5 +44,24 @@ public class DevopsCdJobRecordController {
                                            @PathVariable(value = "job_record_id") Long jobRecordId) {
         devopsCdJobRecordService.retryCdJob(projectId, pipelineRecordId, stageRecordId, jobRecordId);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * 查看部署任务日志
+     *
+     * @param projectId
+     * @param pipelineRecordId
+     * @param stageRecordId
+     * @param jobRecordId
+     * @return
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查看部署任务日志")
+    @GetMapping("/{job_record_id}/logs")
+    public ResponseEntity<List<PodEventVO>> queryDeployJobLogs(@PathVariable(value = "project_id") Long projectId,
+                                                               @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,
+                                                               @PathVariable(value = "stage_record_id") Long stageRecordId,
+                                                               @PathVariable(value = "job_record_id") Long jobRecordId) {
+        return ResponseEntity.ok(devopsCdJobRecordService.queryDeployJobLogs(projectId, pipelineRecordId, stageRecordId, jobRecordId));
     }
 }
