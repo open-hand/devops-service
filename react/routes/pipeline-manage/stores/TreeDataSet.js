@@ -11,7 +11,7 @@ function formatData({ data, expandsKeys }) {
         ...item,
         key,
         parentId: parentId ? parentId.toString() : null,
-        status: item.latestExecuteStatus || item.status,
+        status: item.latestExecuteStatus || item.status || (item.ciStatus === 'success' && item.cdStatus ? item.cdStatus : item.ciStatus),
         expand: expandsKeys.includes(key),
         gitlabProjectId: newGitlabProjectId,
       };

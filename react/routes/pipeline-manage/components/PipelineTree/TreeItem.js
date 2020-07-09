@@ -17,6 +17,7 @@ import StatusTag from '../PipelineFlow/components/StatusTag';
 
 const executeKey = Modal.key();
 const stopKey = Modal.key();
+const auditKey = Modal.key();
 
 const TreeItem = observer(({ record, search }) => {
   const {
@@ -115,10 +116,20 @@ const TreeItem = observer(({ record, search }) => {
       gitlabProjectId: record.get('gitlabProjectId'),
       recordId: record.get('gitlabPipelineId'),
       type,
+      cdRecordId: record.get('cdRecordId'),
     });
     if (res) {
       handleRefresh();
     }
+  }
+
+  function openAuditModal() {
+    Modal.open({
+      key: auditKey,
+      title: formatMessage({ id: `${intlPrefix}.execute.audit` }),
+      children: '人工审核',
+      movable: false,
+    });
   }
 
   async function loadMoreRecord(deleteRecord) {
@@ -198,6 +209,13 @@ const TreeItem = observer(({ record, search }) => {
             service: ['choerodon.code.project.develop.ci-pipeline.ps.retry'],
             text: formatMessage({ id: `${intlPrefix}.execute.retry` }),
             action: () => changeRecordExecute('retry'),
+          }];
+          break;
+        case 'not_audit':
+          actionData = [{
+            service: [''],
+            text: formatMessage({ id: `${intlPrefix}.execute.audit` }),
+            action: openAuditModal,
           }];
           break;
         default:
