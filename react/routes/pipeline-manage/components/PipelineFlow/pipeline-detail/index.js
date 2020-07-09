@@ -2,7 +2,7 @@ import React, { useEffect, Fragment, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 import forEach from 'lodash/forEach';
-import { Spin, Icon } from 'choerodon-ui';
+import { Tooltip } from 'choerodon-ui/pro';
 import { usePipelineFlowStore } from '../stores';
 import StageType from '../components/stage-type';
 
@@ -67,10 +67,10 @@ export default observer((props) => {
     setRightLineDom(rightList);
   }, [getStepData]);
 
-  function getJobTask(type, metadata) {
+  function getJobTask(type, metadata, iamUserDTOS) {
     if (metadata) {
       const newData = JSON.parse(metadata.replace(/'/g, '"'));
-      const { sonarUrl, config, envName, triggerValue = [], triggerType, users, countersigned } = newData || {};
+      const { sonarUrl, config, envName, triggerValue = [], triggerType, countersigned } = newData || {};
       let content;
       switch (type) {
         case 'sonar':
@@ -92,8 +92,16 @@ export default observer((props) => {
         case 'cdAudit':
           content = (
             <div className="c7ncd-pipeline-detail-job-task-deploy">
-              <span className="c7ncd-pipeline-detail-job-task-deploy-item">审核人员：{users}</span>
-              <span className="c7ncd-pipeline-detail-job-task-deploy-item">审核模式：{countersigned ? '会签' : '或签'}</span>
+              <span className="c7ncd-pipeline-detail-job-task-deploy-item">
+                审核人员：
+                {map(iamUserDTOS || [], ({ loginName, realName, id: userId }, index) => (
+                  <span key={userId}>
+                    {realName}
+                    {index !== iamUserDTOS.length - 1 && ','}
+                  </span>
+                ))}
+              </span>
+              <span className="c7ncd-pipeline-detail-job-task-deploy-item">审核模式：{countersigned === 0 ? '或签' : '会签'}</span>
               <span>
                 触发分支：
                 {triggerType === 'exact_exclude' ? '精确排除<br/>' : ''}
@@ -152,12 +160,12 @@ export default observer((props) => {
                 )}
               </div>
             ) : null}
-            {map(jobList, ({ id: jobId, type: jobType, name: jobName, metadata }, index) => (
+            {map(jobList, ({ id: jobId, type: jobType, name: jobName, metadata, iamUserDTOS }, index) => (
               <div key={`${stageId}-${jobId}`}>
                 {index && leftLineDom[stageIndex] ? leftLineDom[stageIndex][index] : null}
                 <div className={`c7ncd-pipeline-detail-job c7ncd-pipeline-detail-job-${stageType}`} id={`${id}-${stageIndex}-job-${index}`}>
                   <div className="c7ncd-pipeline-detail-job-title">【{jobTask[jobType]}】{jobName}</div>
-                  {jobType !== 'custom' && getJobTask(jobType, metadata)}
+                  {jobType !== 'custom' && getJobTask(jobType, metadata, iamUserDTOS)}
                 </div>
                 {index && stageIndex !== getStepData.length - 1 && rightLineDom[stageIndex] ? rightLineDom[stageIndex][index] : null}
               </div>

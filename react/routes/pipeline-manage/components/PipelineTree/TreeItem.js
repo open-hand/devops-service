@@ -14,6 +14,7 @@ import ExecuteContent from './execute-content';
 import TreeItemName from '../../../../components/treeitem-name';
 import { usePipelineTreeStore } from './stores';
 import StatusTag from '../PipelineFlow/components/StatusTag';
+import AuditModal from '../audit-modal';
 
 const executeKey = Modal.key();
 const stopKey = Modal.key();
@@ -124,10 +125,22 @@ const TreeItem = observer(({ record, search }) => {
   }
 
   function openAuditModal() {
+    const checkData = {
+      type: 'task',
+      // stageRecordId,
+      // taskRecordId,
+      // stageName,
+    };
     Modal.open({
       key: auditKey,
       title: formatMessage({ id: `${intlPrefix}.execute.audit` }),
-      children: '人工审核',
+      children: <AuditModal
+        cdRecordId={record.get('cdRecordId')}
+        name={record.get('gitlabPipelineId')}
+        mainStore={mainStore}
+        onClose={refresh}
+        checkData={checkData}
+      />,
       movable: false,
     });
   }
