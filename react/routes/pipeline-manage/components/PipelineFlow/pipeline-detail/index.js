@@ -132,11 +132,11 @@ export default observer((props) => {
         <span className="c7ncd-pipeline-detail-title-appService">{appServiceName ? ` (${appServiceName}) ` : ''}</span>
       </div>
       <div className="c7ncd-pipeline-detail-content">
-        {map(getStepData, ({ id: stageId, name: stageName, jobList, type: stageType = 'CI' }, stageIndex) => (
+        {map(getStepData, ({ id: stageId, name: stageName, jobList, type: stageType = 'CI', parallel }, stageIndex) => (
           <div className="c7ncd-pipeline-detail-stage" key={`${stageId}-${stageIndex}`}>
             <div className="c7ncd-pipeline-detail-stage-title">
               <span>{stageName}</span>
-              <StageType type={stageType} />
+              <StageType type={stageType} parallel={parallel} />
             </div>
             <div className="c7ncd-pipeline-detail-stage-line" />
             {stageIndex !== 0 ? (
