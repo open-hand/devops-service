@@ -231,7 +231,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         LOGGER.info("start image deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
         Boolean status = true;
         SSHClient ssh = new SSHClient();
-        Session session = null;
         try {
             // 0.1
             DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
@@ -264,14 +263,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsCdJobRecordService.update(jobRecordDTO);
             // 2.
             sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
-            session = ssh.startSession();
             // 3.
             // 3.1
-            dockerLogin(session, imageTagVo);
+            dockerLogin(ssh, imageTagVo);
             // 3.2
-            dockerPull(session, filterImageTagVoList.get(0));
+            dockerPull(ssh, filterImageTagVoList.get(0));
             // 3.3
-            dockerRun(session, imageDeploy, filterImageTagVoList.get(0));
+            dockerRun(ssh, imageDeploy, filterImageTagVoList.get(0));
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
             LOGGER.info("========================================");
             LOGGER.info("image deploy cd host job success!!!,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
@@ -279,45 +277,82 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             status = false;
             jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } finally {
-            closeSsh(ssh, session);
+            closeSsh(ssh, null);
         }
         return status;
     }
 
-    private void dockerLogin(Session session, HarborC7nRepoImageTagVo imageTagVo) throws IOException {
-        String loginExec = String.format("docker login -u %s -p %s", imageTagVo.getPullAccount(), imageTagVo.getPullPassword());
-        LOGGER.info(loginExec);
-        Session.Command cmd = session.exec(loginExec);
+    private void dockerLogin(SSHClient ssh, HarborC7nRepoImageTagVo imageTagVo) throws IOException {
+        Session session = null;
+        try {
+            session = ssh.startSession();
+            // todo 未安装docker 判断
+            String loginExec = String.format("docker login -u %s -p %s %s", imageTagVo.getPullAccount(), imageTagVo.getPullPassword(), imageTagVo.getHarborUrl());
+            LOGGER.info(loginExec);
+            Session.Command cmd = session.exec(loginExec);
 
-        String loggerStr = IOUtils.readFully(cmd.getInputStream()).toString();
-        LOGGER.info(loggerStr);
-        LOGGER.info("docker login status:{}", cmd.getExitStatus());
-        if (loggerStr.contains(UNAUTHORIZED) || !StringUtils.isEmpty(cmd.getExitErrorMessage())) {
-            throw new CommonException(ERROR_DOCKER_LOGIN);
+            String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
+            String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
+
+            LOGGER.info(loggerInfo);
+            LOGGER.info(loggerError);
+            LOGGER.info("docker login status:{}", cmd.getExitStatus());
+
+            if (cmd.getExitStatus() != 0) {
+                throw new CommonException(ERROR_DOCKER_LOGIN);
+            }
+
+        } finally {
+            assert session != null;
+            session.close();
         }
     }
 
-    private void dockerPull(Session session, HarborC7nRepoImageTagVo.HarborC7nImageTagVo imageTagVo) throws IOException {
-        LOGGER.info(imageTagVo.getPullCmd());
-        Session.Command cmd = session.exec(imageTagVo.getPullCmd());
-        String loggerStr = IOUtils.readFully(cmd.getInputStream()).toString();
-        LOGGER.info(loggerStr);
-        LOGGER.info("docker pull status:{}", cmd.getExitStatus());
-        if (!StringUtils.isEmpty(cmd.getExitErrorMessage())) {
-            throw new CommonException(ERROR_DOCKER_PULL);
+    private void dockerPull(SSHClient ssh, HarborC7nRepoImageTagVo.HarborC7nImageTagVo imageTagVo) throws IOException {
+        Session session = null;
+        try {
+            session = ssh.startSession();
+            LOGGER.info(imageTagVo.getPullCmd());
+            Session.Command cmd = session.exec(imageTagVo.getPullCmd());
+            String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
+            String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
+            LOGGER.info(loggerInfo);
+            LOGGER.info(loggerError);
+            LOGGER.info("docker pull status:{}", cmd.getExitStatus());
+            if (cmd.getExitStatus() != 0) {
+                throw new CommonException(ERROR_DOCKER_PULL);
+            }
+        } finally {
+            assert session != null;
+            session.close();
         }
     }
 
-    private void dockerRun(Session session, CdHostDeployConfigVO.ImageDeploy imageDeploy, HarborC7nRepoImageTagVo.HarborC7nImageTagVo imageTagVo) throws IOException {
-        String dockerRunExec = imageDeploy.getValues().replace("${iamge}", imageTagVo.getPullCmd().replace("docker run ", ""));
-        LOGGER.info(dockerRunExec);
-        Session.Command cmd = session.exec(dockerRunExec);
-        String loggerStr = IOUtils.readFully(cmd.getInputStream()).toString();
-        LOGGER.info(loggerStr);
-        LOGGER.info("docker run status:{}", cmd.getExitStatus());
-        if (!StringUtils.isEmpty(cmd.getExitErrorMessage())) {
-            throw new CommonException(ERROR_DOCKER_RUN);
+    private void dockerRun(SSHClient ssh, CdHostDeployConfigVO.ImageDeploy imageDeploy, HarborC7nRepoImageTagVo.HarborC7nImageTagVo imageTagVo) throws IOException {
+        Session session = null;
+        try {
+            session = ssh.startSession();
+            // todo 一定要带 -d 一定要带containerName
+            // 判断镜像是否存在 存在删除 部署
+            StringBuilder dockerRunExec = new StringBuilder();
+            dockerRunExec.append("docker stop mytest ").append(System.lineSeparator());
+            dockerRunExec.append("docker rm mytest ").append(System.lineSeparator());
+            dockerRunExec.append(imageDeploy.getValues().replace("${iamge}", imageTagVo.getPullCmd().replace("docker run ", "")));
+            LOGGER.info(dockerRunExec.toString());
+            Session.Command cmd = session.exec(dockerRunExec.toString());
+            String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
+            String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
+            LOGGER.info(loggerInfo);
+            LOGGER.info(loggerError);
+            LOGGER.info("docker run status:{}", cmd.getExitStatus());
+            if (cmd.getExitStatus() != 0) {
+                throw new CommonException(ERROR_DOCKER_RUN);
+            }
+        } finally {
+            assert session != null;
+            session.close();
         }
+
     }
 
     private void sshConnect(HostConnectionVO hostConnectionVO, SSHClient ssh) throws IOException {
@@ -364,6 +399,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         SSHClient ssh = new SSHClient();
         Boolean status = true;
         Session session = null;
+        // todo jar包何时删除
+        // 停止jar
         String jarName = String.format("app-%s.jar", GenerateUUID.generateRandomString());
         try {
             // 0.1
@@ -397,50 +434,54 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
             // 2.1
             sshExec(session, jarName, mavenRepoDTOList.get(0), nexusComponentDTOList.get(0));
+//            NexusMavenRepoDTO nexusMavenRepoDTO = new NexusMavenRepoDTO();
+//            nexusMavenRepoDTO.setNePullUserId("zhuang");
+//            nexusMavenRepoDTO.setNePullUserPassword("123456");
+//            C7nNexusComponentDTO nexusComponentDTO = new C7nNexusComponentDTO();
+//            nexusComponentDTO.setDownloadUrl("https://nexus.choerodon.com.cn/repository/choerodon-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20200709.063923-1.jar");
+//            sshExec(session, jarName, nexusMavenRepoDTO, nexusComponentDTO);
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
         } catch (Exception e) {
             status = false;
             jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } finally {
-            try {
-                if (session != null) {
-                    session.exec(String.format("rm %s", jarName));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
             closeSsh(ssh, session);
         }
         return status;
     }
 
     private void sshExec(Session session, String jarName, NexusMavenRepoDTO mavenRepoDTO, C7nNexusComponentDTO nexusComponentDTO) throws IOException {
-        session.exec("mkdir temp-jar");
-        session.exec("cd temp-jar");
+        StringBuilder cmdStr = new StringBuilder();
+        cmdStr.append("mkdir temp-jar ").append(System.lineSeparator());
+        cmdStr.append("cd temp-jar ").append(System.lineSeparator());
 
         // 2.2
-        String curlExec = String.format("curl -o %s -u %s:%s %s",
+        String curlExec = String.format("curl -o %s -u %s:%s %s ",
                 jarName,
                 mavenRepoDTO.getNePullUserId(),
                 mavenRepoDTO.getNePullUserPassword(),
                 nexusComponentDTO.getDownloadUrl());
-        LOGGER.info(curlExec);
-        Session.Command cmd = session.exec(curlExec);
-        String loggerStr = IOUtils.readFully(cmd.getInputStream()).toString();
-        LOGGER.info(loggerStr);
-        LOGGER.info("download jar status:{}", cmd.getExitStatus());
-        if (!StringUtils.isEmpty(cmd.getExitErrorMessage())) {
-            throw new CommonException(ERROR_DOWNLOAD_JAY);
-        }
+        cmdStr.append(curlExec).append(System.lineSeparator());
 
         // 2.3
-        String javaJarExec = String.format("java -jar %s", jarName);
-        LOGGER.info(javaJarExec);
-        cmd = session.exec(curlExec);
-        LOGGER.info("exec jar status:{}", cmd.getExitStatus());
-        if (!StringUtils.isEmpty(cmd.getExitErrorMessage())) {
+        String javaJarExec = String.format("echo `java -jar %s & `", jarName);
+        cmdStr.append(javaJarExec);
+        LOGGER.info(cmdStr.toString());
+
+        final Session.Command cmd = session.exec(cmdStr.toString());
+        cmd.join(5, TimeUnit.SECONDS);
+        String loggerInfo = IOUtils.readFully(cmd.getErrorStream()).toString();
+        String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
+
+        if (loggerError.contains("Unauthorized") || loggerInfo.contains("Unauthorized")) {
+            throw new CommonException(ERROR_DOWNLOAD_JAY);
+        }
+        if (cmd.getExitStatus() != 0 || loggerError.contains("java: command not found") || loggerInfo.contains("java: command not found")) {
             throw new CommonException(ERROR_JAVA_JAR);
         }
+        LOGGER.info(loggerInfo);
+        LOGGER.info(loggerError);
+
     }
 
     private void closeSsh(SSHClient ssh, Session session) {
@@ -497,10 +538,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         Session session = null;
         try {
             sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
-            session = ssh.startSession();
-            dockerLogin(session, imageTagVoRecord);
-            dockerPull(session, imageTagVoRecord.getImageTagList().get(0));
-            dockerRun(session, imageDeploy, imageTagVoRecord.getImageTagList().get(0));
+            dockerLogin(ssh, imageTagVoRecord);
+            dockerPull(ssh, imageTagVoRecord.getImageTagList().get(0));
+            dockerRun(ssh, imageDeploy, imageTagVoRecord.getImageTagList().get(0));
 
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
         } catch (Exception e) {
