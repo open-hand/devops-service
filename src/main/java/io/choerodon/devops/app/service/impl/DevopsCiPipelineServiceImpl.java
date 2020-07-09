@@ -431,7 +431,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 ciCdPipelineVO.setLatestExecuteDate(devopsCdPipelineRecordVOS.getContent().get(0).getCreatedDate());
                 ciCdPipelineVO.setLatestExecuteStatus(devopsCdPipelineRecordVOS.getContent().get(0).getStatus());
                 ciCdPipelineVO.setHasMoreRecords(pipelineCiRecordVOPageInfo.getTotalElements() > DEFAULT_PIPELINE_RECORD_SIZE);
-                cdPipielineMap = devopsCdPipelineRecordVOS.getContent().stream().collect(Collectors.groupingBy(DevopsCdPipelineRecordVO::getPipelineId));
+                cdPipielineMap = devopsCdPipelineRecordVOS.getContent().stream().collect(Collectors.groupingBy(DevopsCdPipelineRecordVO::getGitlabPipelineId));
             }
 
             //封装 CiCdPipelineRecordVO
