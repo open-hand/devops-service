@@ -67,5 +67,23 @@ export default function useStore() {
     checkLinkToGitlab(projectId, appServiceId, type) {
       return axios.get(`/devops/v1/projects/${projectId}/member-check/${appServiceId}?type=${type || 'CI_PIPELINE_DETAIL'}`);
     },
+
+    /**
+     ** 人工审核阶段或任务
+     * @param projectId
+     * @param data
+     */
+    checkData(projectId, data) {
+      return axios.post(`/devops/v1/projects/${projectId}/pipeline/audit`, JSON.stringify(data));
+    },
+
+    /**
+     ** 人工审核预检，判断是否可以审核
+     * @param projectId
+     * @param data
+     */
+    canCheck(projectId, data) {
+      return axios.post(`/devops/v1/projects/${projectId}/pipeline/check_audit`, JSON.stringify(data));
+    },
   }));
 }
