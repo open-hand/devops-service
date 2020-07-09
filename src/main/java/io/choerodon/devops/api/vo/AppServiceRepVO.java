@@ -2,12 +2,11 @@ package io.choerodon.devops.api.vo;
 
 
 import java.util.Date;
-import java.util.List;
 
-import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
-import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
-import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
 
 /**
  * @author younger
@@ -15,7 +14,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class AppServiceRepVO {
     @ApiModelProperty("应用服务id")
-//    @Encrypt(AppServiceDTO.ENCRYPT_KEY)
+    @Encrypt
     private Long id;
 
     @ApiModelProperty("应用服务名称")
@@ -25,9 +24,11 @@ public class AppServiceRepVO {
     private String code;
 
     @ApiModelProperty("应用服务所属项目id")
+    @Encrypt
     private Long projectId;
 
     @ApiModelProperty("应用服务对应gitlab项目的id")
+    @Encrypt
     private Long gitlabProjectId;
 
     @ApiModelProperty("应用服务对应的gitlab仓库地址")

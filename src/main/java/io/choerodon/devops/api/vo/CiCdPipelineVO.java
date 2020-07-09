@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.GeneratedValue;
@@ -10,27 +9,38 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import io.choerodon.devops.infra.dto.DevopsCdPipelineRecordDTO;
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class CiCdPipelineVO {
+    @Encrypt
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
     @ApiModelProperty("流水线名称")
     @NotEmpty(message = "error.pipeline.name.cannot.be.null")
     private String name;
+
+    @Encrypt
     @ApiModelProperty("项目id")
     private Long projectId;
+
+    @Encrypt
     @ApiModelProperty("流水线关联应用服务id")
     @NotNull(message = "error.pipeline.appSvc.id.cannot.be.null")
     private Long appServiceId;
+
     @ApiModelProperty("流水线关联应用服务名称/nullable")
     private String appServiceName;
     private String appServiceType;
     private String appServiceCode;
     @ApiModelProperty("gitlab项目id/nullable")
+
+    @Encrypt
     private Long gitlabProjectId;
     @ApiModelProperty("runner镜像地址")
+
     private String image;
     @ApiModelProperty("是否启用/nullable")
     private Boolean enabled;

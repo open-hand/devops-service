@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 
 import io.swagger.annotations.ApiOperation;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,20 +29,19 @@ public class DevopsCdJobRecordController {
 
     /**
      * 重试cd_job
-     *
-     * @param projectId
-     * @param pipelineRecordId
-     * @param stageRecordId
-     * @param jobRecordId
-     * @return
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "重试cd_job")
     @PutMapping("/{job_record_id}")
-    public ResponseEntity<Void> retryCdJob(@PathVariable(value = "project_id") Long projectId,
-                                           @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,
-                                           @PathVariable(value = "stage_record_id") Long stageRecordId,
-                                           @PathVariable(value = "job_record_id") Long jobRecordId) {
+    public ResponseEntity<Void> retryCdJob(
+            @Encrypt
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,
+            @Encrypt
+            @PathVariable(value = "stage_record_id") Long stageRecordId,
+            @Encrypt
+            @PathVariable(value = "job_record_id") Long jobRecordId) {
         devopsCdJobRecordService.retryCdJob(projectId, pipelineRecordId, stageRecordId, jobRecordId);
         return ResponseEntity.noContent().build();
     }

@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * @author zmf
  */
@@ -7,6 +9,7 @@ public class InstanceControllerDetailVO {
     /**
      * instance id from the web request
      */
+    @Encrypt
     private Long instanceId;
 
     /**

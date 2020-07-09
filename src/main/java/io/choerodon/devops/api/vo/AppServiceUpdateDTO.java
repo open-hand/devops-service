@@ -2,11 +2,10 @@ package io.choerodon.devops.api.vo;
 
 import javax.validation.constraints.NotNull;
 
-import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
-import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
-import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
-
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
 
 /**
  * Created by younger on 2018/4/10.
@@ -15,6 +14,7 @@ public class AppServiceUpdateDTO {
 
     @ApiModelProperty("id")
     @NotNull(message = "error.id.null")
+    @Encrypt
     private Long id;
     @ApiModelProperty("名称")
     private String name;

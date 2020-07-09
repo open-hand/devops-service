@@ -20,6 +20,8 @@
         <powermock.version>2.0.0-beta.5</powermock.version>
         <choerodon.serviceBuild>true</choerodon.serviceBuild>
         <choerodon.mainClass>io.choerodon.devops.DevopsServiceApplication</choerodon.mainClass>
+        <!--        TODO 替换为稳定版-->
+        <temp.key.encrypt.version>1.5.0-SNAPSHOT</temp.key.encrypt.version>
     </properties>
 
 
@@ -322,11 +324,8 @@
         <dependency>
             <groupId>org.hzero.starter</groupId>
             <artifactId>hzero-starter-keyencrypt</artifactId>
+            <version>${temp.key.encrypt.version}</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.hzero.starter</groupId>-->
-<!--            <artifactId>hzero-starter-keyencrypt</artifactId>-->
-<!--        </dependency>-->
 
     </dependencies>
 

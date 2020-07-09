@@ -2,13 +2,17 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Created by Zenger on 2018/4/12.
  */
 public class AppServiceInstanceVO {
-
+    @Encrypt
     private Long id;
+    @Encrypt
     private Long appServiceId;
+    @Encrypt
     private Long envId;
     private String publishLevel;
     private String contributor;
@@ -21,6 +25,7 @@ public class AppServiceInstanceVO {
     private String envCode;
     private String envName;
     private String status;
+    @Encrypt
     private Long commandId;
     private Long podCount;
     private Long podRunningCount;
@@ -33,6 +38,7 @@ public class AppServiceInstanceVO {
     private String error;
     private Boolean isConnect;
     private Long objectVersionNumber;
+    @Encrypt
     private Long projectId;
     private List<DeploymentVO> deploymentVOS;
 

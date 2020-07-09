@@ -1,8 +1,9 @@
 package io.choerodon.devops.infra.dto;
 
-import io.swagger.annotations.ApiModelProperty;
-import java.util.Objects;
 import javax.persistence.*;
+
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -12,14 +13,19 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 @Table(name = "devops_cicd_pipeline")
 public class CiCdPipelineDTO extends AuditDomain {
-
+    @Encrypt
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
     @ApiModelProperty("流水线名称")
     private String name;
+
+    @Encrypt
     @ApiModelProperty("项目id")
     private Long projectId;
+
+    @Encrypt
     @ApiModelProperty("流水线关联应用服务id")
     private Long appServiceId;
     @ApiModelProperty("流水线触发方式")
