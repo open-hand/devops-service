@@ -115,7 +115,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     @Saga(code = DEVOPS_GITLAB_CI_PIPELINE, description = "gitlab ci pipeline创建到数据库", inputSchemaClass = PipelineWebHookVO.class)
     public void create(PipelineWebHookVO pipelineWebHookVO, String token) {
         AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
-        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
+        CiCdPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
         if (devopsCiPipelineDTO == null || Boolean.FALSE.equals(devopsCiPipelineDTO.getEnabled())) {
             LOGGER.debug("Skip null of disabled pipeline for pipeline webhook with id {} and token: {}", pipelineWebHookVO.getObjectAttributes().getId(), token);
             return;
@@ -162,7 +162,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     public void handleCreate(PipelineWebHookVO pipelineWebHookVO) {
         LOGGER.debug("Start to handle pipeline with gitlab pipeline id {}...", pipelineWebHookVO.getObjectAttributes().getId());
         AppServiceDTO applicationDTO = applicationService.baseQueryByToken(pipelineWebHookVO.getToken());
-        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(applicationDTO.getId());
+        CiCdPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(applicationDTO.getId());
 
         DevopsCiPipelineRecordDTO record = new DevopsCiPipelineRecordDTO();
         record.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
@@ -290,7 +290,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     }
 
     private void handUpdate(AppServiceDTO appServiceDTO, Long pipelineRecordId, Long gitlabPipelineId, GitlabPipelineDTO gitlabPipelineDTO, List<JobDTO> jobs) {
-        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
+        CiCdPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
 
         DevopsCiPipelineRecordDTO record = new DevopsCiPipelineRecordDTO();
         record.setGitlabPipelineId(gitlabPipelineId);

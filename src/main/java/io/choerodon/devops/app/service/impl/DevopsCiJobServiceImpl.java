@@ -64,7 +64,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private UserAttrService userAttrService;
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
     private AppServiceService appServiceService;
-    private DevopsCiPipelineMapper devopsCiPipelineMapper;
+    private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
     private DevopsCiPipelineService devopsCiPipelineService;
     private DevopsCiJobRecordService devopsCiJobRecordService;
     private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
@@ -77,7 +77,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
                                   GitlabServiceClientOperator gitlabServiceClientOperator,
                                   UserAttrService userAttrService,
                                   AppServiceService appServiceService,
-                                  DevopsCiPipelineMapper devopsCiPipelineMapper,
+                                  DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
                                   DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
                                   @Lazy DevopsCiPipelineService devopsCiPipelineService,
                                   DevopsCiJobRecordService devopsCiJobRecordService,
@@ -91,7 +91,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         this.userAttrService = userAttrService;
         this.devopsCiMavenSettingsMapper = devopsCiMavenSettingsMapper;
         this.appServiceService = appServiceService;
-        this.devopsCiPipelineMapper = devopsCiPipelineMapper;
+        this.devopsCiCdPipelineMapper = devopsCiCdPipelineMapper;
         this.devopsCiPipelineService = devopsCiPipelineService;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
@@ -221,7 +221,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
             throw new DevopsCiInvalidException(ERROR_CI_JOB_NON_EXIST);
         }
 
-        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineMapper.selectByPrimaryKey(devopsCiJobDTO.getCiPipelineId());
+        CiCdPipelineDTO devopsCiPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(devopsCiJobDTO.getCiPipelineId());
         if (devopsCiPipelineDTO == null || !Objects.equals(devopsCiPipelineDTO.getAppServiceId(), appServiceDTO.getId())) {
             throw new DevopsCiInvalidException(ERROR_TOKEN_PIPELINE_MISMATCH);
         }
@@ -257,9 +257,9 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
     private SonarInfoVO getCiSonar(Long appServiceId) {
         SonarInfoVO sonarInfoVO = new SonarInfoVO();
-        DevopsCiPipelineDTO devopsCiPipelineDTO = new DevopsCiPipelineDTO();
+        CiCdPipelineDTO devopsCiPipelineDTO = new CiCdPipelineDTO();
         devopsCiPipelineDTO.setAppServiceId(appServiceId);
-        DevopsCiPipelineDTO ciPipelineDTO = devopsCiPipelineMapper.selectOne(devopsCiPipelineDTO);
+        CiCdPipelineDTO ciPipelineDTO = devopsCiCdPipelineMapper.selectOne(devopsCiPipelineDTO);
         if (!Objects.isNull(ciPipelineDTO)) {
             DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
             devopsCiJobDTO.setCiPipelineId(ciPipelineDTO.getId());

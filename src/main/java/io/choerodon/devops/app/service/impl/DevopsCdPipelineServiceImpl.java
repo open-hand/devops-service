@@ -148,7 +148,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Transactional
     public void handleCiPipelineStatusUpdate(PipelineWebHookVO pipelineWebHookVO) {
         AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(pipelineWebHookVO.getToken());
-        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
+        CiCdPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
 
         // 查询流水线是否有cd阶段, 没有cd阶段不做处理
         List<DevopsCdStageDTO> devopsCdStageDTOList = devopsCdStageService.queryByPipelineId(devopsCiPipelineDTO.getId());
@@ -214,7 +214,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         }
     }
 
-    private DevopsCdPipelineRecordDTO initPipelineRecord(DevopsCiPipelineDTO devopsCiPipelineDTO, Long gitlabPipelineId, String commitSha, String ref) {
+    private DevopsCdPipelineRecordDTO initPipelineRecord(CiCdPipelineDTO devopsCiPipelineDTO, Long gitlabPipelineId, String commitSha, String ref) {
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = new DevopsCdPipelineRecordDTO();
         devopsCdPipelineRecordDTO.setPipelineId(devopsCiPipelineDTO.getId());
         devopsCdPipelineRecordDTO.setGitlabPipelineId(gitlabPipelineId);
@@ -328,7 +328,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Override
     public void triggerCdPipeline(String token, String commitSha, String ref, Long gitlabPipelineId) {
         AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
-        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
+        CiCdPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
 
         // 查询流水线是否有cd阶段, 没有cd阶段不做处理
         List<DevopsCdStageDTO> devopsCdStageDTOList = devopsCdStageService.queryByPipelineId(devopsCiPipelineDTO.getId());
