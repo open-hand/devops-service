@@ -5,6 +5,7 @@ import java.util.Set;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,8 +42,10 @@ public class DevopsOrganizationController {
     @ApiOperation(value = "批量查询应用服务")
     @PostMapping(value = "/app_service/list_app_service_ids")
     public ResponseEntity<Page<AppServiceVO>> batchQueryAppService(
+            @Encrypt
             @ApiParam(value = "组织ID")
             @PathVariable(value = "organization_id") Long organizationId,
+            @Encrypt
             @ApiParam(value = "应用服务Ids")
             @RequestParam(value = "ids") Set<Long> ids,
             @ApiParam(value = "是否分页")
@@ -68,6 +71,7 @@ public class DevopsOrganizationController {
     @GetMapping("/cluster/overview")
     @ApiOperation("组织层概览，返回集群的概览")
     public ResponseEntity<ClusterOverViewVO> clusterOverview(
+            @Encrypt
             @PathVariable(name = "organization_id") Long organizationId) {
         return Optional.ofNullable(devopsClusterService.getOrganizationClusterOverview(organizationId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))

@@ -7,6 +7,7 @@ import java.util.Optional;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,10 +48,11 @@ public class DevopsGitlabPipelineController {
     @ApiOperation(value = "获取pipeline时长报表")
     @GetMapping(value = "/time")
     public ResponseEntity<PipelineTimeVO> listPipelineTime(
+            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "app_service_id")
-//            @Encrypt(AppServiceDTO.ENCRYPT_KEY)
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "start_time")
             @RequestParam(value = "start_time") Date startTime,
@@ -77,10 +79,11 @@ public class DevopsGitlabPipelineController {
     @ApiOperation(value = "获取pipeline次数报表")
     @GetMapping(value = "/frequency")
     public ResponseEntity<PipelineFrequencyVO> listPipelineFrequency(
+            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "app_service_id")
-//            @Encrypt(AppServiceDTO.ENCRYPT_KEY)
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "start_time")
             @RequestParam(value = "start_time") Date startTime,
@@ -108,14 +111,15 @@ public class DevopsGitlabPipelineController {
     @CustomPageRequest
     @GetMapping(value = "/page_by_options")
     public ResponseEntity<Page<DevopsGitlabPipelineVO>> pageByOptions(
+            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
                     PageRequest pageable,
             @ApiParam(value = "branch")
             @RequestParam(required = false) String branch,
+            @Encrypt
             @ApiParam(value = "app_service_id")
-//            @Encrypt(AppServiceDTO.ENCRYPT_KEY)
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "start_time")
             @RequestParam(required = false, value = "start_time") Date startTime,

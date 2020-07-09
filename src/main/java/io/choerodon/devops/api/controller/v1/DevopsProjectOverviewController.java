@@ -7,6 +7,7 @@ import io.choerodon.devops.app.service.DevopsProjectOverview;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +38,7 @@ public class DevopsProjectOverviewController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/env")
     public ResponseEntity<Map<String, Long>> getEnvStatusCount(
+            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId) {
         return Optional.ofNullable(devopsProjectOverview.getEnvStatusCount(projectId))
@@ -49,6 +51,7 @@ public class DevopsProjectOverviewController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/app_service")
     public ResponseEntity<Map<String, Long>> getAppServiceStatusCount(
+            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId) {
         return Optional.ofNullable(devopsProjectOverview.getAppServiceStatusCount(projectId))

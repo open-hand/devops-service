@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,7 @@ public class DevopsOrganizationConfigController {
     @ApiOperation(value = "组织下创建配置")
     @PostMapping
     public ResponseEntity<Void> create(
+            @Encrypt
             @ApiParam(value = "组织ID", required = true)
             @PathVariable("organization_id") Long organizationId,
             @ApiParam(value = "配置信息", required = true)
@@ -56,6 +58,7 @@ public class DevopsOrganizationConfigController {
     @ApiOperation(value = "组织下查询配置详情")
     @GetMapping
     public ResponseEntity<DevopsConfigRepVO> query(
+            @Encrypt
             @ApiParam(value = "组织Id", required = true)
             @PathVariable(value = "organization_id") Long organizationId) {
         return Optional.ofNullable(
@@ -68,6 +71,7 @@ public class DevopsOrganizationConfigController {
     @ApiOperation(value = "组织下查询默认配置")
     @GetMapping("/default_config")
     public ResponseEntity<DefaultConfigVO> queryOrganizationDefaultConfig(
+            @Encrypt
             @ApiParam(value = "组织Id")
             @PathVariable(value = "organization_id") Long organizationId) {
         return Optional.ofNullable(
@@ -89,7 +93,8 @@ public class DevopsOrganizationConfigController {
     @ApiOperation(value = "校验harbor配置信息是否正确")
     @GetMapping(value = "/check_harbor")
     public void checkHarbor(
-            @ApiParam(value = "项目id", required = true)
+            @Encrypt
+            @ApiParam(value = "组织id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "harbor地址", required = true)
             @RequestParam String url,
@@ -114,6 +119,7 @@ public class DevopsOrganizationConfigController {
     @ApiOperation(value = "校验chart配置信息是否正确")
     @PostMapping(value = "/check_chart")
     public ResponseEntity<Boolean> checkChart(
+            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "chartMuseum信息", required = true)

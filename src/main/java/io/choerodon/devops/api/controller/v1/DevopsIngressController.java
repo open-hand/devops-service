@@ -15,6 +15,7 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +50,7 @@ public class DevopsIngressController {
     @ApiOperation(value = "项目下创建域名")
     @PostMapping
     public ResponseEntity<Void> create(
+            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名信息", required = true)
@@ -70,8 +72,10 @@ public class DevopsIngressController {
     @ApiOperation(value = "项目下更新域名")
     @PutMapping(value = "/{id}")
     public ResponseEntity<Void> update(
+            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "域名ID", required = true)
             @PathVariable Long id,
             @ApiParam(value = "域名信息", required = true)
@@ -94,10 +98,11 @@ public class DevopsIngressController {
     @ApiOperation(value = "项目下查询域名")
     @GetMapping(value = "/{id}")
     public ResponseEntity<DevopsIngressVO> queryIngress(
+            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "域名ID", required = true)
-//            @Encrypt(DevopsIngressDTO.ENCRYPT_KEY)
             @PathVariable Long id) {
         return Optional.ofNullable(devopsIngressService.queryIngress(projectId, id))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -118,10 +123,11 @@ public class DevopsIngressController {
     @ApiOperation(value = "项目下查询域名详情")
     @GetMapping(value = "/{id}/detail")
     public ResponseEntity<DevopsIngressVO> queryIngressDetailById(
+            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "域名ID", required = true)
-//            @Encrypt(DevopsIngressDTO.ENCRYPT_KEY)
             @PathVariable Long id) {
         return Optional.ofNullable(devopsIngressService.queryIngressDetailById(projectId, id))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -141,10 +147,11 @@ public class DevopsIngressController {
     @ApiOperation(value = "项目下删除域名")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> delete(
+            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "域名ID", required = true)
-//            @Encrypt(DevopsIngressDTO.ENCRYPT_KEY)
             @PathVariable Long id) {
         devopsIngressService.deleteIngress(projectId, id);
         return ResponseEntity.noContent().build();
@@ -158,12 +165,13 @@ public class DevopsIngressController {
     @ApiOperation(value = "检查域名唯一性")
     @GetMapping(value = "/check_name")
     public ResponseEntity<Boolean> checkName(
+            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名名称", required = true)
             @RequestParam String name,
-            @ApiParam(value = "域名名称", required = true)
-//            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
+            @ApiParam(value = "环境id", required = true)
+            @Encrypt
             @RequestParam(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsIngressService.checkName(envId, name))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -184,17 +192,18 @@ public class DevopsIngressController {
     @ApiOperation(value = "检查域名名称唯一性")
     @GetMapping(value = "/check_domain")
     public ResponseEntity<Boolean> checkDomain(
+            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
-//            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "域名", required = true)
             @RequestParam String domain,
             @ApiParam(value = "路径", required = true)
             @RequestParam String path,
+            @Encrypt
             @ApiParam(value = "ingress ID")
-//            @Encrypt(DevopsIngressDTO.ENCRYPT_KEY)
             @RequestParam(value = "id", required = false) Long id) {
         return Optional.ofNullable(devopsIngressService.checkDomainAndPath(envId, domain, path, id))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -218,13 +227,14 @@ public class DevopsIngressController {
     @ApiOperation(value = "环境下分页查询域名")
     @PostMapping(value = "/{env_id}/page_by_env")
     public ResponseEntity<Page<DevopsIngressVO>> pageByEnv(
+            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiParam(value = "分页参数") PageRequest pageable,
+            @Encrypt
             @ApiParam(value = "env_id", required = true)
-//            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
