@@ -16,8 +16,8 @@
   }
   &-type {
     position: absolute;
-    top: .4rem;
-    left: -0.38rem;
+    top: 0.5rem;
+    left: -0.34rem;
     &:first-of-type {
       display: none;
     }
@@ -25,18 +25,21 @@
       background: rgba(104, 135, 232, 1);
       display: inline-block;
       &:first-of-type {
-        width: .24rem;
-        height: .24rem;
-        font-size: 16px;
-        border-radius: 50%;
-        color: #fff;
-        text-align: center;
-        line-height: .24rem;
-        vertical-align: sub;
+        background: #6887e8;
+        display: inline-block;
+        width: .21rem;
+        height: .02rem;
+        position: absolute;
       }
       &:nth-of-type(2) {
-        width: .14rem;
-        height: .02rem;
+        border: 4px solid white;
+        width: 0;
+        height: 0;
+        display: inline-block;
+        border-left: 9px solid #6887e8;
+        position: relative;
+        bottom: 0.1rem;
+        left: 0.2rem;
       }
     }
   }
@@ -48,7 +51,7 @@
       font-weight: 500;
       color: rgba(0, 0, 0, 1);
       line-height: .21rem;
-      margin-left: .02rem;
+      margin-left: .06rem;
     }
     span:nth-of-type(2) {
       font-size: .12rem;
