@@ -633,7 +633,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
                 appServiceDeployVO.getDevopsServiceReqVO().setDevopsIngressVO(appServiceDeployVO.getDevopsIngressVO());
             }
-            InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId().intValue());
+            InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId());
             instanceSagaPayload.setApplicationDTO(appServiceDTO);
             instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
             instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
@@ -864,7 +864,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         appServiceDeployVO.setType(UPDATE);
         appServiceDeployVO.setAppServiceVersionId(appServiceVersionDTO.getId());
         appServiceDeployVO.setInstanceName(appServiceInstanceDTO.getCode());
-        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, devopsEnvCommandDTO.getId().intValue());
+        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, devopsEnvCommandDTO.getId());
         instanceSagaPayload.setApplicationDTO(appServiceDTO);
         instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
         instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
@@ -1267,7 +1267,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
             appServiceDeployVO.getDevopsServiceReqVO().setDevopsIngressVO(appServiceDeployVO.getDevopsIngressVO());
         }
-        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId().intValue());
+        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId());
         instanceSagaPayload.setApplicationDTO(appServiceDTO);
         instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
         instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
@@ -1487,7 +1487,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     private C7nHelmRelease getC7NHelmRelease(String code, String repository,
                                              Long appServiceId,
-                                             Integer commandId, String appServiceCode,
+                                             Long commandId, String appServiceCode,
                                              String version, String deployValue,
                                              Long deployVersionId, String secretName,
                                              DevopsEnvironmentDTO devopsEnvironmentDTO) {
