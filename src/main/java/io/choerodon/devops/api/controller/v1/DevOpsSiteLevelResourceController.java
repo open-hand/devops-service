@@ -5,7 +5,6 @@ import java.util.Set;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.hzero.starter.keyencrypt.mvc.EncryptDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,7 +52,7 @@ public class DevOpsSiteLevelResourceController {
     @PostMapping("/users/list_by_ids")
     public ResponseEntity<List<UserAttrVO>> listByUserIds(
             @ApiParam(value = "用户id", required = true)
-            @EncryptDTO @RequestBody Set<Long> iamUserIds) {
+            @RequestBody Set<Long> iamUserIds) {
         return new ResponseEntity<>(userAttrService.listByUserIds(iamUserIds), HttpStatus.OK);
     }
 
@@ -63,7 +62,7 @@ public class DevOpsSiteLevelResourceController {
     @PostMapping(value = "/app_service/list_app_service_by_ids")
     public ResponseEntity<Page<AppServiceRepVO>> batchQueryAppService(
             @ApiParam(value = "应用服务Ids, 不能为空，也不能为空数组", required = true)
-            @EncryptDTO @RequestBody Set<Long> ids) {
+            @RequestBody Set<Long> ids) {
         return new ResponseEntity<>(appServiceService.listAppServiceByIds(ids, false, null, null), HttpStatus.OK);
     }
 

@@ -2,7 +2,6 @@ package io.choerodon.devops.api.vo;
 
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -15,7 +14,7 @@ import java.util.List;
 public class DevopsEnvPermissionUpdateVO {
     @ApiModelProperty("环境id / 必需")
     @NotNull(message = "error.env.id.null")
-    @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
+//    @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
     private Long envId;
 
     @ApiModelProperty("要添加权限的用户id / 必需")

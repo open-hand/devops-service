@@ -6,7 +6,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
+//import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -23,7 +23,7 @@ public class DevopsServiceDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Encrypt(DevopsServiceDTO.ENCRYPT_KEY)
+//    @Encrypt(DevopsServiceDTO.ENCRYPT_KEY)
     private Long id;
     private Long envId;
     private Long appServiceId;

@@ -16,7 +16,6 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -87,7 +86,8 @@ public class DevopsPvController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "pvId", required = true)
-            @Encrypt(DevopsPvDTO.ENCRYPT_KEY) @PathVariable(value = "pv_id") Long pvId) {
+//            @Encrypt(DevopsPvDTO.ENCRYPT_KEY)
+            @PathVariable(value = "pv_id") Long pvId) {
         devopsPvService.deletePvById(projectId, pvId);
         return ResponseEntity.noContent().build();
     }
@@ -99,7 +99,8 @@ public class DevopsPvController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "pvId", required = true)
-            @Encrypt(DevopsPvDTO.ENCRYPT_KEY) @PathVariable(value = "pv_id") Long pvId) {
+//            @Encrypt(DevopsPvDTO.ENCRYPT_KEY)
+            @PathVariable(value = "pv_id") Long pvId) {
         return Optional.ofNullable(devopsPvService.queryById(pvId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));

@@ -15,8 +15,6 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.hzero.starter.keyencrypt.mvc.EncryptDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -71,7 +69,7 @@ public class DevopsPvcController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "PVC信息", required = true)
-            @EncryptDTO @RequestBody @Valid DevopsPvcReqVO devopsPvcReqVO) {
+            @RequestBody @Valid DevopsPvcReqVO devopsPvcReqVO) {
         return Optional.ofNullable(devopsPvcService.create(projectId, devopsPvcReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pvc.create"));
@@ -94,7 +92,8 @@ public class DevopsPvcController {
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "PVC id", required = true)
-            @Encrypt(DevopsPvcDTO.ENCRYPT_KEY) @PathVariable(value = "pvc_id") Long pvcId) {
+//            @Encrypt(DevopsPvcDTO.ENCRYPT_KEY)
+            @PathVariable(value = "pvc_id") Long pvcId) {
         return Optional.of(devopsPvcService.delete(projectId, envId, pvcId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pvc.delete"));

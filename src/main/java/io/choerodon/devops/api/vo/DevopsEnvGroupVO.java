@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.vo;
 
 import io.choerodon.devops.infra.dto.DevopsEnvGroupDTO;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Creator: Runge
@@ -10,7 +9,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  * Description:
  */
 public class DevopsEnvGroupVO {
-    @Encrypt(DevopsEnvGroupDTO.ENCRYPT_KEY)
+//    @Encrypt(DevopsEnvGroupDTO.ENCRYPT_KEY)
     private Long id;
     private Long projectId;
     private String name;

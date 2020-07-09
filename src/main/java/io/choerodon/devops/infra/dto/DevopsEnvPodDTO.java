@@ -4,7 +4,6 @@ import io.choerodon.devops.api.vo.ContainerVO;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -22,7 +21,7 @@ public class DevopsEnvPodDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Encrypt(DevopsEnvPodDTO.ENCRYPT_KEY)
+//    @Encrypt(DevopsEnvPodDTO.ENCRYPT_KEY)
     private Long id;
     private Long instanceId;
     private String name;

@@ -6,7 +6,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.DevopsSecretDTO;
 
@@ -17,7 +16,7 @@ import io.choerodon.devops.infra.dto.DevopsSecretDTO;
 public class SecretUpdateVO {
     @ApiModelProperty(value = "密钥id/必填")
     @NotNull(message = "error.id.null")
-    @Encrypt(DevopsSecretDTO.ENCRYPT_KEY)
+//    @Encrypt(DevopsSecretDTO.ENCRYPT_KEY)
     private Long id;
 
     @ApiModelProperty(value = "环境id/必填")

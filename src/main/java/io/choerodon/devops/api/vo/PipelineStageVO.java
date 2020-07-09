@@ -3,7 +3,6 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.annotation.WillDeleted;
 import io.choerodon.devops.infra.constant.EncryptKeyConstants;
@@ -15,7 +14,7 @@ import io.choerodon.devops.infra.constant.EncryptKeyConstants;
  */
 @WillDeleted
 public class PipelineStageVO {
-    @Encrypt(EncryptKeyConstants.DEVOPS_PIPELINE_STAGE_ENCRYPT_KEY)
+//    @Encrypt(EncryptKeyConstants.DEVOPS_PIPELINE_STAGE_ENCRYPT_KEY)
     private Long id;
     private String stageName;
     private String triggerType;
@@ -23,7 +22,7 @@ public class PipelineStageVO {
     private Integer isParallel;
     private List<PipelineTaskVO> pipelineTaskVOs;
     private Long pipelineId;
-    @Encrypt(EncryptKeyConstants.IAM_PROJECT_ENCRYPT_KEY)
+//    @Encrypt(EncryptKeyConstants.IAM_PROJECT_ENCRYPT_KEY)
     private Long projectId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;

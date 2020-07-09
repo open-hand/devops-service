@@ -3,7 +3,6 @@ package io.choerodon.devops.infra.dto;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -17,7 +16,7 @@ public class DevopsGitlabCommitDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Encrypt(DevopsGitlabCommitDTO.ENCRYPT_KEY)
+//    @Encrypt(DevopsGitlabCommitDTO.ENCRYPT_KEY)
     private Long id;
     private Long appServiceId;
     private Long userId;

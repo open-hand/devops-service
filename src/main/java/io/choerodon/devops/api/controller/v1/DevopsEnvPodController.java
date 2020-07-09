@@ -15,7 +15,6 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,9 +55,11 @@ public class DevopsEnvPodController {
             @ApiParam(value = "环境id")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "应用id")
-            @Encrypt(AppServiceDTO.ENCRYPT_KEY) @RequestParam(value = "app_service_id", required = false) Long appServiceId,
+//            @Encrypt(AppServiceDTO.ENCRYPT_KEY)
+            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "应用id")
-            @Encrypt(DevopsServiceInstanceDTO.ENCRYPT_KEY) @RequestParam(value = "instance_id", required = false) Long instanceId,
+//            @Encrypt(DevopsServiceInstanceDTO.ENCRYPT_KEY)
+            @RequestParam(value = "instance_id", required = false) Long instanceId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(devopsEnvPodService.pageByOptions(
@@ -105,9 +106,11 @@ public class DevopsEnvPodController {
             @ApiParam(value = "项目id")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "podId")
-            @Encrypt(DevopsEnvPodDTO.ENCRYPT_KEY) @PathVariable(value = "pod_id") Long podId,
+//            @Encrypt(DevopsEnvPodDTO.ENCRYPT_KEY)
+            @PathVariable(value = "pod_id") Long podId,
             @ApiParam(value = "环境id", required = true)
-            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @RequestParam(value = "env_id") Long envId) {
+//            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
+            @RequestParam(value = "env_id") Long envId) {
         devopsEnvPodService.deleteEnvPodById(projectId, envId, podId);
         return ResponseEntity.noContent().build();
     }

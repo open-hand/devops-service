@@ -1,11 +1,8 @@
 package io.choerodon.devops.api.vo;
 
-import org.hzero.starter.keyencrypt.core.Encrypt;
-
-import io.choerodon.devops.infra.dto.UserAttrDTO;
 
 public class UserAttrVO {
-    @Encrypt(UserAttrDTO.ENCRYPT_KEY)
+//    @Encrypt(UserAttrDTO.ENCRYPT_KEY)
     private Long iamUserId;
     private Long gitlabUserId;
 

@@ -3,7 +3,6 @@ package io.choerodon.devops.infra.dto;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -22,11 +21,11 @@ public class DevopsServiceInstanceDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Encrypt(DevopsServiceInstanceDTO.ENCRYPT_KEY)
+//    @Encrypt(DevopsServiceInstanceDTO.ENCRYPT_KEY)
     private Long id;
-    @Encrypt(AppServiceDTO.ENCRYPT_KEY)
+//    @Encrypt(AppServiceDTO.ENCRYPT_KEY)
     private Long serviceId;
-    @Encrypt(DevopsServiceInstanceDTO.ENCRYPT_KEY)
+//    @Encrypt(DevopsServiceInstanceDTO.ENCRYPT_KEY)
     private Long instanceId;
     private String code;
 

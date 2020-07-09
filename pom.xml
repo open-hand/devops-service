@@ -74,10 +74,10 @@
             <artifactId>hzero-starter-feign-replay</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.hzero.starter</groupId>
-            <artifactId>hzero-starter-keyencrypt</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.hzero.starter</groupId>-->
+<!--            <artifactId>hzero-starter-keyencrypt</artifactId>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>io.choerodon</groupId>
@@ -323,6 +323,10 @@
             <groupId>org.hzero.starter</groupId>
             <artifactId>hzero-starter-keyencrypt</artifactId>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.hzero.starter</groupId>-->
+<!--            <artifactId>hzero-starter-keyencrypt</artifactId>-->
+<!--        </dependency>-->
 
     </dependencies>
 

@@ -3,7 +3,6 @@ package io.choerodon.devops.infra.dto;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import javax.persistence.*;
 
@@ -16,7 +15,7 @@ public class DevopsEnvFileErrorDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Encrypt(DevopsEnvFileErrorDTO.ENCRYPT_KEY)
+//    @Encrypt(DevopsEnvFileErrorDTO.ENCRYPT_KEY)
     private Long id;
     private Long envId;
     private String filePath;

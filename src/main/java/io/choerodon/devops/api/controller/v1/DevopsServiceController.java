@@ -15,8 +15,6 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.hzero.starter.keyencrypt.mvc.EncryptDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -77,7 +75,7 @@ public class DevopsServiceController {
     public ResponseEntity<Boolean> create(@ApiParam(value = "项目ID", required = true)
                                           @PathVariable(value = "project_id") Long projectId,
                                           @ApiParam(value = "部署网络参数", required = true)
-                                          @EncryptDTO @RequestBody @Valid DevopsServiceReqVO devopsServiceReqVO) {
+                                          @RequestBody @Valid DevopsServiceReqVO devopsServiceReqVO) {
         return Optional.ofNullable(
                 devopsServiceService.create(projectId, devopsServiceReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.CREATED))
@@ -101,7 +99,7 @@ public class DevopsServiceController {
                                           @ApiParam(value = "网络ID", required = true)
                                           @PathVariable Long id,
                                           @ApiParam(value = "部署网络参数", required = true)
-                                          @EncryptDTO @RequestBody DevopsServiceReqVO devopsServiceReqVO) {
+                                          @RequestBody DevopsServiceReqVO devopsServiceReqVO) {
         return Optional.ofNullable(
                 devopsServiceService.update(projectId, id, devopsServiceReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.CREATED))
@@ -122,7 +120,8 @@ public class DevopsServiceController {
     public ResponseEntity<Void> delete(@ApiParam(value = "项目ID", required = true)
                                        @PathVariable(value = "project_id") Long projectId,
                                        @ApiParam(value = "网络ID", required = true)
-                                       @Encrypt(DevopsServiceDTO.ENCRYPT_KEY) @PathVariable Long id) {
+//                                       @Encrypt(DevopsServiceDTO.ENCRYPT_KEY)
+                                       @PathVariable Long id) {
         devopsServiceService.delete(projectId, id);
         return ResponseEntity.noContent().build();
     }
@@ -167,7 +166,7 @@ public class DevopsServiceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "网络ID", required = true)
-            @Encrypt(DevopsServiceDTO.ENCRYPT_KEY) @PathVariable Long id) {
+            @PathVariable Long id) {
         return Optional.ofNullable(devopsServiceService.querySingleService(id))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));
@@ -224,7 +223,7 @@ public class DevopsServiceController {
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
-            @EncryptDTO @RequestBody(required = false) String searchParam) {
+            @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(devopsServiceService.pageByEnv(projectId, envId, pageable, searchParam, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));
@@ -258,7 +257,7 @@ public class DevopsServiceController {
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
-            @EncryptDTO @RequestBody(required = false) String searchParam) {
+            @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(devopsServiceService.pageByInstance(projectId, envId, instanceId, pageable, appServiceId, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));

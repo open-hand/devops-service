@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +41,8 @@ public class DevopsUserController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "用户id", required = true)
-            @Encrypt(UserAttrDTO.ENCRYPT_KEY) @PathVariable(value = "user_id") Long userId) {
+//            @Encrypt(UserAttrDTO.ENCRYPT_KEY)
+            @PathVariable(value = "user_id") Long userId) {
         return Optional.ofNullable(userAttrService.queryByUserId(userId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.user.get"));

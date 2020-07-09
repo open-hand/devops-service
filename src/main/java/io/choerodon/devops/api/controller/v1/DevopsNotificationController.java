@@ -9,7 +9,6 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +43,8 @@ public class DevopsNotificationController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境Id")
-            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @RequestParam(value = "env_id") Long envId,
+//            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
+            @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "资源对象类型")
             @RequestParam(value = "object_type") String objectType) {
         return Optional.ofNullable(notificationService.checkResourceDelete(projectId, envId, objectType))
@@ -70,7 +70,8 @@ public class DevopsNotificationController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境Id")
-            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @RequestParam(value = "env_id") Long envId,
+//            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
+            @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "对象Id")
             @RequestParam(value = "object_id") Long objectId,
             @ApiParam(value = "通知Id")
@@ -98,7 +99,8 @@ public class DevopsNotificationController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境Id")
-            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY) @RequestParam(value = "env_id") Long envId,
+//            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
+            @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "对象Id")
             @RequestParam(value = "object_id") Long objectId,
             @ApiParam(value = "验证码")

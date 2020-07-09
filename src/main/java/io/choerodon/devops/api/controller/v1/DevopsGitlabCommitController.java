@@ -13,7 +13,6 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,7 +51,8 @@ public class DevopsGitlabCommitController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务ids", required = true)
-            @Encrypt(AppServiceDTO.ENCRYPT_KEY) @RequestBody String appServiceIds,
+//            @Encrypt(AppServiceDTO.ENCRYPT_KEY)
+            @RequestBody String appServiceIds,
             @ApiParam(value = "开始时间start_date", required = true)
             @RequestParam(value = "start_date") Date startDate,
             @ApiParam(value = "结束时间end_date", required = true)

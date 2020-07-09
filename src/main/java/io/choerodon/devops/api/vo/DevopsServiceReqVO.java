@@ -6,7 +6,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
+//import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
 import io.choerodon.devops.api.validator.annotation.AtMostSeveralFieldsNotEmpty;
@@ -23,7 +23,7 @@ import io.choerodon.devops.infra.dto.PortMapVO;
 public class DevopsServiceReqVO {
     @ApiModelProperty("环境ID / 必填")
     @NotNull(message = "error.env.id.null")
-    @Encrypt(DevopsServiceDTO.ENCRYPT_KEY)
+//    @Encrypt(DevopsServiceDTO.ENCRYPT_KEY)
     private Long envId;
 
     @ApiModelProperty("服务ID/从实例界面创建")

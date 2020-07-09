@@ -2,7 +2,6 @@ package io.choerodon.devops.api.vo;
 
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import javax.validation.constraints.NotNull;
 
@@ -12,7 +11,7 @@ import javax.validation.constraints.NotNull;
 public class DevopsBranchUpdateVO {
     @ApiModelProperty("应用服务id / 必填")
     @NotNull(message = "error.app.service.id.null")
-    @Encrypt(AppServiceDTO.ENCRYPT_KEY)
+//    @Encrypt(AppServiceDTO.ENCRYPT_KEY)
     private Long appServiceId;
 
     @ApiModelProperty("关联的敏捷Issue的id")

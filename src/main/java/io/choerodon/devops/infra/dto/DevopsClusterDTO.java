@@ -5,7 +5,6 @@ import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -21,7 +20,7 @@ public class DevopsClusterDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Encrypt(DevopsClusterDTO.ENCRYPT_KEY)
+//    @Encrypt(DevopsClusterDTO.ENCRYPT_KEY)
     private Long id;
     /**
      * 这个集群所属项目的组织id， 不能为空
