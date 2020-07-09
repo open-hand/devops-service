@@ -70,7 +70,7 @@ export default observer((props) => {
   function getJobTask(type, metadata) {
     if (metadata) {
       const newData = JSON.parse(metadata.replace(/'/g, '"'));
-      const { sonarUrl, config, envName, triggerValue = [], triggerType, users, checkMode } = newData || {};
+      const { sonarUrl, config, envName, triggerValue = [], triggerType, users, countersigned } = newData || {};
       let content;
       switch (type) {
         case 'sonar':
@@ -93,7 +93,7 @@ export default observer((props) => {
           content = (
             <div className="c7ncd-pipeline-detail-job-task-deploy">
               <span className="c7ncd-pipeline-detail-job-task-deploy-item">审核人员：{users}</span>
-              <span className="c7ncd-pipeline-detail-job-task-deploy-item">审核模式：{checkMode}</span>
+              <span className="c7ncd-pipeline-detail-job-task-deploy-item">审核模式：{countersigned ? '会签' : '或签'}</span>
               <span>
                 触发分支：
                 {triggerType === 'exact_exclude' ? '精确排除<br/>' : ''}
