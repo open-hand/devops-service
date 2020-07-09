@@ -1,11 +1,12 @@
 package io.choerodon.devops.api.vo;
 
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.List;
 
-public class DevopsClusterBasicInfoVO {
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
+public class DevopsClusterBasicInfoVO {
+    @Encrypt
     private Long id;
     @ApiModelProperty(value = "集群名称")
     private String name;

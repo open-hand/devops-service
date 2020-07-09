@@ -1,13 +1,13 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.infra.dto.DevopsEnvGroupDTO;
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.List;
+
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class DevopsEnvGroupEnvsVO {
     @ApiModelProperty("环境组id / 为空则表示是默认分组")
-//    @Encrypt(DevopsEnvGroupDTO.ENCRYPT_KEY)
+    @Encrypt
     private Long devopsEnvGroupId;
 
     @ApiModelProperty("环境组名")

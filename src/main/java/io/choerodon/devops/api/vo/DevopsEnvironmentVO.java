@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * 〈功能简述〉
  * 〈环境VO〉
@@ -8,6 +10,7 @@ package io.choerodon.devops.api.vo;
  * @Date 2019/12/4 16:02
  */
 public class DevopsEnvironmentVO {
+    @Encrypt
     private Long id;
     private String name;
 

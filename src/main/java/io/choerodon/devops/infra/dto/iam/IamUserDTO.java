@@ -22,6 +22,7 @@ import org.hzero.core.base.BaseConstants;
 import org.hzero.core.user.UserType;
 import org.hzero.core.util.Regexs;
 import org.hzero.mybatis.common.query.Where;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -68,6 +69,8 @@ public class IamUserDTO extends AuditDomain {
     public static final String DEFAULT_TIME_ZONE = "GMT+8";
 
     public static final String DEFAULT_USER_TYPE = "P";
+
+    @Encrypt
     @Id
     @Where
     @GeneratedValue
@@ -83,6 +86,8 @@ public class IamUserDTO extends AuditDomain {
     @Email
     @ApiModelProperty("邮箱")
     private String email;
+
+    @Encrypt
     @Where
     @ApiModelProperty(value = "所属租户ID", required = true)
     private Long organizationId;

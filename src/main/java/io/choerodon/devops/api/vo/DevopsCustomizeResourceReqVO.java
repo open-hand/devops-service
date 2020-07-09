@@ -3,16 +3,19 @@ package io.choerodon.devops.api.vo;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Created by Sheep on 2019/7/3.
  */
 public class DevopsCustomizeResourceReqVO {
 
-
+    @Encrypt
     @ApiModelProperty("环境id/必填")
     @NotNull(message = "error.env.id.null")
     private Long envId;
+
+    @Encrypt
     @ApiModelProperty("资源id")
     private Long resourceId;
     @ApiModelProperty("操作类型")

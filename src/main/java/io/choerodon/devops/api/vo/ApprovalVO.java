@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author lihao
@@ -10,6 +11,7 @@ public class ApprovalVO {
     @ApiModelProperty("项目名称")
     private String projectName;
 
+    @Encrypt
     @ApiModelProperty("项目id")
     private Long projectId;
 
@@ -28,16 +30,20 @@ public class ApprovalVO {
     @ApiModelProperty("合并请求gitlab项目地址")
     private String mergeRequestUrl;
 
+    @Encrypt
     @ApiModelProperty("pipeline id")
     private Long pipelineId;
 
+    @Encrypt
     @ApiModelProperty("pipeline record id")
     private Long pipelineRecordId;
 
+    @Encrypt
     @ApiModelProperty("pipeline stage id")
     private Long stageRecordId;
 
-    @ApiModelProperty("pripeline task id")
+    @Encrypt
+    @ApiModelProperty("pipeline task id")
     private Long taskRecordId;
 
     public String getProjectName() {

@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
@@ -11,16 +13,20 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
  * Description:
  */
 public class PipelineRecordReqVO {
+    @Encrypt
     private Long id;
     private String pipelineName;
     private String triggerType;
+    @Encrypt
     private Long projectId;
     private Date creationDate;
     private IamUserDTO userDTO;
     private String status;
     private Boolean execute;
     private String type;
+    @Encrypt
     private Long stageRecordId;
+    @Encrypt
     private Long taskRecordId;
     private String stageName;
     private List<PipelineStageRecordVO> stageRecordDTOS;

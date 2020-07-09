@@ -2,13 +2,17 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * @author lihao
  */
 public class LatestAppServiceVO {
+    @Encrypt
     private Long id;
     private String name;
     private String code;
+    @Encrypt
     private Long projectId;
     private String projectName;
     private String repoUrl;

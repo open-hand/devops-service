@@ -4,6 +4,7 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 添加证书的权限分配
@@ -11,10 +12,12 @@ import io.swagger.annotations.ApiModelProperty;
  * @author zmf
  */
 public class ProjectCertificationPermissionUpdateVO {
+    @Encrypt
     @ApiModelProperty("证书id / 必需")
     @NotNull(message = "error.certification.id.null")
     private Long certificationId;
 
+    @Encrypt
     @ApiModelProperty("要添加权限的项目id / 必需,可为空数组")
     @NotNull(message = "error.project.ids.null")
     private List<Long> projectIds;

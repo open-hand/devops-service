@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Created by n!Ck
  * Date: 2018/11/21
@@ -7,6 +9,7 @@ package io.choerodon.devops.api.vo;
  * Description:
  */
 public class AppServiceUserPermissionRespVO {
+    @Encrypt
     private Long iamUserId;
     private String loginName;
     private String realName;

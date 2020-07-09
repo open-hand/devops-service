@@ -2,22 +2,28 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
-public class CustomMergeRequestVO {
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
+public class CustomMergeRequestVO {
+    @Encrypt
     private Long id;
 
+    @Encrypt
     private Long projectId;
 
+    @Encrypt
     private Long applicationId;
 
     private String imageUrl;
 
     private Long gitlabMergeRequestId;
 
+    @Encrypt
     private Long authorId;
 
     private String authorName;
 
+    @Encrypt
     private Long assigneeId;
 
     private String assigneeName;

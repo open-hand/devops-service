@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Pod实时信息
@@ -18,12 +19,14 @@ public class PodLiveInfoVO {
     private String nodeName;
     private String nodeIp;
     @JsonProperty("podId")
+    @Encrypt
     private Long id;
     private List<ContainerVO> containers;
     private List<Long> cpuUsedList;
     private List<Long> memoryUsedList;
     private List<Date> timeList;
     private Date creationDate;
+    @Encrypt
     private Long clusterId;
     private String namespace;
 

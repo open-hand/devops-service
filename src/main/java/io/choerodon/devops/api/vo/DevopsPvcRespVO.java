@@ -1,20 +1,21 @@
 package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
-
-import io.choerodon.devops.infra.dto.DevopsPvcDTO;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class DevopsPvcRespVO extends DevopsResourceDataInfoVO {
     @ApiModelProperty("PVC id")
-//    @Encrypt(DevopsPvcDTO.ENCRYPT_KEY)
+    @Encrypt
     private Long id;
 
     @ApiModelProperty("PVC名称")
     private String name;
 
+    @Encrypt
     @ApiModelProperty("PVC绑定环境ID")
     private Long envId;
 
+    @Encrypt
     @ApiModelProperty("PVC绑定PV id")
     private Long pvId;
 

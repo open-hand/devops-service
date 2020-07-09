@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.annotation.WillDeleted;
 
@@ -16,13 +17,19 @@ import io.choerodon.devops.infra.annotation.WillDeleted;
  */
 @WillDeleted
 public class DevopsCiJobRecordVO {
+    @Encrypt
     private Long id;
+
     @ApiModelProperty("gitlab job记录id")
     private Long gitlabJobId;
+
+    @Encrypt
     @ApiModelProperty("流水线记录id")
     private Long ciPipelineRecordId;
     @ApiModelProperty("阶段名称")
     private String stage;
+
+    @Encrypt
     @ApiModelProperty("触发用户")
     private Long triggerUserId;
     @ApiModelProperty("任务类型")

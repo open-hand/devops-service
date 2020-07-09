@@ -1,14 +1,15 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.List;
+
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 
 public class DevopsBranchVO {
     @ApiModelProperty("应用服务id")
-//    @Encrypt(AppServiceDTO.ENCRYPT_KEY)
+    @Encrypt
     private Long appServiceId;
 
     @ApiModelProperty("应用服务名称")
@@ -17,6 +18,7 @@ public class DevopsBranchVO {
     @ApiModelProperty("源分支，此分支基于源分支创建")
     private String originBranch;
 
+    @Encrypt
     @ApiModelProperty("关联的敏捷Issue的id")
     private Long issueId;
 

@@ -1,20 +1,21 @@
 package io.choerodon.devops.api.vo;
 
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  15:37 2019/4/12
  * Description:
  */
 public class PipelineUserRecordRelationshipVO {
-
-//    @Encrypt(EncryptKeyConstants.IAM_USER_ENCRYPT_KEY)
+    @Encrypt
     private Long userId;
-//    @Encrypt(EncryptKeyConstants.DEVOPS_PIPELINE_RECORD_ENCRYPT_KEY)
+    @Encrypt
     private Long pipelineRecordId;
-//    @Encrypt(EncryptKeyConstants.DEVOPS_PIPELINE_STAGE_RECORD_ENCRYPT_KEY)
+    @Encrypt
     private Long stageRecordId;
-//    @Encrypt(EncryptKeyConstants.DEVOPS_PIPELINE_TASK_RECORD_ENCRYPT_KEY)
+    @Encrypt
     private Long taskRecordId;
     private String type;
     private Boolean isApprove;

@@ -1,8 +1,8 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.infra.dto.DevopsEnvFileErrorDTO;
-
 import java.util.Date;
+
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Creator: Runge
@@ -11,9 +11,9 @@ import java.util.Date;
  * Description:
  */
 public class DevopsEnvFileErrorVO {
-
-//    @Encrypt(DevopsEnvFileErrorDTO.ENCRYPT_KEY)
+    @Encrypt
     private Long id;
+    @Encrypt
     private Long envId;
     private String filePath;
     private String fileUrl;

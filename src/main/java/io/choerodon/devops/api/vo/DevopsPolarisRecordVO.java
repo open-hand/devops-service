@@ -4,6 +4,7 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * polaris扫描纪录
@@ -12,9 +13,11 @@ import io.swagger.annotations.ApiModelProperty;
  * @since 2/19/20
  */
 public class DevopsPolarisRecordVO {
+    @Encrypt
     @ApiModelProperty("自增id")
     private Long id;
 
+    @Encrypt
     @ApiModelProperty("纪录对象id(集群id或环境id)")
     private Long scopeId;
 

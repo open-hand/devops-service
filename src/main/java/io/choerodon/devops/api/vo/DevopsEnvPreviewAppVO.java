@@ -2,10 +2,13 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 public class DevopsEnvPreviewAppVO {
 
     private String appServiceName;
     private String appServiceCode;
+    @Encrypt
     private Long projectId;
     private List<AppServiceInstanceVO> appServiceInstanceVOS;
 

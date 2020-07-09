@@ -1,17 +1,20 @@
 package io.choerodon.devops.api.vo;
 
 
-import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
-import io.choerodon.devops.api.validator.annotation.QuantityCheck;
-import io.swagger.annotations.ApiModelProperty;
-import org.hibernate.validator.constraints.Length;
-
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.Length;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
+import io.choerodon.devops.api.validator.annotation.QuantityCheck;
+
 @AtLeastOneNotEmpty(fields = {"pvId", "pvName"}, message = "error.pv.id.or.name.null")
 public class DevopsPvcReqVO {
+    @Encrypt
     @ApiModelProperty("PVC id")
     private Long id;
 
@@ -20,16 +23,19 @@ public class DevopsPvcReqVO {
     @Length(max = 40, min = 1, message = "error.pvc.name.length")
     private String name;
 
+    @Encrypt
     @NotNull(message = "error.env.id.null")
     @ApiModelProperty("PVC绑定环境ID")
     private Long envId;
 
+    @Encrypt
     @ApiModelProperty("PVC绑定PV id")
     private Long pvId;
 
     @ApiModelProperty("PVC绑定PV的name")
     private String pvName;
 
+    @Encrypt
     @ApiModelProperty("PVC绑定PV所在的集群id")
     private Long clusterId;
 

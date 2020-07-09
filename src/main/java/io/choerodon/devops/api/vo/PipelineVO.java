@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import io.choerodon.devops.infra.annotation.WillDeleted;
 
 /**
@@ -11,18 +13,19 @@ import io.choerodon.devops.infra.annotation.WillDeleted;
  */
 @WillDeleted
 public class PipelineVO {
-
-//    @Encrypt(value = EncryptKeyConstants.DEVOPS_PIPELINE_ENCRYPT_KEY)
+    @Encrypt
     private Long id;
     private String name;
     private String triggerType;
     private Integer isEnabled;
+    @Encrypt
     private Long projectId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;
     private String createUserUrl;
     private String createUserName;
     private String createUserRealName;
+    @Encrypt
     private Long createdBy;
     private Boolean isExecute;
     private Boolean edit;

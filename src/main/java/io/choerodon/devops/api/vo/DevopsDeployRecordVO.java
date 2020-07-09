@@ -4,20 +4,24 @@ import java.util.Date;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Created by Sheep on 2019/7/29.
  */
 public class DevopsDeployRecordVO {
-
+    @Encrypt
     private Long id;
+    @Encrypt
     private Long projectId;
     private String deployType;
+    @Encrypt
     private Long deployId;
     private String env;
     private String deployStatus;
     private String pipelineName;
     private String pipelineTriggerType;
+    @Encrypt
     private Long deployCreatedBy;
     private String userName;
     private String userLoginName;

@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 证书及其相关的Ingress名称
@@ -12,6 +13,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @author zmf
  */
 public class CertificationRespVO extends DevopsResourceDataInfoVO {
+    @Encrypt
     @ApiModelProperty("证书id")
     private Long id;
     @ApiModelProperty("证书名称")
