@@ -7,15 +7,40 @@
   border-radius: 4px;
   margin-left: .08rem;
   background: rgba(104, 135, 232, 0.1);
+  border: 1px solid rgba(117, 137, 242, 1);
   color: rgba(104, 135, 232, 1);
 
   &-CI {
     background: rgba(104, 135, 232, 0.1);
     color: rgba(104, 135, 232, 1);
+    border: 1px solid rgba(117, 137, 242, 1);
   }
 
   &-CD {
     background: rgba(63, 178, 233, 0.1);
     color: rgba(63, 178, 233, 1);
+    border: 1px solid rgba(63, 178, 233, 1);
+  }
+
+  &-task {
+    background: rgba(117, 137, 242, .1);
+    border-radius: 4px;
+    font-size: .12rem;
+    font-family: PingFangSC-Regular, PingFang SC;
+    font-weight: 400;
+    color: rgba(117, 137, 242, 1);
+    line-height: .13rem;
+    padding: .01rem .04rem;
+    margin-left: .06rem;
+
+    &-parallel {
+      background: rgba(117, 137, 242, .1);
+      color: rgba(117, 137, 242, 1);
+    }
+
+    &-serial {
+      background: rgba(63, 178, 233, .1);
+      color: rgba(63, 178, 233, 1);
+    }
   }
 }

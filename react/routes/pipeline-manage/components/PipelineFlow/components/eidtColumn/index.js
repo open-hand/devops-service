@@ -133,7 +133,7 @@ const EditItem = (props) => {
 };
 
 export default observer((props) => {
-  const { jobList, sequence, name, columnIndex, edit, appServiceId, appServiceName, image, type, isLast } = props;
+  const { jobList, sequence, name, columnIndex, edit, appServiceId, appServiceName, image, type, isLast, parallel } = props;
   const {
     addStepDs,
     editBlockStore, stepStore,
@@ -301,7 +301,7 @@ export default observer((props) => {
     >
       <div className="c7n-piplineManage-edit-column-header">
         <span>{name}</span>
-        <StageType type={type} />
+        <StageType type={type} parallel={parallel} />
         <div
           className="c7n-piplineManage-edit-column-header-btnGroup"
         >
