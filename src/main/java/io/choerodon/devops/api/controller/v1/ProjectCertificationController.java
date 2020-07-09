@@ -13,6 +13,7 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +46,7 @@ public class ProjectCertificationController {
     @ApiOperation(value = "项目下创建或更新证书")
     @PostMapping
     public ResponseEntity<Void> createOrUpdate(
+            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书信息", required = true)
@@ -71,8 +73,10 @@ public class ProjectCertificationController {
     @ApiOperation(value = "查询单个证书信息")
     @GetMapping("/{cert_id}")
     public ResponseEntity<ProjectCertificationVO> query(
+            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "证书Id")
             @PathVariable(value = "cert_id") Long certId) {
         return Optional.ofNullable(devopsProjectCertificationService.queryCert(certId))
@@ -90,6 +94,7 @@ public class ProjectCertificationController {
     @ApiOperation(value = "校验证书名唯一性")
     @GetMapping(value = "/check_name")
     public ResponseEntity<Boolean> checkName(
+            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书name", required = true)
@@ -111,8 +116,10 @@ public class ProjectCertificationController {
     @ApiOperation(value = "分页查询证书下已有权限的项目列表")
     @PostMapping("/{cert_id}/permission/page_related")
     public ResponseEntity<Page<ProjectReqVO>> pageRelatedProjects(
+            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "证书Id")
             @PathVariable(value = "cert_id") Long certId,
             @ApiParam(value = "分页参数")
@@ -137,8 +144,10 @@ public class ProjectCertificationController {
     @ApiOperation(value = "列出组织下所有项目中没有分配权限的项目")
     @PostMapping(value = "/{cert_id}/permission/list_non_related")
     public ResponseEntity<Page<ProjectReqVO>> listAllNonRelatedMembers(
+            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "证书id", required = true)
             @PathVariable(value = "cert_id") Long certId,
             @ApiParam(value = "分页参数")
@@ -162,15 +171,18 @@ public class ProjectCertificationController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除项目在该证书下的权限")
     @DeleteMapping(value = "/{cert_id}/permission")
-    public ResponseEntity deletePermissionOfProject(
+    public ResponseEntity<Void> deletePermissionOfProject(
+            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "证书id", required = true)
             @PathVariable(value = "cert_id") Long certId,
+            @Encrypt
             @ApiParam(value = "关联的项目ID", required = true)
             @RequestParam(value = "related_project_id") Long relatedProjectId) {
         devopsProjectCertificationService.deletePermissionOfProject(relatedProjectId, certId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
@@ -185,6 +197,7 @@ public class ProjectCertificationController {
     @CustomPageRequest
     @PostMapping("/page_cert")
     public ResponseEntity<Page<ProjectCertificationVO>> pageOrgCert(
+            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -207,8 +220,10 @@ public class ProjectCertificationController {
     @ApiOperation(value = "证书下为项目分配权限")
     @PostMapping(value = "/{cert_id}/permission")
     public ResponseEntity<Void> assignPermission(
+            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "证书id", required = true)
             @PathVariable(value = "cert_id") Long certId,
             @ApiParam(value = "权限分配信息")
@@ -230,8 +245,10 @@ public class ProjectCertificationController {
     @CustomPageRequest
     @DeleteMapping("/{cert_id}")
     public ResponseEntity<Void> deleteOrgCert(
+            @Encrypt
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "证书Id")
             @PathVariable(value = "cert_id") Long certId) {
         devopsProjectCertificationService.deleteCert(projectId, certId);

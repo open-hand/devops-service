@@ -6,8 +6,10 @@ import io.choerodon.devops.api.vo.ApprovalVO;
 import io.choerodon.devops.api.vo.LatestAppServiceVO;
 import io.choerodon.devops.app.service.WorkBenchService;
 import io.choerodon.swagger.annotation.Permission;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,10 +36,13 @@ public class WorkBenchController {
     @Permission(permissionLogin = true, level = ResourceLevel.ORGANIZATION)
     @RequestMapping("/approval")
     @ApiOperation("查询个人待审核事件")
-    public ResponseEntity<List<ApprovalVO>> listApproval(@ApiParam(value = "组织id", required = true)
-                                                         @PathVariable("organization_id") Long organizationId,
-                                                         @ApiParam(value = "项目id")
-                                                         @RequestParam(value = "project_id", required = false) Long projectId) {
+    public ResponseEntity<List<ApprovalVO>> listApproval(
+            @Encrypt
+            @ApiParam(value = "组织id", required = true)
+            @PathVariable("organization_id") Long organizationId,
+            @Encrypt
+            @ApiParam(value = "项目id")
+            @RequestParam(value = "project_id", required = false) Long projectId) {
         return Optional.ofNullable(workBenchService.listApproval(organizationId, projectId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.approval"));
@@ -46,10 +51,13 @@ public class WorkBenchController {
     @Permission(permissionLogin = true, level = ResourceLevel.ORGANIZATION)
     @RequestMapping("/latest_app_service")
     @ApiOperation("查看最近操作过的应用服务")
-    public ResponseEntity<List<LatestAppServiceVO>> listLatestAppService(@ApiParam(value = "组织id", required = true)
-                                                                         @PathVariable("organization_id") Long organizationId,
-                                                                         @ApiParam(value = "项目id")
-                                                                         @RequestParam(value = "project_id", required = false) Long projectId) {
+    public ResponseEntity<List<LatestAppServiceVO>> listLatestAppService(
+            @Encrypt
+            @ApiParam(value = "组织id", required = true)
+            @PathVariable("organization_id") Long organizationId,
+            @Encrypt
+            @ApiParam(value = "项目id")
+            @RequestParam(value = "project_id", required = false) Long projectId) {
         return Optional.ofNullable(workBenchService.listLatestAppService(organizationId, projectId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.latest.app.service"));

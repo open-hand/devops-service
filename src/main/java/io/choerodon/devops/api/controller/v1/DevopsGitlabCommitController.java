@@ -59,7 +59,7 @@ public class DevopsGitlabCommitController {
             @RequestParam(value = "start_date") Date startDate,
             @ApiParam(value = "结束时间end_date", required = true)
             @RequestParam(value = "end_date") Date endDate) {
-        return Optional.ofNullable(devopsGitlabCommitService.queryCommits(projectId, KeyDecryptHelper.decryptCommaSeparatedIds(appServiceIds), startDate, endDate))
+        return Optional.ofNullable(devopsGitlabCommitService.queryCommits(projectId, KeyDecryptHelper.decryptJsonIds(appServiceIds), startDate, endDate))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.commits.get"));
     }
@@ -89,7 +89,7 @@ public class DevopsGitlabCommitController {
             @RequestParam(value = "start_date") Date startDate,
             @ApiParam(value = "结束时间end_date", required = true)
             @RequestParam(value = "end_date") Date endDate) {
-        return Optional.ofNullable(devopsGitlabCommitService.pageRecordCommits(projectId, KeyDecryptHelper.decryptCommaSeparatedIds(appServiceIds), pageable,
+        return Optional.ofNullable(devopsGitlabCommitService.pageRecordCommits(projectId, KeyDecryptHelper.decryptJsonIds(appServiceIds), pageable,
                 startDate, endDate))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.record.commit.get"));

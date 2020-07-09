@@ -26,6 +26,7 @@ import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.KeyDecryptHelper;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -696,14 +697,13 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "envId")
             @RequestParam(value = "env_id", required = false) Long envId,
-            @Encrypt
             @ApiParam(value = "appServiceIds")
-            @RequestBody(required = false) Long[] appServiceIds,
+            @RequestBody(required = false) String[] appServiceIds,
             @ApiParam(value = "startTime")
             @RequestParam(required = true) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(appServiceInstanceService.listDeployTime(projectId, envId, appServiceIds, startTime, endTime))
+        return Optional.ofNullable(appServiceInstanceService.listDeployTime(projectId, envId, KeyDecryptHelper.decryptIdArray(appServiceIds), startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.deploy.time.get"));
     }
@@ -730,14 +730,13 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "appServiceId")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
-            @Encrypt
             @ApiParam(value = "envIds")
-            @RequestBody(required = false) Long[] envIds,
+            @RequestBody(required = false) String[] envIds,
             @ApiParam(value = "startTime")
             @RequestParam(required = true) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(appServiceInstanceService.listDeployFrequency(projectId, envIds, appServiceId, startTime, endTime))
+        return Optional.ofNullable(appServiceInstanceService.listDeployFrequency(projectId, KeyDecryptHelper.decryptIdArray(envIds), appServiceId, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.deploy.frequency.get"));
     }
@@ -767,14 +766,13 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "appServiceId")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
-            @Encrypt
             @ApiParam(value = "envIds")
-            @RequestBody(required = false) Long[] envIds,
+            @RequestBody(required = false) String[] envIds,
             @ApiParam(value = "startTime")
             @RequestParam(required = true) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(appServiceInstanceService.pageDeployFrequencyTable(projectId, pageable, envIds, appServiceId, startTime, endTime))
+        return Optional.ofNullable(appServiceInstanceService.pageDeployFrequencyTable(projectId, pageable, KeyDecryptHelper.decryptIdArray(envIds), appServiceId, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.deploy.frequency.get"));
     }
@@ -800,19 +798,17 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "分页参数")
-                    PageRequest pageable,
+            @ApiParam(value = "分页参数") PageRequest pageable,
             @Encrypt
             @ApiParam(value = "envId")
             @RequestParam(value = "env_id", required = false) Long envId,
-            @Encrypt
             @ApiParam(value = "appServiceIds")
-            @RequestBody(required = false) Long[] appServiceIds,
+            @RequestBody(required = false) String[] appServiceIds,
             @ApiParam(value = "startTime")
             @RequestParam(required = true) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(appServiceInstanceService.pageDeployTimeTable(projectId, pageable, appServiceIds, envId, startTime, endTime))
+        return Optional.ofNullable(appServiceInstanceService.pageDeployTimeTable(projectId, pageable, KeyDecryptHelper.decryptIdArray(appServiceIds), envId, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.deploy.time.get"));
     }

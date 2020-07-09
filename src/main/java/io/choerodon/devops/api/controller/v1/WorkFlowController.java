@@ -4,6 +4,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.PipelineService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,8 +32,10 @@ public class WorkFlowController {
     @ApiOperation(value = "触发自动部署")
     @GetMapping("/auto_deploy")
     public ResponseEntity<Void> autoDeploy(
+            @Encrypt
             @ApiParam(value = "阶段记录Id", required = true)
             @RequestParam(value = "stage_record_id") Long stageRecordId,
+            @Encrypt
             @ApiParam(value = "任务Id", required = true)
             @RequestParam(value = "task_record_id") Long taskRecordId) {
         pipelineService.autoDeploy(stageRecordId, taskRecordId);
@@ -49,10 +52,13 @@ public class WorkFlowController {
     @ApiOperation(value = "接收任务状态")
     @PutMapping("/auto_deploy/status")
     public ResponseEntity<Void> setAppDeployStatusTask(
+            @Encrypt
             @ApiParam(value = "流水线记录Id", required = true)
             @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+            @Encrypt
             @ApiParam(value = "阶段记录Id", required = true)
             @RequestParam(value = "stage_record_id") Long stageRecordId,
+            @Encrypt
             @ApiParam(value = "任务Id", required = true)
             @RequestParam(value = "task_record_id") Long taskRecordId,
             @ApiParam(value = "状态", required = true)
@@ -64,8 +70,10 @@ public class WorkFlowController {
     @ApiOperation(value = "检测部署任务生成实例状态")
     @GetMapping("/auto_deploy/status")
     public ResponseEntity<String> getAppDeployStatusTask(
+            @Encrypt
             @ApiParam(value = "阶段记录Id", required = true)
             @RequestParam(value = "stage_record_id") Long stageRecordId,
+            @Encrypt
             @ApiParam(value = "任务Id", required = true)
             @RequestParam(value = "task_record_id") Long taskRecordId) {
         return Optional.ofNullable(pipelineService.getAppDeployStatus(stageRecordId, taskRecordId))

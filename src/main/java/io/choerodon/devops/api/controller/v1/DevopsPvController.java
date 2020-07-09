@@ -1,19 +1,9 @@
 package io.choerodon.devops.api.controller.v1;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
-import io.choerodon.devops.api.vo.DevopsPvReqVO;
-import io.choerodon.devops.api.vo.DevopsPvVO;
-import io.choerodon.devops.api.vo.ProjectReqVO;
-import io.choerodon.devops.app.service.DevopsPvService;
-import io.choerodon.devops.infra.dto.DevopsPvDTO;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.List;
+import java.util.Optional;
+import javax.validation.Valid;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -23,9 +13,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Optional;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
+import io.choerodon.devops.api.vo.DevopsPvReqVO;
+import io.choerodon.devops.api.vo.DevopsPvVO;
+import io.choerodon.devops.api.vo.ProjectReqVO;
+import io.choerodon.devops.app.service.DevopsPvService;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.swagger.annotation.Permission;
 
 
 @RestController

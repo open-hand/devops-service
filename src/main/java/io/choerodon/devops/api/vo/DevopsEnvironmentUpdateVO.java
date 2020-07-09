@@ -1,18 +1,18 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.swagger.annotations.ApiModelProperty;
-
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Created by younger on 2018/4/9.
  */
 public class DevopsEnvironmentUpdateVO {
+    @Encrypt
     @ApiModelProperty("环境id")
     @NotNull(message = "error.env.id.null")
-//    @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
     private Long id;
     @ApiModelProperty("环境名称，不能为空")
     @NotBlank(message = "error.env.name.empty")
@@ -21,8 +21,11 @@ public class DevopsEnvironmentUpdateVO {
     private String description;
     @ApiModelProperty("环境编码 / 不能修改")
     private String code;
+
+    @Encrypt
     @ApiModelProperty("环境所属组id")
     private Long devopsEnvGroupId;
+
     @ApiModelProperty("版本号 / 更新必须")
     @NotNull(message = "error.object.version.number.null")
     private Long objectVersionNumber;
