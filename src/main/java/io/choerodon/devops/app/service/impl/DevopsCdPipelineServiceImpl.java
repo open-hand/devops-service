@@ -419,6 +419,11 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
         AppServiceVersionDTO appServiceServiceE = getDeployVersion(pipelineRecordId);
 
+        if (appServiceServiceE == null) {
+            devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
+        }
+
+
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
         appServiceDeployVO.setDeployInfoId(devopsCdJobRecordDTO.getDeployInfoId());
         try {
@@ -732,52 +737,52 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             throw new CommonException(ERROR_PIPELINE_STATUS_CHANGED);
         }
         if (AuditStatusEnum.PASSED.value().equals(result)) {
-            // 审核通过
-            // 判断是否是或签任务
-            if (devopsCdJobRecordDTO.getCountersigned() == 0) {
-                // 1. 工作流任务审核通过
-                try {
-                    approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), details.getUsername(), details.getUserId(), details.getOrganizationId());
-                } catch (Exception e) {
-                    LOGGER.error("Approve job failed: {}", e.getMessage());
-                    // 更新job状态为失败
-                    devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.FAILED.toValue());
-                    // 更新阶段状态为失败
-                    devopsCdStageRecordService.updateStatusById(stageRecordId, PipelineStatus.FAILED.toValue());
-                    // 更新流水线状态为失败
-                    devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.FAILED.toValue());
-                    // 停止流水线
-                    workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
-                    // 发送失败通知
-                    sendNotificationService.sendPipelineNotice(pipelineRecordId,
-                            MessageCodeConstants.PIPELINE_FAILED, details.getUserId(), null, null);
-                }
-                // 更新审核状态为通过
-                devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.PASSED.value());
-                devopsCdAuditRecordService.update(devopsCdAuditRecordDTO);
-
-                // 更新job状态为success
-                devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.SUCCESS.toValue());
-
-                // 发送通知
-                sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_PASS, userIds, pipelineRecordId, devopsCdStageRecordDTO.getStageName(), devopsCdStageRecordDTO.getStageId());
-
-                // 执行下一个任务
-                startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
-            } else {
-                if (devopsCdAuditRecordDTOS.stream()
-                        .filter(v -> !v.getUserId().equals(details.getUserId()))
-                        .allMatch(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus()))) {
-
-                    // 更新job状态为success
-                    devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.SUCCESS.toValue());
-                    // 执行下一个任务
-                    startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
-                } else {
+            // 1. 工作流任务审核通过
+            try {
+                approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), details.getUsername(), details.getUserId(), details.getOrganizationId());
+                // 审核通过
+                // 判断是否是或签任务
+                if (devopsCdJobRecordDTO.getCountersigned() == 0) {
                     // 更新审核状态为通过
                     devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.PASSED.value());
                     devopsCdAuditRecordService.update(devopsCdAuditRecordDTO);
+
+                    // 更新job状态为success
+                    devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.SUCCESS.toValue());
+
+                    // 发送通知
+                    sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_PASS, userIds, pipelineRecordId, devopsCdStageRecordDTO.getStageName(), devopsCdStageRecordDTO.getStageId());
+
+                    // 执行下一个任务
+                    startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
+                } else {
+                    if (devopsCdAuditRecordDTOS.stream()
+                            .filter(v -> !v.getUserId().equals(details.getUserId()))
+                            .allMatch(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus()))) {
+
+                        // 更新job状态为success
+                        devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.SUCCESS.toValue());
+                        // 执行下一个任务
+                        startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
+                    } else {
+                        // 更新审核状态为通过
+                        devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.PASSED.value());
+                        devopsCdAuditRecordService.update(devopsCdAuditRecordDTO);
+                    }
                 }
+            } catch (Exception e) {
+                LOGGER.error("Approve job failed: {}", e.getMessage());
+                // 更新job状态为失败
+                devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.FAILED.toValue());
+                // 更新阶段状态为失败
+                devopsCdStageRecordService.updateStatusById(stageRecordId, PipelineStatus.FAILED.toValue());
+                // 更新流水线状态为失败
+                devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.FAILED.toValue());
+                // 停止流水线
+                workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
+                // 发送失败通知
+                sendNotificationService.sendPipelineNotice(pipelineRecordId,
+                        MessageCodeConstants.PIPELINE_FAILED, details.getUserId(), null, null);
             }
         } else if (AuditStatusEnum.REFUSED.value().equals(result)) {
             // 审核不通过
@@ -795,9 +800,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             List<DevopsCdStageRecordDTO> afterStageRecordList = devopsCdStageRecordService.queryByPipelineRecordId(pipelineRecordId).stream()
                     .filter(v -> v.getSequence() >= devopsCdStageRecordDTO.getSequence())
                     .collect(Collectors.toList());
-            afterStageRecordList.forEach(v -> {
-                devopsCdStageRecordService.updateStageStatusStop(v.getId());
-            });
+            afterStageRecordList.forEach(v -> devopsCdStageRecordService.updateStageStatusStop(v.getId()));
             // 3. 更新流水线状态为终止
             devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.STOP.toValue());
             // 4. 发送审核记录通知
