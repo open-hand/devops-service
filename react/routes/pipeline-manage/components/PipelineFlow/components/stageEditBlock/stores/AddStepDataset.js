@@ -1,3 +1,5 @@
+import { DataSet } from 'choerodon-ui/pro';
+
 export default (projectId) => ({
   autoCreate: true,
   fields: [{
@@ -5,6 +7,17 @@ export default (projectId) => ({
     type: 'string',
     label: '阶段属性',
     required: true,
+    textField: 'text',
+    valueField: 'value',
+    options: new DataSet({
+      data: [{
+        value: 'CI',
+        text: 'CI阶段',
+      }, {
+        value: 'CD',
+        text: 'CD阶段',
+      }],
+    }),
   }, {
     name: 'step',
     type: 'string',

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Form, Select, SelectBox, TextField } from 'choerodon-ui/pro';
+import { Form, Select, SelectBox, TextField, Tooltip } from 'choerodon-ui/pro';
 
 const { Option } = Select;
 
@@ -10,12 +10,24 @@ export default observer(({ addStepDs, curType, optType }) => {
     addStepDs.current.set('parallel', type === 'CI' ? 1 : 0);
   }, [addStepDs?.current?.get('type')]);
 
+  const renderer = ({ text }) => text;
+
   return (
     <Form className="addStageForm" dataSet={addStepDs}>
-      <Select showHelp="tooltip" name="type" help="123">
-        <Option disabled={curType && (curType === 'CD')} value="CI">CI阶段</Option>
-        <Option value="CD">CD阶段</Option>
-      </Select>
+      <Select
+        showHelp="tooltip"
+        name="type"
+        help="123"
+        onOption={({ record }) => ({
+          disabled: record.get('value') === 'CI' && curType && (curType === 'CD'),
+        })}
+        optionRenderer={({ text }) => (text.includes('CI') && curType && (curType === 'CD') ? (
+          <Tooltip title="CD阶段后，无法添加CI阶段">
+            {renderer({ text })}
+          </Tooltip>
+        ) : renderer({ text }))}
+        renderer={renderer}
+      />
       <TextField name="step" />
       <Select name="parallel">
         <Option value={0}>任务串行</Option>
