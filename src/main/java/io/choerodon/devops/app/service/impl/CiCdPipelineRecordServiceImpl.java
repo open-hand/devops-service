@@ -71,7 +71,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 
 
     @Override
-    public CiCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId, Long pipelioneRecordId) {
+    public CiCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId) {
         CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
         DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = devopsCiPipelineRecordService.queryPipelineRecordDetails(projectId, gitlabPipelineId);
         ciCdPipelineRecordVO.setCiPipelineRecordVO(devopsCiPipelineRecordVO);

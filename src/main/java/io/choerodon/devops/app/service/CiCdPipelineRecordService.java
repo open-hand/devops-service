@@ -4,7 +4,7 @@ import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
 
 public interface CiCdPipelineRecordService {
 
-    CiCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId, Long pipelineRecordId);
+    CiCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId);
 
     void retryPipeline(Long projectId, Long pipelineRecordId, Long gitlabPipelineId, Long gitlabProjectId);
 
