@@ -6,6 +6,10 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
+
+import io.choerodon.devops.infra.dto.DevopsCdAuditRecordDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 public class DevopsCdJobRecordVO {
 
@@ -21,6 +25,7 @@ public class DevopsCdJobRecordVO {
     @ApiModelProperty("是否会签")
     private Integer countersigned;
     private String executionTime;
+    private Long jobId;
 
     @ApiModelProperty("任务顺序")
     private Long sequence;
@@ -29,6 +34,104 @@ public class DevopsCdJobRecordVO {
     private Date finishedDate;
 
     private Long executeTime;
+
+    //自动部署记录详情
+    private CdAuto cdAuto;
+    private Audit audit;
+
+    public Long getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(Long jobId) {
+        this.jobId = jobId;
+    }
+
+    public CdAuto getCdAuto() {
+        return cdAuto;
+    }
+
+    public void setCdAuto(CdAuto cdAuto) {
+        this.cdAuto = cdAuto;
+    }
+
+    public Audit getAudit() {
+        return audit;
+    }
+
+    public void setAudit(Audit audit) {
+        this.audit = audit;
+    }
+    // 审核模式 指定审核人员 已审核人员 审核状态
+
+    public class Audit{
+       private List<IamUserDTO> appointUsers;
+       private List<IamUserDTO> reviewedUsers;
+       private String status;
+
+        public List<IamUserDTO> getAppointUsers() {
+            return appointUsers;
+        }
+
+        public void setAppointUsers(List<IamUserDTO> appointUsers) {
+            this.appointUsers = appointUsers;
+        }
+
+        public List<IamUserDTO> getReviewedUsers() {
+            return reviewedUsers;
+        }
+
+        public void setReviewedUsers(List<IamUserDTO> reviewedUsers) {
+            this.reviewedUsers = reviewedUsers;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+    }
+
+    public class CdAuto {
+        private String envName;
+        private String appServiceName;
+        private String appServiceVersion;
+        private String instanceName;
+
+        public String getEnvName() {
+            return envName;
+        }
+
+        public void setEnvName(String envName) {
+            this.envName = envName;
+        }
+
+        public String getAppServiceName() {
+            return appServiceName;
+        }
+
+        public void setAppServiceName(String appServiceName) {
+            this.appServiceName = appServiceName;
+        }
+
+        public String getAppServiceVersion() {
+            return appServiceVersion;
+        }
+
+        public void setAppServiceVersion(String appServiceVersion) {
+            this.appServiceVersion = appServiceVersion;
+        }
+
+        public String getInstanceName() {
+            return instanceName;
+        }
+
+        public void setInstanceName(String instanceName) {
+            this.instanceName = instanceName;
+        }
+    }
 
 
     public Long getExecuteTime() {
