@@ -6,7 +6,7 @@ import java.util.Set;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.DevopsCiPipelineVO;
-import io.choerodon.devops.infra.dto.DevopsCiPipelineDTO;
+import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
 /**
@@ -16,7 +16,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @author wanghao
  * @since 2020/4/2 18:01
  */
-public interface DevopsCiPipelineMapper extends BaseMapper<DevopsCiPipelineDTO> {
+public interface DevopsCiCdPipelineMapper extends BaseMapper<CiCdPipelineDTO> {
 
     /**
      * 查询项目下流水线集合
@@ -53,5 +53,5 @@ public interface DevopsCiPipelineMapper extends BaseMapper<DevopsCiPipelineDTO> 
      * @param token 流水线的token
      * @return 流水线数据
      */
-    DevopsCiPipelineDTO queryByToken(@Param("token") String token);
+    CiCdPipelineDTO queryByToken(@Param("token") String token);
 }

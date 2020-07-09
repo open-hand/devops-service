@@ -207,7 +207,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     private HrdsCodeRepoClient hrdsCodeRepoClient;
     @Autowired
-    private DevopsCiPipelineMapper DevopsCiPipelineMapper;
+    private DevopsCiCdPipelineMapper DevopsCiCdPipelineMapper;
 
 
     static {
@@ -591,10 +591,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private boolean appServiceIsExistsCi(Long projectId, Long appServiceId) {
-        DevopsCiPipelineDTO devopsCiPipelineDTO = new DevopsCiPipelineDTO();
+        CiCdPipelineDTO devopsCiPipelineDTO = new CiCdPipelineDTO();
         devopsCiPipelineDTO.setAppServiceId(appServiceId);
         devopsCiPipelineDTO.setProjectId(projectId);
-        return DevopsCiPipelineMapper.selectCount(devopsCiPipelineDTO) > 0;
+        return DevopsCiCdPipelineMapper.selectCount(devopsCiPipelineDTO) > 0;
     }
 
     @Override

@@ -81,7 +81,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     private static final Gson gson = new Gson();
 
-    private final DevopsCiPipelineMapper devopsCiPipelineMapper;
+    private final DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
     private final DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     private final DevopsCiStageService devopsCiStageService;
     private final DevopsCiJobService devopsCiJobService;
@@ -112,7 +112,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
 
     public DevopsCiPipelineServiceImpl(
-            @Lazy DevopsCiPipelineMapper devopsCiPipelineMapper,
+            @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
             // 这里的懒加载是为了避免循环依赖
             @Lazy DevopsCiPipelineRecordService devopsCiPipelineRecordService,
             DevopsCiStageService devopsCiStageService,
@@ -142,7 +142,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCdStageRecordService devopsCdStageRecordService,
             DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService,
             DevopsEnvironmentMapper devopsEnvironmentMapper) {
-        this.devopsCiPipelineMapper = devopsCiPipelineMapper;
+        this.devopsCiCdPipelineMapper = devopsCiCdPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
         this.devopsCiStageService = devopsCiStageService;
         this.devopsCiJobService = devopsCiJobService;
@@ -377,13 +377,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     @Override
-    public DevopsCiPipelineDTO queryByAppSvcId(Long id) {
+    public CiCdPipelineDTO queryByAppSvcId(Long id) {
         if (id == null) {
             throw new CommonException(ERROR_APP_SVC_ID_IS_NULL);
         }
-        DevopsCiPipelineDTO devopsCiPipelineDTO = new DevopsCiPipelineDTO();
-        devopsCiPipelineDTO.setAppServiceId(id);
-        return devopsCiPipelineMapper.selectOne(devopsCiPipelineDTO);
+        CiCdPipelineDTO ciCdPipelineDTO = new CiCdPipelineDTO();
+        ciCdPipelineDTO.setAppServiceId(id);
+        return ciCdPipelineMapper.selectOne(ciCdPipelineDTO);
     }
 
     @Override
@@ -498,7 +498,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     @Override
     public DevopsCiPipelineVO queryById(Long ciPipelineId) {
-        return devopsCiPipelineMapper.queryById(ciPipelineId);
+        return devopsCiCdPipelineMapper.queryById(ciPipelineId);
     }
 
     @Override
@@ -595,9 +595,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     @Override
     public int selectCountByAppServiceId(Long appServiceId) {
-        DevopsCiPipelineDTO devopsCiPipelineDTO = new DevopsCiPipelineDTO();
-        devopsCiPipelineDTO.setAppServiceId(Objects.requireNonNull(appServiceId));
-        return devopsCiPipelineMapper.selectCount(devopsCiPipelineDTO);
+        CiCdPipelineDTO ciCdPipelineDTO = new CiCdPipelineDTO();
+        ciCdPipelineDTO.setAppServiceId(Objects.requireNonNull(appServiceId));
+        return ciCdPipelineMapper.selectCount(ciCdPipelineDTO);
     }
 
     private void deleteGitlabCiFile(Integer gitlabProjectId) {

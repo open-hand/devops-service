@@ -10,11 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCiContentService;
+import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsCiContentDTO;
-import io.choerodon.devops.infra.dto.DevopsCiPipelineDTO;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.mapper.DevopsCiContentMapper;
-import io.choerodon.devops.infra.mapper.DevopsCiPipelineMapper;
+import io.choerodon.devops.infra.mapper.DevopsCiCdPipelineMapper;
 
 /**
  * 〈功能简述〉
@@ -35,7 +35,7 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
      */
     private static final String DEFAULT_EMPTY_GITLAB_CI_FILE_CONTENT;
     private DevopsCiContentMapper devopsCiContentMapper;
-    private DevopsCiPipelineMapper devopsCiPipelineMapper;
+    private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
 
 
     static {
@@ -47,14 +47,14 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
         }
     }
 
-    public DevopsCiContentServiceImpl(DevopsCiContentMapper devopsCiContentMapper, DevopsCiPipelineMapper devopsCiPipelineMapper) {
+    public DevopsCiContentServiceImpl(DevopsCiContentMapper devopsCiContentMapper, DevopsCiCdPipelineMapper devopsCiCdPipelineMapper) {
         this.devopsCiContentMapper = devopsCiContentMapper;
-        this.devopsCiPipelineMapper = devopsCiPipelineMapper;
+        this.devopsCiCdPipelineMapper = devopsCiCdPipelineMapper;
     }
 
     @Override
     public String queryLatestContent(String pipelineToken) {
-        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineMapper.queryByToken(pipelineToken);
+        CiCdPipelineDTO devopsCiPipelineDTO = devopsCiCdPipelineMapper.queryByToken(pipelineToken);
         if (devopsCiPipelineDTO == null) {
             throw new DevopsCiInvalidException(ERROR_PIPELINE_TOKEN_MISMATCH);
         }

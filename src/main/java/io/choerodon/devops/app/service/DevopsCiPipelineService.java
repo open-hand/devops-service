@@ -5,7 +5,6 @@ import java.util.List;
 import io.choerodon.devops.api.vo.CiCdPipelineVO;
 import io.choerodon.devops.api.vo.DevopsCiPipelineVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
-import io.choerodon.devops.infra.dto.DevopsCiPipelineDTO;
 
 /**
  * 〈功能简述〉
@@ -40,7 +39,7 @@ public interface DevopsCiPipelineService {
      * @param appServiceId 应用服务id
      * @return
      */
-    DevopsCiPipelineDTO queryByAppSvcId(Long appServiceId);
+    CiCdPipelineDTO queryByAppSvcId(Long appServiceId);
 
     /**
      * 查询项目下流水线列表（包含5条执行记录）
