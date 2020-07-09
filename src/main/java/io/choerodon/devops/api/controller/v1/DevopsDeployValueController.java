@@ -13,6 +13,7 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,10 +48,13 @@ public class DevopsDeployValueController {
     @CustomPageRequest
     @PostMapping("/page_by_options")
     public ResponseEntity<Page<DevopsDeployValueVO>> pageByOptions(
+            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "应用Id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
+            @Encrypt
             @ApiParam(value = "环境Id")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "分页参数")
@@ -73,6 +77,7 @@ public class DevopsDeployValueController {
     @ApiOperation(value = "项目下创建部署配置")
     @PostMapping
     public ResponseEntity<DevopsDeployValueVO> create(
+            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署配置相关信息")
@@ -93,6 +98,7 @@ public class DevopsDeployValueController {
     @ApiOperation(value = "项目下更新部署配置")
     @PutMapping
     public ResponseEntity<DevopsDeployValueVO> update(
+            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署配置相关信息")
@@ -113,8 +119,10 @@ public class DevopsDeployValueController {
     @ApiOperation(value = "项目下查询配置详情")
     @GetMapping
     public ResponseEntity<DevopsDeployValueVO> query(
+            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "配置Id", required = true)
             @RequestParam(value = "value_id") Long valueId) {
         return Optional.ofNullable(devopsDeployValueService.query(projectId, valueId))
@@ -132,8 +140,10 @@ public class DevopsDeployValueController {
     @ApiOperation(value = "项目下删除配置")
     @DeleteMapping
     public ResponseEntity<Void> delete(
+            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "配置id", required = true)
             @RequestParam(value = "value_id") Long valueId) {
         devopsDeployValueService.delete(projectId, valueId);
@@ -153,10 +163,12 @@ public class DevopsDeployValueController {
     @ApiOperation(value = "校验部署配置的名称在环境下唯一")
     @GetMapping("/check_name")
     public ResponseEntity<Boolean> checkName(
+            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "名称", required = true)
             @RequestParam(value = "name") String name,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId) {
         return ResponseEntity.ok(devopsDeployValueService.isNameUnique(projectId, name, envId));
@@ -173,8 +185,10 @@ public class DevopsDeployValueController {
     @ApiOperation(value = "检测能否删除")
     @GetMapping("/check_delete")
     public ResponseEntity<Boolean> checkDelete(
+            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "valueId", required = true)
             @RequestParam(value = "value_id") Long valueId) {
         return Optional.ofNullable(devopsDeployValueService.checkDelete(projectId, valueId))
@@ -194,10 +208,13 @@ public class DevopsDeployValueController {
     @ApiOperation(value = "根据应用服务Id和环境Id获取配置")
     @GetMapping("/list_by_env_and_app")
     public ResponseEntity<List<DevopsDeployValueVO>> listByEnvAndApp(
+            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "应用服务Id", required = true)
             @RequestParam(value = "app_service_id") Long appServiceId,
+            @Encrypt
             @ApiParam(value = "环境Id", required = true)
             @RequestParam(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsDeployValueService.listByEnvAndApp(projectId, appServiceId, envId))

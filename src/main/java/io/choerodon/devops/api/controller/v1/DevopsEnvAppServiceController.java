@@ -9,6 +9,7 @@ import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +43,7 @@ public class DevopsEnvAppServiceController {
     @ApiOperation(value = "创建环境下的服务关联")
     @PostMapping("/batch_create")
     public ResponseEntity<List<DevopsEnvApplicationVO>> batchCreate(
+            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "关联信息", required = true)
             @RequestBody DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
@@ -56,9 +58,12 @@ public class DevopsEnvAppServiceController {
     @ApiOperation(value = "删除指定环境-服务关联关系")
     @DeleteMapping
     public ResponseEntity<Void> delete(
+            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境Id", required = true)
+            @Encrypt
             @RequestParam("env_id") Long envId,
+            @Encrypt
             @ApiParam(value = "应用服务Id", required = true)
             @RequestParam("app_service_id") Long appServiceId) {
         validator.checkEnvIdAndAppIdsExist(projectId, envId, appServiceId);
@@ -76,6 +81,7 @@ public class DevopsEnvAppServiceController {
     @ApiOperation(value = "查询环境下的所有服务")
     @GetMapping("/list_by_env")
     public ResponseEntity<List<AppServiceRepVO>> listAppByEnvId(
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvApplicationService.listAppByEnvId(envId))
@@ -94,8 +100,10 @@ public class DevopsEnvAppServiceController {
     @ApiOperation(value = "查询服务在环境下的所有label")
     @GetMapping("/list_label")
     public ResponseEntity<List<Map<String, String>>> listLabelByAppAndEnvId(
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @RequestParam(value = "app_service_id") Long appServiceId) {
         return Optional.ofNullable(devopsEnvApplicationService.listLabelByAppAndEnvId(envId, appServiceId))
@@ -115,8 +123,10 @@ public class DevopsEnvAppServiceController {
     @ApiOperation(value = "查询服务在环境下的所有port")
     @GetMapping("/list_port")
     public ResponseEntity<List<DevopsEnvPortVO>> listPortByAppAndEnvId(
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @RequestParam(value = "app_service_id") Long appServiceId) {
         return Optional.ofNullable(devopsEnvApplicationService.listPortByAppAndEnvId(envId, appServiceId))
@@ -136,8 +146,10 @@ public class DevopsEnvAppServiceController {
     @ApiOperation(value = "查询项目下可用的且没有与该环境关联的服务")
     @GetMapping("/non_related_app_service")
     public ResponseEntity<List<BaseApplicationServiceVO>> listNonRelatedAppService(
+            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId) {
         return new ResponseEntity<>(devopsEnvApplicationService.listNonRelatedAppService(projectId, envId), HttpStatus.OK);

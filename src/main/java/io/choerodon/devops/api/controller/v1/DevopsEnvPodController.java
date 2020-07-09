@@ -15,6 +15,7 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,17 +49,19 @@ public class DevopsEnvPodController {
     @CustomPageRequest
     @PostMapping(value = "/page_by_options")
     public ResponseEntity<Page<DevopsEnvPodVO>> pageByOptions(
+            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable,
+            @Encrypt
             @ApiParam(value = "环境id")
             @RequestParam(value = "env_id", required = false) Long envId,
+            @Encrypt
             @ApiParam(value = "应用id")
-//            @Encrypt(AppServiceDTO.ENCRYPT_KEY)
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
-            @ApiParam(value = "应用id")
-//            @Encrypt(DevopsServiceInstanceDTO.ENCRYPT_KEY)
+            @Encrypt
+            @ApiParam(value = "实例id")
             @RequestParam(value = "instance_id", required = false) Long instanceId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
@@ -103,13 +106,14 @@ public class DevopsEnvPodController {
     @ApiOperation(value = "删除环境下的pod")
     @DeleteMapping("/{pod_id}")
     public ResponseEntity<Void> deleteEnvPod(
+            @Encrypt
             @ApiParam(value = "项目id")
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "podId")
-//            @Encrypt(DevopsEnvPodDTO.ENCRYPT_KEY)
             @PathVariable(value = "pod_id") Long podId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
-//            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
             @RequestParam(value = "env_id") Long envId) {
         devopsEnvPodService.deleteEnvPodById(projectId, envId, podId);
         return ResponseEntity.noContent().build();

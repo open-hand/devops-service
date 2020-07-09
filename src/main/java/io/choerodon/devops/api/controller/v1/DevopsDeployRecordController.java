@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,6 +45,7 @@ public class DevopsDeployRecordController {
     @CustomPageRequest
     @PostMapping("/page_by_options")
     public ResponseEntity<Page<DevopsDeployRecordVO>> pageByOptions(
+            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -60,6 +62,7 @@ public class DevopsDeployRecordController {
     @CustomPageRequest
     @GetMapping("/count_by_date")
     public ResponseEntity<DeployRecordCountVO> countByDate(
+            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam("startTime") Date startTime,
             @RequestParam("endTime") Date endTime) {

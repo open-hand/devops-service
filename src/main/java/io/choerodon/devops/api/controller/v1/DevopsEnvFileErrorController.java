@@ -14,6 +14,7 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,10 +52,11 @@ public class DevopsEnvFileErrorController {
     @ApiOperation(value = "项目下查询环境文件错误列表")
     @GetMapping(value = "/list_by_env")
     public ResponseEntity<List<DevopsEnvFileErrorVO>> listByEnvId(
+            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID", required = true)
-//            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
+            @Encrypt
             @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvFileService.listByEnvId(envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -74,13 +76,14 @@ public class DevopsEnvFileErrorController {
     @CustomPageRequest
     @GetMapping(value = "/page_by_env")
     public ResponseEntity<Page<DevopsEnvFileErrorVO>> pageByEnvId(
+            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
             @ApiParam(value = "环境 ID", required = true)
-//            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
+            @Encrypt
             @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvFileService.pageByEnvId(envId, pageable))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
