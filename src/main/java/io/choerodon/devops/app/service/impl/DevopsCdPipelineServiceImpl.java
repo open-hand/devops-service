@@ -143,13 +143,16 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
     @Autowired
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
+    @Autowired
+    private UserAttrService userAttrService;
 
     @Override
     @Transactional
     public void handleCiPipelineStatusUpdate(PipelineWebHookVO pipelineWebHookVO) {
         AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(pipelineWebHookVO.getToken());
         CiCdPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
-
+        Long iamUserId = getIamUserIdByGitlabUserName(pipelineWebHookVO.getUser().getUsername());
+        CustomContextUtil.setDefaultIfNull(iamUserId);
         // 查询流水线是否有cd阶段, 没有cd阶段不做处理
         List<DevopsCdStageDTO> devopsCdStageDTOList = devopsCdStageService.queryByPipelineId(devopsCiPipelineDTO.getId());
         if (CollectionUtils.isEmpty(devopsCdStageDTOList)) {
@@ -806,5 +809,13 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             // 4. 发送审核记录通知
             sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_STOP, userIds, devopsCdPipelineRecordDTO.getId(), devopsCdStageRecordDTO.getStageName(), devopsCdStageRecordDTO.getStageId());
         }
+    }
+
+    private Long getIamUserIdByGitlabUserName(String username) {
+        if ("admin1".equals(username) || "root".equals(username)) {
+            return 1L;
+        }
+        UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserName(username);
+        return userAttrE.getIamUserId();
     }
 }
