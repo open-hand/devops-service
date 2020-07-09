@@ -40,12 +40,12 @@ public class CiCdPipelineRecordController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "cd流水线记录id", required = true)
-            @PathVariable(value = "cd_pipeline_record_id") Long pipelineRecordId,
+            @PathVariable(value = "cd_pipeline_record_id") Long cdPipelineRecordId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @RequestParam("gitlab_pipeline_id") Long gitlabPipelineId,
             @ApiParam(value = "流水线ID", required = true)
             @RequestParam("gitlab_project_id") Long gitlabProjectId) {
-        ciCdPipelineRecordService.retryPipeline(projectId, pipelineRecordId, gitlabPipelineId, gitlabProjectId);
+        ciCdPipelineRecordService.retryPipeline(projectId, cdPipelineRecordId, gitlabPipelineId, gitlabProjectId);
         return Results.success();
     }
 
@@ -58,12 +58,12 @@ public class CiCdPipelineRecordController {
     public ResponseEntity<Boolean> cancel(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "cd流水线记录id", required = true)
-            @PathVariable(value = "cd_pipeline_record_id") Long pipelineRecordId,
+            @PathVariable(value = "cd_pipeline_record_id") Long cdPipelineRecordId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @RequestParam("gitlab_pipeline_id") Long gitlabPipelineId,
             @ApiParam(value = "流水线ID", required = true)
             @RequestParam("gitlab_project_id") Long gitlabProjectId) {
-        ciCdPipelineRecordService.cancel(projectId, pipelineRecordId, gitlabPipelineId, gitlabProjectId);
+        ciCdPipelineRecordService.cancel(projectId, cdPipelineRecordId, gitlabPipelineId, gitlabProjectId);
         return ResponseEntity.noContent().build();
     }
 }

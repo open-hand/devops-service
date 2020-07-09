@@ -81,26 +81,26 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     }
 
     @Override
-    public void retryPipeline(Long projectId, Long pipelineRecordId, Long gitlabPipelineId, Long gitlabProjectId) {
-        DevopsCdStageRecordDTO cdStageRecordDTO = devopsCdStageRecordMapper.queryFailedOrCancelStage(pipelineRecordId);
+    public void retryPipeline(Long projectId, Long cdPipelineRecordId, Long gitlabPipelineId, Long gitlabProjectId) {
+        DevopsCdStageRecordDTO cdStageRecordDTO = devopsCdStageRecordMapper.queryFailedOrCancelStage(cdPipelineRecordId);
         if (cdStageRecordDTO == null || cdStageRecordDTO.getId() == null) {
             devopsCiPipelineRecordService.retry(projectId, gitlabPipelineId, gitlabProjectId);
         } else {
-            retryCdPipeline(projectId, pipelineRecordId);
+            retryCdPipeline(projectId, cdPipelineRecordId);
         }
     }
 
     @Transactional
-    public void retryCdPipeline(Long projectId, Long pipelineRecordId) {
+    public void retryCdPipeline(Long projectId, Long cdPipelineRecordId) {
         // 0.1 更新business key
-        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(cdPipelineRecordId);
         devopsCdPipelineRecordDTO.setBusinessKey(GenerateUUID.generateUUID());
         devopsCdPipelineRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
         devopsCdPipelineRecordService.update(devopsCdPipelineRecordDTO);
         // 1. 根据装填获取DevopsPipelineDTO
-        DevopsPipelineDTO devopsPipelineDTO = devopsCdPipelineRecordService.createCDWorkFlowDTO(pipelineRecordId, true);
+        DevopsPipelineDTO devopsPipelineDTO = devopsCdPipelineRecordService.createCDWorkFlowDTO(cdPipelineRecordId, true);
         // 2.更新状态
-        DevopsCdStageRecordDTO cdStageRecordDTO = devopsCdStageRecordMapper.queryFailedOrCancelStage(pipelineRecordId);
+        DevopsCdStageRecordDTO cdStageRecordDTO = devopsCdStageRecordMapper.queryFailedOrCancelStage(cdPipelineRecordId);
         DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.queryFailedOrCancelJob(cdStageRecordDTO.getId());
         devopsCdStageRecordService.updateStatusById(cdJobRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
         devopsCdJobRecordService.updateStatusById(cdJobRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
@@ -118,12 +118,12 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     }
 
     @Override
-    public void cancel(Long projectId, Long pipelineRecordId, Long gitlabPipelineId, Long gitlabProjectId) {
-        DevopsCdStageRecordDTO cdStageRecordDTO = devopsCdStageRecordMapper.queryPendingAndRunning(pipelineRecordId);
+    public void cancel(Long projectId, Long cdPipelineRecordId, Long gitlabPipelineId, Long gitlabProjectId) {
+        DevopsCdStageRecordDTO cdStageRecordDTO = devopsCdStageRecordMapper.queryPendingAndRunning(cdPipelineRecordId);
         if (cdStageRecordDTO == null || cdStageRecordDTO.getId() == null) {
             devopsCiPipelineRecordService.cancel(projectId, gitlabPipelineId, gitlabProjectId);
         } else {
-            cancelCdPipeline(pipelineRecordId);
+            cancelCdPipeline(cdPipelineRecordId);
         }
     }
 
