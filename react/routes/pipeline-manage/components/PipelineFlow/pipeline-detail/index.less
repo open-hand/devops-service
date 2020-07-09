@@ -15,12 +15,14 @@
     background: rgba(245, 246, 250, 0.3);
     border-radius: 4px;
     min-height: ~"calc(100vh - 2.4rem)";
+    overflow-x: scroll;
   }
 
   &-stage {
     border-right: 1px solid rgba(14, 29, 128, 0.1);
     width: 2.2rem;
     position: relative;
+    flex-shrink: 0;
 
     &:last-child {
       border: none;

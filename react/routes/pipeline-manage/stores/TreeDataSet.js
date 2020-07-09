@@ -3,10 +3,9 @@ import isEmpty from 'lodash/isEmpty';
 
 function formatData({ data, expandsKeys }) {
   const newData = [];
-  function flatData(value, gitlabProjectId) {
+  function flatData(value, gitlabProjectId, parentId) {
     forEach(value, (item) => {
-      const parentId = item.ciPipelineId;
-      const key = `${parentId ? `${parentId}-` : ''}${item.id}`;
+      const key = `${parentId ? `${parentId}-` : ''}${item.id || item.ciRecordId || item.cdRecordId}`;
       const newGitlabProjectId = item.gitlabProjectId || gitlabProjectId;
       const newItem = {
         ...item,
@@ -17,8 +16,8 @@ function formatData({ data, expandsKeys }) {
         gitlabProjectId: newGitlabProjectId,
       };
       newData.push(newItem);
-      if (!isEmpty(item.pipelineRecordVOList)) {
-        flatData(item.pipelineRecordVOList, newGitlabProjectId);
+      if (!isEmpty(item.ciCdPipelineRecordVOS)) {
+        flatData(item.ciCdPipelineRecordVOS, newGitlabProjectId, item.id);
       }
       if (item.hasMoreRecords) {
         newData.push({

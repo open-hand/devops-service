@@ -133,7 +133,7 @@ export default observer((props) => {
       </div>
       <div className="c7ncd-pipeline-detail-content">
         {map(getStepData, ({ id: stageId, name: stageName, jobList, type: stageType = 'CI' }, stageIndex) => (
-          <div className="c7ncd-pipeline-detail-stage" key={stageId}>
+          <div className="c7ncd-pipeline-detail-stage" key={`${stageId}-${stageIndex}`}>
             <div className="c7ncd-pipeline-detail-stage-title">
               <span>{stageName}</span>
               <StageType type={stageType} />

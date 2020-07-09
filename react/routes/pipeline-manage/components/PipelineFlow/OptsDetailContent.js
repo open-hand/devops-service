@@ -18,6 +18,7 @@ export default observer((props) => {
     status: treeStatus,
     treeDs,
     stageRecordVOList: treeStageRecordVOList,
+    cdRecordId,
   } = props;
 
   const {
@@ -33,8 +34,8 @@ export default observer((props) => {
   } = detailStore;
 
   useEffect(() => {
-    loadDetailData(projectId, gitlabPipelineId);
-  }, [projectId, gitlabPipelineId]);
+    loadDetailData(projectId, gitlabPipelineId, cdRecordId);
+  }, [projectId, gitlabPipelineId, cdRecordId]);
 
   // stageRecordVOList: 各个详情阶段记录
   // devopsCipiplineVO: 本流水线记录得信息

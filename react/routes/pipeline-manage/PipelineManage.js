@@ -67,11 +67,11 @@ const PipelineManage = observer((props) => {
     await treeDs.query();
     const { id } = getMainData;
     const { parentId } = getSelectedMenu;
-    const { gitlabPipelineId } = getDetailData;
+    const { gitlabPipelineId, cdRecordId } = getDetailData;
     if (!parentId) {
       id && loadData(projectId, id);
     } else {
-      gitlabPipelineId && loadDetailData(projectId, gitlabPipelineId);
+      gitlabPipelineId && loadDetailData(projectId, gitlabPipelineId, cdRecordId);
     }
   }
 
@@ -89,7 +89,7 @@ const PipelineManage = observer((props) => {
   }
 
   function openRecordDetail() {
-    const { gitlabPipelineId } = getSelectedMenu;
+    const { gitlabPipelineId, cdRecordId } = getSelectedMenu;
     Modal.open({
       key: recordDetailKey,
       style: modalStyle,
@@ -99,6 +99,7 @@ const PipelineManage = observer((props) => {
         intlPrefix={intlPrefix}
         refresh={handleRefresh}
         store={mainStore}
+        cdRecordId={cdRecordId}
       />,
       drawer: true,
       okCancel: false,
