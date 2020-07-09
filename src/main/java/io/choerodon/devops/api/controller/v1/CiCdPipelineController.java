@@ -5,6 +5,7 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -138,7 +139,6 @@ public class CiCdPipelineController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody HostConnectionVO hostConnectionVO) {
-        devopsCdPipelineRecordService.testConnection(hostConnectionVO);
-        return ResponseEntity.noContent().build();
+        return Results.success(devopsCdPipelineRecordService.testConnection(hostConnectionVO));
     }
 }
