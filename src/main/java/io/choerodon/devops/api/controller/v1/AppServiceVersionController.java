@@ -139,28 +139,6 @@ public class AppServiceVersionController {
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }
 
-//    /**
-//     * 项目下查询服务最新的版本和各环境下部署的版本
-//     *
-//     * @param projectId    项目ID
-//     * @param appServiceId 服务ID
-//     * @return DeployVersionVO
-//     */
-//    @Permission(level = ResourceLevel.ORGANIZATION,
-//            roles = {InitRoleCode.PROJECT_OWNER,
-//                    InitRoleCode.PROJECT_MEMBER})
-//    @ApiOperation(value = "项目下查询服务最新的版本和各环境下部署的版本")
-//    @GetMapping(value = "/app_service/{app_service_id}/deployVersions")
-//    public ResponseEntity<DeployVersionVO> queryDeployedVersions(
-//            @ApiParam(value = "项目ID", required = true)
-//            @PathVariable(value = "project_id") Long projectId,
-//            @ApiParam(value = "服务ID", required = true)
-//            @PathVariable(value = "app_service_id") Long appServiceId) {
-//        return Optional.ofNullable(appServiceVersionService.queryDeployedVersions(appServiceId))
-//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-//                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
-//    }
-
 
     /**
      * 根据版本id获取版本values

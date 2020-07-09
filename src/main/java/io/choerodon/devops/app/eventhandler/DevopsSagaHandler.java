@@ -331,7 +331,7 @@ public class DevopsSagaHandler {
         PipelineTaskRecordDTO taskRecordDTO = pipelineTaskRecordService.baseQueryRecordById(taskRecordId);
         Long pipelineRecordId = stageRecordDTO.getPipelineRecordId();
         try {
-            AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(appServiceDeployVO, true);
+            AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(null,appServiceDeployVO, true);
             if (!pipelineRecordService.baseQueryById(pipelineRecordId).getStatus().equals(WorkFlowStatus.FAILED.toValue()) || stageRecordDTO.getIsParallel() == 1) {
                 if (!taskRecordDTO.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
                     PipelineTaskRecordDTO pipelineTaskRecordDTO = new PipelineTaskRecordDTO();
@@ -379,7 +379,7 @@ public class DevopsSagaHandler {
         DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordService.queryById(devopsCdJobRecordDTO.getStageRecordId());
         Long pipelineRecordId = devopsCdStageRecordDTO.getPipelineRecordId();
         try {
-            AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(appServiceDeployVO, true);
+            AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(null, appServiceDeployVO, true);
             // 对于新建实例的部署任务，部署成功后修改为替换实例
             updateDeployTypeToUpdate(appServiceDeployVO.getDeployInfoId(), appServiceInstanceVO);
             // 更新job状态为success

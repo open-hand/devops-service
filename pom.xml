@@ -74,6 +74,11 @@
             <artifactId>hzero-starter-feign-replay</artifactId>
         </dependency>
 
+<!--        <dependency>-->
+<!--            <groupId>org.hzero.starter</groupId>-->
+<!--            <artifactId>hzero-starter-keyencrypt</artifactId>-->
+<!--        </dependency>-->
+
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-liquibase</artifactId>
@@ -313,6 +318,16 @@
             <artifactId>sshj</artifactId>
             <version>0.24.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.hzero.starter</groupId>
+            <artifactId>hzero-starter-keyencrypt</artifactId>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.hzero.starter</groupId>-->
+<!--            <artifactId>hzero-starter-keyencrypt</artifactId>-->
+<!--        </dependency>-->
+
     </dependencies>
 
     <build>

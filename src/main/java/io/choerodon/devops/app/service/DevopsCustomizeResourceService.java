@@ -1,14 +1,13 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqVO;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceVO;
 import io.choerodon.devops.infra.dto.DevopsCustomizeResourceDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 /**
  * Created by Sheep on 2019/6/26.
@@ -31,9 +30,10 @@ public interface DevopsCustomizeResourceService {
 
 
     /**
+     * @param projectId  项目id
      * @param resourceId 资源id
      */
-    void deleteResource(Long resourceId);
+    void deleteResource(Long projectId, Long resourceId);
 
 
     /**

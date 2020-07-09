@@ -1,18 +1,21 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.*;
-
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+
+import javax.persistence.*;
 
 @ModifyAudit
 @VersionAudit
 @Table(name = "devops_env_file_error")
 public class DevopsEnvFileErrorDTO extends AuditDomain {
 
+    public static final String ENCRYPT_KEY = "devops_env_file_error";
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+//    @Encrypt(DevopsEnvFileErrorDTO.ENCRYPT_KEY)
     private Long id;
     private Long envId;
     private String filePath;
@@ -20,7 +23,8 @@ public class DevopsEnvFileErrorDTO extends AuditDomain {
     private String error;
 
 
-    public DevopsEnvFileErrorDTO(){}
+    public DevopsEnvFileErrorDTO() {
+    }
 
 
     public DevopsEnvFileErrorDTO(Long envId, String filePath) {

@@ -1,13 +1,14 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.List;
-
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
+import java.util.List;
 
 public class DevopsBranchVO {
     @ApiModelProperty("应用服务id")
+//    @Encrypt(AppServiceDTO.ENCRYPT_KEY)
     private Long appServiceId;
 
     @ApiModelProperty("应用服务名称")

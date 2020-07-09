@@ -1,9 +1,18 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
-import java.util.Optional;
-import javax.validation.Valid;
-
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.DevopsServiceReqVO;
+import io.choerodon.devops.api.vo.DevopsServiceVO;
+import io.choerodon.devops.app.service.DevopsServiceService;
+import io.choerodon.devops.infra.dto.DevopsServiceDTO;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,18 +21,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.DevopsServiceReqVO;
-import io.choerodon.devops.api.vo.DevopsServiceVO;
-import io.choerodon.devops.app.service.DevopsServiceService;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -117,12 +117,13 @@ public class DevopsServiceController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除网络")
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity delete(@ApiParam(value = "项目ID", required = true)
-                                 @PathVariable(value = "project_id") Long projectId,
-                                 @ApiParam(value = "网络ID", required = true)
-                                 @PathVariable Long id) {
-        devopsServiceService.delete(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<Void> delete(@ApiParam(value = "项目ID", required = true)
+                                       @PathVariable(value = "project_id") Long projectId,
+                                       @ApiParam(value = "网络ID", required = true)
+//                                       @Encrypt(DevopsServiceDTO.ENCRYPT_KEY)
+                                       @PathVariable Long id) {
+        devopsServiceService.delete(projectId, id);
+        return ResponseEntity.noContent().build();
     }
 
 

@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.devops.infra.dto.DevopsSecretDTO;
+
 /**
  * Created by n!Ck
  * Date: 18-12-4
@@ -11,6 +13,7 @@ import java.util.Map;
  */
 public class SecretRespVO extends DevopsResourceDataInfoVO {
 
+//    @Encrypt(DevopsSecretDTO.ENCRYPT_KEY)
     private Long id;
     private String name;
     private Long envId;

@@ -1,16 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
-import java.util.Optional;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
@@ -19,6 +8,16 @@ import io.choerodon.devops.api.vo.DevopsPrometheusVO;
 import io.choerodon.devops.api.vo.PrometheusStageVO;
 import io.choerodon.devops.app.service.DevopsClusterResourceService;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @author zhaotianxin
@@ -38,7 +37,7 @@ public class DevopsClusterResourceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        devopsClusterResourceService.createCertManager(clusterId);
+        devopsClusterResourceService.createCertManager(projectId, clusterId);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -64,7 +63,7 @@ public class DevopsClusterResourceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        return new ResponseEntity<>(devopsClusterResourceService.deleteCertManager(clusterId), HttpStatus.OK);
+        return new ResponseEntity<>(devopsClusterResourceService.deleteCertManager(projectId, clusterId), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
@@ -137,20 +136,22 @@ public class DevopsClusterResourceController {
     @ApiOperation(value = "卸载prometheus")
     @DeleteMapping("/prometheus/unload")
     public ResponseEntity<Boolean> deletePrometheus(
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        return Optional.ofNullable(devopsClusterResourceService.uninstallPrometheus(clusterId))
+        return Optional.ofNullable(devopsClusterResourceService.uninstallPrometheus(projectId, clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.prometheus.unload"));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "卸载prometheus")
+    @ApiOperation(value = "重试prometheus操作")
     @DeleteMapping("/prometheus/retry")
     public ResponseEntity<Boolean> retryInstallPrometheus(
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        devopsClusterResourceService.retryInstallPrometheus(clusterId);
+        devopsClusterResourceService.retryInstallPrometheus(projectId, clusterId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

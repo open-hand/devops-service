@@ -50,6 +50,7 @@ public class DevopsGitlabPipelineController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "app_service_id")
+//            @Encrypt(AppServiceDTO.ENCRYPT_KEY)
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "start_time")
             @RequestParam(value = "start_time") Date startTime,
@@ -79,6 +80,7 @@ public class DevopsGitlabPipelineController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "app_service_id")
+//            @Encrypt(AppServiceDTO.ENCRYPT_KEY)
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "start_time")
             @RequestParam(value = "start_time") Date startTime,
@@ -113,6 +115,7 @@ public class DevopsGitlabPipelineController {
             @ApiParam(value = "branch")
             @RequestParam(required = false) String branch,
             @ApiParam(value = "app_service_id")
+//            @Encrypt(AppServiceDTO.ENCRYPT_KEY)
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "start_time")
             @RequestParam(required = false, value = "start_time") Date startTime,

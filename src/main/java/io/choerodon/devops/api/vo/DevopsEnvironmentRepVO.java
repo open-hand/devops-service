@@ -1,10 +1,13 @@
 package io.choerodon.devops.api.vo;
 
 
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+
 /**
  * Created by younger on 2018/4/9.
  */
 public class DevopsEnvironmentRepVO {
+//    @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
     private Long id;
     private String name;
     private String description;

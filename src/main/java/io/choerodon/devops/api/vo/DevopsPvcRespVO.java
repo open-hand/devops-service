@@ -2,8 +2,11 @@ package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.infra.dto.DevopsPvcDTO;
+
 public class DevopsPvcRespVO extends DevopsResourceDataInfoVO {
     @ApiModelProperty("PVC id")
+//    @Encrypt(DevopsPvcDTO.ENCRYPT_KEY)
     private Long id;
 
     @ApiModelProperty("PVC名称")

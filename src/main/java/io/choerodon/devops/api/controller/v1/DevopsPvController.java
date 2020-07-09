@@ -1,17 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
-import java.util.Optional;
-import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -21,10 +9,22 @@ import io.choerodon.devops.api.vo.DevopsPvReqVO;
 import io.choerodon.devops.api.vo.DevopsPvVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.DevopsPvService;
+import io.choerodon.devops.infra.dto.DevopsPvDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
 
 
 @RestController
@@ -55,12 +55,12 @@ public class DevopsPvController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建pv")
     @PostMapping
-    public ResponseEntity createPv(
+    public ResponseEntity<Void> createPv(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody @Valid DevopsPvReqVO devopsPvReqVo) {
         devopsPvService.createPv(projectId, devopsPvReqVo);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -82,13 +82,14 @@ public class DevopsPvController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "根据pvId删除Pv")
     @DeleteMapping("/{pv_id}")
-    public ResponseEntity deletePv(
+    public ResponseEntity<Void> deletePv(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "pvId", required = true)
+//            @Encrypt(DevopsPvDTO.ENCRYPT_KEY)
             @PathVariable(value = "pv_id") Long pvId) {
-        devopsPvService.deletePvById(pvId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        devopsPvService.deletePvById(projectId, pvId);
+        return ResponseEntity.noContent().build();
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
@@ -98,6 +99,7 @@ public class DevopsPvController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "pvId", required = true)
+//            @Encrypt(DevopsPvDTO.ENCRYPT_KEY)
             @PathVariable(value = "pv_id") Long pvId) {
         return Optional.ofNullable(devopsPvService.queryById(pvId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -134,28 +136,28 @@ public class DevopsPvController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "根据projectId删除和Pv关联的权限记录")
     @DeleteMapping(value = "/{pv_id}/permission")
-    public ResponseEntity deleteRelateProjectById(
+    public ResponseEntity<Void> deleteRelateProjectById(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "PvId", required = true)
             @PathVariable(value = "pv_id") Long pvId,
             @ApiParam(value = "要删除的proejctId")
             @RequestParam(value = "related_project_id") Long relatedProjectId) {
-        devopsPvService.deleteRelatedProjectById(pvId, relatedProjectId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        devopsPvService.deleteRelatedProjectById(projectId, pvId, relatedProjectId);
+        return ResponseEntity.noContent().build();
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "给当前pv分配项目权限")
     @PostMapping(value = "/{pv_id}/permission")
-    public ResponseEntity assignPermission(
+    public ResponseEntity<Void> assignPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "PvId", required = true)
             @PathVariable(value = "pv_id") Long pvId,
             @RequestBody @Valid DevopsPvPermissionUpdateVO devopsPvPermissionUpdateVO) {
-        devopsPvService.assignPermission(devopsPvPermissionUpdateVO);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        devopsPvService.assignPermission(projectId, devopsPvPermissionUpdateVO);
+        return ResponseEntity.noContent().build();
     }
 
 

@@ -1,9 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.C7nCertificationVO;
 import io.choerodon.devops.api.vo.CertificationRespVO;
@@ -13,6 +9,9 @@ import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.infra.dto.CertificationDTO;
 import io.choerodon.devops.infra.dto.CertificationFileDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 /**
  * Created by n!Ck
@@ -34,7 +33,7 @@ public interface CertificationService {
     C7nCertification getC7nCertification(String name, String type, List<String> domains,
                                          String keyContent, String certContent, String envCode);
 
-    void deleteById(Long certId);
+    void deleteById(Long projectId, Long certId);
 
     void certDeleteByGitOps(Long certId);
 

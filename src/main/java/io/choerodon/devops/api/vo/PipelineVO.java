@@ -11,6 +11,8 @@ import io.choerodon.devops.infra.annotation.WillDeleted;
  */
 @WillDeleted
 public class PipelineVO {
+
+//    @Encrypt(value = EncryptKeyConstants.DEVOPS_PIPELINE_ENCRYPT_KEY)
     private Long id;
     private String name;
     private String triggerType;

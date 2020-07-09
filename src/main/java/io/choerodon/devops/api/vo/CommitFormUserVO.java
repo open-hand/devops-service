@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
+
 import java.util.Date;
 import java.util.List;
 
@@ -10,6 +12,7 @@ import java.util.List;
  * Description:
  */
 public class CommitFormUserVO {
+//    @Encrypt(DevopsGitlabCommitDTO.ENCRYPT_KEY)
     private Long id;
     private String name;
     private String imgUrl;

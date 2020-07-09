@@ -17,9 +17,11 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 @Table(name = "devops_secret")
 public class DevopsSecretDTO extends AuditDomain {
+    public static final String ENCRYPT_KEY = "devops_secret";
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+//    @Encrypt(DevopsSecretDTO.ENCRYPT_KEY)
     private Long id;
     private Long envId;
     private String name;

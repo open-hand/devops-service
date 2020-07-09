@@ -654,7 +654,7 @@ public class AppServiceController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用服务权限更新")
     @PostMapping(value = "/{app_service_id}/update_permission")
-    public ResponseEntity updatePermission(
+    public ResponseEntity<Void> updatePermission(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务服务Id")
@@ -662,13 +662,13 @@ public class AppServiceController {
             @ApiParam(value = "权限信息", required = true)
             @RequestBody AppServicePermissionVO appServicePermissionVO) {
         applicationServiceService.updatePermission(projectId, appServiceId, appServicePermissionVO);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用服务权限删除")
     @DeleteMapping(value = "/{app_service_id}/delete_permission")
-    public ResponseEntity deletePermission(
+    public ResponseEntity<Void> deletePermission(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务服务Id")
@@ -676,7 +676,7 @@ public class AppServiceController {
             @ApiParam(value = "user Id", required = true)
             @RequestParam(value = "user_id") Long userId) {
         applicationServiceService.deletePermission(projectId, appServiceId, userId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
 
@@ -699,13 +699,13 @@ public class AppServiceController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "从平台内部导入应用服务")
     @PostMapping(value = "/import/internal")
-    public ResponseEntity importAppService(
+    public ResponseEntity<Void> importAppService(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
             @RequestBody List<ApplicationImportInternalVO> importInternalVOS) {
         applicationServiceService.importAppServiceInternal(projectId, importInternalVOS);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})

@@ -1,7 +1,15 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
-import java.util.Optional;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.service.PipelineService;
+import io.choerodon.devops.infra.constant.EncryptKeyConstants;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -10,15 +18,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -41,9 +42,11 @@ public class PipelineController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建流水线")
     @PostMapping
-    public ResponseEntity create(
+    public ResponseEntity<PipelineReqVO> create(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "project_id")
+//            @Encrypt(value = EncryptKeyConstants.IAM_PROJECT_ENCRYPT_KEY)
+                    Long projectId,
             @ApiParam(value = "服务信息", required = true)
             @RequestBody PipelineReqVO pipelineReqVO) {
         return Optional.ofNullable(pipelineService.create(projectId, pipelineReqVO))
@@ -63,7 +66,9 @@ public class PipelineController {
     @PutMapping
     public ResponseEntity<PipelineReqVO> update(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "project_id")
+//            @Encrypt(value = EncryptKeyConstants.IAM_PROJECT_ENCRYPT_KEY)
+                    Long projectId,
             @ApiParam(value = "服务信息", required = true)
             @RequestBody PipelineReqVO pipelineReqVO) {
         return Optional.ofNullable(pipelineService.update(projectId, pipelineReqVO))
@@ -81,13 +86,17 @@ public class PipelineController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下删除流水线")
     @DeleteMapping(value = "/{pipeline_id}")
-    public ResponseEntity delete(
+    public ResponseEntity<Void> delete(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "project_id")
+//            @Encrypt(EncryptKeyConstants.IAM_PROJECT_ENCRYPT_KEY)
+                    Long projectId,
             @ApiParam(value = "流水线Id", required = true)
-            @PathVariable(value = "pipeline_id") Long pipelineId) {
+            @PathVariable(value = "pipeline_id")
+//            @Encrypt(EncryptKeyConstants.DEVOPS_PIPELINE_ENCRYPT_KEY)
+                    Long pipelineId) {
         pipelineService.delete(projectId, pipelineId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -168,13 +177,13 @@ public class PipelineController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "执行流水线")
     @GetMapping(value = "/{pipeline_id}/execute")
-    public ResponseEntity execute(
+    public ResponseEntity<Void> execute(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         pipelineService.execute(projectId, pipelineId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -187,13 +196,13 @@ public class PipelineController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "批量执行流水线")
     @GetMapping(value = "/batch_execute")
-    public ResponseEntity batchExecute(
+    public ResponseEntity<Void> batchExecute(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Ids", required = true)
             @RequestParam Long[] pipelineIds) {
         pipelineService.batchExecute(projectId, pipelineIds);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -265,13 +274,13 @@ public class PipelineController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "流水线重试")
     @GetMapping(value = "/{pipeline_record_id}/retry")
-    public ResponseEntity retry(
+    public ResponseEntity<Void> retry(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线记录Id", required = true)
             @PathVariable(value = "pipeline_record_id") Long recordId) {
         pipelineService.retry(projectId, recordId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -320,12 +329,12 @@ public class PipelineController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "停止流水线")
     @GetMapping(value = "/failed")
-    public ResponseEntity failed(
+    public ResponseEntity<Void> failed(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线记录Id", required = true)
             @RequestParam(value = "pipeline_record_id") Long recordId) {
         pipelineService.failed(projectId, recordId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 }

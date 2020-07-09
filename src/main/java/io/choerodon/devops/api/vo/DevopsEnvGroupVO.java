@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import io.choerodon.devops.infra.dto.DevopsEnvGroupDTO;
+
 /**
  * Creator: Runge
  * Date: 2018/9/4
@@ -7,6 +9,7 @@ package io.choerodon.devops.api.vo;
  * Description:
  */
 public class DevopsEnvGroupVO {
+//    @Encrypt(DevopsEnvGroupDTO.ENCRYPT_KEY)
     private Long id;
     private Long projectId;
     private String name;

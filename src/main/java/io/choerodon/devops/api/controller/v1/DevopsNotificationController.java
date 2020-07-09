@@ -1,7 +1,12 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Optional;
-
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.ResourceCheckVO;
+import io.choerodon.devops.app.service.DevopsNotificationService;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,12 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.ResourceCheckVO;
-import io.choerodon.devops.app.service.DevopsNotificationService;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.Optional;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -43,10 +43,11 @@ public class DevopsNotificationController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境Id")
+//            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "资源对象类型")
             @RequestParam(value = "object_type") String objectType) {
-        return Optional.ofNullable(notificationService.checkResourceDelete(envId, objectType))
+        return Optional.ofNullable(notificationService.checkResourceDelete(projectId, envId, objectType))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.check.resource.delete"));
     }
@@ -69,6 +70,7 @@ public class DevopsNotificationController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境Id")
+//            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "对象Id")
             @RequestParam(value = "object_id") Long objectId,
@@ -76,7 +78,7 @@ public class DevopsNotificationController {
             @RequestParam(value = "notification_id") Long notificationId,
             @ApiParam(value = "资源对象类型")
             @RequestParam(value = "object_type") String objectType) {
-        notificationService.sendMessage(envId, notificationId, objectId, objectType);
+        notificationService.sendMessage(projectId, envId, notificationId, objectId, objectType);
     }
 
 
@@ -97,6 +99,7 @@ public class DevopsNotificationController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境Id")
+//            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "对象Id")
             @RequestParam(value = "object_id") Long objectId,
@@ -104,7 +107,7 @@ public class DevopsNotificationController {
             @RequestParam String captcha,
             @ApiParam(value = "资源对象类型")
             @RequestParam(value = "object_type") String objectType) {
-        notificationService.validateCaptcha(envId, objectId, objectType, captcha);
+        notificationService.validateCaptcha(projectId, envId, objectId, objectType, captcha);
     }
 
 //    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})

@@ -7,6 +7,8 @@ import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.infra.dto.DevopsSecretDTO;
+
 /**
  * @author lihao
  * @date 2019-09-15 15:54
@@ -14,6 +16,7 @@ import io.swagger.annotations.ApiModelProperty;
 public class SecretUpdateVO {
     @ApiModelProperty(value = "密钥id/必填")
     @NotNull(message = "error.id.null")
+//    @Encrypt(DevopsSecretDTO.ENCRYPT_KEY)
     private Long id;
 
     @ApiModelProperty(value = "环境id/必填")
