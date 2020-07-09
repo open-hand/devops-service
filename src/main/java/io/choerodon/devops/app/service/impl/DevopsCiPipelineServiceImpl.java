@@ -142,7 +142,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCdStageRecordService devopsCdStageRecordService,
             DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService,
             DevopsEnvironmentMapper devopsEnvironmentMapper) {
-            this.devopsCiCdPipelineMapper = devopsCiCdPipelineMapper;
+        this.devopsCiCdPipelineMapper = devopsCiCdPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
         this.devopsCiStageService = devopsCiStageService;
         this.devopsCiJobService = devopsCiJobService;
@@ -656,9 +656,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 校验自定义任务格式
         CiCdPipelineDTO ciCdPipelineDTO = ConvertUtils.convertObject(ciCdPipelineVO, CiCdPipelineDTO.class);
         ciCdPipelineDTO.setId(pipelineId);
-        if (ciCdPipelineMapper.updateByPrimaryKeySelective(ciCdPipelineDTO) != 1) {
-            throw new CommonException(UPDATE_PIPELINE_FAILED);
-        }
+        ciCdPipelineMapper.updateByPrimaryKeySelective(ciCdPipelineDTO);
         //更新CI流水线
         updateCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
         //更新CD流水线

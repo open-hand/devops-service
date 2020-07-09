@@ -26,6 +26,8 @@ public class CiCdPipelineRecordVO {
     private String ciStatus;
     //cicd 流水线的状态
     private String status;
+    private String gitlabTriggerRef;
+    private CustomCommitVO commit;
 
     private CiCdPipelineVO ciCdPipelineVO;
 
@@ -121,5 +123,21 @@ public class CiCdPipelineRecordVO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getGitlabTriggerRef() {
+        return gitlabTriggerRef;
+    }
+
+    public void setGitlabTriggerRef(String gitlabTriggerRef) {
+        this.gitlabTriggerRef = gitlabTriggerRef;
+    }
+
+    public CustomCommitVO getCommit() {
+        return commit;
+    }
+
+    public void setCommit(CustomCommitVO commit) {
+        this.commit = commit;
     }
 }
