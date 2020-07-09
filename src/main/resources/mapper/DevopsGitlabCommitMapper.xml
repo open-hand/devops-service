@@ -60,12 +60,21 @@
     <select id="listLatestUseAppServiceIdAndDate" resultType="io.choerodon.devops.api.vo.LatestAppServiceVO">
         SELECT dgc.app_service_id AS id, max(dgc.commit_date) AS last_update_date
         FROM devops_gitlab_commit dgc
-        JOIN devops_app_service das ON dgc.app_service_id = das.id
-        WHERE dgc.user_id = #{userId} AND dgc.commit_date > #{time}
-        AND das.project_id IN
+                     JOIN devops_app_service das ON dgc.app_service_id = das.id
+                WHERE dgc.user_id = #{userId}
+                  AND dgc.commit_date > #{time}
+                  AND das.project_id IN
         <foreach collection="projectIds" item="projectId" open="(" close=")" separator=",">
             #{projectId}
         </foreach>
         GROUP BY dgc.app_service_id, dgc.commit_date
+    </select>
+
+    <select id="queryCountByProjectIdAndCreationDate" resultType="java.util.Date">
+        SELECT dgc.creation_date
+        FROM devops_gitlab_commit dgc
+                     JOIN devops_app_service das ON dgc.app_service_id = das.id
+        WHERE das.project_id = #{projectId}
+          AND dgc.creation_date > #{startDate}
     </select>
 </mapper>
