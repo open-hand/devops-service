@@ -1,5 +1,6 @@
 import forEach from 'lodash/forEach';
 import isEmpty from 'lodash/isEmpty';
+import JSONBigint from 'json-bigint';
 
 function formatData({ data, expandsKeys }) {
   const newData = [];
@@ -45,7 +46,7 @@ export default ({ projectId, mainStore, editBlockStore, handleSelect }) => ({
       method: 'get',
       transformResponse(response) {
         try {
-          const data = JSON.parse(response);
+          const data = JSONBigint.parse(response);
           if (data && data.failed) {
             return data;
           } else {
