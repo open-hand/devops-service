@@ -345,12 +345,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         Session session = null;
         try {
             session = ssh.startSession();
-            // todo 一定要带 -d 一定要带containerName
             // 判断镜像是否存在 存在删除 部署
             StringBuilder dockerRunExec = new StringBuilder();
-            dockerRunExec.append("docker stop mytest ").append(System.lineSeparator());
-            dockerRunExec.append("docker rm mytest ").append(System.lineSeparator());
-            dockerRunExec.append(imageDeploy.getValues().replace("${iamge}", imageTagVo.getPullCmd().replace("docker run ", "")));
+            dockerRunExec.append("docker stop ").append(imageDeploy.getContainerName()).append(System.lineSeparator());
+            dockerRunExec.append("docker rm ").append(imageDeploy.getContainerName()).append(System.lineSeparator());
+            dockerRunExec.append(imageDeploy.getValues().replace("${containerName}", imageDeploy.getContainerName()).replace("${image}", imageTagVo.getPullCmd().replace("docker run ", "")));
             LOGGER.info(dockerRunExec.toString());
             Session.Command cmd = session.exec(dockerRunExec.toString());
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
@@ -446,7 +445,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             session = ssh.startSession();
 
             // 2.1
-            sshExec(session, jarName, mavenRepoDTOList.get(0), nexusComponentDTOList.get(0));
+            sshExec(session, jarName, mavenRepoDTOList.get(0), nexusComponentDTOList.get(0), jarDeploy);
 //            NexusMavenRepoDTO nexusMavenRepoDTO = new NexusMavenRepoDTO();
 //            nexusMavenRepoDTO.setNePullUserId("zhuang");
 //            nexusMavenRepoDTO.setNePullUserPassword("123456");
@@ -463,7 +462,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         return status;
     }
 
-    private void sshExec(Session session, String jarName, NexusMavenRepoDTO mavenRepoDTO, C7nNexusComponentDTO nexusComponentDTO) throws IOException {
+    private void sshExec(Session session, String jarName, NexusMavenRepoDTO mavenRepoDTO, C7nNexusComponentDTO nexusComponentDTO, CdHostDeployConfigVO.JarDeploy jarDeploy) throws IOException {
         StringBuilder cmdStr = new StringBuilder();
         cmdStr.append("mkdir temp-jar ").append(System.lineSeparator());
         cmdStr.append("cd temp-jar ").append(System.lineSeparator());
@@ -477,7 +476,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         cmdStr.append(curlExec).append(System.lineSeparator());
 
         // 2.3
-        String javaJarExec = String.format("echo `java -jar %s & `", jarName);
+        String javaJarExec = String.format("echo `nohup %s & `", jarDeploy.getValues().replace("${jar}", jarName));
+
         cmdStr.append(javaJarExec);
         LOGGER.info(cmdStr.toString());
 
@@ -576,7 +576,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
             session = ssh.startSession();
             // 2.1
-            sshExec(session, jarName, c7nNexusDeployDTO.getNexusMavenRepoDTO(), c7nNexusDeployDTO.getC7nNexusComponentDTO());
+            sshExec(session, jarName, c7nNexusDeployDTO.getNexusMavenRepoDTO(), c7nNexusDeployDTO.getC7nNexusComponentDTO(), cdHostDeployConfigVO.getJarDeploy());
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
         } catch (Exception e) {
             jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);

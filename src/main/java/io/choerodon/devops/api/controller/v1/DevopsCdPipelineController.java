@@ -88,6 +88,7 @@ public class DevopsCdPipelineController {
      * @param stageRecordId    阶段记录Id
      * @param jobRecordId      任务Id
      */
+    @Permission(permissionWithin = true)
     @ApiOperation(value = "接收任务状态")
     @PutMapping("/auto_deploy/status")
     public ResponseEntity setAppDeployStatus(
@@ -110,6 +111,7 @@ public class DevopsCdPipelineController {
      * @param stageRecordId    阶段记录Id
      * @param jobRecordId      任务Id
      */
+    @Permission(permissionWithin = true)
     @ApiOperation(value = "查询任务状态")
     @GetMapping("/job/status")
     public ResponseEntity<String> getJobStatus(
@@ -120,6 +122,23 @@ public class DevopsCdPipelineController {
             @ApiParam(value = "任务Id", required = true)
             @RequestParam(value = "job_record_id") Long jobRecordId) {
         return Results.success(devopsCdPipelineService.getDeployStatus(pipelineRecordId, stageRecordId, jobRecordId));
+    }
+
+
+    /**
+     * @param type
+     * @param instruction
+     * @return
+     */
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "校验执行指令")
+    @GetMapping("/check/instruction")
+    public ResponseEntity<Boolean> checkInstruction(
+            @ApiParam(value = "指令类型 jar/docker", required = true)
+            @RequestParam(value = "type") String type,
+            @ApiParam(value = "指令", required = true)
+            @RequestParam(value = "instruction") String instruction) {
+        return Results.success(devopsCdPipelineService.checkInstruction(type, instruction));
     }
 
 }
