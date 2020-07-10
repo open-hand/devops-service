@@ -380,7 +380,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     private void sshConnect(HostConnectionVO hostConnectionVO, SSHClient ssh) throws IOException {
         // 3.
-        ssh.loadKnownHosts();
+//        ssh.loadKnownHosts();
         ssh.connect(hostConnectionVO.getHostIp(), TypeUtil.objToInteger(hostConnectionVO.getHostPort()));
         if (hostConnectionVO.getAccountType().equals(CdHostAccountType.PASSWORD.value())) {
             ssh.authPassword(hostConnectionVO.getUserName(), hostConnectionVO.getPassword());
