@@ -1152,7 +1152,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             return result;
         }).collect(Collectors.toList());
 
-        // settings文件内容
+        // 将手动输入的仓库信息也放入列表
+        mavenRepoVOS.addAll(dependencyRepos);
+
+        // 生成settings文件内容
         String settings = buildSettings(mavenRepoVOS);
         DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, sequence, settings);
         MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
