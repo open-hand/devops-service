@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.dto.agile;
 
-import java.sql.Date;
+
+import java.util.Date;
 
 public class SprintDTO {
     private Long sprintId;

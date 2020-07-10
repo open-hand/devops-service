@@ -26,7 +26,7 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
 
     private static final String UP = "up";
     private static final String DOWN = "down";
-    private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
