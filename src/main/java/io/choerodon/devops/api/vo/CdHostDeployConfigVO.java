@@ -46,6 +46,9 @@ public class CdHostDeployConfigVO {
         @ApiModelProperty("部署values")
         private String values;
 
+        @ApiModelProperty("容器名称")
+        private String containerName;
+
         public String getValues() {
             return values;
         }
@@ -100,6 +103,14 @@ public class CdHostDeployConfigVO {
 
         public void setMatchContent(String matchContent) {
             this.matchContent = matchContent;
+        }
+
+        public String getContainerName() {
+            return containerName;
+        }
+
+        public void setContainerName(String containerName) {
+            this.containerName = containerName;
         }
     }
 

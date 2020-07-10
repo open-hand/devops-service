@@ -821,4 +821,13 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserName(username);
         return userAttrE.getIamUserId();
     }
+
+    @Override
+    public Boolean checkInstruction(String type, String instruction) {
+        if (type.equals("jar")) {
+            return instruction.contains("${jar}");
+        } else {
+            return instruction.contains("${containerName}") && instruction.contains("${imageName}") && instruction.contains(" -d");
+        }
+    }
 }
