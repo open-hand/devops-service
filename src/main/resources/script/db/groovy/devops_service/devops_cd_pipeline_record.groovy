@@ -18,7 +18,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_pipeline_record.groovy') {
             column(name: 'bpm_definition', type: 'TEXT', remarks: 'bpm定义')
             column(name: 'business_key', type: 'VARCHAR(255)', remarks: '流程实例')
             column(name: "edited", type: 'TINYINT UNSIGNED', remarks: "是否编辑", defaultValue: "0")
-            column(name: 'error_info', type: 'VARCHAR(255)', remarks: '错误信息')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
