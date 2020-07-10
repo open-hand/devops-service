@@ -172,7 +172,7 @@ export default observer((props) => {
 
   async function editStage() {
     if (addStepDs.current && addStepDs.current.validate()) {
-      eidtStep(sequence, addStepDs.current.get('step'), addStepDs.current.get('type'), addStepDs.current.get('triggerType'), edit);
+      eidtStep(sequence, addStepDs.current.get('step'), addStepDs.current.get('type'), addStepDs.current.get('triggerType'), addStepDs.current.get('cdAuditUserIds'), true);
     } else {
       return false;
     }
@@ -203,8 +203,11 @@ export default observer((props) => {
     const title = optType === 'create' ? '添加阶段' : '修改阶段信息';
     const okText = optType === 'create' ? '添加' : '修改';
     if (optType === 'edit') {
+      const { triggerType, cdAuditUserIds } = editBlockStore.getStepData2.filter(x => x.sequence === sequence)[0];
       addStepDs.current.set('step', name);
       addStepDs.current.set('type', curType || 'CI');
+      addStepDs.current.set('triggerType', triggerType);
+      addStepDs.current.set('cdAuditUserIds', cdAuditUserIds);
     }
     const optsFun = optType === 'create' ? createNewStage : editStage;
     Modal.open({

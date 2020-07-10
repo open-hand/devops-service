@@ -118,7 +118,7 @@ export default function useStore() {
         });
       }
     },
-    eidtStep(sequence, newName, curType, triggerType, edit) {
+    eidtStep(sequence, newName, curType, triggerType, cdAuditUserIds, edit) {
       this.setHasModify(true, edit);
       if (edit) {
         this.dataSource2.forEach((item, index) => {
@@ -126,6 +126,12 @@ export default function useStore() {
             this.dataSource2[index].name = newName;
             this.dataSource2[index].type = curType;
             this.dataSource2[index].triggerType = triggerType;
+            this.dataSource2[index].cdAuditUserIds = [...cdAuditUserIds];
+            // if (!this.dataSource2[index].cdAuditUserIds) {
+            //   this.dataSource2[index].cdAuditUserIds = cdAuditUserIds;
+            // } else {
+            //   this.dataSource2[index].cdAuditUserIds.concat(cdAuditUserIds || []);
+            // }
             return true;
           }
         });
@@ -135,6 +141,12 @@ export default function useStore() {
             this.dataSource[index].name = newName;
             this.dataSource[index].type = curType;
             this.dataSource[index].triggerType = triggerType;
+            if (!this.dataSource[index].cdAuditUserIds) {
+              this.dataSource[index].cdAuditUserIds = cdAuditUserIds;
+            } else {
+              this.dataSource[index].cdAuditUserIds.concat(cdAuditUserIds || []);
+            }
+
             return true;
           }
         });
