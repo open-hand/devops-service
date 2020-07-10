@@ -626,10 +626,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                 break;
                             case DOCKER:
                                 // 不填skipDockerTlsVerify参数或者填TRUE都是跳过证书校验
+                                // TODO 修复 目前后端这个参数的含义是是否跳过证书校验, 前端的含义是是否进行证书校验
+                                Boolean doTlsVerify = config.getSkipDockerTlsVerify();
                                 result.add(GitlabCiUtil.generateDockerScripts(
                                         config.getDockerContextDir(),
                                         config.getDockerFilePath(),
-                                        config.getSkipDockerTlsVerify() == null || config.getSkipDockerTlsVerify()));
+                                        doTlsVerify == null || !doTlsVerify));
                                 break;
                         }
                     });
