@@ -3,6 +3,8 @@ package io.choerodon.devops.infra.util;
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.app.service.UserAttrService;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 
@@ -80,5 +82,14 @@ public class GitUserNameUtil {
             return "admin1";
         }
         return username;
+    }
+
+    public static Long getIamUserIdByGitlabUserName(String username) {
+        if ("admin1".equals(username) || "root".equals(username)) {
+            return 1L;
+        }
+        UserAttrService userAttrService = ApplicationContextHelper.getContext().getBean(UserAttrService.class);
+        UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserName(username);
+        return userAttrE.getIamUserId();
     }
 }
