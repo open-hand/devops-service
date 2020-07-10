@@ -1,10 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -665,7 +662,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         //查询流水线信息
         CiCdPipelineVO ciCdPipelineVO = devopsCiCdPipelineMapper.queryById(cdPipelineRecordDTO.getPipelineId());
         devopsCdPipelineRecordVO.setCiCdPipelineVO(ciCdPipelineVO);
-        List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryByPipelineRecordId(devopsCdPipelineRecordVO.getPipelineId());
+        List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryByPipelineRecordId(devopsCdPipelineRecordVO.getId());
         if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
             List<DevopsCdStageRecordVO> devopsCdStageRecordVOS = ConvertUtils.convertList(devopsCdStageRecordDTOS, DevopsCdStageRecordVO.class);
             devopsCdStageRecordVOS.forEach(devopsCdStageRecordVO -> {
@@ -676,8 +673,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 calculateJob(devopsCdJobRecordVOS);
                 devopsCdStageRecordVO.setDevopsCdJobRecordVOS(devopsCdJobRecordVOS);
             });
-            devopsCdPipelineRecordVO.setDurationSeconds(devopsCdStageRecordVOS.stream().map(DevopsCdStageRecordVO::getExecutionTime).reduce((aLong, aLong2) -> aLong + aLong2).get());
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
+        } else {
+            devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.EMPTY_LIST);
         }
         return devopsCdPipelineRecordVO;
     }
@@ -697,7 +695,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 appServiceVersionDTO.setAppServiceId(devopsCdEnvDeployInfoDTO.getAppServiceId());
                 appServiceVersionDTO.setValueId(devopsCdEnvDeployInfoDTO.getValueId());
                 List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
-                if (CollectionUtils.isEmpty(appServiceVersionDTOS)) {
+                if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
                     cdAuto.setAppServiceVersion(appServiceVersionDTOS.get(0).getVersion());
                 }
                 //创建实例
