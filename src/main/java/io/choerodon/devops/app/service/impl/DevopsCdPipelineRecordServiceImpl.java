@@ -227,7 +227,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             if (i != stageRecordDTOList.size() - 1) {
                 stageDTO.setNextStageTriggerType(stageRecordDTOList.get(i + 1).getTriggerType());
             }
-            devopsPipelineStageDTOS.add(stageDTO);
         }
         devopsPipelineDTO.setStages(devopsPipelineStageDTOS);
         return devopsPipelineDTO;
@@ -345,22 +344,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         Session session = null;
         try {
             session = ssh.startSession();
-            String[] strings = imageDeploy.getValues().split("\n");
-            String values = "";
-            for (String s : strings) {
-                if (s.length() > 0 && !s.contains("#") && s.contains("docker")) {
-                    values = s;
-                }
-            }
-            if (StringUtils.isEmpty(values) || !checkInstruction("image", values)) {
-                throw new CommonException("error.instruction");
-            }
-
             // 判断镜像是否存在 存在删除 部署
             StringBuilder dockerRunExec = new StringBuilder();
             dockerRunExec.append("docker stop ").append(imageDeploy.getContainerName()).append(System.lineSeparator());
             dockerRunExec.append("docker rm ").append(imageDeploy.getContainerName()).append(System.lineSeparator());
-            dockerRunExec.append(values.replace("${containerName}", imageDeploy.getContainerName()).replace("${image}", imageTagVo.getPullCmd().replace("docker run ", "")));
+            dockerRunExec.append(imageDeploy.getValues().replace("${containerName}", imageDeploy.getContainerName()).replace("${image}", imageTagVo.getPullCmd().replace("docker run ", "")));
             LOGGER.info(dockerRunExec.toString());
             Session.Command cmd = session.exec(dockerRunExec.toString());
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
@@ -448,7 +436,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             C7nNexusDeployDTO c7nNexusDeployDTO = new C7nNexusDeployDTO();
             c7nNexusDeployDTO.setC7nNexusComponentDTO(nexusComponentDTOList.get(0));
             c7nNexusDeployDTO.setNexusMavenRepoDTO(mavenRepoDTOList.get(0));
-            c7nNexusDeployDTO.setJarName(jarName);
             jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
             jobRecordDTO.setDeployMetadata(gson.toJson(c7nNexusDeployDTO));
             devopsCdJobRecordService.update(jobRecordDTO);
@@ -488,18 +475,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         cmdStr.append(curlExec).append(System.lineSeparator());
 
         // 2.3
-        String[] strings = jarDeploy.getValues().split("\n");
-        String values = "";
-        for (String s : strings) {
-            if (s.length() > 0 && !s.contains("#") && s.contains("java")) {
-                values = s;
-            }
-        }
-        if (StringUtils.isEmpty(values) || !checkInstruction("jar", values)) {
-            throw new CommonException("error.instruction");
-        }
-
-        String javaJarExec = String.format("echo `nohup %s & `", values.replace("${jar}", jarName));
+        String javaJarExec = String.format("echo `nohup %s & `", jarDeploy.getValues().replace("${jar}", jarName));
 
         cmdStr.append(javaJarExec);
         LOGGER.info(cmdStr.toString());
@@ -668,7 +644,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     devopsCdJobRecordVOS.forEach(devopsCdJobRecordVO -> {
                         devopsCdJobRecordVO.setJobExecuteTime();
                     });
-                    devopsCdStageRecordVO.setDevopsCdJobRecordVOS(devopsCdJobRecordVOS);
+                    devopsCdStageRecordVO.setJobRecordVOList(devopsCdJobRecordVOS);
                 });
                 devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
             } else {
@@ -692,14 +668,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsCdPipelineRecordVO.setCiCdPipelineVO(ciCdPipelineVO);
         List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryByPipelineRecordId(devopsCdPipelineRecordVO.getId());
         if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
-            List<DevopsCdStageRecordVO> devopsCdStageRecordVOS = ConvertUtils.convertList(devopsCdStageRecordDTOS, DevopsCdStageRecordVO.class);
+            List<DevopsCdStageRecordVO> devopsCdStageRecordVOS = ConvertUtils.convertList(devopsCdStageRecordDTOS, this::dtoToVo);
             devopsCdStageRecordVOS.forEach(devopsCdStageRecordVO -> {
                 devopsCdStageRecordVO.setType(StageType.CD.getType());
                 //查询Cd job
                 List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
                 List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
                 calculateJob(devopsCdPipelineRecordVO, devopsCdJobRecordVOS);
-                devopsCdStageRecordVO.setDevopsCdJobRecordVOS(devopsCdJobRecordVOS);
+                devopsCdStageRecordVO.setJobRecordVOList(devopsCdJobRecordVOS);
             });
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
         } else {
@@ -785,12 +761,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         return index;
     }
 
-
-    private Boolean checkInstruction(String type, String instruction) {
-        if (type.equals("jar")) {
-            return instruction.contains("${jar}");
-        } else {
-            return instruction.contains("${containerName}") && instruction.contains("${imageName}") && instruction.contains(" -d");
-        }
+    private DevopsCdStageRecordVO dtoToVo(DevopsCdStageRecordDTO devopsCdStageRecordDTO) {
+        DevopsCdStageRecordVO devopsCdStageRecordVO = new DevopsCdStageRecordVO();
+        BeanUtils.copyProperties(devopsCdStageRecordDTO, devopsCdStageRecordVO);
+        devopsCdStageRecordVO.setName(devopsCdStageRecordDTO.getStageName());
+        return devopsCdStageRecordVO;
     }
 }

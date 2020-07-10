@@ -5,7 +5,7 @@ import java.util.List;
 public class DevopsCdStageRecordVO extends StageRecordVO {
     private Long id;
     private Long durationSeconds;
-    private List<DevopsCdJobRecordVO> devopsCdJobRecordVOS;
+    private List<DevopsCdJobRecordVO> jobRecordVOList;
     private String triggerType;
     private Long pipelineId;
     private Boolean parallel;
@@ -15,19 +15,19 @@ public class DevopsCdStageRecordVO extends StageRecordVO {
 
 
     private Long executionTime;
-
+    private Long sequence;
 
 
     public void setExecutionTime(Long executionTime) {
         this.executionTime = executionTime;
     }
 
-    public List<DevopsCdJobRecordVO> getDevopsCdJobRecordVOS() {
-        return devopsCdJobRecordVOS;
+    public List<DevopsCdJobRecordVO> getJobRecordVOList() {
+        return jobRecordVOList;
     }
 
-    public void setDevopsCdJobRecordVOS(List<DevopsCdJobRecordVO> devopsCdJobRecordVOS) {
-        this.devopsCdJobRecordVOS = devopsCdJobRecordVOS;
+    public void setJobRecordVOList(List<DevopsCdJobRecordVO> jobRecordVOList) {
+        this.jobRecordVOList = jobRecordVOList;
     }
 
     public Long getId() {
