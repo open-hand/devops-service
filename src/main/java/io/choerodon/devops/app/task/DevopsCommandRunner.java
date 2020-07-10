@@ -56,12 +56,6 @@ public class DevopsCommandRunner implements CommandLineRunner {
     private String servicesHelmUserName;
     @Value("${services.helm.password:#{null}}")
     private String servicesHelmPassword;
-    @Value("${services.harbor.baseUrl}")
-    private String servicesHarborBaseUrl;
-    @Value("${services.harbor.username}")
-    private String servicesHarborUsername;
-    @Value("${services.harbor.password}")
-    private String servicesHarborPassword;
     @Value("${services.harbor.update:true}")
     private Boolean servicesHarborUpdate;
     @Value("${services.sonarqube.url:}")
@@ -75,12 +69,6 @@ public class DevopsCommandRunner implements CommandLineRunner {
     public void run(String... strings) {
         if (servicesHarborUpdate) {
             try {
-                ConfigVO harborConfig = new ConfigVO();
-                harborConfig.setUrl(servicesHarborBaseUrl);
-                harborConfig.setUserName(servicesHarborUsername);
-                harborConfig.setPassword(servicesHarborPassword);
-                initConfig(harborConfig, DEFAULT_HARBOR_NAME, ProjectConfigType.HARBOR.getType());
-
                 ConfigVO chartConfig = new ConfigVO();
                 chartConfig.setUrl(servicesHelmUrl);
                 // 只有helm的用户名密码都设置了, 才设置到数据库中
