@@ -7,7 +7,7 @@
             resultType="io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO">
         SELECT
         id, pipeline_record_id, stage_id, stage_name,
-        status, trigger_type, execution_time, project_id,
+        status, trigger_type, project_id,
         object_version_number, created_by, creation_date, last_updated_by, last_update_date
         FROM devops_cd_stage_record dcsr
         WHERE dcsr.pipeline_record_id = #{pipelineRecordId}
@@ -16,7 +16,7 @@
     </select>
 
     <select id="queryRetryStage"
-            resultType="io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO">
+            resultType="io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO">
         SELECT
             dcsr1.*
         FROM
@@ -35,7 +35,7 @@
     </select>
 
     <select id="queryFailedOrCancelStage"
-            resultType="io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO">
+            resultType="io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO">
             SELECT
                 dcsr.*
             FROM
@@ -46,7 +46,7 @@
     </select>
 
     <select id="queryPendingAndRunning"
-            resultType="io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO">
+            resultType="io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO">
             SELECT
                 dcsr.*
             FROM
