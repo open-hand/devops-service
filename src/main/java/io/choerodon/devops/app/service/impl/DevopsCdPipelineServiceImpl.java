@@ -332,7 +332,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     public void triggerCdPipeline(String token, String commitSha, String ref, Long gitlabPipelineId) {
         AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
         CiCdPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
-
+        // 没有配置流水线或流水线已经停用不处理
+        if (devopsCiPipelineDTO == null || Boolean.FALSE.equals(devopsCiPipelineDTO.getEnabled())) {
+            return;
+        }
         // 查询流水线是否有cd阶段, 没有cd阶段不做处理
         List<DevopsCdStageDTO> devopsCdStageDTOList = devopsCdStageService.queryByPipelineId(devopsCiPipelineDTO.getId());
         if (CollectionUtils.isEmpty(devopsCdStageDTOList)) {
