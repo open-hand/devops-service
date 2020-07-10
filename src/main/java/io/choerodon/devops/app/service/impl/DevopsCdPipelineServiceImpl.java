@@ -215,7 +215,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         if (PipelineStatus.SUCCESS.toValue().equals(status)) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>> exec cd pipeline start >>>>>>>>>>>>>>>>>>>>>>>>>>>>", pipelineAttr.getId(), status);
             // 执行条件：cd流水线记录状态为pending
-            if (devopsCdPipelineRecordDTO  != null && PipelineStatus.PENDING.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
+            if (devopsCdPipelineRecordDTO != null && PipelineStatus.CREATED.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
                 executeCdPipeline(devopsCdPipelineRecordDTO.getId());
             }
             LOGGER.info(">>>>>>>>>>>>>>>>>>>> exec cd pipeline success >>>>>>>>>>>>>>>>>>>>>>>>>>>>", pipelineAttr.getId(), status);
