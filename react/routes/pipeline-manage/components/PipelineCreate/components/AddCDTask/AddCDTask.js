@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Form, Select, TextField, SelectBox, Password, Tooltip } from 'choerodon-ui/pro';
-import { Icon } from 'choerodon-ui';
+import { Form, Select, TextField, SelectBox, Password, Tooltip, Button } from 'choerodon-ui/pro';
+import { Icon, Spin } from 'choerodon-ui';
 import { axios } from '@choerodon/boot';
 import { Base64 } from 'js-base64';
 import { observer } from 'mobx-react-lite';
@@ -50,11 +50,17 @@ export default observer(() => {
   const [customValues, setCustomValues] = useState('');
   const [imageDeployValues, setImageDeployValues] = useState('');
   const [jarValues, setJarValues] = useState('');
+  const [testStatus, setTestStatus] = useState('success');
 
   const handleAdd = async () => {
     const result = await ADDCDTaskDataSet.validate();
     if (result) {
       const ds = JSON.parse(JSON.stringify(ADDCDTaskDataSet.toData()[0]));
+      if (ds.type === 'cdHost') {
+        if (!await handleTestConnect()) {
+          return false;
+        }
+      }
       const data = {
         ...ds,
         triggerValue: typeof ds.triggerValue === 'object' ? ds.triggerValue?.join(',') : ds.triggerValue,
@@ -79,6 +85,7 @@ export default observer(() => {
                 imageName: ds.imageName,
                 matchType: ds.matchType,
                 matchContent: ds.matchContent,
+                containerName: ds.containerName,
                 value: Base64.encode(imageDeployValues),
               };
             } else if (ds.hostDeployType === 'jar') {
@@ -148,6 +155,56 @@ export default observer(() => {
     initBranchs();
   }, [ADDCDTaskDataSet.current.get('triggerType')]);
 
+  const getTestDom = () => {
+    const res = {
+      loading: (
+        <div className="testConnectCD">
+          正在进行连接测试<Spin />
+        </div>
+      ),
+      success: (
+        <div style={{ background: 'rgba(0,191,165,0.04)', borderColor: 'rgba(0,191,165,1)' }} className="testConnectCD">
+          <span style={{ color: '#3A345F' }}>测试连接：</span><span style={{ color: '#00BFA5' }}><Icon style={{ border: '1px solid rgb(0, 191, 165)', borderRadius: '50%', marginRight: 2, fontSize: '9px' }} type="done" />成功</span>
+        </div>
+      ),
+      error: (
+        <div style={{ background: 'rgba(247,122,112,0.04)', borderColor: 'rgba(247,122,112,1)' }} className="testConnectCD">
+          <span style={{ color: '#3A345F' }}>测试连接：</span><span style={{ color: '#F77A70' }}><Icon style={{ border: '1px solid #F77A70', borderRadius: '50%', marginRight: 2, fontSize: '9px' }} type="close" />失败</span>
+        </div>
+      ),
+    };
+    return res[testStatus];
+  };
+
+  useEffect(() => {
+    const type = ADDCDTaskDataSet.current.get('type');
+    modal.update({
+      okProps: {
+        disabled: (function () {
+          if (type === 'cdHost') {
+            return testStatus !== 'success';
+          } else {
+            return false;
+          }
+        }()),
+      },
+    });
+  }, [testStatus, ADDCDTaskDataSet.current.get('type')]);
+
+  const handleTestConnect = async () => new Promise((resolve) => {
+    const hostDeployType = ADDCDTaskDataSet.current.get('hostDeployType');
+    axios.post('/devops/v1/cd_pipeline/check/instruction', {
+      type: hostDeployType,
+      instruction: hostDeployType === 'image' ? imageDeployValues : jarValues,
+    }).then((res) => {
+      setTestStatus(res ? 'success' : 'error');
+      resolve(res);
+    }).catch(() => {
+      setTestStatus('error');
+      resolve(false);
+    });
+  });
+
   const getOtherConfig = () => {
     function getModeDom() {
       const result = {
@@ -170,6 +227,7 @@ export default observer(() => {
             <Option value="exact_exclude">精确排除</Option>
           </Select>,
           <TextField colSpan={3} name="matchContent" />,
+          <TextField colSpan={3} name="containerName" />,
           <YamlEditor
             colSpan={6}
             newLine
@@ -237,12 +295,16 @@ export default observer(() => {
               <Password colSpan={1} name="accountKey" />
             )
           }
+          <div colSpan={2} style={{ display: 'flex', alignItems: 'center' }}>
+            <Button onClick={handleTestConnect} style={{ marginRight: 20 }} color="primary" funcType="raised">测试连接</Button>
+            {getTestDom()}
+          </div>
         </Form>,
         <div className="addcdTask-divided" />,
         <p className="addcdTask-title">主机部署</p>,
         <Form style={{ marginTop: 20 }} columns={6} dataSet={ADDCDTaskDataSet}>
           <SelectBox className="addcdTask-mainMode" colSpan={5} name="hostDeployType">
-            <Option value="customize">自定义命令</Option>
+            {/* <Option value="customize">自定义命令</Option> */}
             <Option value="image">镜像部署</Option>
             <Option value="jar">jar包部署</Option>
           </SelectBox>,
@@ -294,7 +356,7 @@ export default observer(() => {
             triggerType: 'refs',
             deployType: 'create',
             accountType: 'accountPassword',
-            hostDeployType: 'customize',
+            hostDeployType: 'image',
           }])}
           colSpan={1}
           name="type"

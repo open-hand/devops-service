@@ -137,7 +137,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
     name: 'hostDeployType',
     type: 'string',
     label: '部署模式',
-    defaultValue: 'customize',
+    defaultValue: 'image',
   }, {
     name: 'repoName',
     type: 'string',
@@ -149,7 +149,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
       url: `/rdupm/v1/harbor-choerodon-repos/listImageRepo?projectId=${projectId}`,
     }),
     dynamicProps: {
-      required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'imageDeploy',
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('hostDeployType') === 'image',
     },
   }, {
     name: 'imageName',
@@ -159,7 +159,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
     valueField: 'imageId',
     dynamicProps: {
       disabled: ({ record }) => !record.get('repoName'),
-      required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'imageDeploy',
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('hostDeployType') === 'image',
       lookupAxiosConfig: ({ record }) => ({
         method: 'get',
         url: `rdupm/v1/harbor-choerodon-repos/listHarborImage?repoId=${record.get('repoName')}&repoType=${(function () {
@@ -174,21 +174,29 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
     type: 'string',
     label: '匹配类型',
     dynamicProps: {
-      required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'imageDeploy',
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('hostDeployType') === 'image',
     },
   }, {
     name: 'matchContent',
     type: 'string',
     label: '镜像版本匹配',
     dynamicProps: {
-      required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'imageDeploy',
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('hostDeployType') === 'image',
+    },
+  }, {
+    name: 'containerName',
+    type: 'string',
+    label: '容器名称',
+    required: true,
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('hostDeployType') === 'image',
     },
   }, {
     name: 'serverName',
     type: 'string',
     label: 'Nexus服务',
     dynamicProps: {
-      required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'jarDeploy',
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('hostDeployType') === 'jar',
     },
     textField: 'serverName',
     valueField: 'configId',
@@ -203,7 +211,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
     textField: 'neRepositoryName',
     valueField: 'repositoryId',
     dynamicProps: {
-      required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'jarDeploy',
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('hostDeployType') === 'jar',
       disabled: ({ record }) => !record.get('serverName'),
       lookupAxiosConfig: ({ record }) => ({
         method: 'get',
@@ -234,7 +242,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
           }
         },
       }),
-      required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'jarDeploy',
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('hostDeployType') === 'jar',
     },
   }, {
     name: 'artifactId',
@@ -244,7 +252,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
     valueField: 'value',
     dynamicProps: {
       disabled: ({ record }) => !record.get('neRepositoryName'),
-      required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'jarDeploy',
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('hostDeployType') === 'jar',
       lookupAxiosConfig: ({ record }) => ({
         method: 'get',
         url: `/rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/artifactId?repositoryId=${record.get('neRepositoryName')}`,
@@ -267,7 +275,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
     type: 'string',
     label: 'jar包版本正则匹配',
     dynamicProps: {
-      required: ({ record }) => record.get('type') === 'cdHost' && record.get('mode') === 'jarDeploy',
+      required: ({ record }) => record.get('type') === 'cdHost' && record.get('hostDeployType') === 'jar',
     },
   }, {
     name: 'cdAuditUserIds',
