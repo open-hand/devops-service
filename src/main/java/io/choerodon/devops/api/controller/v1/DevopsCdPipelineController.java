@@ -132,12 +132,12 @@ public class DevopsCdPipelineController {
      */
     @Permission(permissionPublic = true)
     @ApiOperation(value = "校验执行指令")
-    @GetMapping("/check/instruction")
+    @PostMapping("/check/instruction")
     public ResponseEntity<Boolean> checkInstruction(
-            @ApiParam(value = "指令类型 jar/docker", required = true)
+            @ApiParam(value = "指令类型 jar/image", required = true)
             @RequestParam(value = "type") String type,
             @ApiParam(value = "指令", required = true)
-            @RequestParam(value = "instruction") String instruction) {
+            @RequestBody String instruction) {
         return Results.success(devopsCdPipelineService.checkInstruction(type, instruction));
     }
 
