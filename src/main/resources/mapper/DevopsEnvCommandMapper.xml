@@ -151,6 +151,6 @@
         <foreach collection="objectIds" item="objectId" separator="," open="(" close=")">
             #{objectId}
         </foreach>
-        AND creation_date > #{startTime}
+        AND creation_date <![CDATA[>]]> #{startTime}
     </select>
 </mapper>

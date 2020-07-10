@@ -62,7 +62,7 @@
         FROM devops_gitlab_commit dgc
                      JOIN devops_app_service das ON dgc.app_service_id = das.id
                 WHERE dgc.user_id = #{userId}
-                  AND dgc.commit_date > #{time}
+                  AND dgc.commit_date <![CDATA[>]]> #{time}
                   AND das.project_id IN
         <foreach collection="projectIds" item="projectId" open="(" close=")" separator=",">
             #{projectId}
@@ -75,6 +75,6 @@
         FROM devops_gitlab_commit dgc
                      JOIN devops_app_service das ON dgc.app_service_id = das.id
         WHERE das.project_id = #{projectId}
-          AND dgc.creation_date > #{startDate}
+          AND dgc.creation_date <![CDATA[>]]> #{startDate}
     </select>
 </mapper>
