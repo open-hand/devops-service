@@ -117,6 +117,8 @@
         SELECT da.id,
                da.project_id,
                da.NAME,
+               da.is_synchro,
+               da.is_failed,
                da.is_active,
                da.CODE,
                EXISTS(

@@ -24,8 +24,8 @@ import java.util.stream.Collectors;
 @Service
 public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
 
-    private static final String ENV_UP = "up";
-    private static final String ENV_DOWN = "down";
+    private static final String UP = "up";
+    private static final String DOWN = "down";
     private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     @Autowired
@@ -62,11 +62,11 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
 
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentMapper.listByProjectId(projectId);
 
-        count.put(ENV_UP, devopsEnvironmentDTOS.stream()
+        count.put(UP, devopsEnvironmentDTOS.stream()
                 .filter(t -> isEnvUp(updatedClusterList, t))
                 .count());
 
-        count.put(ENV_DOWN, devopsEnvironmentDTOS.stream()
+        count.put(DOWN, devopsEnvironmentDTOS.stream()
                 .filter(t -> !isEnvUp(updatedClusterList, t))
                 .count());
 
@@ -79,11 +79,15 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
 
         List<AppServiceDTO> appServiceDTOList = appServiceMapper.listByProjectId(projectId, null, null);
 
-        count.put(ENV_UP, appServiceDTOList.stream()
+        count.put(UP, appServiceDTOList.stream()
+                .filter(AppServiceDTO::getSynchro)
+                .filter(a -> !a.getFailed())
                 .filter(AppServiceDTO::getActive)
                 .count());
 
-        count.put(ENV_DOWN, appServiceDTOList.stream()
+        count.put(DOWN, appServiceDTOList.stream()
+                .filter(AppServiceDTO::getSynchro)
+                .filter(a -> !a.getFailed())
                 .filter(t -> !t.getActive())
                 .count());
 
