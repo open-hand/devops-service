@@ -672,7 +672,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 //查询Cd job
                 List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
                 List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
-                calculateJob(devopsCdJobRecordVOS);
+                calculateJob(devopsCdPipelineRecordVO, devopsCdJobRecordVOS);
                 devopsCdStageRecordVO.setDevopsCdJobRecordVOS(devopsCdJobRecordVOS);
             });
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
@@ -682,7 +682,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         return devopsCdPipelineRecordVO;
     }
 
-    private void calculateJob(List<DevopsCdJobRecordVO> devopsCdJobRecordVOS) {
+    private void calculateJob(DevopsCdPipelineRecordVO devopsCdStageRecordVO, List<DevopsCdJobRecordVO> devopsCdJobRecordVOS) {
         devopsCdJobRecordVOS.forEach(devopsCdJobRecordVO -> {
             //计算job耗时
             devopsCdJobRecordVO.setJobExecuteTime();
@@ -695,17 +695,17 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 cdAuto.setAppServiceName(appServiceMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getAppServiceId()).getName());
                 AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
                 appServiceVersionDTO.setAppServiceId(devopsCdEnvDeployInfoDTO.getAppServiceId());
-                appServiceVersionDTO.setValueId(devopsCdEnvDeployInfoDTO.getValueId());
+                appServiceVersionDTO.setCommit(devopsCdStageRecordVO.getCommitSha());
                 List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
                 if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
                     cdAuto.setAppServiceVersion(appServiceVersionDTOS.get(0).getVersion());
                 }
                 //创建实例
-                if (CommandType.CREATE.equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
+                if (CommandType.CREATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
                     cdAuto.setInstanceName(devopsCdEnvDeployInfoDTO.getInstanceName());
                 }
                 //替换实例
-                if (CommandType.CREATE.equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
+                if (CommandType.UPDATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
                     cdAuto.setAppServiceName(appServiceInstanceMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getInstanceId()).getCode());
                 }
                 devopsCdJobRecordVO.setCdAuto(cdAuto);

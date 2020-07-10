@@ -255,10 +255,7 @@ public class AppServiceVersionController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务Id", required = true)
             @RequestParam(value = "app_service_id") Long appServiceId) {
-        return Optional.ofNullable(
-                appServiceVersionService.queryValueById(projectId, appServiceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.version.value.query"));
+        return ResponseEntity.ok(appServiceVersionService.queryValueById(projectId, appServiceId));
     }
 
     /**

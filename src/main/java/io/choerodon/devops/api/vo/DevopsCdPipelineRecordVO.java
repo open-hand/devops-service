@@ -30,9 +30,27 @@ public class DevopsCdPipelineRecordVO {
     private Long durationSeconds;
 
     private CiCdPipelineVO ciCdPipelineVO;
+    private String commitSha;
+    private String ref;
 
 
     private List<DevopsCdStageRecordVO> devopsCdStageRecordVOS;
+
+    public String getCommitSha() {
+        return commitSha;
+    }
+
+    public void setCommitSha(String commitSha) {
+        this.commitSha = commitSha;
+    }
+
+    public String getRef() {
+        return ref;
+    }
+
+    public void setRef(String ref) {
+        this.ref = ref;
+    }
 
     public CiCdPipelineVO getCiCdPipelineVO() {
         return ciCdPipelineVO;
