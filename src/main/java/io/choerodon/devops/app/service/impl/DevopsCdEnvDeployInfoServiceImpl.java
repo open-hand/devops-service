@@ -26,6 +26,7 @@ public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoSe
     private static final String ERROR_VALUE_ID_IS_NULL = "error.value.id.is.null";
     private static final String ERROR_PARAM_IS_INVALID = "error.param.is.invalid";
 
+    private static final String ERROR_DEPLOY_INFO_ID_IS_NULL = "error.deploy.info.id.is.null";
     private static final String ERROR_SAVE_DEPLOY_INFO = "error.save.deploy.info";
     private static final String ERROR_UPDATE_DEPLOY_INFO = "error.update.deploy.info";
 
@@ -59,7 +60,8 @@ public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoSe
 
     @Override
     public DevopsCdEnvDeployInfoDTO queryById(Long deployInfoId) {
-        return null;
+        Assert.notNull(deployInfoId, ERROR_DEPLOY_INFO_ID_IS_NULL);
+        return devopsCdEnvDeployInfoMapper.selectByPrimaryKey(deployInfoId);
     }
 
     @Override

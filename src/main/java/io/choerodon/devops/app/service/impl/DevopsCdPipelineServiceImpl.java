@@ -213,9 +213,14 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
         // ci流水线执行成功， 开始执行cd流水线
         if (PipelineStatus.SUCCESS.toValue().equals(status)) {
-            LOGGER.info("current cd pipeline status is {}", devopsCdPipelineRecordDTO.getStatus());
+            if (devopsCdPipelineRecordDTO == null) {
+                LOGGER.info("current pipeline have no match record.", pipelineAttr.getId());
+                return;
+            }
+
             // 执行条件：cd流水线记录状态为pending
-            if (devopsCdPipelineRecordDTO != null && PipelineStatus.CREATED.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
+            if (PipelineStatus.CREATED.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
+                LOGGER.info("current cd pipeline status is {}", devopsCdPipelineRecordDTO.getStatus());
                 LOGGER.info(">>>>>>>>>>>>>>>>>>>> exec cd pipeline start >>>>>>>>>>>>>>>>>>>>>>>>>>>>", pipelineAttr.getId(), status);
                 executeCdPipeline(devopsCdPipelineRecordDTO.getId());
                 LOGGER.info(">>>>>>>>>>>>>>>>>>>> exec cd pipeline success >>>>>>>>>>>>>>>>>>>>>>>>>>>>", pipelineAttr.getId(), status);
@@ -340,7 +345,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>> current stage have no job <<<<<<<<<<<<<<<<<<<<<<<<<<");
             return;
         }
-        LOGGER.info("current stage first job is", devopsCdJobRecordDTO);
+        LOGGER.info("current stage first job is {}", devopsCdJobRecordDTO);
         if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordDTO.getType())) {
             devopsCdJobRecordService.updateJobStatusNotAudit(pipelineRecordId, devopsCdStageRecord.getId(), devopsCdJobRecordDTO.getId());
         }
@@ -438,7 +443,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
     @Override
     public void envAutoDeploy(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
-        LOGGER.info("autoDeploy:stageRecordId: {} taskId: {}", stageRecordId, jobRecordId);
+        LOGGER.info("autoDeploy:pipelineRecordId {} stageRecordId: {} jobRecordId: {}", pipelineRecordId, stageRecordId, jobRecordId);
         //获取数据
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
         CustomContextUtil.setUserContext(devopsCdJobRecordDTO.getCreatedBy());
@@ -518,11 +523,11 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
                     });
         } catch (Exception e) {
+            LOGGER.error("error.create.pipeline.auto.deploy.instance", e);
             sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId().longValue());
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
             devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, e.getMessage());
-            throw new CommonException("error.create.pipeline.auto.deploy.instance", e);
         }
     }
 
