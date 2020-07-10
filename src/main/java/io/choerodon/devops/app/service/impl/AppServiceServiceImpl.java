@@ -76,6 +76,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.RoleDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.exception.GitlabAccessInvalidException;
 import io.choerodon.devops.infra.feign.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -996,8 +997,8 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{ HARBOR_CONFIG_ID }}", harborConfigDTO.getId().toString());
             return FileUtil.replaceReturnString(CI_FILE_TEMPLATE, params);
         } catch (CommonException e) {
-            LOGGER.warn("Error query ci.sh for app-service with token {} , the ex is ", token, e);
-            return null;
+//            LOGGER.warn("Error query ci.sh for app-service with token {} , the ex is ", token, e);
+            throw new DevopsCiInvalidException(e.getCode(), e.getCause(), e.getParameters());
         }
     }
 
