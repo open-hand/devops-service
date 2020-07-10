@@ -46,7 +46,7 @@ export default function useStore() {
 
     async changeRecordExecute({ projectId, gitlabProjectId, recordId, type, cdRecordId }) {
       try {
-        const res = await axios.post(`/devops/v1/projects/${projectId}/cicd_pipelines_record/${recordId}/${type}?gitlab_project_id=${gitlabProjectId}${cdRecordId ? `&cd_pipeline_record_id=${cdRecordId}` : ''}`);
+        const res = await axios.get(`/devops/v1/projects/${projectId}/cicd_pipelines_record/${type}?gitlab_project_id=${gitlabProjectId}&gitlab_pipeline_id=${recordId}${cdRecordId ? `&cd_pipeline_record_id=${cdRecordId}` : ''}`);
         return handlePromptError(res);
       } catch (e) {
         Choerodon.handleResponseError(e);

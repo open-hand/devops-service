@@ -143,8 +143,12 @@ export default observer((props) => {
         {map(getStepData, ({ id: stageId, name: stageName, jobList, type: stageType = 'CI', parallel }, stageIndex) => (
           <div className="c7ncd-pipeline-detail-stage" key={`${stageId}-${stageIndex}`}>
             <div className="c7ncd-pipeline-detail-stage-title">
-              <span>{stageName}</span>
-              <StageType type={stageType} parallel={parallel} />
+              <Tooltip title={stageName} placement="top">
+                <span className="c7ncd-pipeline-detail-stage-title-text">{stageName}</span>
+              </Tooltip>
+              <div className="c7ncd-pipeline-detail-stage-title-type">
+                <StageType type={stageType} parallel={parallel} />
+              </div>
             </div>
             <div className="c7ncd-pipeline-detail-stage-line" />
             {stageIndex !== 0 ? (
