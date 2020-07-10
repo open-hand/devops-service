@@ -12,12 +12,14 @@ const defaultData = [
     jobList: [],
     type: 'CI',
     parallel: 1,
+    triggerType: '',
   }, {
     name: '部署',
     sequence: 2,
     jobList: [],
     type: 'CD',
     parallel: 0,
+    triggerType: 'auto',
   },
 ];
 

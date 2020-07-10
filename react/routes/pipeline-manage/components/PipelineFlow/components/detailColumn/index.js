@@ -60,7 +60,6 @@ function renderDuration(value) {
 }
 
 const DetailItem = (props) => {
-  const [expand, setExpand] = useState(false);
   const {
     durationSeconds,
     itemStatus,
@@ -76,12 +75,10 @@ const DetailItem = (props) => {
     artifacts,
     sonarContentVOS,
     handleRefresh,
+    cdAuto,
   } = props;
 
   const { gitlabProjectId, appServiceId } = getDetailData && getDetailData.ciCdPipelineVO;
-  function handleDropDown() {
-    setExpand(!expand);
-  }
 
   function openDescModal() {
     Modal.open({
@@ -91,6 +88,24 @@ const DetailItem = (props) => {
         width: 'calc(100vw - 3.52rem)',
       },
       children: <CodeLog gitlabProjectId={gitlabProjectId} projectId={projectId} gitlabJobId={gitlabJobId} />,
+      drawer: true,
+      okText: '关闭',
+      footer: (okbtn) => (
+        <Fragment>
+          {okbtn}
+        </Fragment>
+      ),
+    });
+  }
+
+  function openCdLog() {
+    Modal.open({
+      title: `查看${jobType[type].name}日志`,
+      key: Modal.key(),
+      style: {
+        width: 'calc(100vw - 3.52rem)',
+      },
+      // children: <CodeLog gitlabProjectId={gitlabProjectId} projectId={projectId} gitlabJobId={gitlabJobId} />,
       drawer: true,
       okText: '关闭',
       footer: (okbtn) => (
@@ -133,6 +148,35 @@ const DetailItem = (props) => {
     }
   }
 
+  const renderCdAuto = () => {
+    const {
+      envName,
+      appServiceName: cdJobAppServiceName,
+      appServiceVersion: cdJobAppServiceVersion,
+      instanceName,
+    } = cdAuto || {};
+    return (
+      <main>
+        <div>
+          <span>部署环境:</span>
+          <span>{envName || '-'}</span>
+        </div>
+        <div>
+          <span>应用服务:</span>
+          <span>{cdJobAppServiceName || '-'}</span>
+        </div>
+        <div>
+          <span>服务版本:</span>
+          <span>{cdJobAppServiceVersion || '-'}</span>
+        </div>
+        <div>
+          <span>生成实例:</span>
+          <span>{instanceName || '-'}</span>
+        </div>
+      </main>
+    );
+  };
+
   return (
     <div className="c7n-piplineManage-detail-column-item">
       <header>
@@ -149,7 +193,9 @@ const DetailItem = (props) => {
           }
         </div>
       </header>
-
+      {
+        (type === 'cdDeploy' || type === 'cdHost') && renderCdAuto()
+      }
       <footer>
         <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.job.log']}>
           <Tooltip title="查看日志">
@@ -159,7 +205,7 @@ const DetailItem = (props) => {
               size="small"
               icon="description-o"
               disabled={itemStatus === 'created'}
-              onClick={openDescModal}
+              onClick={(type !== 'cdDeploy' || type !== 'cdHost') ? openDescModal : openCdLog}
               color="primary"
             />
           </Tooltip>

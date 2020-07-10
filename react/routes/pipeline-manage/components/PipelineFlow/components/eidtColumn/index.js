@@ -162,6 +162,7 @@ export default observer((props) => {
   async function createNewStage() {
     const res = await addStepDs.validate();
     if (res) {
+      const a = addStepDs.toData()[0];
       addNewStep(columnIndex, addStepDs.toData()[0], edit);
       addStepDs.reset();
       return true;
@@ -170,8 +171,8 @@ export default observer((props) => {
   }
 
   async function editStage() {
-    if (addStepDs.current && addStepDs.current.get('step')) {
-      eidtStep(sequence, addStepDs.current.get('step'), addStepDs.current.get('type'), edit);
+    if (addStepDs.current && addStepDs.current.validate()) {
+      eidtStep(sequence, addStepDs.current.get('step'), addStepDs.current.get('type'), addStepDs.current.get('triggerType'), edit);
     } else {
       return false;
     }
