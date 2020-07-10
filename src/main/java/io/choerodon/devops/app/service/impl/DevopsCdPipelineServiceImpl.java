@@ -244,6 +244,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         devopsCdStageRecordDTO.setStageName(devopsCdStageDTO.getName());
         devopsCdStageRecordDTO.setSequence(devopsCdStageDTO.getSequence());
         devopsCdStageRecordDTO.setProjectId(devopsCdStageDTO.getProjectId());
+        devopsCdStageRecordDTO.setTriggerType(devopsCdStageDTO.getTriggerType());
         devopsCdStageRecordService.save(devopsCdStageRecordDTO);
 
         return devopsCdStageRecordService.queryById(devopsCdStageRecordDTO.getId());
