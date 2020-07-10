@@ -118,13 +118,14 @@ export default function useStore() {
         });
       }
     },
-    eidtStep(sequence, newName, curType, edit) {
+    eidtStep(sequence, newName, curType, triggerType, edit) {
       this.setHasModify(true, edit);
       if (edit) {
         this.dataSource2.forEach((item, index) => {
           if (item.sequence === sequence) {
             this.dataSource2[index].name = newName;
             this.dataSource2[index].type = curType;
+            this.dataSource2[index].triggerType = triggerType;
             return true;
           }
         });
@@ -133,6 +134,7 @@ export default function useStore() {
           if (item.sequence === sequence) {
             this.dataSource[index].name = newName;
             this.dataSource[index].type = curType;
+            this.dataSource[index].triggerType = triggerType;
             return true;
           }
         });
