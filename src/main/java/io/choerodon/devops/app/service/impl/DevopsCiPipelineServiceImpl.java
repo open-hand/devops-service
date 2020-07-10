@@ -4,6 +4,7 @@ import static io.choerodon.devops.infra.constant.GitOpsConstants.DEFAULT_PIPELIN
 import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
 
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -111,6 +112,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final DevopsCdStageRecordService devopsCdStageRecordService;
     private final DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
     private final DevopsEnvironmentMapper devopsEnvironmentMapper;
+    private String s;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -493,6 +495,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 }
             }
             ciCdPipelineVO.setCiCdPipelineRecordVOS(ciCdPipelineRecordVOS);
+            // 将piplineRecord记录排序
+            recordListSort(ciCdPipelineVO.getCiCdPipelineRecordVOS());
         });
         return ciCdPipelineVOS;
     }
@@ -1190,14 +1194,25 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return appServiceDeployDTO;
     }
 
-    public String getFromBASE64(String s) {
-        if (s == null) return null;
-        try {
-            byte[] bytes = s.getBytes("utf-8");
-            byte[] decode = Base64.getDecoder().decode(bytes);
-            return new String(decode);
-        } catch (Exception e) {
-            return null;
-        }
+    private  void recordListSort(List<CiCdPipelineRecordVO> list) {
+        Collections.sort(list, new Comparator<CiCdPipelineRecordVO>() {
+            @Override
+            public int compare(CiCdPipelineRecordVO o1, CiCdPipelineRecordVO o2) {
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                try {
+
+                    if (o1.getCreatedDate().getTime() > o2.getCreatedDate().getTime()) {
+                        return -1;
+                    } else if (o1.getCreatedDate().getTime() < o2.getCreatedDate().getTime()) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return 0;
+            }
+        });
     }
 }
