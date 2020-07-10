@@ -61,5 +61,4 @@ public interface DevopsCdPipelineService {
 
     void auditJob(Long projectId, Long pipelineRecordId, Long stageRecordId, Long jobRecordId, String result);
 
-    Boolean checkInstruction(String type, String instruction);
 }
