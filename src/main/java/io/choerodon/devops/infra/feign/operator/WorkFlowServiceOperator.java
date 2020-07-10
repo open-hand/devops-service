@@ -42,7 +42,7 @@ public class WorkFlowServiceOperator {
     }
 
     public String createCiCdPipeline(Long projectId, DevopsPipelineDTO devopsPipelineDTO) {
-        ResponseEntity<String> responseEntity = workFlowServiceClient.create(projectId, devopsPipelineDTO);
+        ResponseEntity<String> responseEntity = workFlowServiceClient.createCiCdPipeline(projectId, devopsPipelineDTO);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.workflow.create");
         }
