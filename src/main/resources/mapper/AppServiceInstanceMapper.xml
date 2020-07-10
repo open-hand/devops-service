@@ -628,7 +628,7 @@
         </foreach>
     </select>
 
-    <select id="queryInstanceByAppServiceIdsAndStartDate"
+    <select id="queryInstanceByAppServiceIds"
             resultType="io.choerodon.devops.infra.dto.AppServiceInstanceDTO">
         SELECT dasi.id, dasi.env_id
         FROM devops_app_service_instance dasi

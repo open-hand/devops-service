@@ -818,7 +818,7 @@
         SELECT id, last_update_date
         FROM devops_app_service
                 WHERE last_updated_by = #{userId}
-                  AND last_update_date > #{time}
+                  AND last_update_date <![CDATA[>]]> #{time}
                   AND devops_app_service.project_id IN
         <foreach collection="projectIds" item="projectId" open="(" close=")" separator=",">
             #{projectId}

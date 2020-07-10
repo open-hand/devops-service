@@ -127,7 +127,7 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
 
         SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getOrganizationId());
 
-        List<Long> instanceIds = appServiceInstanceMapper.queryInstanceByAppServiceIdsAndStartDate(appServiceIds).stream()
+        List<Long> instanceIds = appServiceInstanceMapper.queryInstanceByAppServiceIds(appServiceIds).stream()
                 .filter(i -> activeEnvIds.contains(i.getEnvId()))
                 .map(AppServiceInstanceDTO::getId)
                 .collect(Collectors.toList());

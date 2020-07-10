@@ -111,5 +111,5 @@ public interface AppServiceInstanceMapper extends BaseMapper<AppServiceInstanceD
     /**
      * 查询指定时间内到现在的应用实例id
      */
-    List<AppServiceInstanceDTO> queryInstanceByAppServiceIdsAndStartDate(@Param("appServiceIds") List<Long> appServiceIds);
+    List<AppServiceInstanceDTO> queryInstanceByAppServiceIds(@Param("appServiceIds") List<Long> appServiceIds);
 }
