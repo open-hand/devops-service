@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import static io.choerodon.devops.infra.constant.GitOpsConstants.DEFAULT_PIPELINE_RECORD_SIZE;
 import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
 
-import com.google.gson.GsonBuilder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -12,6 +11,7 @@ import javax.annotation.Nullable;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1180,7 +1180,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         DevopsCdJobDTO devopsCdJobDTO = ConvertUtils.convertObject(t, DevopsCdJobDTO.class);
         // 环境部署需要保存部署配置信息
         if (JobTypeEnum.CD_DEPLOY.value().equals(t.getType())) {
-            DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.save(gson.fromJson(t.getMetadata(), DevopsCdEnvDeployInfoDTO.class));
+            DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = gson.fromJson(t.getMetadata(), DevopsCdEnvDeployInfoDTO.class);
+            devopsCdEnvDeployInfoDTO.setProjectId(projectId);
+            devopsCdEnvDeployInfoService.save(devopsCdEnvDeployInfoDTO);
             devopsCdJobDTO.setDeployInfoId(devopsCdEnvDeployInfoDTO.getId());
         }
 
