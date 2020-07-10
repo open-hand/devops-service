@@ -50,7 +50,7 @@ export default observer(() => {
   const [customValues, setCustomValues] = useState('');
   const [imageDeployValues, setImageDeployValues] = useState('');
   const [jarValues, setJarValues] = useState('');
-  const [testStatus, setTestStatus] = useState('success');
+  const [testStatus, setTestStatus] = useState('');
 
   const handleAdd = async () => {
     const result = await ADDCDTaskDataSet.validate();
