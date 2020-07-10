@@ -703,9 +703,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 }
             } else {
                 // 已经是最后一个阶段了
-                currentStage.setStatus(PipelineStatus.SUCCESS.toValue());
-                devopsCdStageRecordService.update(currentStage);
-
                 devopsCdPipelineRecordService.updateStatusById(devopsCdPipelineRecordDTO.getId(), PipelineStatus.SUCCESS.toValue());
                 sendNotificationService.sendPipelineNotice(devopsCdPipelineRecordDTO.getId(), MessageCodeConstants.PIPELINE_SUCCESS, devopsCdPipelineRecordDTO.getCreatedBy(), null, null);
             }
