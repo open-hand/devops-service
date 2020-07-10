@@ -645,6 +645,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     devopsCdStageRecordVO.setDevopsCdJobRecordVOS(devopsCdJobRecordVOS);
                 });
                 devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
+            } else {
+                devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.EMPTY_LIST);
             }
         });
         return pipelineRecordInfo;
