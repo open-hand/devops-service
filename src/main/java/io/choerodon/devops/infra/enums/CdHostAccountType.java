@@ -9,7 +9,7 @@ public enum CdHostAccountType {
     /**
      * 密码模式
      */
-    PASSWORD("password"),
+    PASSWORD("accountPassword"),
     /**
      * 密钥模式
      */
