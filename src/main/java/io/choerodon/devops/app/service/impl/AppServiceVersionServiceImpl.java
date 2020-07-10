@@ -100,7 +100,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private DevopsRegistrySecretMapper devopsRegistrySecretMapper;
 
 
-    private Gson gson = new Gson();
+    private static final Gson GSON = new Gson();
 
     /**
      * 方法中抛出{@link DevopsCiInvalidException}而不是{@link CommonException}是为了返回非200的状态码。
@@ -111,9 +111,9 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             doCreate(image, TypeUtil.objToLong(harborConfigId), token, version, commit, files, ref);
         } catch (Exception e) {
             if (e instanceof CommonException) {
-                throw new DevopsCiInvalidException(((CommonException) e).getCode(), e.getCause());
+                throw new DevopsCiInvalidException(((CommonException) e).getCode(), e.getCause(), ((CommonException) e).getParameters());
             }
-            throw new DevopsCiInvalidException(e);
+            throw new DevopsCiInvalidException(e.getCause());
         }
 
     }
@@ -138,7 +138,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
         // 查询helm仓库配置id
         DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART, AUTHTYPE_PULL);
-        ConfigVO helmConfig = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+        ConfigVO helmConfig = GSON.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
         String helmUrl = helmConfig.getUrl();
         appServiceVersionDTO.setHelmConfigId(devopsConfigDTO.getId());
 
