@@ -147,7 +147,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
             devopsCdPipelineRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
-            devopsCdPipelineRecordDTO.setErrorInfo(e.getMessage());
+//            devopsCdPipelineRecordDTO.setErrorInfo(e.getMessage());
             devopsCdPipelineRecordService.update(devopsCdPipelineRecordDTO);
         }
     }

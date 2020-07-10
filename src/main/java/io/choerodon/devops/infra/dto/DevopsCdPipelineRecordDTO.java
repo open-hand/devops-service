@@ -27,7 +27,6 @@ public class DevopsCdPipelineRecordDTO extends AuditDomain {
     private String pipelineName;
     private String businessKey;
     private Boolean edited;
-    private String errorInfo;
 
     private String commitSha;
     private String ref;
@@ -104,14 +103,6 @@ public class DevopsCdPipelineRecordDTO extends AuditDomain {
         this.edited = edited;
     }
 
-    public String getErrorInfo() {
-        return errorInfo;
-    }
-
-    public void setErrorInfo(String errorInfo) {
-        this.errorInfo = errorInfo;
-    }
-
     public Long getGitlabPipelineId() {
         return gitlabPipelineId;
     }
@@ -149,7 +140,6 @@ public class DevopsCdPipelineRecordDTO extends AuditDomain {
                 ", pipelineName='" + pipelineName + '\'' +
                 ", businessKey='" + businessKey + '\'' +
                 ", edited=" + edited +
-                ", errorInfo='" + errorInfo + '\'' +
                 ", commitSha='" + commitSha + '\'' +
                 ", ref='" + ref + '\'' +
                 '}';

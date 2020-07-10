@@ -422,7 +422,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             LOGGER.error(e.getMessage());
             sendFailedSiteMessage(devopsCdPipelineRecordDTO.getId(), GitUserNameUtil.getUserId().longValue());
             devopsCdPipelineRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
-            devopsCdPipelineRecordDTO.setErrorInfo(e.getMessage());
+//            devopsCdPipelineRecordDTO.setErrorInfo(e.getMessage());
             devopsCdPipelineRecordService.update(devopsCdPipelineRecordDTO);
         }
     }

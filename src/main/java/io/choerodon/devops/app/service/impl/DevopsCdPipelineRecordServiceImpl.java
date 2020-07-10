@@ -1,7 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -25,7 +28,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
-import io.choerodon.devops.api.vo.kubernetes.Stage;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.*;
@@ -609,7 +611,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     public void updatePipelineStatusFailed(Long pipelineRecordId, String errorInfo) {
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = queryById(pipelineRecordId);
         devopsCdPipelineRecordDTO.setStatus(PipelineStatus.FAILED.toValue());
-        devopsCdPipelineRecordDTO.setErrorInfo(errorInfo);
+//        devopsCdPipelineRecordDTO.setErrorInfo(errorInfo);
         update(devopsCdPipelineRecordDTO);
     }
 
