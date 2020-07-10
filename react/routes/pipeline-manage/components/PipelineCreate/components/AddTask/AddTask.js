@@ -596,12 +596,12 @@ const AddTask = observer(() => {
       let extra = [];
       if (value === 'Maven') {
         extra = [
-        //   {
-        //   name: '上传软件包至制品库',
-        //   type: 'maven_deploy',
-        //   checked: false,
-        //   yaml: useStore.getYaml.maven_deploy,
-        // },
+          //   {
+          //   name: '上传软件包至制品库',
+          //   type: 'maven_deploy',
+          //   checked: false,
+          //   yaml: useStore.getYaml.maven_deploy,
+          // },
           {
             name: 'Docker构建',
             type: 'docker',
@@ -985,8 +985,36 @@ const AddTask = observer(() => {
               }())
             }
           </div>
+          <div style={{ marginBottom: '20px' }}>
+            {
+              (function () {
+                if (steps.find(s => s.checked)) {
+                  const type = steps.find(s => s.checked).type;
+                  if (type === 'maven_deploy') {
+                    return (
+                      <Select
+                        name="nexusMavenRepoIds"
+                        style={{
+                          width: '100%',
+                          // marginBottom: 20,
+                        }}
+                        help="123"
+                        showHelp="tooltip"
+                        renderer={({ text }) => (
+                          <Tooltip title={text}>
+                            {text}
+                          </Tooltip>
+                        )}
+                      />
+                    );
+                  }
+                }
+              }())
+            }
+          </div>
+
           {
-            steps.find(s => s.checked) && steps.find(s => s.checked).type === 'Maven'
+            steps.find(s => s.checked) && (steps.find(s => s.checked).type === 'Maven' || steps.find(s => s.checked).type === 'maven_deploy')
               ? [
                 <div style={{
                   marginLeft: '-16px',
@@ -1052,25 +1080,29 @@ const AddTask = observer(() => {
                           </Button>
                         </span>
                       </Option>
-                      <Option value="copy">
-                        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-                          粘贴XML内容
-                          <Button
-                            onClick={handleOpenXML}
-                            style={{
-                              marginLeft: 8,
-                              display: steps.find(s => s.checked).mavenSettings ? 'inline-block' : 'none',
-                            }}
-                          >
-                            <Icon
-                              style={{
-                                color: '#3F51B5',
-                              }}
-                              type="mode_edit"
-                            />
-                          </Button>
-                        </span>
-                      </Option>
+                      {
+                        steps.find(s => s.checked) && steps.find(s => s.checked).type !== 'maven_deploy' && (
+                          <Option value="copy">
+                            <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                              粘贴XML内容
+                              <Button
+                                onClick={handleOpenXML}
+                                style={{
+                                  marginLeft: 8,
+                                  display: steps.find(s => s.checked).mavenSettings ? 'inline-block' : 'none',
+                                }}
+                              >
+                                <Icon
+                                  style={{
+                                    color: '#3F51B5',
+                                  }}
+                                  type="mode_edit"
+                                />
+                              </Button>
+                            </span>
+                          </Option>
+                        )
+                      }
                     </SelectBox>
                   </div>
                 ) : '',
@@ -1214,9 +1246,9 @@ const AddTask = observer(() => {
     </div>,
     expandIf ? (
       <Select
-          // disabled={
-          //     !!(AddTaskFormDataSet.current && AddTaskFormDataSet.current.get('selectImage') === '0')
-          //   }
+        // disabled={
+        //     !!(AddTaskFormDataSet.current && AddTaskFormDataSet.current.get('selectImage') === '0')
+        //   }
         onChange={handleChangeImage}
         newLine
         combo
@@ -1296,10 +1328,10 @@ const AddTask = observer(() => {
                   renderer={renderderBranchs}
                 >
                   {
-                    branchsList.map(b => (
-                      <Option value={b.value}>{b.name}</Option>
-                    ))
-                  }
+                      branchsList.map(b => (
+                        <Option value={b.value}>{b.name}</Option>
+                      ))
+                    }
                   {/* <Option value="master">master</Option> */}
                   {/* <Option value="feature">feature</Option> */}
                   {/* <Option value="bugfix">bugfix</Option> */}

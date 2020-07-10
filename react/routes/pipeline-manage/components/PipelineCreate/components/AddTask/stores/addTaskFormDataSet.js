@@ -130,7 +130,7 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
     {
       name: 'zpk',
       type: 'number',
-      label: '制品库',
+      label: '目标制品库',
       textField: 'name',
       valueField: 'repositoryId',
       multiple: true,
