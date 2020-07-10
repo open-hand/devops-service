@@ -946,8 +946,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                         doTlsVerify == null || !doTlsVerify));
                                 break;
                             case MAVEN_DEPLOY:
-                                List<MavenRepoVO> repos = buildAndSaveMavenSettings(projectId, jobId, config.getSequence(), config.getMavenDeployRepoSettings());
-                                result.addAll(buildMavenScripts(projectId, jobId, config, repos));
+                                List<MavenRepoVO> targetRepos = new ArrayList<>();
+                                boolean hasMavenSettings = buildAndSaveJarDeployMavenSettings(projectId, jobId, config, targetRepos);
+                                result.addAll(buildMavenJarDeployScripts(projectId, jobId, hasMavenSettings, config, targetRepos));
                                 break;
                         }
                     });
@@ -1041,21 +1042,26 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     /**
-     * 生成maven构建相关的脚本
+     * 生成jar包发布相关的脚本
      *
      * @param projectId          项目id
      * @param jobId              job id
+     * @param hasSettings        是否有settings配置
      * @param ciConfigTemplateVO maven发布软件包阶段的信息
-     * @param mavenRepoVO        仓库信息
+     * @param targetMavenRepoVO  目标制品库仓库信息
      * @return 生成的shell脚本
      */
-    private List<String> buildMavenScripts(final Long projectId, final Long jobId, CiConfigTemplateVO ciConfigTemplateVO, List<MavenRepoVO> mavenRepoVO) {
+    private List<String> buildMavenJarDeployScripts(final Long projectId, final Long jobId, final boolean hasSettings, CiConfigTemplateVO ciConfigTemplateVO, List<MavenRepoVO> targetMavenRepoVO) {
         List<String> shells = new ArrayList<>();
         // 这里这么写是为了考虑之后可能选了多个仓库, 如果是多个仓库的话, 变量替换不便
         List<String> templateShells = GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(ciConfigTemplateVO.getScript()), true, true);
-        if (!CollectionUtils.isEmpty(mavenRepoVO)) {
-            // 插入shell指令将配置的settings文件下载到项目目录下
+        // 如果有settings配置, 填入获取settings的指令
+        if (hasSettings) {
             shells.add(GitlabCiUtil.downloadMavenSettings(projectId, jobId, ciConfigTemplateVO.getSequence()));
+        }
+        // 根据目标仓库信息, 渲染发布jar包的指令
+        if (!CollectionUtils.isEmpty(targetMavenRepoVO)) {
+            // 插入shell指令将配置的settings文件下载到项目目录下
 
             // 包含repoId锚点的字符串在templateShells中的索引号
             int repoIdIndex = -1;
@@ -1080,7 +1086,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
 
             // 为每一个仓库都从模板的脚本中加一份生成的命令
-            for (MavenRepoVO repo : mavenRepoVO) {
+            for (MavenRepoVO repo : targetMavenRepoVO) {
                 // 将预定的变量(仓库名和地址)替换为settings.xml文件指定的
                 List<String> commands = new ArrayList<>(templateShells);
                 if (repoIdIndex != -1) {
@@ -1092,6 +1098,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 shells.addAll(commands);
             }
         } else {
+            // 如果没有目标仓库信息, 则认为用户是自己填入好了maven发布jar的指令, 不需要渲染
             shells.addAll(templateShells);
         }
         return shells;
@@ -1100,29 +1107,50 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     /**
      * 生成并存储maven settings到数据库
      *
-     * @param projectId               项目id
-     * @param jobId                   job id
-     * @param sequence                这个步骤的序号
-     * @param mavenDeployRepoSettings 配置信息
-     * @return 为空表示没有settings配置，不为空表示有
+     * @param projectId           项目id
+     * @param jobId               job id
+     * @param ciConfigTemplateVO  配置
+     * @param targetRepoContainer 用来存放解析出的目标仓库信息
+     * @return 返回true表示有settings信息
      */
-    private List<MavenRepoVO> buildAndSaveMavenSettings(Long projectId, Long jobId, Long sequence, MavenDeployRepoSettings mavenDeployRepoSettings) {
-        if (CollectionUtils.isEmpty(mavenDeployRepoSettings.getNexusRepoIds())) {
-            return Collections.emptyList();
+    private boolean buildAndSaveJarDeployMavenSettings(Long projectId, Long jobId, CiConfigTemplateVO ciConfigTemplateVO, List<MavenRepoVO> targetRepoContainer) {
+        MavenDeployRepoSettings mavenDeployRepoSettings = ciConfigTemplateVO.getMavenDeployRepoSettings();
+        Long sequence = ciConfigTemplateVO.getSequence();
+        Set<Long> dependencyRepoIds = ciConfigTemplateVO.getNexusMavenRepoIds();
+        List<MavenRepoVO> dependencyRepos = ciConfigTemplateVO.getRepos();
+
+        boolean targetRepoEmpty = CollectionUtils.isEmpty(mavenDeployRepoSettings.getNexusRepoIds());
+        boolean dependencyRepoIdsEmpty = CollectionUtils.isEmpty(dependencyRepos);
+        boolean dependencyRepoEmpty = CollectionUtils.isEmpty(dependencyRepoIds);
+
+        // 如果都为空, 不生成settings文件
+        if (targetRepoEmpty && dependencyRepoIdsEmpty && dependencyRepoEmpty) {
+            return false;
         }
+
+        // 查询制品库
         List<NexusMavenRepoDTO> nexusMavenRepoDTOs = rdupmClientOperator.getRepoUserByProject(null, projectId, mavenDeployRepoSettings.getNexusRepoIds());
 
-        if (CollectionUtils.isEmpty(nexusMavenRepoDTOs)) {
-            return Collections.emptyList();
+        // 如果填入的仓库信息和制品库查出的结果都为空, 不生成settings文件
+        if (CollectionUtils.isEmpty(nexusMavenRepoDTOs) && dependencyRepoEmpty) {
+            return false;
         }
 
-        List<MavenRepoVO> mavenRepoVOS = nexusMavenRepoDTOs.stream().map(DevopsCiPipelineServiceImpl::convertRepo).collect(Collectors.toList());
+        // 转化制品库信息, 并将目标仓库信息取出, 放入targetRepoContainer
+        List<MavenRepoVO> mavenRepoVOS = nexusMavenRepoDTOs.stream().map(r -> {
+            MavenRepoVO result = convertRepo(r);
+            // 目标仓库不为空, 并且目标仓库包含
+            if (!targetRepoEmpty && mavenDeployRepoSettings.getNexusRepoIds().contains(r.getRepositoryId())) {
+                targetRepoContainer.add(result);
+            }
+            return result;
+        }).collect(Collectors.toList());
 
         // settings文件内容
         String settings = buildSettings(mavenRepoVOS);
         DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, sequence, settings);
         MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
-        return mavenRepoVOS;
+        return true;
     }
 
     private void createUserRel(List<Long> cdAuditUserIds, Long pipelineId, Long stageId, Long jobId) {
