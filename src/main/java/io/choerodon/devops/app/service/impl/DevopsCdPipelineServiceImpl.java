@@ -190,7 +190,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     // 创建cd阶段记录
                     DevopsCdPipelineRecordDTO finalDevopsCdPipelineRecordDTO = devopsCdPipelineRecordDTO;
                     devopsCdStageDTOList.forEach(stage -> {
-                        DevopsCdStageRecordDTO devopsCdStageRecordDTO = initStageRecord(finalDevopsCdPipelineRecordDTO.getId(), stage.getId());
+                        DevopsCdStageRecordDTO devopsCdStageRecordDTO = initStageRecord(finalDevopsCdPipelineRecordDTO.getId(), stage);
                         // 手动流转阶段，添加审核人员记录
                         if (TriggerTypeEnum.MANUAL.value().equals(stage.getTriggerType())) {
                             addStageAuditRecord(stage.getId(), devopsCdStageRecordDTO.getId());
@@ -236,11 +236,14 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         return devopsCdPipelineRecordService.queryById(devopsCdPipelineRecordDTO.getId());
     }
 
-    private DevopsCdStageRecordDTO initStageRecord(Long pipelineRecordId, Long stageId) {
+    private DevopsCdStageRecordDTO initStageRecord(Long pipelineRecordId, DevopsCdStageDTO devopsCdStageDTO) {
         DevopsCdStageRecordDTO devopsCdStageRecordDTO = new DevopsCdStageRecordDTO();
         devopsCdStageRecordDTO.setPipelineRecordId(pipelineRecordId);
-        devopsCdStageRecordDTO.setStageId(stageId);
+        devopsCdStageRecordDTO.setStageId(devopsCdStageDTO.getId());
         devopsCdStageRecordDTO.setStatus(PipelineStatus.CREATED.toValue());
+        devopsCdStageRecordDTO.setStageName(devopsCdStageDTO.getName());
+        devopsCdStageRecordDTO.setSequence(devopsCdStageDTO.getSequence());
+        devopsCdStageRecordDTO.setProjectId(devopsCdStageDTO.getProjectId());
         devopsCdStageRecordService.save(devopsCdStageRecordDTO);
 
         return devopsCdStageRecordService.queryById(devopsCdStageRecordDTO.getId());
@@ -257,6 +260,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         devopsCdJobRecordDTO.setMetadata(job.getMetadata());
         devopsCdJobRecordDTO.setJobId(job.getId());
         devopsCdJobRecordDTO.setDeployInfoId(job.getDeployInfoId());
+        devopsCdJobRecordDTO.setProjectId(job.getProjectId());
+        devopsCdJobRecordDTO.setSequence(job.getSequence());
+        devopsCdJobRecordDTO.setCountersigned(job.getCountersigned());
 
         devopsCdJobRecordService.save(devopsCdJobRecordDTO);
 
@@ -372,7 +378,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             // 创建cd阶段记录
             DevopsCdPipelineRecordDTO finalDevopsCdPipelineRecordDTO = devopsCdPipelineRecordDTO;
             devopsCdStageDTOList.forEach(stage -> {
-                DevopsCdStageRecordDTO devopsCdStageRecordDTO = initStageRecord(finalDevopsCdPipelineRecordDTO.getId(), stage.getId());
+                DevopsCdStageRecordDTO devopsCdStageRecordDTO = initStageRecord(finalDevopsCdPipelineRecordDTO.getId(), stage);
                 // 手动流转阶段，添加审核人员记录
                 if (TriggerTypeEnum.MANUAL.value().equals(stage.getTriggerType())) {
                     addStageAuditRecord(stage.getId(), devopsCdStageRecordDTO.getId());
