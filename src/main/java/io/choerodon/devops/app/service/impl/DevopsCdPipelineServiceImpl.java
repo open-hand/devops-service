@@ -213,12 +213,14 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
         // ci流水线执行成功， 开始执行cd流水线
         if (PipelineStatus.SUCCESS.toValue().equals(status)) {
-            LOGGER.info(">>>>>>>>>>>>>>>>>>>> exec cd pipeline start >>>>>>>>>>>>>>>>>>>>>>>>>>>>", pipelineAttr.getId(), status);
+            LOGGER.info("current cd pipeline status is {}", devopsCdPipelineRecordDTO.getStatus());
             // 执行条件：cd流水线记录状态为pending
             if (devopsCdPipelineRecordDTO != null && PipelineStatus.CREATED.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>> exec cd pipeline start >>>>>>>>>>>>>>>>>>>>>>>>>>>>", pipelineAttr.getId(), status);
                 executeCdPipeline(devopsCdPipelineRecordDTO.getId());
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>> exec cd pipeline success >>>>>>>>>>>>>>>>>>>>>>>>>>>>", pipelineAttr.getId(), status);
             }
-            LOGGER.info(">>>>>>>>>>>>>>>>>>>> exec cd pipeline success >>>>>>>>>>>>>>>>>>>>>>>>>>>>", pipelineAttr.getId(), status);
+
         }
     }
 
@@ -317,7 +319,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     }
 
     private void updateFirstStage(Long pipelineRecordId) {
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>> update first stage status<<<<<<<<<<<<<<<<<<<<<<<<<<");
         DevopsCdStageRecordDTO devopsCdStageRecord = devopsCdStageRecordService.queryFirstByPipelineRecordId(pipelineRecordId);
+        LOGGER.info("current stage is {}", devopsCdStageRecord);
         if (TriggerTypeEnum.MANUAL.value().equals(devopsCdStageRecord.getTriggerType())) {
             devopsCdStageRecordService.updateStageStatusNotAudit(pipelineRecordId, devopsCdStageRecord.getId());
         } else {
@@ -330,10 +334,13 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     }
 
     private void updateFirstJob(Long pipelineRecordId, DevopsCdStageRecordDTO devopsCdStageRecord) {
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>> update first job status to running <<<<<<<<<<<<<<<<<<<<<<<<<<");
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryFirstByStageRecordId(devopsCdStageRecord.getId());
         if (devopsCdJobRecordDTO == null) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>> current stage have no job <<<<<<<<<<<<<<<<<<<<<<<<<<");
             return;
         }
+        LOGGER.info("current stage first job is", devopsCdJobRecordDTO);
         if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordDTO.getType())) {
             devopsCdJobRecordService.updateJobStatusNotAudit(pipelineRecordId, devopsCdStageRecord.getId(), devopsCdJobRecordDTO.getId());
         }
