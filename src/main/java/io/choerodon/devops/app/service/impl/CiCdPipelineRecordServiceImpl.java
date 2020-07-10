@@ -87,8 +87,17 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
             ciCdPipelineRecordVO.setGitlabPipelineId(devopsCiPipelineRecordVO.getGitlabPipelineId());
             //计算记录的状态
-            if (PipelineStatus.SUCCESS.toValue().equals(devopsCiPipelineRecordVO.getStatus())) {
+            if (!PipelineStatus.SUCCESS.toValue().equals(devopsCiPipelineRecordVO.getStatus())) {
                 ciCdPipelineRecordVO.setStatus(devopsCdPipelineRecordVO.getStatus());
+            }
+            if (PipelineStatus.SUCCESS.toValue().equals(devopsCiPipelineRecordVO.getStatus())
+                    && PipelineStatus.SUCCESS.toValue().equals(devopsCdPipelineRecordVO.getStatus())) {
+                ciCdPipelineRecordVO.setStatus(PipelineStatus.SUCCESS.toValue());
+            }
+            //如果ci状态成功cd是未执行，则状态为执行中
+            if (PipelineStatus.SUCCESS.toValue().equals(devopsCiPipelineRecordVO.getStatus()) &&
+                    PipelineStatus.CREATED.toValue().equals(devopsCdPipelineRecordVO.getStatus())) {
+                ciCdPipelineRecordVO.setStatus(PipelineStatus.RUNNING.toValue());
             } else {
                 ciCdPipelineRecordVO.setStatus(devopsCdPipelineRecordVO.getStatus());
             }
