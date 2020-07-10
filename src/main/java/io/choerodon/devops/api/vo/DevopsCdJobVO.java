@@ -40,6 +40,16 @@ public class DevopsCdJobVO {
     @NotEmpty(message = "error.job.metadata.cannot.be.null")
     private String metadata;
     private String envName;
+    private Long sequence;
+
+    public Long getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(Long sequence) {
+        this.sequence = sequence;
+    }
+
     //审核人员的集合
     private List<IamUserDTO> iamUserDTOS;
 

@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.Date;
 import java.util.List;
 
 public class DevopsCdStageRecordVO extends StageRecordVO {
