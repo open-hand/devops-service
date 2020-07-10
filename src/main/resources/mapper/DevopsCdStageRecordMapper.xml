@@ -6,9 +6,7 @@
     <select id="queryFirstByPipelineRecordId"
             resultType="io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO">
         SELECT
-        id, pipeline_record_id, stage_id, stage_name,
-        status, trigger_type, project_id,
-        object_version_number, created_by, creation_date, last_updated_by, last_update_date
+        dcsr.*
         FROM devops_cd_stage_record dcsr
         WHERE dcsr.pipeline_record_id = #{pipelineRecordId}
         ORDER BY dcsr.sequence ASC
