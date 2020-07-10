@@ -98,6 +98,9 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
     public Map<String, Long> getCommitCount(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getOrganizationId());
+        if (sprintDTO.getSprintId() == null) {
+            return new HashMap<>();
+        }
         List<Date> dateList = devopsGitlabCommitMapper.queryCountByProjectIdAndDate(projectId, new java.sql.Date(sprintDTO.getStartDate().getTime()), new java.sql.Date(sprintDTO.getEndDate().getTime()));
 
         return dateList.stream().map(simpleDateFormat::format)
@@ -117,6 +120,9 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
                 .collect(Collectors.toList());
 
         SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getOrganizationId());
+        if (sprintDTO.getSprintId() == null) {
+            return new HashMap<>();
+        }
 
         if (envIds.size() == 0) {
             return new HashMap<>();
