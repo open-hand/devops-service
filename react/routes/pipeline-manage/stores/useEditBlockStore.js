@@ -145,6 +145,7 @@ export default function useStore() {
       if (edit) {
         this.dataSource2.forEach((item, index) => {
           if (item.sequence === sequence) {
+            data.sequence = this.dataSource2[index].jobList.length;
             if (this.dataSource2[index].jobList) {
               this.dataSource2[index].jobList.push(data);
             } else {
@@ -155,6 +156,7 @@ export default function useStore() {
       } else {
         this.dataSource.forEach((item, index) => {
           if (item.sequence === sequence) {
+            data.sequence = this.dataSource[index].jobList.length;
             if (this.dataSource[index].jobList) {
               this.dataSource[index].jobList.push(data);
             } else {
