@@ -256,7 +256,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         devopsCdJobRecordDTO.setType(job.getType());
         devopsCdJobRecordDTO.setStatus(PipelineStatus.CREATED.toValue());
         devopsCdJobRecordDTO.setTriggerType(job.getTriggerType());
-        devopsCdJobRecordDTO.setTriggerValue(job.getTriggerType());
+        devopsCdJobRecordDTO.setTriggerValue(job.getTriggerValue());
         devopsCdJobRecordDTO.setMetadata(job.getMetadata());
         devopsCdJobRecordDTO.setJobId(job.getId());
         devopsCdJobRecordDTO.setDeployInfoId(job.getDeployInfoId());
