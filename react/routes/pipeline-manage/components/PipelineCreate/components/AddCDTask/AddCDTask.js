@@ -60,6 +60,9 @@ export default observer(() => {
         if (!await handleTestConnect()) {
           return false;
         }
+        // if (!await handleTestValue()) {
+        //   return false;
+        // }
       }
       const data = {
         ...ds,
@@ -191,11 +194,26 @@ export default observer(() => {
     });
   }, [testStatus, ADDCDTaskDataSet.current.get('type')]);
 
+  // const handleTestValue = async () => new Promise((resolve) => {
+  //   const hostDeployType = ADDCDTaskDataSet.current.get('hostDeployType');
+  //   axios.post('/devops/v1/cd_pipeline/check/instruction', {
+  //     type: hostDeployType,
+  //     instruction: hostDeployType === 'image' ? imageDeployValues : jarValues,
+  //   }).then((res) => {
+  //     resolve(res);
+  //   }).catch(() => {
+  //     resolve(false);
+  //   });
+  // });
+
   const handleTestConnect = async () => new Promise((resolve) => {
-    const hostDeployType = ADDCDTaskDataSet.current.get('hostDeployType');
-    axios.post('/devops/v1/cd_pipeline/check/instruction', {
-      type: hostDeployType,
-      instruction: hostDeployType === 'image' ? imageDeployValues : jarValues,
+    const { hostIP, hostPort, userName, password, accountType } = ADDCDTaskDataSet.toData()[0];
+    axios.post(`/devops/v1/projects/${projectId}/cicd_pipelines/test_connection`, {
+      hostIP,
+      hostPort,
+      userName,
+      password,
+      accountType,
     }).then((res) => {
       setTestStatus(res ? 'success' : 'error');
       resolve(res);
@@ -296,7 +314,13 @@ export default observer(() => {
             )
           }
           <div colSpan={2} style={{ display: 'flex', alignItems: 'center' }}>
-            <Button onClick={handleTestConnect} style={{ marginRight: 20 }} color="primary" funcType="raised">测试连接</Button>
+            <Button
+              disabled={!ADDCDTaskDataSet.current.get('hostIp') || !ADDCDTaskDataSet.current.get('hostPort') || !ADDCDTaskDataSet.current.get('userName')}
+              onClick={handleTestConnect}
+              style={{ marginRight: 20 }}
+              color="primary"
+              funcType="raised"
+            >测试连接</Button>
             {getTestDom()}
           </div>
         </Form>,
