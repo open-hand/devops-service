@@ -124,21 +124,4 @@ public class DevopsCdPipelineController {
         return Results.success(devopsCdPipelineService.getDeployStatus(pipelineRecordId, stageRecordId, jobRecordId));
     }
 
-
-    /**
-     * @param type
-     * @param instruction
-     * @return
-     */
-    @Permission(permissionPublic = true)
-    @ApiOperation(value = "校验执行指令")
-    @PostMapping("/check/instruction")
-    public ResponseEntity<Boolean> checkInstruction(
-            @ApiParam(value = "指令类型 jar/image", required = true)
-            @RequestParam(value = "type") String type,
-            @ApiParam(value = "指令", required = true)
-            @RequestBody String instruction) {
-        return Results.success(devopsCdPipelineService.checkInstruction(type, instruction));
-    }
-
 }

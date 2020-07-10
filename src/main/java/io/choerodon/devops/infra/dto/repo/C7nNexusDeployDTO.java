@@ -11,6 +11,16 @@ public class C7nNexusDeployDTO {
 
     private NexusMavenRepoDTO nexusMavenRepoDTO;
 
+    private String jarName;
+
+    public String getJarName() {
+        return jarName;
+    }
+
+    public void setJarName(String jarName) {
+        this.jarName = jarName;
+    }
+
     public C7nNexusComponentDTO getC7nNexusComponentDTO() {
         return c7nNexusComponentDTO;
     }

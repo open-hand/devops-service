@@ -344,11 +344,22 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         Session session = null;
         try {
             session = ssh.startSession();
+            String[] strings = imageDeploy.getValues().split("\n");
+            String values = "";
+            for (String s : strings) {
+                if (s.length() > 0 && !s.contains("#") && s.contains("docker")) {
+                    values = s;
+                }
+            }
+            if (StringUtils.isEmpty(values) || !checkInstruction("image", values)) {
+                throw new CommonException("error.instruction");
+            }
+
             // 判断镜像是否存在 存在删除 部署
             StringBuilder dockerRunExec = new StringBuilder();
             dockerRunExec.append("docker stop ").append(imageDeploy.getContainerName()).append(System.lineSeparator());
             dockerRunExec.append("docker rm ").append(imageDeploy.getContainerName()).append(System.lineSeparator());
-            dockerRunExec.append(imageDeploy.getValues().replace("${containerName}", imageDeploy.getContainerName()).replace("${image}", imageTagVo.getPullCmd().replace("docker run ", "")));
+            dockerRunExec.append(values.replace("${containerName}", imageDeploy.getContainerName()).replace("${image}", imageTagVo.getPullCmd().replace("docker run ", "")));
             LOGGER.info(dockerRunExec.toString());
             Session.Command cmd = session.exec(dockerRunExec.toString());
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
@@ -436,6 +447,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             C7nNexusDeployDTO c7nNexusDeployDTO = new C7nNexusDeployDTO();
             c7nNexusDeployDTO.setC7nNexusComponentDTO(nexusComponentDTOList.get(0));
             c7nNexusDeployDTO.setNexusMavenRepoDTO(mavenRepoDTOList.get(0));
+            c7nNexusDeployDTO.setJarName(jarName);
             jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
             jobRecordDTO.setDeployMetadata(gson.toJson(c7nNexusDeployDTO));
             devopsCdJobRecordService.update(jobRecordDTO);
@@ -475,7 +487,18 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         cmdStr.append(curlExec).append(System.lineSeparator());
 
         // 2.3
-        String javaJarExec = String.format("echo `nohup %s & `", jarDeploy.getValues().replace("${jar}", jarName));
+        String[] strings = jarDeploy.getValues().split("\n");
+        String values = "";
+        for (String s : strings) {
+            if (s.length() > 0 && !s.contains("#") && s.contains("java")) {
+                values = s;
+            }
+        }
+        if (StringUtils.isEmpty(values) || !checkInstruction("jar", values)) {
+            throw new CommonException("error.instruction");
+        }
+
+        String javaJarExec = String.format("echo `nohup %s & `", values.replace("${jar}", jarName));
 
         cmdStr.append(javaJarExec);
         LOGGER.info(cmdStr.toString());
@@ -759,5 +782,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             closeSsh(ssh, session);
         }
         return index;
+    }
+
+
+    private Boolean checkInstruction(String type, String instruction) {
+        if (type.equals("jar")) {
+            return instruction.contains("${jar}");
+        } else {
+            return instruction.contains("${containerName}") && instruction.contains("${imageName}") && instruction.contains(" -d");
+        }
     }
 }
