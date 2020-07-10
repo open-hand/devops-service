@@ -126,12 +126,12 @@ export default function useStore() {
             this.dataSource2[index].name = newName;
             this.dataSource2[index].type = curType;
             this.dataSource2[index].triggerType = triggerType;
-            if (!this.dataSource2[index].cdAuditUserIds) {
-              this.dataSource2[index].cdAuditUserIds = cdAuditUserIds;
-            } else {
-              this.dataSource2[index].cdAuditUserIds.concat(cdAuditUserIds || []);
-            }
-
+            this.dataSource2[index].cdAuditUserIds = [...cdAuditUserIds];
+            // if (!this.dataSource2[index].cdAuditUserIds) {
+            //   this.dataSource2[index].cdAuditUserIds = cdAuditUserIds;
+            // } else {
+            //   this.dataSource2[index].cdAuditUserIds.concat(cdAuditUserIds || []);
+            // }
             return true;
           }
         });
