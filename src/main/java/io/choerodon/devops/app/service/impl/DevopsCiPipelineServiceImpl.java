@@ -451,6 +451,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     ciCdPipelineRecordVO.setGitlabPipelineId(devopsCiPipelineRecordVO.getGitlabPipelineId());
 
                     stageRecordVOS.addAll(devopsCiPipelineRecordVO.getStageRecordVOList());
+                    ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
                     ciCdPipelineRecordVOS.add(ciCdPipelineRecordVO);
                 }
             }
@@ -466,6 +467,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     ciCdPipelineRecordVO.setGitlabPipelineId(Objects.isNull(devopsCdPipelineRecordVO.getGitlabPipelineId()) ? null : devopsCdPipelineRecordVO.getGitlabPipelineId());
 
                     stageRecordVOS.addAll(devopsCdPipelineRecordVO.getDevopsCdStageRecordVOS());
+                    ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
                     ciCdPipelineRecordVOS.add(ciCdPipelineRecordVO);
                 }
 
