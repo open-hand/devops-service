@@ -5,12 +5,13 @@ import isEmpty from 'lodash/isEmpty';
 function handleUpdate({ record, name, value }) {
   switch (name) {
     case 'chartType':
-      handleInitialValue(record, value === 'custom', record.get('chart'), 'chartUrl');
       if (value === 'default') {
         record.set('chartStatus', '');
       }
       break;
-    case 'chartUrl':
+    case 'url':
+    case 'userName':
+    case 'password':
       record.set('chartStatus', '');
       break;
     default:
@@ -18,18 +19,25 @@ function handleUpdate({ record, name, value }) {
   }
 }
 
-function handleInitialValue(record, isCustom, data, item) {
-  if (isCustom && !isEmpty(data)) {
-    const config = data.config || {};
-    record.set(item, config[item === 'chartUrl' ? 'url' : item]);
+function handleLoad({ dataSet }) {
+  const record = dataSet.current;
+  if (!record) {
+    return;
   }
-  if (!isCustom) {
-    record.set(item, null);
+  const chart = record.get('chart');
+  if (!isEmpty(chart)) {
+    const { url, userName, password } = chart.config || {};
+    record.init('chartCustom', 'custom');
+    record.init('url', url);
+    record.init('userName', userName);
+    record.init('password', password);
+  } else {
+    record.init('chartCustom', 'default');
   }
 }
 
 function getRequestData(data, res) {
-  const { chartUrl, chartType } = data;
+  const { url, userName, password, chartType } = data;
   if (chartType === 'custom') {
     if (isEmpty(res.chart)) {
       res.chart = {
@@ -38,7 +46,9 @@ function getRequestData(data, res) {
       };
     }
     res.chart.custom = true;
-    res.chart.config.url = chartUrl;
+    res.chart.config.url = url;
+    res.chart.config.userName = userName;
+    res.chart.config.password = password;
   } else {
     res.chart = null;
   }
@@ -65,6 +75,18 @@ export default (({ intlPrefix, formatMessage, projectId, appServiceId, dockerDs 
       }
     } else {
       return formatMessage({ id: 'nameCanNotHasSpaces' });
+    }
+  }
+
+  function checkUserName(value, name, record) {
+    if (!value && record.get('password')) {
+      return formatMessage({ id: `${intlPrefix}.chart.check.failed` });
+    }
+  }
+
+  function checkPassword(value, name, record) {
+    if (!value && record.get('userName')) {
+      return formatMessage({ id: `${intlPrefix}.chart.check.failed` });
     }
   }
 
@@ -96,13 +118,16 @@ export default (({ intlPrefix, formatMessage, projectId, appServiceId, dockerDs 
       { name: 'imgUrl', type: 'string' },
       { name: 'objectVersionNumber', type: 'number' },
       { name: 'chart', type: 'object' },
-      { name: 'chartUrl', type: 'url', label: formatMessage({ id: 'address' }), dynamicProps: { required: getChartRequired } },
+      { name: 'url', type: 'url', label: formatMessage({ id: 'address' }), dynamicProps: { required: getChartRequired } },
+      { name: 'userName', type: 'string', label: formatMessage({ id: 'userName' }), validator: checkUserName },
+      { name: 'password', type: 'string', label: formatMessage({ id: 'password' }), validator: checkPassword },
       { name: 'chartStatus', type: 'string', defaultValue: '' },
       { name: 'chartType', type: 'string', defaultValue: 'default', label: formatMessage({ id: `${intlPrefix}.helm` }) },
       { name: 'harborRepoConfigDTO', type: 'object', textField: 'repoName', valueField: 'repoId', label: formatMessage({ id: `${intlPrefix}.docker` }), options: dockerDs },
     ],
     events: {
       update: handleUpdate,
+      load: handleLoad,
     },
   });
 });

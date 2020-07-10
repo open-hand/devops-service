@@ -3,17 +3,22 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import io.choerodon.devops.infra.annotation.WillDeleted;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  16:14 2019/4/8
  * Description:
  */
+@WillDeleted
 public class PipelineReqVO {
+//    @Encrypt(value = EncryptKeyConstants.DEVOPS_PIPELINE_ENCRYPT_KEY)
     private Long id;
     private String name;
     private String triggerType;
     private List<Long> pipelineUserRels;
     private List<PipelineStageVO> pipelineStageVOs;
+//    @Encrypt(value = EncryptKeyConstants.IAM_PROJECT_ENCRYPT_KEY)
     private Long projectId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;

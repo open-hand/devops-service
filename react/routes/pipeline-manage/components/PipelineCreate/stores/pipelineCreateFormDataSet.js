@@ -1,3 +1,5 @@
+import JSONBigint from 'json-bigint';
+
 const dynamicAxios = {};
 
 export default (AppServiceOptionsDs, projectId, createUseStore, dataSource) => {
@@ -37,7 +39,7 @@ export default (AppServiceOptionsDs, projectId, createUseStore, dataSource) => {
             transformResponse: (res) => {
               let newRes;
               try {
-                newRes = JSON.parse(res);
+                newRes = JSONBigint.parse(res);
                 return [{
                   appServiceId: newRes.id,
                   appServiceName: newRes.name,
@@ -60,7 +62,7 @@ export default (AppServiceOptionsDs, projectId, createUseStore, dataSource) => {
             transformResponse: (res) => {
               let newRes;
               try {
-                newRes = JSON.parse(res);
+                newRes = JSONBigint.parse(res);
                 if (newRes.length % 20 === 0 && newRes.length !== 0) {
                   newRes.push({
                     appServiceId: 'more',

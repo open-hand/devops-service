@@ -65,6 +65,7 @@ import io.choerodon.devops.app.task.DevopsTask;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
@@ -75,6 +76,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.RoleDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.exception.GitlabAccessInvalidException;
 import io.choerodon.devops.infra.feign.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -207,7 +209,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     private HrdsCodeRepoClient hrdsCodeRepoClient;
     @Autowired
-    private DevopsCiPipelineMapper DevopsCiPipelineMapper;
+    private DevopsCiCdPipelineMapper DevopsCiCdPipelineMapper;
 
 
     static {
@@ -225,6 +227,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             description = "Devops创建应用服务", inputSchema = "{}")
     @Transactional
     public AppServiceRepVO create(Long projectId, AppServiceReqVO appServiceReqVO) {
+        appServiceReqVO.setProjectId(projectId);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplicationService(appServiceReqVO.getCode());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
@@ -358,6 +361,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (appServiceDTO == null) {
             return;
         }
+
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
         // 禁止删除未失败或者启用状态的应用服务
         if (Boolean.TRUE.equals(appServiceDTO.getActive())
                 && Boolean.FALSE.equals(appServiceDTO.getFailed())) {
@@ -459,17 +465,41 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     @Transactional
     public Boolean update(Long projectId, AppServiceUpdateDTO appServiceUpdateDTO) {
-        AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceUpdateDTO, AppServiceDTO.class);
         Long appServiceId = appServiceUpdateDTO.getId();
+        AppServiceDTO oldAppServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+
+        if (oldAppServiceDTO == null) {
+            return false;
+        }
+
+        CommonExAssertUtil.assertTrue(projectId.equals(oldAppServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceUpdateDTO, AppServiceDTO.class);
         List<DevopsConfigVO> devopsConfigVOS = new ArrayList<>();
         DevopsConfigVO chart = new DevopsConfigVO();
         if (ObjectUtils.isEmpty(appServiceUpdateDTO.getChart())) {
             chart.setCustom(false);
-            chart.setType(CHART);
-            devopsConfigVOS.add(chart);
         } else {
-            devopsConfigVOS.add(appServiceUpdateDTO.getChart());
+            chart = appServiceUpdateDTO.getChart();
+            chart.setCustom(Boolean.TRUE);
+            ConfigVO configVO = chart.getConfig();
+            CommonExAssertUtil.assertNotNull(configVO, "error.chart.config.null");
+            boolean usernameEmpty = StringUtils.isEmpty(configVO.getUserName());
+            boolean passwordEmpty = StringUtils.isEmpty(configVO.getPassword());
+            if (!usernameEmpty && !passwordEmpty) {
+                configVO.setUserName(configVO.getUserName());
+                configVO.setPassword(configVO.getPassword());
+                configVO.setPrivate(Boolean.TRUE);
+            } else {
+                configVO.setPrivate(Boolean.FALSE);
+            }
+
+            // 用户名和密码要么都为空, 要么都有值
+            CommonExAssertUtil.assertTrue(((usernameEmpty && passwordEmpty) || (!usernameEmpty && !passwordEmpty)), "error.chart.auth.invalid");
         }
+        chart.setType(CHART);
+        devopsConfigVOS.add(chart);
+
         //处理helm仓库的配置
         devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
         //保存应用服务与harbor仓库的关系
@@ -490,10 +520,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, CHART, AUTHTYPE_PULL);
             appServiceDTO.setChartConfigId(chartConfig.getId());
         }
-        AppServiceDTO oldAppServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-        if (oldAppServiceDTO == null) {
-            return false;
-        }
+
         if (!oldAppServiceDTO.getName().equals(appServiceUpdateDTO.getName())) {
             checkName(oldAppServiceDTO.getProjectId(), appServiceDTO.getName());
         }
@@ -512,10 +539,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     @Transactional
     public Boolean updateActive(Long projectId, Long appServiceId, final Boolean active) {
+        AppServiceDTO appServiceDTO = permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
+
         // 为空则默认true
         Boolean toUpdateValue = Boolean.FALSE.equals(active) ? Boolean.FALSE : Boolean.TRUE;
-
-        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
 
         // 如果原先的值和更新的值相等，则不更新
         if (toUpdateValue.equals(appServiceDTO.getActive())) {
@@ -575,10 +602,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private boolean appServiceIsExistsCi(Long projectId, Long appServiceId) {
-        DevopsCiPipelineDTO devopsCiPipelineDTO = new DevopsCiPipelineDTO();
+        CiCdPipelineDTO devopsCiPipelineDTO = new CiCdPipelineDTO();
         devopsCiPipelineDTO.setAppServiceId(appServiceId);
         devopsCiPipelineDTO.setProjectId(projectId);
-        return DevopsCiPipelineMapper.selectCount(devopsCiPipelineDTO) > 0;
+        return DevopsCiCdPipelineMapper.selectCount(devopsCiPipelineDTO) > 0;
     }
 
     @Override
@@ -970,8 +997,8 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{ HARBOR_CONFIG_ID }}", harborConfigDTO.getId().toString());
             return FileUtil.replaceReturnString(CI_FILE_TEMPLATE, params);
         } catch (CommonException e) {
-            LOGGER.warn("Error query ci.sh for app-service with token {} , the ex is ", token, e);
-            return null;
+//            LOGGER.warn("Error query ci.sh for app-service with token {} , the ex is ", token, e);
+            throw new DevopsCiInvalidException(e.getCode(), e.getCause(), e.getParameters());
         }
     }
 
@@ -1177,27 +1204,44 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Boolean checkChart(String url) {
+    public Boolean checkChart(String url, @Nullable String username, @Nullable String password) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setBaseUrl(url);
         configurationProperties.setType(CHART);
+        if (username != null && password != null) {
+            configurationProperties.setUsername(username);
+            configurationProperties.setPassword(password);
+        }
+        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+        ChartClient chartClient = retrofit.create(ChartClient.class);
         try {
-            Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-            ChartClient chartClient = retrofit.create(ChartClient.class);
-            chartClient.getHealth();
+            // 获取健康检查信息是不需要认证信息的
             Call<Object> getHealth = chartClient.getHealth();
             getHealth.execute();
         } catch (Exception e) {
-            LOGGER.error("chart.connection.failed", e);
-            return false;
+            throw new CommonException("error.chart.not.available");
         }
+
+        // 验证用户名密码
+        Response<Void> response = null;
+        try {
+            // 获取首页html需要认证信息
+            Call<Void> getHomePage = chartClient.getHomePage();
+            response = getHomePage.execute();
+        } catch (Exception ex) {
+            throw new CommonException("error.chart.authentication.failed");
+        }
+        if (response != null && !response.isSuccessful()) {
+            throw new CommonException("error.chart.authentication.failed");
+        }
+
         return true;
     }
 
     @Override
     public SonarContentsVO getSonarContent(Long projectId, Long appServiceId) {
         try {
-            checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.SONAR_LIST);
+//todo            checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.SONAR_LIST);
         } catch (GitlabAccessInvalidException e) {
             return null;
         }
@@ -1830,7 +1874,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public void updatePermission(Long projectId, Long appServiceId, AppServicePermissionVO applicationPermissionVO) {
         // 创建gitlabUserPayload
-        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        AppServiceDTO appServiceDTO = permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
 
         DevOpsUserPayload devOpsUserPayload = new DevOpsUserPayload();
         devOpsUserPayload.setIamProjectId(projectId);
@@ -1894,8 +1938,8 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public void deletePermission(Long projectId, Long appServiceId, Long userId) {
-        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-        appServiceUserPermissionService.baseDeleteByUserIdAndAppIds(Arrays.asList(appServiceId), userId);
+        AppServiceDTO appServiceDTO = permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
+        appServiceUserPermissionService.baseDeleteByUserIdAndAppIds(ArrayUtil.singleAsList(appServiceId), userId);
         //原来不跳，现在也不跳，删除用户在gitlab权限
         DevOpsUserPayload devOpsUserPayload = new DevOpsUserPayload();
         devOpsUserPayload.setIamProjectId(projectId);
@@ -2071,14 +2115,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         //push 到远程仓库
         GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserById(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         gitUtil.push(git, applicationDir, "The template version:" + oldAppServiceVersionDTO.getVersion(), repositoryUrl, gitLabUserDTO.getUsername(), pushToken);
-    }
-
-    @Override
-    public void baseCheckApp(Long projectId, Long appServiceId) {
-        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-        if (appServiceDTO == null || !projectId.equals(appServiceDTO.getProjectId())) {
-            throw new CommonException("error.app.project.notMatch");
-        }
     }
 
     @Override
@@ -2751,7 +2787,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         userAttrService.checkUserSync(userAttrDTO, TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         // 判断用户是否有应用服务权限
         if (permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(appServiceDTO.getProjectId())
-                || permissionHelper.isOrganzationRoot(userId, baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId()).getOrganizationId())
+                || permissionHelper.isOrganizationRoot(userId, baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId()).getOrganizationId())
                 || appServiceDTO.getIsSkipCheckPermission()) {
             return true;
         } else {
@@ -2875,7 +2911,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
     }
 
-
     /**
      * set project hook id for application
      *
@@ -2910,6 +2945,14 @@ public class AppServiceServiceImpl implements AppServiceService {
             return null;
         }
         return viewDTOList.get(0).getAppServiceIds();
+    }
+
+    @Override
+    public void baseCheckApp(Long projectId, Long appServiceId) {
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        if (appServiceDTO == null || !projectId.equals(appServiceDTO.getProjectId())) {
+            throw new CommonException("error.app.project.notMatch");
+        }
     }
 
     private void initApplicationParams(ProjectDTO projectDTO, Tenant

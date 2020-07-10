@@ -81,12 +81,16 @@ const CreateForm = injectIntl(observer((props) => {
   }
 
   async function handleTestChart() {
-    if (!record.get('chartUrl')) {
-      record.set('chartStatus', 'failed');
-      return false;
-    }
     try {
-      const res = await store.checkChart(projectId, record.get('chartUrl'));
+      if (!await record.validate()) {
+        return false;
+      }
+      const postData = {
+        url: record.get('url'),
+        userName: record.get('password') && record.get('userName') ? record.get('userName') : null,
+        password: record.get('password') && record.get('userName') ? record.get('password') : null,
+      };
+      const res = await store.checkChart(projectId, postData);
       if (handlePromptError(res, false)) {
         record.set('chartStatus', 'success');
         return true;

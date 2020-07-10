@@ -1,8 +1,12 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
-import java.util.Optional;
-
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.DevopsEnvGroupVO;
+import io.choerodon.devops.app.service.DevopsEnvGroupService;
+import io.choerodon.devops.infra.dto.DevopsEnvGroupDTO;
+import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,12 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.DevopsEnvGroupVO;
-import io.choerodon.devops.app.service.DevopsEnvGroupService;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -107,6 +107,7 @@ public class DevopsEnvGroupController {
             @ApiParam(value = "环境组名", required = true)
             @RequestParam String name,
             @ApiParam(value = "环境组id", required = false)
+//            @Encrypt(DevopsEnvGroupDTO.ENCRYPT_KEY)
             @RequestParam(value = "group_id", required = false) Long groupId) {
         return Optional.ofNullable(devopsEnvGroupService.checkName(name, projectId, groupId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -128,8 +129,9 @@ public class DevopsEnvGroupController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境组ID", required = true)
+//            @Encrypt(DevopsEnvGroupDTO.ENCRYPT_KEY)
             @PathVariable(value = "group_id") Long groupId) {
-        devopsEnvGroupService.delete(groupId);
+        devopsEnvGroupService.delete(projectId, groupId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -143,6 +145,7 @@ public class DevopsEnvGroupController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境组ID", required = true)
+//            @Encrypt(DevopsEnvGroupDTO.ENCRYPT_KEY)
             @PathVariable(value = "group_id") Long groupId) {
         return Optional.ofNullable(devopsEnvGroupService.checkExist(groupId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))

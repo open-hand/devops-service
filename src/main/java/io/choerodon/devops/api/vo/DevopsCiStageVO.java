@@ -9,6 +9,8 @@ import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.infra.annotation.WillDeleted;
+
 /**
  *
  * @author wanghao
@@ -30,6 +32,15 @@ public class DevopsCiStageVO {
     private Long objectVersionNumber;
 
     private List<DevopsCiJobVO> jobList;
+    private String type;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public Long getId() {
         return id;

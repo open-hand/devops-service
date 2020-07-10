@@ -100,25 +100,25 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private DevopsRegistrySecretMapper devopsRegistrySecretMapper;
 
 
-    private Gson gson = new Gson();
+    private static final Gson GSON = new Gson();
 
     /**
      * 方法中抛出{@link DevopsCiInvalidException}而不是{@link CommonException}是为了返回非200的状态码。
      */
     @Override
-    public void create(String image, String harborConfigId, String token, String version, String commit, MultipartFile files) {
+    public void create(String image, String harborConfigId, String token, String version, String commit, MultipartFile files, String ref) {
         try {
-            doCreate(image, TypeUtil.objToLong(harborConfigId), token, version, commit, files);
+            doCreate(image, TypeUtil.objToLong(harborConfigId), token, version, commit, files, ref);
         } catch (Exception e) {
             if (e instanceof CommonException) {
-                throw new DevopsCiInvalidException(((CommonException) e).getCode(), e.getCause());
+                throw new DevopsCiInvalidException(((CommonException) e).getCode(), e.getCause(), ((CommonException) e).getParameters());
             }
-            throw new DevopsCiInvalidException(e);
+            throw new DevopsCiInvalidException(e.getCause());
         }
 
     }
 
-    private void doCreate(String image, Long harborConfigId, String token, String version, String commit, MultipartFile files) {
+    private void doCreate(String image, Long harborConfigId, String token, String version, String commit, MultipartFile files, String ref) {
         AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
 
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
@@ -129,14 +129,17 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         appServiceVersionDTO.setAppServiceId(appServiceDTO.getId());
         appServiceVersionDTO.setImage(image);
         appServiceVersionDTO.setCommit(commit);
+        appServiceVersionDTO.setRef(ref);
         appServiceVersionDTO.setVersion(version);
         //根据配置id 查询仓库是自定义还是默认
         HarborRepoDTO harborRepoDTO = rdupmClient.queryHarborRepoConfig(appServiceDTO.getProjectId(), appServiceDTO.getId()).getBody();
         appServiceVersionDTO.setHarborConfigId(harborRepoDTO.getHarborRepoConfig().getRepoId());
         appServiceVersionDTO.setRepoType(harborRepoDTO.getRepoType());
 
+        // 查询helm仓库配置id
         DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART, AUTHTYPE_PULL);
-        String helmUrl = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class).getUrl();
+        ConfigVO helmConfig = GSON.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+        String helmUrl = helmConfig.getUrl();
         appServiceVersionDTO.setHelmConfigId(devopsConfigDTO.getId());
 
         appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getTenantNum() + "/" + projectDTO.getCode() + "/" : helmUrl + "/" + organization.getTenantNum() + "/" + projectDTO.getCode() + "/");
@@ -145,7 +148,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         String destFilePath = DESTINATION_PATH + version;
         String path = FileUtil.multipartFileToFile(storeFilePath, files);
         //上传chart包到chartmuseum
-        chartUtil.uploadChart(helmUrl, organization.getTenantNum(), projectDTO.getCode(), new File(path));
+        chartUtil.uploadChart(helmUrl, organization.getTenantNum(), projectDTO.getCode(), new File(path), helmConfig.getUserName(), helmConfig.getPassword());
 
         // 有需求让重新上传chart包，所以校验重复推后
         if (newApplicationVersion != null) {
@@ -754,6 +757,14 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         } while (pageNumber <= total);
 
         LOGGER.info("end fix register_secret");
+    }
+
+    @Override
+    public AppServiceVersionDTO queryByCommitShaAndRef(String commitSha, String gitlabTriggerRef) {
+        AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
+        appServiceVersionDTO.setCommit(commitSha);
+        appServiceVersionDTO.setRef(gitlabTriggerRef);
+        return appServiceVersionMapper.selectOne(appServiceVersionDTO);
     }
 
     @Nullable

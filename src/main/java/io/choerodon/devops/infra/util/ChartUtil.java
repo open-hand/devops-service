@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import javax.annotation.Nullable;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -12,7 +13,6 @@ import okhttp3.ResponseBody;
 import org.apache.commons.compress.utils.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -34,19 +34,18 @@ import io.choerodon.devops.infra.handler.RetrofitHandler;
 
 @Component
 public class ChartUtil {
-
     public static final Logger LOGGER = LoggerFactory.getLogger(ChartUtil.class);
     private static final String CHART = "chart";
     private static final String FILE_SEPARATOR = "/";
-    @Value("${services.helm.url}")
-    private String helmUrl;
 
 
-    public void uploadChart(String repository, String organizationCode, String projectCode, File file) {
+    public void uploadChart(String repository, String organizationCode, String projectCode, File file, @Nullable String username, @Nullable String password) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setType(CHART);
         repository = repository.endsWith("/") ? repository.substring(0, repository.length() - 1) : repository;
         configurationProperties.setBaseUrl(repository);
+        configurationProperties.setUsername(username);
+        configurationProperties.setPassword(password);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         file = new File(file.getAbsolutePath());
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);

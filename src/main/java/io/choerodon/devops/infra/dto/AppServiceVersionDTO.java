@@ -28,6 +28,7 @@ public class AppServiceVersionDTO extends AuditDomain {
     private Long harborConfigId;
     private Long helmConfigId;
     private String repoType;
+    private String ref;
 
     @Transient
     private String appServiceName;
@@ -187,5 +188,13 @@ public class AppServiceVersionDTO extends AuditDomain {
 
     public void setRepoType(String repoType) {
         this.repoType = repoType;
+    }
+
+    public String getRef() {
+        return ref;
+    }
+
+    public void setRef(String ref) {
+        this.ref = ref;
     }
 }

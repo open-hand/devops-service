@@ -1,16 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
@@ -18,6 +7,16 @@ import io.choerodon.devops.api.validator.EnvironmentApplicationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author lizongwei
@@ -43,11 +42,12 @@ public class DevopsEnvAppServiceController {
     @ApiOperation(value = "创建环境下的服务关联")
     @PostMapping("/batch_create")
     public ResponseEntity<List<DevopsEnvApplicationVO>> batchCreate(
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "关联信息", required = true)
             @RequestBody DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
         validator.checkEnvIdExist(devopsEnvAppServiceVO.getEnvId());
         validator.checkAppIdsExist(devopsEnvAppServiceVO.getAppServiceIds());
-        return Optional.ofNullable(devopsEnvApplicationService.batchCreate(devopsEnvAppServiceVO))
+        return Optional.ofNullable(devopsEnvApplicationService.batchCreate(projectId, devopsEnvAppServiceVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.service.create"));
     }
@@ -55,14 +55,15 @@ public class DevopsEnvAppServiceController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除指定环境-服务关联关系")
     @DeleteMapping
-    public ResponseEntity delete(
+    public ResponseEntity<Void> delete(
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境Id", required = true)
             @RequestParam("env_id") Long envId,
             @ApiParam(value = "应用服务Id", required = true)
             @RequestParam("app_service_id") Long appServiceId) {
-        validator.checkEnvIdAndAppIdsExist(envId, appServiceId);
+        validator.checkEnvIdAndAppIdsExist(projectId, envId, appServiceId);
         devopsEnvApplicationService.delete(envId, appServiceId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     /**

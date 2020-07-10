@@ -288,17 +288,19 @@ public interface AppServiceService {
     /**
      * 校验chart配置信息是否正确
      *
-     * @param url chartmusume地址
-     * @return Boolean
+     * @param url      ChartMuseum地址
+     * @param username 用户名
+     * @param password 密码
+     * @return true如果通过 (未通过则抛出错误信息)
      */
-    Boolean checkChart(String url);
+    Boolean checkChart(String url, @Nullable String username, @Nullable String password);
 
     /**
      * 查看sonarqube相关信息
      *
      * @param projectId    项目Id
      * @param appServiceId 服务id
-     * @return
+     * @return 信息
      */
     SonarContentsVO getSonarContent(Long projectId, Long appServiceId);
 
@@ -307,7 +309,7 @@ public interface AppServiceService {
      *
      * @param projectId    项目Id
      * @param appServiceId 服务id
-     * @return
+     * @return 报表
      */
     SonarTableVO getSonarTable(Long projectId, Long appServiceId, String type, Date startTime, Date endTime);
 

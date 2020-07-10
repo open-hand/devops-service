@@ -1,30 +1,23 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.*;
-
 import io.swagger.annotations.ApiModelProperty;
+import java.util.Objects;
+import javax.persistence.*;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
-
-/**
- *
- * @author wanghao
- * @Date 2020/4/2 17:00
- */
 @ModifyAudit
 @VersionAudit
-@Table(name = "devops_ci_pipeline")
-public class DevopsCiPipelineDTO extends AuditDomain {
+@Table(name = "devops_cicd_pipeline")
+public class CiCdPipelineDTO extends AuditDomain {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @ApiModelProperty("流水线名称")
     private String name;
-    @ApiModelProperty("流水线镜像地址")
-    private String image;
     @ApiModelProperty("项目id")
     private Long projectId;
     @ApiModelProperty("流水线关联应用服务id")
@@ -36,6 +29,8 @@ public class DevopsCiPipelineDTO extends AuditDomain {
     private Boolean enabled;
     @ApiModelProperty("流水线token")
     private String token;
+    @ApiModelProperty("流水线镜像地址")
+    private String image;
 
     public Long getId() {
         return id;
@@ -53,6 +48,14 @@ public class DevopsCiPipelineDTO extends AuditDomain {
         this.name = name;
     }
 
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
     public Long getAppServiceId() {
         return appServiceId;
     }
@@ -67,14 +70,6 @@ public class DevopsCiPipelineDTO extends AuditDomain {
 
     public void setTriggerType(String triggerType) {
         this.triggerType = triggerType;
-    }
-
-    public Long getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
     }
 
     public Boolean getEnabled() {
@@ -99,5 +94,19 @@ public class DevopsCiPipelineDTO extends AuditDomain {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    @Override
+    public String toString() {
+        return "CiCdPipelineDTO{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", projectId=" + projectId +
+                ", appServiceId=" + appServiceId +
+                ", triggerType='" + triggerType + '\'' +
+                ", enabled=" + enabled +
+                ", token='" + token + '\'' +
+                ", image='" + image + '\'' +
+                '}';
     }
 }

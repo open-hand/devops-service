@@ -86,4 +86,12 @@ public interface AgentCommandService {
      *                  有值时表示扫描一个指定的namespace
      */
     void scanCluster(Long clusterId, Long recordId, @Nullable String namespace);
+
+    /**
+     * 发送chartMuseum的认证信息(包含url, 用户名密码)
+     *
+     * @param clusterId 集群id
+     * @param configVO  配置信息
+     */
+    void sendChartMuseumAuthentication(Long clusterId, ConfigVO configVO);
 }

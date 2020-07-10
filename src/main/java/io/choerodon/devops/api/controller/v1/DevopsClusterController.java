@@ -1,17 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
-import java.util.Optional;
-import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -22,6 +10,17 @@ import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/clusters")
@@ -68,7 +67,7 @@ public class DevopsClusterController {
             @PathVariable("cluster_id") Long clusterId,
             @ApiParam(value = "集群对象")
             @RequestBody @Valid DevopsClusterUpdateVO devopsClusterUpdateVO) {
-        devopsClusterService.updateCluster(clusterId, devopsClusterUpdateVO);
+        devopsClusterService.updateCluster(projectId, clusterId, devopsClusterUpdateVO);
     }
 
     /**
@@ -211,7 +210,7 @@ public class DevopsClusterController {
             @PathVariable(value = "cluster_id") Long clusterId,
             @ApiParam(value = "权限分配信息")
             @RequestBody @Valid DevopsClusterPermissionUpdateVO devopsClusterPermissionUpdateVO) {
-        devopsClusterService.assignPermission(devopsClusterPermissionUpdateVO);
+        devopsClusterService.assignPermission(projectId, devopsClusterPermissionUpdateVO);
         return new ResponseEntity(HttpStatus.OK);
     }
 
@@ -226,15 +225,15 @@ public class DevopsClusterController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除集群下该项目的权限")
     @DeleteMapping(value = "/{cluster_id}/permission")
-    public ResponseEntity deletePermissionOfProject(
+    public ResponseEntity<Void> deletePermissionOfProject(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @PathVariable(value = "cluster_id") Long clusterId,
             @ApiParam(value = "要删除权限的项目id", required = true)
             @RequestParam(value = "delete_project_id") Long projectToDelete) {
-        devopsClusterService.deletePermissionOfProject(clusterId, projectToDelete);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        devopsClusterService.deletePermissionOfProject(projectId, clusterId, projectToDelete);
+        return ResponseEntity.noContent().build();
     }
 
 
@@ -315,7 +314,7 @@ public class DevopsClusterController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群Id")
             @PathVariable(value = "cluster_id") Long clusterId) {
-        devopsClusterService.deleteCluster(clusterId);
+        devopsClusterService.deleteCluster(projectId, clusterId);
     }
 
     /**

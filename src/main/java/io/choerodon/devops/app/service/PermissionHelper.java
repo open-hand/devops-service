@@ -1,8 +1,11 @@
 package io.choerodon.devops.app.service;
 
-import javax.annotation.Nullable;
-
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * 校验权限相关
@@ -72,6 +75,7 @@ public interface PermissionHelper {
 
     /**
      * 判断指定用户是否是root用户
+     *
      * @param userId
      * @return
      */
@@ -79,25 +83,70 @@ public interface PermissionHelper {
 
     /**
      * 判断指定用户是否是组织Root用户
-     * @param userId
-     * @param organizationId
-     * @return
+     *
+     * @param userId         用户id
+     * @param organizationId 组织id
+     * @return true表示是
      */
-    Boolean isOrganzationRoot(Long userId, Long organizationId);
+    Boolean isOrganizationRoot(Long userId, Long organizationId);
 
     /**
      * 判断指定用户是否是项目所有者
-     * @param userId
-     * @param projectId
-     * @return
+     *
+     * @param userId    用户id
+     * @param projectId 项目id
+     * @return 是否是项目所有者
      */
     Boolean isProjectOwner(Long userId, Long projectId);
+
     /**
      * 判断指定用户是否是gitlab owner
-     * @param userId
-     * @param projectId
-     * @return
+     *
+     * @param userId    用户id
+     * @param projectId 项目id
+     * @return 是否是gitlab owner
      */
     Boolean isGitlabProjectOwner(Long userId, Long projectId);
 
+    /**
+     * 这个项目是否有集群的权限
+     *
+     * @param clusterId 集群id
+     * @param projectId 项目id
+     * @return true表示有权限
+     */
+    boolean projectPermittedToCluster(Long clusterId, Long projectId);
+
+    /**
+     * 项目是否有证书的权限
+     *
+     * @param certId    证书id
+     * @param projectId 项目id
+     * @return true表示有
+     */
+    boolean projectPermittedToCert(Long certId, Long projectId);
+
+    /**
+     * 检查环境是否属于指定项目
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     */
+    DevopsEnvironmentDTO checkEnvBelongToProject(Long projectId, Long envId);
+
+    /**
+     * 检查应用是否属于指定项目
+     *
+     * @param projectId    项目id
+     * @param appServiceId 应用id
+     * @return 校验结果
+     */
+    AppServiceDTO checkAppServiceBelongToProject(Long projectId, Long appServiceId);
+
+    /**
+     * 检查多个应用服务是否属于指定项目
+     * @param projectId
+     * @param appServiceIds
+     */
+    void checkAppServicesBelongToProject(Long projectId, List<Long> appServiceIds);
 }

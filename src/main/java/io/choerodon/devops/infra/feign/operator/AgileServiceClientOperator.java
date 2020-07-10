@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.feign.operator;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.dto.agile.IssueDTO;
 import io.choerodon.devops.infra.dto.agile.ProjectInfoDTO;
+import io.choerodon.devops.infra.dto.agile.SprintDTO;
 import io.choerodon.devops.infra.feign.AgileServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -38,6 +39,14 @@ public class AgileServiceClientOperator {
             return agileServiceClient.queryIssues(projectId, ids).getBody();
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    public SprintDTO getActiveSprint(Long projectId, Long organizationId) {
+        try {
+            return agileServiceClient.getActiveSprint(projectId, organizationId).getBody();
+        } catch (Exception e) {
+            throw new CommonException(e);
         }
     }
 }

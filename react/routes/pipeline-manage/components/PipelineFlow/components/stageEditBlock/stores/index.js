@@ -18,8 +18,9 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     children,
     pipelineId,
     stepStore,
+    AppState: { currentMenuType: { projectId } },
   } = props;
-  const addStepDs = useMemo(() => new DataSet(AddStepFormDataSet()), []);
+  const addStepDs = useMemo(() => new DataSet(AddStepFormDataSet(projectId)), []);
 
   const value = {
     ...props,

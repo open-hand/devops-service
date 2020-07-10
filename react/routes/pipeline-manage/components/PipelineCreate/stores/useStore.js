@@ -18,7 +18,7 @@ export default function useStore() {
     },
 
     axiosCreatePipeline(data, projectId) {
-      return axios.post(`/devops/v1/projects/${projectId}/ci_pipelines`, data);
+      return axios.post(`/devops/v1/projects/${projectId}/cicd_pipelines`, data);
     },
   }));
 }

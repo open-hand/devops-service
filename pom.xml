@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>devops-service</artifactId>
-    <version>0.22.0-SNAPSHOT</version>
+    <version>0.23.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <url>https://github.com/choerodon/devops-service</url>
 
@@ -20,7 +20,6 @@
         <powermock.version>2.0.0-beta.5</powermock.version>
         <choerodon.serviceBuild>true</choerodon.serviceBuild>
         <choerodon.mainClass>io.choerodon.devops.DevopsServiceApplication</choerodon.mainClass>
-        <choerodon.starter.version>0.16.2-SNAPSHOT</choerodon.starter.version>
     </properties>
 
 
@@ -74,6 +73,11 @@
             <groupId>org.hzero.starter</groupId>
             <artifactId>hzero-starter-feign-replay</artifactId>
         </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>org.hzero.starter</groupId>-->
+<!--            <artifactId>hzero-starter-keyencrypt</artifactId>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>io.choerodon</groupId>
@@ -307,6 +311,22 @@
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>
         </dependency>
+
+        <!--sshj 依赖-->
+        <dependency>
+            <groupId>com.hierynomus</groupId>
+            <artifactId>sshj</artifactId>
+            <version>0.24.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hzero.starter</groupId>
+            <artifactId>hzero-starter-keyencrypt</artifactId>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.hzero.starter</groupId>-->
+<!--            <artifactId>hzero-starter-keyencrypt</artifactId>-->
+<!--        </dependency>-->
 
     </dependencies>
 

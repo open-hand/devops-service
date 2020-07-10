@@ -48,7 +48,7 @@ public class AppServiceController {
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable,
             @RequestBody(required = false) String params) {
-        return Results.success(applicationServiceService.internalListAllInProject(projectId, params,pageable));
+        return Results.success(applicationServiceService.internalListAllInProject(projectId, params, pageable));
     }
 
     /**
@@ -224,7 +224,7 @@ public class AppServiceController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationServiceService.pageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params,checkMember))
+                applicationServiceService.pageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params, checkMember))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.service.baseList"));
     }
@@ -291,7 +291,7 @@ public class AppServiceController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询所有已经启用的服务")
     @GetMapping("/list_by_active")
-        public ResponseEntity<List<AppServiceRepVO>> listByActive(
+    public ResponseEntity<List<AppServiceRepVO>> listByActive(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(applicationServiceService.listByActive(projectId))
@@ -512,17 +512,17 @@ public class AppServiceController {
     /**
      * 校验chart仓库配置信息是否正确
      *
-     * @param url chartmusume地址
+     * @param configVO chartMuseum信息
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验chart仓库配置信息是否正确")
-    @GetMapping(value = "/check_chart")
+    @PostMapping(value = "/check_chart")
     public void checkChart(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "chartmusume地址", required = true)
-            @RequestParam String url) {
-        applicationServiceService.checkChart(url);
+            @ApiParam(value = "chartMuseum信息", required = true)
+            @RequestBody ConfigVO configVO) {
+        applicationServiceService.checkChart(configVO.getUrl(), configVO.getUserName(), configVO.getPassword());
     }
 
     /**
@@ -654,7 +654,7 @@ public class AppServiceController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用服务权限更新")
     @PostMapping(value = "/{app_service_id}/update_permission")
-    public ResponseEntity updatePermission(
+    public ResponseEntity<Void> updatePermission(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务服务Id")
@@ -662,13 +662,13 @@ public class AppServiceController {
             @ApiParam(value = "权限信息", required = true)
             @RequestBody AppServicePermissionVO appServicePermissionVO) {
         applicationServiceService.updatePermission(projectId, appServiceId, appServicePermissionVO);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用服务权限删除")
     @DeleteMapping(value = "/{app_service_id}/delete_permission")
-    public ResponseEntity deletePermission(
+    public ResponseEntity<Void> deletePermission(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务服务Id")
@@ -676,7 +676,7 @@ public class AppServiceController {
             @ApiParam(value = "user Id", required = true)
             @RequestParam(value = "user_id") Long userId) {
         applicationServiceService.deletePermission(projectId, appServiceId, userId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
 
@@ -699,13 +699,13 @@ public class AppServiceController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "从平台内部导入应用服务")
     @PostMapping(value = "/import/internal")
-    public ResponseEntity importAppService(
+    public ResponseEntity<Void> importAppService(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
             @RequestBody List<ApplicationImportInternalVO> importInternalVOS) {
         applicationServiceService.importAppServiceInternal(projectId, importInternalVOS);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
@@ -844,7 +844,7 @@ public class AppServiceController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "列出项目下有版本的普通应用服务，任何角色可以查到所有的的应用服务")
+    @ApiOperation(value = "列出项目下普通应用服务，任何角色可以查到所有的的应用服务")
     @GetMapping(value = "/list_app_services_having_versions")
     public ResponseEntity<List<AppServiceSimpleVO>> listHavingVersions(
             @ApiParam(value = "项目Id")

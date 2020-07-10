@@ -11,6 +11,8 @@ import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.infra.annotation.WillDeleted;
+
 /**
  *
  * @author wanghao

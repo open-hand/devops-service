@@ -25,6 +25,8 @@ services:
     projectLimit: 100 # gitlab用户可以创建的项目的数量限制
   helm:
     url: "helm.example.com" # 存放helm chart包的仓库地址
+    userName: # Helm chart 仓库 的用户名, 选填(与密码要配对)
+    password: # Helm chart 仓库 的密码, 选填(与用户名要配对)
   gateway:
     url: "http://api.example.com" # 网关地址
   sonarqube:
@@ -63,6 +65,7 @@ mybatis:
   mapperLocations: classpath*:/mapper/*.xml
   configuration:
     mapUnderscoreToCamelCase: true
+
 feign:
   hystrix:
     shareSecurityContext: true

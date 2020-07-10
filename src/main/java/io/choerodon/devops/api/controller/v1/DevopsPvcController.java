@@ -1,8 +1,18 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Optional;
-import javax.validation.Valid;
-
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.DevopsPvcReqVO;
+import io.choerodon.devops.api.vo.DevopsPvcRespVO;
+import io.choerodon.devops.app.service.DevopsPvcService;
+import io.choerodon.devops.infra.dto.DevopsPvcDTO;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,22 +21,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.DevopsPvcReqVO;
-import io.choerodon.devops.api.vo.DevopsPvcRespVO;
-import io.choerodon.devops.app.service.DevopsPvcService;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
+import javax.validation.Valid;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/pvcs")
 public class DevopsPvcController {
+
     @Autowired
     DevopsPvcService devopsPvcService;
 
@@ -91,8 +92,9 @@ public class DevopsPvcController {
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "PVC id", required = true)
+//            @Encrypt(DevopsPvcDTO.ENCRYPT_KEY)
             @PathVariable(value = "pvc_id") Long pvcId) {
-        return Optional.of(devopsPvcService.delete(envId, pvcId))
+        return Optional.of(devopsPvcService.delete(projectId, envId, pvcId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pvc.delete"));
     }

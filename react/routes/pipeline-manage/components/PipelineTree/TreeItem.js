@@ -14,9 +14,11 @@ import ExecuteContent from './execute-content';
 import TreeItemName from '../../../../components/treeitem-name';
 import { usePipelineTreeStore } from './stores';
 import StatusTag from '../PipelineFlow/components/StatusTag';
+import AuditModal from '../audit-modal';
 
 const executeKey = Modal.key();
 const stopKey = Modal.key();
+const auditKey = Modal.key();
 
 const TreeItem = observer(({ record, search }) => {
   const {
@@ -115,10 +117,32 @@ const TreeItem = observer(({ record, search }) => {
       gitlabProjectId: record.get('gitlabProjectId'),
       recordId: record.get('gitlabPipelineId'),
       type,
+      cdRecordId: record.get('cdRecordId'),
     });
     if (res) {
       handleRefresh();
     }
+  }
+
+  function openAuditModal() {
+    const checkData = {
+      type: 'task',
+      // stageRecordId,
+      // taskRecordId,
+      // stageName,
+    };
+    Modal.open({
+      key: auditKey,
+      title: formatMessage({ id: `${intlPrefix}.execute.audit` }),
+      children: <AuditModal
+        cdRecordId={record.get('cdRecordId')}
+        name={record.get('gitlabPipelineId')}
+        mainStore={mainStore}
+        onClose={refresh}
+        checkData={checkData}
+      />,
+      movable: false,
+    });
   }
 
   async function loadMoreRecord(deleteRecord) {
@@ -161,7 +185,7 @@ const TreeItem = observer(({ record, search }) => {
       triggerType,
       id,
       parentId,
-      stageRecordVOList,
+      stageRecordVOS,
     } = record.toData();
     if (includes(key, 'more')) {
       if (record.getState('isLoading')) {
@@ -200,6 +224,13 @@ const TreeItem = observer(({ record, search }) => {
             action: () => changeRecordExecute('retry'),
           }];
           break;
+        case 'not_audit':
+          actionData = [{
+            service: [''],
+            text: formatMessage({ id: `${intlPrefix}.execute.audit` }),
+            action: openAuditModal,
+          }];
+          break;
         default:
           break;
       }
@@ -209,7 +240,7 @@ const TreeItem = observer(({ record, search }) => {
             <TreeItemName name={`#${gitlabPipelineId}`} search={search} headSpace={false} />
           </span>
           <div className={`${prefixCls}-sidebar-header-stage`}>
-            {map(stageRecordVOList, ({ status: stageStatus }) => (
+            {map(stageRecordVOS, ({ status: stageStatus }) => (
               <Fragment>
                 <span className={`${prefixCls}-sidebar-header-stage-item ${prefixCls}-sidebar-header-stage-item-${stageStatus}`} />
                 <span className={`${prefixCls}-sidebar-header-stage-line`} />

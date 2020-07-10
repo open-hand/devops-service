@@ -8,6 +8,7 @@ import io.choerodon.devops.app.service.DevopsCiStageService;
 import io.choerodon.devops.infra.dto.DevopsCiStageDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiStageMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,9 +63,7 @@ public class DevopsCiStageServiceImpl implements DevopsCiStageService {
     @Transactional
     public void update(DevopsCiStageVO devopsCiStageVO) {
         DevopsCiStageDTO devopsCiStageDTO = ConvertUtils.convertObject(devopsCiStageVO, DevopsCiStageDTO.class);
-        if (devopsCiStageMapper.updateByPrimaryKeySelective(devopsCiStageDTO) != 1) {
-            throw new CommonException(UPDATE_STAGE_FAILED);
-        }
+        devopsCiStageMapper.updateByPrimaryKeySelective(devopsCiStageDTO);
     }
 
     @Override

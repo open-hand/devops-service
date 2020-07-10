@@ -14,7 +14,7 @@ public class InstanceSagaPayload {
 
     private Long projectId;
     private Long gitlabUserId;
-    private Integer commandId;
+    private Long commandId;
     private String secretCode;
     private AppServiceDTO applicationDTO;
     private AppServiceVersionDTO appServiceVersionDTO;
@@ -28,7 +28,7 @@ public class InstanceSagaPayload {
     }
 
 
-    public InstanceSagaPayload(Long projectId, Long gitlabUserId, String secretCode, Integer commandId) {
+    public InstanceSagaPayload(Long projectId, Long gitlabUserId, String secretCode, Long commandId) {
         this.projectId = projectId;
         this.gitlabUserId = gitlabUserId;
         this.secretCode = secretCode;
@@ -108,11 +108,11 @@ public class InstanceSagaPayload {
         this.devopsIngressVO = devopsIngressVO;
     }
 
-    public Integer getCommandId() {
+    public Long getCommandId() {
         return commandId;
     }
 
-    public void setCommandId(Integer commandId) {
+    public void setCommandId(Long commandId) {
         this.commandId = commandId;
     }
 }

@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 public class DevopsClusterRepVO {
     @ApiModelProperty("集群id")
+//    @Encrypt(DevopsClusterDTO.ENCRYPT_KEY)
     private Long id;
 
     @ApiModelProperty("集群名称")

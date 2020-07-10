@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import retrofit2.Call;
 
 import io.choerodon.core.exception.CommonException;
@@ -51,6 +52,10 @@ public class DevopsCommandRunner implements CommandLineRunner {
 
     @Value("${services.helm.url}")
     private String servicesHelmUrl;
+    @Value("${services.helm.userName:#{null}}")
+    private String servicesHelmUserName;
+    @Value("${services.helm.password:#{null}}")
+    private String servicesHelmPassword;
     @Value("${services.harbor.update:true}")
     private Boolean servicesHarborUpdate;
     @Value("${services.sonarqube.url:}")
@@ -66,7 +71,14 @@ public class DevopsCommandRunner implements CommandLineRunner {
             try {
                 ConfigVO chartConfig = new ConfigVO();
                 chartConfig.setUrl(servicesHelmUrl);
+                // 只有helm的用户名密码都设置了, 才设置到数据库中
+                if (!StringUtils.isEmpty(servicesHelmUserName) && !StringUtils.isEmpty(servicesHelmPassword)) {
+                    chartConfig.setUserName(servicesHelmUserName);
+                    chartConfig.setPassword(servicesHelmPassword);
+                    chartConfig.setPrivate(Boolean.TRUE);
+                }
                 initConfig(chartConfig, DEFAULT_CHART_NAME, ProjectConfigType.CHART.getType());
+
                 if (sonarqubeUrl != null && !sonarqubeUrl.isEmpty()) {
                     createSonarToken();
                 }
@@ -86,7 +98,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
             devopsConfigService.baseCreate(newConfigDTO);
         } else if (!gson.toJson(configDTO).equals(oldConfigDTO.getConfig())) {
             // 存在判断是否已经生成服务版本，无服务版本，直接覆盖更新；有服务版本，将原config对应的resourceId设置为null,新建config
-            if (appServiceVersionService.isVersionUseConfig(oldConfigDTO.getId(),oldConfigDTO.getType())) {
+            if (appServiceVersionService.isVersionUseConfig(oldConfigDTO.getId(), oldConfigDTO.getType())) {
                 // 将原有配置的name, app_service, project_id, organization_id 字段置为null
                 devopsConfigMapper.updateConfigFieldsNull(oldConfigDTO.getId());
                 newConfigDTO.setId(null);

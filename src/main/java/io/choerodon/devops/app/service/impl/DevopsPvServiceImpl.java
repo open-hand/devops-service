@@ -1,21 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
-import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
@@ -30,6 +16,7 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.PersistentVolumePayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.KubernetesConstants;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -44,6 +31,19 @@ import io.choerodon.devops.infra.mapper.DevopsPvMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.kubernetes.client.custom.Quantity;
+import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DevopsPvServiceImpl implements DevopsPvService {
@@ -87,6 +87,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     DevopsEnvUserPermissionService devopsEnvUserPermissionService;
     @Autowired
     DevopsPrometheusMapper devopsPrometheusMapper;
+    @Autowired
+    PermissionHelper permissionHelper;
 
     private final Gson gson = new Gson();
 
@@ -125,12 +127,13 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         devopsPvDTO.setStatus(PvStatus.OPERATING.getStatus());
         // 创建pv的环境是所选集群关联的系统环境
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsPvDTO.getClusterId());
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         // 如果系统环境id为空那么先去创建系统环境,更新集群关联的系统环境
         if (devopsClusterDTO.getSystemEnvId() == null) {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.createSystemEnv(devopsClusterDTO.getId());
             devopsClusterDTO.setSystemEnvId(devopsEnvironmentDTO.getId());
-            devopsClusterService.baseUpdate(devopsClusterDTO);
+            devopsClusterService.baseUpdate(null, devopsClusterDTO);
         }
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsClusterDTO.getSystemEnvId());
@@ -154,7 +157,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         permissionUpdateVO.setProjectIds(devopsPvReqVo.getProjectIds());
         permissionUpdateVO.setSkipCheckProjectPermission(devopsPvReqVo.getSkipCheckProjectPermission());
         permissionUpdateVO.setObjectVersionNumber(devopsPvReqVo.getObjectVersionNumber());
-        assignPermission(permissionUpdateVO);
+        assignPermission(null, permissionUpdateVO);
     }
 
     private void checkEnv(DevopsEnvironmentDTO devopsEnvironmentDTO) {
@@ -168,7 +171,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean deletePvById(Long pvId) {
+    public Boolean deletePvById(Long projectId, Long pvId) {
 
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
 
@@ -185,6 +188,9 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         // 创建pv的环境是所选集群关联的系统环境
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsPvDTO.getClusterId());
+
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsClusterDTO.getSystemEnvId());
 
 
@@ -254,8 +260,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             v1ObjectMeta.setName(devopsPvDTO.getName());
             v1PersistentVolume.setMetadata(v1ObjectMeta);
             resourceConvertToYamlHandler.setType(v1PersistentVolume);
-            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
-            resourceConvertToYamlHandler.operationEnvGitlabFile(null, projectId, DELETE, (long) GitUserNameUtil.getAdminId(), pvId,
+            Integer gitlabEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
+            resourceConvertToYamlHandler.operationEnvGitlabFile(null, gitlabEnvProjectId, DELETE, (long) GitUserNameUtil.getAdminId(), pvId,
                     PERSISTENTVOLUME, null, false, devopsEnvironmentDTO.getId(), path);
         }
         return true;
@@ -271,8 +277,13 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
     @Override
     @Transactional
-    public void assignPermission(DevopsPvPermissionUpdateVO update) {
-        DevopsPvDTO devopsPvDTO = devopsPvMapper.selectByPrimaryKey(update.getPvId());
+    public void assignPermission(Long projectId, DevopsPvPermissionUpdateVO update) {
+
+        DevopsPvDTO devopsPvDTO = devopsPvMapper.queryWithEnvByPrimaryKey(update.getPvId());
+        // 内部调用时，projectId为null，不校验
+        if (projectId != null) {
+            permissionHelper.checkEnvBelongToProject(projectId, devopsPvDTO.getEnvId());
+        }
 
         if (devopsPvDTO.getSkipCheckProjectPermission()) {
             // 原来对组织下所有项目公开,更新之后依然公开，则不做任何处理
@@ -378,7 +389,9 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     }
 
     @Override
-    public void deleteRelatedProjectById(Long pvId, Long relatedProjectId) {
+    public void deleteRelatedProjectById(Long projectId, Long pvId, Long relatedProjectId) {
+        DevopsPvDTO devopsPvDTO = devopsPvMapper.queryWithEnvByPrimaryKey(pvId);
+        permissionHelper.checkEnvBelongToProject(projectId, devopsPvDTO.getEnvId());
         DevopsPvProPermissionDTO devopsPvProPermissionDTO = new DevopsPvProPermissionDTO();
         devopsPvProPermissionDTO.setPvId(pvId);
         devopsPvProPermissionDTO.setProjectId(relatedProjectId);

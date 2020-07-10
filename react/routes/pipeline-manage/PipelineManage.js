@@ -89,7 +89,7 @@ const PipelineManage = observer((props) => {
   }
 
   function openRecordDetail() {
-    const { gitlabPipelineId } = getSelectedMenu;
+    const { gitlabPipelineId, cdRecordId } = getSelectedMenu;
     Modal.open({
       key: recordDetailKey,
       style: modalStyle,
@@ -99,6 +99,7 @@ const PipelineManage = observer((props) => {
         intlPrefix={intlPrefix}
         refresh={handleRefresh}
         store={mainStore}
+        cdRecordId={cdRecordId}
       />,
       drawer: true,
       okCancel: false,
@@ -107,12 +108,13 @@ const PipelineManage = observer((props) => {
   }
 
   async function changeRecordExecute(type) {
-    const { gitlabProjectId, gitlabPipelineId } = getSelectedMenu;
+    const { gitlabProjectId, gitlabPipelineId, cdRecordId } = getSelectedMenu;
     const res = await mainStore.changeRecordExecute({
       projectId,
       gitlabProjectId,
       recordId: gitlabPipelineId,
       type,
+      cdRecordId,
     });
     if (res) {
       handleRefresh();
@@ -192,6 +194,12 @@ const PipelineManage = observer((props) => {
           icon: 'refresh',
           handler: () => changeRecordExecute('retry'),
           display: status === 'failed',
+          group: 2,
+        }, {
+          permissions: [''],
+          name: formatMessage({ id: `${intlPrefix}.execute.audit` }),
+          icon: 'authorize',
+          display: status === 'not_audit',
           group: 2,
         });
       }

@@ -5,29 +5,33 @@
 @pending: #ffb100;
 @failed: #f77a70;
 @canceled: #d8d8d8;
+@not_audit: #f1b42d;
 
 .c7n-piplineManage-detail-column {
-  i {
+  &-status-icon {
     display: inline-block;
-    &.icon-check_circle {
+    &-success {
       color: @success;
     }
-    &.icon-timelapse {
+    &-running {
       color: @running;
     }
-    &.icon-cancel {
+    &-failed {
       color: @failed;
     }
-    &.icon-cancle_b {
+    &-canceled {
       color: @canceled;
     }
-    &.icon-skipped_a {
+    &-skipped {
       color: @canceled;
     }
-    &.icon-adjust {
+    &-created {
       color: @canceled;
     }
-    &.icon-pause_circle_filled {
+    &-pending {
+      color: @pending;
+    }
+    &-not_audit {
       color: @pending;
     }
   }

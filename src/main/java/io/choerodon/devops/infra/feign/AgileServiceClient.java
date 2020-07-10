@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.feign;
 
 import io.choerodon.devops.infra.dto.agile.IssueDTO;
 import io.choerodon.devops.infra.dto.agile.ProjectInfoDTO;
+import io.choerodon.devops.infra.dto.agile.SprintDTO;
 import io.choerodon.devops.infra.feign.fallback.AgileServiceClientFallback;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -31,4 +32,11 @@ public interface AgileServiceClient {
                                                @PathVariable(name = "project_id") Long projectId,
                                                @ApiParam(value = "issue编号", required = true)
                                                @RequestBody List<Long> issueIds);
+
+    @GetMapping(value = "/v1/projects/{project_id}/sprint/active/{organization_id}")
+    ResponseEntity<SprintDTO> getActiveSprint(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(name = "project_id") Long projectId,
+            @ApiParam(value = "组织id", required = true)
+            @PathVariable(value = "organization_id") Long organizationId);
 }

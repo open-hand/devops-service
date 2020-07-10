@@ -57,10 +57,14 @@ public class DevopsCiInvalidException extends RuntimeException {
     }
 
     public String getTrace() {
-        if(this.traceMessage == null) {
+        if (this.traceMessage == null) {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             PrintStream ps = new PrintStream(outputStream);
-            this.printStackTrace(ps);
+            if (getCause() != null) {
+                getCause().printStackTrace(ps);
+            } else {
+                this.printStackTrace(ps);
+            }
             ps.flush();
             this.traceMessage = new String(outputStream.toByteArray());
         }

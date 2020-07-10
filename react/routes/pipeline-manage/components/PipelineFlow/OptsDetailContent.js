@@ -17,9 +17,9 @@ export default observer((props) => {
     projectId,
     status: treeStatus,
     treeDs,
-    stageRecordVOList: treeStageRecordVOList,
+    stageRecordVOS: treeStageRecordVOList,
+    cdRecordId,
   } = props;
-
   const {
     intl: { formatMessage },
     intlPrefix,
@@ -34,30 +34,30 @@ export default observer((props) => {
 
   useEffect(() => {
     loadDetailData(projectId, gitlabPipelineId);
-  }, [projectId, gitlabPipelineId]);
+  }, [projectId, gitlabPipelineId, cdRecordId]);
 
-  // stageRecordVOList: 各个详情阶段记录
+  // stageRecordVOS: 各个详情阶段记录,包括ci和cd的
   // devopsCipiplineVO: 本流水线记录得信息
 
   const {
-    stageRecordVOList,
-    devopsCiPipelineVO,
+    stageRecordVOS,
+    ciCdPipelineVO,
     status,
     gitlabPipelineId: pipelineRecordId,
     gitlabTriggerRef,
     commit,
   } = getDetailData;
-
+  
   useEffect(() => {
     const treeStatusList = map(treeStageRecordVOList || [], 'status');
-    const detailStatusList = map(stageRecordVOList || [], 'status');
+    const detailStatusList = map(stageRecordVOS || [], 'status');
     if (pipelineRecordId === gitlabPipelineId && (status !== treeStatus || !isEqual(detailStatusList, treeStatusList))) {
       treeDs && treeDs.query();
     }
   }, [pipelineRecordId]);
 
   const renderStage = () => (
-    stageRecordVOList && stageRecordVOList.length > 0 ? stageRecordVOList.map((item) => {
+    stageRecordVOS && stageRecordVOS.length > 0 ? stageRecordVOS.map((item) => {
       const { name, status: stageStatus, durationSeconds, sequence } = item;
       return (
         <DetailColumn
@@ -83,9 +83,8 @@ export default observer((props) => {
       ? <div className="c7n-piplineManage">
         <DetailHeader
           gitlabPipelineId={gitlabPipelineId}
-          parentName={devopsCiPipelineVO && devopsCiPipelineVO.name}
-          appServiceName={devopsCiPipelineVO && devopsCiPipelineVO.appServiceName}
-          appServiceId={devopsCiPipelineVO && devopsCiPipelineVO.appServiceId}
+          appServiceName={ciCdPipelineVO && ciCdPipelineVO.appServiceName}
+          appServiceId={ciCdPipelineVO && ciCdPipelineVO.appServiceId}
           aHref={commit && commit.gitlabProjectUrl}
           triggerRef={gitlabTriggerRef}
           status={status}

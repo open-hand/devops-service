@@ -24,6 +24,7 @@ import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsCertificationProRelationshipService;
 import io.choerodon.devops.app.service.DevopsProjectCertificationService;
 import io.choerodon.devops.app.service.SendNotificationService;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.CertificationDTO;
 import io.choerodon.devops.infra.dto.CertificationFileDTO;
 import io.choerodon.devops.infra.dto.DevopsCertificationProRelationshipDTO;
@@ -281,12 +282,12 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     }
 
     @Override
-    public void deleteCert(Long certId) {
+    public void deleteCert(Long projectId, Long certId) {
         CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
         if (certificationDTO == null) {
             return;
         }
-
+        CommonExAssertUtil.assertTrue(projectId.equals(certificationDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         List<CertificationDTO> certificationDTOS = certificationService.baseListByOrgCertId(certId);
         if (certificationDTOS.isEmpty()) {

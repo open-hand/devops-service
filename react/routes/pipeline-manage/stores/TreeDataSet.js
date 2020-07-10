@@ -1,25 +1,24 @@
 import forEach from 'lodash/forEach';
 import isEmpty from 'lodash/isEmpty';
-
+import JSONBigint from 'json-bigint';
 
 function formatData({ data, expandsKeys }) {
   const newData = [];
-  function flatData(value, gitlabProjectId) {
+  function flatData(value, gitlabProjectId, parentId) {
     forEach(value, (item) => {
-      const parentId = item.ciPipelineId;
-      const key = `${parentId ? `${parentId}-` : ''}${item.id}`;
+      const key = `${parentId ? `${parentId}-` : ''}${item.id || item.ciRecordId || item.cdRecordId}`;
       const newGitlabProjectId = item.gitlabProjectId || gitlabProjectId;
       const newItem = {
         ...item,
         key,
         parentId: parentId ? parentId.toString() : null,
-        status: item.latestExecuteStatus || item.status,
+        status: item.latestExecuteStatus || item.status || (item.ciStatus === 'success' && item.cdStatus ? item.cdStatus : item.ciStatus),
         expand: expandsKeys.includes(key),
         gitlabProjectId: newGitlabProjectId,
       };
       newData.push(newItem);
-      if (!isEmpty(item.pipelineRecordVOList)) {
-        flatData(item.pipelineRecordVOList, newGitlabProjectId);
+      if (!isEmpty(item.ciCdPipelineRecordVOS)) {
+        flatData(item.ciCdPipelineRecordVOS, newGitlabProjectId, item.id);
       }
       if (item.hasMoreRecords) {
         newData.push({
@@ -43,11 +42,11 @@ export default ({ projectId, mainStore, editBlockStore, handleSelect }) => ({
   expandField: 'expand',
   transport: {
     read: {
-      url: `devops/v1/projects/${projectId}/ci_pipelines`,
+      url: `devops/v1/projects/${projectId}/cicd_pipelines`,
       method: 'get',
       transformResponse(response) {
         try {
-          const data = JSON.parse(response);
+          const data = JSONBigint.parse(response);
           if (data && data.failed) {
             return data;
           } else {
@@ -66,7 +65,7 @@ export default ({ projectId, mainStore, editBlockStore, handleSelect }) => ({
       },
     },
     destroy: ({ data: [data] }) => ({
-      url: `/devops/v1/projects/${projectId}/ci_pipelines/${data.id}`,
+      url: `/devops/v1/projects/${projectId}/cicd_pipelines/${data.id}`,
       method: 'delete',
     }),
   },

@@ -9,14 +9,17 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * Created by zzy on 2018/1/10.
  */
 public enum PipelineStatus {
+    CREATED,
     RUNNING,
     PENDING,
     SUCCESS,
     FAILED,
+    STOP,
     CANCELED,
+    NOT_AUDIT,
     SKIPPED;
 
-    private static final HashMap<String, PipelineStatus> valuesMap = new HashMap<>(6);
+    private static final HashMap<String, PipelineStatus> valuesMap = new HashMap<>(8);
 
     static {
         PipelineStatus[] var0 = values();

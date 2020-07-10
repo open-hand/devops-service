@@ -89,6 +89,10 @@ env:
 
     # Helm chart 仓库地址
     SERVICES_HELM_URL: helm.example.com
+    # Helm chart 仓库 的用户名, 选填(与密码要配对)
+    SERVICES_HELM_USERNAME:
+    # Helm chart 仓库 的密码, 选填(与用户名要配对)
+    SERVICES_HELM_PASSWORD:
 
     # Harbor 访问地址
     SERVICES_HARBOR_BASEURL: https://registry.example.com

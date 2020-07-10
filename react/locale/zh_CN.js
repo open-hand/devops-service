@@ -557,6 +557,7 @@ const appService = {
     '您可在此选择一个特定版本进行共享。选择后，则只有此版本会被共享出去',
   'c7ncd.appService.detail.scope.tips':
     '此处仅能选择共享至某个项目，或者选择共享至所有项目',
+  'c7ncd.appService.chart.check.failed': '用户名与密码需配对输入',
 };
 
 const envrionment = {
@@ -733,6 +734,7 @@ const repository = {
   'c7ncd.repository.empty.title': 'Docker仓库配置',
   'c7ncd.repository.empty.des': 'Docker仓库配置功能已迁移至【制品库管理】页面，请点击下方按钮跳转。',
   'c7ncd.repository.empty.link': '跳转至制品库管理',
+  'c7ncd.repository.name.check.failed': '用户名与密码需配对输入',
 };
 
 const pvManager = {
@@ -780,6 +782,7 @@ const pipelineManage = {
   'c7ncd.pipelineManage.execute': '全新执行',
   'c7ncd.pipelineManage.execute.cancel': '取消执行',
   'c7ncd.pipelineManage.execute.retry': '重试',
+  'c7ncd.pipelineManage.execute.audit': '人工审核',
   'c7ncd.pipelineManage.delete.title': '删除流水线',
   'c7ncd.pipelineManage.delete.des': '确定删除该条CI流水线吗？',
   'c7ncd.pipelineManage.stop.title': '停用流水线',

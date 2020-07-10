@@ -14,6 +14,7 @@ public class DevopsEnvironmentReqVO {
 
     @ApiModelProperty("集群ID / 必需")
     @NotNull(message = "error.cluster.id.null")
+//    @Encrypt(DevopsClusterDTO.ENCRYPT_KEY)
     private Long clusterId;
 
     @ApiModelProperty("环境code / 必需")
@@ -24,6 +25,7 @@ public class DevopsEnvironmentReqVO {
     private String description;
 
     @ApiModelProperty("环境分组ID / 非必需")
+//    @Encrypt(DevopsEnvGroupDTO.ENCRYPT_KEY)
     private Long devopsEnvGroupId;
 
     public String getName() {

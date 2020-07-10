@@ -6,8 +6,13 @@ import java.util.Set;
 import org.springframework.http.ResponseEntity;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
+import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoVo;
 import io.choerodon.devops.infra.dto.harbor.HarborAllRepoDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
+import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
+import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
+import io.choerodon.devops.infra.dto.repo.C7nNexusServerDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.infra.feign.RdupmClient;
@@ -60,5 +65,30 @@ public class RdupmClientFallback implements RdupmClient {
     @Override
     public ResponseEntity<HarborAllRepoDTO> queryAllHarborRepoConfig(Long projectId) {
         throw new CommonException("error.query.all.config");
+    }
+
+    @Override
+    public ResponseEntity<List<C7nNexusServerDTO>> getNexusServerByProject(Long organizationId, Long projectId) {
+        throw new CommonException("error.query.nexus.service.by.project");
+    }
+
+    @Override
+    public ResponseEntity<List<C7nNexusComponentDTO>> listMavenComponents(Long organizationId, Long projectId, Long repositoryId, String groupId, String artifactId, String versionRegular) {
+        throw new CommonException("error.query.maven.components");
+    }
+
+    @Override
+    public ResponseEntity<List<C7nNexusRepoDTO>> getMavenRepoByConfig(Long organizationId, Long projectId, Long configId, String type) {
+        throw new CommonException("error.query.nexus.repo.components");
+    }
+
+    @Override
+    public ResponseEntity<List<HarborC7nRepoVo>> listImageRepo(Long projectId) {
+        throw new CommonException("error.query.nexus.repo.list");
+    }
+
+    @Override
+    public ResponseEntity<HarborC7nRepoImageTagVo> listImageTag(String repoType, Long repoId, String imageName, String tagName) {
+        throw new CommonException("error.query.nexus.repo.list.tag");
     }
 }

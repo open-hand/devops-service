@@ -1,7 +1,8 @@
 package io.choerodon.devops.api.vo;
 
-public class UserAttrVO {
 
+public class UserAttrVO {
+//    @Encrypt(UserAttrDTO.ENCRYPT_KEY)
     private Long iamUserId;
     private Long gitlabUserId;
 

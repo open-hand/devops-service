@@ -4,6 +4,7 @@ package io.choerodon.devops.infra.feign.fallback;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.dto.agile.IssueDTO;
 import io.choerodon.devops.infra.dto.agile.ProjectInfoDTO;
+import io.choerodon.devops.infra.dto.agile.SprintDTO;
 import io.choerodon.devops.infra.feign.AgileServiceClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,5 +27,10 @@ public class AgileServiceClientFallback implements AgileServiceClient {
     @Override
     public ResponseEntity<List<IssueDTO>> queryIssues(Long projectId, List<Long> issueIds) {
         throw new CommonException("error.issue.get");
+    }
+
+    @Override
+    public ResponseEntity<SprintDTO> getActiveSprint(Long projectId, Long organizationId) {
+        throw new CommonException("error.active.sprint.get");
     }
 }

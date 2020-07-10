@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Icon } from 'choerodon-ui';
 import StatusTag from '../StatusTag';
 
-const detailHeader = ({ gitlabPipelineId, parentName, status, triggerRef, appServiceName, aHref, mainStore, appServiceId, projectId }) => {
+const detailHeader = ({ gitlabPipelineId, status, triggerRef, appServiceName, aHref, mainStore, appServiceId, projectId }) => {
   async function linkToGitlab() {
     try {
       await mainStore.checkLinkToGitlab(projectId, appServiceId);
@@ -34,7 +34,6 @@ const detailHeader = ({ gitlabPipelineId, parentName, status, triggerRef, appSer
 
 detailHeader.propTypes = {
   gitlabPipelineId: PropTypes.number.isRequired,
-  parentName: PropTypes.string.isRequired,
   status: PropTypes.string.isRequired,
 };
 

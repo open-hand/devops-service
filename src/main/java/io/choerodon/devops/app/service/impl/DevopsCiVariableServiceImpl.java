@@ -4,10 +4,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.CiVariableVO;
 import io.choerodon.devops.api.vo.UserAttrVO;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.DevopsCiVariableService;
-import io.choerodon.devops.app.service.ProjectService;
-import io.choerodon.devops.app.service.UserAttrService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -40,6 +37,9 @@ public class DevopsCiVariableServiceImpl implements DevopsCiVariableService {
 
     @Autowired
     private AppServiceService appServiceService;
+
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     @Override
     public Map<String, List<CiVariableVO>> listKeys(Long projectId, Long appServiceId) {
@@ -75,6 +75,7 @@ public class DevopsCiVariableServiceImpl implements DevopsCiVariableService {
 
     @Override
     public void save(Long projectId, String level, Long appServiceId, List<CiVariableVO> ciVariableVOList) {
+        permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
         List<String> keysToDelete;
         List<String> newKeys = ciVariableVOList.stream().map(CiVariableVO::getKey).collect(Collectors.toList());
         switch (level) {

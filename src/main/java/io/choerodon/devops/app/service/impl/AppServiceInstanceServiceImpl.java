@@ -1,38 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.google.gson.Gson;
-import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
-import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
-import io.choerodon.devops.infra.feign.RdupmClient;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Service;
-import io.kubernetes.client.models.V1beta1Ingress;
-import org.apache.commons.lang.StringUtils;
-import org.hzero.core.util.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.env.YamlPropertySourceLoader;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -56,6 +26,7 @@ import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
@@ -65,6 +36,31 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.V1Service;
+import io.kubernetes.client.models.V1beta1Ingress;
+import org.apache.commons.lang.StringUtils;
+import org.hzero.core.util.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -162,6 +158,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private RdupmClient rdupmClient;
     @Autowired
     private HarborService harborService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -398,7 +396,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
     @Override
-    public void deployTestApp(AppServiceDeployVO appServiceDeployVO) {
+    public void deployTestApp(Long projectId, AppServiceDeployVO appServiceDeployVO) {
+        // 这里的environmentId就是集群id
+        CommonExAssertUtil.assertTrue(permissionHelper.projectPermittedToCluster(appServiceDeployVO.getEnvironmentId(), projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         String versionValue = appServiceVersionService.baseQueryValue(appServiceDeployVO.getAppServiceVersionId());
         AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
@@ -447,9 +447,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public void operationPodCount(String deploymentName, Long envId, Long count) {
-
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+    public void operationPodCount(Long projectId, String deploymentName, Long envId, Long count) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -557,9 +556,14 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE,
             description = "Devops创建实例", inputSchemaClass = InstanceSagaPayload.class)
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    public AppServiceInstanceVO createOrUpdate(AppServiceDeployVO appServiceDeployVO, boolean isFromPipeline) {
+    public AppServiceInstanceVO createOrUpdate(@Nullable Long projectId, AppServiceDeployVO appServiceDeployVO, boolean isFromPipeline) {
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceDeployVO.getEnvironmentId());
+
+        // 自动部署传入的项目id是空的, 不用校验
+        if (projectId != null) {
+            CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        }
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -637,7 +641,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
                 appServiceDeployVO.getDevopsServiceReqVO().setDevopsIngressVO(appServiceDeployVO.getDevopsIngressVO());
             }
-            InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId().intValue());
+            InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId());
             instanceSagaPayload.setApplicationDTO(appServiceDTO);
             instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
             instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
@@ -819,21 +823,21 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
     @Override
-    public void stopInstance(Long instanceId) {
-        handleStartOrStopInstance(instanceId, CommandType.STOP.getType());
+    public void stopInstance(Long projectId, Long instanceId) {
+        handleStartOrStopInstance(projectId, instanceId, CommandType.STOP.getType());
     }
 
     @Override
-    public void startInstance(Long instanceId) {
-        handleStartOrStopInstance(instanceId, CommandType.RESTART.getType());
+    public void startInstance(Long projectId, Long instanceId) {
+        handleStartOrStopInstance(projectId, instanceId, CommandType.RESTART.getType());
     }
 
 
     @Override
-    public void restartInstance(Long instanceId) {
+    public void restartInstance(Long projectId, Long instanceId) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, appServiceInstanceDTO.getEnvId());
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -868,7 +872,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         appServiceDeployVO.setType(UPDATE);
         appServiceDeployVO.setAppServiceVersionId(appServiceVersionDTO.getId());
         appServiceDeployVO.setInstanceName(appServiceInstanceDTO.getCode());
-        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, devopsEnvCommandDTO.getId().intValue());
+        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, devopsEnvCommandDTO.getId());
         instanceSagaPayload.setApplicationDTO(appServiceDTO);
         instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
         instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
@@ -889,7 +893,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteInstance(Long instanceId, Boolean deletePrometheus) {
+    public void deleteInstance(Long projectId, Long instanceId, Boolean deletePrometheus) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
 
         if (appServiceInstanceDTO == null) {
@@ -897,6 +901,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
+
+        // 内部调用不需要校验
+        if (projectId != null) {
+            CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        }
+
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         // 校验环境相关信息
@@ -969,10 +979,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             metadata.setName(appServiceInstanceDTO.getCode());
             c7nHelmRelease.setMetadata(metadata);
             resourceConvertToYamlHandler.setType(c7nHelmRelease);
-            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
+            Integer gitlabProjectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
             resourceConvertToYamlHandler.operationEnvGitlabFile(
                     RELEASE_PREFIX + appServiceInstanceDTO.getCode(),
-                    projectId,
+                    gitlabProjectId,
                     "delete",
                     userAttrDTO.getGitlabUserId(),
                     appServiceInstanceDTO.getId(), C7NHELM_RELEASE, null, false, devopsEnvironmentDTO.getId(), path);
@@ -1271,7 +1281,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
             appServiceDeployVO.getDevopsServiceReqVO().setDevopsIngressVO(appServiceDeployVO.getDevopsIngressVO());
         }
-        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId().intValue());
+        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId());
         instanceSagaPayload.setApplicationDTO(appServiceDTO);
         instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
         instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
@@ -1285,7 +1295,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public List<AppServiceInstanceVO> batchDeployment(Long projectId, List<AppServiceDeployVO> appServiceDeployVOS) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceDeployVOS.get(0).getEnvironmentId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, appServiceDeployVOS.get(0).getEnvironmentId());
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -1414,11 +1424,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 GitOpsConstants.BATCH_DEPLOYMENT_COMMIT_MESSAGE);
     }
 
-    private void handleStartOrStopInstance(Long instanceId, String type) {
+    private void handleStartOrStopInstance(Long projectId, Long instanceId, String type) {
 
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, appServiceInstanceDTO.getEnvId());
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -1491,7 +1501,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     private C7nHelmRelease getC7NHelmRelease(String code, String repository,
                                              Long appServiceId,
-                                             Integer commandId, String appServiceCode,
+                                             Long commandId, String appServiceCode,
                                              String version, String deployValue,
                                              Long deployVersionId, String secretName,
                                              DevopsEnvironmentDTO devopsEnvironmentDTO) {
@@ -1602,14 +1612,18 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String secretCode = null;
         //如果应用绑定了私有镜像库,则处理secret
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceVersionId);
+
+        // 先处理chart的认证信息
+        sendChartMuseumAuthentication(devopsEnvironmentDTO.getClusterId(), appServiceDTO, appServiceVersionDTO);
+
         DevopsConfigDTO devopsConfigDTO;
         if (appServiceVersionDTO.getHarborConfigId() != null) {
-            devopsConfigDTO = harborService.queryRepoConfigByIdToDevopsConfig(appServiceDTO.getId(),appServiceDTO.getProjectId(),
-                    appServiceVersionDTO.getHarborConfigId(), appServiceVersionDTO.getRepoType(),null);
+            devopsConfigDTO = harborService.queryRepoConfigByIdToDevopsConfig(appServiceDTO.getId(), appServiceDTO.getProjectId(),
+                    appServiceVersionDTO.getHarborConfigId(), appServiceVersionDTO.getRepoType(), null);
         } else {
             //查询harbor的用户名密码
             devopsConfigDTO = harborService.queryRepoConfigToDevopsConfig(appServiceDTO.getProjectId(),
-                    appServiceDTO.getId(),AUTHTYPE);
+                    appServiceDTO.getId(), AUTHTYPE);
         }
         LOGGER.debug("Docker config for app service with id {} and code {} and version id: {} is not null. And the config id is {}...", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId, devopsConfigDTO.getId());
 
@@ -1633,7 +1647,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
                 secretCode = String.format("%s%s", "secret-", GenerateUUID.generateUUID().substring(0, 20));
                 // 测试应用的secret是没有环境id的，此处环境id只是暂存，之后不使用，考虑后续版本删除此字段
-                devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), secretCode, gson.toJson(configVO), appServiceDTO.getProjectId(),devopsConfigDTO.getType());
+                devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), secretCode, gson.toJson(configVO), appServiceDTO.getProjectId(), devopsConfigDTO.getType());
                 devopsRegistrySecretService.createIfNonInDb(devopsRegistrySecretDTO);
                 agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, configVO, CREATE);
 
@@ -1660,6 +1674,25 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         LOGGER.debug("Got secret with code {} for app service with id {} and code {} and version id: {}", secretCode, appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId);
         return secretCode;
+    }
+
+    /**
+     * 发送chart museum的认证信息
+     *
+     * @param clusterId            集群id
+     * @param appServiceDTO        应用服务
+     * @param appServiceVersionDTO 应用服务版本
+     */
+    private void sendChartMuseumAuthentication(Long clusterId, AppServiceDTO appServiceDTO, AppServiceVersionDTO appServiceVersionDTO) {
+        if (appServiceVersionDTO.getHelmConfigId() != null) {
+            // 查询chart配置
+            DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, "chart", null);
+            ConfigVO helmConfig = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+            // 如果是私有的, 发送认证信息给agent
+            if (Boolean.TRUE.equals(helmConfig.getPrivate())) {
+                agentCommandService.sendChartMuseumAuthentication(clusterId, helmConfig);
+            }
+        }
     }
 
     /**

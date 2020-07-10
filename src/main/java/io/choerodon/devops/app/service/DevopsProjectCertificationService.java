@@ -41,7 +41,7 @@ public interface DevopsProjectCertificationService {
      */
     Page<ProjectReqVO> listNonRelatedMembers(Long projectId, Long certId, Long selectedProjectId, PageRequest pageable, String params);
 
-    void deleteCert(Long certId);
+    void deleteCert(Long projectId, Long certId);
 
     void deletePermissionOfProject(Long projectId, Long certId);
 

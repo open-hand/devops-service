@@ -1,12 +1,12 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.SecretReqVO;
 import io.choerodon.devops.api.vo.SecretRespVO;
 import io.choerodon.devops.infra.dto.DevopsSecretDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import java.util.List;
 
 /**
  * Created by n!Ck
@@ -22,7 +22,7 @@ public interface DevopsSecretService {
      * @param secretReqVO 请求体
      * @return SecretRespVO
      */
-    SecretRespVO createOrUpdate(SecretReqVO secretReqVO);
+    SecretRespVO createOrUpdate(Long projectId, SecretReqVO secretReqVO);
 
     /**
      * 删除密钥
@@ -31,7 +31,7 @@ public interface DevopsSecretService {
      * @param secretId 密钥id
      * @return Boolean
      */
-    Boolean deleteSecret(Long envId, Long secretId);
+    Boolean deleteSecret(Long projectId, Long envId, Long secretId);
 
     /**
      * 删除密钥,GitOps

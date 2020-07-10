@@ -17,6 +17,7 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
+import io.choerodon.devops.infra.util.CommonExAssertUtil;
 
 /**
  * Created by n!Ck
@@ -64,6 +65,10 @@ public class AppServiceInstanceValidator {
         if (size > batchDeploymentMaxSize) {
             throw new CommonException("error.batch.deployment.size", size);
         }
+
+        Long envId = appServiceDeployVOS.get(0).getEnvironmentId();
+        CommonExAssertUtil.assertTrue(envId != null, "error.env.id.null");
+        appServiceDeployVOS.forEach(ins -> ins.setEnvironmentId(envId));
 
         List<String> instanceCodes = new ArrayList<>(size);
         List<String> serviceNames = new ArrayList<>(size);

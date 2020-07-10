@@ -422,4 +422,15 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         sendToWebSocket(clusterId, msg);
         LOGGER.info("Polaris: successfully sent the polaris scan message...");
     }
+
+    @Override
+    public void sendChartMuseumAuthentication(Long clusterId, ConfigVO configVO) {
+        LOGGER.debug("sendChartMuseumAuthentication. cluster id: {}", clusterId);
+        AgentMsgVO msg = new AgentMsgVO();
+        msg.setKey(String.format(CLUSTER_FORMAT, clusterId));
+        msg.setType(HelmType.CHART_MUSEUM_AUTHENTICATION.toValue());
+        msg.setPayload(JsonHelper.marshalByJackson(configVO));
+        sendToWebSocket(clusterId, msg);
+        LOGGER.debug("Finished to sendChartMuseumAuthentication. cluster id {}", clusterId);
+    }
 }

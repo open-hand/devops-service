@@ -3,12 +3,18 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+
+import io.choerodon.devops.infra.annotation.WillDeleted;
+import io.choerodon.devops.infra.constant.EncryptKeyConstants;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  16:23 2019/4/8
  * Description:
  */
+@WillDeleted
 public class PipelineTaskVO {
+//    @Encrypt(EncryptKeyConstants.DEVOPS_PIPELINE_TASK_ENCRYPT_KEY)
     private Long id;
     private String name;
     private String type;
@@ -16,7 +22,9 @@ public class PipelineTaskVO {
     private Integer isCountersigned;
     private Long appServiceDeployId;
     private PipelineAppServiceDeployVO pipelineAppServiceDeployVO;
+//    @Encrypt(EncryptKeyConstants.DEVOPS_PIPELINE_STAGE_ENCRYPT_KEY)
     private Long stageId;
+//    @Encrypt(EncryptKeyConstants.IAM_PROJECT_ENCRYPT_KEY)
     private Long projectId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;

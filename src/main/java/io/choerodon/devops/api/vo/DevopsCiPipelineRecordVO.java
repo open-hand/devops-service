@@ -6,6 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.infra.annotation.WillDeleted;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
@@ -34,7 +35,7 @@ public class DevopsCiPipelineRecordVO {
     @ApiModelProperty("执行耗时")
     private Long durationSeconds;
     private List<DevopsCiStageRecordVO> stageRecordVOList;
-    private DevopsCiPipelineVO devopsCiPipelineVO;
+    private CiCdPipelineVO devopsCiPipelineVO;
 
     private IamUserDTO userDTO;
     @ApiModelProperty("提交信息")
@@ -124,11 +125,11 @@ public class DevopsCiPipelineRecordVO {
         this.userDTO = userDTO;
     }
 
-    public DevopsCiPipelineVO getDevopsCiPipelineVO() {
+    public CiCdPipelineVO getDevopsCiPipelineVO() {
         return devopsCiPipelineVO;
     }
 
-    public void setDevopsCiPipelineVO(DevopsCiPipelineVO devopsCiPipelineVO) {
+    public void setDevopsCiPipelineVO(CiCdPipelineVO devopsCiPipelineVO) {
         this.devopsCiPipelineVO = devopsCiPipelineVO;
     }
 

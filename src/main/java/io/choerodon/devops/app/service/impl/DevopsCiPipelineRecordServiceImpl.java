@@ -115,7 +115,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     @Saga(code = DEVOPS_GITLAB_CI_PIPELINE, description = "gitlab ci pipeline创建到数据库", inputSchemaClass = PipelineWebHookVO.class)
     public void create(PipelineWebHookVO pipelineWebHookVO, String token) {
         AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
-        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
+        CiCdPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
         if (devopsCiPipelineDTO == null || Boolean.FALSE.equals(devopsCiPipelineDTO.getEnabled())) {
             LOGGER.debug("Skip null of disabled pipeline for pipeline webhook with id {} and token: {}", pipelineWebHookVO.getObjectAttributes().getId(), token);
             return;
@@ -162,7 +162,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     public void handleCreate(PipelineWebHookVO pipelineWebHookVO) {
         LOGGER.debug("Start to handle pipeline with gitlab pipeline id {}...", pipelineWebHookVO.getObjectAttributes().getId());
         AppServiceDTO applicationDTO = applicationService.baseQueryByToken(pipelineWebHookVO.getToken());
-        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(applicationDTO.getId());
+        CiCdPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(applicationDTO.getId());
 
         DevopsCiPipelineRecordDTO record = new DevopsCiPipelineRecordDTO();
         record.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
@@ -254,12 +254,12 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             // 查询阶段信息
             List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(ciPipelineId);
             List<DevopsCiStageRecordVO> devopsCiStageRecordVOS = ConvertUtils.convertList(devopsCiStageDTOList, DevopsCiStageRecordVO.class);
-
             // 计算stage状态
             devopsCiStageRecordVOS.forEach(stageRecord -> {
                 List<DevopsCiJobRecordDTO> ciJobRecordDTOS = jobRecordMap.get(stageRecord.getName());
                 if (!CollectionUtils.isEmpty(ciJobRecordDTOS)) {
                     Map<String, List<DevopsCiJobRecordDTO>> statusMap = ciJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStatus));
+                    //计算stage状态
                     calculateStageStatus(stageRecord, statusMap);
                 }
 
@@ -290,7 +290,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     }
 
     private void handUpdate(AppServiceDTO appServiceDTO, Long pipelineRecordId, Long gitlabPipelineId, GitlabPipelineDTO gitlabPipelineDTO, List<JobDTO> jobs) {
-        DevopsCiPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
+        CiCdPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
 
         DevopsCiPipelineRecordDTO record = new DevopsCiPipelineRecordDTO();
         record.setGitlabPipelineId(gitlabPipelineId);
@@ -393,11 +393,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
 
         // 添加流水线信息
-        DevopsCiPipelineVO ciPipelineVO = devopsCiPipelineService.queryById(devopsCiPipelineRecordDTO.getCiPipelineId());
-        devopsCiPipelineRecordVO.setDevopsCiPipelineVO(ciPipelineVO);
+        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCiPipelineRecordDTO.getCiPipelineId());
+        devopsCiPipelineRecordVO.setDevopsCiPipelineVO(ciCdPipelineVO);
 
         // 添加提交信息
-        addCommitInfo(ciPipelineVO.getAppServiceId(), devopsCiPipelineRecordVO, devopsCiPipelineRecordDTO);
+        addCommitInfo(ciCdPipelineVO.getAppServiceId(), devopsCiPipelineRecordVO, devopsCiPipelineRecordDTO);
 
         // 查询流水线记录下的job记录
         DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
@@ -412,8 +412,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         // 添加sonar
         for (DevopsCiJobRecordVO devopsCiJobRecordVO : devopsCiJobRecordVOList) {
-            if (CiJobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
-                SonarContentsVO sonarContentsVO = applicationService.getSonarContent(ciPipelineVO.getProjectId(), ciPipelineVO.getAppServiceId());
+            if (JobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
+                SonarContentsVO sonarContentsVO = applicationService.getSonarContent(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
                 if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
                     List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
                     List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> {
@@ -431,7 +431,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         // 查询阶段信息
         List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
         List<DevopsCiStageRecordVO> devopsCiStageRecordVOS = ConvertUtils.convertList(devopsCiStageDTOList, DevopsCiStageRecordVO.class);
-
+        devopsCiStageRecordVOS.forEach(devopsCiStageRecordVO -> {
+            devopsCiStageRecordVO.setType(StageType.CI.getType());
+        });
         // 计算stage状态
         devopsCiStageRecordVOS.forEach(stageRecord -> {
             List<DevopsCiJobRecordVO> devopsCiJobRecordVOS = jobRecordMap.get(stageRecord.getName());
@@ -586,6 +588,14 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     public DevopsCiPipelineRecordDTO queryById(Long ciPipelineRecordId) {
 
         return devopsCiPipelineRecordMapper.selectByPrimaryKey(ciPipelineRecordId);
+    }
+
+    @Override
+    public DevopsCiPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
+        Assert.notNull(gitlabPipelineId, ERROR_GITLAB_PIPELINE_ID_IS_NULL);
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = new DevopsCiPipelineRecordDTO();
+        devopsCiPipelineRecordDTO.setGitlabPipelineId(gitlabPipelineId);
+        return devopsCiPipelineRecordMapper.selectOne(devopsCiPipelineRecordDTO);
     }
 
     /**

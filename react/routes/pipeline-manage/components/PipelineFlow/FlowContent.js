@@ -15,7 +15,6 @@ export default observer(() => {
     handleRefresh,
     treeDs,
   } = usePipelineFlowStore();
-
   const {
     getHasModify, setHasModify,
   } = stepStore;
@@ -29,8 +28,6 @@ export default observer(() => {
       detailStore={detailStore}
     /> : <PipelineDetail />
   );
-
-
   return (
     <div className="c7ncd-pipelineManage_flow">
       {renderPipeline()}

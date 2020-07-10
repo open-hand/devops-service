@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class AppServiceRepVO {
     @ApiModelProperty("应用服务id")
+//    @Encrypt(AppServiceDTO.ENCRYPT_KEY)
     private Long id;
 
     @ApiModelProperty("应用服务名称")

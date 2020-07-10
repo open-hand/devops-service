@@ -45,7 +45,6 @@ const DeployModal = injectIntl(observer(({ form }) => {
     ChangeConfigValue(deployStore.getConfigValue);
   }, [deployStore.getConfigValue]);
   
-
   modal.handleOk(async () => {
     if (hasYamlFailed) return false;
     try {
