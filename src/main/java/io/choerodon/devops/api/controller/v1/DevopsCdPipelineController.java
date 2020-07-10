@@ -38,7 +38,7 @@ public class DevopsCdPipelineController {
      */
     @Permission(permissionPublic = true)
     @ApiOperation(value = "启动cd流水线")
-    @PostMapping
+    @PostMapping("/trigger_cd_pipeline")
     public ResponseEntity<Void> triggerCdPipeline(@RequestParam(value = "token") String token,
                                                   @RequestParam(value = "commit") String commit,
                                                   @RequestParam(value = "ref") String ref,
