@@ -24,7 +24,7 @@ public interface DevopsEnvCommandMapper extends BaseMapper<DevopsEnvCommandDTO> 
      * @param startTime
      * @return
      */
-    List<DevopsEnvCommandDTO> listByInstanceIdsAndStartDate(@Param("objectType") String objectType, @Param("objectIds") List<Long> objectId, @Param("startTime") Date startTime);
+    List<DevopsEnvCommandDTO> listByInstanceIdsAndStartDate(@Param("objectType") String objectType, @Param("objectIds") List<Long> objectId, @Param("startTime") java.util.Date startTime);
 
     List<DevopsEnvCommandDTO> listAllInstanceCommandToMigrate();
 

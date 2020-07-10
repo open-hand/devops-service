@@ -28,5 +28,5 @@ public interface DevopsGitlabCommitMapper extends BaseMapper<DevopsGitlabCommitD
                                                               @Param("time") java.util.Date time);
 
     List<java.util.Date> queryCountByProjectIdAndCreationDate(@Param("projectId") Long projectId,
-                                                              @Param("startDate") Date startDate);
+                                                              @Param("startDate") java.util.Date startDate);
 }
