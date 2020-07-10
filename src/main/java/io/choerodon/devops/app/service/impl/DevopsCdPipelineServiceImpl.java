@@ -466,6 +466,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 appServiceDeployVO.setType(CommandType.CREATE.getType());
                 appServiceDeployVO.setRecordId(devopsCdJobRecordDTO.getId());
                 appServiceDeployVO.setValueId(devopsCdEnvDeployInfoDTO.getValueId());
+                appServiceDeployVO.setInstanceName(devopsCdEnvDeployInfoDTO.getInstanceName());
             } else if (CommandType.UPDATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
                 AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(devopsCdEnvDeployInfoDTO.getInstanceName(), devopsCdEnvDeployInfoDTO.getEnvId());
                 appServiceDeployVO.setAppServiceVersionId(appServiceServiceE.getId());
@@ -700,14 +701,14 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         devopsCdJobRecordService.updateJobStatusNotAudit(pipelineRecordId, nextStage.getId(), devopsCdJobRecordDTO.getId());
                     }
                 }
-            }
-        } else {
-            // 已经是最后一个阶段了
-            currentStage.setStatus(PipelineStatus.SUCCESS.toValue());
-            devopsCdStageRecordService.update(currentStage);
+            } else {
+                // 已经是最后一个阶段了
+                currentStage.setStatus(PipelineStatus.SUCCESS.toValue());
+                devopsCdStageRecordService.update(currentStage);
 
-            devopsCdPipelineRecordService.updateStatusById(devopsCdPipelineRecordDTO.getId(), PipelineStatus.SUCCESS.toValue());
-            sendNotificationService.sendPipelineNotice(devopsCdPipelineRecordDTO.getId(), MessageCodeConstants.PIPELINE_SUCCESS, devopsCdPipelineRecordDTO.getCreatedBy(), null, null);
+                devopsCdPipelineRecordService.updateStatusById(devopsCdPipelineRecordDTO.getId(), PipelineStatus.SUCCESS.toValue());
+                sendNotificationService.sendPipelineNotice(devopsCdPipelineRecordDTO.getId(), MessageCodeConstants.PIPELINE_SUCCESS, devopsCdPipelineRecordDTO.getCreatedBy(), null, null);
+            }
         }
     }
 

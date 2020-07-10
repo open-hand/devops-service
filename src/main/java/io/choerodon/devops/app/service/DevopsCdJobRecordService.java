@@ -26,8 +26,6 @@ public interface DevopsCdJobRecordService {
 
     void update(DevopsCdJobRecordDTO devopsCdJobRecordDTO);
 
-    void deleteByStageRecordId(Long projectId);
-
     void updateStatusById(Long jobRecordId, String status);
 
     DevopsCdJobRecordDTO queryById(Long id);
