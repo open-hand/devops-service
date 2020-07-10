@@ -163,11 +163,12 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
         String status = pipelineAttr.getStatus();
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(pipelineAttr.getId());
-
+        LOGGER.info("handler ci pipeline status update, current pipeline {} status is {}", pipelineAttr.getId(), status);
         if (PipelineStatus.PENDING.toValue().equals(status)
                 || PipelineStatus.RUNNING.toValue().equals(status)) {
             // 校验CD流水线记录是否已经创建，未创建才创建记录，并将记录的初始状态设置为pending
             if (devopsCdPipelineRecordDTO == null) {
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>> init cd pipeline >>>>>>>>>>>>>>>>>>>>>>>>>>>>", pipelineAttr.getId(), status);
                 // 1. 根据流水线id,查询job列表
                 List<DevopsCdJobDTO> devopsCdJobDTOList = devopsCdJobService.listByPipelineId(devopsCiPipelineDTO.getId());
 
@@ -205,15 +206,19 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         });
                     });
                 }
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>> init cd pipeline success >>>>>>>>>>>>>>>>>>>>>>>>>>>>", pipelineAttr.getId(), status);
             }
+
         }
 
         // ci流水线执行成功， 开始执行cd流水线
         if (PipelineStatus.SUCCESS.toValue().equals(status)) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>> exec cd pipeline start >>>>>>>>>>>>>>>>>>>>>>>>>>>>", pipelineAttr.getId(), status);
             // 执行条件：cd流水线记录状态为pending
             if (devopsCdPipelineRecordDTO  != null && PipelineStatus.PENDING.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
                 executeCdPipeline(devopsCdPipelineRecordDTO.getId());
             }
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>> exec cd pipeline success >>>>>>>>>>>>>>>>>>>>>>>>>>>>", pipelineAttr.getId(), status);
         }
     }
 
