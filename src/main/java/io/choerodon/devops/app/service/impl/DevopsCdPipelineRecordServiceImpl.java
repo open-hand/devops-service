@@ -227,6 +227,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             if (i != stageRecordDTOList.size() - 1) {
                 stageDTO.setNextStageTriggerType(stageRecordDTOList.get(i + 1).getTriggerType());
             }
+            devopsPipelineStageDTOS.add(stageDTO);
         }
         devopsPipelineDTO.setStages(devopsPipelineStageDTOS);
         return devopsPipelineDTO;
