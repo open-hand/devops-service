@@ -54,7 +54,7 @@ public class CiCdPipelineRecordController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "取消流水线")
-    @PostMapping(value = "/cancel")
+    @GetMapping(value = "/cancel")
     public ResponseEntity cancel(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "cd流水线记录id", required = true)
