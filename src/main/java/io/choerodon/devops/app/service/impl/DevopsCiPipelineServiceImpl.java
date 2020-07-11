@@ -353,11 +353,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             for (DevopsCdJobVO devopsCdJobVO : devopsCdJobVOS) {
                 //如果是自动部署添加环境名字
                 if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobVO.getType())) {
-                    DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = gson.fromJson(devopsCdJobVO.getMetadata(), DevopsCdEnvDeployInfoDTO.class);
+                    Long deployInfoId = devopsCdJobVO.getDeployInfoId();
+                    DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(deployInfoId);
+
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getEnvId());
-                    if (Objects.isNull(devopsEnvironmentDTO)) {
+                    if (!Objects.isNull(devopsEnvironmentDTO)) {
                         devopsCdJobVO.setEnvName(devopsEnvironmentDTO.getName());
                     }
+                    devopsCdJobVO.setMetadata(gson.toJson(devopsCdEnvDeployInfoDTO));
                 }
                 //如果是人工审核，返回审核人员信息
                 if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobVO.getType())) {
