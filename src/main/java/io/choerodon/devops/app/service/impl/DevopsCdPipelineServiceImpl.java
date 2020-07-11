@@ -789,7 +789,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), details.getUsername(), details.getUserId(), details.getOrganizationId());
                 // 审核通过
                 // 判断是否是或签任务
-                if (devopsCdJobRecordDTO.getCountersigned() == 0) {
+                if (devopsCdJobRecordDTO.getCountersigned() != null && devopsCdJobRecordDTO.getCountersigned() == 0) {
                     // 更新审核状态为通过
                     devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.PASSED.value());
                     devopsCdAuditRecordService.update(devopsCdAuditRecordDTO);
@@ -802,19 +802,18 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
                     // 执行下一个任务
                     startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
-                } else {
-                    if (devopsCdAuditRecordDTOS.stream()
-                            .filter(v -> !v.getUserId().equals(details.getUserId()))
-                            .allMatch(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus()))) {
+                } else if (devopsCdJobRecordDTO.getCountersigned() != null && devopsCdJobRecordDTO.getCountersigned() == 1) {
+                    // 更新审核状态为通过
+                    devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.PASSED.value());
+                    devopsCdAuditRecordService.update(devopsCdAuditRecordDTO);
 
+                    if (devopsCdAuditRecordService.queryByJobRecordId(jobRecordId).stream()
+                            .filter(v -> !v.getId().equals(devopsCdAuditRecordDTO.getId()))
+                            .allMatch(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus()))) {
                         // 更新job状态为success
                         devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.SUCCESS.toValue());
                         // 执行下一个任务
                         startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
-                    } else {
-                        // 更新审核状态为通过
-                        devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.PASSED.value());
-                        devopsCdAuditRecordService.update(devopsCdAuditRecordDTO);
                     }
                 }
             } catch (Exception e) {
