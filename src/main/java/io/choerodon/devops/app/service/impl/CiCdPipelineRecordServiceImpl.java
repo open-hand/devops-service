@@ -101,6 +101,8 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             } else {
                 ciCdPipelineRecordVO.setStatus(devopsCdPipelineRecordVO.getStatus());
             }
+            ciCdPipelineRecordVO.setCiRecordId(devopsCiPipelineRecordVO.getId());
+            ciCdPipelineRecordVO.setCdRecordId(devopsCdPipelineRecordVO.getId());
             ciCdPipelineRecordVO.setCommit(devopsCiPipelineRecordVO.getCommit());
             ciCdPipelineRecordVO.setGitlabTriggerRef(devopsCiPipelineRecordVO.getGitlabTriggerRef());
             ciCdPipelineRecordVO.setCiCdPipelineVO(ConvertUtils.convertObject(devopsCiPipelineRecordVO.getDevopsCiPipelineVO(), CiCdPipelineVO.class));
@@ -113,11 +115,13 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
             ciCdPipelineRecordVO.setGitlabPipelineId(devopsCiPipelineRecordVO.getGitlabPipelineId());
             ciCdPipelineRecordVO.setStatus(devopsCiPipelineRecordVO.getStatus());
+            ciCdPipelineRecordVO.setCiRecordId(devopsCiPipelineRecordVO.getId());
             ciCdPipelineRecordVO.setCiCdPipelineVO(ConvertUtils.convertObject(devopsCiPipelineRecordVO.getDevopsCiPipelineVO(), CiCdPipelineVO.class));
         }
         //纯cd
         if (devopsCiPipelineRecordVO == null && devopsCdPipelineRecordVO != null) {
             stageRecordVOS.addAll(devopsCdPipelineRecordVO.getDevopsCdStageRecordVOS());
+            ciCdPipelineRecordVO.setCdRecordId(devopsCdPipelineRecordVO.getId());
             ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
             ciCdPipelineRecordVO.setStatus(devopsCdPipelineRecordVO.getStatus());
             ciCdPipelineRecordVO.setCiCdPipelineVO(ConvertUtils.convertObject(devopsCdPipelineRecordVO.getCiCdPipelineVO(), CiCdPipelineVO.class));
