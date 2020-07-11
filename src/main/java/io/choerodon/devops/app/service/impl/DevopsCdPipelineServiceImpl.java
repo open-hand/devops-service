@@ -284,6 +284,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdAuditRecordDTO.setStageRecordId(stageRecordId);
             devopsCdAuditRecordDTO.setUserId(audit.getUserId());
             devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.NOT_AUDIT.value());
+            devopsCdAuditRecordService.save(devopsCdAuditRecordDTO);
         });
     }
 
@@ -294,6 +295,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdAuditRecordDTO.setJobRecordId(jobRecordId);
             devopsCdAuditRecordDTO.setUserId(audit.getUserId());
             devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.NOT_AUDIT.value());
+            devopsCdAuditRecordService.save(devopsCdAuditRecordDTO);
         });
     }
 
