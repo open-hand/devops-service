@@ -452,6 +452,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
         if (appServiceServiceE == null) {
             devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
+            return;
         }
 
 
@@ -459,50 +460,47 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         appServiceDeployVO.setDeployInfoId(devopsCdJobRecordDTO.getDeployInfoId());
         try {
             if (CommandType.CREATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
-                appServiceDeployVO.setAppServiceVersionId(appServiceServiceE.getId());
-                appServiceDeployVO.setEnvironmentId(devopsCdEnvDeployInfoDTO.getEnvId());
-                appServiceDeployVO.setValues(devopsDeployValueService.baseQueryById(devopsCdEnvDeployInfoDTO.getValueId()).getValue());
-                appServiceDeployVO.setAppServiceId(devopsCdEnvDeployInfoDTO.getAppServiceId());
-                appServiceDeployVO.setType(CommandType.CREATE.getType());
-                appServiceDeployVO.setRecordId(devopsCdJobRecordDTO.getId());
-                appServiceDeployVO.setValueId(devopsCdEnvDeployInfoDTO.getValueId());
-                appServiceDeployVO.setInstanceName(devopsCdEnvDeployInfoDTO.getInstanceName());
+                addCreateInfoForAppServiceDeployVO(appServiceDeployVO, appServiceServiceE, devopsCdEnvDeployInfoDTO, devopsCdJobRecordDTO);
             } else if (CommandType.UPDATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
                 AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(devopsCdEnvDeployInfoDTO.getInstanceName(), devopsCdEnvDeployInfoDTO.getEnvId());
-                appServiceDeployVO.setAppServiceVersionId(appServiceServiceE.getId());
-                appServiceDeployVO.setEnvironmentId(devopsCdEnvDeployInfoDTO.getEnvId());
-                appServiceDeployVO.setValues(devopsDeployValueService.baseQueryById(devopsCdEnvDeployInfoDTO.getValueId()).getValue());
-                appServiceDeployVO.setAppServiceId(devopsCdEnvDeployInfoDTO.getAppServiceId());
-                appServiceDeployVO.setType(CommandType.UPDATE.getType());
-                appServiceDeployVO.setRecordId(devopsCdJobRecordDTO.getId());
-                appServiceDeployVO.setValueId(devopsCdEnvDeployInfoDTO.getValueId());
-                appServiceDeployVO.setInstanceId(instanceE.getId());
-                appServiceDeployVO.setInstanceName(instanceE.getCode());
+                if (instanceE == null) {
+                    addCreateInfoForAppServiceDeployVO(appServiceDeployVO, appServiceServiceE, devopsCdEnvDeployInfoDTO, devopsCdJobRecordDTO);
+                } else {
+                    appServiceDeployVO.setAppServiceVersionId(appServiceServiceE.getId());
+                    appServiceDeployVO.setEnvironmentId(devopsCdEnvDeployInfoDTO.getEnvId());
+                    appServiceDeployVO.setValues(devopsDeployValueService.baseQueryById(devopsCdEnvDeployInfoDTO.getValueId()).getValue());
+                    appServiceDeployVO.setAppServiceId(devopsCdEnvDeployInfoDTO.getAppServiceId());
+                    appServiceDeployVO.setType(CommandType.UPDATE.getType());
+                    appServiceDeployVO.setRecordId(devopsCdJobRecordDTO.getId());
+                    appServiceDeployVO.setValueId(devopsCdEnvDeployInfoDTO.getValueId());
+                    appServiceDeployVO.setInstanceId(instanceE.getId());
+                    appServiceDeployVO.setInstanceName(instanceE.getCode());
 
-                AppServiceInstanceDTO preInstance = appServiceInstanceService.baseQuery(appServiceDeployVO.getInstanceId());
-                DevopsEnvCommandDTO preCommand = devopsEnvCommandService.baseQuery(preInstance.getCommandId());
-                AppServiceVersionRespVO deploydAppServiceVersion = appServiceVersionService.queryById(preCommand.getObjectVersionId());
-                if (preCommand.getObjectVersionId().equals(appServiceDeployVO.getAppServiceVersionId())) {
-                    String oldValue = appServiceInstanceService.baseQueryValueByInstanceId(appServiceDeployVO.getInstanceId());
-                    if (appServiceDeployVO.getValues().trim().equals(oldValue.trim())) {
+                    AppServiceInstanceDTO preInstance = appServiceInstanceService.baseQuery(appServiceDeployVO.getInstanceId());
+                    DevopsEnvCommandDTO preCommand = devopsEnvCommandService.baseQuery(preInstance.getCommandId());
+                    AppServiceVersionRespVO deploydAppServiceVersion = appServiceVersionService.queryById(preCommand.getObjectVersionId());
+                    if (preCommand.getObjectVersionId().equals(appServiceDeployVO.getAppServiceVersionId())) {
+                        String oldValue = appServiceInstanceService.baseQueryValueByInstanceId(appServiceDeployVO.getInstanceId());
+                        if (appServiceDeployVO.getValues().trim().equals(oldValue.trim())) {
+                            devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
+                            return;
+                        }
+                    }
+
+                    AppServiceRepVO appServiceRepVO = appServiceService.query(devopsCdEnvDeployInfoDTO.getProjectId(), devopsCdEnvDeployInfoDTO.getAppServiceId());
+
+                    // 要部署版本的commit
+                    CommitDTO currentCommit = gitlabServiceClientOperator.queryCommit(appServiceRepVO.getGitlabProjectId().intValue(), appServiceServiceE.getCommit(), ADMIN);
+                    // 已经部署版本的commit
+                    CommitDTO deploydCommit = gitlabServiceClientOperator.queryCommit(appServiceRepVO.getGitlabProjectId().intValue(), deploydAppServiceVersion.getCommit(), ADMIN);
+
+                    // 计算commitDate
+                    // 如果要部署的版本的commitDate落后于环境中已经部署的版本，则跳过
+                    // 如果现在部署的版本落后于已经部署的版本则跳过
+                    if (currentCommit.getCommittedDate().before(deploydCommit.getCommittedDate())) {
                         devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
                         return;
                     }
-                }
-
-                AppServiceRepVO appServiceRepVO = appServiceService.query(devopsCdEnvDeployInfoDTO.getProjectId(), devopsCdEnvDeployInfoDTO.getAppServiceId());
-
-                // 要部署版本的commit
-                CommitDTO currentCommit = gitlabServiceClientOperator.queryCommit(appServiceRepVO.getGitlabProjectId().intValue(), appServiceServiceE.getCommit(), ADMIN);
-                // 已经部署版本的commit
-                CommitDTO deploydCommit = gitlabServiceClientOperator.queryCommit(appServiceRepVO.getGitlabProjectId().intValue(), deploydAppServiceVersion.getCommit(), ADMIN);
-
-                // 计算commitDate
-                // 如果要部署的版本的commitDate落后于环境中已经部署的版本，则跳过
-                // 如果现在部署的版本落后于已经部署的版本则跳过
-                if (currentCommit.getCommittedDate().before(deploydCommit.getCommittedDate())) {
-                    devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
-                    return;
                 }
             }
 
@@ -530,6 +528,17 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, e.getMessage());
         }
+    }
+
+    private void addCreateInfoForAppServiceDeployVO(AppServiceDeployVO appServiceDeployVO, AppServiceVersionDTO appServiceServiceE, DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO, DevopsCdJobRecordDTO devopsCdJobRecordDTO) {
+        appServiceDeployVO.setAppServiceVersionId(appServiceServiceE.getId());
+        appServiceDeployVO.setEnvironmentId(devopsCdEnvDeployInfoDTO.getEnvId());
+        appServiceDeployVO.setValues(devopsDeployValueService.baseQueryById(devopsCdEnvDeployInfoDTO.getValueId()).getValue());
+        appServiceDeployVO.setAppServiceId(devopsCdEnvDeployInfoDTO.getAppServiceId());
+        appServiceDeployVO.setType(CommandType.CREATE.getType());
+        appServiceDeployVO.setRecordId(devopsCdJobRecordDTO.getId());
+        appServiceDeployVO.setValueId(devopsCdEnvDeployInfoDTO.getValueId());
+        appServiceDeployVO.setInstanceName(devopsCdEnvDeployInfoDTO.getInstanceName());
     }
 
     @Override
