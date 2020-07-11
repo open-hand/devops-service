@@ -360,7 +360,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     if (!Objects.isNull(devopsEnvironmentDTO)) {
                         devopsCdJobVO.setEnvName(devopsEnvironmentDTO.getName());
                     }
-                    devopsCdJobVO.setMetadata(gson.toJson(devopsCdEnvDeployInfoDTO));
+                    devopsCdJobVO.setMetadata(gson.toJson(devopsCdEnvDeployInfoDTO).replace("\"", "\'"));
                 }
                 //如果是人工审核，返回审核人员信息
                 if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobVO.getType())) {
