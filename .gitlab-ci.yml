@@ -3,41 +3,6 @@ image: registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.9.1
 stages:
   - build
   - release
- 
-build front:
-  stage: build
-  script:
-    - npm install --registry ${NPM_REPO} --sass-binary-site=http://npm.taobao.org/mirrors/node-sass
-    - chmod -R 755 node_modules
-    - npm run compile
-    - echo "//${NPM_REGISTRY}:_authToken=${NPM_TOKEN}">.npmrc
-    - npm publish --registry ${NPM_PUBLISH_REGISTRY}
-    - curl -sX POST -F token=${FRONT_REPOSITORY_TOKEN} -F ref=${REF_NAME} https://code.choerodon.com.cn/api/v4/projects/7909/trigger/pipeline
-  except:
-    changes:
-      - pom.xml
-      - src/**/*
-      - docker/**/*
-      - chart/**/*
-      - init-database.sh
-      - .circleci/**/*
-      - .gitignore
-      - .github/**/*
-      - .gitlab-ci.yml
-      - "*.md"
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /combine/
-
-tag front:
-  stage: build
-  script:
-    - npm install --registry ${NPM_REPO} --sass-binary-site=http://npm.taobao.org/mirrors/node-sass
-    - chmod -R 755 node_modules
-    - npm run compile
-    - echo "//${NPM_REGISTRY}:_authToken=${NPM_TOKEN}">.npmrc
-    - npm publish --registry ${NPM_PUBLISH_REGISTRY}
-  only:
-    - tags
 
 build backend:
   stage: build
@@ -57,20 +22,6 @@ build backend:
     - mvn package spring-boot:repackage
     - mv target/app.jar $PWD/docker
     - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
-  except:
-    changes:
-      - .editorconfig
-      - .eslintrc.json
-      - .stylelintrc.json
-      - gulpfile.js
-      - package.json
-      - react/**/*
-      - .gitignore
-      - .github/**/*
-      - .gitlab-ci.yml
-      - "*.md"
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /combine/
 
 tag backend:
   stage: build
@@ -124,20 +75,6 @@ release backend:
   stage: release
   script:
     - chart_build
-  except:
-    changes:
-      - .editorconfig
-      - .eslintrc.json
-      - .stylelintrc.json
-      - gulpfile.js
-      - package.json
-      - react/**/*
-      - .gitignore
-      - .github/**/*
-      - .gitlab-ci.yml
-      - "*.md"
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /combine/
       
 release combine:
   stage: release
