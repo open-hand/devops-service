@@ -1,10 +1,12 @@
 package io.choerodon.devops.api.vo;
 
-import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
 import java.util.List;
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+
+import io.swagger.annotations.ApiModelProperty;
 
 public class DevopsCdStageVO {
     private Long id;
@@ -16,6 +18,7 @@ public class DevopsCdStageVO {
     @ApiModelProperty("阶段顺序")
     @NotNull(message = "error.stage.sequence.cannot.be.null")
     private Long sequence;
+    @Valid
     private List<DevopsCdJobVO> jobList;
     private Long projectId;
     private Long objectVersionNumber;

@@ -32,6 +32,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
@@ -321,7 +322,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     }
 
     private void sendFailedSiteMessage(Long pipelineRecordId, Long userId) {
-        sendNotificationService.sendPipelineNotice(pipelineRecordId,
+        sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
                 MessageCodeConstants.PIPELINE_FAILED, userId, null, null);
     }
 
@@ -601,7 +602,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 // 停止流水线
                 workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
                 // 发送失败通知
-                sendNotificationService.sendPipelineNotice(pipelineRecordId,
+                sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
                         MessageCodeConstants.PIPELINE_FAILED, details.getUserId(), null, null);
             }
 
@@ -635,6 +636,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.STOP.toValue());
             // 4. 发送审核记录通知
             sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_STOP, userIds, devopsCdPipelineRecordDTO.getId(), devopsCdStageRecordDTO.getStageName(), devopsCdStageRecordDTO.getStageId());
+        } else {
+            throw new CommonException(ResourceCheckConstant.ERROR_PARAM_IS_INVALID);
         }
     }
 
@@ -719,7 +722,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             } else {
                 // 已经是最后一个阶段了
                 devopsCdPipelineRecordService.updateStatusById(devopsCdPipelineRecordDTO.getId(), PipelineStatus.SUCCESS.toValue());
-                sendNotificationService.sendPipelineNotice(devopsCdPipelineRecordDTO.getId(), MessageCodeConstants.PIPELINE_SUCCESS, devopsCdPipelineRecordDTO.getCreatedBy(), null, null);
+                sendNotificationService.sendCdPipelineNotice(devopsCdPipelineRecordDTO.getId(), MessageCodeConstants.PIPELINE_SUCCESS, devopsCdPipelineRecordDTO.getCreatedBy(), null, null);
             }
         }
     }
@@ -825,7 +828,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 // 停止流水线
                 workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
                 // 发送失败通知
-                sendNotificationService.sendPipelineNotice(pipelineRecordId,
+                sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
                         MessageCodeConstants.PIPELINE_FAILED, details.getUserId(), null, null);
             }
         } else if (AuditStatusEnum.REFUSED.value().equals(result)) {

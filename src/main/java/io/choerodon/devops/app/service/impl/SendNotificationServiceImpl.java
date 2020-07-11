@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -77,6 +78,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     @Autowired
     private MessageClient messageClient;
+    @Autowired
+    @Lazy
+    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
 
     /**
      * 发送和应用服务失败、启用和停用的消息(调用此方法时注意在外层捕获异常，此方法不保证无异常抛出)
@@ -760,7 +764,28 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         sendNotices(type, users, constructParamsForPipeline(record, projectDTO, params, stageId, stageName), projectDTO.getId());
     }
 
+    private void sendCdPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
+        DevopsCdPipelineRecordDTO record = devopsCdPipelineRecordService.queryById(pipelineRecordId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(record.getProjectId());
+        sendNotices(type, users, constructCdParamsForPipeline(record, projectDTO, params, stageId, stageName), projectDTO.getId());
+    }
+
     private Map<String, String> constructParamsForPipeline(PipelineRecordDTO record, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
+        return StringMapBuilder.newBuilder()
+                .put("pipelineId", record.getPipelineId())
+                .put("pipelineName", record.getPipelineName())
+                .put("pipelineRecordId", record.getId())
+                .put("projectId", record.getProjectId())
+                .put("projectName", projectDTO.getName())
+                .put("organizationId", projectDTO.getOrganizationId())
+                .put("stageId", stageId)
+                .put("triggerType", record.getTriggerType())
+                .put("stageName", stageName)
+                .putAll(params)
+                .build();
+    }
+
+    private Map<String, String> constructCdParamsForPipeline(DevopsCdPipelineRecordDTO record, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
         return StringMapBuilder.newBuilder()
                 .put("pipelineId", record.getPipelineId())
                 .put("pipelineName", record.getPipelineName())
@@ -1068,9 +1093,36 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
                     params.put("auditName", iamUserDTO.getLoginName());
                     params.put("realName", iamUserDTO.getRealName());
-                    sendPipelineMessage(pipelineRecordId, type, userList, params, stageId, stageName);
+                    sendCdPipelineMessage(pipelineRecordId, type, userList, params, stageId, stageName);
                 },
                 ex -> LOGGER.info("Failed to sendPipelineAuditMassage.", ex)
+        );
+    }
+
+    @Override
+    public void sendCdPipelineNotice(Long pipelineRecordId, String type, Long userId, String email, HashMap<String, String> params) {
+        doWithTryCatchAndLog(
+                () -> {
+                    String actualEmail = email;
+                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
+                    if (iamUserDTO == null) {
+                        LogUtil.loggerInfoObjectNullWithId("User", userId, LOGGER);
+                        return;
+                    }
+                    if (actualEmail == null) {
+                        actualEmail = iamUserDTO.getEmail();
+
+                    }
+                    sendCdPipelineMessage(pipelineRecordId, type, ArrayUtil.singleAsList(constructReceiver(userId, actualEmail, iamUserDTO.getPhone(), iamUserDTO.getOrganizationId())), params, null, null);
+                },
+                ex -> LOGGER.info("Failed to sendPipelineNotice  with email", ex));
+    }
+
+    @Override
+    public void sendCdPipelineNotice(Long pipelineRecordId, String type, List<Receiver> receivers, @Nullable Map<String, String> params) {
+        doWithTryCatchAndLog(
+                () -> sendCdPipelineMessage(pipelineRecordId, type, receivers, params, null, null),
+                ex -> LOGGER.info("Failed to sendPipelineNotice ", ex)
         );
     }
 

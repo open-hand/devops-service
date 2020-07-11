@@ -357,7 +357,7 @@ public class DevopsSagaHandler {
 
             pipelineService.updateStatus(pipelineRecordId, null, WorkFlowStatus.FAILED.toValue(), e.getMessage());
             Long userId = GitUserNameUtil.getUserId().longValue();
-            sendNotificationService.sendPipelineNotice(pipelineRecordId,
+            sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
                     MessageCodeConstants.PIPELINE_FAILED,
                     userId, GitUserNameUtil.getEmail(), new HashMap<>());
             LOGGER.info("send pipeline failed message to the user. The user id is {}", userId);
@@ -395,7 +395,7 @@ public class DevopsSagaHandler {
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, e.getMessage());
 
             Long userId = GitUserNameUtil.getUserId().longValue();
-            sendNotificationService.sendPipelineNotice(pipelineRecordId,
+            sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
                     MessageCodeConstants.PIPELINE_FAILED,
                     userId, GitUserNameUtil.getEmail(), new HashMap<>());
             LOGGER.info("send pipeline failed message to the user. The user id is {}", userId);
