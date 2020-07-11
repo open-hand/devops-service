@@ -355,12 +355,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobVO.getType())) {
                     Long deployInfoId = devopsCdJobVO.getDeployInfoId();
                     DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(deployInfoId);
-
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getEnvId());
                     if (!Objects.isNull(devopsEnvironmentDTO)) {
                         devopsCdJobVO.setEnvName(devopsEnvironmentDTO.getName());
                     }
-                    devopsCdJobVO.setMetadata(gson.toJson(devopsCdEnvDeployInfoDTO).replace("\"", "\'"));
+                    DevopsCdEnvDeployInfoVO devopsCdEnvDeployInfoVO = ConvertUtils.convertObject(devopsCdEnvDeployInfoDTO, DevopsCdEnvDeployInfoVO.class);
+                    devopsCdJobVO.setMetadata(gson.toJson(devopsCdEnvDeployInfoVO).replace("\"", "\'"));
                 }
                 //如果是人工审核，返回审核人员信息
                 if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobVO.getType())) {
