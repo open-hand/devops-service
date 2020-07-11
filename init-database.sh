@@ -12,7 +12,7 @@ java -Dspring.datasource.url="jdbc:mysql://localhost/?serverTimezone=CTT&useUnic
  -Dspring.datasource.username=root \
  -Dspring.datasource.password=root \
  -Dspring.datasource.driver-class-name=com.mysql.jdbc.Driver \
- -Ddata.init=true \
+ -Ddata.init=false \
  -Dlogging.level.root=info \
  -Ddata.version=1.4.0.RELEASE \
  -Dinstaller.jarPath=target/app.jar \

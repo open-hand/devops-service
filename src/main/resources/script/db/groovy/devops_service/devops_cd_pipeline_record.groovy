@@ -18,6 +18,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_pipeline_record.groovy') {
             column(name: 'bpm_definition', type: 'TEXT', remarks: 'bpm定义')
             column(name: 'business_key', type: 'VARCHAR(255)', remarks: '流程实例')
             column(name: "edited", type: 'TINYINT UNSIGNED', remarks: "是否编辑", defaultValue: "0")
+            column(name: 'commit_sha', type: 'VARCHAR(255)', remarks: 'commitSha')
+            column(name: 'ref', type: 'VARCHAR(255)', remarks: 'ref')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
@@ -31,13 +33,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_pipeline_record.groovy') {
         createIndex(indexName: "idx_project_id ", tableName: "devops_cd_pipeline_record") {
             column(name: "project_id")
         }
-    }
-    changeSet(author: 'wx', id: '2020-07-07-add-column') {
-        addColumn(tableName: 'devops_cd_pipeline_record') {
-            column(name: 'commit_sha', type: 'VARCHAR(255)', remarks: 'commitSha', afterColumn: 'error_info')
-            column(name: 'ref', type: 'VARCHAR(255)', remarks: 'ref', afterColumn: 'error_info')
-        }
-
     }
 
 }
