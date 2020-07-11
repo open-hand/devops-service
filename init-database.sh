@@ -8,11 +8,11 @@ mvn org.apache.maven.plugins:maven-dependency-plugin:get \
  -Dartifact=${TOOL_GROUP_ID}:${TOOL_ARTIFACT_ID}:${TOOL_VERSION} \
  -Dtransitive=false
 
-java -Dspring.datasource.url="jdbc:mysql://localhost/?serverTimezone=CTT&useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true" \
- -Dspring.datasource.username=root \
- -Dspring.datasource.password=root \
+java -Dspring.datasource.url="jdbc:mysql://172.23.16.94/?serverTimezone=CTT&useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true" \
+ -Dspring.datasource.username=choerodon \
+ -Dspring.datasource.password=password \
  -Dspring.datasource.driver-class-name=com.mysql.jdbc.Driver \
- -Ddata.init=true \
+ -Ddata.init=false \
  -Dlogging.level.root=info \
  -Ddata.version=1.4.0.RELEASE \
  -Dinstaller.jarPath=target/app.jar \
