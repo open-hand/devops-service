@@ -58,13 +58,14 @@ export default observer((props) => {
 
   const renderStage = () => (
     stageRecordVOS && stageRecordVOS.length > 0 ? stageRecordVOS.map((item) => {
-      const { name, status: stageStatus, durationSeconds, sequence } = item;
+      const { name, status: stageStatus, durationSeconds, sequence, stageId } = item;
       return (
         <DetailColumn
           key={sequence}
           piplineName={name}
           seconds={durationSeconds}
           piplineStatus={stageStatus}
+          stageId={stageId}
           {...item}
           {...props}
         />
