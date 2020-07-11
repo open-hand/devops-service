@@ -162,7 +162,7 @@ public interface RdupmClient {
 
 
     @ApiOperation(value = "根据仓库类型+仓库ID+镜像名称获取获取镜像版本")
-    @GetMapping("/listImageTag")
+    @GetMapping("/v1/harbor-choerodon-repos/listImageTag")
     ResponseEntity<HarborC7nRepoImageTagVo> listImageTag(@ApiParam(value = "仓库类型", required = true) @RequestParam(value = "repoType") String repoType,
                                                          @ApiParam(value = "仓库ID", required = true) @RequestParam("repoId") Long repoId,
                                                          @ApiParam(value = "镜像名称", required = true) @RequestParam("imageName") String imageName,

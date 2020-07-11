@@ -2,8 +2,9 @@ package io.choerodon.devops.api.vo.hrdsCode;
 
 import java.util.List;
 
-import com.google.gson.annotations.SerializedName;
 import io.swagger.annotations.ApiModelProperty;
+
+import io.choerodon.devops.api.vo.HarborC7nImageTagVo;
 
 /**
  * 返回给猪齿鱼
@@ -64,52 +65,6 @@ public class HarborC7nRepoImageTagVo {
 	}
 
 	public void setImageTagList(List<HarborC7nImageTagVo> imageTagList) {
-		this.imageTagList = imageTagList;
-	}
-
-	public class HarborC7nImageTagVo{
-		@ApiModelProperty("TAG名称")
-		@SerializedName("name")
-		private String tagName;
-
-		@ApiModelProperty("最新push时间")
-		@SerializedName("push_time")
-		private String pushTime;
-
-		@ApiModelProperty("pull命令")
-		private String pullCmd;
-
-		public String getTagName() {
-			return tagName;
-		}
-
-		public void setTagName(String tagName) {
-			this.tagName = tagName;
-		}
-
-		public String getPushTime() {
-			return pushTime;
-		}
-
-		public void setPushTime(String pushTime) {
-			this.pushTime = pushTime;
-		}
-
-		public String getPullCmd() {
-			return pullCmd;
-		}
-
-		public void setPullCmd(String pullCmd) {
-			this.pullCmd = pullCmd;
-		}
-	}
-
-	public HarborC7nRepoImageTagVo(){}
-	public HarborC7nRepoImageTagVo(String repoType, String harborUrl, String pullAccount, String pullPassword, List<HarborC7nImageTagVo> imageTagList) {
-		this.repoType = repoType;
-		this.harborUrl = harborUrl;
-		this.pullAccount = pullAccount;
-		this.pullPassword = pullPassword;
 		this.imageTagList = imageTagList;
 	}
 }

@@ -37,6 +37,9 @@ public class CdHostDeployConfigVO {
         @ApiModelProperty("镜像名称")
         private String imageName;
 
+        @ApiModelProperty("镜像Id")
+        private Long imageId;
+
         @ApiModelProperty("匹配类型")
         private String matchType;
 
@@ -44,17 +47,17 @@ public class CdHostDeployConfigVO {
         private String matchContent;
 
         @ApiModelProperty("部署values")
-        private String values;
+        private String value;
 
         @ApiModelProperty("容器名称")
         private String containerName;
 
-        public String getValues() {
-            return values;
+        public String getValue() {
+            return value;
         }
 
-        public void setValues(String values) {
-            this.values = values;
+        public void setValue(String value) {
+            this.value = value;
         }
 
         public String getRepoType() {
@@ -111,6 +114,14 @@ public class CdHostDeployConfigVO {
 
         public void setContainerName(String containerName) {
             this.containerName = containerName;
+        }
+
+        public Long getImageId() {
+            return imageId;
+        }
+
+        public void setImageId(Long imageId) {
+            this.imageId = imageId;
         }
     }
 

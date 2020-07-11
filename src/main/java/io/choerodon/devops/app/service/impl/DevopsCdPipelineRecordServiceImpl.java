@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -76,6 +77,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     private static final Gson gson = new Gson();
 
+    private static final BASE64Decoder decoder = new BASE64Decoder();
     @Autowired
     private DevopsCdAuditRecordService devopsCdAuditRecordService;
 
@@ -252,9 +254,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
             CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
             CdHostDeployConfigVO.ImageDeploy imageDeploy = cdHostDeployConfigVO.getImageDeploy();
+            imageDeploy.setValue(new String(decoder.decodeBuffer(imageDeploy.getValue()), "UTF-8"));
             // 0.2
-            HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName());
-            List<HarborC7nRepoImageTagVo.HarborC7nImageTagVo> filterImageTagVoList;
+//            HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName());
+            HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag("DEFAULT_REPO", TypeUtil.objToLong(imageDeploy.getRepoName()),"scp001-go");
+            List<HarborC7nImageTagVo> filterImageTagVoList;
             if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
                 devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
                 LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
@@ -284,12 +288,15 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             dockerLogin(ssh, imageTagVo);
             // 3.2
             dockerPull(ssh, filterImageTagVoList.get(0));
+
+            dockerStop(ssh,imageDeploy);
             // 3.3
             dockerRun(ssh, imageDeploy, filterImageTagVoList.get(0));
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
             LOGGER.info("========================================");
             LOGGER.info("image deploy cd host job success!!!,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } catch (Exception e) {
+            e.printStackTrace();
             status = false;
             jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } finally {
@@ -303,7 +310,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         try {
             session = ssh.startSession();
             // todo 未安装docker 判断
-            String loginExec = String.format("docker login -u %s -p %s %s", imageTagVo.getPullAccount(), imageTagVo.getPullPassword(), imageTagVo.getHarborUrl());
+//            String loginExec = String.format("docker login -u %s -p %s %s", imageTagVo.getPullAccount(), imageTagVo.getPullPassword(), imageTagVo.getHarborUrl());
+            String loginExec = String.format("docker login -u %s -p %s %s", "admin", "Handhand123", imageTagVo.getHarborUrl());
             LOGGER.info(loginExec);
             Session.Command cmd = session.exec(loginExec);
 
@@ -324,7 +332,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
     }
 
-    private void dockerPull(SSHClient ssh, HarborC7nRepoImageTagVo.HarborC7nImageTagVo imageTagVo) throws IOException {
+    private void dockerPull(SSHClient ssh, HarborC7nImageTagVo imageTagVo) throws IOException {
         Session session = null;
         try {
             session = ssh.startSession();
@@ -344,26 +352,26 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
     }
 
-    private void dockerRun(SSHClient ssh, CdHostDeployConfigVO.ImageDeploy imageDeploy, HarborC7nRepoImageTagVo.HarborC7nImageTagVo imageTagVo) throws IOException {
+    private void dockerRun(SSHClient ssh, CdHostDeployConfigVO.ImageDeploy imageDeploy, HarborC7nImageTagVo imageTagVo) throws IOException {
         Session session = null;
         try {
             session = ssh.startSession();
-            String[] strings = imageDeploy.getValues().split("\n");
+            String[] strings = imageDeploy.getValue().split("\n");
             String values = "";
             for (String s : strings) {
                 if (s.length() > 0 && !s.contains("#") && s.contains("docker")) {
                     values = s;
                 }
             }
+            // todo 记得删除
+            values = "docker run --name=${containerName} -d ${imageName}";
             if (StringUtils.isEmpty(values) || !checkInstruction("image", values)) {
                 throw new CommonException("error.instruction");
             }
 
             // 判断镜像是否存在 存在删除 部署
             StringBuilder dockerRunExec = new StringBuilder();
-            dockerRunExec.append("docker stop ").append(imageDeploy.getContainerName()).append(System.lineSeparator());
-            dockerRunExec.append("docker rm ").append(imageDeploy.getContainerName()).append(System.lineSeparator());
-            dockerRunExec.append(values.replace("${containerName}", imageDeploy.getContainerName()).replace("${image}", imageTagVo.getPullCmd().replace("docker run ", "")));
+            dockerRunExec.append(values.replace("${containerName}", imageDeploy.getContainerName()).replace("${imageName}", imageTagVo.getPullCmd().replace("docker pull", "")));
             LOGGER.info(dockerRunExec.toString());
             Session.Command cmd = session.exec(dockerRunExec.toString());
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
@@ -374,6 +382,29 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             if (cmd.getExitStatus() != 0) {
                 throw new CommonException(ERROR_DOCKER_RUN);
             }
+        } finally {
+            assert session != null;
+            session.close();
+        }
+
+    }
+
+    private void dockerStop(SSHClient ssh, CdHostDeployConfigVO.ImageDeploy imageDeploy) throws IOException {
+        Session session = null;
+        try {
+            session = ssh.startSession();
+
+            // 判断镜像是否存在 存在删除 部署
+            StringBuilder dockerRunExec = new StringBuilder();
+            dockerRunExec.append("docker stop ").append(imageDeploy.getContainerName()).append(" && ");
+            dockerRunExec.append("docker rm ").append(imageDeploy.getContainerName());
+            LOGGER.info(dockerRunExec.toString());
+            Session.Command cmd = session.exec(dockerRunExec.toString());
+            String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
+            String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
+            LOGGER.info(loggerInfo);
+            LOGGER.info(loggerError);
+            LOGGER.info("docker run status:{}", cmd.getExitStatus());
         } finally {
             assert session != null;
             session.close();
@@ -584,6 +615,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
             dockerLogin(ssh, imageTagVoRecord);
             dockerPull(ssh, imageTagVoRecord.getImageTagList().get(0));
+            dockerStop(ssh,imageDeploy);
             dockerRun(ssh, imageDeploy, imageTagVoRecord.getImageTagList().get(0));
 
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
