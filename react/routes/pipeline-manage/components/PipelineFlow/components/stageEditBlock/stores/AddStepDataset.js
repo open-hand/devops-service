@@ -37,7 +37,7 @@ export default (projectId) => ({
     defaultValue: 'auto',
   }, {
     name: 'cdAuditUserIds',
-    type: 'string',
+    type: 'number',
     label: '审核人员',
     dynamicProps: {
       required: ({ record }) => record.get('triggerType') === 'manual',

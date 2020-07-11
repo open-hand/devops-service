@@ -314,6 +314,7 @@ const AddTask = observer(() => {
                   s.mavenDeployRepoSettings = {
                     nexusRepoIds: data.zpk,
                   };
+                  s.nexusMavenRepoIds = data.nexusMavenRepoIds;
                 }
                 return s;
               }),

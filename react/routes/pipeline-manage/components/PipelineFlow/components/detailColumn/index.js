@@ -11,6 +11,7 @@ import CodeLog from '../codeLog';
 import './index.less';
 import { handlePromptError } from '../../../../../../utils';
 import StageType from '../stage-type';
+import StatusTag from '../StatusTag';
 
 const jobType = {
   build: {
@@ -69,13 +70,15 @@ const DetailItem = (props) => {
     projectId,
     gitlabJobId,
     detailStore: {
-      retryJob, getDetailData,
+      retryJob, getDetailData, retryCdJob, // retryCdJob是部署类型任务的重试 
     },
     name,
-    artifacts,
-    sonarContentVOS,
     handleRefresh,
-    cdAuto,
+    cdAuto, // cd阶段job独有的
+    audit, // cd阶段job独有的
+    stageId, // cd阶段job独有的
+    cdRecordId, // cd阶段job独有的
+    jobId, // cd阶段job独有的
   } = props;
 
   const { gitlabProjectId, appServiceId } = getDetailData && getDetailData.ciCdPipelineVO;
@@ -148,6 +151,20 @@ const DetailItem = (props) => {
     }
   }
 
+  async function handleCdJobRetry() {
+    try {
+      const res = await retryCdJob(projectId, cdRecordId, stageId, jobId);
+      if (handlePromptError(res)) {
+        handleRefresh();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      Choerodon.handleResponseError(error);
+      return false;
+    }
+  }
+
   const renderCdAuto = () => {
     const {
       envName,
@@ -171,11 +188,53 @@ const DetailItem = (props) => {
         </div>
         <div>
           <span>生成实例:</span>
-          <span>{instanceName || '-'}</span>
+          <span style={{ color: '#3F51B5' }}>{instanceName || '-'}</span>
         </div>
       </main>
     );
   };
+
+  function renderCdAudit() {
+    const {
+      appointUsers,
+      reviewedUsers,
+      status: auditJobStatus,
+      countersigned,
+    } = audit || {};
+    const appontUserString = appointUsers.map(x => x.realName).join('，');
+    const reviewedUserStirng = reviewedUsers.map(x => x.realName).join('，');
+    const countersignedText = countersigned ? '会签' : '或签';
+    const countersignedNullText = countersigned === null ? '-' : countersignedText;
+    return (
+      <main>
+        <div>
+          <span>审核模式:</span>
+          <span>{countersignedNullText}</span>
+        </div>
+        <div>
+          <span>指定审核人员:</span>
+          <span>{appontUserString || '-'}</span>
+        </div>
+        <div>
+          <span>已审核人员:</span>
+          <span>{reviewedUserStirng || '-'}</span>
+        </div>
+        <div>
+          <span>审核状态:</span>
+          <StatusTag status={auditJobStatus} />
+        </div>
+      </main>
+    );
+  }
+
+  function getRetryBtnDisabled() {
+    const successAndFailed = itemStatus === 'success' || itemStatus === 'failed';
+    if (type === 'cdDeploy' || type === 'cdHost') {
+      return !successAndFailed;
+    } else {
+      return !(successAndFailed || itemStatus === 'canceled');
+    }
+  }
 
   return (
     <div className="c7n-piplineManage-detail-column-item">
@@ -196,6 +255,9 @@ const DetailItem = (props) => {
       {
         (type === 'cdDeploy' || type === 'cdHost') && renderCdAuto()
       }
+      {
+        type === 'cdAudit' && renderCdAudit()
+      }
       <footer>
         <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.job.log']}>
           <Tooltip title="查看日志">
@@ -214,12 +276,12 @@ const DetailItem = (props) => {
           <Tooltip title="重试">
             <Button
               funcType="flat"
-              disabled={!(itemStatus === 'success' || itemStatus === 'failed' || itemStatus === 'canceled')}
+              disabled={getRetryBtnDisabled()}
               shape="circle"
               size="small"
               icon="refresh"
               color="primary"
-              onClick={handleJobRetry}
+              onClick={type === 'cdDeploy' || type === 'cdHost' ? handleCdJobRetry : handleJobRetry}
             />
           </Tooltip>
         </Permission>
@@ -250,7 +312,7 @@ const DetailItem = (props) => {
 
 export default observer((props) => {
   // 抛出piplineName
-  const { piplineName, piplineStatus, jobRecordVOList, seconds, type } = props;
+  const { piplineName, piplineStatus, jobRecordVOList, seconds, type, stageId } = props;
 
   useEffect(() => {
   }, []);
