@@ -13,6 +13,7 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -535,6 +536,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     public void setAppDeployStatus(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, Boolean status) {
         LOGGER.info("setAppDeployStatus:pipelineRecordId: {} stageRecordId: {} taskId: {}, status: {}", pipelineRecordId, stageRecordId, jobRecordId, status);
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>> Userdetails is {}", DetailsHelper.getUserDetails());
+        if (DetailsHelper.getUserDetails().getUserId().equals(BaseConstants.ANONYMOUS_USER_ID)) {
+            DetailsHelper.setCustomUserDetails(0L, BaseConstants.DEFAULT_LOCALE_STR);
+        }
         if (Boolean.TRUE.equals(status)) {
             startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
         } else {
