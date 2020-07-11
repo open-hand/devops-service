@@ -250,6 +250,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         Boolean status = true;
         SSHClient ssh = new SSHClient();
         try {
+            // todo 删除
+            baseServiceClientOperator.queryIamProjectById(2116L);
             // 0.1
             DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
             CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
