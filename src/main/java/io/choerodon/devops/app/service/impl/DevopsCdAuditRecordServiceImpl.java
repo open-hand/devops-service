@@ -33,6 +33,7 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
 
     private static final String STAGE_NAME = "stageName";
 
+    private static final String ERROR_SAVE_AUDIT_RECORD = "error.save.audit.record";
     private static final String ERROR_UPDATE_AUDIT_RECORD = "error.update.audit.record";
 
     @Autowired
@@ -120,6 +121,13 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
     public void update(DevopsCdAuditRecordDTO devopsCdAuditRecordDTO) {
         if (devopsCdAuditRecordMapper.updateByPrimaryKeySelective(devopsCdAuditRecordDTO) != 1) {
             throw new CommonException(ERROR_UPDATE_AUDIT_RECORD);
+        }
+    }
+
+    @Override
+    public void save(DevopsCdAuditRecordDTO devopsCdAuditRecordDTO) {
+        if (devopsCdAuditRecordMapper.insertSelective(devopsCdAuditRecordDTO) != 1) {
+            throw new CommonException(ERROR_SAVE_AUDIT_RECORD);
         }
     }
 }
