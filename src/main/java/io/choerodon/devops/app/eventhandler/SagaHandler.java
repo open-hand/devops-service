@@ -6,6 +6,7 @@ import java.util.List;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -14,24 +15,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.asgard.saga.annotation.SagaTask;
-import io.choerodon.devops.api.vo.GitlabGroupMemberVO;
-import io.choerodon.devops.api.vo.GitlabUserRequestVO;
-import io.choerodon.devops.api.vo.GitlabUserVO;
-import io.choerodon.devops.api.vo.OrgAdministratorVO;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.AssignAdminVO;
 import io.choerodon.devops.api.vo.iam.DeleteAdminVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.CreateAndUpdateUserEventPayload;
-import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
-import io.choerodon.devops.app.eventhandler.payload.HarborPayload;
-import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
-import io.choerodon.devops.app.service.GitlabGroupMemberService;
-import io.choerodon.devops.app.service.GitlabGroupService;
-import io.choerodon.devops.app.service.GitlabUserService;
-import io.choerodon.devops.app.service.HarborService;
+import io.choerodon.devops.app.eventhandler.payload.*;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.HostDeployType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -59,7 +55,10 @@ public class SagaHandler {
     private GitlabUserService gitlabUserService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
-
+    @Autowired
+    private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
+    @Autowired
+    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
 
     private void loggerInfo(Object o) {
         if (LOGGER.isInfoEnabled()) {
@@ -292,5 +291,31 @@ public class SagaHandler {
         gitlabGroupMemberService.createGitlabGroupMemberRole(createAndUpdateUserEventPayload.getUserMemberEventPayloads(), true);
         LOGGER.info("Org create user: update user role end");
         return payload;
+    }
+
+    /**
+     * 处理组织层创建用户
+     *
+     * @param payload
+     * @return
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_HOST_FEPLOY,
+            description = "主机部署",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_HOST_FEPLOY,
+            maxRetryCount = 5, seq = 1)
+    public void hostDeploy(String payload) {
+        HostDeployPayload hostDeployPayload = gson.fromJson(payload, HostDeployPayload.class);
+
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>> Userdetails is {}", DetailsHelper.getUserDetails());
+        if (DetailsHelper.getUserDetails().getUserId().equals(BaseConstants.ANONYMOUS_USER_ID)) {
+            DetailsHelper.setCustomUserDetails(0L, BaseConstants.DEFAULT_LOCALE_STR);
+        }
+        DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(hostDeployPayload.getJobRecordId());
+        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
+        if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.IMAGED_DEPLOY.getValue())) {
+            devopsCdPipelineRecordService.cdHostImageDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
+        } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.JAR_DEPLOY.getValue())) {
+            devopsCdPipelineRecordService.cdHostJarDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
+        }
     }
 }

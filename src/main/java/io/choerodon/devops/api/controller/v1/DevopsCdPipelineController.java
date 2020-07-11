@@ -63,10 +63,11 @@ public class DevopsCdPipelineController {
     @Permission(permissionWithin = true)
     @ApiOperation(value = "主机模式部署接口")
     @PostMapping(value = "/cd_host_deploy")
-    public ResponseEntity<Boolean> cdHostDeploy(@RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
-                                                @RequestParam(value = "stage_record_id") Long stageRecordId,
-                                                @RequestParam(value = "job_record_id") Long jobRecordId) {
-        return Results.success(devopsCdPipelineRecordService.cdHostDeploy(pipelineRecordId, stageRecordId, jobRecordId));
+    public ResponseEntity cdHostDeploy(@RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+                                       @RequestParam(value = "stage_record_id") Long stageRecordId,
+                                       @RequestParam(value = "job_record_id") Long jobRecordId) {
+        devopsCdPipelineRecordService.cdHostDeploy(pipelineRecordId, stageRecordId, jobRecordId);
+        return Results.success();
     }
 
 
