@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_HOST_FEPLOY;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,11 +29,17 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import sun.misc.BASE64Decoder;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.HostDeployPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.*;
@@ -119,6 +127,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Autowired
     private DevopsCdAuditService devopsCdAuditService;
+
+    @Autowired
+    private TransactionalProducer producer;
 
 
     @Override
@@ -250,8 +261,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         Boolean status = true;
         SSHClient ssh = new SSHClient();
         try {
-            // todo 删除
-            baseServiceClientOperator.queryIamProjectById(2116L);
             // 0.1
             DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
             CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
@@ -259,7 +268,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             imageDeploy.setValue(new String(decoder.decodeBuffer(imageDeploy.getValue()), "UTF-8"));
             // 0.2
 //            HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName());
-            HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag("DEFAULT_REPO", TypeUtil.objToLong(imageDeploy.getRepoName()),"scp001-go");
+            HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag("DEFAULT_REPO", TypeUtil.objToLong(imageDeploy.getRepoName()), "scp001-go");
             List<HarborC7nImageTagVo> filterImageTagVoList;
             if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
                 devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
@@ -291,7 +300,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             // 3.2
             dockerPull(ssh, filterImageTagVoList.get(0));
 
-            dockerStop(ssh,imageDeploy);
+            dockerStop(ssh, imageDeploy);
             // 3.3
             dockerRun(ssh, imageDeploy, filterImageTagVoList.get(0));
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
@@ -575,20 +584,21 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     @Override
-    public Boolean cdHostDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
-        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>> Userdetails is {}", DetailsHelper.getUserDetails());
-        if (DetailsHelper.getUserDetails().getUserId().equals(BaseConstants.ANONYMOUS_USER_ID)) {
-            DetailsHelper.setCustomUserDetails(0L, BaseConstants.DEFAULT_LOCALE_STR);
-        }
-        DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
-        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
-        if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.IMAGED_DEPLOY.getValue())) {
-            return cdHostImageDeploy(pipelineRecordId, cdStageRecordId, cdJobRecordId);
-        } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.JAR_DEPLOY.getValue())) {
-            return cdHostJarDeploy(pipelineRecordId, cdStageRecordId, cdJobRecordId);
-        } else {
-            return true;
-        }
+    @Saga(code = DEVOPS_HOST_FEPLOY,
+            description = "devops主机部署", inputSchema = "{}")
+    public void cdHostDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+        HostDeployPayload hostDeployPayload = new HostDeployPayload(pipelineRecordId, cdStageRecordId, cdJobRecordId);
+        DevopsCdPipelineRecordDTO pipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(pipelineRecordDTO.getProjectId())
+                        .withRefType("pipelineRecordId")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_HOST_FEPLOY),
+                builder -> builder
+                        .withPayloadAndSerialize(hostDeployPayload)
+                        .withRefId(pipelineRecordId.toString()));
     }
 
     @Override
@@ -617,7 +627,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
             dockerLogin(ssh, imageTagVoRecord);
             dockerPull(ssh, imageTagVoRecord.getImageTagList().get(0));
-            dockerStop(ssh,imageDeploy);
+            dockerStop(ssh, imageDeploy);
             dockerRun(ssh, imageDeploy, imageTagVoRecord.getImageTagList().get(0));
 
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());

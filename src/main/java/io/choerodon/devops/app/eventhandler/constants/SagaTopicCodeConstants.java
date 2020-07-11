@@ -232,6 +232,11 @@ public class SagaTopicCodeConstants {
      */
     public static final String DEVOPS_BATCH_DEPLOYMENT = "devops-batch-deployment";
 
+    /**
+     * devops 主机部署
+     */
+    public static final String DEVOPS_HOST_FEPLOY = "devops-host-deploy";
+
     private SagaTopicCodeConstants() {
     }
 }
