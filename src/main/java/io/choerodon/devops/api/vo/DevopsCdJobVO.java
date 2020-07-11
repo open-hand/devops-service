@@ -1,12 +1,10 @@
 package io.choerodon.devops.api.vo;
 
-import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
 import java.util.List;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.validation.constraints.NotEmpty;
+
+import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
@@ -41,6 +39,7 @@ public class DevopsCdJobVO {
     private String metadata;
     private String envName;
     private Long sequence;
+    private Long deployInfoId;
 
     public Long getSequence() {
         return sequence;
@@ -180,5 +179,13 @@ public class DevopsCdJobVO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public Long getDeployInfoId() {
+        return deployInfoId;
+    }
+
+    public void setDeployInfoId(Long deployInfoId) {
+        this.deployInfoId = deployInfoId;
     }
 }
