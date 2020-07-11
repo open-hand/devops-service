@@ -12,6 +12,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_stage_record.groovy') {
             column(name: 'status', type: 'VARCHAR(20)', remarks: '状态')
             column(name: 'trigger_type', type: 'VARCHAR(10)', remarks: '触发方式')
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目Id')
+            column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '阶段顺序') {
+                constraints(nullable: false)
+            }
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
@@ -24,11 +27,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_stage_record.groovy') {
     changeSet(author: 'wanghao', id: '2020-07-02-idx-pipeline-record-id') {
         createIndex(indexName: "idx_pipeline_record_id ", tableName: "devops_cd_stage_record") {
             column(name: "pipeline_record_id")
-        }
-    }
-    changeSet(author: 'wanghao', id: '2020-07-05-add-column') {
-        addColumn(tableName: 'devops_cd_stage_record') {
-            column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '阶段顺序')
         }
     }
 }

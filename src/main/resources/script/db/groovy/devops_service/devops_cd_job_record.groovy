@@ -20,7 +20,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_job_record.groovy') {
             column(name: "started_date", type: "DATETIME", remarks: 'job开始执行时间')
             column(name: "finished_date", type: "DATETIME", remarks: 'job结束时间')
             column(name: "duration_seconds", type: "BIGINT UNSIGNED", remarks: 'job执行时长')
-            column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '任务顺序')
+            column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '任务顺序') {
+                constraints(nullable: false)
+            }
             column(name: 'deploy_info_id', type: 'BIGINT UNSIGNED', remarks: '环境部署任务关联的部署信息')
             column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: '操作ID')
             column(name: "deploy_metadata", type: "VARCHAR(2000)", remarks: '主机部署 制品库提供信息')

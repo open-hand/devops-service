@@ -6,13 +6,23 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_stage.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'name', type: 'VARCHAR(255)', remarks: '阶段名称')
-            column(name: 'pipeline_id', type: 'BIGINT UNSIGNED', remarks: '流水线id')
-            column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '阶段顺序')
+            column(name: 'name', type: 'VARCHAR(255)', remarks: '阶段名称') {
+                constraints(nullable: false)
+            }
+            column(name: 'pipeline_id', type: 'BIGINT UNSIGNED', remarks: '流水线id') {
+                constraints(nullable: false)
+            }
+            column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '阶段顺序') {
+                constraints(nullable: false)
+            }
             column(name: 'type', type: 'VARCHAR(32)', remarks: 'ci的还是cd的阶段')
 
-            column(name: 'trigger_type', type: 'VARCHAR(10)', remarks: '触发方式')
-            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目ID')
+            column(name: 'trigger_type', type: 'VARCHAR(10)', remarks: '触发方式') {
+                constraints(nullable: false)
+            }
+            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目ID') {
+                constraints(nullable: false)
+            }
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
