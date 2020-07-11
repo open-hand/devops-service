@@ -84,7 +84,7 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
         });
         HashMap<String, String> params = new HashMap<>();
         params.put(STAGE_NAME, devopsCdStageRecord.getStageName());
-        sendNotificationService.sendPipelineNotice(devopsCdStageRecord.getPipelineRecordId(), MessageCodeConstants.PIPELINE_AUDIT, userList, params);
+        sendNotificationService.sendCdPipelineNotice(devopsCdStageRecord.getPipelineRecordId(), MessageCodeConstants.PIPELINE_AUDIT, userList, params);
     }
 
     @Override
@@ -113,7 +113,7 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
         });
         HashMap<String, String> params = new HashMap<>();
         params.put(STAGE_NAME, devopsCdJobRecordDTO.getName());
-        sendNotificationService.sendPipelineNotice(pipelineRecordId, MessageCodeConstants.PIPELINE_AUDIT, userList, params);
+        sendNotificationService.sendCdPipelineNotice(pipelineRecordId, MessageCodeConstants.PIPELINE_AUDIT, userList, params);
     }
 
     @Override

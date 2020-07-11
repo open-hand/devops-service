@@ -322,7 +322,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     }
 
     private void sendFailedSiteMessage(Long pipelineRecordId, Long userId) {
-        sendNotificationService.sendPipelineNotice(pipelineRecordId,
+        sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
                 MessageCodeConstants.PIPELINE_FAILED, userId, null, null);
     }
 
@@ -602,7 +602,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 // 停止流水线
                 workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
                 // 发送失败通知
-                sendNotificationService.sendPipelineNotice(pipelineRecordId,
+                sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
                         MessageCodeConstants.PIPELINE_FAILED, details.getUserId(), null, null);
             }
 
@@ -722,7 +722,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             } else {
                 // 已经是最后一个阶段了
                 devopsCdPipelineRecordService.updateStatusById(devopsCdPipelineRecordDTO.getId(), PipelineStatus.SUCCESS.toValue());
-                sendNotificationService.sendPipelineNotice(devopsCdPipelineRecordDTO.getId(), MessageCodeConstants.PIPELINE_SUCCESS, devopsCdPipelineRecordDTO.getCreatedBy(), null, null);
+                sendNotificationService.sendCdPipelineNotice(devopsCdPipelineRecordDTO.getId(), MessageCodeConstants.PIPELINE_SUCCESS, devopsCdPipelineRecordDTO.getCreatedBy(), null, null);
             }
         }
     }
@@ -828,7 +828,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 // 停止流水线
                 workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
                 // 发送失败通知
-                sendNotificationService.sendPipelineNotice(pipelineRecordId,
+                sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
                         MessageCodeConstants.PIPELINE_FAILED, details.getUserId(), null, null);
             }
         } else if (AuditStatusEnum.REFUSED.value().equals(result)) {
