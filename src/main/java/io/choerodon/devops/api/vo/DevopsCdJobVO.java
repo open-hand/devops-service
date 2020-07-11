@@ -5,6 +5,7 @@ import java.util.List;
 import javax.validation.constraints.NotEmpty;
 
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.NotNull;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
@@ -38,7 +39,7 @@ public class DevopsCdJobVO {
     @NotEmpty(message = "error.job.metadata.cannot.be.null")
     private String metadata;
     private String envName;
-    @NotEmpty(message = "error.job.sequence.cannot.be.null")
+    @NotNull(message = "error.job.sequence.cannot.be.null")
     private Long sequence;
     private Long deployInfoId;
 
