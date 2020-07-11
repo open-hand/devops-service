@@ -32,6 +32,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
@@ -635,6 +636,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.STOP.toValue());
             // 4. 发送审核记录通知
             sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_STOP, userIds, devopsCdPipelineRecordDTO.getId(), devopsCdStageRecordDTO.getStageName(), devopsCdStageRecordDTO.getStageId());
+        } else {
+            throw new CommonException(ResourceCheckConstant.ERROR_PARAM_IS_INVALID);
         }
     }
 

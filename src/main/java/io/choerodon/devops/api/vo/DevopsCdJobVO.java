@@ -38,6 +38,7 @@ public class DevopsCdJobVO {
     @NotEmpty(message = "error.job.metadata.cannot.be.null")
     private String metadata;
     private String envName;
+    @NotEmpty(message = "error.job.sequence.cannot.be.null")
     private Long sequence;
     private Long deployInfoId;
 
