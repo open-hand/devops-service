@@ -125,12 +125,6 @@ const TreeItem = observer(({ record, search }) => {
   }
 
   function openAuditModal() {
-    const checkData = {
-      type: 'task',
-      // stageRecordId,
-      // taskRecordId,
-      // stageName,
-    };
     Modal.open({
       key: auditKey,
       title: formatMessage({ id: `${intlPrefix}.execute.audit` }),
@@ -139,7 +133,7 @@ const TreeItem = observer(({ record, search }) => {
         name={record.get('gitlabPipelineId')}
         mainStore={mainStore}
         onClose={refresh}
-        checkData={checkData}
+        checkData={record.get('devopsCdPipelineDeatilVO')}
       />,
       movable: false,
     });
@@ -240,7 +234,7 @@ const TreeItem = observer(({ record, search }) => {
             <TreeItemName name={`#${gitlabPipelineId}`} search={search} headSpace={false} />
           </span>
           <div className={`${prefixCls}-sidebar-header-stage`}>
-            {map(stageRecordVOS, ({ status: stageStatus, stageTriggerType = 'auto' }) => (
+            {map(stageRecordVOS, ({ status: stageStatus, triggerType: stageTriggerType = 'auto' }) => (
               <Fragment>
                 <span className={`${prefixCls}-sidebar-header-stage-item ${prefixCls}-sidebar-header-stage-item-${stageStatus}`} />
                 <span className={`${prefixCls}-sidebar-header-stage-line ${prefixCls}-sidebar-header-stage-line-${stageTriggerType}`} />

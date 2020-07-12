@@ -124,13 +124,7 @@ const PipelineManage = observer((props) => {
   }
 
   function openAuditModal() {
-    const { cdRecordId, gitlabPipelineId } = getSelectedMenu;
-    const checkData = {
-      type: 'task',
-      // stageRecordId,
-      // taskRecordId,
-      // stageName,
-    };
+    const { cdRecordId, gitlabPipelineId, devopsCdPipelineDeatilVO } = getSelectedMenu;
     Modal.open({
       key: auditKey,
       title: formatMessage({ id: `${intlPrefix}.execute.audit` }),
@@ -139,7 +133,7 @@ const PipelineManage = observer((props) => {
         name={gitlabPipelineId}
         mainStore={mainStore}
         onClose={handleRefresh}
-        checkData={checkData}
+        checkData={devopsCdPipelineDeatilVO}
       />,
       movable: false,
     });
