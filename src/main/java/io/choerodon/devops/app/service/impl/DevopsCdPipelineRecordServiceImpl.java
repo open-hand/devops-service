@@ -77,6 +77,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private static final String ERROR_DOWNLOAD_JAY = "error.download.jar";
     private static final String ERROR_JAVA_JAR = "error.java.jar";
     private static final String UNAUTHORIZED = "unauthorized";
+    private static final String STAGE = "stage";
+    private static final String TASK = "task";
 
     public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdPipelineRecordServiceImpl.class);
 
@@ -127,6 +129,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Autowired
     private TransactionalProducer producer;
+
+    @Autowired
+    private DevopsCdStageMapper devopsCdStageMapper;
 
 
     @Override
@@ -709,8 +714,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         pipelineRecordVOList.forEach(devopsCdPipelineRecordVO -> {
             List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryByPipelineRecordId(devopsCdPipelineRecordVO.getId());
             if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
+                //封装审核数据
+                DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO = null;
                 List<DevopsCdStageRecordVO> devopsCdStageRecordVOS = ConvertUtils.convertList(devopsCdStageRecordDTOS, DevopsCdStageRecordVO.class);
-                devopsCdStageRecordVOS.forEach(devopsCdStageRecordVO -> {
+                for (DevopsCdStageRecordVO devopsCdStageRecordVO : devopsCdStageRecordVOS) {
                     //查询Cd job
                     List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
                     List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
@@ -719,13 +726,47 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         devopsCdJobRecordVO.setJobExecuteTime();
                     });
                     devopsCdStageRecordVO.setJobRecordVOList(devopsCdJobRecordVOS);
-                });
+                    if (Objects.isNull(devopsCdPipelineDeatilVO)) {
+                        devopsCdPipelineDeatilVO = generateCdPipelineDeatilVO(devopsCdStageRecordVO);
+                    }
+                }
                 devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
+                devopsCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineDeatilVO);
             } else {
                 devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.EMPTY_LIST);
             }
         });
         return pipelineRecordInfo;
+    }
+
+    private DevopsCdPipelineDeatilVO generateCdPipelineDeatilVO(DevopsCdStageRecordVO devopsCdStageRecordVO) {
+        DevopsCdStageDTO cdStageDTO = devopsCdStageMapper.selectByPrimaryKey(devopsCdStageRecordVO.getStageId());
+        if (Objects.isNull(cdStageDTO)) {
+            return null;
+        }
+        DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO = null;
+        //阶段待审核状态
+        if (AuditStatusEnum.NOT_AUDIT.value().equals(devopsCdStageRecordVO.getStatus())) {
+            devopsCdPipelineDeatilVO.setStageName(cdStageDTO.getName());
+            devopsCdPipelineDeatilVO.setStageRecordId(devopsCdStageRecordVO.getId());
+            devopsCdPipelineDeatilVO.setType(STAGE);
+        }
+        //阶段审核通过，任务处于待审核
+        if (AuditStatusEnum.PASSED.value().equals(devopsCdStageRecordVO.getStatus())) {
+            List<DevopsCdJobRecordVO> jobRecordVOList = devopsCdStageRecordVO.getJobRecordVOList();
+            if (!CollectionUtils.isEmpty(jobRecordVOList)) {
+                jobRecordVOList.sort((o1, o2) -> o1.getSequence().compareTo(o2.getSequence()));
+                for (DevopsCdJobRecordVO devopsCdJobRecordVO : jobRecordVOList) {
+                    if (AuditStatusEnum.NOT_AUDIT.value().equals(devopsCdJobRecordVO.getStatus())) {
+                        devopsCdPipelineDeatilVO.setStageName(cdStageDTO.getName());
+                        devopsCdPipelineDeatilVO.setStageRecordId(devopsCdStageRecordVO.getId());
+                        devopsCdPipelineDeatilVO.setTaskRecordId(devopsCdJobRecordVO.getId());
+                        devopsCdPipelineDeatilVO.setType(TASK);
+                    }
+                }
+            }
+        }
+        return devopsCdPipelineDeatilVO;
     }
 
     @Override

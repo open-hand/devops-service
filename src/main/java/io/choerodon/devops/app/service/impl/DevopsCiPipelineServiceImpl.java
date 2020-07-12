@@ -84,7 +84,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Value("${devops.ci.default.image}")
     private String defaultCiImage;
 
-    private static final Gson gson =  new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
+    private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
 
     private final DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
     private final DevopsCiPipelineRecordService devopsCiPipelineRecordService;
@@ -402,16 +402,16 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 应用有权限的应用服务
         Long userId = DetailsHelper.getUserDetails().getUserId();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
+//        boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         Set<Long> appServiceIds;
-        if (projectOwner) {
-            appServiceIds = appServiceMapper.listByActive(projectId).stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
-        } else {
-            appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
-            if (CollectionUtils.isEmpty(appServiceIds)) {
-                return new ArrayList<>();
-            }
-        }
+//        if (projectOwner) {
+        appServiceIds = appServiceMapper.listByActive(projectId).stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
+//        } else {
+//            appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
+//            if (CollectionUtils.isEmpty(appServiceIds)) {
+//                return new ArrayList<>();
+//            }
+//        }
 
         // 查询流水线
         List<CiCdPipelineVO> ciCdPipelineVOS = ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, name);
@@ -470,7 +470,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     ciCdPipelineRecordVO.setCreatedDate(devopsCdPipelineRecordVO.getCreatedDate());
                     ciCdPipelineRecordVO.setCdRecordId(devopsCdPipelineRecordVO.getId());
                     ciCdPipelineRecordVO.setGitlabPipelineId(Objects.isNull(devopsCdPipelineRecordVO.getGitlabPipelineId()) ? null : devopsCdPipelineRecordVO.getGitlabPipelineId());
-
+                    ciCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineRecordVO.getDevopsCdPipelineDeatilVO());
                     stageRecordVOS.addAll(devopsCdPipelineRecordVO.getDevopsCdStageRecordVOS());
                     ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
                     ciCdPipelineRecordVOS.add(ciCdPipelineRecordVO);
@@ -496,6 +496,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         ciCdPipelineRecordVO.setCdRecordId(devopsCdPipelineRecordVO.getId());
                         ciCdPipelineRecordVO.setCdStatus(devopsCdPipelineRecordVO.getStatus());
                         stageRecordVOS.addAll(devopsCdPipelineRecordVO.getDevopsCdStageRecordVOS());
+                        ciCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineRecordVO.getDevopsCdPipelineDeatilVO());
                     }
                     ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
                     ciCdPipelineRecordVOS.add(ciCdPipelineRecordVO);
@@ -1215,7 +1216,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return appServiceDeployDTO;
     }
 
-    private  void recordListSort(List<CiCdPipelineRecordVO> list) {
+    private void recordListSort(List<CiCdPipelineRecordVO> list) {
         Collections.sort(list, new Comparator<CiCdPipelineRecordVO>() {
             @Override
             public int compare(CiCdPipelineRecordVO o1, CiCdPipelineRecordVO o2) {
