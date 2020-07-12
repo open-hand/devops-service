@@ -198,7 +198,7 @@ function downloadSettingsFile() {
 }
 #################################### 触发cd流水线 ####################################
 function triggerCdPipeline() {
-  http_status_code=$(curl -X POST -o -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/v1/cd_pipeline/trigger_cd_pipeline?token=${Token}&commit=${CI_COMMIT_SHA}&ref=${CI_COMMIT_REF_NAME}&gitlab_user_name=${GITLAB_USER_NAME}&gitlab_pipeline_id=${CI_PIPELINE_ID}'")
+  http_status_code=$(curl -X POST -o -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/v1/cd_pipeline/trigger_cd_pipeline?token=${Token}&commit=${CI_COMMIT_SHA}&ref=${CI_COMMIT_REF_NAME}&gitlab_user_id=${GITLAB_USER_ID}&gitlab_pipeline_id=${CI_PIPELINE_ID}'")
 
   if [ "$http_status_code" != "200" ]; then
     echo "failed to triggerCdPipeline"
