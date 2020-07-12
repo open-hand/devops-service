@@ -240,10 +240,10 @@ const TreeItem = observer(({ record, search }) => {
             <TreeItemName name={`#${gitlabPipelineId}`} search={search} headSpace={false} />
           </span>
           <div className={`${prefixCls}-sidebar-header-stage`}>
-            {map(stageRecordVOS, ({ status: stageStatus }) => (
+            {map(stageRecordVOS, ({ status: stageStatus, stageTriggerType = 'auto' }) => (
               <Fragment>
                 <span className={`${prefixCls}-sidebar-header-stage-item ${prefixCls}-sidebar-header-stage-item-${stageStatus}`} />
-                <span className={`${prefixCls}-sidebar-header-stage-line`} />
+                <span className={`${prefixCls}-sidebar-header-stage-line ${prefixCls}-sidebar-header-stage-line-${stageTriggerType}`} />
               </Fragment>
             ))}
           </div>

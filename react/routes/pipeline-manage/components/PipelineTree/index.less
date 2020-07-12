@@ -6,6 +6,8 @@
 @failed: #f77a70;
 @canceled: #d8d8d8;
 @skipped: #d8d8d8;
+@stop: #ff7043;
+@not_audit: #f1b42d;
 
 .pipelineManage_tree {
   flex-basis: 20%;
@@ -197,6 +199,12 @@
         &-failed {
           color: @failed;
         }
+        &-stop {
+          color: @stop;
+        }
+        &-not_audit {
+          color: @not_audit;
+        }
       }
 
       &-number {
@@ -230,15 +238,27 @@
           &-pending {
             background: @pending;
           }
+
+          &-stop {
+            background: @stop;
+          }
+
+          &-not_audit {
+            background: @not_audit;
+          }
         }
 
         &-line {
           width: .06rem;
           height: 1px;
-          background-color: #d3d3d3;
+          border-top: 1px solid #d3d3d3;
           display: inline-block;
           vertical-align: middle;
           margin: .02rem;
+
+          &-manual {
+            border-top: 1px dotted @not_audit;
+          }
 
           &:last-child {
             display: none;
