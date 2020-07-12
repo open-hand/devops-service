@@ -747,6 +747,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO = null;
         //阶段待审核状态
         if (AuditStatusEnum.NOT_AUDIT.value().equals(devopsCdStageRecordVO.getStatus())) {
+            devopsCdPipelineDeatilVO = new DevopsCdPipelineDeatilVO();
             devopsCdPipelineDeatilVO.setStageName(cdStageDTO.getName());
             devopsCdPipelineDeatilVO.setStageRecordId(devopsCdStageRecordVO.getId());
             devopsCdPipelineDeatilVO.setType(STAGE);
@@ -758,6 +759,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 jobRecordVOList.sort((o1, o2) -> o1.getSequence().compareTo(o2.getSequence()));
                 for (DevopsCdJobRecordVO devopsCdJobRecordVO : jobRecordVOList) {
                     if (AuditStatusEnum.NOT_AUDIT.value().equals(devopsCdJobRecordVO.getStatus())) {
+                        devopsCdPipelineDeatilVO = new DevopsCdPipelineDeatilVO();
                         devopsCdPipelineDeatilVO.setStageName(cdStageDTO.getName());
                         devopsCdPipelineDeatilVO.setStageRecordId(devopsCdStageRecordVO.getId());
                         devopsCdPipelineDeatilVO.setTaskRecordId(devopsCdJobRecordVO.getId());
