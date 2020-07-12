@@ -3,6 +3,7 @@ package io.choerodon.devops.app.eventhandler;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -385,6 +386,10 @@ public class DevopsSagaHandler {
             updateDeployTypeToUpdate(appServiceDeployVO.getDeployInfoId(), appServiceInstanceVO);
             // 更新job状态为success
             devopsCdJobRecordDTO.setCommandId(appServiceInstanceVO.getCommandId());
+            devopsCdJobRecordDTO.setFinishedDate(new Date());
+            if (devopsCdJobRecordDTO.getStartedDate() != null) {
+                devopsCdJobRecordDTO.setDurationSeconds((new Date().getTime() - devopsCdJobRecordDTO.getStartedDate().getTime()) / 1000);
+            }
             devopsCdJobRecordDTO.setStatus(PipelineStatus.SUCCESS.toValue());
             devopsCdJobRecordService.update(devopsCdJobRecordDTO);
             LOGGER.info("create pipeline auto deploy instance success");

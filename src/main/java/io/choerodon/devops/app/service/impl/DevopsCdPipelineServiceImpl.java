@@ -786,10 +786,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         if (AuditStatusEnum.PASSED.value().equals(result)) {
             // 1. 工作流任务审核通过
             try {
-                approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), details.getUsername(), details.getUserId(), details.getOrganizationId());
                 // 审核通过
                 // 判断是否是或签任务
                 if (devopsCdJobRecordDTO.getCountersigned() != null && devopsCdJobRecordDTO.getCountersigned() == 0) {
+                    approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), details.getUsername(), details.getUserId(), details.getOrganizationId());
                     // 更新审核状态为通过
                     devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.PASSED.value());
                     devopsCdAuditRecordService.update(devopsCdAuditRecordDTO);
@@ -803,6 +803,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     // 执行下一个任务
                     startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
                 } else if (devopsCdJobRecordDTO.getCountersigned() != null && devopsCdJobRecordDTO.getCountersigned() == 1) {
+                    approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), details.getUsername(), details.getUserId(), details.getOrganizationId());
                     // 更新审核状态为通过
                     devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.PASSED.value());
                     devopsCdAuditRecordService.update(devopsCdAuditRecordDTO);
