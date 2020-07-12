@@ -33,11 +33,23 @@ public class DevopsCdPipelineRecordVO {
     private String commitSha;
     private String ref;
 
+    // 审核数据返回
+    private DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO;
+
+
 
     private List<DevopsCdStageRecordVO> devopsCdStageRecordVOS;
 
     public String getCommitSha() {
         return commitSha;
+    }
+
+    public DevopsCdPipelineDeatilVO getDevopsCdPipelineDeatilVO() {
+        return devopsCdPipelineDeatilVO;
+    }
+
+    public void setDevopsCdPipelineDeatilVO(DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO) {
+        this.devopsCdPipelineDeatilVO = devopsCdPipelineDeatilVO;
     }
 
     public void setCommitSha(String commitSha) {

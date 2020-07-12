@@ -33,9 +33,8 @@ public class CiCdPipelineRecordVO {
 
     // ci和cd阶段记录的集合
     private List<StageRecordVO> stageRecordVOS;
-
-    private DevopsCiPipelineRecordVO ciPipelineRecordVO;
-    private DevopsCdPipelineRecordVO cdPipelineRecordVO;
+    // 待审核状态是需要一些数据
+    private DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO;
 
     public CiCdPipelineVO getCiCdPipelineVO() {
         return ciCdPipelineVO;
@@ -45,20 +44,12 @@ public class CiCdPipelineRecordVO {
         this.ciCdPipelineVO = ciCdPipelineVO;
     }
 
-    public DevopsCiPipelineRecordVO getCiPipelineRecordVO() {
-        return ciPipelineRecordVO;
+    public DevopsCdPipelineDeatilVO getDevopsCdPipelineDeatilVO() {
+        return devopsCdPipelineDeatilVO;
     }
 
-    public void setCiPipelineRecordVO(DevopsCiPipelineRecordVO ciPipelineRecordVO) {
-        this.ciPipelineRecordVO = ciPipelineRecordVO;
-    }
-
-    public DevopsCdPipelineRecordVO getCdPipelineRecordVO() {
-        return cdPipelineRecordVO;
-    }
-
-    public void setCdPipelineRecordVO(DevopsCdPipelineRecordVO cdPipelineRecordVO) {
-        this.cdPipelineRecordVO = cdPipelineRecordVO;
+    public void setDevopsCdPipelineDeatilVO(DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO) {
+        this.devopsCdPipelineDeatilVO = devopsCdPipelineDeatilVO;
     }
 
     public Long getCiRecordId() {
