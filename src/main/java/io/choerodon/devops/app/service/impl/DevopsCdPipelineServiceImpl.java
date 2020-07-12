@@ -499,13 +499,14 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     CommitDTO currentCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), appServiceServiceE.getCommit(), ADMIN);
                     // 已经部署版本的commit
                     CommitDTO deploydCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), deploydAppServiceVersion.getCommit(), ADMIN);
-
-                    // 计算commitDate
-                    // 如果要部署的版本的commitDate落后于环境中已经部署的版本，则跳过
-                    // 如果现在部署的版本落后于已经部署的版本则跳过
-                    if (currentCommit.getCommittedDate().before(deploydCommit.getCommittedDate())) {
-                        devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
-                        return;
+                    if (deploydCommit != null && currentCommit != null) {
+                        // 计算commitDate
+                        // 如果要部署的版本的commitDate落后于环境中已经部署的版本，则跳过
+                        // 如果现在部署的版本落后于已经部署的版本则跳过
+                        if (currentCommit.getCommittedDate().before(deploydCommit.getCommittedDate())) {
+                            devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
+                            return;
+                        }
                     }
                 }
             }
