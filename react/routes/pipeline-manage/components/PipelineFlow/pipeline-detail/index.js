@@ -140,7 +140,7 @@ export default observer((props) => {
         <span className="c7ncd-pipeline-detail-title-appService">{appServiceName ? ` (${appServiceName}) ` : ''}</span>
       </div>
       <div className="c7ncd-pipeline-detail-content">
-        {map(getStepData, ({ id: stageId, name: stageName, jobList, type: stageType = 'CI', parallel }, stageIndex) => (
+        {map(getStepData, ({ id: stageId, name: stageName, jobList, type: stageType = 'CI', parallel, triggerType = 'auto' }, stageIndex) => (
           <div className="c7ncd-pipeline-detail-stage" key={`${stageId}-${stageIndex}`}>
             <div className="c7ncd-pipeline-detail-stage-title">
               <Tooltip title={stageName} placement="top">
@@ -151,9 +151,9 @@ export default observer((props) => {
               </div>
             </div>
             <div className="c7ncd-pipeline-detail-stage-line" />
-            {stageIndex !== 0 ? (
+            {stageIndex !== getStepData.length - 1 ? (
               <div className="c7ncd-pipeline-detail-stage-arrow">
-                {stageType === 'CI' ? (
+                {triggerType === 'auto' ? (
                   <svg xmlns="http://www.w3.org/2000/svg" width="28" height="9" viewBox="0 0 28 9">
                     <path fill="#6887E8" d="M511.5,131 L520.5,135.5 L511.5,140 L511.5,136 L493,136 L493,135 L511.5,135 L511.5,131 Z" transform="translate(-493 -131)" />
                   </svg>

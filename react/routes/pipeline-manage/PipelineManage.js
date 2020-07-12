@@ -16,9 +16,11 @@ import HeaderButtons from '../../components/header-buttons';
 import VariableSettings from './components/variable-settings';
 
 import './index.less';
+import AuditModal from './components/audit-modal';
 
 const recordDetailKey = Modal.key();
 const settingsKey = Modal.key();
+const auditKey = Modal.key();
 const modalStyle = {
   width: 380,
 };
@@ -120,6 +122,28 @@ const PipelineManage = observer((props) => {
       handleRefresh();
     }
   }
+
+  function openAuditModal() {
+    const { cdRecordId, gitlabPipelineId } = getSelectedMenu;
+    const checkData = {
+      type: 'task',
+      // stageRecordId,
+      // taskRecordId,
+      // stageName,
+    };
+    Modal.open({
+      key: auditKey,
+      title: formatMessage({ id: `${intlPrefix}.execute.audit` }),
+      children: <AuditModal
+        cdRecordId={cdRecordId}
+        name={gitlabPipelineId}
+        mainStore={mainStore}
+        onClose={handleRefresh}
+        checkData={checkData}
+      />,
+      movable: false,
+    });
+  }
   
   function openSettingsModal(type) {
     const { id } = getMainData;
@@ -199,6 +223,7 @@ const PipelineManage = observer((props) => {
           permissions: [''],
           name: formatMessage({ id: `${intlPrefix}.execute.audit` }),
           icon: 'authorize',
+          handler: openAuditModal,
           display: status === 'not_audit',
           group: 2,
         });

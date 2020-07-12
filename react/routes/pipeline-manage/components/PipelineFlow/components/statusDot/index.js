@@ -36,6 +36,10 @@ const statusObj = {
     icon: 'timelapse',
     text: '待审核',
   },
+  stop: {
+    icon: 'remove_circle',
+    text: '已终止',
+  },
 };
 
 const statusDot = (props) => {
