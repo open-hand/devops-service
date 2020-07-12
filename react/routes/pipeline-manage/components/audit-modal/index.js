@@ -102,6 +102,7 @@ const AuditModal = ({
         }
       }
     } catch (e) {
+      modal.close();
       return false;
     }
   }
