@@ -402,16 +402,16 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 应用有权限的应用服务
         Long userId = DetailsHelper.getUserDetails().getUserId();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-//        boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
+        boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         Set<Long> appServiceIds;
-//        if (projectOwner) {
+        if (projectOwner) {
         appServiceIds = appServiceMapper.listByActive(projectId).stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
-//        } else {
-//            appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
-//            if (CollectionUtils.isEmpty(appServiceIds)) {
-//                return new ArrayList<>();
-//            }
-//        }
+        } else {
+            appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
+            if (CollectionUtils.isEmpty(appServiceIds)) {
+                return new ArrayList<>();
+            }
+        }
 
         // 查询流水线
         List<CiCdPipelineVO> ciCdPipelineVOS = ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, name);
@@ -1192,7 +1192,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
         // 如果审核任务，审核人员只有一个人，则默认设置为或签
         if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
-            if (CollectionUtils.isEmpty(t.getCdAuditUserIds())) {
+            if (CollectionUtils.isEmpty(t.getIamUserDTOS())) {
                 throw new CommonException(ResourceCheckConstant.ERROR_PARAM_IS_INVALID);
             }
             if (t.getCdAuditUserIds().size() == 1) {
