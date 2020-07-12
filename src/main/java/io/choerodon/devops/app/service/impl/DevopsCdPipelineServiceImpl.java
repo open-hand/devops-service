@@ -843,8 +843,11 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     .collect(Collectors.toList());
             stopJobRecordList.forEach(v -> devopsCdJobRecordService.updateStatusById(v.getId(), PipelineStatus.STOP.toValue()));
             // 2. 更新后续阶段以及任务状态为终止
+            // 2.1 更新当前阶段状态为stop
+            // 2.2 更新后续阶段状态为stop
+            devopsCdStageRecordService.updateStatusById(devopsCdStageRecordDTO.getId(), PipelineStatus.STOP.toValue());
             List<DevopsCdStageRecordDTO> afterStageRecordList = devopsCdStageRecordService.queryByPipelineRecordId(pipelineRecordId).stream()
-                    .filter(v -> v.getSequence() >= devopsCdStageRecordDTO.getSequence())
+                    .filter(v -> v.getSequence() > devopsCdStageRecordDTO.getSequence())
                     .collect(Collectors.toList());
             afterStageRecordList.forEach(v -> devopsCdStageRecordService.updateStageStatusStop(v.getId()));
             // 3. 更新流水线状态为终止
