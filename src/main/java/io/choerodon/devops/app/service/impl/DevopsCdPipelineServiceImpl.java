@@ -29,7 +29,10 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.AppServiceDeployVO;
+import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
+import io.choerodon.devops.api.vo.PipelineWebHookAttributesVO;
+import io.choerodon.devops.api.vo.PipelineWebHookVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
@@ -490,12 +493,12 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         }
                     }
 
-                    AppServiceRepVO appServiceRepVO = appServiceService.query(devopsCdEnvDeployInfoDTO.getProjectId(), devopsCdEnvDeployInfoDTO.getAppServiceId());
+                    AppServiceDTO appServiceDTO = appServiceService.baseQuery(devopsCdEnvDeployInfoDTO.getAppServiceId());
 
                     // 要部署版本的commit
-                    CommitDTO currentCommit = gitlabServiceClientOperator.queryCommit(appServiceRepVO.getGitlabProjectId().intValue(), appServiceServiceE.getCommit(), ADMIN);
+                    CommitDTO currentCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), appServiceServiceE.getCommit(), ADMIN);
                     // 已经部署版本的commit
-                    CommitDTO deploydCommit = gitlabServiceClientOperator.queryCommit(appServiceRepVO.getGitlabProjectId().intValue(), deploydAppServiceVersion.getCommit(), ADMIN);
+                    CommitDTO deploydCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), deploydAppServiceVersion.getCommit(), ADMIN);
 
                     // 计算commitDate
                     // 如果要部署的版本的commitDate落后于环境中已经部署的版本，则跳过
