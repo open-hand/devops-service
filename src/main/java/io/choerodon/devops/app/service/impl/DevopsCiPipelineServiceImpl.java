@@ -31,6 +31,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
@@ -1187,6 +1188,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             devopsCdEnvDeployInfoDTO.setProjectId(projectId);
             devopsCdEnvDeployInfoService.save(devopsCdEnvDeployInfoDTO);
             devopsCdJobDTO.setDeployInfoId(devopsCdEnvDeployInfoDTO.getId());
+        }
+        // 如果审核任务，审核人员只有一个人，则默认设置为或签
+        if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
+            if (CollectionUtils.isEmpty(t.getCdAuditUserIds())) {
+                throw new CommonException(ResourceCheckConstant.ERROR_PARAM_IS_INVALID);
+            }
+            if (t.getCdAuditUserIds().size() == 1) {
+                t.setCountersigned(0);
+            }
         }
 
         Long jobId = devopsCdJobService.create(devopsCdJobDTO).getId();
