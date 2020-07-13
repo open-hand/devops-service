@@ -270,8 +270,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             CdHostDeployConfigVO.ImageDeploy imageDeploy = cdHostDeployConfigVO.getImageDeploy();
             imageDeploy.setValue(new String(decoder.decodeBuffer(imageDeploy.getValue()), "UTF-8"));
             // 0.2
-//            HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName());
-            HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag("DEFAULT_REPO", TypeUtil.objToLong(imageDeploy.getRepoName()), "scp001-go");
+            HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName());
+//            HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag("DEFAULT_REPO", TypeUtil.objToLong(imageDeploy.getRepoName()), "scp001-go");
             List<HarborC7nImageTagVo> filterImageTagVoList;
             if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
                 devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
@@ -323,9 +323,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         Session session = null;
         try {
             session = ssh.startSession();
-            // todo 未安装docker 判断
-//            String loginExec = String.format("docker login -u %s -p %s %s", imageTagVo.getPullAccount(), imageTagVo.getPullPassword(), imageTagVo.getHarborUrl());
-            String loginExec = String.format("docker login -u %s -p %s %s", "admin", "Handhand123", imageTagVo.getHarborUrl());
+            String loginExec = String.format("docker login -u %s -p %s %s", imageTagVo.getPullAccount(), imageTagVo.getPullPassword(), imageTagVo.getHarborUrl());
+//            String loginExec = String.format("docker login -u %s -p %s %s", "admin", "Handhand123", imageTagVo.getHarborUrl());
             LOGGER.info(loginExec);
             Session.Command cmd = session.exec(loginExec);
 
@@ -377,8 +376,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     values = s;
                 }
             }
-            // todo 记得删除
-            values = "docker run --name=${containerName} -d ${imageName}";
+//        todo 删除    values = "docker run --name=${containerName} -d ${imageName}";
             if (StringUtils.isEmpty(values) || !checkInstruction("image", values)) {
                 throw new CommonException("error.instruction");
             }
