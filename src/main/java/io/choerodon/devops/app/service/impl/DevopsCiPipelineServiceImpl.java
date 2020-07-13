@@ -1132,8 +1132,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         List<MavenRepoVO> dependencyRepos = ciConfigTemplateVO.getRepos();
 
         boolean targetRepoEmpty = CollectionUtils.isEmpty(mavenDeployRepoSettings.getNexusRepoIds());
-        boolean dependencyRepoIdsEmpty = CollectionUtils.isEmpty(dependencyRepos);
-        boolean dependencyRepoEmpty = CollectionUtils.isEmpty(dependencyRepoIds);
+        boolean dependencyRepoIdsEmpty = CollectionUtils.isEmpty(dependencyRepoIds);
+        boolean dependencyRepoEmpty = CollectionUtils.isEmpty(dependencyRepos);
 
         // 如果都为空, 不生成settings文件
         if (targetRepoEmpty && dependencyRepoIdsEmpty && dependencyRepoEmpty) {
@@ -1159,7 +1159,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }).collect(Collectors.toList());
 
         // 将手动输入的仓库信息也放入列表
-        mavenRepoVOS.addAll(dependencyRepos);
+        if (!dependencyRepoEmpty) {
+            mavenRepoVOS.addAll(dependencyRepos);
+        }
 
         // 生成settings文件内容
         String settings = buildSettings(mavenRepoVOS);
