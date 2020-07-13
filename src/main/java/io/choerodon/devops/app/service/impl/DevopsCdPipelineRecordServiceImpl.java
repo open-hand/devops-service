@@ -725,9 +725,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         devopsCdJobRecordVO.setJobExecuteTime();
                     });
                     devopsCdStageRecordVO.setJobRecordVOList(devopsCdJobRecordVOS);
-                    if (Objects.isNull(devopsCdPipelineDeatilVO)) {
-                        devopsCdPipelineDeatilVO = generateCdPipelineDeatilVO(devopsCdStageRecordVO);
-                    }
+                    devopsCdPipelineDeatilVO = generateCdPipelineDeatilVO(devopsCdStageRecordVO);
                 }
                 devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
                 devopsCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineDeatilVO);
@@ -739,6 +737,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     private DevopsCdPipelineDeatilVO generateCdPipelineDeatilVO(DevopsCdStageRecordVO devopsCdStageRecordVO) {
+        //判断阶段是不是在审核中，如果阶段在审核中判断阶段的job是不是处于审核中
         DevopsCdStageDTO cdStageDTO = devopsCdStageMapper.selectByPrimaryKey(devopsCdStageRecordVO.getStageId());
         if (Objects.isNull(cdStageDTO)) {
             return null;
@@ -752,8 +751,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsCdPipelineDeatilVO.setExecute(executeValue(cdStageDTO));
             devopsCdPipelineDeatilVO.setType(STAGE);
         }
-        //阶段审核通过，任务处于待审核
-        if (AuditStatusEnum.PASSED.value().equals(devopsCdStageRecordVO.getStatus())) {
+        //阶段审核中，任务处于待审核
+        if (AuditStatusEnum.AUDITING.value().equals(devopsCdStageRecordVO.getStatus())) {
             List<DevopsCdJobRecordVO> jobRecordVOList = devopsCdStageRecordVO.getJobRecordVOList();
             if (!CollectionUtils.isEmpty(jobRecordVOList)) {
                 jobRecordVOList.sort((o1, o2) -> o1.getSequence().compareTo(o2.getSequence()));
