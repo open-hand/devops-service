@@ -1194,7 +1194,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
         // 如果审核任务，审核人员只有一个人，则默认设置为或签
         if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
-            if (CollectionUtils.isEmpty(t.getIamUserDTOS())) {
+            if (CollectionUtils.isEmpty(t.getCdAuditUserIds())) {
                 throw new CommonException(ResourceCheckConstant.ERROR_PARAM_IS_INVALID);
             }
             if (t.getCdAuditUserIds().size() == 1) {
