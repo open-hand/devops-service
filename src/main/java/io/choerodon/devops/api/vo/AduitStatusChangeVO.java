@@ -9,7 +9,9 @@ package io.choerodon.devops.api.vo;
  */
 public class AduitStatusChangeVO {
     private Boolean auditStatusChanged;
+    private Integer countersigned;
     private String auditUserName;
+
 
     public Boolean getAuditStatusChanged() {
         return auditStatusChanged;
@@ -25,5 +27,13 @@ public class AduitStatusChangeVO {
 
     public void setAuditUserName(String auditUserName) {
         this.auditUserName = auditUserName;
+    }
+
+    public Integer getCountersigned() {
+        return countersigned;
+    }
+
+    public void setCountersigned(Integer countersigned) {
+        this.countersigned = countersigned;
     }
 }

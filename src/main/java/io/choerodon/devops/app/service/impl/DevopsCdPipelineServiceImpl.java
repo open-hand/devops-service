@@ -872,6 +872,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 Optional<DevopsCdAuditRecordDTO> optionalDevopsCdAuditRecordDTO = devopsCdAuditRecordDTOS.stream().filter(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus())).findFirst();
                 calculatAuditUserName(optionalDevopsCdAuditRecordDTO, aduitStatusChangeVO);
             }
+            aduitStatusChangeVO.setCountersigned(0);
             return aduitStatusChangeVO;
         } else if ("job".equals(auditCheckVO.getSourceType())) {
             DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(auditCheckVO.getSourceId());
@@ -880,6 +881,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 Optional<DevopsCdAuditRecordDTO> optionalDevopsCdAuditRecordDTO = devopsCdAuditRecordDTOS.stream().filter(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus())).findFirst();
                 calculatAuditUserName(optionalDevopsCdAuditRecordDTO, aduitStatusChangeVO);
             }
+            aduitStatusChangeVO.setCountersigned(devopsCdJobRecordDTO.getCountersigned());
             return aduitStatusChangeVO;
         } else {
             throw new CommonException(ResourceCheckConstant.ERROR_PARAM_IS_INVALID);
