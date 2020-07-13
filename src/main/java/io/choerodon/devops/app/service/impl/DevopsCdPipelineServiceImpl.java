@@ -612,15 +612,16 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.PASSED.value());
             devopsCdAuditRecordService.update(devopsCdAuditRecordDTO);
 
-            // 1. 更新阶段状态为执行中
-            devopsCdStageRecordService.updateStatusById(stageRecordId, PipelineStatus.RUNNING.toValue());
-            // 2. 更新流水线状态为执行中
-            devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.RUNNING.toValue());
-            // 3. 查询阶段的第一个任务
+            // 1. 查询阶段的第一个任务
             DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryFirstByStageRecordId(stageRecordId);
-            // 4. 判断阶段的第一个任务是否是人工卡点任务，人工卡点任务则更新状态为待审核
+            // 2. 判断阶段的第一个任务是否是人工卡点任务，人工卡点任务则更新状态为待审核
             if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordDTO.getType())) {
                 devopsCdJobRecordService.updateJobStatusNotAudit(pipelineRecordId, stageRecordId, devopsCdJobRecordDTO.getId());
+            } else {
+                // 3. 更新阶段状态为执行中
+                devopsCdStageRecordService.updateStatusById(stageRecordId, PipelineStatus.RUNNING.toValue());
+                // 4. 更新流水线状态为执行中
+                devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.RUNNING.toValue());
             }
             sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_SUCCESS, userIds, devopsCdPipelineRecordDTO.getId(), devopsCdStageRecordDTO.getStageName(), devopsCdStageRecordDTO.getStageId());
         } else if (AuditStatusEnum.REFUSED.value().equals(result)) {
