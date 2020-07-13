@@ -725,8 +725,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         devopsCdJobRecordVO.setJobExecuteTime();
                     });
                     devopsCdStageRecordVO.setJobRecordVOList(devopsCdJobRecordVOS);
-                    devopsCdPipelineDeatilVO = generateCdPipelineDeatilVO(devopsCdStageRecordVO);
+                    if (AuditStatusEnum.NOT_AUDIT.value().equals(devopsCdStageRecordVO.getStatus()))
+                        devopsCdPipelineDeatilVO = generateCdPipelineDeatilVO(devopsCdStageRecordVO);
                 }
+
                 devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
                 devopsCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineDeatilVO);
             } else {
