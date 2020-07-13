@@ -401,16 +401,16 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 应用有权限的应用服务
         Long userId = DetailsHelper.getUserDetails().getUserId();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-//        boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
+        boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         Set<Long> appServiceIds;
-//        if (projectOwner) {
+        if (projectOwner) {
         appServiceIds = appServiceMapper.listByActive(projectId).stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
-//        } else {
-//            appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
-//            if (CollectionUtils.isEmpty(appServiceIds)) {
-//                return new ArrayList<>();
-//            }
-//        }
+        } else {
+            appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
+            if (CollectionUtils.isEmpty(appServiceIds)) {
+                return new ArrayList<>();
+            }
+        }
 
         // 查询流水线
         List<CiCdPipelineVO> ciCdPipelineVOS = ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, name);
