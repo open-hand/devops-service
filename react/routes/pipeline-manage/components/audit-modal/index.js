@@ -4,7 +4,6 @@ import { observer } from 'mobx-react-lite';
 import { inject } from 'mobx-react';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { Button } from 'choerodon-ui';
-import _ from 'lodash';
 
 const AuditModal = ({
   AppState: {
@@ -48,7 +47,7 @@ const AuditModal = ({
             key="stop"
             loading={stopLoading}
             type="primary"
-            onClick={handleSubmit.bind(this, false)}
+            onClick={handleSubmit.bind(this, 'refused')}
             disabled={passLoading}
           >
             <FormattedMessage id="pipelineRecord.check.stop" />
@@ -57,7 +56,7 @@ const AuditModal = ({
             key="pass"
             loading={passLoading}
             type="primary"
-            onClick={handleSubmit.bind(this, true)}
+            onClick={handleSubmit.bind(this, 'passed')}
             disabled={stopLoading}
           >
             <FormattedMessage id="pipelineRecord.check.pass" />
@@ -82,21 +81,18 @@ const AuditModal = ({
   async function check() {
     try {
       const postData = {
-        pipelineRecordId: cdRecordId,
-        userId,
-        type,
-        stageRecordId,
-        taskRecordId,
+        sourceId: type === 'stage' ? stageRecordId : taskRecordId,
+        sourceType: type,
       };
-      const data = await mainStore.canCheck(projectId, postData);
+      const data = await mainStore.canCheck(projectId, cdRecordId, postData);
       if (data && !data.failed) {
-        if ((data.isCountersigned || data.isCountersigned === 0) && data.userName) {
-          // 会签已被终止、或签已被审核，返回数据：{ isCountersigned: 0 或签 | 1 会签, userName: "string"}
+        if (data.auditStatusChanged && (data.countersigned || data.countersigned === 0) && data.auditUserName) {
+          // 会签已被终止、或签已被审核，返回数据：{ countersigned: 0 或签 | 1 会签, auditUserName: "string"}
           setCanCheck(false);
           changeModalFooter(false);
-          setCheckTips(formatMessage({ id: `pipeline.canCheck.tips.${data.isCountersigned}` }, { userName: data.userName }));
+          setCheckTips(formatMessage({ id: `pipeline.canCheck.tips.${data.countersigned}` }, { userName: data.auditUserName }));
         } else {
-          // 预检通过，返回数据：{ isCountersigned: null, userName: null }
+          // 预检通过，返回数据：{ countersigned: null, auditUserName: null }
           setCanCheck(true);
           changeModalFooter(true);
         }
@@ -111,38 +107,34 @@ const AuditModal = ({
    * 中止或通过人工审核
    * @param flag 是否通过
    */
-  async function handleSubmit(flag) {
+  async function handleSubmit(result) {
     const postData = {
-      pipelineRecordId: cdRecordId,
-      userId,
-      isApprove: flag,
-      type,
+      projectId,
+      cdRecordId,
       stageRecordId,
-      taskRecordId,
+      result,
     };
-    flag ? changePassLoading(true) : changeStopLoading(true);
+    result === 'passed' ? changePassLoading(true) : changeStopLoading(true);
     try {
-      const data = await mainStore.checkData(projectId, postData);
+      let data;
+      if (type === 'stage') {
+        data = await mainStore.auditStage(postData);
+      } else {
+        postData.jobRecordId = taskRecordId;
+        data = await mainStore.auditJob(postData);
+      }
       if (data && !data.failed) {
-        if (data.length) {
-          // 会签，非最后一人审核，返回数据：[{ audit: true 已审核 | false 未审核, loginName: "工号", realName: "姓名"}]
-          const users = {
-            check: [],
-            unCheck: [],
-          };
-          _.forEach(data, ({ audit, loginName, realName }) => {
-            users[audit ? 'check' : 'unCheck'].push(realName);
-          });
-          setCanCheck(false);
-          changeModalFooter(false);
-          setCheckTips(formatMessage({ id: 'pipeline.check.tips.text' }, {
-            checkUsers: users.check.join('，'),
-            unCheckUsers: users.unCheck.join('，'),
-          }));
-        } else {
-          // 或签、会签最后一人，返回数据[]
-          handClose(true);
-        }
+        // 会签，非最后一人审核，返回数据：[{ audit: true 已审核 | false 未审核, loginName: "工号", realName: "姓名"}]
+        const { auditedUserName = [], notAuditUserName = [] } = data || {};
+        setCanCheck(false);
+        changeModalFooter(false);
+        setCheckTips(formatMessage({ id: 'pipeline.check.tips.text' }, {
+          checkUsers: auditedUserName.join('，'),
+          unCheckUsers: notAuditUserName.join('，'),
+        }));
+      } else {
+        // 或签、会签最后一人审核通过、审核终止，返回数据null
+        handClose(true);
       }
     } catch (e) {
       return false;
@@ -154,13 +146,13 @@ const AuditModal = ({
    * @param flag 是否重新加载列表数据
    */
   function handClose(flag) {
-    onClose(flag);
+    flag && onClose();
     modal.close();
   }
 
   return (canCheck ? (
     <FormattedMessage
-      id={`pipelineRecord.check.${type}.des`}
+      id={`c7ncd.pipelineManage.record.check.${type}.des`}
       values={{ name, stage: stageName }}
     />) : <span>{checkTips}</span>
   );

@@ -819,6 +819,7 @@ const pipelineManage = {
   'c7ncd.pipelineManage.settings.check.empty': '此项不能为空',
   'c7ncd.pipelineManage.settings.project': '项目层',
   'c7ncd.pipelineManage.settings.app': '应用服务层',
+  'c7ncd.pipelineManage.record.check.stage.des': '流水线“{name}”将要执行阶段【{stage}】，需要您进行审核。',
 };
 
 const emptyPage = {
