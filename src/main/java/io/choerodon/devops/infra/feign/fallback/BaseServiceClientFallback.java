@@ -27,7 +27,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     private static final String ERROR_PROJECT_QUERY_BY_ID = "error.project.query.by.id";
 
     @Override
-    public ResponseEntity<ProjectDTO> queryIamProject(Long projectId) {
+    public ResponseEntity<ProjectDTO> queryIamProject(Long projectId, Boolean withCategoryInfo, Boolean withUserInfo, Boolean withAgileInfo) {
         throw new CommonException(ERROR_PROJECT_QUERY_BY_ID, projectId);
     }
 
@@ -164,6 +164,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     public ResponseEntity<List<ProjectDTO>> listOwnedProjects(Long organizationId, Long userId) {
         throw new CommonException("error.query.project");
     }
+
     @Override
     public ResponseEntity<List<UserVO>> listUserByCreationDate() {
         throw new CommonException("error.list.user");
