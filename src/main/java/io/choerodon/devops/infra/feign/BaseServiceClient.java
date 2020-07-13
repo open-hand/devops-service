@@ -31,7 +31,8 @@ public interface BaseServiceClient {
                                                @RequestParam(value = "with_agile_info") Boolean withAgileInfo);
 
     @GetMapping(value = "/choerodon/v1/organizations/{organizationId}")
-    ResponseEntity<Tenant> queryOrganizationById(@PathVariable("organizationId") Long organizationId);
+    ResponseEntity<Tenant> queryOrganizationById(@PathVariable("organizationId") Long organizationId,
+                                                 @RequestParam(value = "with_more_info") Boolean withMoreInfo);
 
     /**
      * 根据id集合查询组织

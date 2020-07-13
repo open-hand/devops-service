@@ -75,7 +75,11 @@ public class BaseServiceClientOperator {
     }
 
     public Tenant queryOrganizationById(Long organizationId) {
-        ResponseEntity<Tenant> organizationDTOResponseEntity = baseServiceClient.queryOrganizationById(organizationId);
+        return queryOrganizationById(organizationId, true);
+    }
+
+    public Tenant queryOrganizationById(Long organizationId, Boolean withMoreInfo) {
+        ResponseEntity<Tenant> organizationDTOResponseEntity = baseServiceClient.queryOrganizationById(organizationId, withMoreInfo);
         if (organizationDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
             Tenant tenant = organizationDTOResponseEntity.getBody();
             if (tenant != null && tenant.getTenantId() != null) {
