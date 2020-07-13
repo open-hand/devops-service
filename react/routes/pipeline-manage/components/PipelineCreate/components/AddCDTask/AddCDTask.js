@@ -84,8 +84,11 @@ export default observer(() => {
               ds.customize = Base64.encode(customValues);
             } else if (ds.hostDeployType === 'image') {
               ds.imageDeploy = {
-                repoName: ds.repoName,
-                imageName: ds.imageName,
+                repoId: ds.repoId,
+                repoName: ADDCDTaskUseStore.getRepoList?.find(i => String(i.repoId) === String(ds.repoId))?.repoName,
+                repoType: ADDCDTaskUseStore.getRepoList?.find(i => String(i.repoId) === String(ds.repoId))?.repoType,
+                imageId: ds.imageId,
+                imageName: ADDCDTaskUseStore.getImageList?.find(i => String(i.imageId) === String(ds.imageId))?.imageName,
                 matchType: ds.matchType,
                 matchContent: ds.matchContent,
                 containerName: ds.containerName,
@@ -236,8 +239,8 @@ export default observer(() => {
           />
         ),
         image: [
-          <Select newLine colSpan={3} name="repoName" />,
-          <Select colSpan={3} name="imageName" />,
+          <Select newLine colSpan={3} name="repoId" />,
+          <Select colSpan={3} name="imageId" />,
           <Select colSpan={3} name="matchType">
             <Option value="refs">模糊匹配</Option>
             <Option value="regex">正则匹配</Option>
@@ -328,7 +331,7 @@ export default observer(() => {
         <p className="addcdTask-title">主机部署</p>,
         <Form style={{ marginTop: 20 }} columns={6} dataSet={ADDCDTaskDataSet}>
           <SelectBox className="addcdTask-mainMode" colSpan={5} name="hostDeployType">
-            {/* <Option value="customize">自定义命令</Option> */}
+            <Option value="customize">自定义命令</Option>
             <Option value="image">镜像部署</Option>
             <Option value="jar">jar包部署</Option>
           </SelectBox>,

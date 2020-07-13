@@ -139,7 +139,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
     label: '部署模式',
     defaultValue: 'image',
   }, {
-    name: 'repoName',
+    name: 'repoId',
     type: 'string',
     label: '项目镜像仓库',
     textField: 'repoName',
@@ -147,25 +147,43 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
     lookupAxiosConfig: () => ({
       method: 'get',
       url: `/rdupm/v1/harbor-choerodon-repos/listImageRepo?projectId=${projectId}`,
+      transformResponse: (data) => {
+        let newData = data;
+        try {
+          newData = JSON.parse(newData);
+        } finally {
+          useStore.setRepoList(newData);
+        }
+        return newData;
+      },
     }),
     dynamicProps: {
       required: ({ record }) => record.get('type') === 'cdHost' && record.get('hostDeployType') === 'image',
     },
   }, {
-    name: 'imageName',
+    name: 'imageId',
     type: 'string',
     label: '镜像',
     textField: 'imageName',
     valueField: 'imageId',
     dynamicProps: {
-      disabled: ({ record }) => !record.get('repoName'),
+      disabled: ({ record }) => !record.get('repoId'),
       required: ({ record }) => record.get('type') === 'cdHost' && record.get('hostDeployType') === 'image',
       lookupAxiosConfig: ({ record }) => ({
         method: 'get',
-        url: `rdupm/v1/harbor-choerodon-repos/listHarborImage?repoId=${record.get('repoName')}&repoType=${(function () {
-          const lookup = record.getField('repoName').lookup;
-          return lookup?.find(l => String(l.repoId) === String(record.get('repoName')))?.repoType;
+        url: `rdupm/v1/harbor-choerodon-repos/listHarborImage?repoId=${record.get('repoId')}&repoType=${(function () {
+          const lookup = record.getField('repoId').lookup;
+          return lookup?.find(l => String(l.repoId) === String(record.get('repoId')))?.repoType;
         }())}`,
+        transformResponse: (data) => {
+          let newData = data;
+          try {
+            newData = JSON.parse(newData);
+          } finally {
+            useStore.setImageList(newData);
+          }
+          return newData;
+        },
       }),
     },
 
