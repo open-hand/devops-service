@@ -29,15 +29,13 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.vo.AppServiceDeployVO;
-import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
-import io.choerodon.devops.api.vo.PipelineWebHookAttributesVO;
-import io.choerodon.devops.api.vo.PipelineWebHookVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -859,6 +857,44 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.STOP.toValue());
             // 4. 发送审核记录通知
             sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_STOP, userIds, devopsCdPipelineRecordDTO.getId(), devopsCdStageRecordDTO.getStageName(), devopsCdStageRecordDTO.getStageId());
+        }
+    }
+
+    @Override
+    public AduitStatusChangeVO checkAuditStatus(Long projectId, Long pipelineRecordId, AuditCheckVO auditCheckVO) {
+        AduitStatusChangeVO aduitStatusChangeVO = new AduitStatusChangeVO();
+        aduitStatusChangeVO.setAuditStatusChanged(false);
+        if ("stage".equals(auditCheckVO.getSourceType())) {
+            DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordService.queryById(auditCheckVO.getSourceId());
+            if (!PipelineStatus.NOT_AUDIT.toValue().equals(devopsCdStageRecordDTO.getStatus())) {
+                List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(auditCheckVO.getSourceId());
+                Optional<DevopsCdAuditRecordDTO> optionalDevopsCdAuditRecordDTO = devopsCdAuditRecordDTOS.stream().filter(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus())).findFirst();
+                calculatAuditUserName(optionalDevopsCdAuditRecordDTO, aduitStatusChangeVO);
+            }
+            return aduitStatusChangeVO;
+        } else if ("job".equals(auditCheckVO.getSourceType())) {
+            DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(auditCheckVO.getSourceId());
+            if (!PipelineStatus.NOT_AUDIT.toValue().equals(devopsCdJobRecordDTO.getStatus())) {
+                List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByJobRecordId(auditCheckVO.getSourceId());
+                Optional<DevopsCdAuditRecordDTO> optionalDevopsCdAuditRecordDTO = devopsCdAuditRecordDTOS.stream().filter(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus())).findFirst();
+                calculatAuditUserName(optionalDevopsCdAuditRecordDTO, aduitStatusChangeVO);
+            }
+            return aduitStatusChangeVO;
+        } else {
+            throw new CommonException(ResourceCheckConstant.ERROR_PARAM_IS_INVALID);
+        }
+    }
+
+    private void calculatAuditUserName(Optional<DevopsCdAuditRecordDTO> optionalDevopsCdAuditRecordDTO, AduitStatusChangeVO aduitStatusChangeVO) {
+        if (optionalDevopsCdAuditRecordDTO.isPresent()) {
+            aduitStatusChangeVO.setAuditStatusChanged(true);
+            Long userId = optionalDevopsCdAuditRecordDTO.get().getUserId();
+            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
+            if (iamUserDTO.getLdap()) {
+                aduitStatusChangeVO.setAuditUserName(iamUserDTO.getLoginName());
+            } else {
+                aduitStatusChangeVO.setAuditUserName(iamUserDTO.getEmail());
+            }
         }
     }
 
