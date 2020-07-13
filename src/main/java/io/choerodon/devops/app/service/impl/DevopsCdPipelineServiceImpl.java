@@ -921,8 +921,11 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             return aduitStatusChangeVO;
         } else if ("task".equals(auditCheckVO.getSourceType())) {
             DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(auditCheckVO.getSourceId());
-            if (!PipelineStatus.NOT_AUDIT.toValue().equals(devopsCdJobRecordDTO.getStatus())) {
-                List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByJobRecordId(auditCheckVO.getSourceId());
+            List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByJobRecordId(auditCheckVO.getSourceId());
+            if (PipelineStatus.STOP.toValue().equals(devopsCdJobRecordDTO.getStatus())) {
+                Optional<DevopsCdAuditRecordDTO> optionalDevopsCdAuditRecordDTO = devopsCdAuditRecordDTOS.stream().filter(v -> AuditStatusEnum.REFUSED.value().equals(v.getStatus())).findFirst();
+                calculatAuditUserName(optionalDevopsCdAuditRecordDTO, aduitStatusChangeVO);
+            } else if (PipelineStatus.SUCCESS.toValue().equals(devopsCdJobRecordDTO.getStatus())) {
                 Optional<DevopsCdAuditRecordDTO> optionalDevopsCdAuditRecordDTO = devopsCdAuditRecordDTOS.stream().filter(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus())).findFirst();
                 calculatAuditUserName(optionalDevopsCdAuditRecordDTO, aduitStatusChangeVO);
             }
