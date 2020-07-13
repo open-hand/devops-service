@@ -17,6 +17,7 @@ import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.tomcat.util.descriptor.web.ContextHandler;
 import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import sun.misc.BASE64Decoder;
+import sun.plugin.liveconnect.SecurityContextHelper;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -750,6 +752,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsCdPipelineDeatilVO = new DevopsCdPipelineDeatilVO();
             devopsCdPipelineDeatilVO.setStageName(cdStageDTO.getName());
             devopsCdPipelineDeatilVO.setStageRecordId(devopsCdStageRecordVO.getId());
+            devopsCdPipelineDeatilVO.setExecute(executeValue(cdStageDTO));
             devopsCdPipelineDeatilVO.setType(STAGE);
         }
         //阶段审核通过，任务处于待审核
@@ -763,12 +766,35 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         devopsCdPipelineDeatilVO.setStageName(cdStageDTO.getName());
                         devopsCdPipelineDeatilVO.setStageRecordId(devopsCdStageRecordVO.getId());
                         devopsCdPipelineDeatilVO.setTaskRecordId(devopsCdJobRecordVO.getId());
+                        devopsCdPipelineDeatilVO.setExecute(executeValue(devopsCdJobRecordVO));
                         devopsCdPipelineDeatilVO.setType(TASK);
                     }
                 }
             }
         }
         return devopsCdPipelineDeatilVO;
+    }
+
+    private Boolean executeValue(DevopsCdJobRecordVO devopsCdJobRecordVO) {
+        List<DevopsCdAuditDTO> devopsCdAuditDTOS = devopsCdAuditService.baseListByOptions(null, null, devopsCdJobRecordVO.getJobId());
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        if (!CollectionUtils.isEmpty(devopsCdAuditDTOS)) {
+            return devopsCdAuditDTOS.stream().map(DevopsCdAuditDTO::getUserId).
+                    collect(Collectors.toList()).contains(userId);
+        } else {
+            return false;
+        }
+    }
+
+    private Boolean executeValue(DevopsCdStageDTO cdStageDTO) {
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        List<DevopsCdAuditDTO> devopsCdAuditDTOS = devopsCdAuditService.baseListByOptions(null, cdStageDTO.getId(), null);
+        if (!CollectionUtils.isEmpty(devopsCdAuditDTOS)) {
+            return devopsCdAuditDTOS.stream().map(DevopsCdAuditDTO::getUserId).
+                    collect(Collectors.toList()).contains(userId);
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -826,10 +852,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 //替换实例
                 if (CommandType.UPDATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
                     AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getInstanceId());
-                    if (appServiceInstanceDTO == null) {
-                        throw new CommonException("error.update.instance.not.exist");
+                    if (appServiceInstanceDTO != null) {
+                        cdAuto.setAppServiceName(appServiceInstanceDTO.getCode());
                     }
-                    cdAuto.setAppServiceName(appServiceInstanceDTO.getCode());
                 }
                 devopsCdJobRecordVO.setCdAuto(cdAuto);
 

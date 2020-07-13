@@ -5,6 +5,16 @@ public class DevopsCdPipelineDeatilVO {
     private Long stageRecordId;
     private Long taskRecordId;
     private String type;
+    //判断当前用户能否进行审核，能否看到人工审核这个操作按钮
+    private Boolean execute;
+
+    public Boolean getExecute() {
+        return execute;
+    }
+
+    public void setExecute(Boolean execute) {
+        this.execute = execute;
+    }
 
     public String getStageName() {
         return stageName;
