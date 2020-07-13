@@ -825,7 +825,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 }
                 //替换实例
                 if (CommandType.UPDATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
-                    cdAuto.setAppServiceName(appServiceInstanceMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getInstanceId()).getCode());
+                    AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getInstanceId());
+                    if (appServiceInstanceDTO == null) {
+                        throw new CommonException("error.update.instance.not.exist");
+                    }
+                    cdAuto.setAppServiceName(appServiceInstanceDTO.getCode());
                 }
                 devopsCdJobRecordVO.setCdAuto(cdAuto);
 
