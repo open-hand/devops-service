@@ -132,11 +132,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         //上传chart包到chartmuseum
         chartUtil.uploadChart(helmUrl, organization.getCode(), projectDTO.getCode(), new File(path));
 
-        // 有需求让重新上传chart包，所以校验重复推后
-        if (newApplicationVersion != null) {
-            FileUtil.deleteDirectories(storeFilePath);
-            return;
-        }
         FileUtil.unTarGZ(path, destFilePath);
 
         // 使用深度优先遍历查找文件, 避免查询到子chart的values值
@@ -153,6 +148,17 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         } catch (IOException e) {
             FileUtil.deleteDirectories(storeFilePath, destFilePath);
             throw new CommonException(e);
+        }
+
+        // 有需求让重新上传chart包，所以校验重复推后
+        if (newApplicationVersion != null) {
+            try {
+                // 重新上传chart包后更新values
+                updateValues(newApplicationVersion.getId(), values);
+            } finally {
+                FileUtil.deleteDirectories(storeFilePath);
+            }
+            return;
         }
 
         try {
@@ -180,6 +186,13 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         FileUtil.deleteDirectories(destFilePath, storeFilePath);
         //流水线
         checkAutoDeploy(appServiceVersionDTO);
+    }
+
+    private void updateValues(Long oldValuesId, String values) {
+        AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
+        appServiceVersionValueDTO.setId(oldValuesId);
+        appServiceVersionValueDTO.setValue(values);
+        appServiceVersionValueService.baseUpdate(appServiceVersionValueDTO);
     }
 
     /**
