@@ -30,6 +30,24 @@ public class DevopsCdEnvDeployInfoDTO extends AuditDomain {
     private String deployType;  // 部署类型：新建实例 create 替换实例 update
     private Long instanceId;    // 替换实例时需要
     private String instanceName;    // 新建实例时需要
+    private Long cdJobId; //cd 主机部署jar 部署id
+    private String jarName; // jar 名称
+
+    public Long getCdJobId() {
+        return cdJobId;
+    }
+
+    public void setCdJobId(Long cdJobId) {
+        this.cdJobId = cdJobId;
+    }
+
+    public String getJarName() {
+        return jarName;
+    }
+
+    public void setJarName(String jarName) {
+        this.jarName = jarName;
+    }
 
     public Long getId() {
         return id;

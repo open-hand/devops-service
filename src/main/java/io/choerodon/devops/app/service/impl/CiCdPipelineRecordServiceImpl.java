@@ -134,13 +134,17 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(cdPipelineRecordId);
         devopsCdPipelineRecordDTO.setBusinessKey(GenerateUUID.generateUUID());
         devopsCdPipelineRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
-        devopsCdPipelineRecordService.update(devopsCdPipelineRecordDTO);
         // 1. 根据装填获取DevopsPipelineDTO
         DevopsPipelineDTO devopsPipelineDTO = devopsCdPipelineRecordService.createCDWorkFlowDTO(cdPipelineRecordId, true);
         // 2.更新状态
         DevopsCdStageRecordDTO cdStageRecordDTO = devopsCdStageRecordMapper.queryFailedOrCancelStage(cdPipelineRecordId);
         DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.queryFailedOrCancelJob(cdStageRecordDTO.getId());
-        devopsCdStageRecordService.updateStatusById(cdJobRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
+        if (ObjectUtils.isEmpty(cdStageRecordDTO) || ObjectUtils.isEmpty(cdJobRecordDTO)) {
+            LOGGER.warn("no job or stage failed!!");
+            return;
+        }
+        devopsCdPipelineRecordService.update(devopsCdPipelineRecordDTO);
+        devopsCdStageRecordService.updateStatusById(cdStageRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
         devopsCdJobRecordService.updateStatusById(cdJobRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
 
         try {
@@ -195,13 +199,17 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     @Transactional
     public void cancelCdPipeline(Long pipelineRecordId) {
         DevopsCdPipelineRecordDTO pipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
-
         DevopsCdStageRecordDTO cdStageRecordDTO = devopsCdStageRecordMapper.queryPendingAndRunning(pipelineRecordId);
         DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.queryPendingAndRunning(cdStageRecordDTO.getId());
-        devopsCdStageRecordService.updateStatusById(cdJobRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
-        devopsCdJobRecordService.updateStatusById(cdJobRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
-        devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.CANCELED.toValue());
 
+        if (!ObjectUtils.isEmpty(cdStageRecordDTO)) {
+            devopsCdStageRecordService.updateStatusById(cdStageRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
+        }
+        if (!ObjectUtils.isEmpty(cdJobRecordDTO)) {
+            devopsCdJobRecordService.updateStatusById(cdJobRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
+        }
+
+        devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.CANCELED.toValue());
         workFlowServiceOperator.stopInstance(pipelineRecordDTO.getProjectId(), pipelineRecordDTO.getBusinessKey());
     }
 

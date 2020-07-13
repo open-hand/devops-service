@@ -71,4 +71,29 @@ public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoSe
             throw new CommonException(ERROR_UPDATE_DEPLOY_INFO);
         }
     }
+
+    @Override
+    public void updateOrUpdateByCdJob(Long cdJobId, String jarName) {
+        DevopsCdEnvDeployInfoDTO queryDTO = new DevopsCdEnvDeployInfoDTO();
+        queryDTO.setCdJobId(cdJobId);
+        DevopsCdEnvDeployInfoDTO envDeployInfoDTO = devopsCdEnvDeployInfoMapper.selectOne(queryDTO);
+        if (envDeployInfoDTO == null) {
+            queryDTO.setJarName(jarName);
+            if (devopsCdEnvDeployInfoMapper.insert(queryDTO) != 1) {
+                throw new CommonException(ERROR_SAVE_DEPLOY_INFO);
+            }
+        } else {
+            envDeployInfoDTO.setJarName(jarName);
+            if (devopsCdEnvDeployInfoMapper.updateByPrimaryKeySelective(envDeployInfoDTO) != 1) {
+                throw new CommonException(ERROR_UPDATE_DEPLOY_INFO);
+            }
+        }
+    }
+
+    @Override
+    public DevopsCdEnvDeployInfoDTO queryByCdJobId(Long cdJobId) {
+        DevopsCdEnvDeployInfoDTO queryDTO = new DevopsCdEnvDeployInfoDTO();
+        queryDTO.setCdJobId(cdJobId);
+        return devopsCdEnvDeployInfoMapper.selectOne(queryDTO);
+    }
 }

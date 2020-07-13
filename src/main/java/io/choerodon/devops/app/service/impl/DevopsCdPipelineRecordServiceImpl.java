@@ -17,8 +17,6 @@ import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import org.apache.commons.lang.BooleanUtils;
-import org.apache.tomcat.util.descriptor.web.ContextHandler;
-import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -31,15 +29,12 @@ import org.springframework.util.StringUtils;
 import sun.misc.BASE64Decoder;
 
 import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
-import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.HostDeployPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
@@ -133,6 +128,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Autowired
     private DevopsCdStageMapper devopsCdStageMapper;
+
+    @Autowired
+    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
 
 
     @Override
@@ -376,7 +374,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     values = s;
                 }
             }
-//        todo 删除    values = "docker run --name=${containerName} -d ${imageName}";
             if (StringUtils.isEmpty(values) || !checkInstruction("image", values)) {
                 throw new CommonException("error.instruction");
             }
@@ -468,8 +465,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         LOGGER.info("start jar deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
         SSHClient ssh = new SSHClient();
         Boolean status = true;
-        Session session = null;
-        // todo jar包何时删除
         // 停止jar
         String jarName = String.format("app-%s.jar", GenerateUUID.generateRandomString());
         try {
@@ -477,6 +472,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
             CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
             CdHostDeployConfigVO.JarDeploy jarDeploy = cdHostDeployConfigVO.getJarDeploy();
+            jarDeploy.setValue(new String(decoder.decodeBuffer(jarDeploy.getValue()), "UTF-8"));
             DevopsCdPipelineRecordDTO cdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(cdPipelineRecordDTO.getProjectId());
             List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), jarDeploy.getRepositoryId(), jarDeploy.getGroupId(), jarDeploy.getArtifactId(), jarDeploy.getVersionRegular());
@@ -501,69 +497,94 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsCdJobRecordService.update(jobRecordDTO);
 
             sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
-            session = ssh.startSession();
 
             // 2.1
-            sshExec(session, jarName, mavenRepoDTOList.get(0), nexusComponentDTOList.get(0), jarDeploy);
-//            NexusMavenRepoDTO nexusMavenRepoDTO = new NexusMavenRepoDTO();
-//            nexusMavenRepoDTO.setNePullUserId("zhuang");
-//            nexusMavenRepoDTO.setNePullUserPassword("123456");
-//            C7nNexusComponentDTO nexusComponentDTO = new C7nNexusComponentDTO();
-//            nexusComponentDTO.setDownloadUrl("https://nexus.choerodon.com.cn/repository/choerodon-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20200709.063923-1.jar");
-//            sshExec(session, jarName, nexusMavenRepoDTO, nexusComponentDTO);
+            sshStopJar(ssh, jobRecordDTO.getJobId());
+            sshExec(ssh, jarName, mavenRepoDTOList.get(0), nexusComponentDTOList.get(0), jarDeploy);
+            devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(jobRecordDTO.getJobId(), jarName);
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
         } catch (Exception e) {
+            e.printStackTrace();
             status = false;
             jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } finally {
-            closeSsh(ssh, session);
+            closeSsh(ssh, null);
         }
         return status;
     }
 
-    private void sshExec(Session session, String jarName, NexusMavenRepoDTO mavenRepoDTO, C7nNexusComponentDTO nexusComponentDTO, CdHostDeployConfigVO.JarDeploy jarDeploy) throws IOException {
-        StringBuilder cmdStr = new StringBuilder();
-        cmdStr.append("mkdir temp-jar ").append(System.lineSeparator());
-        cmdStr.append("cd temp-jar ").append(System.lineSeparator());
-
-        // 2.2
-        String curlExec = String.format("curl -o %s -u %s:%s %s ",
-                jarName,
-                mavenRepoDTO.getNePullUserId(),
-                mavenRepoDTO.getNePullUserPassword(),
-                nexusComponentDTO.getDownloadUrl());
-        cmdStr.append(curlExec).append(System.lineSeparator());
-
-        // 2.3
-        String[] strings = jarDeploy.getValues().split("\n");
-        String values = "";
-        for (String s : strings) {
-            if (s.length() > 0 && !s.contains("#") && s.contains("java")) {
-                values = s;
+    private void sshStopJar(SSHClient ssh, Long jobId) throws IOException {
+        DevopsCdEnvDeployInfoDTO cdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryByCdJobId(jobId);
+        if (cdEnvDeployInfoDTO != null && !StringUtils.isEmpty(cdEnvDeployInfoDTO.getJarName())) {
+            StringBuilder stopJar = new StringBuilder();
+            stopJar.append(String.format("ps aux|grep %s | grep -v grep |awk '{print  $2}' |xargs kill -9 ", cdEnvDeployInfoDTO.getJarName()));
+            stopJar.append(System.lineSeparator());
+            stopJar.append(String.format("cd temp-jar && rm -f %s", cdEnvDeployInfoDTO.getJarName()));
+            stopJar.append(" && cd ../ && cd temp-log &&");
+            stopJar.append(String.format("rm -f %s", cdEnvDeployInfoDTO.getJarName().replace(".jar", ".log")));
+            LOGGER.info(stopJar.toString());
+            Session session = null;
+            try {
+                session = ssh.startSession();
+                final Session.Command cmd = session.exec(stopJar.toString());
+                LOGGER.info(IOUtils.readFully(cmd.getInputStream()).toString());
+                LOGGER.info(IOUtils.readFully(cmd.getErrorStream()).toString());
+            } finally {
+                assert session != null;
+                session.close();
             }
         }
-        if (StringUtils.isEmpty(values) || !checkInstruction("jar", values)) {
-            throw new CommonException("error.instruction");
+    }
+
+    private void sshExec(SSHClient ssh, String jarName, NexusMavenRepoDTO mavenRepoDTO, C7nNexusComponentDTO nexusComponentDTO, CdHostDeployConfigVO.JarDeploy jarDeploy) throws IOException {
+        StringBuilder cmdStr = new StringBuilder();
+        cmdStr.append("mkdir temp-jar ").append(System.lineSeparator());
+        cmdStr.append("mkdir temp-log ").append(System.lineSeparator());
+        cmdStr.append("cd temp-jar ").append(System.lineSeparator());
+        Session session = null;
+        try {
+            session = ssh.startSession();
+            // 2.2
+            String curlExec = String.format("curl -o %s -u %s:%s %s ",
+                    jarName,
+                    mavenRepoDTO.getNePullUserId(),
+                    mavenRepoDTO.getNePullUserPassword(),
+                    nexusComponentDTO.getDownloadUrl());
+            cmdStr.append(curlExec).append(System.lineSeparator());
+
+            // 2.3
+            String[] strings = jarDeploy.getValue().split("\n");
+            String values = "";
+            for (String s : strings) {
+                if (s.length() > 0 && !s.contains("#") && s.contains("java")) {
+                    values = s;
+                }
+            }
+            if (StringUtils.isEmpty(values) || !checkInstruction("jar", values)) {
+                throw new CommonException("error.instruction");
+            }
+
+//        String javaJarExec = String.format("echo `nohup %s > sss.log & `", values.replace("${jar}", jarName));
+            String logName = jarName.replace(".jar", ".log");
+            String javaJarExec = String.format("nohup %s > ~/temp-log/%s & ", values.replace("${jar}", jarName), logName);
+
+            cmdStr.append(javaJarExec);
+            LOGGER.info(cmdStr.toString());
+
+            final Session.Command cmd = session.exec(cmdStr.toString());
+            cmd.join(5, TimeUnit.SECONDS);
+            String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
+            String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
+
+            if (loggerError.contains("Unauthorized") || loggerInfo.contains("Unauthorized")) {
+                throw new CommonException(ERROR_DOWNLOAD_JAY);
+            }
+            LOGGER.info(loggerInfo);
+            LOGGER.info(loggerError);
+        } finally {
+            assert session != null;
+            session.close();
         }
-
-        String javaJarExec = String.format("echo `nohup %s & `", values.replace("${jar}", jarName));
-
-        cmdStr.append(javaJarExec);
-        LOGGER.info(cmdStr.toString());
-
-        final Session.Command cmd = session.exec(cmdStr.toString());
-        cmd.join(5, TimeUnit.SECONDS);
-        String loggerInfo = IOUtils.readFully(cmd.getErrorStream()).toString();
-        String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
-
-        if (loggerError.contains("Unauthorized") || loggerInfo.contains("Unauthorized")) {
-            throw new CommonException(ERROR_DOWNLOAD_JAY);
-        }
-        if (cmd.getExitStatus() != 0 || loggerError.contains("java: command not found") || loggerInfo.contains("java: command not found")) {
-            throw new CommonException(ERROR_JAVA_JAR);
-        }
-        LOGGER.info(loggerInfo);
-        LOGGER.info(loggerError);
 
     }
 
@@ -591,16 +612,24 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         HostDeployPayload hostDeployPayload = new HostDeployPayload(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         DevopsCdPipelineRecordDTO pipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
         CustomContextUtil.setUserContext(pipelineRecordDTO.getCreatedBy());
-        producer.apply(
-                StartSagaBuilder
-                        .newBuilder()
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withSourceId(pipelineRecordDTO.getProjectId())
-                        .withRefType("pipelineRecordId")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_HOST_FEPLOY),
-                builder -> builder
-                        .withPayloadAndSerialize(hostDeployPayload)
-                        .withRefId(pipelineRecordId.toString()));
+
+        DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(hostDeployPayload.getJobRecordId());
+        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
+        if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.IMAGED_DEPLOY.getValue())) {
+            cdHostImageDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
+        } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.JAR_DEPLOY.getValue())) {
+            cdHostJarDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
+        }
+//        producer.apply(
+//                StartSagaBuilder
+//                        .newBuilder()
+//                        .withLevel(ResourceLevel.PROJECT)
+//                        .withSourceId(pipelineRecordDTO.getProjectId())
+//                        .withRefType("pipelineRecordId")
+//                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_HOST_FEPLOY),
+//                builder -> builder
+//                        .withPayloadAndSerialize(hostDeployPayload)
+//                        .withRefId(pipelineRecordId.toString()));
     }
 
     @Override
@@ -624,7 +653,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         CdHostDeployConfigVO.ImageDeploy imageDeploy = cdHostDeployConfigVO.getImageDeploy();
         HarborC7nRepoImageTagVo imageTagVoRecord = gson.fromJson(cdJobRecordDTO.getDeployMetadata(), HarborC7nRepoImageTagVo.class);
         SSHClient ssh = new SSHClient();
-        Session session = null;
         try {
             sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
             dockerLogin(ssh, imageTagVoRecord);
@@ -636,7 +664,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         } catch (Exception e) {
             jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } finally {
-            closeSsh(ssh, session);
+            closeSsh(ssh, null);
         }
     }
 
@@ -647,18 +675,18 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(cdJobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
         C7nNexusDeployDTO c7nNexusDeployDTO = gson.fromJson(cdJobRecordDTO.getDeployMetadata(), C7nNexusDeployDTO.class);
         SSHClient ssh = new SSHClient();
-        Session session = null;
         String jarName = String.format("app-%s.jar", GenerateUUID.generateRandomString());
         try {
             sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
-            session = ssh.startSession();
             // 2.1
-            sshExec(session, jarName, c7nNexusDeployDTO.getNexusMavenRepoDTO(), c7nNexusDeployDTO.getC7nNexusComponentDTO(), cdHostDeployConfigVO.getJarDeploy());
+            sshStopJar(ssh, cdJobRecordDTO.getJobId());
+            sshExec(ssh, jarName, c7nNexusDeployDTO.getNexusMavenRepoDTO(), c7nNexusDeployDTO.getC7nNexusComponentDTO(), cdHostDeployConfigVO.getJarDeploy());
+            devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(cdJobRecordDTO.getJobId(), jarName);
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
         } catch (Exception e) {
             jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } finally {
-            closeSsh(ssh, session);
+            closeSsh(ssh, null);
         }
     }
 
