@@ -919,7 +919,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             }
             aduitStatusChangeVO.setCountersigned(0);
             return aduitStatusChangeVO;
-        } else if ("job".equals(auditCheckVO.getSourceType())) {
+        } else if ("task".equals(auditCheckVO.getSourceType())) {
             DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(auditCheckVO.getSourceId());
             if (!PipelineStatus.NOT_AUDIT.toValue().equals(devopsCdJobRecordDTO.getStatus())) {
                 List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByJobRecordId(auditCheckVO.getSourceId());
