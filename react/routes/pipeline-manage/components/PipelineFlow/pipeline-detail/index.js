@@ -67,14 +67,16 @@ export default observer((props) => {
     setRightLineDom(rightList);
   }, [getStepData]);
 
-  function getJobTask(type, metadata, iamUserDTOS) {
+  function getJobTask({ jobType: type, metadata, iamUserDTOS, jobTriggerValue, triggerValue }) {
     if (metadata) {
       const newData = JSON.parse(metadata.replace(/'/g, '"'));
-      const { sonarUrl, config, envName, triggerValue = [], triggerType, countersigned } = newData || {};
+      const { sonarUrl, config, envName, countersigned } = newData || {};
       let content;
       switch (type) {
         case 'sonar':
-          content = <div className="c7ncd-pipeline-detail-job-task-sonar">{sonarUrl}</div>;
+          if (sonarUrl) {
+            content = <div className="c7ncd-pipeline-detail-job-task-sonar">{sonarUrl}</div>;
+          }
           break;
         case 'cdDeploy':
         case 'cdHost':
@@ -83,8 +85,8 @@ export default observer((props) => {
               {envName ? <span className="c7ncd-pipeline-detail-job-task-deploy-item">部署环境：{envName}</span> : null}
               <span>
                 触发分支：
-                {triggerType === 'exact_exclude' ? '精确排除<br/>' : ''}
-                {triggerValue.join()}
+                {jobTriggerValue === 'exact_exclude' ? '精确排除<br/>' : ''}
+                {triggerValue}
               </span>
             </div>
           );
@@ -104,8 +106,8 @@ export default observer((props) => {
               <span className="c7ncd-pipeline-detail-job-task-deploy-item">审核模式：{countersigned === 0 ? '或签' : '会签'}</span>
               <span>
                 触发分支：
-                {triggerType === 'exact_exclude' ? '精确排除<br/>' : ''}
-                {triggerValue.join()}
+                {jobTriggerValue === 'exact_exclude' ? '精确排除<br/>' : ''}
+                {triggerValue}
               </span>
             </div>
           );
@@ -164,12 +166,12 @@ export default observer((props) => {
                 )}
               </div>
             ) : null}
-            {map(jobList, ({ id: jobId, type: jobType, name: jobName, metadata, iamUserDTOS }, index) => (
+            {map(jobList, ({ id: jobId, type: jobType, name: jobName, metadata, iamUserDTOS, triggerValue: jobTriggerValue, triggerValue }, index) => (
               <div key={`${stageId}-${jobId}`}>
                 {index && leftLineDom[stageIndex] ? leftLineDom[stageIndex][index] : null}
                 <div className={`c7ncd-pipeline-detail-job c7ncd-pipeline-detail-job-${stageType}`} id={`${id}-${stageIndex}-job-${index}`}>
                   <div className="c7ncd-pipeline-detail-job-title">【{jobTask[jobType]}】{jobName}</div>
-                  {jobType !== 'custom' && getJobTask(jobType, metadata, iamUserDTOS)}
+                  {jobType !== 'custom' && getJobTask({ jobType, metadata, iamUserDTOS, jobTriggerValue, triggerValue })}
                 </div>
                 {index && stageIndex !== getStepData.length - 1 && rightLineDom[stageIndex] ? rightLineDom[stageIndex][index] : null}
               </div>

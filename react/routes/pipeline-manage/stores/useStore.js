@@ -71,19 +71,34 @@ export default function useStore() {
     /**
      ** 人工审核阶段或任务
      * @param projectId
-     * @param data
+     * @param cdRecordId
+     * @param stageRecordId
+     * @param result
      */
-    checkData(projectId, data) {
-      return axios.post(`/devops/v1/projects/${projectId}/pipeline/audit`, JSON.stringify(data));
+    auditStage({ projectId, cdRecordId, stageRecordId, result }) {
+      return axios.post(`devops/v1/projects/${projectId}/pipeline_records/${cdRecordId}/stage_records/${stageRecordId}/audit?result=${result}`);
+    },
+
+    /**
+     ** 人工审核阶段或任务
+     * @param projectId
+     * @param cdRecordId
+     * @param stageRecordId
+     * @param jobRecordId
+     * @param result
+     */
+    auditJob({ projectId, cdRecordId, stageRecordId, jobRecordId, result }) {
+      return axios.post(`/devops/v1/projects/${projectId}/pipeline_records/${cdRecordId}/stage_records/${stageRecordId}/job_records/${jobRecordId}/audit?result=${result}`);
     },
 
     /**
      ** 人工审核预检，判断是否可以审核
      * @param projectId
+     * @param cdRecordId
      * @param data
      */
-    canCheck(projectId, data) {
-      return axios.post(`/devops/v1/projects/${projectId}/pipeline/check_audit`, JSON.stringify(data));
+    canCheck(projectId, cdRecordId, data) {
+      return axios.post(`/devops/v1/projects/${projectId}/pipeline_records/${cdRecordId}/check_audit_status`, JSON.stringify(data));
     },
   }));
 }

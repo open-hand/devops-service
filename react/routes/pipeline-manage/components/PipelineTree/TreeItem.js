@@ -125,12 +125,13 @@ const TreeItem = observer(({ record, search }) => {
   }
 
   function openAuditModal() {
+    const pipelineName = record.parent ? record.parent.get('name') : '';
     Modal.open({
       key: auditKey,
       title: formatMessage({ id: `${intlPrefix}.execute.audit` }),
       children: <AuditModal
         cdRecordId={record.get('cdRecordId')}
-        name={record.get('gitlabPipelineId')}
+        name={pipelineName}
         mainStore={mainStore}
         onClose={refresh}
         checkData={record.get('devopsCdPipelineDeatilVO')}
@@ -151,8 +152,9 @@ const TreeItem = observer(({ record, search }) => {
         deleteRecord.setState('isLoading', false);
         treeDs.remove(deleteRecord);
         forEach(recordData.list, (item) => {
-          item.key = `${parentId}-${item.id}`;
+          item.key = `${parentId}-${item.id || item.ciRecordId || item.cdRecordId}`;
           item.parentId = parentId;
+          item.status = item.status || (item.ciStatus === 'success' && item.cdStatus ? item.cdStatus : item.ciStatus);
           const treeRecord = treeDs.create(item);
           treeDs.push(treeRecord);
         });
@@ -226,6 +228,11 @@ const TreeItem = observer(({ record, search }) => {
               action: openAuditModal,
             }];
           }
+          actionData = [{
+            service: [''],
+            text: formatMessage({ id: `${intlPrefix}.execute.audit` }),
+            action: openAuditModal,
+          }];
           break;
         default:
           break;
