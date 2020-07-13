@@ -119,12 +119,12 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
                 .map(DevopsEnvironmentDTO::getId)
                 .collect(Collectors.toList());
 
-        SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getOrganizationId());
-        if (sprintDTO.getSprintId() == null) {
+        if (envIds.size() == 0) {
             return new HashMap<>();
         }
 
-        if (envIds.size() == 0) {
+        SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getOrganizationId());
+        if (sprintDTO.getSprintId() == null) {
             return new HashMap<>();
         }
 
