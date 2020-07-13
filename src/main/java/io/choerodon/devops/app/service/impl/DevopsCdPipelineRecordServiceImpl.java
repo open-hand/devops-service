@@ -844,7 +844,17 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 }
                 //创建实例
                 if (CommandType.CREATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
-                    cdAuto.setInstanceName(devopsCdEnvDeployInfoDTO.getInstanceName());
+                    //instanceName 根据环境id code来查询
+                    AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
+                    appServiceInstanceDTO.setCode(devopsCdEnvDeployInfoDTO.getInstanceName());
+                    appServiceInstanceDTO.setEnvId(devopsCdEnvDeployInfoDTO.getEnvId());
+                    AppServiceInstanceDTO serviceInstanceDTO = appServiceInstanceMapper.selectOne(appServiceInstanceDTO);
+                    if (!Objects.isNull(serviceInstanceDTO)) {
+                        cdAuto.setInstanceName(serviceInstanceDTO.getCode());
+                        cdAuto.setInstanceId(serviceInstanceDTO.getId());
+                        cdAuto.setAppServiceId(serviceInstanceDTO.getAppServiceId());
+                        cdAuto.setEnvId(serviceInstanceDTO.getEnvId());
+                    }
                 }
                 //替换实例
                 if (CommandType.UPDATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {

@@ -64,10 +64,10 @@ public class DevopsCdJobRecordVO {
     }
     // 审核模式 指定审核人员 已审核人员 审核状态
 
-    public class Audit{
-       private List<IamUserDTO> appointUsers;
-       private List<IamUserDTO> reviewedUsers;
-       private String status;
+    public class Audit {
+        private List<IamUserDTO> appointUsers;
+        private List<IamUserDTO> reviewedUsers;
+        private String status;
 
         public List<IamUserDTO> getAppointUsers() {
             return appointUsers;
@@ -99,6 +99,33 @@ public class DevopsCdJobRecordVO {
         private String appServiceName;
         private String appServiceVersion;
         private String instanceName;
+        private Long instanceId;
+        private Long appServiceId;
+        private Long envId;
+
+        public Long getInstanceId() {
+            return instanceId;
+        }
+
+        public void setInstanceId(Long instanceId) {
+            this.instanceId = instanceId;
+        }
+
+        public Long getAppServiceId() {
+            return appServiceId;
+        }
+
+        public void setAppServiceId(Long appServiceId) {
+            this.appServiceId = appServiceId;
+        }
+
+        public Long getEnvId() {
+            return envId;
+        }
+
+        public void setEnvId(Long envId) {
+            this.envId = envId;
+        }
 
         public String getEnvName() {
             return envName;
