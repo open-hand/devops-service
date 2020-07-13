@@ -219,8 +219,7 @@ const PipelineManage = observer((props) => {
           name: formatMessage({ id: `${intlPrefix}.execute.audit` }),
           icon: 'authorize',
           handler: openAuditModal,
-          // display: status === 'not_audit' && devopsCdPipelineDeatilVO && devopsCdPipelineDeatilVO.execute,
-          display: status === 'not_audit',
+          display: status === 'not_audit' && devopsCdPipelineDeatilVO && devopsCdPipelineDeatilVO.execute,
           group: 2,
         });
       }

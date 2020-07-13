@@ -228,11 +228,6 @@ const TreeItem = observer(({ record, search }) => {
               action: openAuditModal,
             }];
           }
-          actionData = [{
-            service: [''],
-            text: formatMessage({ id: `${intlPrefix}.execute.audit` }),
-            action: openAuditModal,
-          }];
           break;
         default:
           break;
