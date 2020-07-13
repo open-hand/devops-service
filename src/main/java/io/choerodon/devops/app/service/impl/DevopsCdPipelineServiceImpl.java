@@ -800,6 +800,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
                     // 更新job状态为success
                     devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.SUCCESS.toValue());
+                    // 更新阶段状态为RUNNING
+                    devopsCdStageRecordService.updateStatusById(stageRecordId, PipelineStatus.RUNNING.toValue());
+                    // 更新流水线状态为RUNNING
+                    devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.RUNNING.toValue());
 
                     // 发送通知
                     sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_PASS, userIds, pipelineRecordId, devopsCdStageRecordDTO.getStageName(), devopsCdStageRecordDTO.getStageId());
@@ -822,6 +826,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                             .allMatch(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus()))) {
                         // 更新job状态为success
                         devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.SUCCESS.toValue());
+                        // 更新阶段状态为RUNNING
+                        devopsCdStageRecordService.updateStatusById(stageRecordId, PipelineStatus.RUNNING.toValue());
+                        // 更新流水线状态为RUNNING
+                        devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.RUNNING.toValue());
                         // 执行下一个任务
                         startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
                     } else {
