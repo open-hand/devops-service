@@ -207,7 +207,7 @@ export default observer((props) => {
       addStepDs.current.set('step', name);
       addStepDs.current.set('type', curType || 'CI');
       addStepDs.current.set('triggerType', triggerType);
-      addStepDs.current.set('cdAuditUserIds', cdAuditUserIds);
+      addStepDs.current.set('cdAuditUserIds', cdAuditUserIds && [...cdAuditUserIds]);
     }
     const optsFun = optType === 'create' ? createNewStage : editStage;
     Modal.open({
