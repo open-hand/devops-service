@@ -7,11 +7,17 @@ import org.hzero.core.util.Results;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
 import io.choerodon.devops.app.service.CiCdPipelineRecordService;
+import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.Permission;
 
 @RestController
@@ -65,5 +71,18 @@ public class CiCdPipelineRecordController {
             @RequestParam("gitlab_project_id") Long gitlabProjectId) {
         ciCdPipelineRecordService.cancel(projectId, cdPipelineRecordId, gitlabPipelineId, gitlabProjectId);
         return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "分页查询流水线执行记录")
+    @GetMapping("/{pipeline_id}")
+    public ResponseEntity<Page<CiCdPipelineRecordVO>> pagingPipelineRecord(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "流水线Id", required = true)
+            @PathVariable(value = "pipeline_id") Long pipelineId,
+            @ApiIgnore
+            @SortDefault(value = DevopsCiPipelineRecordDTO.FIELD_GITLAB_PIPELINE_ID, direction = Sort.Direction.DESC) PageRequest pageable) {
+        return ResponseEntity.ok(ciCdPipelineRecordService.pagingPipelineRecord(projectId, pipelineId, pageable));
     }
 }
