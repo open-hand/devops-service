@@ -12,6 +12,7 @@ import './index.less';
 import { handlePromptError } from '../../../../../../utils';
 import StageType from '../stage-type';
 import StatusTag from '../StatusTag';
+import DepolyLog from '../deployLog';
 
 const jobType = {
   build: {
@@ -27,13 +28,13 @@ const jobType = {
     name: '发布Chart',
   },
   cdDeploy: {
-    name: '部署任务',
+    name: '部署',
   },
   cdAudit: {
     name: '人工卡点',
   },
   cdHost: {
-    name: '主机部署任务',
+    name: '主机部署',
   },
 };
 
@@ -78,7 +79,10 @@ const DetailItem = (props) => {
     audit, // cd阶段job独有的
     stageId, // cd阶段job独有的
     cdRecordId, // cd阶段job独有的
-    jobId, // cd阶段job独有的
+    gitlabPipelineId,
+    jobRecordId,
+    history,
+    location: { search },
   } = props;
 
   const { gitlabProjectId, appServiceId } = getDetailData && getDetailData.ciCdPipelineVO;
@@ -102,13 +106,19 @@ const DetailItem = (props) => {
   }
 
   function openCdLog() {
+    const logData = {
+      projectId,
+      cdRecordId,
+      stageId,
+      jobRecordId,
+    };
     Modal.open({
       title: `查看${jobType[type].name}日志`,
       key: Modal.key(),
       style: {
         width: 'calc(100vw - 3.52rem)',
       },
-      // children: <CodeLog gitlabProjectId={gitlabProjectId} projectId={projectId} gitlabJobId={gitlabJobId} />,
+      children: <DepolyLog {...logData} />,
       drawer: true,
       okText: '关闭',
       footer: (okbtn) => (
@@ -150,10 +160,9 @@ const DetailItem = (props) => {
       return false;
     }
   }
-
   async function handleCdJobRetry() {
     try {
-      const res = await retryCdJob(projectId, cdRecordId, stageId, jobId);
+      const res = await retryCdJob(projectId, cdRecordId, gitlabPipelineId, gitlabProjectId);
       if (handlePromptError(res)) {
         handleRefresh();
         return true;
@@ -171,7 +180,27 @@ const DetailItem = (props) => {
       appServiceName: cdJobAppServiceName,
       appServiceVersion: cdJobAppServiceVersion,
       instanceName,
+      envId,
+      appServiceId: jobAppServiceId,
+      instanceId,
     } = cdAuto || {};
+
+    function linkTo() {
+      if (instanceId && instanceName) {
+        history.push({
+          pathname: '/devops/resource',
+          search,
+          state: {
+            instanceId,
+            appServiceId,
+            envId,
+          },
+        });
+      } else {
+        history.push(`/devops/resource${search}`);
+      }
+    }
+
     return (
       <main>
         <div>
@@ -188,7 +217,10 @@ const DetailItem = (props) => {
         </div>
         <div>
           <span>生成实例:</span>
-          <span style={{ color: '#3F51B5' }}>{instanceName || '-'}</span>
+          <span
+            style={{ color: '#3F51B5', cursor: 'pointer' }}
+            onClick={linkTo}
+          >{instanceName || '-'}</span>
         </div>
       </main>
     );
@@ -229,7 +261,7 @@ const DetailItem = (props) => {
 
   function getRetryBtnDisabled() {
     const successAndFailed = itemStatus === 'success' || itemStatus === 'failed';
-    if (type === 'cdDeploy' || type === 'cdHost') {
+    if (type === 'cdDeploy') {
       return !successAndFailed;
     } else {
       return !(successAndFailed || itemStatus === 'canceled');
@@ -253,38 +285,43 @@ const DetailItem = (props) => {
         </div>
       </header>
       {
-        (type === 'cdDeploy' || type === 'cdHost') && renderCdAuto()
+        type === 'cdDeploy' && renderCdAuto()
       }
       {
         type === 'cdAudit' && renderCdAudit()
       }
       <footer>
-        <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.job.log']}>
-          <Tooltip title="查看日志">
-            <Button
-              funcType="flat"
-              shape="circle"
-              size="small"
-              icon="description-o"
-              disabled={itemStatus === 'created'}
-              onClick={(type !== 'cdDeploy' || type !== 'cdHost') ? openDescModal : openCdLog}
-              color="primary"
-            />
-          </Tooltip>
-        </Permission>
-        <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.job.retry']}>
-          <Tooltip title="重试">
-            <Button
-              funcType="flat"
-              disabled={getRetryBtnDisabled()}
-              shape="circle"
-              size="small"
-              icon="refresh"
-              color="primary"
-              onClick={type === 'cdDeploy' || type === 'cdHost' ? handleCdJobRetry : handleJobRetry}
-            />
-          </Tooltip>
-        </Permission>
+        {
+          type !== 'cdAudit' && type !== 'cdHost' && <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.job.log']}>
+            <Tooltip title="查看日志">
+              <Button
+                funcType="flat"
+                shape="circle"
+                size="small"
+                icon="description-o"
+                disabled={itemStatus === 'created'}
+                onClick={(type !== 'cdDeploy') ? openDescModal : openCdLog}
+                color="primary"
+              />
+            </Tooltip>
+          </Permission>
+        }
+        {
+          type !== 'cdAudit'
+          && <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.job.retry']}>
+            <Tooltip title="重试">
+              <Button
+                funcType="flat"
+                disabled={getRetryBtnDisabled()}
+                shape="circle"
+                size="small"
+                icon="refresh"
+                color="primary"
+                onClick={type === 'cdDeploy' || type === 'cdHost' || type === 'cdAudit' ? handleCdJobRetry : handleJobRetry}
+              />
+            </Tooltip>
+          </Permission>
+        }
         {
           type === 'sonar' && (
             <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.job.sonarqube']}>
@@ -324,12 +361,13 @@ export default observer((props) => {
       return item;
     });
     return hasJobs ? lists.map((item, index) => {
-      const { status, gitlabJobId, stage } = item;
+      const { status, gitlabJobId, stage, id: jobRecordId } = item;
       return (
         <DetailItem
           key={gitlabJobId}
           piplineName={stage}
           itemStatus={status}
+          jobRecordId={jobRecordId}
           {...props}
           {...item}
         />

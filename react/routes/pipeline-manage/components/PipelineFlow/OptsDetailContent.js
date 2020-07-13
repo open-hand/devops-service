@@ -24,6 +24,8 @@ export default observer((props) => {
     intl: { formatMessage },
     intlPrefix,
     mainStore,
+    history,
+    location,
   } = usePipelineManageStore();
 
   const {
@@ -66,6 +68,8 @@ export default observer((props) => {
           seconds={durationSeconds}
           piplineStatus={stageStatus}
           stageId={stageId}
+          history={history}
+          location={location}
           {...item}
           {...props}
         />
