@@ -10,12 +10,15 @@ import org.hzero.boot.message.entity.Receiver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCdAuditRecordService;
 import io.choerodon.devops.app.service.SendNotificationService;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdAuditRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO;
@@ -129,5 +132,27 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
         if (devopsCdAuditRecordMapper.insertSelective(devopsCdAuditRecordDTO) != 1) {
             throw new CommonException(ERROR_SAVE_AUDIT_RECORD);
         }
+    }
+
+    @Override
+    public DevopsCdAuditRecordDTO queryByStageRecordIdAndUserId(Long stageRecordId, Long userId) {
+        Assert.notNull(stageRecordId, PipelineCheckConstant.ERROR_STAGE_RECORD_ID_IS_NULL);
+        Assert.notNull(userId, ResourceCheckConstant.ERROR_USER_ID_IS_NULL);
+
+        DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = new DevopsCdAuditRecordDTO();
+        devopsCdAuditRecordDTO.setStageRecordId(stageRecordId);
+        devopsCdAuditRecordDTO.setUserId(userId);
+        return devopsCdAuditRecordMapper.selectOne(devopsCdAuditRecordDTO);
+    }
+
+    @Override
+    public DevopsCdAuditRecordDTO queryByJobRecordIdAndUserId(Long jobRecordId, Long userId) {
+        Assert.notNull(jobRecordId, PipelineCheckConstant.ERROR_JOB_RECORD_ID_IS_NULL);
+        Assert.notNull(userId, ResourceCheckConstant.ERROR_USER_ID_IS_NULL);
+
+        DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = new DevopsCdAuditRecordDTO();
+        devopsCdAuditRecordDTO.setJobRecordId(jobRecordId);
+        devopsCdAuditRecordDTO.setUserId(userId);
+        return devopsCdAuditRecordMapper.selectOne(devopsCdAuditRecordDTO);
     }
 }

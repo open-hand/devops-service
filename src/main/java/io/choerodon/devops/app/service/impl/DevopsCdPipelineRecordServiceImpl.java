@@ -753,17 +753,42 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         devopsCdJobRecordVO.setJobExecuteTime();
                     });
                     devopsCdStageRecordVO.setJobRecordVOList(devopsCdJobRecordVOS);
-                    if (AuditStatusEnum.NOT_AUDIT.value().equals(devopsCdStageRecordVO.getStatus()) || AuditStatusEnum.AUDITING.value().equals(devopsCdStageRecordVO.getStatus()))
-                        devopsCdPipelineDeatilVO = generateCdPipelineDeatilVO(devopsCdStageRecordVO);
+//                    if (Objects.isNull(devopsCdPipelineDeatilVO)) {
+//                        devopsCdPipelineDeatilVO = generateCdPipelineDeatilVO(devopsCdStageRecordVO);
+//                    }
                 }
-
+                // 计算流水线当前停留的审核节点
+                addAuditStateInfo(devopsCdPipelineRecordVO);
                 devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
-                devopsCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineDeatilVO);
+//                devopsCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineDeatilVO);
             } else {
                 devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.EMPTY_LIST);
             }
         });
         return pipelineRecordInfo;
+    }
+
+    private void addAuditStateInfo(DevopsCdPipelineRecordVO devopsCdPipelineRecordVO) {
+        DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO = new DevopsCdPipelineDeatilVO();
+        DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordService.queryStageWithPipelineRecordIdAndStatus(devopsCdPipelineRecordVO.getPipelineId(), PipelineStatus.NOT_AUDIT.toValue());
+        if (devopsCdStageRecordDTO != null) {
+            // 继续判断阶段中是否还有待审核的任务
+            DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryJobWithStageRecordIdAndStatus(devopsCdStageRecordDTO.getId(), PipelineStatus.NOT_AUDIT.toValue());
+            if (devopsCdJobRecordDTO == null) {
+                DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = devopsCdAuditRecordService.queryByStageRecordIdAndUserId(devopsCdStageRecordDTO.getId(), DetailsHelper.getUserDetails().getUserId());
+                devopsCdPipelineDeatilVO.setType("stage");
+                devopsCdPipelineDeatilVO.setExecute(devopsCdAuditRecordDTO != null);
+                devopsCdPipelineDeatilVO.setStageRecordId(devopsCdStageRecordDTO.getId());
+            } else {
+                DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = devopsCdAuditRecordService.queryByJobRecordIdAndUserId(devopsCdJobRecordDTO.getId(), DetailsHelper.getUserDetails().getUserId());
+                devopsCdPipelineDeatilVO.setType("task");
+                devopsCdPipelineDeatilVO.setExecute(devopsCdAuditRecordDTO != null);
+                devopsCdPipelineDeatilVO.setStageRecordId(devopsCdStageRecordDTO.getId());
+                devopsCdPipelineDeatilVO.setTaskRecordId(devopsCdJobRecordDTO.getId());
+            }
+        }
+        devopsCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineDeatilVO);
+
     }
 
     private DevopsCdPipelineDeatilVO generateCdPipelineDeatilVO(DevopsCdStageRecordVO devopsCdStageRecordVO) {
