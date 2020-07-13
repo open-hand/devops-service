@@ -26,6 +26,7 @@ import io.choerodon.devops.infra.mapper.DevopsIngressMapper;
 import io.choerodon.devops.infra.util.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +55,7 @@ public class CertificationServiceImpl implements CertificationService {
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Lazy
     @Autowired
     private DevopsCertificationValidator devopsCertificationValidator;
     @Autowired
