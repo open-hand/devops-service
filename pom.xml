@@ -21,7 +21,7 @@
         <choerodon.serviceBuild>true</choerodon.serviceBuild>
         <choerodon.mainClass>io.choerodon.devops.DevopsServiceApplication</choerodon.mainClass>
         <!--        TODO 替换为稳定版-->
-        <temp.key.encrypt.version>1.5.0-SNAPSHOT</temp.key.encrypt.version>
+        <temp.key.encrypt.version>1.4.0.RELEASE</temp.key.encrypt.version>
     </properties>
 
 

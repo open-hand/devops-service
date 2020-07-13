@@ -45,6 +45,7 @@ public class AppServiceController {
     @Permission(permissionWithin = true)
     @CustomPageRequest
     public ResponseEntity<Page<AppServiceRepVO>> internalListAll(
+            @Encrypt
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable,
