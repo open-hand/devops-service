@@ -127,11 +127,6 @@ export default function useStore() {
             this.dataSource2[index].type = curType;
             this.dataSource2[index].triggerType = triggerType;
             this.dataSource2[index].cdAuditUserIds = [...cdAuditUserIds];
-            // if (!this.dataSource2[index].cdAuditUserIds) {
-            //   this.dataSource2[index].cdAuditUserIds = cdAuditUserIds;
-            // } else {
-            //   this.dataSource2[index].cdAuditUserIds.concat(cdAuditUserIds || []);
-            // }
             return true;
           }
         });
@@ -141,12 +136,7 @@ export default function useStore() {
             this.dataSource[index].name = newName;
             this.dataSource[index].type = curType;
             this.dataSource[index].triggerType = triggerType;
-            if (!this.dataSource[index].cdAuditUserIds) {
-              this.dataSource[index].cdAuditUserIds = cdAuditUserIds;
-            } else {
-              this.dataSource[index].cdAuditUserIds.concat(cdAuditUserIds || []);
-            }
-
+            this.dataSource[index].cdAuditUserIds = [...cdAuditUserIds];
             return true;
           }
         });
