@@ -137,6 +137,7 @@ export default observer(() => {
         const { cdAuditUserIds } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
         newCdAuditUserIds = cdAuditUserIds;
       }
+
       const newJobDetail = {
         ...jobDetail,
         ...JSON.parse(jobDetail.metadata.replace(/'/g, '"')),
