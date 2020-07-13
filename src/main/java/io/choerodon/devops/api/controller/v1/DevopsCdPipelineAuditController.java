@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.AduitStatusChangeVO;
+import io.choerodon.devops.api.vo.AuditCheckVO;
 import io.choerodon.devops.app.service.DevopsCdPipelineService;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -51,5 +53,17 @@ public class DevopsCdPipelineAuditController {
                                          @RequestParam(value = "result") String result) {
         devopsCdPipelineService.auditJob(projectId, pipelineRecordId, stageRecordId, jobRecordId, result);
         return Results.success();
+    }
+
+    /**
+     * 校验stage、job审核状态是否改变
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "校验stage、job审核状态是否改变")
+    @PostMapping("check_audit_status")
+    public ResponseEntity<AduitStatusChangeVO> checkAuditStatus(@PathVariable(value = "project_id") Long projectId,
+                                                                @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,
+                                                                @RequestBody AuditCheckVO auditCheckVO) {
+        return ResponseEntity.ok(devopsCdPipelineService.checkAuditStatus(projectId, pipelineRecordId, auditCheckVO));
     }
 }
