@@ -4,7 +4,6 @@ import static io.choerodon.devops.infra.constant.GitOpsConstants.DEFAULT_PIPELIN
 import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
 
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -402,16 +401,16 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 应用有权限的应用服务
         Long userId = DetailsHelper.getUserDetails().getUserId();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
+//        boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         Set<Long> appServiceIds;
-        if (projectOwner) {
+//        if (projectOwner) {
         appServiceIds = appServiceMapper.listByActive(projectId).stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
-        } else {
-            appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
-            if (CollectionUtils.isEmpty(appServiceIds)) {
-                return new ArrayList<>();
-            }
-        }
+//        } else {
+//            appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
+//            if (CollectionUtils.isEmpty(appServiceIds)) {
+//                return new ArrayList<>();
+//            }
+//        }
 
         // 查询流水线
         List<CiCdPipelineVO> ciCdPipelineVOS = ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, name);
@@ -504,7 +503,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
             ciCdPipelineVO.setCiCdPipelineRecordVOS(ciCdPipelineRecordVOS);
             // 将piplineRecord记录排序
-            CiCdPipelineSortUtils.recordListSort(ciCdPipelineVO.getCiCdPipelineRecordVOS());
+            CiCdPipelineUtils.recordListSort(ciCdPipelineVO.getCiCdPipelineRecordVOS());
         });
         return ciCdPipelineVOS;
     }

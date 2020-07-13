@@ -1,7 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.GitOpsConstants.DEFAULT_PIPELINE_RECORD_SIZE;
-
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -30,7 +28,7 @@ import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.*;
-import io.choerodon.devops.infra.util.CiCdPipelineSortUtils;
+import io.choerodon.devops.infra.util.CiCdPipelineUtils;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -92,20 +90,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
             ciCdPipelineRecordVO.setGitlabPipelineId(devopsCiPipelineRecordVO.getGitlabPipelineId());
             //计算记录的状态
-            if (!PipelineStatus.SUCCESS.toValue().equals(devopsCiPipelineRecordVO.getStatus())) {
-                ciCdPipelineRecordVO.setStatus(devopsCdPipelineRecordVO.getStatus());
-            }
-            if (PipelineStatus.SUCCESS.toValue().equals(devopsCiPipelineRecordVO.getStatus())
-                    && PipelineStatus.SUCCESS.toValue().equals(devopsCdPipelineRecordVO.getStatus())) {
-                ciCdPipelineRecordVO.setStatus(PipelineStatus.SUCCESS.toValue());
-            }
-            //如果ci状态成功cd是未执行，则状态为执行中
-            if (PipelineStatus.SUCCESS.toValue().equals(devopsCiPipelineRecordVO.getStatus()) &&
-                    PipelineStatus.CREATED.toValue().equals(devopsCdPipelineRecordVO.getStatus())) {
-                ciCdPipelineRecordVO.setStatus(PipelineStatus.RUNNING.toValue());
-            } else {
-                ciCdPipelineRecordVO.setStatus(devopsCdPipelineRecordVO.getStatus());
-            }
+            CiCdPipelineUtils.calculateStatus(ciCdPipelineRecordVO, devopsCiPipelineRecordVO, devopsCdPipelineRecordVO);
             ciCdPipelineRecordVO.setCiRecordId(devopsCiPipelineRecordVO.getId());
             ciCdPipelineRecordVO.setCdRecordId(devopsCdPipelineRecordVO.getId());
             ciCdPipelineRecordVO.setCommit(devopsCiPipelineRecordVO.getCommit());
@@ -299,7 +284,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 
         }
         // 排序
-        CiCdPipelineSortUtils.recordListSort(ciCdPipelineRecordVOPage.getContent());
+        CiCdPipelineUtils.recordListSort(ciCdPipelineRecordVOPage.getContent());
         return ciCdPipelineRecordVOPage;
     }
 
