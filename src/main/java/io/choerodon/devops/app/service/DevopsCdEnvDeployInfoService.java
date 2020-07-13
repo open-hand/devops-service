@@ -16,4 +16,8 @@ public interface DevopsCdEnvDeployInfoService {
     DevopsCdEnvDeployInfoDTO queryById(Long deployInfoId);
 
     void update(DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO);
+
+    void updateOrUpdateByCdJob(Long cdJobId, String jarName);
+
+    DevopsCdEnvDeployInfoDTO queryByCdJobId(Long cdJobId);
 }

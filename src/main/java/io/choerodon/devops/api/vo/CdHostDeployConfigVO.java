@@ -145,14 +145,14 @@ public class CdHostDeployConfigVO {
         private String versionRegular;
 
         @ApiModelProperty("部署values")
-        private String values;
+        private String value;
 
-        public String getValues() {
-            return values;
+        public String getValue() {
+            return value;
         }
 
-        public void setValues(String values) {
-            this.values = values;
+        public void setValue(String value) {
+            this.value = value;
         }
 
         public String getServerName() {
