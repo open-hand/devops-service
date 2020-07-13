@@ -118,7 +118,9 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = queryById(jobRecordId);
         devopsCdJobRecordDTO.setStatus(PipelineStatus.FAILED.toValue());
         devopsCdJobRecordDTO.setFinishedDate(new Date());
-        devopsCdJobRecordDTO.setDurationSeconds((new Date().getTime() - devopsCdJobRecordDTO.getStartedDate().getTime()) / 1000);
+        if (devopsCdJobRecordDTO.getStartedDate() != null) {
+            devopsCdJobRecordDTO.setDurationSeconds((new Date().getTime() - devopsCdJobRecordDTO.getStartedDate().getTime()) / 1000);
+        }
         update(devopsCdJobRecordDTO);
     }
 
@@ -160,7 +162,9 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = queryById(jobRecordId);
         devopsCdJobRecordDTO.setStatus(PipelineStatus.SUCCESS.toValue());
         devopsCdJobRecordDTO.setFinishedDate(new Date());
-        devopsCdJobRecordDTO.setDurationSeconds((new Date().getTime() - devopsCdJobRecordDTO.getStartedDate().getTime()) / 1000);
+        if (devopsCdJobRecordDTO.getStartedDate() != null) {
+            devopsCdJobRecordDTO.setDurationSeconds((new Date().getTime() - devopsCdJobRecordDTO.getStartedDate().getTime()) / 1000);
+        }
         update(devopsCdJobRecordDTO);
     }
 
