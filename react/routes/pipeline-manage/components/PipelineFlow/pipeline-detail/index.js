@@ -151,7 +151,7 @@ export default observer((props) => {
               </div>
             </div>
             <div className="c7ncd-pipeline-detail-stage-line" />
-            {stageIndex !== getStepData.length - 1 ? (
+            {stageIndex !== 0 ? (
               <div className="c7ncd-pipeline-detail-stage-arrow">
                 {triggerType === 'auto' ? (
                   <svg xmlns="http://www.w3.org/2000/svg" width="28" height="9" viewBox="0 0 28 9">

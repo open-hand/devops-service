@@ -219,11 +219,13 @@ const TreeItem = observer(({ record, search }) => {
           }];
           break;
         case 'not_audit':
-          actionData = [{
-            service: [''],
-            text: formatMessage({ id: `${intlPrefix}.execute.audit` }),
-            action: openAuditModal,
-          }];
+          if (record.get('devopsCdPipelineDeatilVO') && record.get('devopsCdPipelineDeatilVO').execute) {
+            actionData = [{
+              service: [''],
+              text: formatMessage({ id: `${intlPrefix}.execute.audit` }),
+              action: openAuditModal,
+            }];
+          }
           break;
         default:
           break;
@@ -236,8 +238,8 @@ const TreeItem = observer(({ record, search }) => {
           <div className={`${prefixCls}-sidebar-header-stage`}>
             {map(stageRecordVOS, ({ status: stageStatus, triggerType: stageTriggerType = 'auto' }) => (
               <Fragment>
-                <span className={`${prefixCls}-sidebar-header-stage-item ${prefixCls}-sidebar-header-stage-item-${stageStatus}`} />
                 <span className={`${prefixCls}-sidebar-header-stage-line ${prefixCls}-sidebar-header-stage-line-${stageTriggerType}`} />
+                <span className={`${prefixCls}-sidebar-header-stage-item ${prefixCls}-sidebar-header-stage-item-${stageStatus}`} />
               </Fragment>
             ))}
           </div>

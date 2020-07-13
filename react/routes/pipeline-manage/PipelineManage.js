@@ -159,7 +159,7 @@ const PipelineManage = observer((props) => {
   }
 
   function getHeaderButtons() {
-    const { parentId, status } = getSelectedMenu;
+    const { parentId, status, devopsCdPipelineDeatilVO } = getSelectedMenu;
     const buttons = [{
       permissions: ['choerodon.code.project.develop.ci-pipeline.ps.create'],
       name: formatMessage({ id: `${intlPrefix}.create` }),
@@ -218,7 +218,7 @@ const PipelineManage = observer((props) => {
           name: formatMessage({ id: `${intlPrefix}.execute.audit` }),
           icon: 'authorize',
           handler: openAuditModal,
-          display: status === 'not_audit',
+          display: status === 'not_audit' && devopsCdPipelineDeatilVO && devopsCdPipelineDeatilVO.execute,
           group: 2,
         });
       }
