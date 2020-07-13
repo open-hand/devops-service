@@ -194,5 +194,16 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
         }
     }
 
+    @Override
+    public DevopsCdJobRecordDTO queryJobWithStageRecordIdAndStatus(Long stageRecordId, String status) {
+        Assert.notNull(stageRecordId, PipelineCheckConstant.ERROR_STAGE_RECORD_ID_IS_NULL);
+        Assert.notNull(status, PipelineCheckConstant.ERROR_JOB_STATUS_IS_NULL);
+
+        DevopsCdJobRecordDTO devopsCdJobRecordDTO = new DevopsCdJobRecordDTO();
+        devopsCdJobRecordDTO.setStageRecordId(stageRecordId);
+        devopsCdJobRecordDTO.setStatus(status);
+        return devopsCdJobRecordMapper.selectOne(devopsCdJobRecordDTO);
+    }
+
 
 }

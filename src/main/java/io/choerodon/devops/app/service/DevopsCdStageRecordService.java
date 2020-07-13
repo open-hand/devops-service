@@ -43,4 +43,6 @@ public interface DevopsCdStageRecordService {
     void deleteByPipelineRecordId(Long pipelineRecordId);
 
     void updateStageStatusStop(Long stageRecordId);
+
+    DevopsCdStageRecordDTO queryStageWithPipelineRecordIdAndStatus(Long pipelineRecordId, String status);
 }

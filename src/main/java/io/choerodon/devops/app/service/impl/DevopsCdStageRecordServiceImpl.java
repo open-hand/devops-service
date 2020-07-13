@@ -156,4 +156,16 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
         // 更新阶段中的所有任务状态为stop
         devopsCdJobRecordService.updateJobStatusStopByStageRecordId(stageRecordId);
     }
+
+    @Override
+    public DevopsCdStageRecordDTO queryStageWithPipelineRecordIdAndStatus(Long pipelineRecordId, String status) {
+        Assert.notNull(pipelineRecordId, PipelineCheckConstant.ERROR_PIPELINE_RECORD_ID_IS_NULL);
+        Assert.notNull(status, PipelineCheckConstant.ERROR_STAGE_STATUS_IS_NULL);
+
+        DevopsCdStageRecordDTO devopsCdStageRecordDTO = new DevopsCdStageRecordDTO();
+        devopsCdStageRecordDTO.setPipelineRecordId(pipelineRecordId);
+        devopsCdStageRecordDTO.setStatus(status);
+
+        return devopsCdStageRecordMapper.selectOne(devopsCdStageRecordDTO);
+    }
 }

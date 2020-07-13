@@ -16,8 +16,10 @@ public class PipelineCheckConstant {
     // stage
     public static final String ERROR_STAGE_RECORD_ID_IS_NULL = "error.stage.record.id.is.null";
     public static final String ERROR_STAGE_ID_IS_NULL = "error.stage.id.is.null";
+    public static final String ERROR_STAGE_STATUS_IS_NULL = "error.stage.status.is.null";
 
     // job
     public static final String ERROR_JOB_RECORD_ID_IS_NULL = "error.job.record.id.is.null";
     public static final String ERROR_JOB_ID_IS_NULL = "error.job.id.is.null";
+    public static final String ERROR_JOB_STATUS_IS_NULL = "error.job.status.is.null";
 }

@@ -9,4 +9,5 @@ package io.choerodon.devops.infra.constant;
  */
 public class ResourceCheckConstant {
     public static final String ERROR_PARAM_IS_INVALID = "error.param.is.invalid";
+    public static final String ERROR_USER_ID_IS_NULL = "error.user.id.is.null";
 }
