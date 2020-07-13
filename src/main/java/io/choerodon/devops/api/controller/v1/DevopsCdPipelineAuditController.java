@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.AduitStatusChangeVO;
 import io.choerodon.devops.api.vo.AuditCheckVO;
+import io.choerodon.devops.api.vo.AuditResultVO;
 import io.choerodon.devops.app.service.DevopsCdPipelineService;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -46,13 +47,12 @@ public class DevopsCdPipelineAuditController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "审核人工卡点任务")
     @PostMapping("/stage_records/{stage_record_id}/job_records/{job_record_id}/audit")
-    public ResponseEntity<Void> auditJob(@PathVariable(value = "project_id") Long projectId,
-                                         @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,
-                                         @PathVariable(value = "stage_record_id") Long stageRecordId,
-                                         @PathVariable(value = "job_record_id") Long jobRecordId,
-                                         @RequestParam(value = "result") String result) {
-        devopsCdPipelineService.auditJob(projectId, pipelineRecordId, stageRecordId, jobRecordId, result);
-        return Results.success();
+    public ResponseEntity<AuditResultVO> auditJob(@PathVariable(value = "project_id") Long projectId,
+                                                  @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,
+                                                  @PathVariable(value = "stage_record_id") Long stageRecordId,
+                                                  @PathVariable(value = "job_record_id") Long jobRecordId,
+                                                  @RequestParam(value = "result") String result) {
+        return ResponseEntity.ok(devopsCdPipelineService.auditJob(projectId, pipelineRecordId, stageRecordId, jobRecordId, result));
     }
 
     /**

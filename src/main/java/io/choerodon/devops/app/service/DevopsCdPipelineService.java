@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.api.vo.AduitStatusChangeVO;
 import io.choerodon.devops.api.vo.AuditCheckVO;
+import io.choerodon.devops.api.vo.AuditResultVO;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
 
 public interface DevopsCdPipelineService {
@@ -61,7 +62,7 @@ public interface DevopsCdPipelineService {
 
     void createWorkFlow(Long projectId, io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO devopsPipelineDTO, String loginName, Long userId, Long orgId);
 
-    void auditJob(Long projectId, Long pipelineRecordId, Long stageRecordId, Long jobRecordId, String result);
+    AuditResultVO auditJob(Long projectId, Long pipelineRecordId, Long stageRecordId, Long jobRecordId, String result);
 
     AduitStatusChangeVO checkAuditStatus(Long projectId, Long pipelineRecordId, AuditCheckVO auditCheckVO);
 }

@@ -182,5 +182,13 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
         return devopsEnvResourceService.listPodEventBycommandId(devopsCdJobRecordDTO.getCommandId());
     }
 
+    @Override
+    @Transactional
+    public void updateNotAuditJobStatus(Long jobRecordId, String status) {
+        if (devopsCdJobRecordMapper.updateNotAuditJobStatus(jobRecordId, status) != 1) {
+            throw new CommonException(ERROR_UPDATE_JOB_RECORD_FAILED);
+        }
+    }
+
 
 }

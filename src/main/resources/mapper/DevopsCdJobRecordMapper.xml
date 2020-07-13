@@ -58,4 +58,9 @@
                 dcsr.stage_record_id = #{stageRecordId}
                 AND (dcsr.`status` = 'PENDING' or  dcsr.status='RUNNING')
     </select>
+    <update id="updateNotAuditJobStatus">
+        UPDATE devops_cd_job_record
+        SET status = #{status}
+        WHERE id = #{jobRecordId} AND status = 'not_audit'
+    </update>
 </mapper>
