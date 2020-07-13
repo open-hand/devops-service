@@ -504,7 +504,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
             ciCdPipelineVO.setCiCdPipelineRecordVOS(ciCdPipelineRecordVOS);
             // 将piplineRecord记录排序
-            recordListSort(ciCdPipelineVO.getCiCdPipelineRecordVOS());
+            CiCdPipelineSortUtils.recordListSort(ciCdPipelineVO.getCiCdPipelineRecordVOS());
         });
         return ciCdPipelineVOS;
     }
@@ -1218,25 +1218,4 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return appServiceDeployDTO;
     }
 
-    private void recordListSort(List<CiCdPipelineRecordVO> list) {
-        Collections.sort(list, new Comparator<CiCdPipelineRecordVO>() {
-            @Override
-            public int compare(CiCdPipelineRecordVO o1, CiCdPipelineRecordVO o2) {
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                try {
-
-                    if (o1.getCreatedDate().getTime() > o2.getCreatedDate().getTime()) {
-                        return -1;
-                    } else if (o1.getCreatedDate().getTime() < o2.getCreatedDate().getTime()) {
-                        return 1;
-                    } else {
-                        return 0;
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return 0;
-            }
-        });
-    }
 }

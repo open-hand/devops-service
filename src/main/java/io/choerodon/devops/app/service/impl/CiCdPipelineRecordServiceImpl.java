@@ -24,11 +24,13 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
+import io.choerodon.devops.infra.enums.JobStatusEnum;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.util.CiCdPipelineSortUtils;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -296,23 +298,47 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             ciCdPipelineRecordVOPage = assemblePage(ciCdPipelineRecordVOPage, ciCdPipelineRecordVOS, pipelineCiRecordVOPageInfo);
 
         }
-
+        // 排序
+        CiCdPipelineSortUtils.recordListSort(ciCdPipelineRecordVOPage.getContent());
         return ciCdPipelineRecordVOPage;
     }
 
     private Page<CiCdPipelineRecordVO> assemblePage(Page<CiCdPipelineRecordVO> ciCdPipelineRecordVOPage,
                                                     List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS,
                                                     Page<DevopsCiPipelineRecordVO> pipelineCiRecordVOPageInfo) {
+        //计算状态
+        calculateRecordStatus(ciCdPipelineRecordVOS);
+
         ciCdPipelineRecordVOPage = ConvertUtils.convertPage(pipelineCiRecordVOPageInfo, CiCdPipelineRecordVO.class);
         ciCdPipelineRecordVOPage.setContent(ciCdPipelineRecordVOS);
         return ciCdPipelineRecordVOPage;
     }
 
+    private void calculateRecordStatus(List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS) {
+        if (CollectionUtils.isEmpty(ciCdPipelineRecordVOS)) {
+            return;
+        }
+        ciCdPipelineRecordVOS.forEach(ciCdPipelineRecordVO -> {
+            if (JobStatusEnum.SUCCESS.value().equals(ciCdPipelineRecordVO.getCiStatus()) && JobStatusEnum.SUCCESS.value().equals(ciCdPipelineRecordVO.getCdStatus())) {
+                ciCdPipelineRecordVO.setStatus(JobStatusEnum.SUCCESS.value());
+            } else if (!JobStatusEnum.SUCCESS.value().equals(ciCdPipelineRecordVO.getCiStatus())) {
+                ciCdPipelineRecordVO.setStatus(ciCdPipelineRecordVO.getCiStatus());
+            } else if (JobStatusEnum.SUCCESS.value().equals(ciCdPipelineRecordVO.getCiStatus()) && JobStatusEnum.CREATED.value().equals(ciCdPipelineRecordVO.getCdStatus())) {
+                ciCdPipelineRecordVO.setStatus(JobStatusEnum.RUNNING.value());
+            } else {
+                ciCdPipelineRecordVO.setStatus(ciCdPipelineRecordVO.getCdStatus());
+            }
+        });
+    }
+
     private Page<CiCdPipelineRecordVO> assembleCdPage(Page<CiCdPipelineRecordVO> ciCdPipelineRecordVOPage,
                                                       List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS,
                                                       Page<DevopsCdPipelineRecordVO> devopsCdPipelineRecordVOS) {
+        calculateRecordStatus(ciCdPipelineRecordVOS);
         ciCdPipelineRecordVOPage = ConvertUtils.convertPage(devopsCdPipelineRecordVOS, CiCdPipelineRecordVO.class);
         ciCdPipelineRecordVOPage.setContent(ciCdPipelineRecordVOS);
         return ciCdPipelineRecordVOPage;
     }
+
+
 }
