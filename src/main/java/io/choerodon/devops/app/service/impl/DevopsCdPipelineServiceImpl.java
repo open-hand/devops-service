@@ -768,7 +768,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
     @Override
     @Transactional
-    public void auditJob(Long projectId, Long pipelineRecordId, Long stageRecordId, Long jobRecordId, String result) {
+    public AuditResultVO auditJob(Long projectId, Long pipelineRecordId, Long stageRecordId, Long jobRecordId, String result) {
+        AuditResultVO auditResultVO = new AuditResultVO();
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
         DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordService.queryById(stageRecordId);
         // 1. 查询审核人员
@@ -805,19 +806,27 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
                     // 执行下一个任务
                     startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
+                    auditResultVO.setCountersigned(0);
+
                 } else if (devopsCdJobRecordDTO.getCountersigned() != null && devopsCdJobRecordDTO.getCountersigned() == 1) {
                     approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), details.getUsername(), details.getUserId(), details.getOrganizationId());
                     // 更新审核状态为通过
                     devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.PASSED.value());
                     devopsCdAuditRecordService.update(devopsCdAuditRecordDTO);
-
-                    if (devopsCdAuditRecordService.queryByJobRecordId(jobRecordId).stream()
+                    // 添加审核结果信息 - 是否会签
+                    auditResultVO.setCountersigned(1);
+                    List<DevopsCdAuditRecordDTO> cdAuditRecordDTOS = devopsCdAuditRecordService.queryByJobRecordId(jobRecordId);
+                    // 如果说是最后一个人审核，则不添加审核人员信息
+                    if (cdAuditRecordDTOS.stream()
                             .filter(v -> !v.getId().equals(devopsCdAuditRecordDTO.getId()))
                             .allMatch(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus()))) {
                         // 更新job状态为success
                         devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.SUCCESS.toValue());
                         // 执行下一个任务
                         startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
+                    } else {
+                        // 添加审核结果信息 - 审核人员信息
+                        addAuditUserInfo(userIds, cdAuditRecordDTOS, auditResultVO);
                     }
                 }
             } catch (Exception e) {
@@ -859,6 +868,33 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             // 4. 发送审核记录通知
             sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_STOP, userIds, devopsCdPipelineRecordDTO.getId(), devopsCdStageRecordDTO.getStageName(), devopsCdStageRecordDTO.getStageId());
         }
+        return auditResultVO;
+    }
+
+    private void addAuditUserInfo(List<Long> userIds, List<DevopsCdAuditRecordDTO> cdAuditRecordDTOS, AuditResultVO auditResultVO) {
+        Map<Long, IamUserDTO> userDTOMap = baseServiceClientOperator.queryUsersByUserIds(userIds).stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
+        cdAuditRecordDTOS.forEach(v -> {
+            if (AuditStatusEnum.PASSED.value().equals(v.getStatus())) {
+                IamUserDTO iamUserDTO = userDTOMap.get(v.getUserId());
+                if (iamUserDTO != null) {
+                    if (Boolean.TRUE.equals(iamUserDTO.getLdap())) {
+                        auditResultVO.getAuditedUserNameList().add(iamUserDTO.getLoginName());
+                    } else {
+                        auditResultVO.getAuditedUserNameList().add(iamUserDTO.getEmail());
+                    }
+                }
+            } else if (AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus())) {
+                IamUserDTO iamUserDTO = userDTOMap.get(v.getUserId());
+                if (iamUserDTO != null) {
+                    if (Boolean.TRUE.equals(iamUserDTO.getLdap())) {
+                        auditResultVO.getNotAuditUserNameList().add(iamUserDTO.getLoginName());
+                    } else {
+                        auditResultVO.getNotAuditUserNameList().add(iamUserDTO.getEmail());
+                    }
+                }
+            }
+        });
+
     }
 
     @Override

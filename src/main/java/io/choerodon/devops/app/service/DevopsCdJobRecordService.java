@@ -64,4 +64,13 @@ public interface DevopsCdJobRecordService {
     void updateJobStatusStopByStageRecordId(Long stageRecordId);
 
     List<PodEventVO> queryDeployJobLogs(Long projectId, Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
+
+    /**
+     * 用于处理并发场景
+     * 更新时同时根据job_record_id,status 筛选， 更新失败，表示记录已经被修改了
+     *
+     * @param jobRecordId
+     * @param status
+     */
+    void updateNotAuditJobStatus(Long jobRecordId, String status);
 }
