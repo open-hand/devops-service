@@ -770,7 +770,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     private void addAuditStateInfo(DevopsCdPipelineRecordVO devopsCdPipelineRecordVO) {
         DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO = new DevopsCdPipelineDeatilVO();
-        DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordService.queryStageWithPipelineRecordIdAndStatus(devopsCdPipelineRecordVO.getPipelineId(), PipelineStatus.NOT_AUDIT.toValue());
+        DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordService.queryStageWithPipelineRecordIdAndStatus(devopsCdPipelineRecordVO.getId(), PipelineStatus.NOT_AUDIT.toValue());
         if (devopsCdStageRecordDTO != null) {
             // 继续判断阶段中是否还有待审核的任务
             DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryJobWithStageRecordIdAndStatus(devopsCdStageRecordDTO.getId(), PipelineStatus.NOT_AUDIT.toValue());

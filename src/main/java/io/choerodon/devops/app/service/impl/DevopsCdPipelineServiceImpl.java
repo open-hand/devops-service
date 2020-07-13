@@ -587,7 +587,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         }
         // 状态不是待审核，抛出错误信息
         DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordService.queryById(stageRecordId);
-        if (!PipelineStatus.NOT_AUDIT.toValue().equals(devopsCdStageRecordDTO.getStatus())) {
+        boolean audited = devopsCdAuditRecordDTOS.stream().anyMatch(v -> AuditStatusEnum.REFUSED.value().equals(v.getStatus()) || AuditStatusEnum.PASSED.value().equals(v.getStatus()));
+        if (!PipelineStatus.NOT_AUDIT.toValue().equals(devopsCdStageRecordDTO.getStatus()) || audited) {
             throw new CommonException(ERROR_PIPELINE_STATUS_CHANGED);
         }
         if (AuditStatusEnum.PASSED.value().equals(result)) {
