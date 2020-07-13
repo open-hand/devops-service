@@ -27,6 +27,7 @@ export default observer(({ addStepDs, curType, optType }) => {
           </Tooltip>
         ) : renderer({ text }))}
         renderer={renderer}
+        disabled={optType === 'edit'}
       />
       <TextField name="step" />
       <Select name="parallel">
