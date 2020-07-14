@@ -53,6 +53,7 @@ export default observer(() => {
         columnIndex={index}
         key={item.id}
         isLast={String(index) === String(dataSource.length - 1)}
+        isFirst={index === 0}
         {...item}
         edit={edit}
         pipelineId={pipelineId}
