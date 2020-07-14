@@ -26,6 +26,7 @@ public class CiCdPipelineVO {
     private Long appServiceId;
     @ApiModelProperty("流水线关联应用服务名称/nullable")
     private String appServiceName;
+    private String appServiceCode;
     @ApiModelProperty("gitlab项目id/nullable")
     private Long gitlabProjectId;
     @ApiModelProperty("runner镜像地址")
@@ -75,6 +76,14 @@ public class CiCdPipelineVO {
 
     public Long getId() {
         return id;
+    }
+
+    public String getAppServiceCode() {
+        return appServiceCode;
+    }
+
+    public void setAppServiceCode(String appServiceCode) {
+        this.appServiceCode = appServiceCode;
     }
 
     public void setId(Long id) {
