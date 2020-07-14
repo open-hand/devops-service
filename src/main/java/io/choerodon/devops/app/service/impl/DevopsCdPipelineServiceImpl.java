@@ -573,8 +573,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
     @Override
     @Transactional
-    public void auditStage(Long projectId, Long pipelineRecordId, Long stageRecordId, String result) {
-
+    public AuditResultVO auditStage(Long projectId, Long pipelineRecordId, Long stageRecordId, String result) {
+        AuditResultVO auditResultVO = new AuditResultVO();
+        auditResultVO.setCountersigned(0);
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
         // 1. 查询审核人员
         CustomUserDetails details = DetailsHelper.getUserDetails();
@@ -644,6 +645,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         } else {
             throw new CommonException(ResourceCheckConstant.ERROR_PARAM_IS_INVALID);
         }
+        return auditResultVO;
     }
 
     private void approveWorkFlow(Long projectId, String businessKey, String loginName, Long userId, Long orgId) {
