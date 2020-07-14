@@ -643,6 +643,7 @@ public class PipelineServiceImpl implements PipelineService {
         LOGGER.info("setAppDeployStatus:pipelineRecordId: {} stageRecordId: {} taskId: {}", pipelineRecordId, stageRecordId, taskRecordId);
         PipelineRecordDTO pipelineRecordE = pipelineRecordService.baseQueryById(pipelineRecordId);
         PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);
+        CustomContextUtil.setUserContext(pipelineRecordE.getCreatedBy());
         if (status) {
             if (stageRecordDTO.getIsParallel() == 1) {
                 List<PipelineTaskRecordDTO> taskRecordEList = pipelineTaskRecordService.baseQueryByStageRecordId(stageRecordId, null);
