@@ -1,11 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_CI_PIPELINE_SUCCESS_FOR_SIMPLE_CD;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_PIPELINE_ENV_AUTO_DEPLOY_INSTANCE;
 
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import io.reactivex.Emitter;
 import io.reactivex.Observable;
@@ -24,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
@@ -149,6 +153,12 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
     @Autowired
     private UserAttrService userAttrService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    @Lazy
+    private DevopsCiStageService devopsCiStageService;
+    @Autowired
+    private TransactionalProducer transactionalProducer;
 
     @Override
     @Transactional
@@ -937,6 +947,60 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         } else {
             throw new CommonException(ResourceCheckConstant.ERROR_PARAM_IS_INVALID);
         }
+    }
+
+    @Override
+    @Saga(code = DEVOPS_CI_PIPELINE_SUCCESS_FOR_SIMPLE_CD, description = "ci流水线成功，执行纯cd流水线", inputSchemaClass = PipelineWebHookVO.class)
+    public void handlerCiPipelineStatusSuccess(PipelineWebHookVO pipelineWebHookVO, String token) {
+        AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
+        pipelineWebHookVO.setToken(token);
+        try {
+            String input = objectMapper.writeValueAsString(pipelineWebHookVO);
+            transactionalProducer.apply(
+                    StartSagaBuilder.newBuilder()
+                            .withRefType("app")
+                            .withRefId(appServiceDTO.getId().toString())
+                            .withSagaCode(DEVOPS_CI_PIPELINE_SUCCESS_FOR_SIMPLE_CD)
+                            .withLevel(ResourceLevel.PROJECT)
+                            .withSourceId(appServiceDTO.getProjectId())
+                            .withJson(input),
+                    builder -> {
+                    });
+        } catch (JsonProcessingException e) {
+            throw new CommonException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void trigerSimpleCDPipeline(PipelineWebHookVO pipelineWebHookVO) {
+        AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(pipelineWebHookVO.getToken());
+        CiCdPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
+
+        // 设置用户上下文
+        Long iamUserId = GitUserNameUtil.getIamUserIdByGitlabUserName(pipelineWebHookVO.getUser().getUsername());
+        CustomContextUtil.setDefaultIfNull(iamUserId);
+
+        if (devopsCiPipelineDTO == null || Boolean.FALSE.equals(devopsCiPipelineDTO.getEnabled())) {
+            LOGGER.debug("Skip null of disabled pipeline for pipeline webhook with id {} and token: {}", pipelineWebHookVO.getObjectAttributes().getId(), pipelineWebHookVO.getToken());
+            return;
+        }
+
+        // 只有纯cd流水线才触发
+        // 包含ci阶段的不触发
+        List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(devopsCiPipelineDTO.getId());
+        if (!CollectionUtils.isEmpty(devopsCiStageDTOList)) {
+            return;
+        }
+        // 不包含cd阶段的不触发
+        List<DevopsCdStageDTO> devopsCdStageDTOList = devopsCdStageService.queryByPipelineId(devopsCiPipelineDTO.getId());
+        if (CollectionUtils.isEmpty(devopsCdStageDTOList)) {
+            return;
+        }
+        triggerCdPipeline(pipelineWebHookVO.getToken(),
+                pipelineWebHookVO.getObjectAttributes().getSha(),
+                pipelineWebHookVO.getObjectAttributes().getRef(),
+                pipelineWebHookVO.getObjectAttributes().getId());
+
     }
 
     private void calculatAuditUserName(List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOList, AduitStatusChangeVO aduitStatusChangeVO) {

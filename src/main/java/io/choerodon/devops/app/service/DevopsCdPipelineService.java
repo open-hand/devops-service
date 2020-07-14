@@ -65,4 +65,9 @@ public interface DevopsCdPipelineService {
     AuditResultVO auditJob(Long projectId, Long pipelineRecordId, Long stageRecordId, Long jobRecordId, String result);
 
     AduitStatusChangeVO checkAuditStatus(Long projectId, Long pipelineRecordId, AuditCheckVO auditCheckVO);
+
+    void handlerCiPipelineStatusSuccess(PipelineWebHookVO pipelineWebHookVO, String token);
+
+    void trigerSimpleCDPipeline(PipelineWebHookVO pipelineWebHookVO);
+
 }

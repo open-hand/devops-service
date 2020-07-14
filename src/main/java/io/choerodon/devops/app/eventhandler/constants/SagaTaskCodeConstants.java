@@ -68,6 +68,11 @@ public class SagaTaskCodeConstants {
     public static final String DEVOPS_GITLAB_CD_PIPELINE = "devopsGitlabCDPipeline";
 
     /**
+     * 触发纯cd流水线
+     */
+    public static final String DEVOPS_TRIGGER_SIMPLE_CD_PIPELINE = "devopsTriggerSimpleCdPipeline";
+
+    /**
      * 创建流水线自动部署实例
      */
     public static final String DEVOPS_PIPELINE_CREATE_INSTANCE = "devops-pipeline-create-instance";

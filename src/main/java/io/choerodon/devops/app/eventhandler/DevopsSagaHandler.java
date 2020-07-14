@@ -317,6 +317,20 @@ public class DevopsSagaHandler {
     }
 
     /**
+     * 监听gitlab ci pipeline事件，触发cd逻辑
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_TRIGGER_SIMPLE_CD_PIPELINE,
+            description = "gitlab pipeline事件",
+            sagaCode = DEVOPS_CI_PIPELINE_SUCCESS_FOR_SIMPLE_CD,
+            maxRetryCount = 3,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            seq = 10)
+    public String trigerSimpleCDPipeline(String data) {
+        devopsCdPipelineService.trigerSimpleCDPipeline(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
+        return data;
+    }
+
+    /**
      * 创建流水线自动部署实例
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_PIPELINE_CREATE_INSTANCE,
