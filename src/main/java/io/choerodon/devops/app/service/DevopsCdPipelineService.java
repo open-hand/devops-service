@@ -73,4 +73,6 @@ public interface DevopsCdPipelineService {
 
     void trigerSimpleCDPipeline(PipelineWebHookVO pipelineWebHookVO);
 
+    void executeCdPipeline(Long pipelineRecordId);
+
 }

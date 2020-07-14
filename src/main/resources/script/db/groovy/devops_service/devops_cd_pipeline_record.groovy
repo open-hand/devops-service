@@ -8,9 +8,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_pipeline_record.groovy') {
             }
             column(name: 'pipeline_id', type: 'BIGINT UNSIGNED', remarks: '流水线Id')
             column(name: "pipeline_name", type: 'VARCHAR(64)', remarks: "pipeline name")
-            column(name: 'gitlab_pipeline_id', type: 'BIGINT UNSIGNED', remarks: 'gitlab流水线记录id') {
-                constraints(nullable: false)
-            }
+            column(name: 'gitlab_pipeline_id', type: 'BIGINT UNSIGNED', remarks: 'gitlab流水线记录id')
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目Id')
             column(name: 'status', type: 'VARCHAR(20)', remarks: '状态')
             column(name: 'trigger_type', type: 'VARCHAR(10)', remarks: '触发方式')
