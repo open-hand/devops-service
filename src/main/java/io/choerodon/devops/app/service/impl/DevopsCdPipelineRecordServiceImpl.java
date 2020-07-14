@@ -755,8 +755,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         devopsCdJobRecordVO.setJobExecuteTime();
                     });
                     //计算satge耗时
-                    Long seconds = devopsCdStageRecordVO.getJobRecordVOList().stream().map(DevopsCdJobRecordVO::getDurationSeconds).reduce((aLong, aLong2) -> aLong + aLong2).get();
-                    devopsCdStageRecordVO.setDurationSeconds(seconds);
+                    if (!CollectionUtils.isEmpty(devopsCdStageRecordVO.getJobRecordVOList())) {
+                        Long seconds = devopsCdStageRecordVO.getJobRecordVOList().stream().filter(devopsCdJobRecordVO -> !Objects.isNull(devopsCdJobRecordVO.getDurationSeconds())).map(DevopsCdJobRecordVO::getDurationSeconds).reduce((aLong, aLong2) -> aLong + aLong2).get();
+                        devopsCdStageRecordVO.setDurationSeconds(seconds);
+                    }
                 }
                 // 计算流水线当前停留的审核节点
                 addAuditStateInfo(devopsCdPipelineRecordVO);
