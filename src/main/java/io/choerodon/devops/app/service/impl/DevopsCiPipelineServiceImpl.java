@@ -376,6 +376,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             List<DevopsCdJobVO> jobMapOrDefault = cdJobMap.getOrDefault(devopsCdStageVO.getId(), Collections.emptyList());
             jobMapOrDefault.sort(Comparator.comparing(DevopsCdJobVO::getId));
             devopsCdStageVO.setJobList(jobMapOrDefault);
+            //如果是手动流转需要返回人员信息
+            if (TriggerTypeEnum.MANUAL.value().equals(devopsCdStageVO.getTriggerType())) {
+                List<DevopsCdAuditDTO> devopsCdAuditDTOS = devopsCdAuditService.baseListByOptions(null, devopsCdStageVO.getId(), null);
+                if (!CollectionUtils.isEmpty(devopsCdAuditDTOS)) {
+                    devopsCdStageVO.setCdAuditUserIds(devopsCdAuditDTOS.stream().map(DevopsCdAuditDTO::getUserId).collect(Collectors.toList()));
+                }
+            }
         });
         // cd stage排序
         devopsCdStageVOS = devopsCdStageVOS.stream().sorted(Comparator.comparing(DevopsCdStageVO::getSequence)).collect(Collectors.toList());
@@ -404,7 +411,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         Set<Long> appServiceIds;
         if (projectOwner) {
-        appServiceIds = appServiceMapper.listByActive(projectId).stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
+            appServiceIds = appServiceMapper.listByActive(projectId).stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
         } else {
             appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
             if (CollectionUtils.isEmpty(appServiceIds)) {
@@ -435,7 +442,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 cdPipielineMap = devopsCdPipelineRecordVOS.getContent().stream().collect(Collectors.groupingBy(DevopsCdPipelineRecordVO::getGitlabPipelineId));
             }
             //计算流水线上一次执行的状态和时间
-            CiCdPipelineUtils.calculateStatus(ciCdPipelineVO,pipelineCiRecordVOPageInfo,devopsCdPipelineRecordVOS);
+            CiCdPipelineUtils.calculateStatus(ciCdPipelineVO, pipelineCiRecordVOPageInfo, devopsCdPipelineRecordVOS);
             //封装 CiCdPipelineRecordVO
             //纯ci流水线
             if (!CollectionUtils.isEmpty(ciPipielineMap) && CollectionUtils.isEmpty(cdPipielineMap)) {
