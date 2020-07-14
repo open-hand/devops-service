@@ -86,13 +86,13 @@ const AuditModal = ({
       };
       const data = await mainStore.canCheck(projectId, cdRecordId, postData);
       if (data && !data.failed) {
-        if (data.auditStatusChanged && (data.countersigned || data.countersigned === 0) && data.auditUserName) {
-          // 会签已被终止、或签已被审核，返回数据：{ countersigned: 0 或签 | 1 会签, auditUserName: "string"}
+        if (data.auditStatusChanged) {
+          // 会签已被终止、或签已被审核
           setCanCheck(false);
           changeModalFooter(false);
-          setCheckTips(formatMessage({ id: `pipeline.canCheck.tips.${data.countersigned}` }, { userName: data.auditUserName }));
+          setCheckTips(formatMessage({ id: `c7ncd.pipelineManage.canCheck.tips.${data.currentStatus}` }, { userName: data.auditUserName }));
         } else {
-          // 预检通过，返回数据：{ countersigned: null, auditUserName: null }
+          // 预检通过
           setCanCheck(true);
           changeModalFooter(true);
         }
