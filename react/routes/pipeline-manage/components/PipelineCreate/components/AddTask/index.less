@@ -2,6 +2,23 @@
   .c7n-pro-select-multiple-block > div:not(:last-child) {
     max-width: calc(45px);
   }
+  &-select {
+    .c7n-pro-select {
+      ul {
+        display: flex;
+        flex-wrap: nowrap;
+      }
+    }
+  }
+  .icon {
+    color: rgba(0, 0, 0, 0.54);
+  }
+  label.c7n-pro-checkbox-wrapper {
+    &:nth-of-type(2){
+      margin-left: .7rem;
+    }
+  }
+
 }
 .AddTask_configStep {
   border-top: 1px solid #d8d8d8;
@@ -24,6 +41,11 @@
   box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.08);
   border-radius: 4px;
   padding: 20px 16px;
+  label.c7n-pro-radio-wrapper {
+    &:nth-of-type(2){
+      margin-left: .21rem;
+    }
+  }
   .c7n-pro-input-group-help {
     height: 36px;
   }
@@ -34,6 +56,7 @@
   .AddTask_stepItemsContainer {
     display: flex;
     overflow: auto;
+    height: .32rem;
     .AddTask_stepMapContent {
       display: flex;
       align-items: center;

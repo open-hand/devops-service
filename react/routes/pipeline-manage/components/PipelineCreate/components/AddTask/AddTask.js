@@ -1326,6 +1326,7 @@ const AddTask = observer(() => {
                   maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
                     {`+${omittedValues.length}`}
                   </Tooltip>}
+                  className="addTaskForm-select"
                   renderer={renderderBranchs}
                 >
                   {
@@ -1333,12 +1334,6 @@ const AddTask = observer(() => {
                         <Option value={b.value}>{b.name}</Option>
                       ))
                     }
-                  {/* <Option value="master">master</Option> */}
-                  {/* <Option value="feature">feature</Option> */}
-                  {/* <Option value="bugfix">bugfix</Option> */}
-                  {/* <Option value="hotfix">hotfix</Option> */}
-                  {/* <Option value="release">release</Option> */}
-                  {/* <Option value="tag">tag</Option> */}
                 </Select>
               )}
             </div>,
