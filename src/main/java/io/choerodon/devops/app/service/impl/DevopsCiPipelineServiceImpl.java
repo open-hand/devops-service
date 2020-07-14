@@ -1197,7 +1197,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 throw new CommonException(ResourceCheckConstant.ERROR_PARAM_IS_INVALID);
             }
             if (t.getCdAuditUserIds().size() == 1) {
-                devopsCdJobDTO.setCountersigned(0);
+                devopsCdJobDTO.setCountersigned(1);
             }
         }
 

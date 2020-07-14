@@ -781,13 +781,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = devopsCdAuditRecordService.queryByStageRecordIdAndUserId(devopsCdStageRecordDTO.getId(), DetailsHelper.getUserDetails().getUserId());
                 devopsCdPipelineDeatilVO.setType("stage");
                 devopsCdPipelineDeatilVO.setStageName(devopsCdStageRecordDTO.getStageName());
-                devopsCdPipelineDeatilVO.setExecute(devopsCdAuditRecordDTO != null);
+                devopsCdPipelineDeatilVO.setExecute(devopsCdAuditRecordDTO != null && AuditStatusEnum.NOT_AUDIT.value().equals(devopsCdAuditRecordDTO.getStatus()));
                 devopsCdPipelineDeatilVO.setStageRecordId(devopsCdStageRecordDTO.getId());
             } else {
                 DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = devopsCdAuditRecordService.queryByJobRecordIdAndUserId(devopsCdJobRecordDTO.getId(), DetailsHelper.getUserDetails().getUserId());
                 devopsCdPipelineDeatilVO.setType("task");
                 devopsCdPipelineDeatilVO.setStageName(devopsCdStageRecordDTO.getStageName());
-                devopsCdPipelineDeatilVO.setExecute(devopsCdAuditRecordDTO != null);
+                devopsCdPipelineDeatilVO.setExecute(devopsCdAuditRecordDTO != null && AuditStatusEnum.NOT_AUDIT.value().equals(devopsCdAuditRecordDTO.getStatus()));
                 devopsCdPipelineDeatilVO.setStageRecordId(devopsCdStageRecordDTO.getId());
                 devopsCdPipelineDeatilVO.setTaskRecordId(devopsCdJobRecordDTO.getId());
             }
