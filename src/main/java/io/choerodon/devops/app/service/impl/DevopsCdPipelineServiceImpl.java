@@ -791,6 +791,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         if (!PipelineStatus.NOT_AUDIT.toValue().equals(devopsCdJobRecordDTO.getStatus())) {
             throw new CommonException(ERROR_PIPELINE_STATUS_CHANGED);
         }
+        // 添加审核结果 - 是否会签
+        auditResultVO.setCountersigned(devopsCdJobRecordDTO.getCountersigned());
+
         if (AuditStatusEnum.PASSED.value().equals(result)) {
             // 1. 工作流任务审核通过
             try {
@@ -811,18 +814,14 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
                     // 发送通知
                     sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_PASS, userIds, pipelineRecordId, devopsCdStageRecordDTO.getStageName(), devopsCdStageRecordDTO.getStageId());
-
                     // 执行下一个任务
                     startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
-                    auditResultVO.setCountersigned(0);
 
                 } else if (devopsCdJobRecordDTO.getCountersigned() != null && devopsCdJobRecordDTO.getCountersigned() == 1) {
                     approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), details.getUsername(), details.getUserId(), details.getOrganizationId());
                     // 更新审核状态为通过
                     devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.PASSED.value());
                     devopsCdAuditRecordService.update(devopsCdAuditRecordDTO);
-                    // 添加审核结果信息 - 是否会签
-                    auditResultVO.setCountersigned(1);
                     List<DevopsCdAuditRecordDTO> cdAuditRecordDTOS = devopsCdAuditRecordService.queryByJobRecordId(jobRecordId);
                     // 如果说是最后一个人审核，则不添加审核人员信息
                     if (cdAuditRecordDTOS.stream()
