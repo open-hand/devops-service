@@ -20,6 +20,8 @@ public class DevopsPipelineRecordRelDTO extends AuditDomain {
 
     private Long id;
 
+    private Long pipelineId;
+
     private Long ciPipelineRecordId;
 
     private Long cdPipelineRecordId;
@@ -46,5 +48,13 @@ public class DevopsPipelineRecordRelDTO extends AuditDomain {
 
     public void setCdPipelineRecordId(Long cdPipelineRecordId) {
         this.cdPipelineRecordId = cdPipelineRecordId;
+    }
+
+    public Long getPipelineId() {
+        return pipelineId;
+    }
+
+    public void setPipelineId(Long pipelineId) {
+        this.pipelineId = pipelineId;
     }
 }

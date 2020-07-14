@@ -29,6 +29,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.GitlabPipelineDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
@@ -79,6 +80,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private final AppServiceMapper appServiceMapper;
     private DevopsCdPipelineService devopsCdPipelineService;
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
+    private DevopsPipelineRecordRelService devopsPipelineRecordRelService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -98,10 +100,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                              GitlabServiceClientOperator gitlabServiceClientOperator,
                                              @Lazy CiPipelineSyncHandler ciPipelineSyncHandler,
                                              DevopsGitlabCommitService devopsGitlabCommitService,
-                                             @Lazy
-                                                     DevopsCdPipelineService devopsCdPipelineService,
-                                             @Lazy
-                                                     DevopsCdPipelineRecordService devopsCdPipelineRecordService) {
+                                             @Lazy DevopsCdPipelineService devopsCdPipelineService,
+                                             @Lazy DevopsCdPipelineRecordService devopsCdPipelineRecordService,
+                                             @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService
+    ) {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
         this.devopsCiStageService = devopsCiStageService;
@@ -119,6 +121,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         this.appServiceMapper = appServiceMapper;
         this.devopsCdPipelineService = devopsCdPipelineService;
         this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
+        this.devopsPipelineRecordRelService = devopsPipelineRecordRelService;
     }
 
     @Override
@@ -198,6 +201,14 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             // 保存job执行记录
             Long pipelineRecordId = devopsCiPipelineRecordDTO.getId();
             saveJobRecords(pipelineWebHookVO, pipelineRecordId);
+
+            // 保存流水线记录关系
+            DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = new DevopsPipelineRecordRelDTO();
+            devopsPipelineRecordRelDTO.setCiPipelineRecordId(pipelineRecordId);
+            devopsPipelineRecordRelDTO.setPipelineId(devopsCiPipelineDTO.getId());
+            devopsPipelineRecordRelDTO.setCdPipelineRecordId(PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID);
+            devopsPipelineRecordRelService.save(devopsPipelineRecordRelDTO);
+
         } else {
             LOGGER.debug("Start to update pipeline with gitlab pipeline id {}...", pipelineWebHookVO.getObjectAttributes().getId());
             devopsCiPipelineRecordDTO.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
