@@ -64,6 +64,9 @@ public class CiCdPipelineVO {
     private Long createdBy;
     private Boolean execute;
     private String envName;
+    //流程耗时
+    private Long time;
+
 
     public List<CiCdPipelineRecordVO> getCiCdPipelineRecordVOS() {
         return ciCdPipelineRecordVOS;
@@ -73,6 +76,14 @@ public class CiCdPipelineVO {
         this.ciCdPipelineRecordVOS = ciCdPipelineRecordVOS;
     }
 
+
+    public Long getTime() {
+        return time;
+    }
+
+    public void setTime(Long time) {
+        this.time = time;
+    }
 
     public Long getId() {
         return id;

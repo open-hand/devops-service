@@ -5,6 +5,7 @@ public class StageRecordVO {
     private Long sequence;
     private String status;
     private String type;
+    private Long durationSeconds;
 
     public String getType() {
         return type;
@@ -36,5 +37,13 @@ public class StageRecordVO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Long getDurationSeconds() {
+        return durationSeconds;
+    }
+
+    public void setDurationSeconds(Long durationSeconds) {
+        this.durationSeconds = durationSeconds;
     }
 }
