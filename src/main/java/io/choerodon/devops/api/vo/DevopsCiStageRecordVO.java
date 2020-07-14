@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class DevopsCiStageRecordVO extends StageRecordVO{
 
-    private Long durationSeconds;
+
     private List<DevopsCiJobRecordVO> jobRecordVOList;
 
 
@@ -22,13 +22,5 @@ public class DevopsCiStageRecordVO extends StageRecordVO{
 
     public void setJobRecordVOList(List<DevopsCiJobRecordVO> jobRecordVOList) {
         this.jobRecordVOList = jobRecordVOList;
-    }
-
-    public Long getDurationSeconds() {
-        return durationSeconds;
-    }
-
-    public void setDurationSeconds(Long durationSeconds) {
-        this.durationSeconds = durationSeconds;
     }
 }

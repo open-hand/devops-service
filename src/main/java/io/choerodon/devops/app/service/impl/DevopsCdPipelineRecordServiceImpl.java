@@ -860,7 +860,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         if (Objects.isNull(cdPipelineRecordDTO)) {
             return null;
         }
+        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(cdPipelineRecordDTO.getCreatedBy());
         DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = ConvertUtils.convertObject(cdPipelineRecordDTO, DevopsCdPipelineRecordVO.class);
+        devopsCdPipelineRecordVO.setUsername(iamUserDTO.getRealName());
         //查询流水线信息
         CiCdPipelineVO ciCdPipelineVO = devopsCiCdPipelineMapper.queryById(cdPipelineRecordDTO.getPipelineId());
         devopsCdPipelineRecordVO.setCiCdPipelineVO(ciCdPipelineVO);

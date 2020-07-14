@@ -4,7 +4,6 @@ import java.util.List;
 
 public class DevopsCdStageRecordVO extends StageRecordVO {
     private Long id;
-    private Long durationSeconds;
     private List<DevopsCdJobRecordVO> jobRecordVOList;
     private String triggerType;
     private Long pipelineId;
@@ -38,15 +37,6 @@ public class DevopsCdStageRecordVO extends StageRecordVO {
         this.id = id;
     }
 
-
-
-    public Long getDurationSeconds() {
-        return durationSeconds;
-    }
-
-    public void setDurationSeconds(Long durationSeconds) {
-        this.durationSeconds = durationSeconds;
-    }
 
     public String getTriggerType() {
         return triggerType;
