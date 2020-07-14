@@ -202,17 +202,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             DevopsPipelineStageDTO stageDTO = new DevopsPipelineStageDTO();
             DevopsCdStageRecordDTO stageRecordDTO = stageRecordDTOList.get(i);
             stageDTO.setStageRecordId(stageRecordDTO.getId());
-            if (!isRetry || i > 0) {
-                if (stageRecordDTO.getTriggerType().equals(DeployType.MANUAL.getType())) {
-                    List<DevopsCdAuditRecordDTO> stageAuditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(stageRecordDTO.getId());
-                    if (CollectionUtils.isEmpty(stageAuditRecordDTOS)) {
-                        throw new CommonException("error.audit.stage.noUser");
-                    }
-                    List<String> users = stageAuditRecordDTOS.stream().map(t -> TypeUtil.objToString(t.getUserId())).collect(Collectors.toList());
-                    stageDTO.setUsernames(users);
-                    stageDTO.setMultiAssign(users.size() > 1);
-                }
-            }
             // 4.
             List<DevopsCdJobRecordDTO> jobRecordDTOList;
             if (!isRetry || i > 0) {
@@ -243,9 +232,31 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 });
             }
             stageDTO.setTasks(taskDTOList);
-            // 5.
+            // 5. 审核任务处理
+            // 在workflow 是先渲染阶段 在渲染阶段任务
             if (i != stageRecordDTOList.size() - 1) {
                 stageDTO.setNextStageTriggerType(stageRecordDTOList.get(i + 1).getTriggerType());
+                if (stageRecordDTOList.get(i + 1).getTriggerType().equals(DeployType.MANUAL.getType())) {
+                    List<DevopsCdAuditRecordDTO> stageAuditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(stageRecordDTOList.get(i + 1).getId());
+                    if (CollectionUtils.isEmpty(stageAuditRecordDTOS)) {
+                        throw new CommonException("error.audit.stage.noUser");
+                    }
+                    List<String> users = stageAuditRecordDTOS.stream().map(t -> TypeUtil.objToString(t.getUserId())).collect(Collectors.toList());
+                    stageDTO.setUsernames(users);
+                    stageDTO.setMultiAssign(users.size() > 1);
+                }
+            }
+             // ci cd 间的审核任务 放在流水线
+            if (!isRetry && i == 0) {
+                if (stageRecordDTO.getTriggerType().equals(DeployType.MANUAL.getType())) {
+                    List<DevopsCdAuditRecordDTO> stageAuditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(stageRecordDTO.getId());
+                    if (CollectionUtils.isEmpty(stageAuditRecordDTOS)) {
+                        throw new CommonException("error.audit.stage.noUser");
+                    }
+                    List<String> users = stageAuditRecordDTOS.stream().map(t -> TypeUtil.objToString(t.getUserId())).collect(Collectors.toList());
+                    devopsPipelineDTO.setUserNames(users);
+                    devopsPipelineDTO.setMultiAssign(users.size() > 1);
+                }
             }
             devopsPipelineStageDTOS.add(stageDTO);
         }
