@@ -164,6 +164,7 @@ const AddTask = observer(() => {
             } else if (c.type === 'maven_deploy') {
               if (c.mavenDeployRepoSettings) {
                 zpk = c.mavenDeployRepoSettings.nexusRepoIds;
+                nexusMavenRepoIds = c.nexusMavenRepoIds;
               }
             }
             if (c.mavenSettings) {
