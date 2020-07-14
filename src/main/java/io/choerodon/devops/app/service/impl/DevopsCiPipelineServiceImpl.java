@@ -426,21 +426,16 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             //查询ci流水线记录
             Page<DevopsCiPipelineRecordVO> pipelineCiRecordVOPageInfo = devopsCiPipelineRecordService.pagingPipelineRecord(projectId, ciCdPipelineVO.getId(), ciPageable);
             if (!CollectionUtils.isEmpty(pipelineCiRecordVOPageInfo.getContent())) {
-                ciCdPipelineVO.setLatestExecuteDate(pipelineCiRecordVOPageInfo.getContent().get(0).getCreatedDate());
-                ciCdPipelineVO.setLatestExecuteStatus(pipelineCiRecordVOPageInfo.getContent().get(0).getStatus());
-                ciCdPipelineVO.setHasMoreRecords(pipelineCiRecordVOPageInfo.getTotalElements() > DEFAULT_PIPELINE_RECORD_SIZE);
                 ciPipielineMap = pipelineCiRecordVOPageInfo.getContent().stream().collect(Collectors.groupingBy(DevopsCiPipelineRecordVO::getGitlabPipelineId));
             }
 
             //查询cd流水线记录
             Page<DevopsCdPipelineRecordVO> devopsCdPipelineRecordVOS = devopsCdPipelineRecordService.pagingCdPipelineRecord(projectId, ciCdPipelineVO.getId(), cdPpageable);
             if (!CollectionUtils.isEmpty(devopsCdPipelineRecordVOS.getContent())) {
-                ciCdPipelineVO.setLatestExecuteDate(devopsCdPipelineRecordVOS.getContent().get(0).getCreatedDate());
-                ciCdPipelineVO.setLatestExecuteStatus(devopsCdPipelineRecordVOS.getContent().get(0).getStatus());
-                ciCdPipelineVO.setHasMoreRecords(pipelineCiRecordVOPageInfo.getTotalElements() > DEFAULT_PIPELINE_RECORD_SIZE);
                 cdPipielineMap = devopsCdPipelineRecordVOS.getContent().stream().collect(Collectors.groupingBy(DevopsCdPipelineRecordVO::getGitlabPipelineId));
             }
-
+            //计算流水线上一次执行的状态和时间
+            CiCdPipelineUtils.calculateStatus(ciCdPipelineVO,pipelineCiRecordVOPageInfo,devopsCdPipelineRecordVOS);
             //封装 CiCdPipelineRecordVO
             //纯ci流水线
             if (!CollectionUtils.isEmpty(ciPipielineMap) && CollectionUtils.isEmpty(cdPipielineMap)) {
