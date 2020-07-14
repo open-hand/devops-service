@@ -21,6 +21,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.enums.MessageAdditionalType;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
 import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
 import io.choerodon.devops.app.service.*;
@@ -1090,7 +1091,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     users.forEach(t -> userList.add(constructReceiver(t.getId(), t.getEmail(), t.getPhone(), t.getOrganizationId())));
                     Map<String, String> params = new HashMap<>();
                     params.put(STAGE_NAME, stageName);
-                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
+                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(DetailsHelper.getUserDetails().getUserId());
                     params.put("auditName", iamUserDTO.getLoginName());
                     params.put("realName", iamUserDTO.getRealName());
                     sendCdPipelineMessage(pipelineRecordId, type, userList, params, stageId, stageName);
