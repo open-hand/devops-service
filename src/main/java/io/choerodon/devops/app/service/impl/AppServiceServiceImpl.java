@@ -1,47 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
-import io.kubernetes.client.JSON;
-import org.apache.commons.io.IOUtils;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -85,6 +45,45 @@ import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.kubernetes.client.JSON;
+import org.apache.commons.io.IOUtils;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.*;
 
 
 /**
@@ -587,9 +586,9 @@ public class AppServiceServiceImpl implements AppServiceService {
                                                String type, Boolean doPage,
                                                PageRequest pageable, String params, Boolean checkMember) {
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
         Page<AppServiceDTO> applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params, checkMember);
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId(), false);
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOS.getContent(), urlSlash);
 
@@ -597,11 +596,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         BeanUtils.copyProperties(applicationServiceDTOS, destination, "content");
         if (applicationServiceDTOS.getContent() != null) {
             List<AppServiceDTO> appServiceDTOList = applicationServiceDTOS.getContent();
-            List<Long> createdByIds = appServiceDTOList.stream().map(AppServiceDTO::getCreatedBy).collect(toList());
-            List<Long> lastUpdatedByIds = appServiceDTOList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList());
-            Map<Long, List<IamUserDTO>> createdByUsers = baseServiceClientOperator.listUsersByIds(createdByIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
-            Map<Long, List<IamUserDTO>> lastUpdatedByUsers = baseServiceClientOperator.listUsersByIds(lastUpdatedByIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
-            destination.setContent(applicationServiceDTOS.getContent().stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, createdByUsers, lastUpdatedByUsers)).collect(Collectors.toList()));
+            List<Long> userIds = appServiceDTOList.stream().map(AppServiceDTO::getCreatedBy).collect(toList());
+            userIds.addAll(appServiceDTOList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList()));
+            List<Long> distinctIds = userIds.stream().distinct().collect(toList());
+
+            Map<Long, IamUserDTO> users = baseServiceClientOperator.listUsersByIds(new ArrayList<>(distinctIds)).stream().collect(Collectors.toMap(IamUserDTO::getId, u -> u));
+            destination.setContent(applicationServiceDTOS.getContent().stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, users)).collect(Collectors.toList()));
         } else {
             destination.setContent(new ArrayList<>());
         }
@@ -645,13 +645,15 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-        List<Long> createdByIds = applicationDTOServiceList.stream().map(AppServiceDTO::getCreatedBy).collect(toList());
-        List<Long> lastUpdatedByIds = applicationDTOServiceList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList());
-        Map<Long, List<IamUserDTO>> createdByUsers = baseServiceClientOperator.listUsersByIds(createdByIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
-        Map<Long, List<IamUserDTO>> lastUpdatedByUsers = baseServiceClientOperator.listUsersByIds(lastUpdatedByIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
+        List<Long> userIds = applicationDTOServiceList.stream().map(AppServiceDTO::getCreatedBy).collect(toList());
+        userIds.addAll(applicationDTOServiceList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList()));
+
+        List<Long> distinctIds = userIds.stream().distinct().collect(toList());
+        Map<Long, IamUserDTO> users = baseServiceClientOperator.listUsersByIds(new ArrayList<>(distinctIds)).stream().collect(toMap(IamUserDTO::getId, u -> u));
+
         initApplicationParams(projectDTO, organizationDTO, applicationDTOServiceList, urlSlash);
 
-        return applicationDTOServiceList.stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, createdByUsers, lastUpdatedByUsers)).collect(toList());
+        return applicationDTOServiceList.stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, users)).collect(toList());
     }
 
     @Override
@@ -2912,41 +2914,13 @@ public class AppServiceServiceImpl implements AppServiceService {
         return viewDTOList.get(0).getAppServiceIds();
     }
 
-    private void initApplicationParams(ProjectDTO projectDTO, Tenant
-            organizationDTO, List<AppServiceDTO> applicationDTOS, String urlSlash) {
-        List<String> projectKeys = new ArrayList<>();
-        if (!sonarqubeUrl.equals("")) {
-            SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
-
-            //校验sonarqube地址是否正确
-            try {
-                sonarClient.getUser().execute();
-            } catch (IOException e) {
-                if (e.getCause().getMessage().equals("Connection refused: connect")) {
-                    throw new CommonException("error.connect.sonarqube.fail");
-                }
-            }
-
-            try {
-                Response<Projects> projectsResponse = sonarClient.listProject().execute();
-                if (projectsResponse != null && projectsResponse.raw().code() == 200) {
-                    projectKeys = projectsResponse.body().getComponents().stream().map(Component::getKey).collect(Collectors.toList());
-                }
-            } catch (IOException e) {
-                LOGGER.info(e.getMessage(), e);
-            }
-        }
-
+    private void initApplicationParams(ProjectDTO projectDTO, Tenant organizationDTO, List<AppServiceDTO> applicationDTOS, String urlSlash) {
         for (AppServiceDTO t : applicationDTOS) {
             if (t.getGitlabProjectId() != null) {
                 t.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), t.getCode()));
                 t.setRepoUrl(
                         gitlabUrl + urlSlash + organizationDTO.getTenantNum() + "-" + projectDTO.getCode() + "/"
                                 + t.getCode() + ".git");
-                String key = String.format(SONAR_KEY, organizationDTO.getTenantNum(), projectDTO.getCode(), t.getCode());
-                if (!projectKeys.isEmpty() && projectKeys.contains(key)) {
-                    t.setSonarUrl(sonarqubeUrl);
-                }
             }
         }
     }
@@ -2977,12 +2951,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         return appServiceRepVO;
     }
 
-    public AppServiceRepVO dtoToRepVo(AppServiceDTO appServiceDTO, Map<Long, List<IamUserDTO>> createdByUsers, Map<Long, List<IamUserDTO>> lastUpdatedByUsers) {
+    public AppServiceRepVO dtoToRepVo(AppServiceDTO appServiceDTO, Map<Long, IamUserDTO> users) {
         AppServiceRepVO appServiceRepVO = new AppServiceRepVO();
         BeanUtils.copyProperties(appServiceDTO, appServiceRepVO);
         appServiceRepVO.setFail(appServiceDTO.getFailed());
-        IamUserDTO createUser = null == createdByUsers.get(appServiceDTO.getCreatedBy()) ? null : createdByUsers.get(appServiceDTO.getCreatedBy()).get(0);
-        IamUserDTO updateUser = null == lastUpdatedByUsers.get(appServiceDTO.getLastUpdatedBy()) ? null : lastUpdatedByUsers.get(appServiceDTO.getLastUpdatedBy()).get(0);
+        IamUserDTO createUser = users.get(appServiceDTO.getCreatedBy());
+        IamUserDTO updateUser = users.get(appServiceDTO.getLastUpdatedBy());
         if (createUser != null) {
             appServiceRepVO.setCreateUserName(createUser.getRealName());
             appServiceRepVO.setCreateLoginName(createUser.getLoginName());
