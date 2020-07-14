@@ -1,15 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import io.kubernetes.client.models.V1Endpoints;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.AppServiceInstanceVO;
@@ -27,6 +17,17 @@ import io.choerodon.devops.infra.util.ComponentVersionUtil;
 import io.choerodon.devops.infra.util.GitOpsUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.kubernetes.client.models.V1Endpoints;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -34,6 +35,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
     private static final String C7N_HELM_RELEASE = "C7NHelmRelease";
     private static final String GIT_SUFFIX = "/.git";
     private static final String COMPARE_VALUES = "{}";
+    private static final Logger LOGGER = LoggerFactory.getLogger(HandlerC7nReleaseRelationsServiceImpl.class);
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
@@ -257,6 +259,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
         appServiceDeployVO.setEnvironmentId(envId);
         appServiceDeployVO.setType(type);
+        LOGGER.info("==========================================versionValue:\n" + versionValue + "\n=====================================c7nValue:\n" + c7nHelmRelease.getSpec().getValues());
         appServiceDeployVO.setValues(appServiceInstanceService.getReplaceResult(versionValue, c7nHelmRelease.getSpec().getValues()).getYaml());
         appServiceDeployVO.setAppServiceId(releaseAppServiceId);
         appServiceDeployVO.setAppServiceVersionId(appServiceVersionDTO.getId());
@@ -271,7 +274,10 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                 devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
             }
             String deployValue = appServiceInstanceService.baseQueryValueByInstanceId(appServiceInstanceDTO.getId());
+            LOGGER.info("==========================================values\n" + "deployValue:\n" + deployValue + "\n====================appServiceDeployVOValue:\n" + appServiceDeployVO.getValues());
             InstanceValueVO instanceValueVO = appServiceInstanceService.getReplaceResult(deployValue, appServiceDeployVO.getValues());
+            LOGGER.info("==========================================deltaYaml:\n" + instanceValueVO.getDeltaYaml());
+            LOGGER.info("==========================================appServiceVersionId:\n" + appServiceVersionDTO.getId() + "\n============================objectVersionId:\n" + devopsEnvCommandDTO.getObjectVersionId());
             if (deployValue != null
                     && (instanceValueVO.getDeltaYaml() == null || instanceValueVO.getDeltaYaml().equals("") || instanceValueVO.getDeltaYaml().trim().equals(COMPARE_VALUES))
                     && Objects.equals(appServiceVersionDTO.getId(), devopsEnvCommandDTO.getObjectVersionId())) {
