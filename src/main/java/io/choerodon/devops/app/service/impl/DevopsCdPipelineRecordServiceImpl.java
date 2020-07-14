@@ -935,7 +935,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 }
                 List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByJobRecordId(devopsCdJobRecordVO.getId());
                 if (!CollectionUtils.isEmpty(devopsCdAuditRecordDTOS)) {
-                    List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(devopsCdAuditRecordDTOS.stream().map(DevopsCdAuditRecordDTO::getUserId).collect(Collectors.toList()));
+                    List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(devopsCdAuditRecordDTOS.stream()
+                            .filter(devopsCdAuditRecordDTO -> AuditStatusEnum.PASSED.value().equals(devopsCdAuditRecordDTO.getStatus()))
+                            .map(DevopsCdAuditRecordDTO::getUserId).collect(Collectors.toList()));
                     audit.setReviewedUsers(iamUserDTOS);
                     audit.setStatus(devopsCdJobRecordVO.getStatus());
                 }
