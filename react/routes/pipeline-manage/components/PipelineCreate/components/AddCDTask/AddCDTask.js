@@ -184,20 +184,20 @@ export default observer(() => {
     return res[testStatus];
   };
 
-  useEffect(() => {
-    const type = ADDCDTaskDataSet.current.get('type');
-    modal.update({
-      okProps: {
-        disabled: (function () {
-          if (type === 'cdHost') {
-            return testStatus !== 'success';
-          } else {
-            return false;
-          }
-        }()),
-      },
-    });
-  }, [testStatus, ADDCDTaskDataSet.current.get('type')]);
+  // useEffect(() => {
+  //   const type = ADDCDTaskDataSet.current.get('type');
+  //   modal.update({
+  //     okProps: {
+  //       disabled: (function () {
+  //         if (type === 'cdHost') {
+  //           return testStatus === 'failed';
+  //         } else {
+  //           return false;
+  //         }
+  //       }()),
+  //     },
+  //   });
+  // }, [testStatus, ADDCDTaskDataSet.current.get('type')]);
 
   // const handleTestValue = async () => new Promise((resolve) => {
   //   const hostDeployType = ADDCDTaskDataSet.current.get('hostDeployType');
