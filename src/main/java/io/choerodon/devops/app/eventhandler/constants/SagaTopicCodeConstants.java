@@ -101,6 +101,11 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_GITLAB_CI_PIPELINE = "devops-gitlab-ci-pipeline";
 
     /**
+     * 处理流水线执行成功， 为了纯cd流水线触发
+     */
+    public static final String DEVOPS_CI_PIPELINE_SUCCESS_FOR_SIMPLE_CD = "devops-ci-pipeline-success-for-simple-cd";
+
+    /**
      * 创建分支
      */
     public static final String DEVOPS_CREATE_BRANCH = "devops-create-branch";
