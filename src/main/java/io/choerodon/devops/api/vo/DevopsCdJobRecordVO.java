@@ -2,13 +2,11 @@ package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
-import io.choerodon.devops.infra.dto.DevopsCdAuditRecordDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 public class DevopsCdJobRecordVO {
@@ -33,7 +31,7 @@ public class DevopsCdJobRecordVO {
     private Date startedDate;
     private Date finishedDate;
 
-    private Long executeTime;
+    private Long durationSeconds;
 
     //自动部署记录详情
     private CdAuto cdAuto;
@@ -160,13 +158,12 @@ public class DevopsCdJobRecordVO {
         }
     }
 
-
-    public Long getExecuteTime() {
-        return executeTime;
+    public Long getDurationSeconds() {
+        return durationSeconds;
     }
 
-    public void setExecuteTime(Long executeTime) {
-        this.executeTime = executeTime;
+    public void setDurationSeconds(Long durationSeconds) {
+        this.durationSeconds = durationSeconds;
     }
 
     public Long getId() {
@@ -285,6 +282,6 @@ public class DevopsCdJobRecordVO {
         if (this.startedDate == null || this.finishedDate == null) return;
         LocalDateTime start = startedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         LocalDateTime finished = finishedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        this.executeTime = Duration.between(start, finished).getSeconds();
+        this.durationSeconds = Duration.between(start, finished).getSeconds();
     }
 }

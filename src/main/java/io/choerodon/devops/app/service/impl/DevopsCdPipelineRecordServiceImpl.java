@@ -745,7 +745,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryByPipelineRecordId(devopsCdPipelineRecordVO.getId());
             if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
                 //封装审核数据
-                DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO = null;
                 List<DevopsCdStageRecordVO> devopsCdStageRecordVOS = ConvertUtils.convertList(devopsCdStageRecordDTOS, DevopsCdStageRecordVO.class);
                 for (DevopsCdStageRecordVO devopsCdStageRecordVO : devopsCdStageRecordVOS) {
                     //查询Cd job
@@ -755,15 +754,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     devopsCdJobRecordVOS.forEach(devopsCdJobRecordVO -> {
                         devopsCdJobRecordVO.setJobExecuteTime();
                     });
-                    devopsCdStageRecordVO.setJobRecordVOList(devopsCdJobRecordVOS);
-//                    if (Objects.isNull(devopsCdPipelineDeatilVO)) {
-//                        devopsCdPipelineDeatilVO = generateCdPipelineDeatilVO(devopsCdStageRecordVO);
-//                    }
+                    //计算satge耗时
+                    Long seconds = devopsCdStageRecordVO.getJobRecordVOList().stream().map(DevopsCdJobRecordVO::getDurationSeconds).reduce((aLong, aLong2) -> aLong + aLong2).get();
+                    devopsCdStageRecordVO.setDurationSeconds(seconds);
                 }
                 // 计算流水线当前停留的审核节点
                 addAuditStateInfo(devopsCdPipelineRecordVO);
                 devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
-//                devopsCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineDeatilVO);
             } else {
                 devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.EMPTY_LIST);
             }
