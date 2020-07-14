@@ -64,14 +64,14 @@ public class CiCdPipelineUtils {
     public static void calculateStatus(CiCdPipelineVO ciCdPipelineVO, Page<DevopsCiPipelineRecordVO> pipelineCiRecordVOPageInfo, Page<DevopsCdPipelineRecordVO> devopsCdPipelineRecordVOS) {
         //纯CD
         if (!CollectionUtils.isEmpty(devopsCdPipelineRecordVOS.getContent())) {
-            List<DevopsCdPipelineRecordVO> cdPipelineRecordVOS = devopsCdPipelineRecordVOS.getContent().stream().sorted(Comparator.comparing(DevopsCdPipelineRecordVO::getCreatedDate)).collect(Collectors.toList());
+            List<DevopsCdPipelineRecordVO> cdPipelineRecordVOS = devopsCdPipelineRecordVOS.getContent().stream().sorted(Comparator.comparing(DevopsCdPipelineRecordVO::getId).reversed()).collect(Collectors.toList());
             ciCdPipelineVO.setLatestExecuteDate(cdPipelineRecordVOS.get(0).getCreatedDate());
             ciCdPipelineVO.setLatestExecuteStatus(cdPipelineRecordVOS.get(0).getStatus());
             ciCdPipelineVO.setHasMoreRecords(devopsCdPipelineRecordVOS.getTotalElements() > DEFAULT_PIPELINE_RECORD_SIZE);
         }
         //纯CI
         if (!CollectionUtils.isEmpty(pipelineCiRecordVOPageInfo.getContent())) {
-            List<DevopsCiPipelineRecordVO> ciPipelineRecordVOS = pipelineCiRecordVOPageInfo.getContent().stream().sorted(Comparator.comparing(DevopsCiPipelineRecordVO::getCreatedDate)).collect(Collectors.toList());
+            List<DevopsCiPipelineRecordVO> ciPipelineRecordVOS = pipelineCiRecordVOPageInfo.getContent().stream().sorted(Comparator.comparing(DevopsCiPipelineRecordVO::getId).reversed()).collect(Collectors.toList());
             ciCdPipelineVO.setLatestExecuteDate(ciPipelineRecordVOS.get(0).getCreatedDate());
             ciCdPipelineVO.setLatestExecuteStatus(ciPipelineRecordVOS.get(0).getStatus());
             ciCdPipelineVO.setHasMoreRecords(pipelineCiRecordVOPageInfo.getTotalElements() > DEFAULT_PIPELINE_RECORD_SIZE);
@@ -79,8 +79,8 @@ public class CiCdPipelineUtils {
         //cicd
         if (!CollectionUtils.isEmpty(devopsCdPipelineRecordVOS.getContent()) && !CollectionUtils.isEmpty(pipelineCiRecordVOPageInfo.getContent())) {
             ciCdPipelineVO.setHasMoreRecords(pipelineCiRecordVOPageInfo.getTotalElements() > DEFAULT_PIPELINE_RECORD_SIZE);
-            DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = devopsCdPipelineRecordVOS.getContent().stream().sorted(Comparator.comparing(DevopsCdPipelineRecordVO::getCreatedDate)).collect(Collectors.toList()).get(0);
-            DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = pipelineCiRecordVOPageInfo.getContent().stream().sorted(Comparator.comparing(DevopsCiPipelineRecordVO::getCreatedDate)).collect(Collectors.toList()).get(0);
+            DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = devopsCdPipelineRecordVOS.getContent().stream().sorted(Comparator.comparing(DevopsCdPipelineRecordVO::getId).reversed()).collect(Collectors.toList()).get(0);
+            DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = pipelineCiRecordVOPageInfo.getContent().stream().sorted(Comparator.comparing(DevopsCiPipelineRecordVO::getId).reversed()).collect(Collectors.toList()).get(0);
             ciCdPipelineVO.setLatestExecuteDate(devopsCiPipelineRecordVO.getCreatedDate());
             if (!PipelineStatus.SUCCESS.toValue().equals(devopsCiPipelineRecordVO.getStatus())) {
                 ciCdPipelineVO.setLatestExecuteStatus(devopsCiPipelineRecordVO.getStatus());
