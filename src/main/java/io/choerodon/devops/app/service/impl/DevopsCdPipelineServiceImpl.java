@@ -17,7 +17,6 @@ import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import org.apache.commons.lang3.StringUtils;
-import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +36,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
+import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
@@ -160,6 +160,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Autowired
     private TransactionalProducer transactionalProducer;
 
+    @Autowired
+    private DevopsPipelineRecordRelService devopsPipelineRecordRelService;
+
     @Override
     @Transactional
     public void handleCiPipelineStatusUpdate(PipelineWebHookVO pipelineWebHookVO) {
@@ -200,6 +203,12 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 if (!CollectionUtils.isEmpty(executeStageList)) {
                     // 保存流水线记录
                     devopsCdPipelineRecordDTO = initPipelineRecord(devopsCiPipelineDTO, pipelineAttr.getId(), pipelineAttr.getSha(), pipelineAttr.getRef());
+
+                    // 保存流水线记录关系
+                    DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryByGitlabPipelineId(pipelineAttr.getId());
+                    DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryByPipelineIdAndCiPipelineRecordId(devopsCiPipelineDTO.getId(), devopsCiPipelineRecordDTO.getId());
+                    devopsPipelineRecordRelDTO.setCdPipelineRecordId(devopsCdPipelineRecordDTO.getId());
+                    devopsPipelineRecordRelService.update(devopsPipelineRecordRelDTO);
                     // 创建cd阶段记录
                     DevopsCdPipelineRecordDTO finalDevopsCdPipelineRecordDTO = devopsCdPipelineRecordDTO;
                     devopsCdStageDTOList.forEach(stage -> {
@@ -403,6 +412,12 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         if (!CollectionUtils.isEmpty(executeStageList)) {
             // 保存流水线记录
             devopsCdPipelineRecordDTO = initPipelineRecord(devopsCiPipelineDTO, gitlabPipelineId, commitSha, ref);
+            // 保存流水线关系记录
+            DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = new DevopsPipelineRecordRelDTO();
+            devopsPipelineRecordRelDTO.setPipelineId(devopsCiPipelineDTO.getId());
+            devopsPipelineRecordRelDTO.setCdPipelineRecordId(devopsCdPipelineRecordDTO.getId());
+            devopsPipelineRecordRelDTO.setCiPipelineRecordId(PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID);
+            devopsPipelineRecordRelService.save(devopsPipelineRecordRelDTO);
             // 创建cd阶段记录
             DevopsCdPipelineRecordDTO finalDevopsCdPipelineRecordDTO = devopsCdPipelineRecordDTO;
             devopsCdStageDTOList.forEach(stage -> {
