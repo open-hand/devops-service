@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { inject } from 'mobx-react';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { Button } from 'choerodon-ui';
+import isEmpty from 'lodash/isEmpty';
 
 const AuditModal = ({
   AppState: {
@@ -125,16 +126,18 @@ const AuditModal = ({
       }
       if (data && !data.failed) {
         // 会签，非最后一人审核，返回数据：[{ audit: true 已审核 | false 未审核, loginName: "工号", realName: "姓名"}]
-        const { auditedUserName = [], notAuditUserName = [] } = data || {};
-        setCanCheck(false);
-        changeModalFooter(false);
-        setCheckTips(formatMessage({ id: 'pipeline.check.tips.text' }, {
-          checkUsers: auditedUserName.join('，'),
-          unCheckUsers: notAuditUserName.join('，'),
-        }));
-      } else {
-        // 或签、会签最后一人审核通过、审核终止，返回数据null
-        handClose(true);
+        const { auditedUserNameList, notAuditUserNameList, countersigned } = data || {};
+        if (countersigned === 1 && !isEmpty(auditedUserNameList) && !isEmpty(notAuditUserNameList)) {
+          setCanCheck(false);
+          changeModalFooter(false);
+          setCheckTips(formatMessage({ id: 'pipeline.check.tips.text' }, {
+            checkUsers: auditedUserNameList.join('，'),
+            unCheckUsers: notAuditUserNameList.join('，'),
+          }));
+        } else {
+          // 或签、会签最后一人审核通过、审核终止，返回数据null
+          handClose(true);
+        }
       }
     } catch (e) {
       return false;

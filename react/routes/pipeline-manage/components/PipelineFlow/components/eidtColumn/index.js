@@ -133,7 +133,7 @@ const EditItem = (props) => {
 };
 
 export default observer((props) => {
-  const { jobList, sequence, name, columnIndex, edit, appServiceId, appServiceName, image, type, isLast, parallel } = props;
+  const { jobList, sequence, name, columnIndex, edit, appServiceId, appServiceName, image, type, isLast, parallel, isFirst, triggerType: stageTriggerType } = props;
   const {
     addStepDs,
     editBlockStore, stepStore,
@@ -347,9 +347,9 @@ export default observer((props) => {
         onClick={() => openAddStageModal({ optType: 'create', curType: type })}
       />
       <div
-        className="c7n-piplineManage-edit-column-arrow"
+        className={`c7n-piplineManage-edit-column-arrow c7n-piplineManage-edit-column-arrow-${stageTriggerType}`}
         style={{
-          display: isLast ? 'none' : 'block',
+          display: isFirst ? 'none' : 'block',
         }}
       >
         <span />

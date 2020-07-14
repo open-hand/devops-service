@@ -332,9 +332,9 @@ export default observer(() => {
         <p className="addcdTask-title">主机部署</p>,
         <Form style={{ marginTop: 20 }} columns={6} dataSet={ADDCDTaskDataSet}>
           <SelectBox className="addcdTask-mainMode" colSpan={5} name="hostDeployType">
-            <Option value="customize">自定义命令</Option>
             <Option value="image">镜像部署</Option>
             <Option value="jar">jar包部署</Option>
+            <Option value="customize">自定义命令</Option>
           </SelectBox>,
           {
             getModeDom()

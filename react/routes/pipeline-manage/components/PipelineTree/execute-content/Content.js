@@ -179,7 +179,7 @@ export default observer(() => {
   return (
     <Form
       dataSet={selectDs}
-      style={{ width: 340 }}
+      // style={{ width: 340 }}
       ref={changeRef}
       columns={3}
     >
