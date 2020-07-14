@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
 import io.swagger.annotations.ApiOperation;
-import org.hzero.core.util.Results;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,12 +32,11 @@ public class DevopsCdPipelineAuditController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "审核手动流转阶段")
     @PostMapping("/stage_records/{stage_record_id}/audit")
-    public ResponseEntity<Void> auditStage(@PathVariable(value = "project_id") Long projectId,
-                                           @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,
-                                           @PathVariable(value = "stage_record_id") Long stageRecordId,
-                                           @RequestParam(value = "result") String result) {
-        devopsCdPipelineService.auditStage(projectId, pipelineRecordId, stageRecordId, result);
-        return Results.success();
+    public ResponseEntity<AuditResultVO> auditStage(@PathVariable(value = "project_id") Long projectId,
+                                                    @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,
+                                                    @PathVariable(value = "stage_record_id") Long stageRecordId,
+                                                    @RequestParam(value = "result") String result) {
+        return ResponseEntity.ok(devopsCdPipelineService.auditStage(projectId, pipelineRecordId, stageRecordId, result));
     }
 
     /**
