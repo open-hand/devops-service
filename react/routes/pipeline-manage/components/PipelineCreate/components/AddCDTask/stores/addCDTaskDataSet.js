@@ -160,10 +160,12 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
         let newData = data;
         try {
           newData = JSON.parse(newData);
-        } finally {
           useStore.setRepoList(newData);
+          return newData;
+        } catch (e) {
+          useStore.setRepoList(newData);
+          return newData;
         }
-        return newData;
       },
     }),
     dynamicProps: {
@@ -188,10 +190,12 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
           let newData = data;
           try {
             newData = JSON.parse(newData);
-          } finally {
             useStore.setImageList(newData);
+            return newData;
+          } catch (e) {
+            useStore.setImageList(newData);
+            return newData;
           }
-          return newData;
         },
       }),
     },
@@ -235,7 +239,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
     name: 'repositoryId',
     type: 'string',
     label: '项目制品库',
-    textField: 'repositoryId',
+    textField: 'neRepositoryName',
     valueField: 'repositoryId',
     dynamicProps: {
       required: ({ record }) => record.get('type') === 'cdHost' && record.get('hostDeployType') === 'jar',
