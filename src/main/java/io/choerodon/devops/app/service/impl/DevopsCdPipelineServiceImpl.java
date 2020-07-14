@@ -433,7 +433,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
      *
      * @param pipelineRecordId
      */
-    private void executeCdPipeline(Long pipelineRecordId) {
+    @Override
+    public void executeCdPipeline(Long pipelineRecordId) {
         DevopsPipelineDTO devopsPipelineDTO = devopsCdPipelineRecordService.createCDWorkFlowDTO(pipelineRecordId);
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
         devopsCdPipelineRecordDTO.setBpmDefinition(gson.toJson(devopsPipelineDTO));
@@ -448,7 +449,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             // 更新流水线执行状态
             updateFirstStage(devopsCdPipelineRecordDTO.getId());
         } catch (Exception e) {
-            LOGGER.error(e.getMessage());
+            e.printStackTrace();
             sendFailedSiteMessage(devopsCdPipelineRecordDTO.getId(), GitUserNameUtil.getUserId().longValue());
             devopsCdPipelineRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
 //            devopsCdPipelineRecordDTO.setErrorInfo(e.getMessage());

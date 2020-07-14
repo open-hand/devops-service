@@ -18,6 +18,9 @@ public interface DevopsCdPipelineService {
 
     void triggerCdPipeline(String token, String commit, String ref, Long gitlabPipelineId);
 
+    void executeCdPipeline(Long pipelineRecordId);
+
+
     /**
      * 执行环境部署任务
      *
