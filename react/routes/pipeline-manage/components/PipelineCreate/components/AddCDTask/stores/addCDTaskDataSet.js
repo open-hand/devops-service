@@ -223,10 +223,10 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
       url: `/devops/v1/nexus/choerodon/${organizationId}/project/${projectId}/nexus/server/list`,
     }),
   }, {
-    name: 'neRepositoryName',
+    name: 'repositoryId',
     type: 'string',
     label: '项目制品库',
-    textField: 'neRepositoryName',
+    textField: 'repositoryId',
     valueField: 'repositoryId',
     dynamicProps: {
       required: ({ record }) => record.get('type') === 'cdHost' && record.get('hostDeployType') === 'jar',
@@ -243,10 +243,10 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
     textField: 'name',
     valueField: 'value',
     dynamicProps: {
-      disabled: ({ record }) => !record.get('neRepositoryName'),
+      disabled: ({ record }) => !record.get('repositoryId'),
       lookupAxiosConfig: ({ record }) => ({
         method: 'get',
-        url: `/rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/groupId?repositoryId=${record.get('neRepositoryName')}`,
+        url: `/rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/groupId?repositoryId=${record.get('repositoryId')}`,
         transformResponse: (data) => {
           try {
             const array = JSON.parse(data);
@@ -269,11 +269,11 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
     textField: 'name',
     valueField: 'value',
     dynamicProps: {
-      disabled: ({ record }) => !record.get('neRepositoryName'),
+      disabled: ({ record }) => !record.get('repositoryId'),
       required: ({ record }) => record.get('type') === 'cdHost' && record.get('hostDeployType') === 'jar',
       lookupAxiosConfig: ({ record }) => ({
         method: 'get',
-        url: `/rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/artifactId?repositoryId=${record.get('neRepositoryName')}`,
+        url: `/rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/artifactId?repositoryId=${record.get('repositoryId')}`,
         transformResponse: (data) => {
           try {
             const array = JSON.parse(data);

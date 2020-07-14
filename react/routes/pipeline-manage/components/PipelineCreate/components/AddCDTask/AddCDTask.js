@@ -97,7 +97,7 @@ export default observer(() => {
             } else if (ds.hostDeployType === 'jar') {
               ds.jarDeploy = {
                 serverName: ds.serverName,
-                neRepositoryName: ds.neRepositoryName,
+                repositoryId: ds.repositoryId,
                 groupId: ds.groupId,
                 artifactId: ds.artifactId,
                 versionRegular: ds.versionRegular,
@@ -122,7 +122,7 @@ export default observer(() => {
       let newCdAuditUserIds;
       if (jobDetail.type === 'cdDeploy') {
         const { value } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
-        setValueIdValues(Base64.decode(value));
+        value && setValueIdValues(Base64.decode(value));
       } else if (jobDetail.type === 'cdHost') {
         const metadata = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
         const { hostDeployType } = metadata;
@@ -260,7 +260,7 @@ export default observer(() => {
         ],
         jar: [
           <Select newLine colSpan={3} name="serverName" />,
-          <Select colSpan={3} name="neRepositoryName" />,
+          <Select colSpan={3} name="repositoryId" />,
           <Select colSpan={3} name="groupId" />,
           <Select colSpan={3} name="artifactId" />,
           <TextField colSpan={6} name="versionRegular" />,

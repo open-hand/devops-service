@@ -1,4 +1,4 @@
-export default ({ formatMessage, projectId, gitlabProjectId, pipelineId }) => ({
+export default ({ formatMessage, projectId, gitlabProjectId, pipelineId, appServiceName }) => ({
   autoCreate: true,
   selection: 'single',
   transport: {
@@ -11,6 +11,12 @@ export default ({ formatMessage, projectId, gitlabProjectId, pipelineId }) => ({
     },
   },
   fields: [
+    {
+      name: 'appServiceName',
+      type: 'string',
+      label: formatMessage({ id: 'c7ncd.pipelineManage.appService' }),
+      defaultValue: appServiceName,
+    },
     {
       name: 'branch',
       type: 'string',

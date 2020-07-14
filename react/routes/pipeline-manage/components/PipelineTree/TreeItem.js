@@ -63,6 +63,7 @@ const TreeItem = observer(({ record, search }) => {
         title: formatMessage({ id: `${intlPrefix}.execute` }),
         children: <ExecuteContent
           appServiceId={record.get('appServiceId')}
+          appServiceName={record.get('appServiceName')}
           gitlabProjectId={record.get('gitlabProjectId')}
           pipelineId={record.get('id')}
           refresh={refresh}

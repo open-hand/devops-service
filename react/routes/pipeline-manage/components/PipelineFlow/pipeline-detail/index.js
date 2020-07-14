@@ -67,10 +67,10 @@ export default observer((props) => {
     setRightLineDom(rightList);
   }, [getStepData]);
 
-  function getJobTask({ jobType: type, metadata, iamUserDTOS, jobTriggerValue, triggerValue }) {
+  function getJobTask({ jobType: type, metadata, iamUserDTOS, jobTriggerValue, triggerValue, envName }) {
     if (metadata) {
       const newData = JSON.parse(metadata.replace(/'/g, '"'));
-      const { sonarUrl, config, envName, countersigned } = newData || {};
+      const { sonarUrl, config, countersigned } = newData || {};
       let content;
       switch (type) {
         case 'sonar':
@@ -166,12 +166,12 @@ export default observer((props) => {
                 )}
               </div>
             ) : null}
-            {map(jobList, ({ id: jobId, type: jobType, name: jobName, metadata, iamUserDTOS, triggerValue: jobTriggerValue, triggerValue }, index) => (
+            {map(jobList, ({ id: jobId, type: jobType, name: jobName, metadata, iamUserDTOS, triggerValue: jobTriggerValue, triggerValue, envName }, index) => (
               <div key={`${stageId}-${jobId}`}>
                 {index && leftLineDom[stageIndex] ? leftLineDom[stageIndex][index] : null}
                 <div className={`c7ncd-pipeline-detail-job c7ncd-pipeline-detail-job-${stageType}`} id={`${id}-${stageIndex}-job-${index}`}>
                   <div className="c7ncd-pipeline-detail-job-title">【{jobTask[jobType]}】{jobName}</div>
-                  {jobType !== 'custom' && getJobTask({ jobType, metadata, iamUserDTOS, jobTriggerValue, triggerValue })}
+                  {jobType !== 'custom' && getJobTask({ jobType, metadata, iamUserDTOS, jobTriggerValue, triggerValue, envName })}
                 </div>
                 {index && stageIndex !== getStepData.length - 1 && rightLineDom[stageIndex] ? rightLineDom[stageIndex][index] : null}
               </div>
