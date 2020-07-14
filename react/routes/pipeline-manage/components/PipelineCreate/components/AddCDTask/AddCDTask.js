@@ -48,8 +48,8 @@ export default observer(() => {
   const [branchsList, setBranchsList] = useState([]);
   const [valueIdValues, setValueIdValues] = useState('');
   const [customValues, setCustomValues] = useState('');
-  const [imageDeployValues, setImageDeployValues] = useState('');
-  const [jarValues, setJarValues] = useState('');
+  const [imageDeployValues, setImageDeployValues] = useState('# java -jar指令\n# 不可删除${jar}\n# java -jar 后台运行参数会自动添加 不需要在重复添加\n# 其余参数可参考可根据需要添加java -jar ${jar}');
+  const [jarValues, setJarValues] = useState('docker run --name=${containerName} -d ${imageName}');
   const [testStatus, setTestStatus] = useState('');
 
   const handleAdd = async () => {
