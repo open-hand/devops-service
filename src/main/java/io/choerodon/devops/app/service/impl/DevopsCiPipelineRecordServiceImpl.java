@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hzero.core.util.AssertUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -408,10 +409,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     }
 
     @Override
-    public DevopsCiPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId) {
-        DevopsCiPipelineRecordDTO pipelineRecordDTO = new DevopsCiPipelineRecordDTO();
-        pipelineRecordDTO.setGitlabPipelineId(gitlabPipelineId);
-        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectOne(pipelineRecordDTO);
+    public DevopsCiPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long ciPipelineRecordId) {
+        if (ciPipelineRecordId == null || ciPipelineRecordId == 0L) {
+            return null;
+        }
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(ciPipelineRecordId);
 
         ciPipelineSyncHandler.syncPipeline(devopsCiPipelineRecordDTO.getStatus(), devopsCiPipelineRecordDTO.getLastUpdateDate(), devopsCiPipelineRecordDTO.getId(), TypeUtil.objToInteger(devopsCiPipelineRecordDTO.getGitlabPipelineId()));
 
@@ -613,7 +615,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     @Override
     public DevopsCiPipelineRecordDTO queryById(Long ciPipelineRecordId) {
-
         return devopsCiPipelineRecordMapper.selectByPrimaryKey(ciPipelineRecordId);
     }
 
@@ -705,5 +706,46 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
         UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserName(username);
         return userAttrE.getIamUserId();
+    }
+
+    @Override
+    public DevopsCiPipelineRecordVO queryByCiPipelineRecordId(Long ciPipelineRecordId) {
+        if (ciPipelineRecordId == null || ciPipelineRecordId == 0L) {
+            return null;
+        }
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(ciPipelineRecordId);
+        if (Objects.isNull(devopsCiPipelineRecordDTO)) {
+            return null;
+        }
+        DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = new DevopsCiPipelineRecordVO();
+        BeanUtils.copyProperties(devopsCiPipelineRecordDTO, devopsCiPipelineRecordVO);
+        devopsCiPipelineRecordVO.setCreatedDate(devopsCiPipelineRecordDTO.getCreatedDate());
+
+        ciPipelineSyncHandler.syncPipeline(devopsCiPipelineRecordVO.getStatus(), devopsCiPipelineRecordVO.getLastUpdateDate(), devopsCiPipelineRecordVO.getId(), TypeUtil.objToInteger(devopsCiPipelineRecordVO.getGitlabPipelineId()));
+        // 查询流水线记录下的job记录
+        DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
+        recordDTO.setCiPipelineRecordId(devopsCiPipelineRecordVO.getId());
+        List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOS = devopsCiJobRecordMapper.select(recordDTO);
+
+        // 只返回job的最新记录
+        devopsCiJobRecordDTOS = filterJobs(devopsCiJobRecordDTOS);
+        Map<String, List<DevopsCiJobRecordDTO>> jobRecordMap = devopsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStage));
+        // 查询阶段信息
+        List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
+        List<DevopsCiStageRecordVO> devopsCiStageRecordVOS = ConvertUtils.convertList(devopsCiStageDTOList, DevopsCiStageRecordVO.class);
+        // 计算stage状态
+        devopsCiStageRecordVOS.forEach(stageRecord -> {
+            List<DevopsCiJobRecordDTO> ciJobRecordDTOS = jobRecordMap.get(stageRecord.getName());
+            if (!CollectionUtils.isEmpty(ciJobRecordDTOS)) {
+                Map<String, List<DevopsCiJobRecordDTO>> statusMap = ciJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStatus));
+                //计算stage状态
+                calculateStageStatus(stageRecord, statusMap);
+            }
+
+        });
+        // stage排序
+        devopsCiStageRecordVOS = devopsCiStageRecordVOS.stream().sorted(Comparator.comparing(DevopsCiStageRecordVO::getSequence)).filter(v -> v.getStatus() != null).collect(Collectors.toList());
+        devopsCiPipelineRecordVO.setStageRecordVOList(devopsCiStageRecordVOS);
+        return devopsCiPipelineRecordVO;
     }
 }

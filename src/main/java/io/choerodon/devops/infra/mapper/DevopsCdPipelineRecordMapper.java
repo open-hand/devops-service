@@ -8,4 +8,6 @@ import io.choerodon.mybatis.common.BaseMapper;
 
 public interface DevopsCdPipelineRecordMapper extends BaseMapper<DevopsCdPipelineRecordDTO> {
     List<DevopsCdPipelineRecordVO> listByCiPipelineId(Long pipelineId);
+
+    DevopsCdPipelineRecordVO selectById(Long cdPipelineRecordId);
 }

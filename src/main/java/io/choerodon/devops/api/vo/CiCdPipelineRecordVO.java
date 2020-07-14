@@ -12,6 +12,7 @@ import java.util.List;
  * @Date 2020/4/7 22:18
  */
 public class CiCdPipelineRecordVO {
+    private Long devopsPipelineRecordRelId;
     //ci 执行记录的id
     private Long ciRecordId;
     //cd 执行记录的id
@@ -50,6 +51,14 @@ public class CiCdPipelineRecordVO {
 
     public void setDevopsCdPipelineDeatilVO(DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO) {
         this.devopsCdPipelineDeatilVO = devopsCdPipelineDeatilVO;
+    }
+
+    public Long getDevopsPipelineRecordRelId() {
+        return devopsPipelineRecordRelId;
+    }
+
+    public void setDevopsPipelineRecordRelId(Long devopsPipelineRecordRelId) {
+        this.devopsPipelineRecordRelId = devopsPipelineRecordRelId;
     }
 
     public Long getCiRecordId() {

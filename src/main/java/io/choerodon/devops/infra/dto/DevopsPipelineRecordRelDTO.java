@@ -20,6 +20,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 @Table(name = "devops_pipeline_record_rel")
 public class DevopsPipelineRecordRelDTO extends AuditDomain {
+    public static final String FIELD_ID = "id";
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

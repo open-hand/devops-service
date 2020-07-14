@@ -1,14 +1,21 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
 import io.choerodon.devops.app.service.DevopsPipelineRecordRelService;
 import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.dto.DevopsPipelineRecordRelDTO;
 import io.choerodon.devops.infra.mapper.DevopsPipelineRecordRelMapper;
+import io.choerodon.devops.infra.util.PageRequestUtil;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 〈功能简述〉
@@ -51,4 +58,11 @@ public class DevopsPipelineRecordRelServiceImpl implements DevopsPipelineRecordR
         }
     }
 
+    @Override
+    public Page<DevopsPipelineRecordRelDTO> pagingPipelineRel(Long pipelineId, PageRequest cicdPipelineRel) {
+        DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = new DevopsPipelineRecordRelDTO();
+        devopsPipelineRecordRelDTO.setPipelineId(pipelineId);
+        Page<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(cicdPipelineRel), () -> devopsPipelineRecordRelMapper.select(devopsPipelineRecordRelDTO));
+        return devopsPipelineRecordRelDTOS;
+    }
 }
