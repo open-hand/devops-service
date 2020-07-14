@@ -259,7 +259,6 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
         appServiceDeployVO.setEnvironmentId(envId);
         appServiceDeployVO.setType(type);
-        LOGGER.info("==========================================versionValue:\n" + versionValue + "\n=====================================c7nValue:\n" + c7nHelmRelease.getSpec().getValues());
         appServiceDeployVO.setValues(appServiceInstanceService.getReplaceResult(versionValue, c7nHelmRelease.getSpec().getValues()).getYaml());
         appServiceDeployVO.setAppServiceId(releaseAppServiceId);
         appServiceDeployVO.setAppServiceVersionId(appServiceVersionDTO.getId());
@@ -274,10 +273,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                 devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
             }
             String deployValue = appServiceInstanceService.baseQueryValueByInstanceId(appServiceInstanceDTO.getId());
-            LOGGER.info("==========================================values\n" + "deployValue:\n" + deployValue + "\n====================appServiceDeployVOValue:\n" + appServiceDeployVO.getValues());
             InstanceValueVO instanceValueVO = appServiceInstanceService.getReplaceResult(deployValue, appServiceDeployVO.getValues());
-            LOGGER.info("==========================================deltaYaml:\n" + instanceValueVO.getDeltaYaml());
-            LOGGER.info("==========================================appServiceVersionId:\n" + appServiceVersionDTO.getId() + "\n============================objectVersionId:\n" + devopsEnvCommandDTO.getObjectVersionId());
             if (deployValue != null
                     && (instanceValueVO.getDeltaYaml() == null || instanceValueVO.getDeltaYaml().equals("") || instanceValueVO.getDeltaYaml().trim().equals(COMPARE_VALUES))
                     && Objects.equals(appServiceVersionDTO.getId(), devopsEnvCommandDTO.getObjectVersionId())) {
