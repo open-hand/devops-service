@@ -296,6 +296,8 @@ export default observer((props) => {
 
   const getType = () => type === 'CI';
 
+  const realType = type?.toUpperCase();
+
   return (
     <div
       className="c7n-piplineManage-edit-column"
@@ -305,7 +307,10 @@ export default observer((props) => {
     >
       <div className="c7n-piplineManage-edit-column-header">
         <span>{name}</span>
-        <StageType type={type} parallel={parallel} />
+        {/* <StageType type={type} parallel={parallel} /> */}
+        <span className={`c7n-piplineManage-stage-type c7n-piplineManage-stage-type-${realType}`}>
+          {realType}
+        </span>
         <div
           className="c7n-piplineManage-edit-column-header-btnGroup"
         >
@@ -328,6 +333,12 @@ export default observer((props) => {
             className="c7n-piplineManage-edit-column-header-btnGroup-btn c7n-piplineManage-edit-column-header-btnGroup-btn-delete"
           />}
         </div>
+      </div>
+      <div className="c7n-piplineManage-edit-column-stageType">
+        <span>任务列表</span>
+        <span
+          className={`c7n-piplineManage-stage-type-task c7n-piplineManage-stage-type-task-${parallel ? 'parallel' : 'serial'}`}
+        >{parallel ? '任务并行' : '任务串行'}</span>
       </div>
       {renderStepTasks()}
       <Button
