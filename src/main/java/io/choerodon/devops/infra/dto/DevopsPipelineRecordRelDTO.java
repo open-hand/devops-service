@@ -22,9 +22,9 @@ public class DevopsPipelineRecordRelDTO extends AuditDomain {
 
     private Long pipelineId;
 
-    private Long ciPipelineRecordId;
+    private Long ciPipelineRecordId;    // 纯cd流水线，这个值为0
 
-    private Long cdPipelineRecordId;
+    private Long cdPipelineRecordId;    // 纯ci流水线，这个值为0
 
     public Long getId() {
         return id;
