@@ -7,4 +7,10 @@
         FROM devops_cd_pipeline_record dcpr
         WHERE dcpr.pipeline_id = #{pipelineId}
     </select>
+
+    <select id="selectById" resultType="io.choerodon.devops.api.vo.DevopsCdPipelineRecordVO">
+        SELECT *
+        FROM devops_cd_pipeline_record dcpr
+        WHERE dcpr.id = #{cdPipelineRecordId}
+    </select>
 </mapper>

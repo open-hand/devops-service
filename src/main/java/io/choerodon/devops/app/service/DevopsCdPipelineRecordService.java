@@ -48,8 +48,10 @@ public interface DevopsCdPipelineRecordService {
 
     void updatePipelineStatusFailed(Long pipelineRecordId, String errorInfo);
 
-    DevopsCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId);
+    DevopsCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long cdPipelineId);
 
 
     Boolean testConnection(HostConnectionVO hostConnectionVO);
+
+    DevopsCdPipelineRecordVO queryByCdPipelineRecordId(Long cdPipelineRecordId);
 }

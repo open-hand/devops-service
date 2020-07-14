@@ -33,4 +33,9 @@
         WHERE (dcpr.status = 'pending' or dcpr.status = 'running')
         and dcpr.last_update_date <![CDATA[<]]> #{date} and dcpr.last_update_date <![CDATA[>]]> #{currentDate}
     </select>
+    <select id="selectById" resultType="io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO">
+        SELECT *
+        FROM devops_ci_pipeline_record dcpr
+        WHERE dcpr.id = #{ciPipelineId}
+    </select>
 </mapper>

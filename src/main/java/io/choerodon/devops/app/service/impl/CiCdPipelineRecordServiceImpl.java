@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -75,6 +76,9 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 
     @Autowired
     private DevopsGitlabCommitMapper devopsGitlabCommitMapper;
+
+    @Autowired
+    private DevopsPipelineRecordRelService devopsPipelineRecordRelService;
 
 
     @Override
@@ -232,25 +236,37 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     public Page<CiCdPipelineRecordVO> pagingPipelineRecord(Long projectId, Long pipelineId, PageRequest pageable) {
         Page<CiCdPipelineRecordVO> ciCdPipelineRecordVOPage = new Page<>();
         List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS = new ArrayList<>();
-        Map<Long, List<DevopsCdPipelineRecordVO>> cdPipielineMap = new HashMap<>();
-        Map<Long, List<DevopsCiPipelineRecordVO>> ciPipielineMap = new HashMap<>();
-        //查询ci流水线记录
-        Page<DevopsCiPipelineRecordVO> pipelineCiRecordVOPageInfo = devopsCiPipelineRecordService.pagingPipelineRecord(projectId, pipelineId, pageable);
-        if (!CollectionUtils.isEmpty(pipelineCiRecordVOPageInfo.getContent())) {
-            ciPipielineMap = pipelineCiRecordVOPageInfo.getContent().stream().collect(Collectors.groupingBy(DevopsCiPipelineRecordVO::getGitlabPipelineId));
+        Page<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS = devopsPipelineRecordRelService.pagingPipelineRel(pipelineId, pageable);
+        if (Objects.isNull(devopsPipelineRecordRelDTOS) || CollectionUtils.isEmpty(devopsPipelineRecordRelDTOS.getContent())) {
+            return null;
         }
-        //查询cd流水线记录
-        Page<DevopsCdPipelineRecordVO> devopsCdPipelineRecordVOS = devopsCdPipelineRecordService.pagingCdPipelineRecord(projectId, pipelineId, pageable);
-        if (!CollectionUtils.isEmpty(devopsCdPipelineRecordVOS.getContent())) {
-            cdPipielineMap = devopsCdPipelineRecordVOS.getContent().stream().collect(Collectors.groupingBy(DevopsCdPipelineRecordVO::getGitlabPipelineId));
-        }
-        //纯ci
-        if (!CollectionUtils.isEmpty(ciPipielineMap) && CollectionUtils.isEmpty(cdPipielineMap)) {
-            for (Map.Entry<Long, List<DevopsCiPipelineRecordVO>> longListEntry : ciPipielineMap.entrySet()) {
-                List<StageRecordVO> stageRecordVOS = new ArrayList<>();
+        Page<CiCdPipelineRecordVO> cdPipelineRecordVOS = ConvertUtils.convertPage(devopsPipelineRecordRelDTOS, this::dtoToVo);
+        cdPipelineRecordVOS.getContent().forEach(recordVO -> {
+            DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = devopsCiPipelineRecordService.queryByCiPipelineRecordId(recordVO.getCiRecordId());
+            DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = devopsCdPipelineRecordService.queryByCdPipelineRecordId(recordVO.getCdRecordId());
+            if (devopsCiPipelineRecordVO != null && devopsCdPipelineRecordVO != null) {
                 CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
+                List<StageRecordVO> stageRecordVOS = new ArrayList<>();
                 //收集这条ci流水线的所有stage
-                DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = longListEntry.getValue().get(0);
+                ciCdPipelineRecordVO.setCiStatus(devopsCiPipelineRecordVO.getStatus());
+                ciCdPipelineRecordVO.setCreatedDate(devopsCiPipelineRecordVO.getCreatedDate());
+                ciCdPipelineRecordVO.setCiRecordId(devopsCiPipelineRecordVO.getId());
+                ciCdPipelineRecordVO.setGitlabPipelineId(devopsCiPipelineRecordVO.getGitlabPipelineId());
+
+                stageRecordVOS.addAll(devopsCiPipelineRecordVO.getStageRecordVOList());
+
+                ciCdPipelineRecordVO.setCdRecordId(devopsCdPipelineRecordVO.getId());
+                ciCdPipelineRecordVO.setCdStatus(devopsCdPipelineRecordVO.getStatus());
+                stageRecordVOS.addAll(devopsCdPipelineRecordVO.getDevopsCdStageRecordVOS());
+                ciCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineRecordVO.getDevopsCdPipelineDeatilVO());
+
+                ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
+                ciCdPipelineRecordVOS.add(ciCdPipelineRecordVO);
+            }
+            if (devopsCiPipelineRecordVO != null && devopsCdPipelineRecordVO == null) {
+                CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
+                List<StageRecordVO> stageRecordVOS = new ArrayList<>();
+                //收集这条ci流水线的所有stage
                 ciCdPipelineRecordVO.setCiStatus(devopsCiPipelineRecordVO.getStatus());
                 ciCdPipelineRecordVO.setCreatedDate(devopsCiPipelineRecordVO.getCreatedDate());
                 ciCdPipelineRecordVO.setCiRecordId(devopsCiPipelineRecordVO.getId());
@@ -259,15 +275,11 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                 ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
                 ciCdPipelineRecordVOS.add(ciCdPipelineRecordVO);
             }
-            ciCdPipelineRecordVOPage = assemblePage(ciCdPipelineRecordVOPage, ciCdPipelineRecordVOS, pipelineCiRecordVOPageInfo);
-        }
-        //纯cd
-        if (!CollectionUtils.isEmpty(cdPipielineMap) && CollectionUtils.isEmpty(ciPipielineMap)) {
-            for (Map.Entry<Long, List<DevopsCdPipelineRecordVO>> longListEntry : cdPipielineMap.entrySet()) {
-                List<StageRecordVO> stageRecordVOS = new ArrayList<>();
+
+            if (devopsCiPipelineRecordVO == null && devopsCdPipelineRecordVO != null) {
                 CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
+                List<StageRecordVO> stageRecordVOS = new ArrayList<>();
                 //收集这条ci流水线的所有stage
-                DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = longListEntry.getValue().get(0);
                 ciCdPipelineRecordVO.setCdStatus(devopsCdPipelineRecordVO.getStatus());
                 ciCdPipelineRecordVO.setCreatedDate(devopsCdPipelineRecordVO.getCreatedDate());
                 ciCdPipelineRecordVO.setCdRecordId(devopsCdPipelineRecordVO.getId());
@@ -277,49 +289,33 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                 ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
                 ciCdPipelineRecordVOS.add(ciCdPipelineRecordVO);
             }
-            ciCdPipelineRecordVOPage = assembleCdPage(ciCdPipelineRecordVOPage, ciCdPipelineRecordVOS, devopsCdPipelineRecordVOS);
-        }
-        if (!CollectionUtils.isEmpty(cdPipielineMap) && !CollectionUtils.isEmpty(ciPipielineMap)) {
-            for (Map.Entry<Long, List<DevopsCiPipelineRecordVO>> longListEntry : ciPipielineMap.entrySet()) {
-                List<StageRecordVO> stageRecordVOS = new ArrayList<>();
-                CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
-                //收集这条ci流水线的所有stage
-                DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = longListEntry.getValue().get(0);
-                ciCdPipelineRecordVO.setCiStatus(devopsCiPipelineRecordVO.getStatus());
-                ciCdPipelineRecordVO.setCreatedDate(devopsCiPipelineRecordVO.getCreatedDate());
-                ciCdPipelineRecordVO.setCiRecordId(devopsCiPipelineRecordVO.getId());
-                ciCdPipelineRecordVO.setGitlabPipelineId(devopsCiPipelineRecordVO.getGitlabPipelineId());
-
-                stageRecordVOS.addAll(devopsCiPipelineRecordVO.getStageRecordVOList());
-
-                List<DevopsCdPipelineRecordVO> cdPipelineRecordVOS = cdPipielineMap.get(longListEntry.getKey());
-                if (!CollectionUtils.isEmpty(cdPipelineRecordVOS)) {
-                    DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = cdPipelineRecordVOS.get(0);
-                    ciCdPipelineRecordVO.setCdRecordId(devopsCdPipelineRecordVO.getId());
-                    ciCdPipelineRecordVO.setCdStatus(devopsCdPipelineRecordVO.getStatus());
-                    stageRecordVOS.addAll(devopsCdPipelineRecordVO.getDevopsCdStageRecordVOS());
-                    ciCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineRecordVO.getDevopsCdPipelineDeatilVO());
-                }
-                ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
-                ciCdPipelineRecordVOS.add(ciCdPipelineRecordVO);
-            }
-            ciCdPipelineRecordVOPage = assemblePage(ciCdPipelineRecordVOPage, ciCdPipelineRecordVOS, pipelineCiRecordVOPageInfo);
-
-        }
+        });
+        assemblePage(ciCdPipelineRecordVOS, ciCdPipelineRecordVOPage, devopsPipelineRecordRelDTOS);
         // 排序
+        ciCdPipelineRecordVOPage.setContent(ciCdPipelineRecordVOS);
         CiCdPipelineUtils.recordListSort(ciCdPipelineRecordVOPage.getContent());
         return ciCdPipelineRecordVOPage;
     }
 
-    private Page<CiCdPipelineRecordVO> assemblePage(Page<CiCdPipelineRecordVO> ciCdPipelineRecordVOPage,
-                                                    List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS,
-                                                    Page<DevopsCiPipelineRecordVO> pipelineCiRecordVOPageInfo) {
+    private CiCdPipelineRecordVO dtoToVo(DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO) {
+        CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
+        ciCdPipelineRecordVO.setDevopsPipelineRecordRelId(devopsPipelineRecordRelDTO.getId());
+        ciCdPipelineRecordVO.setCiRecordId(devopsPipelineRecordRelDTO.getCiPipelineRecordId());
+        ciCdPipelineRecordVO.setCdRecordId(devopsPipelineRecordRelDTO.getCdPipelineRecordId());
+        return ciCdPipelineRecordVO;
+    }
+
+    private void assemblePage(List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS, Page<CiCdPipelineRecordVO> ciCdPipelineRecordVO, Page<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS) {
         //计算状态
         calculateRecordStatus(ciCdPipelineRecordVOS);
+        ciCdPipelineRecordVO.setTotalElements(devopsPipelineRecordRelDTOS.getTotalElements());
+        ciCdPipelineRecordVO.setSize(devopsPipelineRecordRelDTOS.getSize());
+        ciCdPipelineRecordVO.setNumber(devopsPipelineRecordRelDTOS.getNumber());
+        ciCdPipelineRecordVO.setTotalPages(devopsPipelineRecordRelDTOS.getTotalPages());
+        ciCdPipelineRecordVO.setNumberOfElements(devopsPipelineRecordRelDTOS.getNumberOfElements());
+        ciCdPipelineRecordVO = ConvertUtils.convertPage(devopsPipelineRecordRelDTOS, CiCdPipelineRecordVO.class);
+        ciCdPipelineRecordVO.setContent(ciCdPipelineRecordVOS);
 
-        ciCdPipelineRecordVOPage = ConvertUtils.convertPage(pipelineCiRecordVOPageInfo, CiCdPipelineRecordVO.class);
-        ciCdPipelineRecordVOPage.setContent(ciCdPipelineRecordVOS);
-        return ciCdPipelineRecordVOPage;
     }
 
     private void calculateRecordStatus(List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS) {

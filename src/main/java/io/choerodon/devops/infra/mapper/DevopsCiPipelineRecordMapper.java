@@ -48,4 +48,5 @@ public interface DevopsCiPipelineRecordMapper extends BaseMapper<DevopsCiPipelin
     List<DevopsCiPipelineRecordDTO> queryNotSynchronizedRecord(@Param("date") Date date,
                                                                @Param("currentDate") Date currentDate);
 
+    DevopsCiPipelineRecordVO selectById(Long ciPipelineRecordId);
 }

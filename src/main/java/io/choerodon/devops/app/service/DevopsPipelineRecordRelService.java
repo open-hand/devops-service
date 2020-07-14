@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.infra.dto.DevopsPipelineRecordRelDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 〈功能简述〉
@@ -16,4 +18,6 @@ public interface DevopsPipelineRecordRelService {
     DevopsPipelineRecordRelDTO queryByPipelineIdAndCiPipelineRecordId(Long pipelineId, Long ciPipelineRecordId);
 
     void update(DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO);
+
+    Page<DevopsPipelineRecordRelDTO> pagingPipelineRel(Long id, PageRequest cicdPipelineRel);
 }

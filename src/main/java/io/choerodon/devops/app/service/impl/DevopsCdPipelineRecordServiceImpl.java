@@ -246,7 +246,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     stageDTO.setMultiAssign(users.size() > 1);
                 }
             }
-             // ci cd 间的审核任务 放在流水线
+            // ci cd 间的审核任务 放在流水线
             if (!isRetry && i == 0) {
                 if (stageRecordDTO.getTriggerType().equals(DeployType.MANUAL.getType())) {
                     List<DevopsCdAuditRecordDTO> stageAuditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(stageRecordDTO.getId());
@@ -864,10 +864,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     @Override
-    public DevopsCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId) {
-        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = new DevopsCdPipelineRecordDTO();
-        devopsCdPipelineRecordDTO.setGitlabPipelineId(gitlabPipelineId);
-        DevopsCdPipelineRecordDTO cdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectOne(devopsCdPipelineRecordDTO);
+    public DevopsCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long cdPipelineId) {
+        if (Objects.isNull(cdPipelineId) || cdPipelineId == null) {
+            return null;
+        }
+        DevopsCdPipelineRecordDTO cdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(cdPipelineId);
         if (Objects.isNull(cdPipelineRecordDTO)) {
             return null;
         }
@@ -995,4 +996,45 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             return instruction.contains("${containerName}") && instruction.contains("${imageName}") && instruction.contains(" -d");
         }
     }
+
+    @Override
+    public DevopsCdPipelineRecordVO queryByCdPipelineRecordId(Long cdPipelineRecordId) {
+        if (cdPipelineRecordId == null || cdPipelineRecordId == 0L) {
+            return null;
+        }
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(cdPipelineRecordId);
+        if (Objects.isNull(devopsCdPipelineRecordDTO)) {
+            return null;
+        }
+        DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = new DevopsCdPipelineRecordVO();
+        BeanUtils.copyProperties(devopsCdPipelineRecordDTO, devopsCdPipelineRecordVO);
+        devopsCdPipelineRecordVO.setCreatedDate(devopsCdPipelineRecordDTO.getCreationDate());
+        List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryByPipelineRecordId(devopsCdPipelineRecordVO.getId());
+        if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
+            //封装审核数据
+            List<DevopsCdStageRecordVO> devopsCdStageRecordVOS = ConvertUtils.convertList(devopsCdStageRecordDTOS, DevopsCdStageRecordVO.class);
+            for (DevopsCdStageRecordVO devopsCdStageRecordVO : devopsCdStageRecordVOS) {
+                //查询Cd job
+                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
+                List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
+                //计算job耗时
+                devopsCdJobRecordVOS.forEach(devopsCdJobRecordVO -> {
+                    devopsCdJobRecordVO.setJobExecuteTime();
+                });
+                //计算satge耗时
+                if (!CollectionUtils.isEmpty(devopsCdStageRecordVO.getJobRecordVOList())) {
+                    Long seconds = devopsCdStageRecordVO.getJobRecordVOList().stream().filter(devopsCdJobRecordVO -> !Objects.isNull(devopsCdJobRecordVO.getDurationSeconds())).map(DevopsCdJobRecordVO::getDurationSeconds).reduce((aLong, aLong2) -> aLong + aLong2).get();
+                    devopsCdStageRecordVO.setDurationSeconds(seconds);
+                }
+            }
+            // 计算流水线当前停留的审核节点
+            addAuditStateInfo(devopsCdPipelineRecordVO);
+            devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
+        } else {
+            devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.EMPTY_LIST);
+        }
+
+        return devopsCdPipelineRecordVO;
+    }
+
 }
