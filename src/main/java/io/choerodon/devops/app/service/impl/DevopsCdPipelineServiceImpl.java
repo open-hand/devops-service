@@ -888,20 +888,12 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             if (AuditStatusEnum.PASSED.value().equals(v.getStatus())) {
                 IamUserDTO iamUserDTO = userDTOMap.get(v.getUserId());
                 if (iamUserDTO != null) {
-                    if (Boolean.TRUE.equals(iamUserDTO.getLdap())) {
-                        auditResultVO.getAuditedUserNameList().add(iamUserDTO.getLoginName());
-                    } else {
-                        auditResultVO.getAuditedUserNameList().add(iamUserDTO.getEmail());
-                    }
+                    auditResultVO.getAuditedUserNameList().add(iamUserDTO.getRealName());
                 }
             } else if (AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus())) {
                 IamUserDTO iamUserDTO = userDTOMap.get(v.getUserId());
                 if (iamUserDTO != null) {
-                    if (Boolean.TRUE.equals(iamUserDTO.getLdap())) {
-                        auditResultVO.getNotAuditUserNameList().add(iamUserDTO.getLoginName());
-                    } else {
-                        auditResultVO.getNotAuditUserNameList().add(iamUserDTO.getEmail());
-                    }
+                    auditResultVO.getNotAuditUserNameList().add(iamUserDTO.getRealName());
                 }
             }
         });
