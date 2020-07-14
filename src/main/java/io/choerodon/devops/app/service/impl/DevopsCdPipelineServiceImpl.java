@@ -562,13 +562,11 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     public void setAppDeployStatus(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, Boolean status) {
         LOGGER.info("setAppDeployStatus:pipelineRecordId: {} stageRecordId: {} taskId: {}, status: {}", pipelineRecordId, stageRecordId, jobRecordId, status);
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>> Userdetails is {}", DetailsHelper.getUserDetails());
-        if (DetailsHelper.getUserDetails().getUserId().equals(BaseConstants.ANONYMOUS_USER_ID)) {
-            DetailsHelper.setCustomUserDetails(0L, BaseConstants.DEFAULT_LOCALE_STR);
-        }
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
+        CustomContextUtil.setUserContext(devopsCdPipelineRecordDTO.getCreatedBy());
         if (Boolean.TRUE.equals(status)) {
             startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
         } else {
-            DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
             workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
         }
     }
