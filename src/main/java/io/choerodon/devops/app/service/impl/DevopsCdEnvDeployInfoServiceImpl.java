@@ -45,7 +45,7 @@ public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoSe
                 throw new CommonException(ERROR_PARAM_IS_INVALID);
             }
         } else if (CommandType.UPDATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
-            if (devopsCdEnvDeployInfoDTO.getInstanceName() != null || devopsCdEnvDeployInfoDTO.getInstanceId() == null) {
+            if (devopsCdEnvDeployInfoDTO.getInstanceId() == null) {
                 throw new CommonException(ERROR_PARAM_IS_INVALID);
             }
         } else {
