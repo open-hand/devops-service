@@ -627,6 +627,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             devopsEnvCommandDTO.setObjectId(appServiceInstanceDTO.getId());
             devopsEnvCommandDTO.setValueId(devopsEnvCommandValueService.baseCreate(devopsEnvCommandValueDTO).getId());
             devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
+            LOGGER.info("========================================创建devopsEnvCommand");
             appServiceInstanceDTO.setCommandId(devopsEnvCommandDTO.getId());
             baseUpdate(appServiceInstanceDTO);
 
