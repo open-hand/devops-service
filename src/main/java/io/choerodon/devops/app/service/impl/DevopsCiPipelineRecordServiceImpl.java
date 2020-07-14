@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_GITLAB_CI_PIPELINE;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -75,6 +77,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private final CiPipelineSyncHandler ciPipelineSyncHandler;
     private final CheckGitlabAccessLevelService checkGitlabAccessLevelService;
     private final AppServiceMapper appServiceMapper;
+    private DevopsCdPipelineService devopsCdPipelineService;
+    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -93,7 +97,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                              BaseServiceClientOperator baseServiceClientOperator,
                                              GitlabServiceClientOperator gitlabServiceClientOperator,
                                              @Lazy CiPipelineSyncHandler ciPipelineSyncHandler,
-                                             DevopsGitlabCommitService devopsGitlabCommitService) {
+                                             DevopsGitlabCommitService devopsGitlabCommitService,
+                                             @Lazy
+                                                     DevopsCdPipelineService devopsCdPipelineService,
+                                             @Lazy
+                                                     DevopsCdPipelineRecordService devopsCdPipelineRecordService) {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
         this.devopsCiStageService = devopsCiStageService;
@@ -109,6 +117,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         this.ciPipelineSyncHandler = ciPipelineSyncHandler;
         this.checkGitlabAccessLevelService = checkGitlabAccessLevelService;
         this.appServiceMapper = appServiceMapper;
+        this.devopsCdPipelineService = devopsCdPipelineService;
+        this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
     }
 
     @Override
@@ -302,6 +312,13 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsCiPipelineRecordDTO.setDurationSeconds(TypeUtil.objToLong(gitlabPipelineDTO.getDuration()));
         devopsCiPipelineRecordDTO.setStatus(gitlabPipelineDTO.getStatus().toValue());
         devopsCiPipelineRecordMapper.updateByPrimaryKeySelective(devopsCiPipelineRecordDTO);
+        // 如果流水线状态更新为成功，则执行cd流水线触发逻辑
+        if (PipelineStatus.SUCCESS.toValue().equals(gitlabPipelineDTO.getStatus().toValue())) {
+            DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(devopsCiPipelineRecordDTO.getGitlabPipelineId());
+            if (devopsCdPipelineRecordDTO != null) {
+                devopsCdPipelineService.executeCdPipeline(devopsCdPipelineRecordDTO.getId());
+            }
+        }
 
         List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(devopsCiPipelineDTO.getId());
         List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(devopsCiPipelineDTO.getId());
@@ -595,6 +612,19 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = new DevopsCiPipelineRecordDTO();
         devopsCiPipelineRecordDTO.setGitlabPipelineId(gitlabPipelineId);
         return devopsCiPipelineRecordMapper.selectOne(devopsCiPipelineRecordDTO);
+    }
+
+    @Override
+    public List<DevopsCiPipelineRecordDTO> queryNotSynchronizedRecord(Long statusUpdatePeriodMilliSeconds) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String currentDateStr = sdf.format(new Date());
+        Date currentDate = null;
+        try {
+            currentDate = sdf.parse(currentDateStr);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return devopsCiPipelineRecordMapper.queryNotSynchronizedRecord(new Date(System.currentTimeMillis() - statusUpdatePeriodMilliSeconds), currentDate);
     }
 
     /**
