@@ -146,6 +146,11 @@ const PipelineCreate = observer(() => {
 
   const optionRenderer = ({ text }) => renderer({ text });
 
+  function getAppServiceCode() {
+    const appServiceData = PipelineCreateFormDataSet.getField('appServiceId').getLookupData(PipelineCreateFormDataSet.current.get('appServiceId'));
+    return appServiceData?.appServiceCode || '';
+  }
+
   return (
     <div>
       <Form columns={3} dataSet={PipelineCreateFormDataSet}>
@@ -194,6 +199,7 @@ const PipelineCreate = observer(() => {
         edit
         image={PipelineCreateFormDataSet.current.get('image')}
         appServiceId={PipelineCreateFormDataSet.current.get('appServiceId')}
+        appServiceCode={getAppServiceCode() || editBlockStore.getMainData?.appServiceCode}
       />
       <p className="pipeline_createInfo"><Icon style={{ color: 'red', verticalAlign: 'text-bottom' }} type="error" />此页面定义了阶段与任务后，GitLab仓库中的.gitlab-ci.yml文件也会同步修改。</p>
     </div>

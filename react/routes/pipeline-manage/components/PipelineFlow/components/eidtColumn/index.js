@@ -133,7 +133,7 @@ const EditItem = (props) => {
 };
 
 export default observer((props) => {
-  const { jobList, sequence, name, columnIndex, edit, appServiceId, appServiceName, image, type, isLast, parallel, isFirst, triggerType: stageTriggerType } = props;
+  const { jobList, sequence, name, columnIndex, edit, appServiceId, appServiceName, image, type, isLast, parallel, isFirst, triggerType: stageTriggerType, appServiceCode } = props;
   const {
     addStepDs,
     editBlockStore, stepStore,
@@ -283,6 +283,7 @@ export default observer((props) => {
       ) : (<AddCDTask
         appServiceId={!edit && appServiceName}
         appServiceName={!edit && appServiceName}
+        appServiceCode={appServiceCode}
         PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
         handleOk={hanleStepCreateOk}
       />),

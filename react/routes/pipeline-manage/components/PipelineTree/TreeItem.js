@@ -134,7 +134,7 @@ const TreeItem = observer(({ record, search }) => {
         cdRecordId={record.get('cdRecordId')}
         name={pipelineName}
         mainStore={mainStore}
-        onClose={refresh}
+        onClose={handleRefresh}
         checkData={record.get('devopsCdPipelineDeatilVO')}
       />,
       movable: false,
