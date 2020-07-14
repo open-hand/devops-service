@@ -23,10 +23,11 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
         organizationId,
       },
     },
+    appServiceCode,
   } = props;
 
   const ADDCDTaskUseStore = useStore();
-  const ADDCDTaskDataSet = useMemo(() => new DataSet(addCDTaskDataSet(projectId, PipelineCreateFormDataSet, organizationId, ADDCDTaskUseStore)), [ADDCDTaskUseStore]);
+  const ADDCDTaskDataSet = useMemo(() => new DataSet(addCDTaskDataSet(projectId, PipelineCreateFormDataSet, organizationId, ADDCDTaskUseStore, appServiceCode)), [ADDCDTaskUseStore]);
 
   const value = {
     ...props,

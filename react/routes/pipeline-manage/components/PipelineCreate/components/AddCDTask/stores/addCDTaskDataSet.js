@@ -1,4 +1,12 @@
-export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) => ({
+import uuidV1 from 'uuid/v1';
+
+function getDefaultInstanceName(appServiceCode) {
+  return appServiceCode
+    ? `${appServiceCode.substring(0, 24)}-${uuidV1().substring(0, 5)}`
+    : uuidV1().substring(0, 30);
+}
+
+export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, appServiceCode) => ({
   autoCreate: true,
   fields: [{
     name: 'type',
@@ -54,6 +62,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore) 
     dynamicProps: {
       required: ({ record }) => record.get('type') === 'cdDeploy' && record.get('deployType') === 'create',
     },
+    defaultValue: getDefaultInstanceName(appServiceCode),
   }, {
     name: 'instanceId',
     type: 'string',

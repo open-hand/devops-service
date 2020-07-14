@@ -32,6 +32,7 @@ export default observer(() => {
     edit,
     appServiceId,
     appServiceName,
+    appServiceCode,
     image,
   } = usePipelineStageEditStore();
   const {
@@ -59,6 +60,7 @@ export default observer(() => {
         pipelineId={pipelineId}
         appServiceId={appServiceId}
         appServiceName={appServiceName}
+        appServiceCode={appServiceCode}
         image={image}
       />);
     }
