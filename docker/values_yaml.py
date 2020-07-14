@@ -87,7 +87,6 @@ def traversal(version_value_map, deploy_value_map, follow_keys, delta_map, updat
                                 update_list.append(follow_keys_copy)
                                 version_value_map[key] = deploy_value_map[key]
                                 set_map_item(follow_keys_copy, delta_map, deploy_value_map[key])
-                                return
             else:
                 # add list
                 add_list.append(follow_keys_copy)
