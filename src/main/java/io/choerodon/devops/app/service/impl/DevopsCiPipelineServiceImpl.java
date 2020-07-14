@@ -370,6 +370,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     List<Long> longs = devopsCdAuditService.baseListByOptions(null, null, devopsCdJobVO.getId()).stream().map(DevopsCdAuditDTO::getUserId).collect(Collectors.toList());
                     List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(longs);
                     devopsCdJobVO.setIamUserDTOS(iamUserDTOS);
+                    devopsCdJobVO.setCdAuditUserIds(longs);
+
                 }
             }
         }
