@@ -220,7 +220,7 @@ const DetailItem = (props) => {
           <span
             style={{ color: '#3F51B5', cursor: 'pointer' }}
             onClick={linkTo}
-          >{instanceName || '-'}</span>
+          >{(itemStatus !== 'created' && instanceName) || '-'}</span>
         </div>
       </main>
     );
