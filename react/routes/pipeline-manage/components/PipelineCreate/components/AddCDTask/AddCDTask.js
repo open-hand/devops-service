@@ -1,3 +1,4 @@
+/* eslint-disable no-template-curly-in-string */
 import React, { useEffect, useState, useCallback } from 'react';
 import { Form, Select, TextField, SelectBox, Password, Tooltip, Button } from 'choerodon-ui/pro';
 import { Icon, Spin } from 'choerodon-ui';
@@ -400,6 +401,7 @@ export default observer(() => {
             name="triggerType"
             className="addcdTask-triggerType"
             onChange={() => ADDCDTaskDataSet.current.set('triggerValue', undefined)}
+            colSpan={1}
           >
             <Option value="refs">分支类型匹配</Option>
             <Option value="regex">正则匹配</Option>
@@ -420,11 +422,12 @@ export default observer(() => {
                 help="您可以在此输入或选择触发该任务的分支类型，若不填写，则默认为所有分支或tag"
                 searchMatcher="branchName"
                 optionRenderer={({ text }) => renderderBranchs({ text })}
-                maxTagCount={1}
+                maxTagCount={2}
                 maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
                   {`+${omittedValues.length}`}
                 </Tooltip>}
                 renderer={renderderBranchs}
+                colSpan={2}
               >
                 {branchsList.map(b => (
                   <Option value={b.value}>{b.name}</Option>
@@ -451,12 +454,12 @@ export default observer(() => {
         {
           ADDCDTaskDataSet?.current?.get('type') === 'cdAudit' && (
             <div colSpan={3} style={{ display: 'flex' }}>
-              <div style={{ width: '51.1%', marginRight: 8 }}>
+              <div style={{ width: '47.5%', marginRight: 8 }} colSpan={2}>
                 <Select style={{ width: '100%' }} name="cdAuditUserIds" />
               </div>
               {
                 ADDCDTaskDataSet?.current?.get('cdAuditUserIds')?.length > 1 && (
-                  <div style={{ width: 'calc(100% - 51.1% - 8px)' }}>
+                  <div style={{ width: 'calc(100% - 47.5% - 8px)' }} colSpan={1}>
                     <Select style={{ width: '100%' }} name="countersigned">
                       <Option value={1}>会签</Option>
                       <Option value={0}>或签</Option>

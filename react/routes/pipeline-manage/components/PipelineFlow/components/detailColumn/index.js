@@ -83,6 +83,7 @@ const DetailItem = (props) => {
     jobRecordId,
     history,
     location: { search },
+    countersigned,
   } = props;
 
   const { gitlabProjectId, appServiceId } = getDetailData && getDetailData.ciCdPipelineVO;
@@ -231,7 +232,6 @@ const DetailItem = (props) => {
       appointUsers,
       reviewedUsers,
       status: auditJobStatus,
-      countersigned,
     } = audit || {};
     const appontUserString = appointUsers.map(x => x.realName).join('，');
     const reviewedUserStirng = reviewedUsers.map(x => x.realName).join('，');

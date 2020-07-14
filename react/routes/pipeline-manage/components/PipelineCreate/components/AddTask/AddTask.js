@@ -478,22 +478,6 @@ const AddTask = observer(() => {
               type: value,
               checked: true,
               yaml: useStore.getYaml[value] || '',
-              // children: (
-              //   <div
-              //     style={{
-              //       marginTop: 20,
-              //     }}
-              //   >
-              //     <YamlEditor
-              //       readOnly={false}
-              //       colSpan={2}
-              //       newLine
-              //       value={steps[0].yaml}
-              //       modeChange={false}
-              //       onValueChange={(valueYaml) => handleChangeValue(valueYaml, index)}
-              //     />
-              //   </div>
-              // ),
             });
             setSteps(newSteps.map((s, sIndex) => {
               if (sIndex === index) {
@@ -662,7 +646,7 @@ const AddTask = observer(() => {
     if ((AddTaskFormDataSet.current.get('authType') === 'username')) {
       return (
         <div
-          colSpan={2}
+          colSpan={4}
           newLine
           className="addTask_testConnect_container"
           style={{
@@ -807,7 +791,7 @@ const AddTask = observer(() => {
             <p>Setting文件内容</p>
             <YamlEditor
               readOnly={false}
-              colSpan={2}
+              colSpan={4}
               newLine
               value={steps.length > 0 ? steps.find(s => s.checked).mavenSettings || '' : ''}
               onValueChange={(valueYaml) => setSteps(steps.map(s => {
@@ -918,7 +902,7 @@ const AddTask = observer(() => {
   const getMissionOther = () => {
     if (AddTaskFormDataSet.current.get('type') === 'build') {
       return [
-        <div colSpan={2} className="AddTask_configStep">
+        <div colSpan={4} className="AddTask_configStep">
           <p>配置步骤</p>
         </div>,
         <Select onChange={handleChangeBuildTemple} name="gjmb">
@@ -926,7 +910,7 @@ const AddTask = observer(() => {
           <Option value="npm">Npm模板</Option>
           <Option value="go">Go模板</Option>
         </Select>,
-        <div newLine colSpan={2} style={{ display: 'flex', flexDirection: 'column' }} className="AddTask_stepContent">
+        <div newLine colSpan={4} style={{ display: 'flex', flexDirection: 'column' }} className="AddTask_stepContent">
           {generateSteps()}
           <div
             className="stepformContent"
@@ -1025,7 +1009,7 @@ const AddTask = observer(() => {
                 }}
                 />,
                 <div
-                  colSpan={2}
+                  colSpan={4}
                   newLine
                   className="advanced_text"
                   style={{
@@ -1132,7 +1116,7 @@ const AddTask = observer(() => {
                       >
                         <YamlEditor
                           readOnly={false}
-                          colSpan={2}
+                          colSpan={4}
                           newLine
                           value={steps.length > 0 ? steps.find(s => s.checked).yaml : ''}
                           onValueChange={(valueYaml) => handleChangeValue(valueYaml)}
@@ -1242,7 +1226,7 @@ const AddTask = observer(() => {
   };
 
   const getImageDom = () => [
-    <div colSpan={2} newLine className="advanced_text" style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
+    <div colSpan={4} newLine className="advanced_text" style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
       高级设置<Icon style={{ fontSize: 18 }} type={expandIf ? 'expand_less' : 'expand_more'} />
     </div>,
     expandIf ? (
@@ -1253,7 +1237,7 @@ const AddTask = observer(() => {
         onChange={handleChangeImage}
         newLine
         combo
-        colSpan={2}
+        colSpan={4}
         name="image"
       >
         <Option value={defaultImage}>{`${defaultImage}${defaultImage === useStore.getDefaultImage ? '(默认)' : ''}`}</Option>
@@ -1262,13 +1246,13 @@ const AddTask = observer(() => {
   ];
 
   const getShareSettings = () => (expandIf && AddTaskFormDataSet.current.get('type') === 'build' ? (
-    <div newLine colSpan={2}>
+    <div newLine colSpan={4}>
       <Tips
         title={formatMessage({ id: 'c7ncd.pipelineManage.create.share.title' })}
         helpText={formatMessage({ id: 'c7ncd.pipelineManage.create.share.tips' })}
         newLine
       />
-      <SelectBox name="share" newLine colSpan={2}>
+      <SelectBox name="share" newLine colSpan={4}>
         <Option value="toUpload">上传共享目录choerodon-ci-cache</Option>
         <Option value="toDownload">下载共享目录choerodon-ci-cache</Option>
       </SelectBox>
@@ -1277,8 +1261,8 @@ const AddTask = observer(() => {
 
   return (
     <React.Fragment>
-      <Form className="addTaskForm" dataSet={AddTaskFormDataSet} columns={2}>
-        <Select name="type">
+      <Form className="addTaskForm" dataSet={AddTaskFormDataSet} columns={4}>
+        <Select name="type" colSpan={2}>
           <Option value="build">构建</Option>
           <Option value="sonar">代码检查</Option>
           <Option value="custom">自定义</Option>
@@ -1286,18 +1270,12 @@ const AddTask = observer(() => {
         </Select>
         {
           AddTaskFormDataSet.current.get('type') !== 'custom' ? [
-            <TextField name="name" />,
-            <TextField name="glyyfw" />,
+            <TextField name="name" colSpan={2} />,
+            <TextField name="glyyfw" colSpan={1} />,
 
-            <div className="matchType" style={{ display: 'inline-flex', position: 'relative' }}>
+            <div className="matchType" style={{ display: 'inline-flex', position: 'relative' }} colSpan={3}>
               <Select
                 onChange={(value) => {
-                  // const arr = ['triggerRefs', 'regexMatch', 'exactMatch', 'exactExclude'];
-                  // arr.forEach((a) => {
-                  //   if (a !== value) {
-                  //     AddTaskFormDataSet.current.set(a, undefined);
-                  //   }
-                  // });
                   AddTaskFormDataSet.current.set('triggerValue', undefined);
                 }}
                 combo={false}
@@ -1322,12 +1300,13 @@ const AddTask = observer(() => {
                   help="您可以在此输入或选择触发该任务的分支类型，若不填写，则默认为所有分支或tag"
                   searchMatcher="branchName"
                   optionRenderer={({ text }) => renderderBranchs({ text })}
-                  maxTagCount={1}
+                  maxTagCount={3}
                   maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
                     {`+${omittedValues.length}`}
                   </Tooltip>}
                   className="addTaskForm-select"
                   renderer={renderderBranchs}
+                  colSpan={2}
                 >
                   {
                       branchsList.map(b => (
@@ -1343,7 +1322,7 @@ const AddTask = observer(() => {
           ] : [
             <YamlEditor
               readOnly={false}
-              colSpan={2}
+              colSpan={4}
               newLine
               value={customYaml}
               onValueChange={(valueYaml) => setCustomYaml(valueYaml)}
