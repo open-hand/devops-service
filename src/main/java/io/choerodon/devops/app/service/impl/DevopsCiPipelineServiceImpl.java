@@ -327,6 +327,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(ciCdPipelineVO.getAppServiceId());
         if (!Objects.isNull(appServiceDTO)) {
             ciCdPipelineVO.setAppServiceCode(appServiceDTO.getCode());
+            ciCdPipelineVO.setAppServiceType(appServiceDTO.getType());
         }
         //查询CI相关的阶段以及JOB
         List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(pipelineId);

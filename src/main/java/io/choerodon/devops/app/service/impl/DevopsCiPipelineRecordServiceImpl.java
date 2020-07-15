@@ -421,7 +421,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsCiPipelineRecordDTO.getTriggerUserId());
         devopsCiPipelineRecordVO.setUserDTO(iamUserDTO);
         devopsCiPipelineRecordVO.setUsername(iamUserDTO.getRealName());
-
+        devopsCiPipelineRecordVO.setCreatedDate(devopsCiPipelineRecordDTO.getCreationDate());
 
         // 添加提交信息
         CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCiPipelineRecordDTO.getCiPipelineId());

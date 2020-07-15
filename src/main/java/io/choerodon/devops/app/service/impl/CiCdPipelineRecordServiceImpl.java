@@ -91,6 +91,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             return null;
         }
         CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
+        ciCdPipelineRecordVO.setDevopsPipelineRecordRelId(devopsPipelineRecordRelDTO.getId());
         DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = devopsCiPipelineRecordService.queryPipelineRecordDetails(projectId, devopsPipelineRecordRelDTO.getCiPipelineRecordId());
         DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = devopsCdPipelineRecordService.queryPipelineRecordDetails(projectId, devopsPipelineRecordRelDTO.getCdPipelineRecordId());
         //ci和cd都有记录
@@ -106,6 +107,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             ciCdPipelineRecordVO.setCdRecordId(devopsCdPipelineRecordVO.getId());
             ciCdPipelineRecordVO.setCommit(devopsCiPipelineRecordVO.getCommit());
             ciCdPipelineRecordVO.setGitlabTriggerRef(devopsCiPipelineRecordVO.getGitlabTriggerRef());
+            ciCdPipelineRecordVO.setCreatedDate(devopsCiPipelineRecordVO.getCreatedDate());
             CiCdPipelineVO ciCdPipelineVO = ConvertUtils.convertObject(devopsCiPipelineRecordVO.getDevopsCiPipelineVO(), CiCdPipelineVO.class);
             //触发人员 执行时间 流程耗时
             fillPipelineVO(devopsCiPipelineRecordVO.getUsername(), stageRecordVOS, devopsCiPipelineRecordVO.getCreatedDate(), ciCdPipelineVO, ciCdPipelineRecordVO);
@@ -119,7 +121,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             ciCdPipelineRecordVO.setGitlabPipelineId(devopsCiPipelineRecordVO.getGitlabPipelineId());
             ciCdPipelineRecordVO.setStatus(devopsCiPipelineRecordVO.getStatus());
             ciCdPipelineRecordVO.setCiRecordId(devopsCiPipelineRecordVO.getId());
-
+            ciCdPipelineRecordVO.setCreatedDate(devopsCiPipelineRecordVO.getCreatedDate());
             CiCdPipelineVO ciCdPipelineVO = ConvertUtils.convertObject(devopsCiPipelineRecordVO.getDevopsCiPipelineVO(), CiCdPipelineVO.class);
             fillPipelineVO(devopsCiPipelineRecordVO.getUsername(), stageRecordVOS, devopsCiPipelineRecordVO.getCreatedDate(), ciCdPipelineVO, ciCdPipelineRecordVO);
         }
@@ -129,6 +131,9 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             ciCdPipelineRecordVO.setCdRecordId(devopsCdPipelineRecordVO.getId());
             ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
             ciCdPipelineRecordVO.setStatus(devopsCdPipelineRecordVO.getStatus());
+            ciCdPipelineRecordVO.setCommit(devopsCdPipelineRecordVO.getCommit());
+            ciCdPipelineRecordVO.setGitlabTriggerRef(devopsCdPipelineRecordVO.getRef());
+            ciCdPipelineRecordVO.setCreatedDate(devopsCdPipelineRecordVO.getCreatedDate());
             CiCdPipelineVO ciCdPipelineVO = ConvertUtils.convertObject(devopsCdPipelineRecordVO.getCiCdPipelineVO(), CiCdPipelineVO.class);
             fillPipelineVO(devopsCdPipelineRecordVO.getUsername(), stageRecordVOS, devopsCdPipelineRecordVO.getCreatedDate(), ciCdPipelineVO, ciCdPipelineRecordVO);
         }

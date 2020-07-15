@@ -135,6 +135,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     @Autowired
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
 
+    @Autowired
+    private DevopsGitlabCommitService devopsGitlabCommitService;
+
+    @Autowired
+    private AppServiceService applicationService;
+
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
@@ -875,8 +881,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(cdPipelineRecordDTO.getCreatedBy());
         DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = ConvertUtils.convertObject(cdPipelineRecordDTO, DevopsCdPipelineRecordVO.class);
         devopsCdPipelineRecordVO.setUsername(iamUserDTO.getRealName());
+        devopsCdPipelineRecordVO.setCreatedDate(cdPipelineRecordDTO.getCreationDate());
         //查询流水线信息
         CiCdPipelineVO ciCdPipelineVO = devopsCiCdPipelineMapper.queryById(cdPipelineRecordDTO.getPipelineId());
+        //添加提交信息
+        devopsCdPipelineRecordVO.setCiCdPipelineVO(ciCdPipelineVO);
+        addCommitInfo(ciCdPipelineVO.getAppServiceId(), devopsCdPipelineRecordVO, cdPipelineRecordDTO);
+
         devopsCdPipelineRecordVO.setCiCdPipelineVO(ciCdPipelineVO);
         List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryByPipelineRecordId(devopsCdPipelineRecordVO.getId());
         if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
@@ -898,6 +909,35 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.EMPTY_LIST);
         }
         return devopsCdPipelineRecordVO;
+    }
+
+
+    private void addCommitInfo(Long appServiceId, DevopsCdPipelineRecordVO devopsCPipelineRecordVO, DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO) {
+        DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.baseQueryByShaAndRef(devopsCdPipelineRecordDTO.getCommitSha(), devopsCdPipelineRecordDTO.getRef());
+
+        CustomCommitVO customCommitVO = new CustomCommitVO();
+        devopsCPipelineRecordVO.setCommit(customCommitVO);
+
+        customCommitVO.setGitlabProjectUrl(applicationService.calculateGitlabProjectUrlWithSuffix(appServiceId));
+
+        // 可能因为GitLab webhook 失败, commit信息查不出
+        if (devopsGitlabCommitDTO == null) {
+            return;
+        }
+        IamUserDTO commitUser = null;
+        if (devopsGitlabCommitDTO.getUserId() != null) {
+            commitUser = baseServiceClientOperator.queryUserByUserId(devopsGitlabCommitDTO.getUserId());
+        }
+
+        customCommitVO.setRef(devopsCdPipelineRecordDTO.getRef());
+        customCommitVO.setCommitSha(devopsCdPipelineRecordDTO.getCommitSha());
+        customCommitVO.setCommitContent(devopsGitlabCommitDTO.getCommitContent());
+        customCommitVO.setCommitUrl(devopsGitlabCommitDTO.getUrl());
+
+        if (commitUser != null) {
+            customCommitVO.setUserHeadUrl(commitUser.getImageUrl());
+            customCommitVO.setUserName(commitUser.getLdap() ? commitUser.getLoginName() : commitUser.getEmail());
+        }
     }
 
     private void calculateJob(DevopsCdPipelineRecordVO devopsCdStageRecordVO, List<DevopsCdJobRecordVO> devopsCdJobRecordVOS) {

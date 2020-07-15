@@ -26,6 +26,7 @@ public class CiCdPipelineVO {
     private Long appServiceId;
     @ApiModelProperty("流水线关联应用服务名称/nullable")
     private String appServiceName;
+    private String appServiceType;
     private String appServiceCode;
     @ApiModelProperty("gitlab项目id/nullable")
     private Long gitlabProjectId;
@@ -67,6 +68,13 @@ public class CiCdPipelineVO {
     //流程耗时
     private Long time;
 
+    public String getAppServiceType() {
+        return appServiceType;
+    }
+
+    public void setAppServiceType(String appServiceType) {
+        this.appServiceType = appServiceType;
+    }
 
     public List<CiCdPipelineRecordVO> getCiCdPipelineRecordVOS() {
         return ciCdPipelineRecordVOS;

@@ -32,6 +32,16 @@ public class DevopsCdPipelineRecordVO {
     private CiCdPipelineVO ciCdPipelineVO;
     private String commitSha;
     private String ref;
+    @ApiModelProperty("提交信息")
+    private CustomCommitVO commit;
+
+    public CustomCommitVO getCommit() {
+        return commit;
+    }
+
+    public void setCommit(CustomCommitVO commit) {
+        this.commit = commit;
+    }
 
     // 审核数据返回
     private DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO;
