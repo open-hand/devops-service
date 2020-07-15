@@ -6,7 +6,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface CiCdPipelineRecordService {
 
-    CiCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId);
+    CiCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long recordRelId);
 
     void retryPipeline(Long projectId, Long pipelineRecordId, Long gitlabPipelineId, Long gitlabProjectId);
 

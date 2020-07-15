@@ -80,12 +80,19 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     @Autowired
     private DevopsPipelineRecordRelService devopsPipelineRecordRelService;
 
+    @Autowired
+    private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
+
 
     @Override
-    public CiCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId) {
+    public CiCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long recordRelId) {
+        DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelMapper.selectByPrimaryKey(recordRelId);
+        if (Objects.isNull(devopsPipelineRecordRelDTO)) {
+            return null;
+        }
         CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
-        DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = devopsCiPipelineRecordService.queryPipelineRecordDetails(projectId, gitlabPipelineId);
-        DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = devopsCdPipelineRecordService.queryPipelineRecordDetails(projectId, gitlabPipelineId);
+        DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = devopsCiPipelineRecordService.queryPipelineRecordDetails(projectId, devopsPipelineRecordRelDTO.getCiPipelineRecordId());
+        DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = devopsCdPipelineRecordService.queryPipelineRecordDetails(projectId, devopsPipelineRecordRelDTO.getCdPipelineRecordId());
         //ci和cd都有记录
         List<StageRecordVO> stageRecordVOS = new ArrayList<>();
         if (devopsCiPipelineRecordVO != null && devopsCdPipelineRecordVO != null) {
