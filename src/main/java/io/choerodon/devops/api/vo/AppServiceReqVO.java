@@ -23,7 +23,6 @@ public class AppServiceReqVO {
     @NotNull(message = "error.app.code.null")
     private String code;
 
-    @Encrypt
     @ApiModelProperty("项目id/必填")
     private Long projectId;
 

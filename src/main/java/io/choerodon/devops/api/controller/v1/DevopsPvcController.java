@@ -48,7 +48,6 @@ public class DevopsPvcController {
     @CustomPageRequest
     @PostMapping("/page_by_options")
     public ResponseEntity<Page<DevopsPvcRespVO>> pageByOptions(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -69,7 +68,6 @@ public class DevopsPvcController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建PVC")
     public ResponseEntity<DevopsPvcRespVO> create(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "PVC信息", required = true)
@@ -91,7 +89,6 @@ public class DevopsPvcController {
     @ApiOperation(value = "删除PVC")
     @DeleteMapping("/{pvc_id}")
     public ResponseEntity<Boolean> deletePvc(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -116,7 +113,6 @@ public class DevopsPvcController {
     @ApiOperation(value = "检查PVC名称的唯一性")
     @GetMapping("/check_name")
     public ResponseEntity<Boolean> checkName(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

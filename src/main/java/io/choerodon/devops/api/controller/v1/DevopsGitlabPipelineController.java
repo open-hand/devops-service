@@ -48,7 +48,6 @@ public class DevopsGitlabPipelineController {
     @ApiOperation(value = "获取pipeline时长报表")
     @GetMapping(value = "/time")
     public ResponseEntity<PipelineTimeVO> listPipelineTime(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -79,7 +78,6 @@ public class DevopsGitlabPipelineController {
     @ApiOperation(value = "获取pipeline次数报表")
     @GetMapping(value = "/frequency")
     public ResponseEntity<PipelineFrequencyVO> listPipelineFrequency(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -111,7 +109,6 @@ public class DevopsGitlabPipelineController {
     @CustomPageRequest
     @GetMapping(value = "/page_by_options")
     public ResponseEntity<Page<DevopsGitlabPipelineVO>> pageByOptions(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")

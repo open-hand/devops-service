@@ -25,7 +25,6 @@ public class PipelineAppServiceDeployVO {
     private String value;
     @Encrypt
     private Long valueId;
-    @Encrypt
     private Long projectId;
     private String appServiceName;
     private String envName;

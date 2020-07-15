@@ -21,7 +21,6 @@ public class PipelineReqVO {
     @Encrypt
     private List<Long> pipelineUserRels;
     private List<PipelineStageVO> pipelineStageVOs;
-    @Encrypt
     private Long projectId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;

@@ -22,7 +22,6 @@ public class CiCdPipelineVO {
     @NotEmpty(message = "error.pipeline.name.cannot.be.null")
     private String name;
 
-    @Encrypt
     @ApiModelProperty("项目id")
     private Long projectId;
 

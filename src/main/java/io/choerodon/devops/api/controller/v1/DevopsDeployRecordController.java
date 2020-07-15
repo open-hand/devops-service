@@ -45,7 +45,6 @@ public class DevopsDeployRecordController {
     @CustomPageRequest
     @PostMapping("/page_by_options")
     public ResponseEntity<Page<DevopsDeployRecordVO>> pageByOptions(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -62,7 +61,6 @@ public class DevopsDeployRecordController {
     @CustomPageRequest
     @GetMapping("/count_by_date")
     public ResponseEntity<DeployRecordCountVO> countByDate(
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam("startTime") Date startTime,
             @RequestParam("endTime") Date endTime) {

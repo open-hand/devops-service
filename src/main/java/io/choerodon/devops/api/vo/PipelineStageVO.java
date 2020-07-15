@@ -24,7 +24,6 @@ public class PipelineStageVO {
     private List<PipelineTaskVO> pipelineTaskVOs;
     @Encrypt
     private Long pipelineId;
-    @Encrypt
     private Long projectId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;

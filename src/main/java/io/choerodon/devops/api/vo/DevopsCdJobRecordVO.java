@@ -21,12 +21,12 @@ public class DevopsCdJobRecordVO {
     private String status;
     private String triggerType;
     private String triggerValue;
-    @Encrypt
     private Long projectId;
     private String metadata;
     @ApiModelProperty("是否会签")
     private Integer countersigned;
     private String executionTime;
+    @Encrypt
     private Long jobId;
 
     @ApiModelProperty("任务顺序")

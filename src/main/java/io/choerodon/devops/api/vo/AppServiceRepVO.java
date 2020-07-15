@@ -24,7 +24,6 @@ public class AppServiceRepVO {
     private String code;
 
     @ApiModelProperty("应用服务所属项目id")
-    @Encrypt
     private Long projectId;
 
     @ApiModelProperty("应用服务对应gitlab项目的id")

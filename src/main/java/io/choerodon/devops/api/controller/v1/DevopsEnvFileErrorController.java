@@ -52,7 +52,6 @@ public class DevopsEnvFileErrorController {
     @ApiOperation(value = "项目下查询环境文件错误列表")
     @GetMapping(value = "/list_by_env")
     public ResponseEntity<List<DevopsEnvFileErrorVO>> listByEnvId(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID", required = true)
@@ -76,7 +75,6 @@ public class DevopsEnvFileErrorController {
     @CustomPageRequest
     @GetMapping(value = "/page_by_env")
     public ResponseEntity<Page<DevopsEnvFileErrorVO>> pageByEnvId(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")

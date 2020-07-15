@@ -47,7 +47,6 @@ public class AppShareRuleController {
     @ApiOperation(value = "创建服务共享规则")
     @PostMapping
     public ResponseEntity<AppServiceShareRuleVO> create(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务共享规则", required = true)
@@ -69,7 +68,6 @@ public class AppShareRuleController {
     @ApiOperation(value = "更新服务共享规则")
     @PutMapping
     public ResponseEntity<AppServiceShareRuleVO> update(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务共享规则", required = true)
@@ -85,7 +83,6 @@ public class AppShareRuleController {
     @PostMapping(value = "/page_by_options")
     @CustomPageRequest
     public ResponseEntity<Page<AppServiceShareRuleVO>> pageByOptions(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -105,8 +102,6 @@ public class AppShareRuleController {
     @ApiOperation(value = "查询单个共享规则详情")
     @GetMapping(value = "/{rule_id}")
     public ResponseEntity<AppServiceShareRuleVO> query(
-            @Encrypt
-            @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @ApiParam(value = "规则Id", required = true)
@@ -121,7 +116,6 @@ public class AppShareRuleController {
     @ApiOperation(value = "删除单个服务共享规则")
     @DeleteMapping(value = "/{rule_id}")
     public ResponseEntity<Void> delete(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

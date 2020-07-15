@@ -33,7 +33,6 @@ public class CiCdPipelineRecordController {
     @ApiOperation(value = "查询指定流水线记录详情")
     @GetMapping("/details")
     public ResponseEntity<CiCdPipelineRecordVO> queryPipelineRecordDetails(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -46,7 +45,6 @@ public class CiCdPipelineRecordController {
     @ApiOperation(value = "重试整条流水线")
     @GetMapping("/retry")
     public ResponseEntity<Void> retryPipeline(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -69,7 +67,6 @@ public class CiCdPipelineRecordController {
     @ApiOperation(value = "取消流水线")
     @GetMapping(value = "/cancel")
     public ResponseEntity<Void> cancel(
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "cd流水线记录id", required = true)
             @Encrypt

@@ -11,7 +11,6 @@ public class AppServiceCodeVO {
     private String name;
     private String code;
     private String publishLevel;
-    @Encrypt
     private Long projectId;
     private String contributor;
     private String description;

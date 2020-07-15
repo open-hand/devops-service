@@ -11,7 +11,6 @@ public class ApprovalVO {
     @ApiModelProperty("项目名称")
     private String projectName;
 
-    @Encrypt
     @ApiModelProperty("项目id")
     private Long projectId;
 

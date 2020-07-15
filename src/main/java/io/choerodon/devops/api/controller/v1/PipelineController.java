@@ -44,7 +44,6 @@ public class PipelineController {
     @ApiOperation(value = "项目下创建流水线")
     @PostMapping
     public ResponseEntity<PipelineReqVO> create(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务信息", required = true)
@@ -65,7 +64,6 @@ public class PipelineController {
     @ApiOperation(value = "项目下更新流水线")
     @PutMapping
     public ResponseEntity<PipelineReqVO> update(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务信息", required = true)
@@ -86,7 +84,6 @@ public class PipelineController {
     @ApiOperation(value = "项目下删除流水线")
     @DeleteMapping(value = "/{pipeline_id}")
     public ResponseEntity<Void> delete(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -108,7 +105,6 @@ public class PipelineController {
     @ApiOperation(value = "启/停用流水线")
     @PutMapping(value = "/{pipeline_id}")
     public ResponseEntity<PipelineVO> updateIsEnabled(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -132,7 +128,6 @@ public class PipelineController {
     @ApiOperation(value = "查询流水线详情")
     @GetMapping(value = "/{pipeline_id}")
     public ResponseEntity<PipelineReqVO> queryById(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -156,7 +151,6 @@ public class PipelineController {
     @CustomPageRequest
     @PostMapping("/page_by_options")
     public ResponseEntity<Page<PipelineVO>> pageByOptions(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -180,7 +174,6 @@ public class PipelineController {
     @ApiOperation(value = "执行流水线")
     @GetMapping(value = "/{pipeline_id}/execute")
     public ResponseEntity<Void> execute(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -201,7 +194,6 @@ public class PipelineController {
     @ApiOperation(value = "批量执行流水线")
     @GetMapping(value = "/batch_execute")
     public ResponseEntity<Void> batchExecute(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Ids", required = true)
@@ -214,7 +206,6 @@ public class PipelineController {
     @ApiOperation(value = "人工审核")
     @PostMapping("/audit")
     public ResponseEntity<List<PipelineUserVO>> audit(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "PipelineUserRelDTO", required = true)
@@ -228,7 +219,6 @@ public class PipelineController {
     @ApiOperation(value = "校验人工审核")
     @PostMapping("/check_audit")
     public ResponseEntity<CheckAuditVO> checkAudit(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "PipelineUserRelDTO", required = true)
@@ -242,7 +232,6 @@ public class PipelineController {
     @ApiOperation(value = "条件校验")
     @GetMapping("/check_deploy")
     public ResponseEntity<PipelineCheckDeployVO> checkDeploy(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -264,7 +253,6 @@ public class PipelineController {
     @ApiOperation(value = "查询流水线记录详情")
     @GetMapping(value = "/{pipeline_record_id}/record_detail")
     public ResponseEntity<PipelineRecordReqVO> getRecordById(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -286,7 +274,6 @@ public class PipelineController {
     @ApiOperation(value = "流水线重试")
     @GetMapping(value = "/{pipeline_record_id}/retry")
     public ResponseEntity<Void> retry(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -307,7 +294,6 @@ public class PipelineController {
     @ApiOperation(value = "流水线所有记录")
     @GetMapping(value = "/{pipeline_id}/list_record")
     public ResponseEntity<List<PipelineRecordListVO>> queryByPipelineId(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -322,7 +308,6 @@ public class PipelineController {
     @ApiOperation(value = "名称校验")
     @GetMapping(value = "/check_name")
     public ResponseEntity<Boolean> checkName(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线名称", required = true)
@@ -334,7 +319,6 @@ public class PipelineController {
     @ApiOperation(value = "获取所有流水线")
     @GetMapping(value = "/list_all")
     public ResponseEntity<List<PipelineVO>> listPipelineDTO(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(pipelineService.listPipelineDTO(projectId))
@@ -347,7 +331,6 @@ public class PipelineController {
     @ApiOperation(value = "停止流水线")
     @GetMapping(value = "/failed")
     public ResponseEntity<Void> failed(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线记录Id", required = true)

@@ -49,7 +49,6 @@ public class DevopsEnvPodController {
     @CustomPageRequest
     @PostMapping(value = "/page_by_options")
     public ResponseEntity<Page<DevopsEnvPodVO>> pageByOptions(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -106,7 +105,6 @@ public class DevopsEnvPodController {
     @ApiOperation(value = "删除环境下的pod")
     @DeleteMapping("/{pod_id}")
     public ResponseEntity<Void> deleteEnvPod(
-            @Encrypt
             @ApiParam(value = "项目id")
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

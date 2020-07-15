@@ -17,7 +17,6 @@ public class PipelineRecordReqVO {
     private Long id;
     private String pipelineName;
     private String triggerType;
-    @Encrypt
     private Long projectId;
     private Date creationDate;
     private IamUserDTO userDTO;

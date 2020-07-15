@@ -33,7 +33,6 @@ public class AppServiceShareRuleVO {
     @ApiModelProperty("共享版本")
     private String version;
 
-    @Encrypt
     @ApiModelProperty("共享到指定项目,项目Id/必填")
     private Long projectId;
 

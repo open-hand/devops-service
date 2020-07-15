@@ -34,7 +34,6 @@ public class DevopsClusterResourceController {
     @ApiOperation(value = "项目下创建cert_manager")
     @PostMapping("/cert_manager/deploy")
     public ResponseEntity<Void> deployCertManager(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -48,7 +47,6 @@ public class DevopsClusterResourceController {
     @ApiOperation(value = "查询组件")
     @GetMapping
     public ResponseEntity<List<ClusterResourceVO>> listClusterResource(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -64,7 +62,6 @@ public class DevopsClusterResourceController {
     @ApiOperation(value = "项目下卸载cert_manager")
     @DeleteMapping("/cert_manager/unload")
     public ResponseEntity<Boolean> unloadCertManager(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -77,7 +74,6 @@ public class DevopsClusterResourceController {
     @ApiOperation(value = "校验集群下的环境中是否存在使用CertManager申请或上传的证书")
     @GetMapping("/cert_manager/check")
     public ResponseEntity<Boolean> checkCertManager(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -90,7 +86,6 @@ public class DevopsClusterResourceController {
     @ApiOperation(value = "集群下安装prometheus")
     @PostMapping("/prometheus")
     public ResponseEntity<Boolean> createPrometheus(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -109,7 +104,6 @@ public class DevopsClusterResourceController {
     @PutMapping("/prometheus")
     public ResponseEntity<Boolean> updatePrometheus(
             @ApiParam(value = "项目id", required = true)
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @Encrypt
@@ -138,7 +132,6 @@ public class DevopsClusterResourceController {
     @ApiOperation(value = "查询prometheus部署状态")
     @GetMapping("/prometheus/deploy_status")
     public ResponseEntity<PrometheusStageVO> getPrometheusDeployStatus(
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @Encrypt
@@ -152,7 +145,6 @@ public class DevopsClusterResourceController {
     @ApiOperation(value = "卸载prometheus")
     @DeleteMapping("/prometheus/unload")
     public ResponseEntity<Boolean> deletePrometheus(
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @ApiParam(value = "集群id", required = true)
@@ -166,7 +158,6 @@ public class DevopsClusterResourceController {
     @ApiOperation(value = "重试prometheus操作")
     @DeleteMapping("/prometheus/retry")
     public ResponseEntity<Boolean> retryInstallPrometheus(
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @ApiParam(value = "集群id", required = true)
@@ -179,7 +170,6 @@ public class DevopsClusterResourceController {
     @ApiOperation(value = "查询grafana URL")
     @GetMapping("/grafana_url")
     public ResponseEntity<String> getGrafanaUrl(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -194,7 +184,6 @@ public class DevopsClusterResourceController {
     @ApiOperation(value = "查询环境关联的集群是否安装cert-manager")
     @GetMapping("/cert_manager/check_by_env_id")
     public ResponseEntity<Boolean> queryCertManagerByEnvId(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

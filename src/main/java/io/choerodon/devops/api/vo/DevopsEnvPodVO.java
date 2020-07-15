@@ -23,7 +23,6 @@ public class DevopsEnvPodVO {
     private String instanceCode;
     @Encrypt
     private Long envId;
-    @Encrypt
     private Long projectId;
     private String envCode;
     private String envName;

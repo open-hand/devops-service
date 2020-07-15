@@ -13,7 +13,6 @@ public class DevopsPvVO {
     @ApiModelProperty("关联的clusterId")
     private Long clusterId;
 
-    @Encrypt
     @ApiModelProperty("所属项目id")
     private Long projectId;
 

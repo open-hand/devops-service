@@ -34,7 +34,6 @@ public class HarborController {
     @ApiOperation(value = "查询项目下所有的仓库配置")
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     public ResponseEntity<List<HarborRepoConfigDTO>> listAllCustomRepoByProject(
-            @Encrypt
             @ApiParam(value = "猪齿鱼项目ID", required = true)
             @PathVariable("projectId") Long projectId) {
         List<HarborRepoConfigDTO> list = harborService.listAllCustomRepoByProject(projectId);

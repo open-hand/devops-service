@@ -6,11 +6,9 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  * Created by Zenger on 2018/3/28.
  */
 public class ProjectVO {
-    @Encrypt
     private Long id;
     private String name;
     private String appName;
-    @Encrypt
     private Long organizationId;
     private String code;
     private DevopsProjectVO devopsProjectVO;

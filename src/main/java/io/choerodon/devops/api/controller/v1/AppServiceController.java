@@ -45,7 +45,6 @@ public class AppServiceController {
     @Permission(permissionWithin = true)
     @CustomPageRequest
     public ResponseEntity<Page<AppServiceRepVO>> internalListAll(
-            @Encrypt
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable,
@@ -65,7 +64,6 @@ public class AppServiceController {
     @PostMapping
     public ResponseEntity<AppServiceRepVO> create(
             @ApiParam(value = "项目id", required = true)
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务信息", required = true)
             @RequestBody @Validated AppServiceReqVO appServiceReqVO) {
@@ -86,7 +84,6 @@ public class AppServiceController {
     @PostMapping("/import/external")
     public ResponseEntity<AppServiceRepVO> importApp(
             @ApiParam(value = "项目id", required = true)
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "是否系统模板", required = false)
             @RequestParam(value = "is_template", required = false) Boolean isTemplate,
@@ -110,7 +107,6 @@ public class AppServiceController {
     @GetMapping("/{app_service_id}")
     public ResponseEntity<AppServiceRepVO> query(
             @ApiParam(value = "项目id", required = true)
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @ApiParam(value = "服务id", required = true)
@@ -131,7 +127,6 @@ public class AppServiceController {
     @ApiOperation(value = "项目下更新服务信息")
     @PutMapping
     public ResponseEntity<Boolean> update(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务信息", required = true)
@@ -153,10 +148,8 @@ public class AppServiceController {
     @ApiOperation(value = "项目下启用停用应用服务")
     @PutMapping("/{app_service_id}")
     public ResponseEntity<Boolean> updateActive(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "启用停用", required = true)
@@ -170,7 +163,6 @@ public class AppServiceController {
     @ApiOperation(value = "项目下校验是否能够停用服务")
     @GetMapping("/check/{app_service_id}")
     public ResponseEntity<AppServiceMsgVO> checkAppService(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -192,7 +184,6 @@ public class AppServiceController {
     @ApiOperation(value = "项目下删除创建应用服务")
     @DeleteMapping("/{app_service_id}")
     public ResponseEntity<Void> delete(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -218,7 +209,6 @@ public class AppServiceController {
     @CustomPageRequest
     @PostMapping("/page_by_options")
     public ResponseEntity<Page<AppServiceRepVO>> pageByOptions(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务是否启用")
@@ -255,7 +245,6 @@ public class AppServiceController {
     @CustomPageRequest
     @GetMapping("/page_by_ids")
     public ResponseEntity<Page<AppServiceCodeVO>> pageByEnvIdAndappServiceId(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -285,7 +274,6 @@ public class AppServiceController {
     @ApiOperation(value = "根据环境id获取已部署正在运行实例的服务")
     @GetMapping("/list_by_env")
     public ResponseEntity<List<AppServiceCodeVO>> listByEnvIdAndStatus(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -312,7 +300,6 @@ public class AppServiceController {
     @ApiOperation(value = "项目下查询所有已经启用的服务")
     @GetMapping("/list_by_active")
     public ResponseEntity<List<AppServiceRepVO>> listByActive(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(applicationServiceService.listByActive(projectId))
@@ -331,7 +318,6 @@ public class AppServiceController {
     @ApiOperation(value = "项目下查询所有已经启用服务数量")
     @GetMapping("/count_by_active")
     public ResponseEntity<Integer> countByActive(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(applicationServiceService.countByActive(projectId))
@@ -350,7 +336,6 @@ public class AppServiceController {
     @ApiOperation(value = "查询在此项目下生成了实例的服务")
     @GetMapping(value = "/list_all")
     public ResponseEntity<List<AppServiceRepVO>> listAll(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(applicationServiceService.listAll(projectId))
@@ -368,7 +353,6 @@ public class AppServiceController {
     @ApiOperation(value = "创建服务时校验名称是否存在")
     @GetMapping(value = "/check_name")
     public ResponseEntity<Boolean> checkName(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境名", required = true)
@@ -403,7 +387,6 @@ public class AppServiceController {
     @ApiOperation(value = "批量校验appServiceCode和appServiceName")
     @PostMapping(value = "/batch_check")
     public ResponseEntity<AppServiceBatchCheckVO> batchCheck(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "校验数据", required = true)
@@ -423,7 +406,6 @@ public class AppServiceController {
     @ApiOperation(value = "根据服务编码查询服务")
     @GetMapping(value = "/query_by_code")
     public ResponseEntity<AppServiceRepVO> queryByCode(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务编码", required = true)
@@ -473,7 +455,6 @@ public class AppServiceController {
     @CustomPageRequest
     @PostMapping("/page_code_repository")
     public ResponseEntity<Page<AppServiceRepVO>> pageCodeRepository(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -497,7 +478,6 @@ public class AppServiceController {
     @ApiOperation(value = "获取服务下所有用户权限")
     @GetMapping(value = "/{appServiceId}/list_all")
     public ResponseEntity<List<AppServiceUserPermissionRespVO>> listAllUserPermission(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -522,7 +502,6 @@ public class AppServiceController {
     @ApiOperation(value = "校验harbor配置信息是否正确")
     @GetMapping(value = "/check_harbor")
     public void checkHarbor(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "harbor地址", required = true)
@@ -548,7 +527,6 @@ public class AppServiceController {
     @ApiOperation(value = "校验chart仓库配置信息是否正确")
     @PostMapping(value = "/check_chart")
     public void checkChart(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "chartMuseum信息", required = true)
@@ -568,7 +546,6 @@ public class AppServiceController {
     @ApiOperation("验证用于克隆仓库的url及授权的access token是否有效")
     @GetMapping("/url_validation")
     public ResponseEntity<Object> validateUrlAndAccessToken(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "Git平台类型", required = true)
@@ -592,7 +569,6 @@ public class AppServiceController {
     @ApiOperation("查看sonarqube相关信息")
     @GetMapping("/{app_service_id}/sonarqube")
     public ResponseEntity<SonarContentsVO> getSonarQube(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -612,7 +588,6 @@ public class AppServiceController {
     @ApiOperation("查看sonarqube相关信息")
     @GetMapping("/{app_service_id}/sonarqube_table")
     public ResponseEntity<SonarTableVO> getSonarQubeTable(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -634,7 +609,6 @@ public class AppServiceController {
     @CustomPageRequest
     @PostMapping(value = "/page_share_app_service")
     public ResponseEntity<Page<AppServiceRepVO>> pageShareApps(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "是否分页")
@@ -654,7 +628,6 @@ public class AppServiceController {
     @CustomPageRequest
     @PostMapping(value = "/{app_service_id}/page_permission_users")
     public ResponseEntity<Page<DevopsUserPermissionVO>> pagePermissionUsers(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -674,7 +647,6 @@ public class AppServiceController {
     @ApiOperation(value = "查询没有服务应用服务权限的成员")
     @PostMapping(value = "/{app_service_id}/list_non_permission_users")
     public ResponseEntity<Page<DevopsUserPermissionVO>> listNonPermissionUsers(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -697,7 +669,6 @@ public class AppServiceController {
     @ApiOperation(value = "应用服务权限更新")
     @PostMapping(value = "/{app_service_id}/update_permission")
     public ResponseEntity<Void> updatePermission(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -713,7 +684,6 @@ public class AppServiceController {
     @ApiOperation(value = "应用服务权限删除")
     @DeleteMapping(value = "/{app_service_id}/delete_permission")
     public ResponseEntity<Void> deletePermission(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -731,7 +701,6 @@ public class AppServiceController {
     @ApiOperation(value = "项目下查询组织下所有项目，除当前项目")
     @GetMapping(value = "/{organization_id}/list_projects")
     public ResponseEntity<List<ProjectVO>> listProjects(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -749,7 +718,6 @@ public class AppServiceController {
     @ApiOperation(value = "从平台内部导入应用服务")
     @PostMapping(value = "/import/internal")
     public ResponseEntity<Void> importAppService(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
@@ -762,14 +730,12 @@ public class AppServiceController {
     @ApiOperation(value = "导入应用下根据组织共享或者市场下载查询应用服务")
     @GetMapping(value = "/page_by_mode")
     public ResponseEntity<Page<AppServiceGroupInfoVO>> listAppServiceGroup(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "市场来源", required = true)
             @RequestParam(required = true) Boolean share,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable,
-            @Encrypt
             @ApiParam(value = "查询项目Id", required = false)
             @RequestParam(value = "search_project_id", required = false) Long searchProjectId,
             @ApiParam(value = "查询条件", required = false)
@@ -784,7 +750,6 @@ public class AppServiceController {
     @ApiOperation(value = "查询单个项目下的应用服务")
     @PostMapping(value = "/list_by_project_id")
     public ResponseEntity<Page<AppServiceVO>> listAppByProjectId(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "是否分页")
@@ -803,7 +768,6 @@ public class AppServiceController {
     @ApiOperation(value = "查询所有应用服务(应用服务导入、应用部署)")
     @GetMapping(value = "/list_all_app_services")
     public ResponseEntity<List<AppServiceGroupVO>> listAllAppServices(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "类型", required = true)
@@ -824,7 +788,6 @@ public class AppServiceController {
     @ApiOperation(value = "批量查询应用服务")
     @PostMapping(value = "/list_app_service_ids")
     public ResponseEntity<Page<AppServiceVO>> batchQueryAppService(
-            @Encrypt
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -848,7 +811,6 @@ public class AppServiceController {
     @ApiOperation(value = "通过一组id分页查询或者不传id时进行分页查询")
     @PostMapping(value = "/list_by_ids_or_page")
     public ResponseEntity<Page<AppServiceVO>> listOrPage(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "是否分页")
@@ -868,7 +830,6 @@ public class AppServiceController {
     @ApiOperation(value = "根据导入类型查询应用服务所属的项目集合")
     @GetMapping(value = "/list_project_by_share")
     public ResponseEntity<List<ProjectVO>> listProjectByShare(
-            @Encrypt
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "导入应用服务类型")
@@ -880,7 +841,6 @@ public class AppServiceController {
     @ApiOperation(value = "根据多个版本Id查询多个应用服务")
     @GetMapping(value = "/list_service_by_version_ids")
     public ResponseEntity<List<AppServiceVO>> listServiceByVersionIds(
-            @Encrypt
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用服务Ids")
@@ -896,7 +856,6 @@ public class AppServiceController {
     @ApiOperation(value = "查询应用服务模板")
     @GetMapping(value = "/list_service_templates")
     public ResponseEntity<List<AppServiceTemplateVO>> listServiceTemplates(
-            @Encrypt
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(
@@ -909,7 +868,6 @@ public class AppServiceController {
     @ApiOperation(value = "列出项目下普通应用服务，任何角色可以查到所有的的应用服务")
     @GetMapping(value = "/list_app_services_having_versions")
     public ResponseEntity<List<AppServiceSimpleVO>> listHavingVersions(
-            @Encrypt
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId) {
         return new ResponseEntity<>(applicationServiceService.listAppServiceHavingVersions(projectId), HttpStatus.OK);
@@ -919,12 +877,10 @@ public class AppServiceController {
     @ApiOperation(value = "查询项目下应用服务的数量")
     @GetMapping("/list_by_project_id")
     public ResponseEntity<Map<Long, Integer>> countByProjectId(
-            @Encrypt
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
-            @RequestParam(value = "longList") List<Long> longList) {
-        return new ResponseEntity<>(applicationServiceService.countByProjectId(longList), HttpStatus.OK);
+            @RequestParam(value = "longList") List<Long> projectIds) {
+        return new ResponseEntity<>(applicationServiceService.countByProjectId(projectIds), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
@@ -952,7 +908,6 @@ public class AppServiceController {
     @CustomPageRequest
     @PostMapping("/page_app_services_without_ci")
     public ResponseEntity<List<AppServiceSimpleVO>> pageAppServiceWithoutCiPipeline(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(name = "project_id") Long projectId,
             @ApiIgnore @PageableDefault() PageRequest pageRequest,

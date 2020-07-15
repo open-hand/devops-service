@@ -51,7 +51,6 @@ public class DevopsServiceController {
     @ApiOperation(value = "检查网络名称唯一性")
     @GetMapping(value = "/check_name")
     public ResponseEntity<Boolean> checkName(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -76,7 +75,6 @@ public class DevopsServiceController {
     @ApiOperation(value = "部署网络")
     @PostMapping
     public ResponseEntity<Boolean> create(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署网络参数", required = true)
@@ -100,7 +98,6 @@ public class DevopsServiceController {
     @ApiOperation(value = "更新网络")
     @PutMapping(value = "/{id}")
     public ResponseEntity<Boolean> update(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -126,7 +123,6 @@ public class DevopsServiceController {
     @ApiOperation(value = "删除网络")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> delete(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -150,7 +146,6 @@ public class DevopsServiceController {
     @ApiOperation(value = "根据环境查询网络列表")
     @GetMapping("/list_by_env")
     public ResponseEntity<List<DevopsServiceVO>> listByEnvId(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -176,7 +171,6 @@ public class DevopsServiceController {
     @ApiOperation(value = "查询单个网络")
     @GetMapping(value = "/{id}")
     public ResponseEntity<DevopsServiceVO> query(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -201,7 +195,6 @@ public class DevopsServiceController {
     @ApiOperation(value = "根据网络名查询网络")
     @GetMapping(value = "/query_by_name")
     public ResponseEntity<DevopsServiceVO> queryByName(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -230,7 +223,6 @@ public class DevopsServiceController {
     @CustomPageRequest
     @PostMapping(value = "/page_by_options")
     public ResponseEntity<Page<DevopsServiceVO>> pageByEnv(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -265,7 +257,6 @@ public class DevopsServiceController {
     @CustomPageRequest
     @PostMapping(value = "/page_by_instance")
     public ResponseEntity<Page<DevopsServiceVO>> pageByInstance(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

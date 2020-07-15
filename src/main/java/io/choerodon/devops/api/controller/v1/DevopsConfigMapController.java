@@ -47,7 +47,6 @@ public class DevopsConfigMapController {
     @ApiOperation(value = "项目下创建配置映射")
     @PostMapping
     public ResponseEntity<Void> create(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名信息", required = true)
@@ -69,7 +68,6 @@ public class DevopsConfigMapController {
     @ApiOperation(value = "项目下更新配置映射")
     @PutMapping
     public ResponseEntity<Void> update(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名信息", required = true)
@@ -91,7 +89,6 @@ public class DevopsConfigMapController {
     @ApiOperation(value = "配置映射删除")
     @DeleteMapping(value = "/{configMap_id}")
     public ResponseEntity<Void> delete(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -112,7 +109,6 @@ public class DevopsConfigMapController {
     @ApiOperation(value = "校验配置映射名唯一性")
     @GetMapping(value = "/check_name")
     public ResponseEntity<Boolean> checkName(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -137,7 +133,6 @@ public class DevopsConfigMapController {
     @ApiOperation(value = "查询单个配置映射")
     @GetMapping("/{config_map_id}")
     public ResponseEntity<DevopsConfigMapRespVO> query(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -166,7 +161,6 @@ public class DevopsConfigMapController {
     @CustomPageRequest
     @PostMapping(value = "/page_by_options")
     public ResponseEntity<Page<DevopsConfigMapRespVO>> pageByOptions(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

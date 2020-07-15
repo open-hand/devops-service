@@ -23,7 +23,6 @@ public class DevopsCdStageVO {
     private Long sequence;
     @Valid
     private List<DevopsCdJobVO> jobList;
-    @Encrypt
     private Long projectId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;

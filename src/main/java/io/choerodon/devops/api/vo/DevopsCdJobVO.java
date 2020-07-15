@@ -62,7 +62,6 @@ public class DevopsCdJobVO {
     private List<Long> cdAuditUserIds;
     //是否会签
     private Integer countersigned;
-    @Encrypt
     private Long projectId;
     private Date lastUpdateDate;
     private Long objectVersionNumber;

@@ -18,7 +18,6 @@ public class PipelineVO {
     private String name;
     private String triggerType;
     private Integer isEnabled;
-    @Encrypt
     private Long projectId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;

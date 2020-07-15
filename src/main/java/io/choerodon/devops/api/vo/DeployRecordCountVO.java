@@ -14,7 +14,6 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  * @Date 2020/2/25 20:22
  */
 public class DeployRecordCountVO {
-    @Encrypt
     @ApiModelProperty("项目id")
     private Long id;
     @ApiModelProperty("每日部署次数")

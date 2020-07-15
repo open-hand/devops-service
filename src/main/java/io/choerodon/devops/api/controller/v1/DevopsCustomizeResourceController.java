@@ -50,7 +50,6 @@ public class DevopsCustomizeResourceController {
     @ApiOperation(value = "创建其他k8s资源")
     @PostMapping
     public ResponseEntity<Void> createResource(
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @ModelAttribute @Valid DevopsCustomizeResourceReqVO devopsCustomizeResourceReqVO,
             BindingResult bindingResult,
@@ -75,7 +74,6 @@ public class DevopsCustomizeResourceController {
     @ApiOperation(value = "删除其他k8s资源")
     @DeleteMapping
     public ResponseEntity<Void> deleteResource(
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @RequestParam(value = "resource_id") Long resourceId) {
@@ -96,7 +94,6 @@ public class DevopsCustomizeResourceController {
     @ApiOperation(value = "获取资源详情")
     @GetMapping("/{resource_id}")
     public ResponseEntity<DevopsCustomizeResourceVO> getResource(
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @PathVariable(value = "resource_id") Long resourceId) {
@@ -122,7 +119,6 @@ public class DevopsCustomizeResourceController {
     @CustomPageRequest
     @PostMapping(value = "/{env_id}/page_by_env")
     public ResponseEntity<Page<DevopsCustomizeResourceVO>> pageByEnv(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

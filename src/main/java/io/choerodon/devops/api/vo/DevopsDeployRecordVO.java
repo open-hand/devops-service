@@ -12,7 +12,6 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsDeployRecordVO {
     @Encrypt
     private Long id;
-    @Encrypt
     private Long projectId;
     private String deployType;
     @Encrypt

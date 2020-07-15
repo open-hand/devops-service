@@ -50,7 +50,6 @@ public class DevopsPvReqVO {
     @ApiModelProperty("根据存储类型的不同，生成不同的Json数据")
     private String valueConfig;
 
-    @Encrypt
     @ApiModelProperty("pv公开范围，指定项目id/必填，可为空数组")
     @NotNull(message = "error.project.ids.null")
     private List<Long> projectIds;

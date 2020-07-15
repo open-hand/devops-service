@@ -39,7 +39,6 @@ public class DevopsCiVariableController {
     @ApiOperation(value = "列举出ci变量")
     @GetMapping("/keys")
     public ResponseEntity<Map<String, List<CiVariableVO>>> listVariableKey(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable("project_id") Long projectId,
             @Encrypt
@@ -59,7 +58,6 @@ public class DevopsCiVariableController {
     @ApiOperation(value = "列举出指定key的value")
     @GetMapping("/values")
     public ResponseEntity<List<CiVariableVO>> listValues(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "层级", required = true)
@@ -76,7 +74,6 @@ public class DevopsCiVariableController {
     @ApiOperation(value = "保存对key的修改")
     @PostMapping
     public ResponseEntity<Void> save(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "层级", required = true)

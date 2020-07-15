@@ -37,10 +37,8 @@ public class WorkBenchController {
     @RequestMapping("/approval")
     @ApiOperation("查询个人待审核事件")
     public ResponseEntity<List<ApprovalVO>> listApproval(
-            @Encrypt
             @ApiParam(value = "组织id", required = true)
             @PathVariable("organization_id") Long organizationId,
-            @Encrypt
             @ApiParam(value = "项目id")
             @RequestParam(value = "project_id", required = false) Long projectId) {
         return Optional.ofNullable(workBenchService.listApproval(organizationId, projectId))
@@ -52,10 +50,8 @@ public class WorkBenchController {
     @RequestMapping("/latest_app_service")
     @ApiOperation("查看最近操作过的应用服务")
     public ResponseEntity<List<LatestAppServiceVO>> listLatestAppService(
-            @Encrypt
             @ApiParam(value = "组织id", required = true)
             @PathVariable("organization_id") Long organizationId,
-            @Encrypt
             @ApiParam(value = "项目id")
             @RequestParam(value = "project_id", required = false) Long projectId) {
         return Optional.ofNullable(workBenchService.listLatestAppService(organizationId, projectId))

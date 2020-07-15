@@ -43,7 +43,6 @@ public class DevopsEnvAppServiceController {
     @ApiOperation(value = "创建环境下的服务关联")
     @PostMapping("/batch_create")
     public ResponseEntity<List<DevopsEnvApplicationVO>> batchCreate(
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "关联信息", required = true)
             @RequestBody DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
@@ -58,7 +57,6 @@ public class DevopsEnvAppServiceController {
     @ApiOperation(value = "删除指定环境-服务关联关系")
     @DeleteMapping
     public ResponseEntity<Void> delete(
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境Id", required = true)
             @Encrypt
@@ -146,7 +144,6 @@ public class DevopsEnvAppServiceController {
     @ApiOperation(value = "查询项目下可用的且没有与该环境关联的服务")
     @GetMapping("/non_related_app_service")
     public ResponseEntity<List<BaseApplicationServiceVO>> listNonRelatedAppService(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @Encrypt

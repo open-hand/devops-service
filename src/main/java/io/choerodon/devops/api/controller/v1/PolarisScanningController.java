@@ -31,7 +31,6 @@ public class PolarisScanningController {
     @GetMapping("/records")
     @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER}, level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<DevopsPolarisRecordRespVO> queryRecordByScopeAndScopeId(
-            @Encrypt
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam("扫描的范围 env/cluster")
@@ -47,7 +46,6 @@ public class PolarisScanningController {
     @GetMapping("/envs/{env_id}")
     @ResponseBody
     public ResponseEntity<String> queryEnvPolarisResult(
-            @Encrypt
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
             @Encrypt
@@ -60,7 +58,6 @@ public class PolarisScanningController {
     @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER}, level = ResourceLevel.ORGANIZATION)
     @PostMapping("/envs/{env_id}")
     public ResponseEntity<DevopsPolarisRecordVO> scanEnv(
-            @Encrypt
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
             @Encrypt
@@ -73,7 +70,6 @@ public class PolarisScanningController {
     @Permission(roles = {InitRoleCode.PROJECT_OWNER}, level = ResourceLevel.ORGANIZATION)
     @GetMapping("/clusters/{cluster_id}/summary")
     public ResponseEntity<DevopsPolarisSummaryVO> clusterPolarisSummary(
-            @Encrypt
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
             @Encrypt
@@ -86,7 +82,6 @@ public class PolarisScanningController {
     @Permission(roles = {InitRoleCode.PROJECT_OWNER}, level = ResourceLevel.ORGANIZATION)
     @GetMapping("/clusters/{cluster_id}/env_detail")
     public ResponseEntity<ClusterPolarisEnvDetailsVO> clusterPolarisEnvDetail(
-            @Encrypt
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
             @Encrypt
@@ -99,7 +94,6 @@ public class PolarisScanningController {
     @Permission(roles = {InitRoleCode.PROJECT_OWNER}, level = ResourceLevel.ORGANIZATION)
     @PostMapping("/clusters/{cluster_id}")
     public ResponseEntity<DevopsPolarisRecordVO> scanCluster(
-            @Encrypt
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
             @Encrypt

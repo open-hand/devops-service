@@ -1,12 +1,8 @@
 package io.choerodon.devops.api.controller.v1;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.DevopsEnvGroupVO;
-import io.choerodon.devops.app.service.DevopsEnvGroupService;
-import io.choerodon.devops.infra.dto.DevopsEnvGroupDTO;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.List;
+import java.util.Optional;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -15,8 +11,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.DevopsEnvGroupVO;
+import io.choerodon.devops.app.service.DevopsEnvGroupService;
+import io.choerodon.swagger.annotation.Permission;
 
 
 /**
@@ -45,7 +45,6 @@ public class DevopsEnvGroupController {
     @ApiOperation(value = "项目下创建环境组")
     @PostMapping
     public ResponseEntity<DevopsEnvGroupVO> create(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境组信息", required = true)
@@ -67,7 +66,6 @@ public class DevopsEnvGroupController {
     @ApiOperation(value = "项目下更新环境组")
     @PutMapping
     public ResponseEntity<DevopsEnvGroupVO> update(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境组信息", required = true)
@@ -88,7 +86,6 @@ public class DevopsEnvGroupController {
     @ApiOperation(value = "项目下查询环境组")
     @GetMapping("/list_by_project")
     public ResponseEntity<List<DevopsEnvGroupVO>> listByProject(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(devopsEnvGroupService.listByProject(projectId))
@@ -106,7 +103,6 @@ public class DevopsEnvGroupController {
     @ApiOperation(value = "校验环境组名唯一性")
     @GetMapping(value = "/check_name")
     public ResponseEntity<Boolean> checkName(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境组名", required = true)
@@ -131,7 +127,6 @@ public class DevopsEnvGroupController {
     @ApiOperation(value = "环境组删除")
     @DeleteMapping(value = "/{group_id}")
     public ResponseEntity<Void> delete(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境组ID", required = true)
@@ -148,7 +143,6 @@ public class DevopsEnvGroupController {
     @ApiOperation(value = "环境组存在检查")
     @GetMapping(value = "/{group_id}/check")
     public ResponseEntity<Boolean> checkExist(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

@@ -17,7 +17,6 @@ public class DevopsClusterPermissionUpdateVO {
     @NotNull(message = "error.cluster.id.null")
     private Long clusterId;
 
-    @Encrypt
     @ApiModelProperty("要添加权限的项目id / 必需,可为空数组")
     @NotNull(message = "error.project.ids.null")
     private List<Long> projectIds;

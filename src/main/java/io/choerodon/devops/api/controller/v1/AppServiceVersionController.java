@@ -48,7 +48,6 @@ public class AppServiceVersionController {
     @CustomPageRequest
     @PostMapping(value = "/page_by_options")
     public ResponseEntity<Page<AppServiceVersionVO>> pageByOptions(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -87,7 +86,6 @@ public class AppServiceVersionController {
                     InitRoleCode.PROJECT_MEMBER})
     @GetMapping("/list_deployed_by_app_service/{app_service_id}")
     public ResponseEntity<List<AppServiceVersionRespVO>> queryDeployedByAppServiceId(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -112,7 +110,6 @@ public class AppServiceVersionController {
     @ApiOperation(value = "查询部署在某个环境的应用服务的版本")
     @GetMapping("/app/{app_service_id}/env/{envId}/query")
     public ResponseEntity<List<AppServiceVersionRespVO>> queryByappServiceIdAndEnvId(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -215,7 +212,6 @@ public class AppServiceVersionController {
     @ApiOperation(value = "根据分支名查询版本")
     @GetMapping(value = "/list_by_branch")
     public ResponseEntity<List<AppServiceVersionAndCommitVO>> listAppVersionsByBranch(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -243,7 +239,6 @@ public class AppServiceVersionController {
     @ApiOperation(value = "根据pipelineID 查询版本, 判断是否存在")
     @GetMapping(value = "/query_by_pipeline")
     public ResponseEntity<Boolean> queryByPipeline(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -271,7 +266,6 @@ public class AppServiceVersionController {
     @ApiOperation(value = "根据服务ID查询最新生成版本的values")
     @GetMapping("/value")
     public ResponseEntity<String> queryByProjectId(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -294,7 +288,6 @@ public class AppServiceVersionController {
     @ApiOperation(value = "根据服务和版本号查询服务版本")
     @GetMapping(value = "/query_by_version")
     public ResponseEntity<AppServiceVersionRespVO> queryByVersion(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -313,7 +306,6 @@ public class AppServiceVersionController {
     @CustomPageRequest
     @PostMapping(value = "/page_share/versions")
     public ResponseEntity<Page<AppServiceVersionRespVO>> pageShareVersionByappServiceId(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -333,7 +325,6 @@ public class AppServiceVersionController {
     @ApiOperation(value = "项目下查询共享服务的所有共享版本")
     @GetMapping(value = "/{app_service_id}/list_share_versions")
     public ResponseEntity<List<AppServiceVersionVO>> listAppServiceVersionByShareAndAppSerivceId(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -351,7 +342,6 @@ public class AppServiceVersionController {
     @ApiOperation(value = "根据应用服务Id集合查询所有应用版本")
     @GetMapping(value = "/list_by_service_ids")
     public ResponseEntity<List<AppServiceVersionVO>> listVersionByIds(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -367,7 +357,6 @@ public class AppServiceVersionController {
     @ApiOperation(value = "根据应用服务Id查询所有应用版本")
     @GetMapping(value = "/list_by_service_id")
     public ResponseEntity<List<AppServiceVersionVO>> listVersionById(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

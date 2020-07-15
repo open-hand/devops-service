@@ -30,10 +30,8 @@ public class NexusController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/choerodon/{organizationId}/project/{projectId}/nexus/server/list")
     public ResponseEntity<List<C7nNexusServerDTO>> getNexusServerByProject(
-            @Encrypt
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(name = "organizationId") Long organizationId,
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(name = "projectId") Long projectId) {
         return Results.success(rdupmClient.getNexusServerByProject(organizationId, projectId).getBody());

@@ -12,7 +12,6 @@ public class LatestAppServiceVO {
     private Long id;
     private String name;
     private String code;
-    @Encrypt
     private Long projectId;
     private String projectName;
     private String repoUrl;

@@ -46,7 +46,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "项目下创建环境")
     @PostMapping
     public ResponseEntity<Void> create(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境信息", required = true)
@@ -67,7 +66,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "实例视图查询环境及其下服务及实例")
     @GetMapping(value = "/ins_tree_menu")
     public ResponseEntity<List<DevopsEnvironmentViewVO>> listEnvTree(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return new ResponseEntity<>(devopsEnvironmentService.listInstanceEnvTree(projectId), HttpStatus.OK);
@@ -84,7 +82,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "资源视图查询项目下环境及其下各种资源的基本信息")
     @GetMapping(value = "/resource_tree_menu")
     public ResponseEntity<List<DevopsResourceEnvOverviewVO>> listResourceEnvTree(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return new ResponseEntity<>(devopsEnvironmentService.listResourceEnvTree(projectId), HttpStatus.OK);
@@ -103,7 +100,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "项目下查询环境")
     @GetMapping(value = "/list_by_active")
     public ResponseEntity<List<DevopsEnvironmentRepVO>> listByActive(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "是否启用", required = true)
@@ -125,8 +121,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "项目下启用停用环境")
     @PutMapping("/{environment_id}/active")
     public ResponseEntity<Boolean> updateActive(
-            @Encrypt
-            @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @ApiParam(value = "环境id", required = true)
@@ -150,7 +144,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "项目下查询单个环境")
     @GetMapping("/{environment_id}")
     public ResponseEntity<DevopsEnvironmentUpdateVO> query(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -172,7 +165,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "实例视图查询单个环境信息")
     @GetMapping("/{environment_id}/info")
     public ResponseEntity<DevopsEnvironmentInfoVO> queryEnvInfo(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -194,7 +186,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "查询环境下相关资源的数量")
     @GetMapping("/{env_id}/resource_count")
     public ResponseEntity<DevopsEnvResourceCountVO> queryEnvResourceCount(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -217,7 +208,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "项目下更新环境")
     @PutMapping
     public ResponseEntity<DevopsEnvironmentUpdateVO> update(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -239,7 +229,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "创建环境校验编码是否存在")
     @GetMapping(value = "/check_code")
     public ResponseEntity<Boolean> checkCode(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -260,7 +249,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "项目下查询有正在运行实例的环境")
     @GetMapping(value = "/list_by_instance")
     public ResponseEntity<List<DevopsEnvironmentRepVO>> listByProjectId(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -285,7 +273,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "查询环境同步状态")
     @GetMapping(value = "/{env_id}/status")
     public ResponseEntity<EnvSyncStatusVO> queryEnvSyncStatus(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -312,7 +299,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "分页查询环境下用户权限")
     @PostMapping(value = "/{env_id}/permission/page_by_options")
     public ResponseEntity<Page<DevopsUserPermissionVO>> pageEnvUserPermissions(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -341,7 +327,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "列出项目下所有与该环境未分配权限的项目成员")
     @PostMapping(value = "/{env_id}/permission/list_non_related")
     public ResponseEntity<Page<DevopsEnvUserVO>> listAllNonRelatedMembers(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -370,7 +355,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "删除该用户在该环境下的权限")
     @DeleteMapping(value = "/{env_id}/permission")
     public ResponseEntity<Void> deletePermissionOfUser(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -396,7 +380,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "获取环境下所有用户权限")
     @GetMapping(value = "/{env_id}/list_all")
     public ResponseEntity<List<DevopsEnvUserVO>> listAllUserPermission(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -418,7 +401,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "环境下为用户分配权限")
     @PostMapping(value = "/{env_id}/permission")
     public ResponseEntity<Void> updateEnvUserPermission(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -442,7 +424,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "删除未连接/已停用/失败的环境")
     @DeleteMapping(value = "/{env_id}")
     public ResponseEntity<Void> deleteDeactivatedEnvironment(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -464,7 +445,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "项目下查询集群信息")
     @GetMapping(value = "/list_clusters")
     public ResponseEntity<List<DevopsClusterRepVO>> listDevopsClusters(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(devopsEnvironmentService.listDevopsCluster(projectId))
@@ -483,7 +463,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "根据环境编码查询环境")
     @GetMapping(value = "/query_by_code")
     public ResponseEntity<DevopsEnvironmentRepVO> queryByCode(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境编码", required = true)
@@ -504,7 +483,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "重试gitOps解析流程")
     @GetMapping(value = "/{env_id}/retry")
     public void retryByGitOps(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -524,7 +502,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "环境树形目录")
     @GetMapping(value = "/env_tree_menu")
     public ResponseEntity<List<DevopsEnvGroupEnvsVO>> listEnvTreeMenu(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(devopsEnvironmentService.listEnvTreeMenu(projectId))
@@ -544,7 +521,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "项目下查询环境")
     @GetMapping(value = "/list_by_group")
     public ResponseEntity<List<DevopsEnvironmentRepVO>> listByGroup(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -567,7 +543,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "查询指定环境是否可删除")
     @GetMapping(value = "/{env_id}/delete_check")
     public ResponseEntity<Boolean> deleteCheck(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -590,7 +565,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "查询指定环境是否可停用")
     @GetMapping(value = "/{env_id}/disable_check")
     public ResponseEntity<Boolean> disableCheck(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -615,7 +589,6 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "检查资源是否存在")
     @GetMapping(value = "/{env_id}/check")
     public ResponseEntity<EnvironmentMsgVO> checkExist(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "对象类型,对象类型为空时，表示查询环境是否存在")
@@ -642,7 +615,6 @@ public class DevopsEnvironmentController {
     @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER}, level = ResourceLevel.ORGANIZATION)
     @GetMapping("/count_by_options")
     public ResponseEntity<Long> countEnvByOptions(
-            @Encrypt
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "环境是否失败", required = false)

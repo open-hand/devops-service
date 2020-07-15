@@ -53,7 +53,6 @@ public class DevopsGitController {
     @ApiOperation(value = "获取应用服务的GitLab地址")
     @GetMapping("/url")
     public ResponseEntity<String> queryUrl(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -79,7 +78,6 @@ public class DevopsGitController {
     @ApiOperation(value = "创建标签")
     @PostMapping("/tags")
     public ResponseEntity<Void> createTag(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -111,7 +109,6 @@ public class DevopsGitController {
     @ApiOperation(value = "更新标签")
     @PutMapping("/tags")
     public ResponseEntity<Void> updateTag(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -138,7 +135,6 @@ public class DevopsGitController {
     @ApiOperation(value = "分页获取标签列表")
     @PostMapping("/page_tags_by_options")
     public ResponseEntity<Page<TagVO>> pageTagsByOptions(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -163,7 +159,6 @@ public class DevopsGitController {
     @ApiOperation(value = "获取标签列表")
     @GetMapping("/list_tags")
     public ResponseEntity<List<TagVO>> listTags(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -186,7 +181,6 @@ public class DevopsGitController {
     @ApiOperation(value = "检查标签")
     @GetMapping("/check_tag")
     public ResponseEntity<Boolean> checkTag(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -211,7 +205,6 @@ public class DevopsGitController {
     @ApiOperation(value = "删除标签")
     @DeleteMapping("/tags")
     public ResponseEntity<Void> deleteTag(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -235,7 +228,6 @@ public class DevopsGitController {
     @ApiOperation(value = "创建分支")
     @PostMapping("/branch")
     public ResponseEntity<Void> createBranch(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -261,7 +253,6 @@ public class DevopsGitController {
     @CustomPageRequest
     @PostMapping("/page_branch_by_options")
     public ResponseEntity<Page<BranchVO>> pageBranchByOptions(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -287,7 +278,6 @@ public class DevopsGitController {
     @ApiOperation(value = "查询单个分支")
     @GetMapping("/branch")
     public ResponseEntity<DevopsBranchVO> queryBranch(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -312,7 +302,6 @@ public class DevopsGitController {
     @ApiOperation(value = "更新分支关联的问题")
     @PutMapping("/update_branch_issue")
     public ResponseEntity<Void> updateBranchIssue(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -335,7 +324,6 @@ public class DevopsGitController {
     @ApiOperation(value = "删除分支")
     @DeleteMapping("/branch")
     public ResponseEntity<Void> deleteBranch(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -360,7 +348,6 @@ public class DevopsGitController {
     @GetMapping(value = "/list_merge_request")
     @CustomPageRequest
     public ResponseEntity<MergeRequestTotalVO> listMergeRequest(
-            @Encrypt
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -385,7 +372,6 @@ public class DevopsGitController {
     @ApiOperation(value = "校验分支名唯一性")
     @GetMapping(value = "/check_branch_name")
     public ResponseEntity<Boolean> checkName(
-            @Encrypt
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

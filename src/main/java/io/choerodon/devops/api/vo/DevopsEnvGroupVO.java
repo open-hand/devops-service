@@ -11,7 +11,6 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsEnvGroupVO {
     @Encrypt
     private Long id;
-    @Encrypt
     private Long projectId;
     private String name;
 

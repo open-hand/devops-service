@@ -42,7 +42,6 @@ public class DevopsPvController {
     @ApiOperation(value = "分页带参数查询项目下所有pv")
     @PostMapping("/page_by_options")
     public ResponseEntity<Page<DevopsPvVO>> queryAll(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -58,7 +57,6 @@ public class DevopsPvController {
     @ApiOperation(value = "创建pv")
     @PostMapping
     public ResponseEntity<Void> createPv(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody @Valid DevopsPvReqVO devopsPvReqVo) {
@@ -73,7 +71,6 @@ public class DevopsPvController {
     @ApiOperation(value = "校验pv的名称是否满足所选集群下唯一")
     @GetMapping("check_name")
     public ResponseEntity<Boolean> checkPvName(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -88,7 +85,6 @@ public class DevopsPvController {
     @ApiOperation(value = "根据pvId删除Pv")
     @DeleteMapping("/{pv_id}")
     public ResponseEntity<Void> deletePv(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -102,7 +98,6 @@ public class DevopsPvController {
     @ApiOperation(value = "根据pvId查询相应pv")
     @GetMapping("/{pv_id}")
     public ResponseEntity<DevopsPvVO> queryById(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -125,7 +120,6 @@ public class DevopsPvController {
     @ApiOperation(value = "列出组织下所有项目中没有分配权限的项目")
     @PostMapping(value = "/{pv_id}/permission/list_non_related")
     public ResponseEntity<Page<ProjectReqVO>> listAllNonRelatedMembers(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -147,7 +141,6 @@ public class DevopsPvController {
     @ApiOperation(value = "根据projectId删除和Pv关联的权限记录")
     @DeleteMapping(value = "/{pv_id}/permission")
     public ResponseEntity<Void> deleteRelateProjectById(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -164,7 +157,6 @@ public class DevopsPvController {
     @ApiOperation(value = "给当前pv分配项目权限")
     @PostMapping(value = "/{pv_id}/permission")
     public ResponseEntity<Void> assignPermission(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -180,7 +172,6 @@ public class DevopsPvController {
     @ApiOperation(value = "PV跳过权限校验，查询所属集群下的所有项目")
     @PostMapping("/{pv_id}/page_projects")
     public ResponseEntity<Page<ProjectReqVO>> pageProjects(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -199,7 +190,6 @@ public class DevopsPvController {
     @ApiOperation(value = "PV不跳过权限校验，查询有关联的项目")
     @PostMapping("/{pv_id}/page_related")
     public ResponseEntity<Page<ProjectReqVO>> pageRelatedProjects(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -218,7 +208,6 @@ public class DevopsPvController {
     @ApiOperation(value = "根据pvc的条件筛选查询可用的pv")
     @PostMapping("/pv_available")
     public ResponseEntity<List<DevopsPvVO>> queryPvcRelatedPv(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

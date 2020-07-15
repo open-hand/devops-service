@@ -15,7 +15,6 @@ public class DevopsCdPipelineRecordVO {
     private String status;
     private String triggerType;
     private String bpmDefinition;
-    @Encrypt
     private Long projectId;
     private String pipelineName;
     private String businessKey;

@@ -37,7 +37,6 @@ public class DevopsUserController {
     @ApiOperation(value = "根据用户Id查询gitlab用户Id")
     @GetMapping("/{user_id}")
     public ResponseEntity<UserAttrVO> queryByUserId(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

@@ -38,7 +38,6 @@ public class DevopsCiPipelineRecordController {
     @ApiOperation(value = "查询ci流水线执行记录")
     @GetMapping("/{ci_pipeline_id}")
     public ResponseEntity<Page<DevopsCiPipelineRecordVO>> pagingPipelineRecord(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -53,7 +52,6 @@ public class DevopsCiPipelineRecordController {
     @ApiOperation(value = "查询指定流水线记录详情")
     @GetMapping("/{gitlab_pipeline_id}/details")
     public ResponseEntity<DevopsCiPipelineRecordVO> queryPipelineRecordDetails(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab流水线Id", required = true)
@@ -82,7 +80,6 @@ public class DevopsCiPipelineRecordController {
     @ApiOperation(value = "取消GitLab流水线")
     @PostMapping(value = "/{gitlab_pipeline_id}/cancel")
     public ResponseEntity<Boolean> cancel(
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @PathVariable("gitlab_pipeline_id") Long gitlabPipelineId,

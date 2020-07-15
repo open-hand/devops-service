@@ -36,7 +36,6 @@ public class DevopsCiJobController {
     @PostMapping("/sonar/connect")
     @ApiOperation("sonar的连接测试")
     public ResponseEntity<Boolean> sonarConnect(
-            @Encrypt
             @PathVariable(name = "project_id") Long projectId,
             @RequestBody SonarQubeConfigVO sonarQubeConfigVO) {
         return ResponseEntity.ok(devopsCiJobService.sonarConnect(projectId, sonarQubeConfigVO));
@@ -49,7 +48,6 @@ public class DevopsCiJobController {
     @PostMapping("/sonar/config")
     @ApiOperation("返回应用服务对应的sonar配置（给质量管理团队使用）")
     public ResponseEntity<SonarInfoVO> getSonarConfig(
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @RequestParam(name = "appServiceId", required = false) Long appServiceId,
@@ -62,7 +60,6 @@ public class DevopsCiJobController {
     @ApiOperation(value = "查询job日志")
     @GetMapping("/gitlab_projects/{gitlab_project_id}/gitlab_jobs/{job_id}/trace")
     public ResponseEntity<String> queryTrace(
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @PathVariable(value = "gitlab_project_id") Long gitlabProjectId,
             @PathVariable(value = "job_id") Long jobId) {
@@ -73,7 +70,6 @@ public class DevopsCiJobController {
     @ApiOperation(value = "重试job")
     @GetMapping("/gitlab_projects/{gitlab_project_id}/gitlab_jobs/{job_id}/retry")
     public ResponseEntity<Void> retryJob(
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @PathVariable(value = "gitlab_project_id") Long gitlabProjectId,
             @Encrypt
@@ -86,7 +82,6 @@ public class DevopsCiJobController {
     @Permission(permissionPublic = true)
     @GetMapping("/maven_settings")
     public ResponseEntity<String> querySettings(
-            @Encrypt
             @ApiParam("猪齿鱼项目id")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用服务token", required = true)

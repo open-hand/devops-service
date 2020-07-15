@@ -38,7 +38,6 @@ public class AppServiceInstanceVO {
     private String error;
     private Boolean isConnect;
     private Long objectVersionNumber;
-    @Encrypt
     private Long projectId;
     private List<DeploymentVO> deploymentVOS;
 

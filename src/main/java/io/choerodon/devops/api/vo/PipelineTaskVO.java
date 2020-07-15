@@ -26,7 +26,6 @@ public class PipelineTaskVO {
     private PipelineAppServiceDeployVO pipelineAppServiceDeployVO;
     @Encrypt
     private Long stageId;
-    @Encrypt
     private Long projectId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;

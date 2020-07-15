@@ -34,7 +34,6 @@ public class DevopsCdPipelineAuditController {
     @ApiOperation(value = "审核手动流转阶段")
     @PostMapping("/stage_records/{stage_record_id}/audit")
     public ResponseEntity<AuditResultVO> auditStage(
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,
@@ -51,7 +50,6 @@ public class DevopsCdPipelineAuditController {
     @ApiOperation(value = "审核人工卡点任务")
     @PostMapping("/stage_records/{stage_record_id}/job_records/{job_record_id}/audit")
     public ResponseEntity<AuditResultVO> auditJob(
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,

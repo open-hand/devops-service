@@ -45,7 +45,6 @@ public class DevopsProjectController {
     @ApiOperation(value = "查询项目Gitlab Group是否创建成功")
     @GetMapping("/check_gitlab_group")
     public ResponseEntity<Boolean> queryProjectGroupReady(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return new ResponseEntity<>(devopsProjectService.queryProjectGitlabGroupReady(projectId), HttpStatus.OK);
@@ -63,7 +62,6 @@ public class DevopsProjectController {
     @CustomPageRequest
     @PostMapping("/page_projects")
     public ResponseEntity<Page<ProjectReqVO>> pageProjects(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -87,7 +85,6 @@ public class DevopsProjectController {
     @ApiOperation(value = "获取所有项目成员和项目所有者")
     @PostMapping(value = "/users/list_users")
     public ResponseEntity<Page<UserVO>> getAllUsers(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -110,10 +107,8 @@ public class DevopsProjectController {
     @ApiOperation(value = "查询项目gitlab group信息")
     @PostMapping("/gitlab_groups")
     public ResponseEntity<List<GitlabProjectSimple>> queryGitlabGroups(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
             @ApiParam(value = "项目Ids")
             @RequestBody List<Long> projectIds) {
         return new ResponseEntity<>(devopsProjectService.queryGitlabGroups(projectIds), HttpStatus.OK);

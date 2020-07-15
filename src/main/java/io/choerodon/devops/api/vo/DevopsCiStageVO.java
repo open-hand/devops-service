@@ -8,6 +8,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.annotation.WillDeleted;
 
@@ -17,12 +18,16 @@ import io.choerodon.devops.infra.annotation.WillDeleted;
  * @Date 2020/4/2 17:00
  */
 public class DevopsCiStageVO {
+    @Encrypt
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @ApiModelProperty("阶段名称")
     @NotEmpty(message = "error.stage.name.cannot.be.null")
     private String name;
+
+    @Encrypt
     @ApiModelProperty("阶段所属流水线id")
     private Long ciPipelineId;
     @ApiModelProperty("阶段顺序")

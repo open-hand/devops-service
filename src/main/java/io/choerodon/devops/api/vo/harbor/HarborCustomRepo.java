@@ -80,11 +80,9 @@ public class HarborCustomRepo extends AuditDomain {
     @GeneratedValue
     private Long id;
 
-    @Encrypt
     @ApiModelProperty(value = "猪齿鱼项目ID")
     private Long projectId;
 
-    @Encrypt
     @ApiModelProperty(value = "猪齿鱼组织ID")
     private Long organizationId;
 

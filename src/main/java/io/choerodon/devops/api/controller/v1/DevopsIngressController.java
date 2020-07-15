@@ -49,7 +49,6 @@ public class DevopsIngressController {
     @ApiOperation(value = "项目下创建域名")
     @PostMapping
     public ResponseEntity<Void> create(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名信息", required = true)
@@ -71,7 +70,6 @@ public class DevopsIngressController {
     @ApiOperation(value = "项目下更新域名")
     @PutMapping(value = "/{id}")
     public ResponseEntity<Void> update(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -97,7 +95,6 @@ public class DevopsIngressController {
     @ApiOperation(value = "项目下查询域名")
     @GetMapping(value = "/{id}")
     public ResponseEntity<DevopsIngressVO> queryIngress(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -122,7 +119,6 @@ public class DevopsIngressController {
     @ApiOperation(value = "项目下查询域名详情")
     @GetMapping(value = "/{id}/detail")
     public ResponseEntity<DevopsIngressVO> queryIngressDetailById(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -146,7 +142,6 @@ public class DevopsIngressController {
     @ApiOperation(value = "项目下删除域名")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> delete(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -164,7 +159,6 @@ public class DevopsIngressController {
     @ApiOperation(value = "检查域名唯一性")
     @GetMapping(value = "/check_name")
     public ResponseEntity<Boolean> checkName(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名名称", required = true)
@@ -191,7 +185,6 @@ public class DevopsIngressController {
     @ApiOperation(value = "检查域名名称唯一性")
     @GetMapping(value = "/check_domain")
     public ResponseEntity<Boolean> checkDomain(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -226,7 +219,6 @@ public class DevopsIngressController {
     @ApiOperation(value = "环境下分页查询域名")
     @PostMapping(value = "/{env_id}/page_by_env")
     public ResponseEntity<Page<DevopsIngressVO>> pageByEnv(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore

@@ -20,13 +20,14 @@ public class DevopsDeployValueVO {
     @NotNull(message = "error.deploy.value.value.null")
     private String value;
 
-    @Encrypt
     private Long projectId;
 
     @Encrypt
     @ApiModelProperty("环境id")
     @NotNull(message = "error.env.id.null")
     private Long envId;
+
+    @Encrypt
     @ApiModelProperty("应用服务id")
     @NotNull(message = "error.app.service.id.null")
     private Long appServiceId;

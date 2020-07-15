@@ -14,10 +14,8 @@ public class DevopsConfigVO {
 
     private ConfigVO config;
 
-    @Encrypt
     private Long projectId;
 
-    @Encrypt
     private Long organizationId;
 
     @Encrypt

@@ -14,7 +14,6 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class CertificationVO {
     @Encrypt
     private Long id;
-    @Encrypt
     private Long organizationId;
     private String certName;
     private String commonName;

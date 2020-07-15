@@ -8,7 +8,6 @@ public class CustomMergeRequestVO {
     @Encrypt
     private Long id;
 
-    @Encrypt
     private Long projectId;
 
     @Encrypt

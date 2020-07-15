@@ -53,7 +53,6 @@ public class CertificationController {
     @ApiOperation(value = "项目下创建证书")
     @PostMapping
     public ResponseEntity<Void> create(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书", required = true)
@@ -78,7 +77,6 @@ public class CertificationController {
     @ApiOperation(value = "项目下删除证书")
     @DeleteMapping
     public ResponseEntity<Void> delete(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -105,7 +103,6 @@ public class CertificationController {
     @CustomPageRequest
     @PostMapping("/page_by_options")
     public ResponseEntity<Page<CertificationVO>> pageByOptions(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -133,7 +130,6 @@ public class CertificationController {
     @ApiOperation(value = "通过域名查询已生效的证书")
     @PostMapping("/active")
     public ResponseEntity<List<CertificationVO>> getActiveCertificationByDomain(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -159,7 +155,6 @@ public class CertificationController {
     @ApiOperation(value = "校验证书名称唯一性")
     @GetMapping("/unique")
     public ResponseEntity<Boolean> checkCertNameUniqueInEnv(
-            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

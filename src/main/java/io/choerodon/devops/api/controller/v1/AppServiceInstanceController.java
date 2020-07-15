@@ -65,7 +65,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "根据实例id获取实例信息")
     @GetMapping(value = "/{instance_id}")
     public ResponseEntity<AppServiceInstanceInfoVO> queryInstanceInformationById(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -91,7 +90,6 @@ public class AppServiceInstanceController {
     @CustomPageRequest
     @PostMapping(value = "/info/page_by_options")
     public ResponseEntity<Page<AppServiceInstanceInfoVO>> pageInstanceInfoByOptions(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore @SortDefault(value = "id", direction = Sort.Direction.DESC)
@@ -157,7 +155,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "获取实例上次部署配置")
     @GetMapping(value = "/{instance_Id}/last_deploy_value")
     public ResponseEntity<InstanceValueVO> queryLastDeployValue(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -182,7 +179,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "根据实例id获取更多部署详情(Json格式)")
     @GetMapping(value = "/{instance_id}/deployment_detail_json")
     public ResponseEntity<InstanceControllerDetailVO> getDeploymentDetailsJsonByInstanceId(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署名称", required = true)
@@ -206,7 +202,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "根据实例id获取更多daemonSet详情(Json格式)")
     @GetMapping(value = "/{instance_id}/daemon_set_detail_json")
     public ResponseEntity<InstanceControllerDetailVO> getDaemonSetDetailsJsonByInstanceId(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署名称", required = true)
@@ -230,7 +225,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "根据实例id获取更多statefulSet详情(Json格式)")
     @GetMapping(value = "/{instance_id}/stateful_set_detail_json")
     public ResponseEntity<InstanceControllerDetailVO> getStatefulSetDetailsJsonByInstanceId(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署名称", required = true)
@@ -254,7 +248,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "根据实例id获取更多部署详情(Yaml格式)")
     @GetMapping(value = "/{instance_id}/deployment_detail_yaml")
     public ResponseEntity<InstanceControllerDetailVO> getDeploymentDetailsYamlByInstanceId(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署名称", required = true)
@@ -278,7 +271,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "根据实例id获取更多daemonSet详情(Yaml格式)")
     @GetMapping(value = "/{instance_id}/daemon_set_detail_yaml")
     public ResponseEntity<InstanceControllerDetailVO> getDaemonSetDetailsYamlByInstanceId(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署名称", required = true)
@@ -302,7 +294,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "根据实例id获取更多statefulSet详情(Yaml格式)")
     @GetMapping(value = "/{instance_id}/stateful_set_detail_yaml")
     public ResponseEntity<InstanceControllerDetailVO> getStatefulSetDetailsYamlByInstanceId(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署名称", required = true)
@@ -327,7 +318,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "获取当前实例升级到特定版本的Values")
     @GetMapping(value = "/{instance_id}/appServiceVersion/{version_id}/upgrade_value")
     public ResponseEntity<InstanceValueVO> queryUpgradeValue(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -355,7 +345,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "查询服务部署时value")
     @GetMapping("/deploy_value")
     public ResponseEntity<InstanceValueVO> queryDeployValue(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "type", required = true)
@@ -382,7 +371,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "查询预览value")
     @PostMapping("/preview_value")
     public ResponseEntity<InstanceValueVO> previewValues(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam
@@ -406,7 +394,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "校验values")
     @PostMapping("/value_format")
     public ResponseEntity<List<ErrorLineVO>> formatValue(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "value", required = true)
@@ -427,7 +414,6 @@ public class AppServiceInstanceController {
                     InitRoleCode.PROJECT_MEMBER})
     @PostMapping
     public ResponseEntity<AppServiceInstanceVO> deploy(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署信息", required = true)
@@ -475,7 +461,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "查询运行中的实例")
     @GetMapping("/list_running_instance")
     public ResponseEntity<List<RunningInstanceVO>> listRunningInstance(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -505,7 +490,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "环境下某服务运行中或失败的实例")
     @GetMapping("/list_running_and_failed")
     public ResponseEntity<List<RunningInstanceVO>> listByAppServiceIdAndEnvId(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -532,7 +516,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "获取部署实例release中的各种资源")
     @GetMapping("/{instance_id}/resources")
     public ResponseEntity<DevopsEnvResourceVO> listResourcesInHelmRelease(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -555,7 +538,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "获取部署实例Event事件")
     @GetMapping("/{instance_id}/events")
     public ResponseEntity<List<InstanceEventVO>> listEvents(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -577,7 +559,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "实例停止")
     @PutMapping(value = "/{instance_id}/stop")
     public ResponseEntity<Void> stop(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -598,7 +579,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "实例重启")
     @PutMapping(value = "/{instance_id}/start")
     public ResponseEntity<Void> start(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -620,7 +600,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "实例重新部署")
     @PutMapping(value = "/{instance_id}/restart")
     public ResponseEntity<Void> restart(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -642,7 +621,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "实例删除")
     @DeleteMapping(value = "/{instance_id}/delete")
     public ResponseEntity<Void> delete(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -663,7 +641,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "校验实例名唯一性")
     @GetMapping(value = "/check_name")
     public ResponseEntity<Boolean> checkName(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
@@ -691,7 +668,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "获取部署时长报表")
     @PostMapping(value = "/env_commands/time")
     public ResponseEntity<DeployTimeVO> listDeployTimeReport(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -724,7 +700,6 @@ public class AppServiceInstanceController {
     @ApiOperation(value = "获取部署次数报表")
     @PostMapping(value = "/env_commands/frequency")
     public ResponseEntity<DeployFrequencyVO> listDeployFrequencyReport(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -760,7 +735,6 @@ public class AppServiceInstanceController {
     @PostMapping(value = "/env_commands/frequencyTable")
     public ResponseEntity<Page<DeployDetailTableVO>> pageDeployFrequencyDetailTable(
             @ApiParam(value = "项目 ID", required = true)
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数") PageRequest pageable,
             @Encrypt
@@ -795,7 +769,6 @@ public class AppServiceInstanceController {
     @CustomPageRequest
     @PostMapping(value = "/env_commands/timeTable")
     public ResponseEntity<Page<DeployDetailTableVO>> pageDeployTimeTable(
-            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数") PageRequest pageable,
@@ -823,7 +796,6 @@ public class AppServiceInstanceController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/deploy_test_app")
     public void deployTestApp(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署信息", required = true)
@@ -845,7 +817,6 @@ public class AppServiceInstanceController {
                     InitRoleCode.PROJECT_MEMBER})
     @PutMapping("/operate_pod_count")
     public void operatePodCount(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
@@ -872,7 +843,6 @@ public class AppServiceInstanceController {
                     InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/query_by_command/{command_id}")
     public ResponseEntity<AppServiceInstanceRepVO> deployRemoteApp(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -889,7 +859,6 @@ public class AppServiceInstanceController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @GetMapping("/count_by_options")
     public ResponseEntity<Integer> countByOptions(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -911,7 +880,6 @@ public class AppServiceInstanceController {
                     InitRoleCode.PROJECT_MEMBER})
     @GetMapping("/query_by_deploy_record_id")
     public ResponseEntity<List<AppServiceInstanceForRecordVO>> queryByBatchDeployRecordId(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -926,7 +894,6 @@ public class AppServiceInstanceController {
                     InitRoleCode.PROJECT_MEMBER})
     @PostMapping("/batch_deployment")
     public ResponseEntity<List<AppServiceInstanceVO>> batchDeployment(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "批量部署信息数组", required = true)

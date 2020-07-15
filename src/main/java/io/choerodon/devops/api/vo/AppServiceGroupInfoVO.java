@@ -15,7 +15,6 @@ public class AppServiceGroupInfoVO {
     private Long id;
     private String name;
     private String code;
-    @Encrypt
     private Long projectId;
     @Encrypt
     private Long mktAppId;

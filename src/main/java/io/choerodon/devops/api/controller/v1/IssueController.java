@@ -41,7 +41,6 @@ public class IssueController {
     @ApiOperation(value = "根据issueId获取issue关联的commit列表")
     @GetMapping("/commit/list")
     public ResponseEntity<List<DevopsBranchVO>> getCommitsByIssueId(
-            @Encrypt
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -63,7 +62,6 @@ public class IssueController {
     @ApiOperation(value = "根据issueId获取issue关联的mergeRequest列表")
     @GetMapping("/merge_request/list")
     public ResponseEntity<List<CustomMergeRequestVO>> getMergeRequestsByIssueId(
-            @Encrypt
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -85,7 +83,6 @@ public class IssueController {
     @ApiOperation(value = "根据issueId获取issue关联的mergerequest和commit数量")
     @GetMapping("/commit_and_merge_request/count")
     public ResponseEntity<IssueVO> countCommitAndMergeRequest(
-            @Encrypt
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

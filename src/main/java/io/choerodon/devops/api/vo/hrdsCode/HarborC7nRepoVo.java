@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo.hrdsCode;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 返回给猪齿鱼
@@ -12,7 +13,7 @@ import io.swagger.annotations.ApiModelProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class HarborC7nRepoVo {
-
+	@Encrypt
 	@ApiModelProperty("仓库ID")
 	private Long repoId;
 

@@ -46,7 +46,6 @@ public class CiCdPipelineController {
     @ApiOperation(value = "项目下创建流水线")
     @PostMapping
     public ResponseEntity<CiCdPipelineDTO> create(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody @Valid CiCdPipelineVO ciCdPipelineVO) {
@@ -58,7 +57,6 @@ public class CiCdPipelineController {
     @ApiOperation(value = "项目下更新流水线")
     @PutMapping("/{pipeline_id}")
     public ResponseEntity<CiCdPipelineDTO> update(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -73,7 +71,6 @@ public class CiCdPipelineController {
     @ApiOperation(value = "查询cicd流水线配置")
     @GetMapping("/{pipeline_id}")
     public ResponseEntity<CiCdPipelineVO> query(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = true)
@@ -85,7 +82,6 @@ public class CiCdPipelineController {
     @ApiOperation(value = "查询项目下流水线")
     @GetMapping
     public ResponseEntity<List<CiCdPipelineVO>> listByProjectIdAndAppName(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam(value = "name", required = false) String name) {
@@ -96,7 +92,6 @@ public class CiCdPipelineController {
     @ApiOperation(value = "停用流水线")
     @PutMapping("/{pipeline_id}/disable")
     public ResponseEntity<CiCdPipelineDTO> disablePipeline(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -108,7 +103,6 @@ public class CiCdPipelineController {
     @ApiOperation(value = "启用流水线")
     @PutMapping("/{pipeline_id}/enable")
     public ResponseEntity<CiCdPipelineDTO> enablePipeline(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -120,7 +114,6 @@ public class CiCdPipelineController {
     @ApiOperation(value = "删除流水线")
     @DeleteMapping("/{pipeline_id}")
     public ResponseEntity<Void> deletePipeline(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -136,7 +129,6 @@ public class CiCdPipelineController {
             @Encrypt
             @PathVariable(value = "pipeline_id") Long pipelineId,
             @ApiParam(value = "项目ID", required = true)
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @RequestParam(value = "gitlab_project_id") Long gitlabProjectId,
@@ -151,7 +143,6 @@ public class CiCdPipelineController {
     @ApiOperation(value = "测试主机连接")
     @PostMapping(value = "/test_connection")
     public ResponseEntity<Boolean> testConnection(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody HostConnectionVO hostConnectionVO) {

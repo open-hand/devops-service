@@ -40,7 +40,6 @@ public class ProjectPipelineController {
     @ApiOperation(value = "重试GitLab流水线")
     @PostMapping(value = "/gitlab_projects/{gitlab_project_id}/pipelines/{pipeline_id}/retry")
     public ResponseEntity<Boolean> retry(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab项目ID", required = true)
@@ -65,7 +64,6 @@ public class ProjectPipelineController {
     @ApiOperation(value = "取消GitLab流水线")
     @PostMapping(value = "/gitlab_projects/{gitlabProjectId}/pipelines/{pipeline_id}/cancel")
     public ResponseEntity<Boolean> cancel(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab项目ID", required = true)
@@ -90,7 +88,6 @@ public class ProjectPipelineController {
     @ApiOperation(value = "创建GitLab流水线")
     @PostMapping(value = "/gitlab_projects/{gitlab_project_id}/pipelines")
     public ResponseEntity<Boolean> create(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab项目ID", required = true)

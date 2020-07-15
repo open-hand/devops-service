@@ -41,7 +41,6 @@ public class DevopsNotificationController {
     @GetMapping(value = "/check_delete_resource")
     @ApiOperation(value = "校验删除对象是否需要发送验证码")
     public ResponseEntity<ResourceCheckVO> checkDeleteResource(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -69,7 +68,6 @@ public class DevopsNotificationController {
     @GetMapping(value = "/send_message")
     @ApiOperation(value = "发送验证码")
     public void sendMessage(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -101,7 +99,6 @@ public class DevopsNotificationController {
     @GetMapping(value = "/validate_captcha")
     @ApiOperation(value = "校验验证码")
     public void validateCaptcha(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

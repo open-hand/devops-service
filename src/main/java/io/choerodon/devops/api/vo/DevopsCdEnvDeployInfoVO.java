@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -8,11 +10,15 @@ package io.choerodon.devops.api.vo;
  * @since 2020/7/11 16:45
  */
 public class DevopsCdEnvDeployInfoVO {
+    @Encrypt
     private Long appServiceId;
+    @Encrypt
     private Long envId;
+    @Encrypt
     private Long valueId;
     private Long projectId;
     private String deployType;  // 部署类型：新建实例 create 替换实例 update
+    @Encrypt
     private Long instanceId;    // 替换实例时需要
     private String instanceName;    // 新建实例时需要
 

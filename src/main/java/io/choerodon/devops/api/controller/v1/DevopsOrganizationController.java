@@ -42,7 +42,6 @@ public class DevopsOrganizationController {
     @ApiOperation(value = "批量查询应用服务")
     @PostMapping(value = "/app_service/list_app_service_ids")
     public ResponseEntity<Page<AppServiceVO>> batchQueryAppService(
-            @Encrypt
             @ApiParam(value = "组织ID")
             @PathVariable(value = "organization_id") Long organizationId,
             @Encrypt
@@ -71,7 +70,6 @@ public class DevopsOrganizationController {
     @GetMapping("/cluster/overview")
     @ApiOperation("组织层概览，返回集群的概览")
     public ResponseEntity<ClusterOverViewVO> clusterOverview(
-            @Encrypt
             @PathVariable(name = "organization_id") Long organizationId) {
         return Optional.ofNullable(devopsClusterService.getOrganizationClusterOverview(organizationId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))

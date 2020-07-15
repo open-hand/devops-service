@@ -10,7 +10,6 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  * @since 2020/6/29 17:29
  */
 public class ProjectAppSvcCountVO {
-    @Encrypt
     private Long projectId;
     private Integer appSvcNum;
 

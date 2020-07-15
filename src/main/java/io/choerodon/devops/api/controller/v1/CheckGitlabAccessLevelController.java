@@ -32,7 +32,6 @@ public class CheckGitlabAccessLevelController {
     @ApiOperation(value = "项目下校验项目成员权限")
     @GetMapping(value = "/{app_service_id}")
     public ResponseEntity<Void> create(
-            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

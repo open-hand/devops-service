@@ -17,7 +17,6 @@ public class ProjectCertificationPermissionUpdateVO {
     @NotNull(message = "error.certification.id.null")
     private Long certificationId;
 
-    @Encrypt
     @ApiModelProperty("要添加权限的项目id / 必需,可为空数组")
     @NotNull(message = "error.project.ids.null")
     private List<Long> projectIds;

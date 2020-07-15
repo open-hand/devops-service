@@ -19,7 +19,6 @@ public class DevopsDeployValueUpdateVO {
     @NotNull(message = "error.deploy.value.value.null")
     private String value;
 
-    @Encrypt
     private Long projectId;
 
     @Encrypt

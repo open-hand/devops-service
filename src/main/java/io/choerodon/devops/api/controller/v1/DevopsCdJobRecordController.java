@@ -34,7 +34,6 @@ public class DevopsCdJobRecordController {
     @ApiOperation(value = "重试cd_job")
     @PutMapping("/{job_record_id}")
     public ResponseEntity<Void> retryCdJob(
-            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,

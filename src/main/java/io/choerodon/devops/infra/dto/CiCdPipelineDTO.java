@@ -21,7 +21,6 @@ public class CiCdPipelineDTO extends AuditDomain {
     @ApiModelProperty("流水线名称")
     private String name;
 
-    @Encrypt
     @ApiModelProperty("项目id")
     private Long projectId;
 

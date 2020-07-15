@@ -87,7 +87,6 @@ public class IamUserDTO extends AuditDomain {
     @ApiModelProperty("邮箱")
     private String email;
 
-    @Encrypt
     @Where
     @ApiModelProperty(value = "所属租户ID", required = true)
     private Long organizationId;
