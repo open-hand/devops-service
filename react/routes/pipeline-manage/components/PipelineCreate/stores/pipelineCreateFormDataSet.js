@@ -1,4 +1,5 @@
 import JSONBigint from 'json-bigint';
+import isEmpty from 'lodash/isEmpty';
 
 const dynamicAxios = {};
 
@@ -9,6 +10,20 @@ export default (AppServiceOptionsDs, projectId, createUseStore, dataSource) => {
       return true;
     } else {
       return '请输入格式正确的image镜像';
+    }
+  }
+
+  function handleUpdate({ dataSet, value, name }) {
+    if (name === 'appServiceId') {
+      if (value) {
+        let appServiceData = dataSet.getField('appServiceId').getLookupData(value);
+        if (isEmpty(appServiceData)) {
+          appServiceData = createUseStore.getSearchAppServiceData.find(({ appServiceId }) => appServiceId === value);
+        }
+        createUseStore.setCurrentAppService(appServiceData || {});
+      } else {
+        createUseStore.setCurrentAppService({});
+      }
     }
   }
 
@@ -40,10 +55,14 @@ export default (AppServiceOptionsDs, projectId, createUseStore, dataSource) => {
               let newRes;
               try {
                 newRes = JSONBigint.parse(res);
-                return [{
+                const appServiceData = {
                   appServiceId: newRes.id,
                   appServiceName: newRes.name,
-                }];
+                  appServiceCode: newRes.code,
+                  type: newRes.type,
+                };
+                createUseStore.setCurrentAppService(appServiceData);
+                return [appServiceData];
               } catch (e) {
                 return res;
               }
@@ -63,6 +82,9 @@ export default (AppServiceOptionsDs, projectId, createUseStore, dataSource) => {
               let newRes;
               try {
                 newRes = JSONBigint.parse(res);
+                if (data.params.appServiceName) {
+                  createUseStore.setSearchAppServiceData(newRes);
+                }
                 if (newRes.length % 20 === 0 && newRes.length !== 0) {
                   newRes.push({
                     appServiceId: 'more',
@@ -95,5 +117,8 @@ export default (AppServiceOptionsDs, projectId, createUseStore, dataSource) => {
       label: '触发方式',
       defaultValue: 'auto',
     }],
+    events: {
+      update: handleUpdate,
+    },
   });
 };

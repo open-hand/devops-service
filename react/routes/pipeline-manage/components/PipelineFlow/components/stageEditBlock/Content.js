@@ -33,7 +33,9 @@ export default observer(() => {
     appServiceId,
     appServiceName,
     appServiceCode,
+    appServiceType,
     image,
+    dataSource: propsDataSource,
   } = usePipelineStageEditStore();
   const {
     setStepData,
@@ -44,8 +46,12 @@ export default observer(() => {
   } = editBlockStore || stepStore;
 
   useEffect(() => {
-    pipelineId && !edit ? loadData(projectId, pipelineId) : setStepData(defaultData, edit);
-  }, [pipelineId, projectId]);
+    let stageList = appServiceType === 'test' ? defaultData.slice(0, 1) : defaultData;
+    if (propsDataSource) {
+      stageList = propsDataSource.stageList;
+    }
+    setStepData(stageList, edit);
+  }, [appServiceId]);
 
   function renderColumn() {
     const dataSource = edit ? getStepData2 : getStepData;
@@ -61,6 +67,7 @@ export default observer(() => {
         appServiceId={appServiceId}
         appServiceName={appServiceName}
         appServiceCode={appServiceCode}
+        appServiceType={appServiceType}
         image={image}
       />);
     }
