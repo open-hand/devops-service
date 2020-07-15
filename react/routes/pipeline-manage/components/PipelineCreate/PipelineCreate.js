@@ -39,7 +39,7 @@ const PipelineCreate = observer(() => {
         image,
         selectImage: '1',
       }]);
-      editBlockStore.setStepData(stageList, true);
+      // editBlockStore.setStepData(stageList, true);
     }
     const init = async () => {
       const res = await createUseStore.axiosGetDefaultImage();
@@ -140,15 +140,17 @@ const PipelineCreate = observer(() => {
     PipelineCreateFormDataSet.getField('appServiceId').props.lookup = result;
   };
 
-  const renderer = ({ text }) => (text === '加载更多' ? (
+  const renderer = ({ text }) => {
+    const { appServiceName } = createUseStore.getCurrentAppService || {};
+    return appServiceName || text;
+  };
+
+  const optionRenderer = ({ text }) => (text === '加载更多' ? (
     <a onClick={handleClickMore}>{text}</a>
   ) : text);
 
-  const optionRenderer = ({ text }) => renderer({ text });
-
-  function getAppServiceCode() {
-    const appServiceData = PipelineCreateFormDataSet.getField('appServiceId').getLookupData(PipelineCreateFormDataSet.current.get('appServiceId'));
-    return appServiceData?.appServiceCode || '';
+  function getAppServiceData() {
+    return createUseStore.getCurrentAppService || {};
   }
 
   return (
@@ -201,7 +203,9 @@ const PipelineCreate = observer(() => {
         edit
         image={PipelineCreateFormDataSet.current.get('image')}
         appServiceId={PipelineCreateFormDataSet.current.get('appServiceId')}
-        appServiceCode={getAppServiceCode() || editBlockStore.getMainData?.appServiceCode}
+        appServiceCode={getAppServiceData()?.appServiceCode || editBlockStore.getMainData?.appServiceCode}
+        appServiceType={getAppServiceData().type || editBlockStore.getMainData?.appServiceType}
+        dataSource={dataSource}
       />
       <p className="pipeline_createInfo"><Icon style={{ color: 'red', verticalAlign: 'text-bottom' }} type="error" />此页面定义了CI阶段或其中的任务后，GitLab仓库中的.gitlab-ci.yml文件也会同步修改。</p>
     </div>

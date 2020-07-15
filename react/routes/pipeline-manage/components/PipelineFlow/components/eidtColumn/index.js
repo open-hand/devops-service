@@ -133,7 +133,7 @@ const EditItem = (props) => {
 };
 
 export default observer((props) => {
-  const { jobList, sequence, name, columnIndex, edit, appServiceId, appServiceName, image, type, isLast, parallel, isFirst, triggerType: stageTriggerType, appServiceCode } = props;
+  const { jobList, sequence, name, columnIndex, edit, appServiceId, appServiceName, image, type, isLast, parallel, isFirst, triggerType: stageTriggerType, appServiceCode, appServiceType } = props;
   const {
     addStepDs,
     editBlockStore, stepStore,
@@ -218,7 +218,7 @@ export default observer((props) => {
         width: 380,
       },
       okText,
-      children: <AddStage curType={curType} optType={optType} addStepDs={addStepDs} />,
+      children: <AddStage curType={curType} optType={optType} addStepDs={addStepDs} appServiceType={appServiceType} />,
       onOk: optsFun,
       onCancel: () => addStepDs.reset(),
     });

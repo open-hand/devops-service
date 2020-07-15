@@ -4,13 +4,30 @@ import { Form, Select, SelectBox, TextField, Tooltip } from 'choerodon-ui/pro';
 
 const { Option } = Select;
 
-export default observer(({ addStepDs, curType, optType }) => {
+export default observer(({ addStepDs, curType, optType, appServiceType }) => {
   useEffect(() => {
     const type = addStepDs?.current?.get('type');
     addStepDs.current.set('parallel', type === 'CI' ? 1 : 0);
   }, [addStepDs?.current?.get('type')]);
 
   const renderer = ({ text }) => text;
+
+  const optionRenderer = ({ text }) => {
+    if (text.includes('CI') && curType && (curType === 'CD')) {
+      return (
+        <Tooltip title="CD阶段后，无法添加CI阶段">
+          {renderer({ text })}
+        </Tooltip>
+      );
+    } else if (text.includes('CD') && appServiceType === 'test') {
+      return (
+        <Tooltip title="测试类型应用服务不能添加CD阶段">
+          {renderer({ text })}
+        </Tooltip>
+      );
+    }
+    return renderer({ text });
+  };
 
   return (
     <Form className="addStageForm" dataSet={addStepDs}>
@@ -19,13 +36,9 @@ export default observer(({ addStepDs, curType, optType }) => {
         name="type"
         help="CI阶段中支持添加构建、发布Chart、代码检查以及自定义类型的CI任务；CD阶段中支持添加部署、主机部署以及人工卡点的CD任务。且流水线中任何CD阶段后，不能再添加CI阶段"
         onOption={({ record }) => ({
-          disabled: record.get('value') === 'CI' && curType && (curType === 'CD'),
+          disabled: (record.get('value') === 'CI' && curType && (curType === 'CD')) || (record.get('value') === 'CD' && appServiceType === 'test'),
         })}
-        optionRenderer={({ text }) => (text.includes('CI') && curType && (curType === 'CD') ? (
-          <Tooltip title="CD阶段后，无法添加CI阶段">
-            {renderer({ text })}
-          </Tooltip>
-        ) : renderer({ text }))}
+        optionRenderer={optionRenderer}
         renderer={renderer}
         disabled={optType === 'edit'}
       />
