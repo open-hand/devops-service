@@ -19,10 +19,8 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     pipelineRecordId,
     store,
     refresh,
-    cdRecordId,
   } = props;
-
-  const detailDs = useMemo(() => new DataSet(DetailDataSet({ formatMessage, intlPrefix, projectId, pipelineRecordId, store, refresh, cdRecordId })), [projectId, pipelineRecordId, cdRecordId]);
+  const detailDs = useMemo(() => new DataSet(DetailDataSet({ formatMessage, intlPrefix, projectId, pipelineRecordId, store, refresh })), [projectId, pipelineRecordId]);
 
   const value = {
     ...props,

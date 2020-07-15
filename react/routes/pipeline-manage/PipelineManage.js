@@ -95,17 +95,16 @@ const PipelineManage = observer((props) => {
   }
 
   function openRecordDetail() {
-    const { gitlabPipelineId, cdRecordId } = getSelectedMenu;
+    const { devopsPipelineRecordRelId } = getSelectedMenu;
     Modal.open({
       key: recordDetailKey,
       style: modalStyle,
-      title: formatMessage({ id: `${intlPrefix}.record.detail.title` }, { id: gitlabPipelineId }),
+      title: formatMessage({ id: `${intlPrefix}.record.detail.title` }, { id: devopsPipelineRecordRelId }),
       children: <RecordDetail
-        pipelineRecordId={gitlabPipelineId}
+        pipelineRecordId={devopsPipelineRecordRelId}
         intlPrefix={intlPrefix}
         refresh={handleRefresh}
         store={mainStore}
-        cdRecordId={cdRecordId}
       />,
       drawer: true,
       okCancel: false,
@@ -255,27 +254,26 @@ const PipelineManage = observer((props) => {
               access
             />
           </Suspense>
-        </div> : (
-            <div
-              ref={rootRef}
-              className={`${prefixCls}-wrap`}
-            >
-              <DragBar
-                parentRef={rootRef}
-                store={mainStore}
-              />
-              <PipelineTree handleRefresh={handleRefresh} />
-              <div className={`${prefixCls}-main ${prefixCls}-animate`}>
-                <PipelineFlow
-                  stepStore={editBlockStore}
-                  detailStore={detailStore}
-                  handleRefresh={handleRefresh}
-                  treeDs={treeDs}
-                  mainStore={mainStore}
-                />
-              </div>
-            </div>
-          )}
+        </div> : (<div
+          ref={rootRef}
+          className={`${prefixCls}-wrap`}
+        >
+          <DragBar
+            parentRef={rootRef}
+            store={mainStore}
+          />
+          <PipelineTree handleRefresh={handleRefresh} />
+          <div className={`${prefixCls}-main ${prefixCls}-animate`}>
+            <PipelineFlow
+              stepStore={editBlockStore}
+              detailStore={detailStore}
+              handleRefresh={handleRefresh}
+              treeDs={treeDs}
+              mainStore={mainStore}
+            />
+          </div>
+        </div>
+        )}
       </Content>
     </Page>
   );
