@@ -13,14 +13,21 @@ public class AppServiceSimpleVO {
     private String appServiceName;
     @ApiModelProperty("应用服务code")
     private String appServiceCode;
+    @ApiModelProperty("应用服务类型")
+    private String type;
 
     public AppServiceSimpleVO() {
     }
 
     public AppServiceSimpleVO(Long appServiceId, String appServiceName, String appServiceCode) {
+        this(appServiceId, appServiceName, appServiceCode, null);
+    }
+
+    public AppServiceSimpleVO(Long appServiceId, String appServiceName, String appServiceCode, String type) {
         this.appServiceId = appServiceId;
         this.appServiceName = appServiceName;
         this.appServiceCode = appServiceCode;
+        this.type = type;
     }
 
     public Long getAppServiceId() {
@@ -45,5 +52,13 @@ public class AppServiceSimpleVO {
 
     public void setAppServiceCode(String appServiceCode) {
         this.appServiceCode = appServiceCode;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }
