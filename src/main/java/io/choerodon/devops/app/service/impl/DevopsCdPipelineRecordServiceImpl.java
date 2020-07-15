@@ -888,6 +888,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
                 calculateJob(devopsCdPipelineRecordVO, devopsCdJobRecordVOS);
                 devopsCdStageRecordVO.setJobRecordVOList(devopsCdJobRecordVOS);
+                //计算stage耗时
+                List<Long> collect = devopsCdJobRecordVOS.stream().filter(devopsCdJobRecordVO -> !Objects.isNull(devopsCdJobRecordVO.getDurationSeconds())).map(DevopsCdJobRecordVO::getDurationSeconds).collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(collect))
+                    devopsCdStageRecordVO.setDurationSeconds(collect.stream().reduce((aLong, aLong2) -> aLong + aLong2).get());
             });
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
         } else {
