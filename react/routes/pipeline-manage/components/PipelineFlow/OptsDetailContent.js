@@ -75,20 +75,18 @@ export default observer((props) => {
           {...props}
         />
       );
-    }) : (
-        <EmptyPage
-          title={formatMessage({ id: status === 'skipped' ? `${intlPrefix}.record.empty.title` : `${intlPrefix}.record.empty.title.other` })}
-          describe={formatMessage({ id: status === 'skipped' ? `${intlPrefix}.record.empty.des` : `${intlPrefix}.record.empty.des.other` })}
-          access
-        />
-      )
+    }) : (<EmptyPage
+      title={formatMessage({ id: status === 'skipped' ? `${intlPrefix}.record.empty.title` : `${intlPrefix}.record.empty.title.other` })}
+      describe={formatMessage({ id: status === 'skipped' ? `${intlPrefix}.record.empty.des` : `${intlPrefix}.record.empty.des.other` })}
+      access
+    />)
   );
 
   return (
     !getDetailLoading
       ? <div className="c7n-piplineManage">
         <DetailHeader
-          gitlabPipelineId={gitlabPipelineId}
+          devopsPipelineRecordRelId={devopsPipelineRecordRelId}
           appServiceName={ciCdPipelineVO && ciCdPipelineVO.appServiceName}
           appServiceId={ciCdPipelineVO && ciCdPipelineVO.appServiceId}
           aHref={commit && commit.gitlabProjectUrl}
