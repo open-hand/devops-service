@@ -1171,6 +1171,7 @@ const AddTask = observer(() => {
                         marginTop: 20,
                       }}
                       name="skipDockerTlsVerify"
+                      help="是否对harbor域名进行证书校验"
                     >
                       <Option value>是</Option>
                       <Option value={false}>否</Option>
@@ -1235,6 +1236,8 @@ const AddTask = observer(() => {
         // disabled={
         //     !!(AddTaskFormDataSet.current && AddTaskFormDataSet.current.get('selectImage') === '0')
         //   }
+        showHelp="tooltip"
+        help="CI任务Runner镜像是该CI任务的执行环境。您可直接使用此处给出的默认Runner镜像，或是输入自定义的CI任务Runner镜像"
         onChange={handleChangeImage}
         newLine
         combo
@@ -1259,6 +1262,18 @@ const AddTask = observer(() => {
       </SelectBox>
     </div>
   ) : null);
+
+  function renderTriggerTypeTips() {
+    const type = AddTaskFormDataSet.current.get('triggerType');
+    switch (type) {
+      case 'refs':
+        return '您可在此选择或输入触发该任务的分支类型；支持多填多选；若不填写，则默认为所有分支和tag';
+      case 'exact_match':
+        return '您可在此精确选择或输入触发该任务的具体分支名称；支持多填多选；若不填写，则默认为所有分支和tag';
+      default:
+        return '您可在此选择或输入某几个具体的分支名称以此来精确排除；此处支持多填多选；若不填写，则默认为没有需要排除的分支或tag';
+    }
+  }
 
   return (
     <React.Fragment>
@@ -1290,15 +1305,19 @@ const AddTask = observer(() => {
                 <Option value="exact_exclude">精确排除</Option>
               </Select>
               {AddTaskFormDataSet.current.get('triggerType') === 'regex' ? (
-                <TextField name="triggerValue" />
+                <TextField
+                  name="triggerValue"
+                  showHelp="tooltip"
+                  help="'您可在此输入正则表达式来配置触发分支；例：若想匹配以 feature 开头的分支，可以输入 ^feature.*。更多表达式，详见用户手册。若不填写，则默认为所有分支和tag'"
+                />
               ) : (
                 <Select
                   combo
                   searchable
                   multiple
                   name="triggerValue"
-                  showHelp={AddTaskFormDataSet.current.get('triggerType') !== 'exact_exclude' ? 'tooltip' : 'none'}
-                  help="您可以在此输入或选择触发该任务的分支类型，若不填写，则默认为所有分支或tag"
+                  showHelp="tooltip"
+                  help={renderTriggerTypeTips()}
                   searchMatcher="branchName"
                   optionRenderer={({ text }) => renderderBranchs({ text })}
                   maxTagCount={3}

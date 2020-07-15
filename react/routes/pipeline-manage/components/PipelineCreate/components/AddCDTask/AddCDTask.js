@@ -314,9 +314,7 @@ export default observer(() => {
           {
             ADDCDTaskDataSet?.current?.get('accountType') === 'accountPassword' ? (
               <Password colSpan={1} name="password" />
-            ) : (
-              <Password colSpan={1} name="accountKey" />
-            )
+            ) : (<Password colSpan={1} name="accountKey" />)
           }
           <div colSpan={2} style={{ display: 'flex', alignItems: 'center' }}>
             <Button
@@ -375,6 +373,18 @@ export default observer(() => {
     >{text}</a>
   ) : text);
 
+  function renderTriggerTypeTips() {
+    const type = ADDCDTaskDataSet.current.get('triggerType');
+    switch (type) {
+      case 'refs':
+        return '您可在此选择或输入触发该任务的分支类型；支持多填多选；若不填写，则默认为所有分支和tag';
+      case 'exact_match':
+        return '您可在此精确选择或输入触发该任务的具体分支名称；支持多填多选；若不填写，则默认为所有分支和tag';
+      default:
+        return '您可在此选择或输入某几个具体的分支名称以此来精确排除；此处支持多填多选；若不填写，则默认为没有需要排除的分支或tag';
+    }
+  }
+
   return (
     <div className="addcdTask">
       <Form columns={3} dataSet={ADDCDTaskDataSet}>
@@ -410,30 +420,33 @@ export default observer(() => {
           </Select>
           {
             ADDCDTaskDataSet.current.get('triggerType') === 'regex' ? (
-              <TextField className="addcdTask-triggerValue" name="triggerValue" />
-            ) : (
-              <Select
-                combo
-                searchable
-                multiple
+              <TextField
                 className="addcdTask-triggerValue"
                 name="triggerValue"
-                showHelp={ADDCDTaskDataSet.current.get('triggerType') !== 'exact_exclude' ? 'tooltip' : 'none'}
-                help="您可以在此输入或选择触发该任务的分支类型，若不填写，则默认为所有分支或tag"
-                searchMatcher="branchName"
-                optionRenderer={({ text }) => renderderBranchs({ text })}
-                maxTagCount={2}
-                maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
-                  {`+${omittedValues.length}`}
-                </Tooltip>}
-                renderer={renderderBranchs}
-                colSpan={2}
-              >
-                {branchsList.map(b => (
-                  <Option value={b.value}>{b.name}</Option>
-                ))}
-              </Select>
-            )
+                showHelp="tooltip"
+                help="'您可在此输入正则表达式来配置触发分支；例：若想匹配以 feature 开头的分支，可以输入 ^feature.*。更多表达式，详见用户手册。若不填写，则默认为所有分支和tag'"
+              />
+            ) : (<Select
+              combo
+              searchable
+              multiple
+              className="addcdTask-triggerValue"
+              name="triggerValue"
+              showHelp="tooltip"
+              help={renderTriggerTypeTips()}
+              searchMatcher="branchName"
+              optionRenderer={({ text }) => renderderBranchs({ text })}
+              maxTagCount={2}
+              maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
+                {`+${omittedValues.length}`}
+              </Tooltip>}
+              renderer={renderderBranchs}
+              colSpan={2}
+            >
+              {branchsList.map(b => (
+                <Option value={b.value}>{b.name}</Option>
+              ))}
+            </Select>)
           }
         </div>
         {
@@ -446,9 +459,7 @@ export default observer(() => {
             <p className="addcdTask-text" colSpan={2}><Icon style={{ color: '#F44336' }} type="error" />替换实例会更新该实例的镜像及配置信息，请确认要替换的实例选择无误。</p>,
             ADDCDTaskDataSet?.current?.get('deployType') === 'create' ? (
               <TextField newLine colSpan={2} name="instanceName" />
-            ) : (
-              <Select newLine colSpan={2} name="instanceId" />
-            ),
+            ) : (<Select newLine colSpan={2} name="instanceId" />),
           ]
         }
         {
@@ -460,7 +471,12 @@ export default observer(() => {
               {
                 ADDCDTaskDataSet?.current?.get('cdAuditUserIds')?.length > 1 && (
                   <div style={{ width: 'calc(100% - 47.5% - 8px)' }} colSpan={1}>
-                    <Select style={{ width: '100%' }} name="countersigned">
+                    <Select
+                      style={{ width: '100%' }}
+                      name="countersigned"
+                      showHelp="tooltip"
+                      help="会签模式中，需要所有审核人员都审核通过才能通过，审核人员中任一人点击终止，则流水线终止；或签模式中，仅需任一审核人员审核即可，即第一个审核的人点击通过则通过，点击终止则终止"
+                    >
                       <Option value={1}>会签</Option>
                       <Option value={0}>或签</Option>
                     </Select>

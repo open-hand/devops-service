@@ -184,6 +184,8 @@ const PipelineCreate = observer(() => {
               colSpan={2}
               name="image"
               onChange={handleChangeSelectImage}
+              showHelp="tooltip"
+              help="CI流程Runner镜像是该条流水线中所有CI任务默认的执行环境。您可直接使用此处给出的默认Runner镜像，或是输入自定义的CI流程Runner镜像"
             >
               <Option value={createUseStore.getDefaultImage}>{createUseStore.getDefaultImage}</Option>
             </Select>
@@ -201,7 +203,7 @@ const PipelineCreate = observer(() => {
         appServiceId={PipelineCreateFormDataSet.current.get('appServiceId')}
         appServiceCode={getAppServiceCode() || editBlockStore.getMainData?.appServiceCode}
       />
-      <p className="pipeline_createInfo"><Icon style={{ color: 'red', verticalAlign: 'text-bottom' }} type="error" />此页面定义了阶段与任务后，GitLab仓库中的.gitlab-ci.yml文件也会同步修改。</p>
+      <p className="pipeline_createInfo"><Icon style={{ color: 'red', verticalAlign: 'text-bottom' }} type="error" />此页面定义了CI阶段或其中的任务后，GitLab仓库中的.gitlab-ci.yml文件也会同步修改。</p>
     </div>
   );
 });
