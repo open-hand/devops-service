@@ -95,10 +95,12 @@ export default class Details extends Component {
     } = this.context;
     let status;
     let connect;
+    let instanceStatus;
     const record = baseDs.current;
     if (record) {
       status = record.get('effectCommandStatus');
       connect = record.get('connect');
+      instanceStatus = record.get('status');
     }
     const { isDisabled } = this.state;
     const {
@@ -213,6 +215,7 @@ export default class Details extends Component {
             count={podCount}
             targetCount={targetCount}
             status={status}
+            instanceStatus={instanceStatus}
             handleChangeCount={this.changeTargetCount}
             store={detailsStore}
             envId={envId}
