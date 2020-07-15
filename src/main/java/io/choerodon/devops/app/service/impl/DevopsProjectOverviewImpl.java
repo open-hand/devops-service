@@ -95,7 +95,7 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
     }
 
     @Override
-    public Map<String, Long> getCommitCount(Long projectId) {
+    public Map<String, List<Object>> getCommitCount(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getOrganizationId());
         if (sprintDTO.getSprintId() == null) {
@@ -103,16 +103,30 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
         }
         List<Date> dateList = devopsGitlabCommitMapper.queryCountByProjectIdAndDate(projectId, new java.sql.Date(sprintDTO.getStartDate().getTime()), new java.sql.Date(sprintDTO.getEndDate().getTime()));
 
-        return dateList.stream().map(simpleDateFormat::format)
+        Map<String, Long> dateCount = dateList.stream().map(simpleDateFormat::format)
                 .sorted(Comparator.naturalOrder())
                 .collect(Collectors.groupingBy(t -> t, Collectors.counting()));
+
+        List<String> date = dateCount.keySet().stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+
+        List<Long> count = new ArrayList<>();
+
+        date.forEach(d -> count.add(dateCount.get(d)));
+
+
+        Map<String, List<Object>> result = new HashMap<>();
+
+        result.put("date", Collections.singletonList(date));
+        result.put("count", Collections.singletonList(count));
+
+        return result;
     }
 
     @Override
-    public Map<String, Long> getDeployCount(Long projectId) {
+    public Map<String, List<Object>> getDeployCount(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
-        // 该项目下所有启用环境
+        // 该项目下所有环境
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentMapper.listByProjectId(projectId);
 
         List<Long> envIds = devopsEnvironmentDTOS.stream()
@@ -141,13 +155,18 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
                 .collect(Collectors.toList());
 
 
-        Map<String, Long> count = new HashMap<>();
+        List<Long> count = new ArrayList<>();
         creationDates.forEach(date -> {
             Long[] newDeployFrequency = {0L};
             resultMaps.get(date).forEach(deployFrequencyDO -> newDeployFrequency[0] = newDeployFrequency[0] + 1L);
-            count.put(date, newDeployFrequency[0]);
+            count.add(newDeployFrequency[0]);
         });
-        return count;
+
+        Map<String, List<Object>> result = new HashMap<>();
+
+        result.put("date", Collections.singletonList(creationDates));
+        result.put("count", Collections.singletonList(count));
+        return result;
     }
 
     private boolean isEnvUp(List<Long> updatedClusterList, DevopsEnvironmentDTO t) {
