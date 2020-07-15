@@ -138,8 +138,10 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     private void fillPipelineVO(String userName, List<StageRecordVO> stageRecordVOS, Date executeDate, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineRecordVO ciCdPipelineRecordVO) {
         ciCdPipelineVO.setCreateUserName(userName);
         if (!CollectionUtils.isEmpty(stageRecordVOS)) {
-            Long time = stageRecordVOS.stream().filter(stageRecordVO -> !Objects.isNull(stageRecordVO.getDurationSeconds())).map(StageRecordVO::getDurationSeconds).reduce((aLong, aLong2) -> aLong + aLong2).get();
-            ciCdPipelineVO.setTime(time);
+            Optional<Long> reduce = stageRecordVOS.stream().filter(stageRecordVO -> !Objects.isNull(stageRecordVO.getDurationSeconds())).map(StageRecordVO::getDurationSeconds).reduce((aLong, aLong2) -> aLong + aLong2);
+            if (reduce != null && reduce.isPresent()) {
+                ciCdPipelineVO.setTime(reduce.get());
+            }
         }
         ciCdPipelineVO.setLatestExecuteDate(executeDate);
         ciCdPipelineRecordVO.setCiCdPipelineVO(ciCdPipelineVO);
