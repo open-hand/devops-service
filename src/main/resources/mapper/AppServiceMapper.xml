@@ -713,7 +713,7 @@
 
     <select id="listAppServiceToCreatePipelineForOwner"
             resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
-        SELECT das.id, das.name, das.code
+        SELECT das.id, das.name, das.code, das.type
         FROM devops_app_service das
                      LEFT JOIN devops_cicd_pipeline dcp ON das.id = dcp.app_service_id
                      LEFT JOIN devops_ci_stage dcs on dcs.ci_pipeline_id = dcp.id
@@ -729,9 +729,9 @@
 
     <select id="listAppServiceToCreatePipelineForMember"
             resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
-        SELECT tmp.id, tmp.name, tmp.code
+        SELECT tmp.id, tmp.name, tmp.code, tmp.type
                 FROM (
-                SELECT das.id, das.name, das.code
+                SELECT das.id, das.name, das.code, das.type
                 FROM devops_app_service das
                              LEFT JOIN devops_cicd_pipeline dcp ON das.id = dcp.app_service_id
                              LEFT JOIN devops_ci_stage dcs on dcs.ci_pipeline_id = dcp.id
@@ -752,7 +752,7 @@
         </if>
         <include refid="appServiceCiSqlparams"/>
         UNION ALL
-        SELECT das.id, das.name, das.code
+        SELECT das.id, das.name, das.code, das.type
         FROM devops_app_service das
                 LEFT JOIN devops_cicd_pipeline dcp
         ON das.id = dcp.app_service_id
