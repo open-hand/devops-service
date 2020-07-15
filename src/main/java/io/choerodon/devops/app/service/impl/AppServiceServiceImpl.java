@@ -2824,7 +2824,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private static AppServiceSimpleVO dto2SimpleVo(AppServiceDTO app) {
-        return new AppServiceSimpleVO(app.getId(), app.getName(), app.getCode());
+        return new AppServiceSimpleVO(app.getId(), app.getName(), app.getCode(), app.getType());
     }
 
     @Override
