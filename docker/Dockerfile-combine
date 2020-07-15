@@ -7,5 +7,5 @@ COPY app.jar devops-service.jar
 COPY dist dist
 RUN chmod +x /choerodon/dist/env.sh \
     && chown -R www-data:www-data /usr/lib/yaml /usr/bin/kaniko /choerodon
-USER www-data
+USER 33
 CMD /choerodon/dist/env.sh java $JAVA_OPTS $SKYWALKING_OPTS -jar /choerodon/devops-service.jar
