@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import io.choerodon.devops.api.vo.CountVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsProjectOverview;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
@@ -95,11 +96,11 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
     }
 
     @Override
-    public Map<String, List<Object>> getCommitCount(Long projectId) {
+    public CountVO getCommitCount(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getOrganizationId());
         if (sprintDTO.getSprintId() == null) {
-            return new HashMap<>();
+            return new CountVO();
         }
         List<Date> dateList = devopsGitlabCommitMapper.queryCountByProjectIdAndDate(projectId, new java.sql.Date(sprintDTO.getStartDate().getTime()), new java.sql.Date(sprintDTO.getEndDate().getTime()));
 
@@ -114,16 +115,16 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
         date.forEach(d -> count.add(dateCount.get(d)));
 
 
-        Map<String, List<Object>> result = new HashMap<>();
+        CountVO result = new CountVO();
 
-        result.put("date", Collections.singletonList(date));
-        result.put("count", Collections.singletonList(count));
+        result.setDate(date);
+        result.setCount(count);
 
         return result;
     }
 
     @Override
-    public Map<String, List<Object>> getDeployCount(Long projectId) {
+    public CountVO getDeployCount(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         // 该项目下所有环境
@@ -134,12 +135,12 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
                 .collect(Collectors.toList());
 
         if (envIds.size() == 0) {
-            return new HashMap<>();
+            return new CountVO();
         }
 
         SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getOrganizationId());
         if (sprintDTO.getSprintId() == null) {
-            return new HashMap<>();
+            return new CountVO();
         }
 
         List<DeployDTO> deployDTOS = appServiceInstanceService.baseListDeployFrequency(projectId, envIds.toArray(new Long[0]), null, sprintDTO.getStartDate(), sprintDTO.getEndDate());
@@ -162,10 +163,10 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
             count.add(newDeployFrequency[0]);
         });
 
-        Map<String, List<Object>> result = new HashMap<>();
+        CountVO result = new CountVO();
 
-        result.put("date", Collections.singletonList(creationDates));
-        result.put("count", Collections.singletonList(count));
+        result.setDate(creationDates);
+        result.setCount(count);
         return result;
     }
 
