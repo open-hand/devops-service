@@ -36,7 +36,7 @@ export default observer(({ addStepDs, curType, optType }) => {
       </Select>
       {
         addStepDs?.current?.get('type') === 'CD' ? (
-          <SelectBox name="triggerType">
+          <SelectBox name="triggerType" className="addStageForm-triggerType-select">
             <Option value="auto">自动流转</Option>
             <Option value="manual">手动流转</Option>
           </SelectBox>

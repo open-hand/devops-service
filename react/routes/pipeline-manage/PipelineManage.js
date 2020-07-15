@@ -69,11 +69,11 @@ const PipelineManage = observer((props) => {
     await treeDs.query();
     const { id } = getMainData;
     const { parentId } = getSelectedMenu;
-    const { gitlabPipelineId } = getDetailData;
+    const { gitlabPipelineId, devopsPipelineRecordRelId } = getDetailData;
     if (!parentId) {
       id && loadData(projectId, id);
     } else {
-      gitlabPipelineId && loadDetailData(projectId, gitlabPipelineId);
+      devopsPipelineRecordRelId && loadDetailData(projectId, devopsPipelineRecordRelId);
     }
   }
 
@@ -143,7 +143,7 @@ const PipelineManage = observer((props) => {
       movable: false,
     });
   }
-  
+
   function openSettingsModal(type) {
     const { id } = getMainData;
     const { appServiceId, appServiceName } = getSelectedMenu;
@@ -256,26 +256,26 @@ const PipelineManage = observer((props) => {
             />
           </Suspense>
         </div> : (
-          <div
-            ref={rootRef}
-            className={`${prefixCls}-wrap`}
-          >
-            <DragBar
-              parentRef={rootRef}
-              store={mainStore}
-            />
-            <PipelineTree handleRefresh={handleRefresh} />
-            <div className={`${prefixCls}-main ${prefixCls}-animate`}>
-              <PipelineFlow
-                stepStore={editBlockStore}
-                detailStore={detailStore}
-                handleRefresh={handleRefresh}
-                treeDs={treeDs}
-                mainStore={mainStore}
+            <div
+              ref={rootRef}
+              className={`${prefixCls}-wrap`}
+            >
+              <DragBar
+                parentRef={rootRef}
+                store={mainStore}
               />
+              <PipelineTree handleRefresh={handleRefresh} />
+              <div className={`${prefixCls}-main ${prefixCls}-animate`}>
+                <PipelineFlow
+                  stepStore={editBlockStore}
+                  detailStore={detailStore}
+                  handleRefresh={handleRefresh}
+                  treeDs={treeDs}
+                  mainStore={mainStore}
+                />
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </Content>
     </Page>
   );

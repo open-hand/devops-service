@@ -19,6 +19,7 @@ export default observer((props) => {
     treeDs,
     stageRecordVOS: treeStageRecordVOList,
     cdRecordId,
+    devopsPipelineRecordRelId,
   } = props;
   const {
     intl: { formatMessage },
@@ -35,8 +36,8 @@ export default observer((props) => {
   } = detailStore;
 
   useEffect(() => {
-    loadDetailData(projectId, gitlabPipelineId);
-  }, [projectId, gitlabPipelineId, cdRecordId]);
+    loadDetailData(projectId, devopsPipelineRecordRelId);
+  }, [projectId, cdRecordId, devopsPipelineRecordRelId]);
 
   // stageRecordVOS: 各个详情阶段记录,包括ci和cd的
   // devopsCipiplineVO: 本流水线记录得信息
@@ -49,7 +50,7 @@ export default observer((props) => {
     gitlabTriggerRef,
     commit,
   } = getDetailData;
-  
+
   useEffect(() => {
     const treeStatusList = map(treeStageRecordVOList || [], 'status');
     const detailStatusList = map(stageRecordVOS || [], 'status');
@@ -75,12 +76,12 @@ export default observer((props) => {
         />
       );
     }) : (
-      <EmptyPage
-        title={formatMessage({ id: status === 'skipped' ? `${intlPrefix}.record.empty.title` : `${intlPrefix}.record.empty.title.other` })}
-        describe={formatMessage({ id: status === 'skipped' ? `${intlPrefix}.record.empty.des` : `${intlPrefix}.record.empty.des.other` })}
-        access
-      />
-    )
+        <EmptyPage
+          title={formatMessage({ id: status === 'skipped' ? `${intlPrefix}.record.empty.title` : `${intlPrefix}.record.empty.title.other` })}
+          describe={formatMessage({ id: status === 'skipped' ? `${intlPrefix}.record.empty.des` : `${intlPrefix}.record.empty.des.other` })}
+          access
+        />
+      )
   );
 
   return (
