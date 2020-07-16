@@ -3,6 +3,8 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.*;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -19,13 +21,18 @@ public class AppServiceVersionDTO extends AuditDomain {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String version;
+    @Encrypt
     private Long appServiceId;
+    @Encrypt
     private Long valueId;
+    @Encrypt
     private Long readmeValueId;
     private String image;
     private String commit;
     private String repository;
+    @Encrypt
     private Long harborConfigId;
+    @Encrypt
     private Long helmConfigId;
     private String repoType;
     private String ref;

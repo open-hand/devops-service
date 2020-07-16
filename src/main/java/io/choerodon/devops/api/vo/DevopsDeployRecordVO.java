@@ -30,12 +30,15 @@ public class DevopsDeployRecordVO {
     private PipelineDetailVO pipelineDetailVO;
     private String errorInfo;
 
+    @Encrypt
     @ApiModelProperty("手动部署生成的实例id, 对于自动部署的纪录此值为空")
     private Long instanceId;
 
+    @Encrypt
     @ApiModelProperty("手动部署生成的实例的环境id, 对于自动部署的纪录此值为空")
     private Long envId;
 
+    @Encrypt
     @ApiModelProperty("手动部署的实例的应用服务id, 对于自动部署的纪录此值为空")
     private Long appServiceId;
 
