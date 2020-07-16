@@ -7,6 +7,7 @@ import java.util.Optional;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,8 +50,8 @@ public class DevopsGitlabPipelineController {
     public ResponseEntity<PipelineTimeVO> listPipelineTime(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "app_service_id")
-//            @Encrypt(AppServiceDTO.ENCRYPT_KEY)
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "start_time")
             @RequestParam(value = "start_time") Date startTime,
@@ -79,8 +80,8 @@ public class DevopsGitlabPipelineController {
     public ResponseEntity<PipelineFrequencyVO> listPipelineFrequency(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "app_service_id")
-//            @Encrypt(AppServiceDTO.ENCRYPT_KEY)
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "start_time")
             @RequestParam(value = "start_time") Date startTime,
@@ -114,8 +115,8 @@ public class DevopsGitlabPipelineController {
                     PageRequest pageable,
             @ApiParam(value = "branch")
             @RequestParam(required = false) String branch,
+            @Encrypt
             @ApiParam(value = "app_service_id")
-//            @Encrypt(AppServiceDTO.ENCRYPT_KEY)
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "start_time")
             @RequestParam(required = false, value = "start_time") Date startTime,

@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 发送Polaris扫描请求时的数据结构
@@ -9,6 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @since 2/17/20
  */
 public class ClusterPolarisScanningVO {
+    @Encrypt
     @ApiModelProperty("扫描关联的扫描纪录id")
     private Long recordId;
     @ApiModelProperty("为null时表示扫描整个集群所有的namespace，有值时表示扫描一个指定的namespace")

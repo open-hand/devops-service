@@ -4,6 +4,8 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -12,13 +14,17 @@ import java.util.List;
  * @Date 2020/4/7 22:18
  */
 public class CiCdPipelineRecordVO {
+    @Encrypt
     private Long devopsPipelineRecordRelId;
+    @Encrypt
     //ci 执行记录的id
     private Long ciRecordId;
+    @Encrypt
     //cd 执行记录的id
     private Long cdRecordId;
     // cicd 执行记录创建时间
     private Date createdDate;
+    @Encrypt
     //gitlab的流水线id
     private Long gitlabPipelineId;
     //cd流水线记录的状态

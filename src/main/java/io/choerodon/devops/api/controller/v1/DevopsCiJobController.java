@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,6 +49,7 @@ public class DevopsCiJobController {
     @ApiOperation("返回应用服务对应的sonar配置（给质量管理团队使用）")
     public ResponseEntity<SonarInfoVO> getSonarConfig(
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @RequestParam(name = "appServiceId", required = false) Long appServiceId,
             @RequestParam(name = "appServiceCode", required = false) String code) {
         return ResponseEntity.ok(devopsCiJobService.getSonarConfig(projectId, appServiceId, code));
@@ -70,6 +72,7 @@ public class DevopsCiJobController {
     public ResponseEntity<Void> retryJob(
             @PathVariable(value = "project_id") Long projectId,
             @PathVariable(value = "gitlab_project_id") Long gitlabProjectId,
+            @Encrypt
             @PathVariable(value = "job_id") Long jobId) {
         devopsCiJobService.retryJob(projectId, gitlabProjectId, jobId);
         return ResponseEntity.noContent().build();
@@ -83,6 +86,7 @@ public class DevopsCiJobController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用服务token", required = true)
             @RequestParam(value = "token") String token,
+            @Encrypt
             @ApiParam("猪齿鱼中流水线job id")
             @RequestParam(value = "job_id") Long job_id,
             @ApiParam("猪齿鱼中流水线的step的sequence")

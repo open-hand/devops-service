@@ -4,6 +4,7 @@ package io.choerodon.devops.api.controller.v1;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +15,6 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
 import io.choerodon.devops.app.service.CiCdPipelineRecordService;
-import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsPipelineRecordRelDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -35,6 +35,7 @@ public class CiCdPipelineRecordController {
     public ResponseEntity<CiCdPipelineRecordVO> queryPipelineRecordDetails(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "ci与cd记录关系表", required = true)
             @RequestParam(value = "record_rel_id") Long recordRelId) {
         return ResponseEntity.ok(ciCdPipelineRecordService.queryPipelineRecordDetails(projectId, recordRelId));
@@ -43,13 +44,16 @@ public class CiCdPipelineRecordController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "重试整条流水线")
     @GetMapping("/retry")
-    public ResponseEntity retryPipeline(
+    public ResponseEntity<Void> retryPipeline(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "cd流水线记录id", required = true)
             @RequestParam(value = "cd_pipeline_record_id") Long cdPipelineRecordId,
+            @Encrypt
             @ApiParam(value = "gitlab项目ID", required = true)
             @RequestParam("gitlab_pipeline_id") Long gitlabPipelineId,
+            @Encrypt
             @ApiParam(value = "流水线ID", required = true)
             @RequestParam("gitlab_project_id") Long gitlabProjectId) {
         ciCdPipelineRecordService.retryPipeline(projectId, cdPipelineRecordId, gitlabPipelineId, gitlabProjectId);
@@ -62,12 +66,15 @@ public class CiCdPipelineRecordController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "取消流水线")
     @GetMapping(value = "/cancel")
-    public ResponseEntity cancel(
+    public ResponseEntity<Void> cancel(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "cd流水线记录id", required = true)
+            @Encrypt
             @RequestParam(value = "cd_pipeline_record_id") Long cdPipelineRecordId,
             @ApiParam(value = "gitlab项目ID", required = true)
+            @Encrypt
             @RequestParam("gitlab_pipeline_id") Long gitlabPipelineId,
+            @Encrypt
             @ApiParam(value = "流水线ID", required = true)
             @RequestParam("gitlab_project_id") Long gitlabProjectId) {
         ciCdPipelineRecordService.cancel(projectId, cdPipelineRecordId, gitlabPipelineId, gitlabProjectId);

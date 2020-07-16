@@ -1,9 +1,10 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
-
 import java.util.Date;
+
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 
 /**
  * Created by n!Ck
@@ -12,8 +13,9 @@ import java.util.Date;
  * Description:
  */
 public class CommitFormRecordVO {
+    @Encrypt
     private Long userId;
-//    @Encrypt(AppServiceDTO.ENCRYPT_KEY)
+    @Encrypt
     private Long appServiceId;
     private String imgUrl;
     private String commitContent;

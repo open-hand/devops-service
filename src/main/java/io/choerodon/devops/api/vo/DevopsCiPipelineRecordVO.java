@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.annotation.WillDeleted;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -17,11 +18,16 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
  * @Date 2020/4/7 22:18
  */
 public class DevopsCiPipelineRecordVO {
+    @Encrypt
     private Long id;
+
     @ApiModelProperty("gitlab流水线记录id")
     private Long gitlabPipelineId;
+
+    @Encrypt
     @ApiModelProperty("流水线id")
     private Long ciPipelineId;
+
     @ApiModelProperty("流水线状态")
     private String status;
     @ApiModelProperty("触发用户")

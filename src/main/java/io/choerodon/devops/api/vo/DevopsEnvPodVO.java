@@ -1,15 +1,15 @@
 
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
-
 import java.util.Date;
 import java.util.List;
 
-public class DevopsEnvPodVO {
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
-//    @Encrypt(DevopsEnvPodDTO.ENCRYPT_KEY)
+public class DevopsEnvPodVO {
+    @Encrypt
     private Long id;
+    @Encrypt
     private Long instanceId;
     private String name;
     private String ip;
@@ -21,12 +21,14 @@ public class DevopsEnvPodVO {
     private String appServiceVersion;
     private String publishLevel;
     private String instanceCode;
+    @Encrypt
     private Long envId;
     private Long projectId;
     private String envCode;
     private String envName;
     private Long objectVersionNumber;
     private Boolean isConnect;
+    @Encrypt
     private Long clusterId;
     private List<ContainerVO> containers;
     private String nodeName;

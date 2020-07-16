@@ -2,7 +2,10 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 public class CiCdStageRecordVO {
+    @Encrypt
     private Long id;
     private String name;
     private Long sequence;
@@ -11,9 +14,11 @@ public class CiCdStageRecordVO {
     private List<CiCdJobRecordVO> jobRecordVOList;
 
     private String triggerType;
+    @Encrypt
     private Long pipelineId;
     private Boolean parallel;
     private String executionTime;
+    @Encrypt
     private Long stageId;
     private List<PipelineUserVO> userDTOS;
     private Boolean index;

@@ -1,17 +1,22 @@
 package io.choerodon.devops.api.vo;
 
-import io.swagger.annotations.ApiModelProperty;
-
+import java.util.Map;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.Map;
+
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class DevopsConfigMapVO {
-
+    @Encrypt
     @ApiModelProperty("配置映射id")
     private Long id;
+
+    @Encrypt
     @ApiModelProperty("应用服务id")
     private Long appServiceId;
+
+    @Encrypt
     @ApiModelProperty("环境id/必填")
     @NotNull(message = "error.env.id.null")
     private Long envId;

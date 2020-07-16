@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Created by n!Ck
  * Date: 2018/8/20
@@ -10,6 +12,7 @@ import java.util.List;
  * Description:
  */
 public class CertificationVO {
+    @Encrypt
     private Long id;
     private Long organizationId;
     private String certName;
@@ -19,6 +22,7 @@ public class CertificationVO {
     private String status;
     private Date validFrom;
     private Date validUntil;
+    @Encrypt
     private Long envId;
     private String envName;
     private Boolean envConnected;

@@ -1,9 +1,12 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * @author zmf
  */
 public class DevopsAppServiceInstanceViewVO {
+    @Encrypt
     private Long id;
     private String code;
     private Long podCount;

@@ -2,11 +2,11 @@ package io.choerodon.devops.api.vo;
 
 
 import java.util.Date;
-
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -14,14 +14,20 @@ import io.swagger.annotations.ApiModelProperty;
  * Description:
  */
 public class DevopsDeployValueVO {
+    @Encrypt
     private Long id;
     @ApiModelProperty("部署配置内容")
     @NotNull(message = "error.deploy.value.value.null")
     private String value;
+
     private Long projectId;
+
+    @Encrypt
     @ApiModelProperty("环境id")
     @NotNull(message = "error.env.id.null")
     private Long envId;
+
+    @Encrypt
     @ApiModelProperty("应用服务id")
     @NotNull(message = "error.app.service.id.null")
     private Long appServiceId;

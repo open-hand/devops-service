@@ -3,8 +3,10 @@ package io.choerodon.devops.api.vo;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class ProjectCertificationVO {
+    @Encrypt
     @ApiModelProperty("证书id")
     private Long id;
 

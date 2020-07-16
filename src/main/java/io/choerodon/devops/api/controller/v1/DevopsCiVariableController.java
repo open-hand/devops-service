@@ -7,6 +7,7 @@ import io.choerodon.devops.app.service.DevopsCiVariableService;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,7 @@ public class DevopsCiVariableController {
     public ResponseEntity<Map<String, List<CiVariableVO>>> listVariableKey(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable("project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "应用Id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId) {
         return Optional.ofNullable(devopsCiVariableService.listKeys(projectId, appServiceId))
@@ -60,6 +62,7 @@ public class DevopsCiVariableController {
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "层级", required = true)
             @RequestParam("level") String level,
+            @Encrypt
             @ApiParam(value = "应用Id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId) {
         return Optional.ofNullable(devopsCiVariableService.listValues(projectId, level, appServiceId))
@@ -76,6 +79,7 @@ public class DevopsCiVariableController {
             @ApiParam(value = "层级", required = true)
             @RequestParam("level") String level,
             @ApiParam(value = "应用Id")
+            @Encrypt
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "变量列表")
             @RequestBody List<CiVariableVO> ciVariableVOList) {

@@ -1,13 +1,13 @@
 package io.choerodon.devops.api.vo;
 
 
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Created by younger on 2018/4/9.
  */
 public class DevopsEnvironmentRepVO {
-//    @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
+    @Encrypt
     private Long id;
     private String name;
     private String description;
@@ -16,7 +16,9 @@ public class DevopsEnvironmentRepVO {
     private Boolean isConnected;
     private Long gitlabEnvProjectId;
     private String clusterName;
+    @Encrypt
     private Long clusterId;
+    @Encrypt
     private Long devopsEnvGroupId;
     private Boolean permission;
     private Boolean isSynchro;

@@ -1,5 +1,18 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
+import java.util.Optional;
+import javax.validation.Valid;
+
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -9,22 +22,10 @@ import io.choerodon.devops.api.vo.DevopsPvReqVO;
 import io.choerodon.devops.api.vo.DevopsPvVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.DevopsPvService;
-import io.choerodon.devops.infra.dto.DevopsPvDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.Permission;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Optional;
 
 
 @RestController
@@ -72,6 +73,7 @@ public class DevopsPvController {
     public ResponseEntity<Boolean> checkPvName(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群Id", required = true)
             @RequestParam Long clusterId,
             @ApiParam(value = "pv名称", required = true)
@@ -85,8 +87,8 @@ public class DevopsPvController {
     public ResponseEntity<Void> deletePv(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "pvId", required = true)
-//            @Encrypt(DevopsPvDTO.ENCRYPT_KEY)
             @PathVariable(value = "pv_id") Long pvId) {
         devopsPvService.deletePvById(projectId, pvId);
         return ResponseEntity.noContent().build();
@@ -98,8 +100,8 @@ public class DevopsPvController {
     public ResponseEntity<DevopsPvVO> queryById(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "pvId", required = true)
-//            @Encrypt(DevopsPvDTO.ENCRYPT_KEY)
             @PathVariable(value = "pv_id") Long pvId) {
         return Optional.ofNullable(devopsPvService.queryById(pvId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -120,10 +122,12 @@ public class DevopsPvController {
     public ResponseEntity<Page<ProjectReqVO>> listAllNonRelatedMembers(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "PvId", required = true)
             @PathVariable(value = "pv_id") Long pvId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable,
+            @Encrypt
             @ApiParam(value = "指定项目id")
             @RequestParam(value = "id", required = false) Long selectedProjectId,
             @ApiParam(value = "查询参数")
@@ -139,9 +143,11 @@ public class DevopsPvController {
     public ResponseEntity<Void> deleteRelateProjectById(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "PvId", required = true)
             @PathVariable(value = "pv_id") Long pvId,
-            @ApiParam(value = "要删除的proejctId")
+            @Encrypt
+            @ApiParam(value = "要删除的projectId")
             @RequestParam(value = "related_project_id") Long relatedProjectId) {
         devopsPvService.deleteRelatedProjectById(projectId, pvId, relatedProjectId);
         return ResponseEntity.noContent().build();
@@ -153,6 +159,7 @@ public class DevopsPvController {
     public ResponseEntity<Void> assignPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "PvId", required = true)
             @PathVariable(value = "pv_id") Long pvId,
             @RequestBody @Valid DevopsPvPermissionUpdateVO devopsPvPermissionUpdateVO) {
@@ -167,6 +174,7 @@ public class DevopsPvController {
     public ResponseEntity<Page<ProjectReqVO>> pageProjects(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "PvId")
             @PathVariable(value = "pv_id") Long pvId,
             @ApiParam(value = "分页参数")
@@ -184,6 +192,7 @@ public class DevopsPvController {
     public ResponseEntity<Page<ProjectReqVO>> pageRelatedProjects(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "PvId")
             @PathVariable(value = "pv_id") Long pvId,
             @ApiParam(value = "分页参数")
@@ -201,8 +210,10 @@ public class DevopsPvController {
     public ResponseEntity<List<DevopsPvVO>> queryPvcRelatedPv(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id")
             @RequestParam(value = "env_id", required = false) Long envId,
+            @Encrypt
             @ApiParam(value = "集群id")
             @RequestParam(value = "cluster_id", required = false) Long clusterId,
             @ApiParam(value = "PV查询方式，默认为1,即过滤掉与Prometheus绑定的PV,0是不过滤")

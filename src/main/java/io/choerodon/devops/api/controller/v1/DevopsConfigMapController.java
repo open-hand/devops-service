@@ -17,6 +17,7 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +46,7 @@ public class DevopsConfigMapController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建配置映射")
     @PostMapping
-    public ResponseEntity create(
+    public ResponseEntity<Void> create(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名信息", required = true)
@@ -66,7 +67,7 @@ public class DevopsConfigMapController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下更新配置映射")
     @PutMapping
-    public ResponseEntity update(
+    public ResponseEntity<Void> update(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名信息", required = true)
@@ -87,9 +88,10 @@ public class DevopsConfigMapController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "配置映射删除")
     @DeleteMapping(value = "/{configMap_id}")
-    public ResponseEntity delete(
+    public ResponseEntity<Void> delete(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "实例ID", required = true)
             @PathVariable("configMap_id") Long configMapId) {
         devopsConfigMapService.delete(projectId, configMapId);
@@ -109,8 +111,10 @@ public class DevopsConfigMapController {
     public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境ID", required = true)
             @RequestParam Long envId,
+            @Encrypt
             @ApiParam(value = "实例ID", required = true)
             @RequestParam String name) {
         return ResponseEntity.ok(devopsConfigMapService.isNameUnique(envId, name));
@@ -131,6 +135,7 @@ public class DevopsConfigMapController {
     public ResponseEntity<DevopsConfigMapRespVO> query(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "configMap的ID", required = true)
             @PathVariable(value = "config_map_id") Long configMapId) {
         return Optional.ofNullable(devopsConfigMapService.query(configMapId))
@@ -158,8 +163,10 @@ public class DevopsConfigMapController {
     public ResponseEntity<Page<DevopsConfigMapRespVO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id")
             @RequestParam(value = "env_id", required = false) Long envId,
+            @Encrypt
             @ApiParam(value = "应用id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")

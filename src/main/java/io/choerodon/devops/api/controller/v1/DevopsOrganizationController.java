@@ -5,6 +5,7 @@ import java.util.Set;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +44,7 @@ public class DevopsOrganizationController {
     public ResponseEntity<Page<AppServiceVO>> batchQueryAppService(
             @ApiParam(value = "组织ID")
             @PathVariable(value = "organization_id") Long organizationId,
+            @Encrypt
             @ApiParam(value = "应用服务Ids")
             @RequestParam(value = "ids") Set<Long> ids,
             @ApiParam(value = "是否分页")

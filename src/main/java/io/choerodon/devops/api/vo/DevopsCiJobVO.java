@@ -7,6 +7,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.annotation.WillDeleted;
 
@@ -28,9 +29,11 @@ public class DevopsCiJobVO {
     @ApiModelProperty("runner镜像地址")
     private String image;
 
+    @Encrypt
     @ApiModelProperty("阶段id")
     private Long ciStageId;
 
+    @Encrypt
     @ApiModelProperty("流水线id")
     private Long ciPipelineId;
 

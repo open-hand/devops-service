@@ -3,15 +3,18 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author zmf
  * @since 2/18/20
  */
 public class DevopsPolarisRecordRespVO {
+    @Encrypt
     @ApiModelProperty("自增id")
     private Long id;
 
+    @Encrypt
     @ApiModelProperty("纪录对象id(集群id或环境id)")
     private Long scopeId;
 

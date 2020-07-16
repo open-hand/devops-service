@@ -1,11 +1,13 @@
 package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Created by Zenger on 2018/4/18.
  */
 public class RunningInstanceVO {
+    @Encrypt
     @ApiModelProperty("实例id")
     private Long id;
     @ApiModelProperty("实例code")

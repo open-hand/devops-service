@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author: 25499
@@ -10,7 +11,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @description:
  */
 public class DevopsPrometheusVO {
-
+    @Encrypt
     @ApiModelProperty("promtheusid/更新必填")
     private Long id;
 
@@ -22,6 +23,7 @@ public class DevopsPrometheusVO {
     @NotNull(message = "error.grafana.null")
     private String grafanaDomain;
 
+    @Encrypt
     @ApiModelProperty("PrometheusPvId/必填")
     @NotNull(message = "error.prometheus.pv.id.null")
     private Long prometheusPvId;
@@ -32,6 +34,7 @@ public class DevopsPrometheusVO {
     @ApiModelProperty("PrometheusPv名称")
     private String prometheusPvName;
 
+    @Encrypt
     @ApiModelProperty("GrafanaPvId/必填")
     @NotNull(message = "error.grafana.pv.id.null")
     private Long grafanaPvId;
@@ -42,6 +45,7 @@ public class DevopsPrometheusVO {
     @ApiModelProperty("GrafanaPv名称")
     private String grafanaPvName;
 
+    @Encrypt
     @ApiModelProperty("AlertmanagerPvId/必填")
     @NotNull(message = "error.alertmanager.pv.id.null")
     private Long alertmanagerPvId;
@@ -52,6 +56,7 @@ public class DevopsPrometheusVO {
     @ApiModelProperty("AlertmanagerPv名称")
     private String alertmanagerPvName;
 
+    @Encrypt
     @ApiModelProperty("集群id")
     private Long clusterId;
 

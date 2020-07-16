@@ -10,6 +10,7 @@ import io.choerodon.devops.app.service.DevopsClusterResourceService;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,9 +33,10 @@ public class DevopsClusterResourceController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建cert_manager")
     @PostMapping("/cert_manager/deploy")
-    public ResponseEntity deployCertManager(
+    public ResponseEntity<Void> deployCertManager(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
         devopsClusterResourceService.createCertManager(projectId, clusterId);
@@ -47,6 +49,7 @@ public class DevopsClusterResourceController {
     public ResponseEntity<List<ClusterResourceVO>> listClusterResource(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
         return Optional.ofNullable(devopsClusterResourceService.listClusterResource(clusterId, projectId))
@@ -61,6 +64,7 @@ public class DevopsClusterResourceController {
     public ResponseEntity<Boolean> unloadCertManager(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
         return new ResponseEntity<>(devopsClusterResourceService.deleteCertManager(projectId, clusterId), HttpStatus.OK);
@@ -72,6 +76,7 @@ public class DevopsClusterResourceController {
     public ResponseEntity<Boolean> checkCertManager(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
         return new ResponseEntity<>(devopsClusterResourceService.checkCertManager(clusterId), HttpStatus.OK);
@@ -83,6 +88,7 @@ public class DevopsClusterResourceController {
     public ResponseEntity<Boolean> createPrometheus(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id") Long clusterId,
             @ApiParam(value = "请求体")
@@ -100,6 +106,7 @@ public class DevopsClusterResourceController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
+            @Encrypt
             @RequestParam(name = "cluster_id") Long clusterId,
             @ApiParam(value = "请求体", required = true)
             @RequestBody DevopsPrometheusVO prometheusVo) {
@@ -112,6 +119,7 @@ public class DevopsClusterResourceController {
     @ApiOperation(value = "查询集群下prometheus")
     @GetMapping("/prometheus")
     public ResponseEntity<DevopsPrometheusVO> queryPrometheus(
+            @Encrypt
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id") Long clusterId) {
 
@@ -126,6 +134,7 @@ public class DevopsClusterResourceController {
     public ResponseEntity<PrometheusStageVO> getPrometheusDeployStatus(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
+            @Encrypt
             @RequestParam(name = "cluster_id") Long clusterId) {
         return Optional.ofNullable(devopsClusterResourceService.queryDeployStage(clusterId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
@@ -137,6 +146,7 @@ public class DevopsClusterResourceController {
     @DeleteMapping("/prometheus/unload")
     public ResponseEntity<Boolean> deletePrometheus(
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
         return Optional.ofNullable(devopsClusterResourceService.uninstallPrometheus(projectId, clusterId))
@@ -149,6 +159,7 @@ public class DevopsClusterResourceController {
     @DeleteMapping("/prometheus/retry")
     public ResponseEntity<Boolean> retryInstallPrometheus(
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
         devopsClusterResourceService.retryInstallPrometheus(projectId, clusterId);
@@ -161,6 +172,7 @@ public class DevopsClusterResourceController {
     public ResponseEntity<String> getGrafanaUrl(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id") Long clusterId,
             @ApiParam(value = "接口type", required = true)
@@ -174,6 +186,7 @@ public class DevopsClusterResourceController {
     public ResponseEntity<Boolean> queryCertManagerByEnvId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @RequestParam(name = "env_id") Long envId) {
         return new ResponseEntity<>(devopsClusterResourceService.queryCertManagerByEnvId(envId), HttpStatus.OK);

@@ -1,5 +1,18 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
+import java.util.Optional;
+
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -14,17 +27,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Created by n!Ck
@@ -77,6 +79,7 @@ public class CertificationController {
     public ResponseEntity<Void> delete(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "证书id", required = true)
             @RequestParam(value = "cert_id") Long certId) {
         certificationService.deleteById(projectId, certId);
@@ -102,6 +105,7 @@ public class CertificationController {
     public ResponseEntity<Page<CertificationVO>> pageByOptions(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境ID")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "分页参数")
@@ -128,6 +132,7 @@ public class CertificationController {
     public ResponseEntity<List<CertificationVO>> getActiveCertificationByDomain(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境ID", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "域名")
@@ -152,6 +157,7 @@ public class CertificationController {
     public ResponseEntity<Boolean> checkCertNameUniqueInEnv(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境ID", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "证书名称", required = true)

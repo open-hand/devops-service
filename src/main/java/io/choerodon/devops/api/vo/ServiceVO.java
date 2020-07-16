@@ -1,11 +1,14 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Created by younger on 2018/4/25.
  */
 public class ServiceVO {
     private String name;
     private String type;
+    @Encrypt
     private String clusterIp;
     private String externalIp;
     private String port;

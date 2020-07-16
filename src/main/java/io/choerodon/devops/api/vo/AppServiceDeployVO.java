@@ -4,15 +4,18 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
 
 @AtLeastOneNotEmpty(fields = {"valueId", "values"}, message = "error.atleast.one.not.empty")
 public class AppServiceDeployVO {
+    @Encrypt
     @ApiModelProperty("服务id/必填")
     @NotNull(message = "error.app.id.null")
     private Long appServiceId;
 
+    @Encrypt
     @ApiModelProperty("服务应用版本id/必填")
     @NotNull(message = "appversion.not.exist.in.database")
     private Long appServiceVersionId;
@@ -24,6 +27,7 @@ public class AppServiceDeployVO {
     @ApiModelProperty("部署配置")
     private String values;
 
+    @Encrypt
     @ApiModelProperty("值id")
     private Long valueId;
 
@@ -31,21 +35,25 @@ public class AppServiceDeployVO {
     @NotBlank(message = "error.app.instance.name.null")
     private String instanceName;
 
+    @Encrypt
     @ApiModelProperty("实例id")
     private Long instanceId;
 
     @ApiModelProperty("操作类型")
     private String type;
 
+    @Encrypt
     @ApiModelProperty("命令id")
     private Long commandId;
 
     @ApiModelProperty("是否改变")
     private boolean isNotChange;
 
+    @Encrypt
     @ApiModelProperty("记录id")
     private Long recordId;
 
+    @Encrypt
     private Long deployInfoId;
 
     private DevopsServiceReqVO devopsServiceReqVO;

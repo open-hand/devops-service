@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import io.swagger.annotations.ApiModelProperty;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -9,10 +8,14 @@ import java.util.List;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
-public class DevopsCdJobRecordVO {
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
+public class DevopsCdJobRecordVO {
+    @Encrypt
     private Long id;
     private String name;
+    @Encrypt
     private Long stageRecordId;
     private String type;
     private String status;
@@ -23,6 +26,7 @@ public class DevopsCdJobRecordVO {
     @ApiModelProperty("是否会签")
     private Integer countersigned;
     private String executionTime;
+    @Encrypt
     private Long jobId;
 
     @ApiModelProperty("任务顺序")

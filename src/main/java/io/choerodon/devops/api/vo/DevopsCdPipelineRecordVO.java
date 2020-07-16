@@ -1,12 +1,15 @@
 package io.choerodon.devops.api.vo;
 
-import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
 import java.util.List;
 
-public class DevopsCdPipelineRecordVO {
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
+public class DevopsCdPipelineRecordVO {
+    @Encrypt
     private Long id;
+    @Encrypt
     private Long pipelineId;
     private Long gitlabPipelineId;
     private String status;

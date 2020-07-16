@@ -2,12 +2,17 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 public class DevopsCdStageRecordVO extends StageRecordVO {
+    @Encrypt
     private Long id;
     private List<DevopsCdJobRecordVO> jobRecordVOList;
     private String triggerType;
+    @Encrypt
     private Long pipelineId;
     private Boolean parallel;
+    @Encrypt
     private Long stageId;
     private List<PipelineUserVO> userDTOS;
     private Boolean index;

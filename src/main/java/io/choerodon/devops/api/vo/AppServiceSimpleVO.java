@@ -1,12 +1,14 @@
 package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author zmf
  * @since 2/24/20
  */
 public class AppServiceSimpleVO {
+    @Encrypt
     @ApiModelProperty("应用服务id")
     private Long appServiceId;
     @ApiModelProperty("应用服务名称")

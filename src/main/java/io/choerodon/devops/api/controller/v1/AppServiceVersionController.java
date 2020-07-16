@@ -7,6 +7,7 @@ import java.util.Set;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,8 +50,10 @@ public class AppServiceVersionController {
     public ResponseEntity<Page<AppServiceVersionVO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务Id")
             @RequestParam(value = "app_service_id") Long appServiceId,
+            @Encrypt
             @ApiParam(value = "服务版本Id")
             @RequestParam(value = "app_service_version_id", required = false) Long appServiceVersionId,
             @ApiParam(value = "是否仅部署")
@@ -85,6 +88,7 @@ public class AppServiceVersionController {
     public ResponseEntity<List<AppServiceVersionRespVO>> queryDeployedByAppServiceId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务Id")
             @PathVariable(value = "app_service_id") Long appServiceId) {
         return Optional.ofNullable(appServiceVersionService.listDeployedByAppId(projectId, appServiceId))
@@ -108,8 +112,10 @@ public class AppServiceVersionController {
     public ResponseEntity<List<AppServiceVersionRespVO>> queryByappServiceIdAndEnvId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务Id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId,
+            @Encrypt
             @ApiParam(value = "环境 ID", required = true)
             @PathVariable Long envId) {
         return Optional.ofNullable(appServiceVersionService.listByAppIdAndEnvId(projectId, appServiceId, envId))
@@ -130,8 +136,10 @@ public class AppServiceVersionController {
     @ApiOperation(value = "实例下查询可升级版本")
     @GetMapping(value = "/version/{app_version_id}/upgrade_version")
     public ResponseEntity<List<AppServiceVersionRespVO>> listUpgradeableAppVersion(
+            @Encrypt
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务版本ID", required = true)
             @PathVariable(value = "app_version_id") Long appServiceServiceId) {
         return Optional.ofNullable(appServiceVersionService.listUpgradeableAppVersion(projectId, appServiceServiceId))
@@ -153,8 +161,10 @@ public class AppServiceVersionController {
     @ApiOperation(value = "根据版本id获取版本values")
     @GetMapping(value = "/{versionId}/queryValue")
     public ResponseEntity<String> queryVersionValue(
+            @Encrypt
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务版本ID", required = true)
             @PathVariable(value = "versionId") Long versionId) {
         return Optional.ofNullable(appServiceVersionService.queryVersionValue(versionId))
@@ -176,8 +186,10 @@ public class AppServiceVersionController {
     @ApiOperation(value = "根据版本id查询版本信息")
     @PostMapping(value = "/list_by_versionIds")
     public ResponseEntity<List<AppServiceVersionRespVO>> queryAppServiceVersionsByIds(
+            @Encrypt
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务ID", required = true)
             @RequestParam Long[] versionIds) {
         return Optional.ofNullable(appServiceVersionService.listByAppServiceVersionIds(Arrays.asList(versionIds)))
@@ -200,8 +212,9 @@ public class AppServiceVersionController {
     @ApiOperation(value = "根据分支名查询版本")
     @GetMapping(value = "/list_by_branch")
     public ResponseEntity<List<AppServiceVersionAndCommitVO>> listAppVersionsByBranch(
-            @ApiParam(value = "实例ID", required = true)
+            @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务ID", required = true)
             @RequestParam Long appServiceId,
             @ApiParam(value = "分支", required = true)
@@ -226,10 +239,12 @@ public class AppServiceVersionController {
     @ApiOperation(value = "根据pipelineID 查询版本, 判断是否存在")
     @GetMapping(value = "/query_by_pipeline")
     public ResponseEntity<Boolean> queryByPipeline(
-            @ApiParam(value = "实例ID", required = true)
+            @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "持续集成Id", required = true)
             @RequestParam(value = "pipeline_id") Long pipelineId,
+            @Encrypt
             @ApiParam(value = "服务Id", required = true)
             @RequestParam(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分支", required = true)
@@ -253,6 +268,7 @@ public class AppServiceVersionController {
     public ResponseEntity<String> queryByProjectId(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务Id", required = true)
             @RequestParam(value = "app_service_id") Long appServiceId) {
         return ResponseEntity.ok(appServiceVersionService.queryValueById(projectId, appServiceId));
@@ -274,6 +290,7 @@ public class AppServiceVersionController {
     public ResponseEntity<AppServiceVersionRespVO> queryByVersion(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务Id", required = true)
             @RequestParam(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "版本号", required = true)
@@ -291,6 +308,7 @@ public class AppServiceVersionController {
     public ResponseEntity<Page<AppServiceVersionRespVO>> pageShareVersionByappServiceId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务Id", required = true)
             @RequestParam(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分页参数")
@@ -309,6 +327,7 @@ public class AppServiceVersionController {
     public ResponseEntity<List<AppServiceVersionVO>> listAppServiceVersionByShareAndAppSerivceId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务Id", required = true)
             @PathVariable(value = "app_service_id", required = true) Long appServiceId,
             @ApiParam(value = "共享形式")
@@ -325,6 +344,7 @@ public class AppServiceVersionController {
     public ResponseEntity<List<AppServiceVersionVO>> listVersionByIds(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "应用服务id集合", required = true)
             @RequestParam(value = "app_service_ids", required = true) Set<Long> ids) {
         return Optional.ofNullable(
@@ -339,6 +359,7 @@ public class AppServiceVersionController {
     public ResponseEntity<List<AppServiceVersionVO>> listVersionById(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "应用服务id", required = true)
             @RequestParam(value = "app_service_id", required = true) Long id,
             @ApiParam(value = "查询参数", required = false)

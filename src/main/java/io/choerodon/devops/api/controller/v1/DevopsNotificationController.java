@@ -9,6 +9,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,8 +43,8 @@ public class DevopsNotificationController {
     public ResponseEntity<ResourceCheckVO> checkDeleteResource(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境Id")
-//            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "资源对象类型")
             @RequestParam(value = "object_type") String objectType) {
@@ -69,11 +70,13 @@ public class DevopsNotificationController {
     public void sendMessage(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境Id")
-//            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
             @RequestParam(value = "env_id") Long envId,
+            @Encrypt
             @ApiParam(value = "对象Id")
             @RequestParam(value = "object_id") Long objectId,
+            @Encrypt
             @ApiParam(value = "通知Id")
             @RequestParam(value = "notification_id") Long notificationId,
             @ApiParam(value = "资源对象类型")
@@ -98,9 +101,10 @@ public class DevopsNotificationController {
     public void validateCaptcha(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境Id")
-//            @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
             @RequestParam(value = "env_id") Long envId,
+            @Encrypt
             @ApiParam(value = "对象Id")
             @RequestParam(value = "object_id") Long objectId,
             @ApiParam(value = "验证码")
@@ -109,14 +113,4 @@ public class DevopsNotificationController {
             @RequestParam(value = "object_type") String objectType) {
         notificationService.validateCaptcha(projectId, envId, objectId, objectType, captcha);
     }
-
-//    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-//    @GetMapping(value = "/transfer/data")
-//    public ResponseEntity<List<DevopsNotificationTransferDataVO>> transferDate(
-//            @ApiParam(value = "项目ID")
-//            @PathVariable(value = "project_id") Long projectId) {
-//        return Optional.ofNullable(notificationService.transferDate())
-//                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-//                .orElseThrow(() -> new CommonException("error.transfer.data"));
-//    }
 }

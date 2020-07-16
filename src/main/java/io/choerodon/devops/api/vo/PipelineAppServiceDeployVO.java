@@ -2,9 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
-//import org.hzero.starter.keyencrypt.core.Encrypt;
-
-import io.choerodon.devops.infra.constant.EncryptKeyConstants;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -12,21 +10,21 @@ import io.choerodon.devops.infra.constant.EncryptKeyConstants;
  * Description:
  */
 public class PipelineAppServiceDeployVO {
+    @Encrypt
     private Long id;
-//    @Encrypt(EncryptKeyConstants.DEVOPS_APP_SERVICE_ENCRYPT_KEY)
+    @Encrypt
     private Long appServiceId;
     private List<String> triggerVersion;
-//    @Encrypt(EncryptKeyConstants.DEVOPS_ENV_ENCRYPT_KEY)
+    @Encrypt
     private Long envId;
-//    @Encrypt(EncryptKeyConstants.DDEVOPS_APP_SERVICE_INSTANCE_ENCRYPT_KEY)
+    @Encrypt
     private Long instanceId;
-//    @Encrypt(EncryptKeyConstants.DEVOPS_PIPELINE_STAGE_ENCRYPT_KEY)
+    @Encrypt
     private Long stageId;
     private String instanceName;
     private String value;
-//    @Encrypt(EncryptKeyConstants.DEVOPS_DEPLOY_VALUE_ENCRYPT_KEY)
+    @Encrypt
     private Long valueId;
-//    @Encrypt(EncryptKeyConstants.IAM_PROJECT_ENCRYPT_KEY)
     private Long projectId;
     private String appServiceName;
     private String envName;

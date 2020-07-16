@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Creator: Runge
@@ -12,6 +13,7 @@ public class DevopsIngressPathVO {
     @ApiModelProperty("Ingress的path值")
     private String path;
     @ApiModelProperty("path对应的网络id")
+    @Encrypt
     private Long serviceId;
     @ApiModelProperty("网络名称")
     private String serviceName;

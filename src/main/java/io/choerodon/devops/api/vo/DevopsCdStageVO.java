@@ -7,12 +7,15 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class DevopsCdStageVO {
+    @Encrypt
     private Long id;
     @ApiModelProperty("阶段名称")
     @NotEmpty(message = "error.stage.name.cannot.be.null")
     private String name;
+    @Encrypt
     @ApiModelProperty("阶段所属流水线id")
     private Long pipelineId;
     @ApiModelProperty("阶段顺序")
@@ -24,6 +27,7 @@ public class DevopsCdStageVO {
     private Long objectVersionNumber;
     private Date lastUpdateDate;
     private String triggerType;
+    @Encrypt
     private List<Long> cdAuditUserIds;
     private Boolean parallel;
     private String type;

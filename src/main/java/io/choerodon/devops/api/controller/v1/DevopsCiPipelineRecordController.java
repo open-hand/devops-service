@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
@@ -27,7 +28,7 @@ import io.choerodon.swagger.annotation.Permission;
 @RestController
 @RequestMapping("/v1/projects/{project_id}/ci_pipeline_records")
 public class DevopsCiPipelineRecordController {
-    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
+    private final DevopsCiPipelineRecordService devopsCiPipelineRecordService;
 
     public DevopsCiPipelineRecordController(DevopsCiPipelineRecordService devopsCiPipelineRecordService) {
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
@@ -39,6 +40,7 @@ public class DevopsCiPipelineRecordController {
     public ResponseEntity<Page<DevopsCiPipelineRecordVO>> pagingPipelineRecord(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "ci_pipeline_id") Long ciPipelineId,
             @ApiIgnore
@@ -61,6 +63,7 @@ public class DevopsCiPipelineRecordController {
     @ApiOperation(value = "重试GitLab流水线")
     @PostMapping(value = "/{gitlab_pipeline_id}/retry")
     public ResponseEntity<Boolean> retry(
+            @Encrypt
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @PathVariable("gitlab_pipeline_id") Long gitlabPipelineId,

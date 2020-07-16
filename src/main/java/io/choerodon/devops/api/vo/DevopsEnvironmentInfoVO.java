@@ -1,8 +1,9 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.enums.EnvironmentGitopsStatus;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.enums.EnvironmentGitopsStatus;
 
 /**
  * 展示环境信息及一些相关的信息
@@ -10,12 +11,13 @@ import io.swagger.annotations.ApiModelProperty;
  * @author zmf
  */
 public class DevopsEnvironmentInfoVO {
-//    @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
+    @Encrypt
     private Long id;
     private String code;
     private String name;
     private Boolean connect;
     private Boolean synchronize;
+    @Encrypt
     private Long clusterId;
     private String clusterName;
     private Boolean skipCheckPermission;
@@ -24,6 +26,7 @@ public class DevopsEnvironmentInfoVO {
     private Boolean active;
     @ApiModelProperty("环境是否失败")
     private Boolean fail;
+    @Encrypt
     private Long groupId;
     private String gitlabUrl;
     /**

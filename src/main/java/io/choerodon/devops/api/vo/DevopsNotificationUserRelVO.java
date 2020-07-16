@@ -1,14 +1,18 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  17:27 2019/5/13
  * Description:
  */
 public class DevopsNotificationUserRelVO {
+    @Encrypt
     private Long userId;
     private String loginName;
     private String realName;
+    @Encrypt
     private Long notificationId;
     private String imageUrl;
     private String userType;

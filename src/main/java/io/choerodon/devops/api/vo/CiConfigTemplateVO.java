@@ -7,6 +7,7 @@ import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 〈功能简述〉
@@ -32,6 +33,7 @@ public class CiConfigTemplateVO {
     @ApiModelProperty("执行脚本")
     private String script;
 
+    @Encrypt
     @ApiModelProperty("项目下已有的maven仓库id列表/用于maven构建步骤")
     private Set<Long> nexusMavenRepoIds;
 

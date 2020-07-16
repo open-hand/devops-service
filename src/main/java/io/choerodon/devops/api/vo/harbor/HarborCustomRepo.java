@@ -1,18 +1,19 @@
 package io.choerodon.devops.api.vo.harbor;
 
+import java.util.Set;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Transient;
+import javax.validation.constraints.NotBlank;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.validation.constraints.NotBlank;
-import java.util.Set;
 
 /**
  * 制品库-harbor自定义镜像仓库表
@@ -73,6 +74,7 @@ public class HarborCustomRepo extends AuditDomain {
     // ------------------------------------------------------------------------------
 
 
+    @Encrypt
     @ApiModelProperty("表ID，主键，供其他表做外键")
     @Id
     @GeneratedValue
@@ -110,10 +112,10 @@ public class HarborCustomRepo extends AuditDomain {
     // 非数据库字段
     // ------------------------------------------------------------------------------
 
-	@Transient
-	@ApiModelProperty(value = "关联的应用服务ID")
-	private Set<Long> appServiceIds;
-
+    @Encrypt
+    @Transient
+    @ApiModelProperty(value = "关联的应用服务ID")
+    private Set<Long> appServiceIds;
 
 	@Transient
     @ApiModelProperty(value = "项目编码")

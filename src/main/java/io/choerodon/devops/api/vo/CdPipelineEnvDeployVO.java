@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -8,11 +10,16 @@ package io.choerodon.devops.api.vo;
  * @since 2020/7/6 15:44
  */
 public class CdPipelineEnvDeployVO {
+    @Encrypt
     private Long appServiceId;
+    @Encrypt
     private Long envId;
+    @Encrypt
     private Long valueId;
+    @Encrypt
     private Long projectId;
     private String deployType;
+    @Encrypt
     private Long instanceId;
     private String instanceName;
 

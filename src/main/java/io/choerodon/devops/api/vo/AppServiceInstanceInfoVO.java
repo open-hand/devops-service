@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.nutz.json.JsonIgnore;
 
 /**
@@ -11,6 +12,7 @@ import org.nutz.json.JsonIgnore;
  * @author zmf
  */
 public class AppServiceInstanceInfoVO {
+    @Encrypt
     @ApiModelProperty("实例id")
     private Long id;
     @ApiModelProperty("实例code")
@@ -21,6 +23,7 @@ public class AppServiceInstanceInfoVO {
     @ApiModelProperty("实例的运行中的pod的数量")
     private Long podRunningCount;
     @ApiModelProperty("实例所属应用服务id")
+    @Encrypt
     private Long appServiceId;
     @ApiModelProperty("实例所属应用服务的名称")
     private String appServiceName;

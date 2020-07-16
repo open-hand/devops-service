@@ -1,10 +1,10 @@
 package io.choerodon.devops.api.vo;
 
-import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
 import java.util.List;
 
-import io.choerodon.devops.infra.annotation.WillDeleted;
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 〈功能简述〉
@@ -14,14 +14,17 @@ import io.choerodon.devops.infra.annotation.WillDeleted;
  * @since 2020/4/7 22:34
  */
 public class CiCdJobRecordVO {
+    @Encrypt
     private Long id;
     @ApiModelProperty("gitlab job记录id")
     private Long gitlabJobId;
     @ApiModelProperty("流水线记录id")
+    @Encrypt
     private Long pipelineRecordId;
     @ApiModelProperty("阶段名称")
     private String stage;
     @ApiModelProperty("触发用户")
+    @Encrypt
     private Long triggerUserId;
     @ApiModelProperty("任务类型")
     private String type;
@@ -42,12 +45,16 @@ public class CiCdJobRecordVO {
     private Boolean countersigned;
     private String appServiceName;
     private String envName;
+    @Encrypt
     private Long appServiceId;
+    @Encrypt
     private Long envId;
     private String version;
     private String instanceName;
+    @Encrypt
     private Long taskId;
     private String instanceStatus;
+    @Encrypt
     private Long instanceId;
     private Boolean envPermission;
     private List<PipelineUserVO> userDTOList;

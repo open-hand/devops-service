@@ -6,6 +6,7 @@ import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Created by n!Ck
@@ -14,6 +15,7 @@ import io.swagger.annotations.ApiModelProperty;
  * Description:
  */
 public class RoleVO {
+    @Encrypt
     @ApiModelProperty(value = "主键ID/非必填")
     private Long id;
 

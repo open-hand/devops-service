@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -89,7 +90,7 @@ public class DevopsOrganizationConfigController {
     @ApiOperation(value = "校验harbor配置信息是否正确")
     @GetMapping(value = "/check_harbor")
     public void checkHarbor(
-            @ApiParam(value = "项目id", required = true)
+            @ApiParam(value = "组织id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "harbor地址", required = true)
             @RequestParam String url,
@@ -114,7 +115,7 @@ public class DevopsOrganizationConfigController {
     @ApiOperation(value = "校验chart配置信息是否正确")
     @PostMapping(value = "/check_chart")
     public ResponseEntity<Boolean> checkChart(
-            @ApiParam(value = "项目id", required = true)
+            @ApiParam(value = "组织id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "chartMuseum信息", required = true)
             @RequestBody ConfigVO configVO) {

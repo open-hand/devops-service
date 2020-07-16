@@ -1,15 +1,15 @@
 package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
-
-import io.choerodon.devops.infra.dto.DevopsPvDTO;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class DevopsPvVO {
 
+    @Encrypt
     @ApiModelProperty("pvId")
-//    @Encrypt(DevopsPvDTO.ENCRYPT_KEY)
     private Long id;
 
+    @Encrypt
     @ApiModelProperty("关联的clusterId")
     private Long clusterId;
 

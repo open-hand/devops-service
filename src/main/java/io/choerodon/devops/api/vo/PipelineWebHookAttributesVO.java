@@ -2,7 +2,10 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 public class PipelineWebHookAttributesVO {
+    @Encrypt
     private Long id;
     private String status;
     private String sha;

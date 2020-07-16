@@ -2,7 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
-import io.choerodon.devops.infra.constant.EncryptKeyConstants;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -13,7 +13,7 @@ public class PipelineSearchVO {
     private Boolean creator;
     private Boolean executor;
     private Boolean manager;
-//    @Encrypt(EncryptKeyConstants.DEVOPS_ENV_ENCRYPT_KEY)
+    @Encrypt
     private Long envId;
     private String triggerType;
     private Boolean enabled;

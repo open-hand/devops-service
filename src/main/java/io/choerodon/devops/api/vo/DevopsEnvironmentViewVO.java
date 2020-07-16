@@ -1,17 +1,17 @@
 package io.choerodon.devops.api.vo;
 
 
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.List;
+
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author zmf
  */
 public class DevopsEnvironmentViewVO {
+    @Encrypt
     @ApiModelProperty("环境id")
-//    @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
     private Long id;
 
     @ApiModelProperty("环境名称")

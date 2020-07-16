@@ -1,14 +1,22 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Created by Sheep on 2019/7/2.
  */
 public class DevopsCustomizeResourceVO extends DevopsResourceDataInfoVO{
-
+    @Encrypt
     private Long id;
+
     private Long projectId;
+
+    @Encrypt
     private Long envId;
+
+    @Encrypt
     private Long clusterId;
+
     private Boolean envStatus;
     private String envCode;
     private String resourceContent;

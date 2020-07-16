@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.dto.harbor;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * description
@@ -10,9 +11,10 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel("Harbor仓库配置DTO")
 public class HarborRepoConfigDTO {
-
+    @Encrypt
     @ApiModelProperty(value = "仓库ID")
     private Long repoId;
+
     @ApiModelProperty(value = "仓库地址")
     private String repoUrl;
     @ApiModelProperty(value = "仓库名称")

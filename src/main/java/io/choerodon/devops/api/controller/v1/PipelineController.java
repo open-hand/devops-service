@@ -1,25 +1,26 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
+import java.util.Optional;
+
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.devops.infra.constant.EncryptKeyConstants;
+import io.choerodon.devops.infra.util.KeyDecryptHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -44,9 +45,7 @@ public class PipelineController {
     @PostMapping
     public ResponseEntity<PipelineReqVO> create(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id")
-//            @Encrypt(value = EncryptKeyConstants.IAM_PROJECT_ENCRYPT_KEY)
-                    Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务信息", required = true)
             @RequestBody PipelineReqVO pipelineReqVO) {
         return Optional.ofNullable(pipelineService.create(projectId, pipelineReqVO))
@@ -66,9 +65,7 @@ public class PipelineController {
     @PutMapping
     public ResponseEntity<PipelineReqVO> update(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id")
-//            @Encrypt(value = EncryptKeyConstants.IAM_PROJECT_ENCRYPT_KEY)
-                    Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务信息", required = true)
             @RequestBody PipelineReqVO pipelineReqVO) {
         return Optional.ofNullable(pipelineService.update(projectId, pipelineReqVO))
@@ -88,13 +85,10 @@ public class PipelineController {
     @DeleteMapping(value = "/{pipeline_id}")
     public ResponseEntity<Void> delete(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id")
-//            @Encrypt(EncryptKeyConstants.IAM_PROJECT_ENCRYPT_KEY)
-                    Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "流水线Id", required = true)
-            @PathVariable(value = "pipeline_id")
-//            @Encrypt(EncryptKeyConstants.DEVOPS_PIPELINE_ENCRYPT_KEY)
-                    Long pipelineId) {
+            @PathVariable(value = "pipeline_id") Long pipelineId) {
         pipelineService.delete(projectId, pipelineId);
         return ResponseEntity.noContent().build();
     }
@@ -113,6 +107,7 @@ public class PipelineController {
     public ResponseEntity<PipelineVO> updateIsEnabled(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "pipeline_id") Long pipelineId,
             @ApiParam(value = "是否启用", required = true)
@@ -135,6 +130,7 @@ public class PipelineController {
     public ResponseEntity<PipelineReqVO> queryById(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         return Optional.ofNullable(pipelineService.queryById(projectId, pipelineId))
@@ -180,6 +176,7 @@ public class PipelineController {
     public ResponseEntity<Void> execute(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         pipelineService.execute(projectId, pipelineId);
@@ -200,8 +197,8 @@ public class PipelineController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Ids", required = true)
-            @RequestParam Long[] pipelineIds) {
-        pipelineService.batchExecute(projectId, pipelineIds);
+            @RequestParam String[] pipelineIds) {
+        pipelineService.batchExecute(projectId, KeyDecryptHelper.decryptIdArray(pipelineIds));
         return ResponseEntity.noContent().build();
     }
 
@@ -237,6 +234,7 @@ public class PipelineController {
     public ResponseEntity<PipelineCheckDeployVO> checkDeploy(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "记录Id", required = true)
             @RequestParam(value = "pipeline_id") Long pipelineId) {
         return Optional.ofNullable(pipelineService.checkDeploy(projectId, pipelineId))
@@ -257,6 +255,7 @@ public class PipelineController {
     public ResponseEntity<PipelineRecordReqVO> getRecordById(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "pipeline_record_id") Long recordId) {
         return Optional.ofNullable(pipelineService.getRecordById(projectId, recordId))
@@ -277,6 +276,7 @@ public class PipelineController {
     public ResponseEntity<Void> retry(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "流水线记录Id", required = true)
             @PathVariable(value = "pipeline_record_id") Long recordId) {
         pipelineService.retry(projectId, recordId);
@@ -296,6 +296,7 @@ public class PipelineController {
     public ResponseEntity<List<PipelineRecordListVO>> queryByPipelineId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         return Optional.ofNullable(pipelineService.queryByPipelineId(pipelineId))

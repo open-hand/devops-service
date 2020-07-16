@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,6 +45,7 @@ public class DevopsProjectConfigController {
     @ApiOperation(value = "项目下创建配置")
     @PostMapping
     public ResponseEntity<Void> create(
+            @Encrypt
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "配置信息", required = true)
@@ -63,6 +65,7 @@ public class DevopsProjectConfigController {
     @ApiOperation(value = "项目下查询配置详情")
     @GetMapping
     public ResponseEntity<DevopsConfigRepVO> query(
+            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(
@@ -82,6 +85,7 @@ public class DevopsProjectConfigController {
     @ApiOperation(value = "获取项目默认的配置")
     @GetMapping("/default_config")
     public ResponseEntity<DefaultConfigVO> queryProjectDefaultConfig(
+            @Encrypt
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(
@@ -104,6 +108,7 @@ public class DevopsProjectConfigController {
     @ApiOperation(value = "校验harbor配置信息是否正确")
     @GetMapping(value = "/check_harbor")
     public void checkHarbor(
+            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "harbor地址", required = true)
@@ -129,6 +134,7 @@ public class DevopsProjectConfigController {
     @ApiOperation(value = "校验chart配置信息是否正确")
     @PostMapping(value = "/check_chart")
     public ResponseEntity<Boolean> checkChart(
+            @Encrypt
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "chartMuseum信息", required = true)

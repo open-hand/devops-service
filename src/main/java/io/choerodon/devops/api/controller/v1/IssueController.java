@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +43,7 @@ public class IssueController {
     public ResponseEntity<List<DevopsBranchVO>> getCommitsByIssueId(
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "issueID")
             @PathVariable(value = "issue_id") Long issueId) {
 
@@ -51,17 +53,18 @@ public class IssueController {
     }
 
     /**
-     * 根据issueId获取issue关联的mergerequest
+     * 根据issueId获取issue关联的mergeRequest
      *
      * @param issueId issueID
-     * @return 返回mergerequest列表
+     * @return 返回mergeRequest列表
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "根据issueId获取issue关联的mergerequest列表")
+    @ApiOperation(value = "根据issueId获取issue关联的mergeRequest列表")
     @GetMapping("/merge_request/list")
     public ResponseEntity<List<CustomMergeRequestVO>> getMergeRequestsByIssueId(
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "issueID")
             @PathVariable(value = "issue_id") Long issueId) {
 
@@ -71,10 +74,10 @@ public class IssueController {
     }
 
     /**
-     * 根据issueId获取issue关联的mergerequest和commit数量
+     * 根据issueId获取issue关联的mergeRequest和commit数量
      *
      * @param issueId issueID
-     * @return 返回mergerequest和commit数量
+     * @return 返回mergeRequest和commit数量
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据issueId获取issue关联的mergerequest和commit数量")
@@ -82,6 +85,7 @@ public class IssueController {
     public ResponseEntity<IssueVO> countCommitAndMergeRequest(
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "issueID")
             @PathVariable(value = "issue_id") Long issueId) {
         return Optional.ofNullable(issueService.countCommitAndMergeRequest(issueId))

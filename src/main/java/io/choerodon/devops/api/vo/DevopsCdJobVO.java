@@ -3,9 +3,10 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
-import javax.validation.constraints.NotNull;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
@@ -14,13 +15,17 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
  * @since 2020/4/2 17:00
  */
 public class DevopsCdJobVO {
-
+    @Encrypt
     private Long id;
     @ApiModelProperty("任务名称")
     @NotEmpty(message = "error.job.name.cannot.be.null")
     private String name;
+
+    @Encrypt
     @ApiModelProperty("阶段id")
     private Long stageId;
+
+    @Encrypt
     @ApiModelProperty("流水线id")
     private Long pipelineId;
     @ApiModelProperty("任务类型")
@@ -53,7 +58,7 @@ public class DevopsCdJobVO {
 
     //审核人员的集合
     private List<IamUserDTO> iamUserDTOS;
-
+    @Encrypt
     private List<Long> cdAuditUserIds;
     //是否会签
     private Integer countersigned;

@@ -4,12 +4,14 @@ import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.Length;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Created by younger on 2018/3/28.
  */
 public class AppServiceReqVO {
 
+    @Encrypt
     private Long id;
 
     @ApiModelProperty("服务名称/必填")
@@ -20,17 +22,28 @@ public class AppServiceReqVO {
     @ApiModelProperty("服务code/必填")
     @NotNull(message = "error.app.code.null")
     private String code;
+
     @ApiModelProperty("项目id/必填")
     private Long projectId;
+
     @ApiModelProperty("服务类型/必填")
     @NotNull(message = "error.app.type.null")
     private String type;
+
+    @Encrypt
     @ApiModelProperty("模板服务Id")
     private Long templateAppServiceId;
+
     @ApiModelProperty("模板服务版本Id")
+    @Encrypt
     private Long templateAppServiceVersionId;
+
+    @Encrypt
     private Long harborConfigId;
+
+    @Encrypt
     private Long chartConfigId;
+
     private String imgUrl;
 
     public Long getTemplateAppServiceId() {

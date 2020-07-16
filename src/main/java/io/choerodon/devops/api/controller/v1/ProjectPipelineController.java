@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +44,7 @@ public class ProjectPipelineController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @PathVariable("gitlab_project_id") Long gitlabProjectId,
+            @Encrypt
             @ApiParam(value = "流水线ID", required = true)
             @PathVariable("pipeline_id") Long pipelineId) {
         return Optional.ofNullable(projectPipelineService.retry(gitlabProjectId, pipelineId))
@@ -66,6 +68,7 @@ public class ProjectPipelineController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @PathVariable Long gitlabProjectId,
+            @Encrypt
             @ApiParam(value = "流水线ID", required = true)
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         return Optional.ofNullable(projectPipelineService.cancel(gitlabProjectId, pipelineId))

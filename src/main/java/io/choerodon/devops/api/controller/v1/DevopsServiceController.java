@@ -1,5 +1,18 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
+import java.util.Optional;
+import javax.validation.Valid;
+
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -7,23 +20,11 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.api.vo.DevopsServiceVO;
 import io.choerodon.devops.app.service.DevopsServiceService;
-import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -52,6 +53,7 @@ public class DevopsServiceController {
     public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境ID", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "网络名", required = true)
@@ -72,10 +74,11 @@ public class DevopsServiceController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "部署网络")
     @PostMapping
-    public ResponseEntity<Boolean> create(@ApiParam(value = "项目ID", required = true)
-                                          @PathVariable(value = "project_id") Long projectId,
-                                          @ApiParam(value = "部署网络参数", required = true)
-                                          @RequestBody @Valid DevopsServiceReqVO devopsServiceReqVO) {
+    public ResponseEntity<Boolean> create(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "部署网络参数", required = true)
+            @RequestBody @Valid DevopsServiceReqVO devopsServiceReqVO) {
         return Optional.ofNullable(
                 devopsServiceService.create(projectId, devopsServiceReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.CREATED))
@@ -94,12 +97,14 @@ public class DevopsServiceController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "更新网络")
     @PutMapping(value = "/{id}")
-    public ResponseEntity<Boolean> update(@ApiParam(value = "项目ID", required = true)
-                                          @PathVariable(value = "project_id") Long projectId,
-                                          @ApiParam(value = "网络ID", required = true)
-                                          @PathVariable Long id,
-                                          @ApiParam(value = "部署网络参数", required = true)
-                                          @RequestBody DevopsServiceReqVO devopsServiceReqVO) {
+    public ResponseEntity<Boolean> update(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "网络ID", required = true)
+            @PathVariable Long id,
+            @ApiParam(value = "部署网络参数", required = true)
+            @RequestBody DevopsServiceReqVO devopsServiceReqVO) {
         return Optional.ofNullable(
                 devopsServiceService.update(projectId, id, devopsServiceReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.CREATED))
@@ -117,11 +122,12 @@ public class DevopsServiceController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除网络")
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Void> delete(@ApiParam(value = "项目ID", required = true)
-                                       @PathVariable(value = "project_id") Long projectId,
-                                       @ApiParam(value = "网络ID", required = true)
-//                                       @Encrypt(DevopsServiceDTO.ENCRYPT_KEY)
-                                       @PathVariable Long id) {
+    public ResponseEntity<Void> delete(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "网络ID", required = true)
+            @PathVariable Long id) {
         devopsServiceService.delete(projectId, id);
         return ResponseEntity.noContent().build();
     }
@@ -142,8 +148,10 @@ public class DevopsServiceController {
     public ResponseEntity<List<DevopsServiceVO>> listByEnvId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境ID", required = true)
             @RequestParam(value = "env_id") Long envId,
+            @Encrypt
             @ApiParam(value = "服务id", required = false)
             @RequestParam(value = "app_service_id", required = false) Long appServiceId) {
         return Optional.ofNullable(devopsServiceService.listByEnvIdAndAppServiceId(envId, appServiceId))
@@ -165,6 +173,7 @@ public class DevopsServiceController {
     public ResponseEntity<DevopsServiceVO> query(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "网络ID", required = true)
             @PathVariable Long id) {
         return Optional.ofNullable(devopsServiceService.querySingleService(id))
@@ -188,6 +197,7 @@ public class DevopsServiceController {
     public ResponseEntity<DevopsServiceVO> queryByName(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境Id", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "网络名", required = true)
@@ -215,8 +225,10 @@ public class DevopsServiceController {
     public ResponseEntity<Page<DevopsServiceVO>> pageByEnv(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId,
+            @Encrypt
             @ApiParam(value = "服务id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
@@ -247,10 +259,13 @@ public class DevopsServiceController {
     public ResponseEntity<Page<DevopsServiceVO>> pageByInstance(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id")
             @RequestParam(value = "env_id") Long envId,
+            @Encrypt
             @ApiParam(value = "实例id")
             @RequestParam(value = "instance_id", required = false) Long instanceId,
+            @Encrypt
             @ApiParam(value = "服务id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")

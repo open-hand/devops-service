@@ -6,6 +6,7 @@ import javax.validation.Valid;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,9 +32,9 @@ import io.choerodon.swagger.annotation.Permission;
 @RequestMapping("/v1/projects/{project_id}/cicd_pipelines")
 public class CiCdPipelineController {
 
-    private DevopsCiPipelineService devopsCiPipelineService;
-    private CiCdPipelineRecordService ciCdPipelineRecordService;
-    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
+    private final DevopsCiPipelineService devopsCiPipelineService;
+    private final CiCdPipelineRecordService ciCdPipelineRecordService;
+    private final DevopsCdPipelineRecordService devopsCdPipelineRecordService;
 
     public CiCdPipelineController(DevopsCiPipelineService devopsCiPipelineService, CiCdPipelineRecordService ciCdPipelineRecordService, DevopsCdPipelineRecordService devopsCdPipelineRecordService) {
         this.devopsCiPipelineService = devopsCiPipelineService;
@@ -58,6 +59,7 @@ public class CiCdPipelineController {
     public ResponseEntity<CiCdPipelineDTO> update(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "pipeline_id") Long pipelineId,
             @RequestBody @Valid CiCdPipelineVO ciCdPipelineVO) {
@@ -92,6 +94,7 @@ public class CiCdPipelineController {
     public ResponseEntity<CiCdPipelineDTO> disablePipeline(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         return ResponseEntity.ok(devopsCiPipelineService.disablePipeline(projectId, pipelineId));
     }
@@ -102,6 +105,7 @@ public class CiCdPipelineController {
     public ResponseEntity<CiCdPipelineDTO> enablePipeline(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         return ResponseEntity.ok(devopsCiPipelineService.enablePipeline(projectId, pipelineId));
     }
@@ -112,6 +116,7 @@ public class CiCdPipelineController {
     public ResponseEntity<Void> deletePipeline(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         devopsCiPipelineService.deletePipeline(projectId, pipelineId);
         return ResponseEntity.noContent().build();
@@ -121,9 +126,11 @@ public class CiCdPipelineController {
     @ApiOperation(value = "全新执行GitLab流水线")
     @PostMapping(value = "/{pipeline_id}/execute")
     public ResponseEntity<Boolean> executeNew(
+            @Encrypt
             @PathVariable(value = "pipeline_id") Long pipelineId,
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @RequestParam(value = "gitlab_project_id") Long gitlabProjectId,
             @ApiParam(value = "分支名", required = true)
             @RequestParam(value = "ref") String ref) {
