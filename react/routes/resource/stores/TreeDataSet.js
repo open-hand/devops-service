@@ -126,7 +126,7 @@ export default ({ store, type, projectId, formatMessage, organizationId, project
     expandField: 'expand',
     idField: 'key',
     fields: [
-      { name: 'id', type: 'number' },
+      { name: 'id', type: 'string' },
       { name: 'name', type: 'string' },
       { name: 'key', type: 'string' },
       { name: 'parentId', type: 'string' },

@@ -79,7 +79,7 @@ export default ({ formatMessage, projectId, envId, ingressId, serviceDs }) => {
       { name: 'path', type: 'string', defaultValue: '/', label: formatMessage({ id: 'path' }), validator: checkPath, maxLength: 30 },
       {
         name: 'serviceId',
-        type: 'number',
+        type: 'string',
         textField: 'name',
         valueField: 'id',
         label: formatMessage({ id: 'network' }),

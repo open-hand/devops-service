@@ -3,7 +3,7 @@ export default (projectId) => ({
   selection: false,
   paging: false,
   fields: [
-    { name: 'appServiceId', type: 'number' },
+    { name: 'appServiceId', type: 'string' },
     { name: 'appServiceName', type: 'string' },
   ],
   transport: {

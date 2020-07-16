@@ -6,7 +6,7 @@ export default () => ({
   fields: [
     { name: 'certificationCount', type: 'number' },
     { name: 'configMapCount', type: 'number' },
-    { name: 'envId', type: 'number' },
+    { name: 'envId', type: 'string' },
     { name: 'failedInstanceCount', type: 'number' },
     { name: 'ingressCount', type: 'number' },
     { name: 'instanceCount', type: 'number' },
