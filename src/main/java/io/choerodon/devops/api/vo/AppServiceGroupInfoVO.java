@@ -19,6 +19,7 @@ public class AppServiceGroupInfoVO {
     @Encrypt
     private Long mktAppId;
     private String type;
+    @Encrypt
     private Long versionId;
     private List<AppServiceVersionDTO> versions;
     private Boolean share;
