@@ -84,7 +84,7 @@ export default class Upgrade extends Component {
 
         if (shouldLoadValue) {
           const { id, parentId } = vo;
-          const [envId] = parentId.split('-');
+          const [envId] = parentId.split('**');
 
           const newIdArr = {
             appInstanceId: id,

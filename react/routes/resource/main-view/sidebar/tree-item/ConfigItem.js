@@ -39,7 +39,7 @@ function ConfigItem({
 
   function freshMenu() {
     freshTree();
-    const [envId] = record.get('parentId').split('-');
+    const [envId] = record.get('parentId').split('**');
     if (itemType === MAP_GROUP && envId === parentId) {
       setUpTarget({
         type: itemType,
@@ -54,7 +54,7 @@ function ConfigItem({
   }
 
   function getEnvIsNotRunning() {
-    const [envId] = record.get('parentId').split('-');
+    const [envId] = record.get('parentId').split('**');
     const envRecord = treeDs.find((item) => item.get('key') === envId);
     const connect = envRecord.get('connect');
     return !connect;
@@ -64,7 +64,7 @@ function ConfigItem({
     return checkExist({
       projectId,
       type: 'configMap',
-      envId: record.get('parentId').split('-')[0],
+      envId: record.get('parentId').split('**')[0],
       id: record.get('id'),
     }).then((isExist) => {
       if (!isExist) {
@@ -84,7 +84,7 @@ function ConfigItem({
           title: formatMessage({ id: `${intlPrefix}.configMap.edit` }),
           children: <KeyValueModal
             id={record.get('id')}
-            envId={record.get('parentId').split('-')[0]}
+            envId={record.get('parentId').split('**')[0]}
             intlPrefix={intlPrefix}
             modeSwitch
             title="configMap"
@@ -100,7 +100,7 @@ function ConfigItem({
   function getSuffix() {
     const id = record.get('id');
     const recordName = record.get('name');
-    const [envId] = record.get('parentId').split('-');
+    const [envId] = record.get('parentId').split('**');
     const status = record.get('status');
     const disabled = getEnvIsNotRunning() || status === 'operating';
     if (disabled) {

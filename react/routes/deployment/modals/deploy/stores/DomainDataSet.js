@@ -115,7 +115,7 @@ export default ({ formatMessage, intlPrefix, projectId, pathListDs, annotationDs
       },
       {
         name: 'certId',
-        type: 'number',
+        type: 'string',
         textField: 'certName',
         valueField: 'id',
         label: formatMessage({ id: 'domain.form.cert' }),

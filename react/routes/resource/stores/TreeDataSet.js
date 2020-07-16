@@ -27,7 +27,7 @@ function formatResource({ value, expandsKeys, formatMessage }) {
     for (let j = 0; j < RES_TYPES.length; j++) {
       const type = RES_TYPES[j];
       const child = node[type];
-      const groupKey = `${envId}-${type}`;
+      const groupKey = `${envId}**${type}`;
       const group = {
         id: j,
         name: formatMessage({ id: type }),
@@ -41,9 +41,9 @@ function formatResource({ value, expandsKeys, formatMessage }) {
       const items = map(child, (item) => ({
         ...item,
         name: type === 'instances' ? item.code : item.name,
-        key: `${envId}-${item.id}-${type}`,
+        key: `${envId}**${item.id}**${type}`,
         itemType: type,
-        parentId: `${envId}-${type}`,
+        parentId: `${envId}**${type}`,
         expand: false,
       }));
       flatted.push(group, ...items);
@@ -60,7 +60,7 @@ function formatInstance({ value, expandsKeys }) {
     for (let i = 0; i < data.length; i++) {
       const node = data[i];
       const peerNode = omit(node, ['apps', 'instances']);
-      const key = prevKey ? `${prevKey}-${node.id}` : String(node.id);
+      const key = prevKey ? `${prevKey}**${node.id}` : String(node.id);
 
       flatted.push({
         ...peerNode,

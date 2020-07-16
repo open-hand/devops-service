@@ -89,8 +89,8 @@ export default (({ intlPrefix, formatMessage, projectId, sourceDs, store }) => {
       { name: 'type', type: 'string', defaultValue: 'normal', label: formatMessage({ id: `${intlPrefix}.type` }), required: true },
       { name: 'imgUrl', type: 'string' },
       { name: 'appServiceSource', type: 'string', textField: 'text', valueField: 'value', label: formatMessage({ id: `${intlPrefix}.service.source` }), options: sourceDs },
-      { name: 'templateAppServiceId', type: 'number', label: formatMessage({ id: intlPrefix }) },
-      { name: 'templateAppServiceVersionId', type: 'number', textField: 'version', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.version` }) },
+      { name: 'templateAppServiceId', type: 'string', label: formatMessage({ id: intlPrefix }) },
+      { name: 'templateAppServiceVersionId', type: 'string', textField: 'version', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.version` }) },
     ],
     events: {
       update: handleUpdate,

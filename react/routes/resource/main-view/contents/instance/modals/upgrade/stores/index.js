@@ -38,7 +38,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
 
     useEffect(() => {
       const record = upgradeDs.current;
-      const [envId] = parentId.split('-');
+      const [envId] = parentId.split('**');
       if (record) {
         record.init({
           appServiceVersionId: versionId,

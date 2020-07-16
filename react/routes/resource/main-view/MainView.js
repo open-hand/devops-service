@@ -74,7 +74,7 @@ const MainView = observer(() => {
   const deleteModals = useMemo(() => (
     map(getDeleteArr, ({ name, display, deleteId, type, refresh, envId }) => (<DeleteModal
       key={deleteId}
-      envId={envId || parentId.split('-')[0]}
+      envId={envId || parentId.split('**')[0]}
       store={mainStore}
       title={`${formatMessage({ id: `${type}.delete` })}“${name}”`}
       visible={display}

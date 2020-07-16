@@ -45,12 +45,11 @@ export const StoreProvider = injectIntl(inject('AppState')(observer(
       // 此处的key是TreeDataSet里的formatInstance中的key值
       // 这个key的规则是每一级别的节点的id属性 然后用 '-' 相连接 例如：’523-1080-21‘
       // 这里只取第一级别的key值，作为环境id
-      if (key && key.indexOf('-') < 0) {
+      if (key && key.indexOf('**') < 0) {
         baseInfoDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${key}/info`;
         baseInfoDs.query();
       }
     }, [projectId, key]);
-    
 
     const value = {
       ...props,
