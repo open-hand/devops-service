@@ -73,6 +73,7 @@ public class CiCdPipelineController {
     public ResponseEntity<CiCdPipelineVO> query(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         return ResponseEntity.ok(devopsCiPipelineService.query(projectId, pipelineId));
