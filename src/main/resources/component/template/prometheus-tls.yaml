@@ -6,7 +6,7 @@ alertmanager:
       volumeClaimTemplate:
         spec:
           accessModes:
-          - {{altermanagerAccesssMode}}
+            - {{altermanagerAccesssMode}}
           resources:
             requests:
               storage: {{altermanagerStorage}}
@@ -20,15 +20,22 @@ grafana:
   ingress:
     enabled: true
     hosts:
-    - {{host}}
+      - {{host}}
+    tls:
+      - secretName: tls-grafana-nginx
+        hosts:
+          - {{host}}
     annotations:
+      kubernetes.io/ingress.class: "nginx"
+      kubernetes.io/tls-acme: "true"
+      certmanager.k8s.io/cluster-issuer: "letsencrypt-prod"
       # iframe 嵌套跨域
       nginx.ingress.kubernetes.io/configuration-snippet: |
         more_set_headers "X-Frame-Options: ALLOW-ALL";
   persistence:
     enabled: true
     accessModes:
-    - {{grafanaAccessMode}}
+      - {{grafanaAccessMode}}
     size: {{grafanaStorage}}
     existingClaim: c7n-grafana-pvc
     # 选择 PVC 绑定的 PV
@@ -68,7 +75,7 @@ prometheus:
       volumeClaimTemplate:
         spec:
           accessModes:
-          - {{prometheusAccessMode}}
+            - {{prometheusAccessMode}}
           resources:
             requests:
               storage: {{prometheusStorage}}

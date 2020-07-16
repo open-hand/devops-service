@@ -1,9 +1,9 @@
 package io.choerodon.devops.api.vo;
 
-import javax.validation.constraints.NotNull;
-
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * @author: 25499
@@ -62,6 +62,9 @@ public class DevopsPrometheusVO {
 
     @ApiModelProperty("cluster编码")
     private String clusterCode;
+
+    @ApiModelProperty("是否启用tls")
+    private Boolean enableTls;
 
     private String clientName;
 
@@ -193,5 +196,13 @@ public class DevopsPrometheusVO {
 
     public void setClientName(String clientName) {
         this.clientName = clientName;
+    }
+
+    public Boolean getEnableTls() {
+        return enableTls;
+    }
+
+    public void setEnableTls(Boolean enableTls) {
+        this.enableTls = enableTls;
     }
 }

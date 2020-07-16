@@ -22,4 +22,10 @@ databaseChangeLog(logicalFilePath: 'devops_prometheus.groovy') {
         }
     }
 
+    changeSet(author: 'lihao', id: '2020-07-16-add-column') {
+        addColumn(tableName: 'devops_prometheus') {
+            column(name: 'enable_tls', type: 'tinyint(1)', remarks: '是否启用tls', afterColumn: 'cluster_id', defaultValue: 0)
+        }
+    }
+
 }

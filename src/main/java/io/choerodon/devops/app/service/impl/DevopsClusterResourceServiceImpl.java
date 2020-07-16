@@ -283,7 +283,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             devopsClusterResourceDTO.setConfigId(newPrometheusDTO.getId());
             devopsClusterResourceDTO.setName(devopsClusterDTO.getName());
             devopsClusterResourceDTO.setCode(devopsClusterDTO.getCode());
-            devopsClusterResourceDTO.setType(ClusterResourceType.PROMETHEUS.getType());
+            devopsClusterResourceDTO.setType(getPrometheusType(newPrometheusDTO.getEnableTls()).getType());
             devopsClusterResourceDTO.setOperate(ClusterResourceOperateType.INSTALL.getType());
             devopsClusterResourceService.baseCreate(devopsClusterResourceDTO);
 
@@ -316,11 +316,12 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         devopsPrometheusDTO.setPrometheusPvId(devopsPrometheusVO.getPrometheusPvId());
         devopsPrometheusDTO.setGrafanaPvId(devopsPrometheusVO.getGrafanaPvId());
         devopsPrometheusDTO.setAlertmanagerPvId(devopsPrometheusVO.getAlertmanagerPvId());
+        devopsPrometheusDTO.setEnableTls(devopsPrometheusVO.getEnableTls());
         if (devopsPrometheusMapper.updateByPrimaryKey(devopsPrometheusDTO) != 1) {
             throw new CommonException("error.prometheus.update");
         }
         // 添加prometheus挂载的pvc
-        DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, getPrometheusType(devopsPrometheusDTO.getEnableTls()).getType());
         clusterResourceDTO.setOperate(ClusterResourceOperateType.UPGRADE.getType());
 
         setPvs(devopsPrometheusDTO);
@@ -644,5 +645,13 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         // 添加两个角色id
         clientVO.setAccessRoles(String.valueOf(projectAdminId).concat(",").concat(String.valueOf(tenantAdminId)));
         return baseServiceClientOperator.createClient(devopsClusterDTO.getOrganizationId(), clientVO);
+    }
+
+    public static ClusterResourceType getPrometheusType(Boolean enableTls) {
+        if (enableTls) {
+            return ClusterResourceType.PROMETHEUSWITHTLS;
+        } else {
+            return ClusterResourceType.PROMETHEUS;
+        }
     }
 }
