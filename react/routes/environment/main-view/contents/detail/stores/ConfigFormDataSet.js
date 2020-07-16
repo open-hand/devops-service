@@ -45,7 +45,7 @@ export default ({ formatMessage, intlPrefix, projectId, store, envId }) => {
       maxLength: 200,
     }, {
       name: 'appServiceId',
-      type: 'number',
+      type: 'string',
       textField: 'text',
       label: '应用服务',
       required: true,
@@ -60,7 +60,7 @@ export default ({ formatMessage, intlPrefix, projectId, store, envId }) => {
       type: 'string',
     }, {
       name: 'envId',
-      type: 'number',
+      type: 'string',
     }],
     transport: {
       read: {

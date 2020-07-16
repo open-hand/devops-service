@@ -5,7 +5,7 @@ export default () => ({
   fields: [
     { name: 'name', type: 'string' },
     { name: 'connect', type: 'boolean' },
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
   ],
   transport: {
     read: {

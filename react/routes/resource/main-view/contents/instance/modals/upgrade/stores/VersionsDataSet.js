@@ -30,7 +30,7 @@ export default ({ formatMessage, intlPrefix, projectId, appServiceId, upgradeSto
       },
     },
     fields: [
-      { name: 'id', type: 'number' },
+      { name: 'id', type: 'string' },
       { name: 'version', type: 'string' },
     ],
     events: {

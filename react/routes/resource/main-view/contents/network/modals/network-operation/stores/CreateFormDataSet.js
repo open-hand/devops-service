@@ -41,7 +41,6 @@ export default ({ formatMessage, portDs, endPointsDs, targetLabelsDs, appInstanc
     }
   }
   
-
   function checkInstance(value, name, record) {
     if (!networkId) return;
     let msg;
@@ -80,7 +79,7 @@ export default ({ formatMessage, portDs, endPointsDs, targetLabelsDs, appInstanc
       },
       {
         name: 'appServiceId',
-        type: 'number', 
+        type: 'string', 
         label: formatMessage({ id: 'network.form.app' }),
         required: true,
         valueField: 'id',
@@ -188,7 +187,6 @@ function handleTargetChange({ targetLabelsDs, endPointsDs, value, record }) {
   }
 }
 
-
 function handleTypeChange({ portDs, value, record }) {
   portDs.reset();
   portDs.create();
@@ -220,7 +218,6 @@ function createNetworkName(opt) {
   initName = `${initName}-${uuidv1().slice(0, 6)}`;
   return initName;
 }
-
 
 export function transFormData(data, formatMessage, envId) {
   const { portDs: portData, endPointsDs: endPointsData, targetLabelsDs: targetLabelsData, target, appInstance, name, type, externalIps, targetIps, appServiceId } = data;
@@ -279,7 +276,6 @@ export function transFormData(data, formatMessage, envId) {
     externalIp = ips || null;
   }
  
-
   return {
     appServiceId,
     envId,

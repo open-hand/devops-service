@@ -23,7 +23,7 @@ export default ({ formatMessage, intlPrefix }) => ({
       type: 'dateTime',
       label: formatMessage({ id: `${intlPrefix}.environment.permission.addTime` }),
     },
-    { name: 'iamUserId', type: 'number', textField: 'realName', valueField: 'iamUserId', label: formatMessage({ id: `${intlPrefix}.project.member` }) },
+    { name: 'iamUserId', type: 'string', textField: 'realName', valueField: 'iamUserId', label: formatMessage({ id: `${intlPrefix}.project.member` }) },
   ],
   queryFields: [
     {

@@ -20,7 +20,7 @@ export default ({ formatMessage, intlPrefix, projectId, envId }) => ({
     }),
   },
   fields: [
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
     { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.application.net.name` }) },
     { name: 'error', type: 'string' },
     { name: 'status', type: 'string' },
@@ -28,7 +28,7 @@ export default ({ formatMessage, intlPrefix, projectId, envId }) => ({
     { name: 'type', type: 'string', label: formatMessage({ id: `${intlPrefix}.application.net.configType` }) },
     { name: 'loadBalanceIp', type: 'string' },
     { name: 'target', type: 'object' },
-    { name: 'appId', type: 'number' },
+    { name: 'appId', type: 'string' },
   ],
   queryFields: [
     { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.application.net.name` }) },

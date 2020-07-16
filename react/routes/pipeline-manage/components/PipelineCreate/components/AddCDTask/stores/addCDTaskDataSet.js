@@ -310,7 +310,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
     },
   }, {
     name: 'cdAuditUserIds',
-    type: 'number',
+    type: 'string',
     label: '审核人员',
     textField: 'realName',
     multiple: true,
