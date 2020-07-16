@@ -35,11 +35,14 @@ spec:
         - -c
         - >
           java -Ddata.init=true
-          -Ddata.update.exclusion={{ .Values.preJob.preInitDB.datasource.exclusion }}
           -Dspring.datasource.url="{{ .Values.preJob.preInitDB.datasource.url }}"
           -Dspring.datasource.username={{ .Values.preJob.preInitDB.datasource.username }}
           -Dspring.datasource.password={{ .Values.preJob.preInitDB.datasource.password }}
           -Dspring.datasource.driver-class-name={{ .Values.preJob.preInitDB.datasource.driver }}
+          -Dinstaller.datasources.platform.url={{ .Values.preJob.preInitDB.datasources.platform.url }}
+          -Dinstaller.datasources.platform.username={{ .Values.preJob.preInitDB.datasources.platform.username }}
+          -Dinstaller.datasources.platform.password={{ .Values.preJob.preInitDB.datasources.platform.password }}
+          -Dinstaller.datasources.platform.driver-class-name={{ .Values.preJob.preInitDB.datasources.platform.driver-class-name }}
           -Dinstaller.jarPath=/choerodon/{{ .Chart.Name }}.jar
           -Dlogging.level.root=info
           -Dinstaller.mapping=script/db/service-mapping.xml
