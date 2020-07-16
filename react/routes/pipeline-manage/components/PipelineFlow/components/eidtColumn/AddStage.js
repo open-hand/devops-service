@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Form, Select, SelectBox, TextField, Tooltip } from 'choerodon-ui/pro';
+import { Form, Select, SelectBox, TextField, Tooltip, Icon } from 'choerodon-ui/pro';
 
 const { Option } = Select;
 
@@ -49,14 +49,18 @@ export default observer(({ addStepDs, curType, optType, appServiceType }) => {
       </Select>
       {
         addStepDs?.current?.get('type') === 'CD' ? (
-          <SelectBox
-            name="triggerType"
-            className="addStageForm-triggerType-select"
-            help="自动流转表示成功执行完上一阶段后，流水线会自动流转并开始执行此阶段；手动流转则表示上一阶段成功执行后，需要人工审核通过后才能执行此阶段。"
-          >
-            <Option value="auto">自动流转</Option>
-            <Option value="manual">手动流转</Option>
-          </SelectBox>
+          <div style={{ position: 'relative' }}>
+            <SelectBox
+              name="triggerType"
+              className="addStageForm-triggerType-select"
+            >
+              <Option value="auto">自动流转</Option>
+              <Option value="manual">手动流转</Option>
+            </SelectBox>
+            <Tooltip title="自动流转表示成功执行完上一阶段后，流水线会自动流转并开始执行此阶段；手动流转则表示上一阶段成功执行后，需要人工审核通过后才能执行此阶段。">
+              <Icon type="help" style={{ position: 'absolute', top: '-19px', left: '79px' }} />
+            </Tooltip>
+          </div>
         ) : ''
       }
       {

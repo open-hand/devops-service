@@ -1166,16 +1166,20 @@ const AddTask = observer(() => {
                         }}
                       />
                     </div>,
-                    <SelectBox
-                      style={{
-                        marginTop: 20,
-                      }}
-                      name="skipDockerTlsVerify"
-                      help="是否对harbor域名进行证书校验"
-                    >
-                      <Option value>是</Option>
-                      <Option value={false}>否</Option>
-                    </SelectBox>,
+                    <div style={{ position: 'relative' }}>
+                      <SelectBox
+                        style={{
+                          marginTop: 20,
+                        }}
+                        name="skipDockerTlsVerify"
+                      >
+                        <Option value>是</Option>
+                        <Option value={false}>否</Option>
+                      </SelectBox>
+                      <Tooltip title="是否对harbor域名进行证书校验">
+                        <Icon type="help" style={{ position: 'absolute', top: '1px', left: '83px' }} />
+                      </Tooltip>
+                    </div>,
                   ];
                 }
               }
@@ -1298,6 +1302,7 @@ const AddTask = observer(() => {
                 style={{ marginRight: 8 }}
                 name="triggerType"
                 allowClear={false}
+                clearButton={false}
               >
                 <Option value="refs">分支类型匹配</Option>
                 <Option value="regex">正则匹配</Option>

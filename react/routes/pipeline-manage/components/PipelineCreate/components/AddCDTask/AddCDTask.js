@@ -412,6 +412,7 @@ export default observer(() => {
             className="addcdTask-triggerType"
             onChange={() => ADDCDTaskDataSet.current.set('triggerValue', undefined)}
             colSpan={1}
+            clearButton={false}
           >
             <Option value="refs">分支类型匹配</Option>
             <Option value="regex">正则匹配</Option>
