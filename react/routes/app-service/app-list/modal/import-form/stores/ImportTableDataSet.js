@@ -18,7 +18,7 @@ export default ({ intlPrefix, formatMessage, projectId }) => ({
     },
   },
   fields: [
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
     { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }) },
     { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.code` }) },
     { name: 'type', type: 'string', label: formatMessage({ id: `${intlPrefix}.type` }) },

@@ -34,7 +34,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
 
     useEffect(() => {
       if (parentId) {
-        const envId = parentId.split('-')[0];
+        const envId = parentId.split('**')[0];
         treeDs.transport.destroy = ({ data: [data] }) => {
           const url = {
             [SERVICES_ITEM]: `/devops/v1/projects/${id}/service/${data.id}`,
