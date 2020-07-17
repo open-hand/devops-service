@@ -8,7 +8,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 public enum VolumeTypeEnum {
 
     NFS("nfs"),
-    HOSTPATH("HostPath");
+    HOSTPATH("HostPath"),
+    LOCALPV("LocalPv");
 
     private String type;
 
