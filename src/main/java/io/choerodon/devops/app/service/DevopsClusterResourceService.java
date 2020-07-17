@@ -93,7 +93,7 @@ public interface DevopsClusterResourceService {
      *
      * @param clusterId
      */
-    void basedeletePrometheus(Long clusterId);
+    void baseDeletePrometheus(Long clusterId);
 
     String getGrafanaUrl(Long projectId, Long clusterId, String type);
 
@@ -118,8 +118,9 @@ public interface DevopsClusterResourceService {
      *
      * @param instanceId 实例id
      * @param envId      环境id
+     * @param type       prometheus类型
      */
-    void retryPrometheusInstance(Long instanceId, Long envId);
+    void retryPrometheusInstance(Long instanceId, Long envId, String type);
 
     void retryInstallPrometheus(Long projectId, Long clusterId);
 
