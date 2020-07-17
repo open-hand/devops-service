@@ -20,7 +20,7 @@ export default ((intlPrefix, formatMessage, projectId) => ({
     }),
   },
   fields: [
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
     { name: 'name', type: 'string', label: formatMessage({ id: 'name' }) },
     { name: 'description', type: 'string', label: formatMessage({ id: 'description' }) },
     { name: 'clusterName', type: 'string', label: formatMessage({ id: `${intlPrefix}.belong.cluster` }) },
