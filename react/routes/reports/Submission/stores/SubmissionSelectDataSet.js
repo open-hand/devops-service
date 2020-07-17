@@ -4,7 +4,7 @@ export default ({ formatMessage }) => ({
   }],
   fields: [{
     name: 'apps',
-    type: 'number',
+    type: 'string',
     multiple: true,
     label: formatMessage({ id: 'chooseApp' }),
   }],

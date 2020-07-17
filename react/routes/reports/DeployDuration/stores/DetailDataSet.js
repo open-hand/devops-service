@@ -38,7 +38,7 @@ export default ({ formatMessage, appServiceDs, chartsDs, envDs, tableDs }) => {
     fields: [
       {
         name: 'envId',
-        type: 'number',
+        type: 'string',
         textField: 'name',
         valueField: 'id',
         label: formatMessage({ id: 'envName' }),
