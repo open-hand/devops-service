@@ -58,8 +58,11 @@ public class DevopsCdJobRecordController {
     @ApiOperation(value = "查看部署任务日志")
     @GetMapping("/{job_record_id}/logs")
     public ResponseEntity<List<PodEventVO>> queryDeployJobLogs(@PathVariable(value = "project_id") Long projectId,
+                                                               @Encrypt
                                                                @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,
+                                                               @Encrypt
                                                                @PathVariable(value = "stage_record_id") Long stageRecordId,
+                                                               @Encrypt
                                                                @PathVariable(value = "job_record_id") Long jobRecordId) {
         return ResponseEntity.ok(devopsCdJobRecordService.queryDeployJobLogs(projectId, pipelineRecordId, stageRecordId, jobRecordId));
     }

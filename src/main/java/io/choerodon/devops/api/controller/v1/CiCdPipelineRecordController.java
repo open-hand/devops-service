@@ -87,6 +87,7 @@ public class CiCdPipelineRecordController {
     public ResponseEntity<Page<CiCdPipelineRecordVO>> pagingPipelineRecord(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "pipeline_id") Long pipelineId,
             @ApiIgnore
