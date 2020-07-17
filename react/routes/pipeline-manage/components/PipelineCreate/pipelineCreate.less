@@ -13,4 +13,24 @@
   align-items: center;
   cursor: pointer;
 }
+.border-advanced-content {
+  content: '';
+  position: absolute;
+  left: -25px;
+  height: 1px;
+  width: 107%;
+  background-color: #d8d8d8;
+}
+.border-advanced {
+  position: relative;
+  padding: 18px 0;
+  &::before {
+    top: 0;
+    .border-advanced-content
+  }
+  &::after {
+    bottom: 0;
+    .border-advanced-content
+  }
+}
 
