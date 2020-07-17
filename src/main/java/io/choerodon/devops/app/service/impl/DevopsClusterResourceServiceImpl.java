@@ -206,14 +206,14 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         clusterConfigVO.setType(ClusterResourceType.CERTMANAGER.getType());
         list.add(clusterConfigVO);
         // 查询prometheus 的状态和信息
-        DevopsClusterResourceDTO prometheus = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsClusterResourceDTO prometheus = devopsClusterResourceMapper.queryPrometheusByClusterId(clusterId);
         ClusterResourceVO clusterResourceVO = new ClusterResourceVO();
         if (ObjectUtils.isEmpty(prometheus)) {
             clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALLED.getStatus());
         } else {
             clusterResourceVO = queryPrometheusStatus(projectId, clusterId);
         }
-        clusterResourceVO.setType(ClusterResourceType.PROMETHEUS.getType());
+        clusterResourceVO.setType(prometheus.getType());
         list.add(clusterResourceVO);
         return list;
     }
@@ -233,8 +233,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     @Transactional
-    public void basedeletePrometheus(Long clusterId) {
-        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+    public void baseDeletePrometheus(Long clusterId) {
+        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryPrometheusByClusterId(clusterId);
         if (devopsPrometheusMapper.deleteByPrimaryKey(devopsClusterResourceDTO.getConfigId()) != 1) {
             throw new CommonException("error.delete.devopsPrometheus");
         }
@@ -267,10 +267,10 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         devopsClusterService.baseUpdate(null, devopsClusterDTO);
 
         DevopsPrometheusDTO newPrometheusDTO = ConvertUtils.convertObject(devopsPrometheusVO, DevopsPrometheusDTO.class);
-        DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsClusterResourceDTO clusterResourceDTO = devopsClusterResourceMapper.queryPrometheusByClusterId(clusterId);
         //安装失败点击安装
         if (clusterResourceDTO != null) {
-            retryPrometheusInstance(clusterResourceDTO.getObjectId(), systemEnvId);
+            retryPrometheusInstance(clusterResourceDTO.getObjectId(), systemEnvId, clusterResourceDTO.getType());
         } else {
             //首次点击安装
             newPrometheusDTO.setClusterId(clusterId);
@@ -335,7 +335,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     public DevopsPrometheusVO queryPrometheus(Long clusterId) {
-        DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryPrometheusByClusterId(clusterId);
         DevopsPrometheusVO devopsPrometheusVO = devopsPrometheusMapper.queryPrometheusWithPvById(devopsClusterResourceDTO.getConfigId());
 
         // 如果PV的状态为null，说明PV已经被删除，则将prometheus绑定的对应PV信息置为null
@@ -363,7 +363,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     public DevopsPrometheusDTO baseQueryPrometheusDTO(Long clusterId) {
-        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryPrometheusByClusterId(clusterId);
         if (devopsClusterResourceDTO == null) {
             return null;
         } else {
@@ -373,7 +373,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     public PrometheusStageVO queryDeployStage(Long clusterId) {
-        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryPrometheusByClusterId(clusterId);
         PrometheusStageVO prometheusStageVO = new PrometheusStageVO(
                 PrometheusDeploy.WAITING.getStaus(),
                 PrometheusDeploy.WAITING.getStaus());
@@ -395,7 +395,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                     //pod异常 安装组件失败，发送webhook
                     sendNotificationService.sendWhenResourceInstallFailed(devopsClusterResourceDTO,
                             SendSettingEnum.RESOURCE_INSTALLFAILED.value(),
-                            ClusterResourceType.PROMETHEUS.getType(),
+                            devopsClusterResourceDTO.getType(),
                             clusterId,
                             errorStr.toString());
                 }
@@ -412,7 +412,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     public Boolean uninstallPrometheus(Long projectId, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryPrometheusByClusterId(clusterId);
         componentReleaseService.deleteReleaseForComponent(devopsClusterResourceDTO.getObjectId(), true);
         devopsClusterResourceDTO.setOperate(ClusterResourceOperateType.UNINSTALL.getType());
         devopsClusterResourceService.baseUpdate(devopsClusterResourceDTO);
@@ -421,13 +421,15 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     public ClusterResourceVO queryPrometheusStatus(Long projectId, Long clusterId) {
-        DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryPrometheusByClusterId(clusterId);
         ClusterResourceVO clusterResourceVO = new ClusterResourceVO();
-        clusterResourceVO.setType(ClusterResourceType.PROMETHEUS.getType());
         if (devopsClusterResourceDTO == null) {
+            clusterResourceVO.setType(ClusterResourceType.PROMETHEUS.getType());
             clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALLED.getStatus());
             return clusterResourceVO;
         }
+
+        clusterResourceVO.setType(devopsClusterResourceDTO.getType());
         AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getObjectId());
 
         //删除操作的状态
@@ -466,7 +468,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     public String getGrafanaUrl(Long projectId, Long clusterId, String type) {
-        DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsClusterResourceDTO clusterResourceDTO = devopsClusterResourceMapper.queryPrometheusByClusterId(clusterId);
         ClusterResourceVO clusterResourceVO = queryPrometheusStatus(projectId, clusterId);
         if (!clusterResourceVO.getStatus().equals(ClusterResourceStatus.AVAILABLE.getStatus())) {
             return null;
@@ -479,7 +481,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Override
     public void installPrometheus(Long clusterId, DevopsPrometheusDTO devopsPrometheusDTO) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
-        DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsClusterResourceDTO clusterResourceDTO = devopsClusterResourceMapper.queryPrometheusByClusterId(clusterId);
         // 设置当前操作用户
         CustomContextUtil.setUserContext(clusterResourceDTO.getLastUpdatedBy());
         devopsPrometheusDTO.setClusterCode(devopsClusterDTO.getCode());
@@ -504,9 +506,9 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
 
     @Override
-    public void retryPrometheusInstance(Long instanceId, Long envId) {
+    public void retryPrometheusInstance(Long instanceId, Long envId, String type) {
         // 三步重试每次只重试一步
-        if (componentReleaseService.retryPushingToGitLab(instanceId, ClusterResourceType.PROMETHEUS)) {
+        if (componentReleaseService.retryPushingToGitLab(instanceId, ClusterResourceType.valueOf(type))) {
             return;
         }
 
@@ -514,7 +516,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             return;
         }
 
-        if (componentReleaseService.restartComponentInstance(instanceId, ClusterResourceType.PROMETHEUS)) {
+        if (componentReleaseService.restartComponentInstance(instanceId, ClusterResourceType.valueOf(type))) {
             return;
         }
     }
@@ -523,12 +525,12 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     public void retryInstallPrometheus(Long projectId, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-        DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsClusterResourceDTO clusterResourceDTO = devopsClusterResourceMapper.queryPrometheusByClusterId(clusterId);
         if (clusterResourceDTO == null || clusterResourceDTO.getObjectId() == null) {
             throw new CommonException("error.prometheus.retry");
         } else {
             AppServiceInstanceDTO instanceDTO = appServiceInstanceService.baseQuery(clusterResourceDTO.getObjectId());
-            retryPrometheusInstance(clusterResourceDTO.getObjectId(), instanceDTO.getEnvId());
+            retryPrometheusInstance(clusterResourceDTO.getObjectId(), instanceDTO.getEnvId(), clusterResourceDTO.getType());
         }
     }
 
