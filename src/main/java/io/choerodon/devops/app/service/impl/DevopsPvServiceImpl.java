@@ -12,6 +12,7 @@ import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
 import io.choerodon.devops.api.vo.DevopsPvReqVO;
 import io.choerodon.devops.api.vo.DevopsPvVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
+import io.choerodon.devops.api.vo.kubernetes.LocalPvResource;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.PersistentVolumePayload;
 import io.choerodon.devops.app.service.*;
@@ -603,6 +604,35 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 DevopsPvValidator.checkConfigValue(hostPath, volumeTypeEnum);
                 v1PersistentVolumeSpec.setHostPath(hostPath);
                 devopsPvDTO.setValueConfig(JSONObject.toJSONString(hostPath));
+                break;
+            case LOCALPV:
+                LocalPvResource localPvResource = gson.fromJson(devopsPvDTO.getValueConfig(), LocalPvResource.class);
+                //反序列化成对象之后校验
+                DevopsPvValidator.checkConfigValue(localPvResource, volumeTypeEnum);
+
+                V1LocalVolumeSource v1LocalVolumeSource = new V1LocalVolumeSource();
+                v1LocalVolumeSource.setPath(localPvResource.getPath());
+
+                v1PersistentVolumeSpec.setLocal(v1LocalVolumeSource);
+
+                V1VolumeNodeAffinity nodeAffinity = new V1VolumeNodeAffinity();
+                V1NodeSelector v1NodeSelector = new V1NodeSelector();
+                V1NodeSelectorTerm v1NodeSelectorTerm = new V1NodeSelectorTerm();
+
+                V1NodeSelectorRequirement v1NodeSelectorRequirement = new V1NodeSelectorRequirement();
+                v1NodeSelectorRequirement.setKey("kubernetes.io/hostname");
+                v1NodeSelectorRequirement.setOperator("in");
+                v1NodeSelectorRequirement.setValues(Collections.singletonList(localPvResource.getNodeName()));
+
+                v1NodeSelectorTerm.setMatchExpressions(Collections.singletonList(v1NodeSelectorRequirement));
+
+                v1NodeSelector.setNodeSelectorTerms(Collections.singletonList(v1NodeSelectorTerm));
+
+                nodeAffinity.setRequired(v1NodeSelector);
+
+
+                v1PersistentVolumeSpec.setNodeAffinity(nodeAffinity);
+                devopsPvDTO.setValueConfig(JSONObject.toJSONString(v1LocalVolumeSource));
                 break;
         }
         v1PersistentVolume.setSpec(v1PersistentVolumeSpec);
