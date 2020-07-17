@@ -75,5 +75,10 @@ export default ({ formatMessage, intlPrefix, projectId, clusterId, pvDs }) => ({
       required: true,
       options: pvDs,
     },
+    {
+      name: 'enableTls',
+      type: 'boolean',
+      defaultValue: false,
+    },
   ],
 });

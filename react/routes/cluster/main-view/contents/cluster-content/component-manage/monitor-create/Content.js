@@ -1,11 +1,14 @@
 import React, { useMemo } from 'react';
 import { Choerodon } from '@choerodon/boot';
-import { Form, Password, Select, Spin, TextField } from 'choerodon-ui/pro';
+import { Form, Password, Select, Spin, TextField, SelectBox } from 'choerodon-ui/pro';
 import { filter, forEach, map } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { usePrometheusStore } from './stores';
+import Tips from '../../../../../../../components/new-tips';
 
 import './index.less';
+
+const { Option } = Select;
 
 export default observer((props) => {
   const {
@@ -96,6 +99,26 @@ export default observer((props) => {
       </div>
       <Form dataSet={formDs}>
         {map(pvSelect, (item) => getSelectContent(item))}
+      </Form>
+      <div className={`${prefixCls}-monitor-create-https`}>
+        <Tips
+          title={formatMessage({ id: `${intlPrefix}.monitor.https` })}
+          helpText={formatMessage({ id: `${intlPrefix}.monitor.https.tips` })}
+        />
+      </div>
+      <Form dataSet={formDs}>
+        <SelectBox name="enableTls">
+          <Option value>
+            <span className={`${prefixCls}-monitor-create-https-span`}>
+              {formatMessage({ id: `${intlPrefix}.monitor.https.true` })}
+            </span>
+          </Option>
+          <Option value={false}>
+            <span className={`${prefixCls}-monitor-create-https-span`}>
+              {formatMessage({ id: `${intlPrefix}.monitor.https.false` })}
+            </span>
+          </Option>
+        </SelectBox>
       </Form>
     </div>
   );

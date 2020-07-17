@@ -1347,6 +1347,10 @@ const cluster = {
   'c7ncd.cluster.monitor.password': 'admin密码',
   'c7ncd.cluster.monitor.ingress': '域名地址',
   'c7ncd.cluster.monitor.pv': '选择存储',
+  'c7ncd.cluster.monitor.https': '是否安装https',
+  'c7ncd.cluster.monitor.https.true': '是',
+  'c7ncd.cluster.monitor.https.false': '否',
+  'c7ncd.cluster.monitor.https.tips': '安装https提示文案',
   'c7ncd.cluster.component.monitor': '监控组件',
   'c7ncd.cluster.component.monitor.des':
     '监控组件用于帮助监控集群中资源的使用情况。该组件包括了Prometheus、Grafana和AlertManager',
