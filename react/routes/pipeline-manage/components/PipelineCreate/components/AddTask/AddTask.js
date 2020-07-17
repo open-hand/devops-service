@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { axios } from '@choerodon/boot';
 import { Form, Select, TextField, Modal, SelectBox, Button, Password } from 'choerodon-ui/pro';
 import _ from 'lodash';
-import { Icon, Spin, Tooltip } from 'choerodon-ui';
+import { Icon, Spin, Tooltip, Divider } from 'choerodon-ui';
 import { Base64 } from 'js-base64';
 import Tips from '../../../../../../components/new-tips';
 import YamlEditor from '../../../../../../components/yamlEditor';
@@ -541,12 +541,12 @@ const AddTask = observer(() => {
             </div>
           </div>
         )) : (
-          <div className="AddTask_stepMapContent">
-            <div className="AddTask_stepAdd">
-              <span onClick={() => handleAddStepItem(0)} style={{ fontSize: 20 }}>+</span>
+            <div className="AddTask_stepMapContent">
+              <div className="AddTask_stepAdd">
+                <span onClick={() => handleAddStepItem(0)} style={{ fontSize: 20 }}>+</span>
+              </div>
             </div>
-          </div>
-        )
+          )
       }
     </div>
   );
@@ -1232,7 +1232,7 @@ const AddTask = observer(() => {
   };
 
   const getImageDom = () => [
-    <div colSpan={4} newLine className="advanced_text" style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
+    <div colSpan={4} newLine className="advanced_text border-advanced" style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
       高级设置<Icon style={{ fontSize: 18 }} type={expandIf ? 'expand_less' : 'expand_more'} />
     </div>,
     expandIf ? (
@@ -1316,45 +1316,45 @@ const AddTask = observer(() => {
                   help="'您可在此输入正则表达式来配置触发分支；例：若想匹配以 feature 开头的分支，可以输入 ^feature.*。更多表达式，详见用户手册。若不填写，则默认为所有分支和tag'"
                 />
               ) : (
-                <Select
-                  combo
-                  searchable
-                  multiple
-                  name="triggerValue"
-                  showHelp="tooltip"
-                  help={renderTriggerTypeTips()}
-                  searchMatcher="branchName"
-                  optionRenderer={({ text }) => renderderBranchs({ text })}
-                  maxTagCount={3}
-                  maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
-                    {`+${omittedValues.length}`}
-                  </Tooltip>}
-                  className="addTaskForm-select"
-                  renderer={renderderBranchs}
-                  colSpan={2}
-                >
-                  {
+                  <Select
+                    combo
+                    searchable
+                    multiple
+                    name="triggerValue"
+                    showHelp="tooltip"
+                    help={renderTriggerTypeTips()}
+                    searchMatcher="branchName"
+                    optionRenderer={({ text }) => renderderBranchs({ text })}
+                    maxTagCount={3}
+                    maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
+                      {`+${omittedValues.length}`}
+                    </Tooltip>}
+                    className="addTaskForm-select"
+                    renderer={renderderBranchs}
+                    colSpan={2}
+                  >
+                    {
                       branchsList.map(b => (
                         <Option value={b.value}>{b.name}</Option>
                       ))
                     }
-                </Select>
-              )}
+                  </Select>
+                )}
             </div>,
             getImageDom(),
             getShareSettings(),
             AddTaskFormDataSet.current.get('type') !== 'chart' ? getMissionOther() : '',
           ] : [
-            <YamlEditor
-              readOnly={false}
-              colSpan={4}
-              newLine
-              value={customYaml}
-              onValueChange={(valueYaml) => setCustomYaml(valueYaml)}
-              modeChange={false}
-              showError={false}
-            />,
-          ]
+              <YamlEditor
+                readOnly={false}
+                colSpan={4}
+                newLine
+                value={customYaml}
+                onValueChange={(valueYaml) => setCustomYaml(valueYaml)}
+                modeChange={false}
+                showError={false}
+              />,
+            ]
         }
       </Form>
     </React.Fragment>
