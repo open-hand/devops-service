@@ -14,13 +14,15 @@ import EmptyPage from '../../components/empty-page';
 import { usePipelineManageStore } from './stores';
 import HeaderButtons from '../../components/header-buttons';
 import VariableSettings from './components/variable-settings';
+import AuditModal from './components/audit-modal';
+import GitlabRunner from './components/gitlab-runner';
 
 import './index.less';
-import AuditModal from './components/audit-modal';
 
 const recordDetailKey = Modal.key();
 const settingsKey = Modal.key();
 const auditKey = Modal.key();
+const runnerKey = Modal.key();
 const modalStyle = {
   width: 380,
 };
@@ -162,6 +164,18 @@ const PipelineManage = observer((props) => {
     });
   }
 
+  function openRunnerModal() {
+    Modal.open({
+      key: runnerKey,
+      style: settingsModalStyle,
+      title: formatMessage({ id: `${intlPrefix}.gitlab.runner` }),
+      children: <GitlabRunner />,
+      drawer: true,
+      okCancel: false,
+      okText: formatMessage({ id: 'close' }),
+    });
+  }
+
   function getHeaderButtons() {
     const { parentId, status, devopsCdPipelineDeatilVO } = getSelectedMenu;
     const buttons = [{
@@ -176,6 +190,13 @@ const PipelineManage = observer((props) => {
       name: formatMessage({ id: `${intlPrefix}.settings.global` }),
       icon: 'settings-o',
       handler: () => openSettingsModal('global'),
+      display: true,
+      group: 1,
+    }, {
+      permissions: [''],
+      name: formatMessage({ id: `${intlPrefix}.gitlab.runner` }),
+      icon: 'find_in_page-o',
+      handler: openRunnerModal,
       display: true,
       group: 1,
     }];

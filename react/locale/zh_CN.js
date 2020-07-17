@@ -824,6 +824,7 @@ const pipelineManage = {
   'c7ncd.pipelineManage.record.check.task.des': '流水线“{name}”目前暂停于阶段【{stage}】，需要您进行审核。',
   'c7ncd.pipelineManage.canCheck.tips.success': '此任务已被{userName}审核',
   'c7ncd.pipelineManage.canCheck.tips.stop': '此任务已被{userName}终止',
+  'c7ncd.pipelineManage.gitlab.runner': 'GitLab Runner配置指引',
 };
 
 const emptyPage = {
