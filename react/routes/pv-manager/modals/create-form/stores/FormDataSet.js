@@ -76,7 +76,7 @@ export default (({ intlPrefix, formatMessage, projectId, typeDs, modeDs, storage
     fields: [
       {
         name: 'clusterId',
-        type: 'number',
+        type: 'string',
         textField: 'name',
         valueField: 'id',
         label: formatMessage({ id: `${intlPrefix}.cluster` }),
