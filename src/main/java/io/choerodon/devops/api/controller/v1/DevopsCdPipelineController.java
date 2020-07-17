@@ -43,6 +43,7 @@ public class DevopsCdPipelineController {
                                                   @RequestParam(value = "commit") String commit,
                                                   @RequestParam(value = "ref") String ref,
                                                   @RequestParam(value = "gitlab_user_id") Long gitlabUserId,
+                                                  @Encrypt
                                                   @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId) {
         // 设置用户上下文
         Long iamUserId = userAttrService.queryUserIdByGitlabUserId(gitlabUserId);

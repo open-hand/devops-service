@@ -68,6 +68,7 @@ public class DevopsCdPipelineAuditController {
     @ApiOperation(value = "校验stage、job审核状态是否改变")
     @PostMapping("check_audit_status")
     public ResponseEntity<AduitStatusChangeVO> checkAuditStatus(@PathVariable(value = "project_id") Long projectId,
+                                                                @Encrypt
                                                                 @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,
                                                                 @RequestBody AuditCheckVO auditCheckVO) {
         return ResponseEntity.ok(devopsCdPipelineService.checkAuditStatus(projectId, pipelineRecordId, auditCheckVO));
