@@ -20,7 +20,7 @@ export default ((intlPrefix, formatMessage, projectId) => ({
     }),
   },
   fields: [
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
     { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }) },
     { name: 'domain', type: 'string', label: formatMessage({ id: `${intlPrefix}.domain` }) },
     { name: 'keyValue', type: 'string' },

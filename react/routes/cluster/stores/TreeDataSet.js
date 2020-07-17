@@ -43,7 +43,6 @@ function formatCluster(value, expandsKeys) {
   return flatted;
 }
 
-
 function handleSelect(record, store) {
   const id = record.get('id');
   const itemType = record.get('itemType');
