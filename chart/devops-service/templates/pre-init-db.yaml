@@ -42,7 +42,7 @@ spec:
           -Dinstaller.datasources.platform.url="{{ .Values.preJob.preInitDB.datasources.platform.url }}"
           -Dinstaller.datasources.platform.username={{ .Values.preJob.preInitDB.datasources.platform.username }}
           -Dinstaller.datasources.platform.password={{ .Values.preJob.preInitDB.datasources.platform.password }}
-          -Dinstaller.datasources.platform.driver-class-name={{ .Values.preJob.preInitDB.datasources.platform.driver-class-name }}
+          -Dinstaller.datasources.platform.driver-class-name={{ .Values.preJob.preInitDB.datasources.platform.driver }}
           -Dinstaller.jarPath=/choerodon/{{ .Chart.Name }}.jar
           -Dlogging.level.root=info
           -Dinstaller.mapping=script/db/service-mapping.xml
