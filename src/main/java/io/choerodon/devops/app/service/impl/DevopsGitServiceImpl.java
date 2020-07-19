@@ -302,8 +302,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         } catch (GitlabAccessInvalidException e) {
             return null;
         }
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId(), false);
         AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
         if (applicationDTO == null) {
             return null;
