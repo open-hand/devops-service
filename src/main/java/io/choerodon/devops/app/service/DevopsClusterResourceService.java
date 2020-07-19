@@ -118,9 +118,8 @@ public interface DevopsClusterResourceService {
      *
      * @param instanceId 实例id
      * @param envId      环境id
-     * @param type       prometheus类型
      */
-    void retryPrometheusInstance(Long instanceId, Long envId, String type);
+    void retryPrometheusInstance(Long instanceId, Long envId);
 
     void retryInstallPrometheus(Long projectId, Long clusterId);
 
