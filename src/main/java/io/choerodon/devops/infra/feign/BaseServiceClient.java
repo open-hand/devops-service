@@ -30,6 +30,11 @@ public interface BaseServiceClient {
                                                @RequestParam(value = "with_user_info") Boolean withUserInfo,
                                                @RequestParam(value = "with_agile_info") Boolean withAgileInfo);
 
+    /**
+     * @param organizationId 组织id
+     * @param withMoreInfo   获取更详细的组织配置信息以及用户信息
+     * @return
+     */
     @GetMapping(value = "/choerodon/v1/organizations/{organizationId}")
     ResponseEntity<Tenant> queryOrganizationById(@PathVariable("organizationId") Long organizationId,
                                                  @RequestParam(value = "with_more_info") Boolean withMoreInfo);
