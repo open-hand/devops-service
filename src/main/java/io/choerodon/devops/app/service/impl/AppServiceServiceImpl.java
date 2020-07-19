@@ -2724,7 +2724,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private Boolean checkEnableCreateAppSvcWithSize(Long projectId, int appSize) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
         if (baseServiceClientOperator.checkOrganizationIsRegistered(projectDTO.getOrganizationId())) {
             ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit();
             AppServiceDTO example = new AppServiceDTO();
