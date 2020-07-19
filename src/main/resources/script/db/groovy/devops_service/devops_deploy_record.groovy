@@ -25,4 +25,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_record.groovy') {
             column(name: 'deploy_type', type: 'VARCHAR(32)')
         }
     }
+
+    changeSet(author: 'lihao', id: '2020-07-19-add-index') {
+        createIndex(tableName: 'devops_deploy_record', indexName: 'dp_record_project_id_type__idx') {
+            column(name: 'project_id')
+            column(name: 'deploy_type')
+        }
+    }
+
 }
