@@ -6,7 +6,6 @@ package io.choerodon.devops.infra.enums;
  */
 public enum ClusterResourceType {
     PROMETHEUS("prometheus"),
-    PROMETHEUSWITHTLS("prometheus-tls"),
     CERTMANAGER("cert-manager");
 
     private String type;

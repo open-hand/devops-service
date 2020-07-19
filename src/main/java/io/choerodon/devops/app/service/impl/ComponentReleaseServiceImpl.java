@@ -30,8 +30,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static io.choerodon.devops.app.service.impl.DevopsClusterResourceServiceImpl.getPrometheusType;
-
 /**
  * 为集群的组件部署对应的Release
  *
@@ -161,13 +159,13 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public AppServiceInstanceDTO createReleaseForPrometheus(Long systemEnvId, DevopsPrometheusDTO devopsPrometheusDTO) {
-        return createOrUpdateComponentRelease(getPrometheusType(devopsPrometheusDTO.getEnableTls()), CommandType.CREATE, devopsPrometheusDTO, systemEnvId, null);
+        return createOrUpdateComponentRelease(ClusterResourceType.PROMETHEUS, CommandType.CREATE, devopsPrometheusDTO, systemEnvId, null);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public AppServiceInstanceDTO updateReleaseForPrometheus(DevopsPrometheusDTO devopsPrometheusDTO, Long instanceId, Long systemEnvId) {
-        return createOrUpdateComponentRelease(getPrometheusType(devopsPrometheusDTO.getEnableTls()), CommandType.UPDATE, devopsPrometheusDTO, systemEnvId, instanceId);
+        return createOrUpdateComponentRelease(ClusterResourceType.PROMETHEUS, CommandType.UPDATE, devopsPrometheusDTO, systemEnvId, instanceId);
     }
 
     // 开新事务
