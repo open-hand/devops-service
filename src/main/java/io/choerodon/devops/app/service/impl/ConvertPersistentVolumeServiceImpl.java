@@ -1,16 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.util.GitOpsUtil.*;
-
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
-import io.kubernetes.client.models.V1PersistentVolume;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsPvService;
@@ -21,6 +10,16 @@ import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.kubernetes.client.models.V1PersistentVolume;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import static io.choerodon.devops.infra.util.GitOpsUtil.*;
 
 /**
  * @author zmf
@@ -73,7 +72,7 @@ public class ConvertPersistentVolumeServiceImpl extends ConvertK8sObjectService<
     }
 
     private void validateType(V1PersistentVolume pv, String filePath) {
-        // 暂时只支持NFS和HostPath类型的网络
+        // 支持NFS、HostPath、LocalPV类型的网络
         int typeCount = countTypeDefined(pv);
         if (typeCount == 0) {
             throw new CommonException(
@@ -87,6 +86,7 @@ public class ConvertPersistentVolumeServiceImpl extends ConvertK8sObjectService<
 
         validateNFS(pv, filePath);
         validateHostPath(pv, filePath);
+        validateLocal(pv, filePath);
     }
 
     private int countTypeDefined(V1PersistentVolume pv) {
@@ -95,6 +95,9 @@ public class ConvertPersistentVolumeServiceImpl extends ConvertK8sObjectService<
             typeCount++;
         }
         if (pv.getSpec().getHostPath() != null) {
+            typeCount++;
+        }
+        if (pv.getSpec().getLocal() != null) {
             typeCount++;
         }
         return typeCount;
@@ -125,6 +128,23 @@ public class ConvertPersistentVolumeServiceImpl extends ConvertK8sObjectService<
         if (pv.getSpec().getHostPath().getPath() == null) {
             throw new CommonException(
                     GitOpsObjectError.PERSISTENT_VOLUME_NFS_PATH_NOT_FOUND.getError(), filePath);
+        }
+    }
+
+    private void validateLocal(V1PersistentVolume pv, String filePath) {
+        if (pv.getSpec().getLocal() == null) {
+            return;
+        }
+        if (pv.getSpec().getLocal().getPath() == null) {
+            throw new CommonException(
+                    GitOpsObjectError.PERSISTENT_VOLUME_NFS_PATH_NOT_FOUND.getError(), filePath);
+        }
+        try {
+            if (pv.getSpec().getNodeAffinity().getRequired().getNodeSelectorTerms().get(0).getMatchExpressions().get(0).getValues().size() != 1) {
+                throw new CommonException(GitOpsObjectError.PERSISTENT_VOLUME_LOCAL_PATH_NODE_NAME_MORE_THAN_ONE.getError(), filePath);
+            }
+        } catch (NullPointerException e) {
+            throw new CommonException(GitOpsObjectError.PERSISTENT_VOLUME_LOCAL_PATH_NODE_AFFINITY_NOT_FOUND.getError(), filePath);
         }
     }
 
