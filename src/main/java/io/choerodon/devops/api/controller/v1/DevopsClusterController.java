@@ -431,4 +431,15 @@ public class DevopsClusterController {
     public ResponseEntity<Boolean> checkEnableCreateCluster(@PathVariable(name = "project_id") Long projectId) {
         return ResponseEntity.ok(devopsClusterService.checkEnableCreateCluster(projectId));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(("查询指定集群下的节点名称"))
+    @GetMapping("/{cluster_id}/node_names")
+    public ResponseEntity<List<String>> getNodeNames(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "集群id", required = true)
+            @PathVariable(value = "cluster_id") Long clusterId) {
+        return new ResponseEntity<>(clusterNodeInfoService.queryNodeName(projectId, clusterId), HttpStatus.OK);
+    }
 }
