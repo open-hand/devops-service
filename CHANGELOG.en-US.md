@@ -1,6 +1,49 @@
 # Changelog
 All notable changes to devops-service will be documented in this file.
 
+## [0.22.3] 2020-08-01
+#### Add
+- Organizational layer "Management Center" added Webhook configuration function, support to create DingTalk, enterprise WeChat, Json type Webhook to send organization layer message notification
+- A new Webhook execution record page is added to the "Management Center" at the organization level and the "Settings-Notification" module at the project level, which supports viewing and retrying a certain Webhook execution record
+- The "Management Center" of the organization layer has a new function of "Role Management", which supports the organization administrator to create a custom role for the organization or project level here
+- The default message templates of Dingding, Enterprise WeChat, and Json type webhook corresponding to each event in the organization layer and project layer are added in "Platform Layer-Message Service"
+- Added a new type of "Ordinary Agile Project". This type of project only retains the functions related to agile testing and supports the project team to focus on the use of agile collaboration functions
+- Added "Operation and Maintenance Project" project type, which only retains DevOps-related functions such as development and deployment
+- The development module adds the function of "CI Pipeline", which supports the creation of multiple stages, and multiple tasks can be added to each stage
+- The CI pipeline interface supports configuration to add multiple types of tasks, including: build, code inspection and custom tasks
+- New build templates supporting multiple common languages ​​in the CI pipeline: such as Maven templates, Npm templates, and Go templates
+- Support to view the execution record details of each CI pipeline in the CI pipeline interface
+- "Application Deployment-Resources-Domain Name" module, when creating and modifying domain names, add support for filling in "Annotation"
+- The helm component of C7N agent is upgraded from V2 to V3
+- Upgrade the k8s version supported by the deployment module to V1.17
+
+#### fix
+- Fixed the issue of the node monitoring page being blank when not logged in to Grafana
+- Fixed the problem that the white screen occasionally appeared when clicking "Run Details-More Details" in the instance interface
+- Fixed the problem of incorrect judgment of whether pods can be increased or decreased after redeploying after modifying the number of pods in the running details of the instance interface
+- Fixed the issue of changing instance query values ​​interface parameters
+- Fixed the problem that the instance deployment timeout did not send the station letter
+- Fix the problem that the agent does not support StatefulSet
+- Fixed the problem that the existing port is not displayed in the port drop-down box when modifying the domain name
+- Fixed the issue that Choerodon was not aware of the RegistrySecret after being deleted in Kubernetes
+- Fixed the problem that Pod data was not synchronized after cluster reset
+- Fixed the issue that the timeout mechanism of Polaris scan did not take effect during query
+- Fixed an issue where the ChoerodonId used to create a cluster might be a pure numeric string
+- Deal with the situation where there are multiple resources including PV and PVC in one file
+- Fixed the problem that the cluster status in the tree structure is disorderly sorted on the cluster management page
+- Fixed the problem of inaccurate data when selecting the time range for the code submission graph and the construction frequency graph in the DevOps report
+- Fixed the issue that batch deployments were not filtered out when searching for deployment records based on running results
+- Fixed an issue where the command startup error in the selected microservice backend template was incorrect when importing application services
+
+
+#### optimization
+- Added the status and number of clusters in the platform to the platform overview interface
+- "Application Deployment-Resources" module, the environment level of instance view and resource view, the cluster to which they belong is added after the environment name
+- In "Platform Management-Mail Log", support for resending mails with "success" or "failure" status
+- In "Platform Management-Mail Log", it supports automatic clearing of sending records six months ago
+- "Organization layer-User management-Add organization user", "Project layer-Team member-Add team member", add the login name after the searched user
+- A quick copy button is added after the "Permission Code" and "Address" on the "Platform Management-Interface" page
+
 ## [0.21.0] 2020-03-04
 
 #### Add
