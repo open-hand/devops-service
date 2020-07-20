@@ -193,7 +193,7 @@ const PipelineManage = observer((props) => {
       display: true,
       group: 1,
     }, {
-      permissions: [''],
+      permissions: ['choerodon.code.project.develop.ci-pipeline.ps.runner'],
       name: formatMessage({ id: `${intlPrefix}.gitlab.runner` }),
       icon: 'find_in_page-o',
       handler: openRunnerModal,
@@ -239,7 +239,7 @@ const PipelineManage = observer((props) => {
           display: status === 'failed',
           group: 2,
         }, {
-          permissions: [''],
+          permissions: ['choerodon.code.project.develop.ci-pipeline.ps.audit'],
           name: formatMessage({ id: `${intlPrefix}.execute.audit` }),
           icon: 'authorize',
           handler: openAuditModal,

@@ -225,7 +225,7 @@ const TreeItem = observer(({ record, search }) => {
         case 'not_audit':
           if (record.get('devopsCdPipelineDeatilVO') && record.get('devopsCdPipelineDeatilVO').execute) {
             actionData = [{
-              service: [''],
+              service: ['choerodon.code.project.develop.ci-pipeline.ps.audit'],
               text: formatMessage({ id: `${intlPrefix}.execute.audit` }),
               action: openAuditModal,
             }];
