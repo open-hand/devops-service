@@ -44,7 +44,7 @@ const obj = {
   docker: 'Docker构建',
   chart: 'Chart构建',
   go: 'Go语言构建',
-  maven_deploy: '上传软件包至制品库',
+  maven_deploy: 'Maven发布',
 };
 
 const checkField = {
