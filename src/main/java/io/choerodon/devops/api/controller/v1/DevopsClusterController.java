@@ -439,6 +439,7 @@ public class DevopsClusterController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
+            @Encrypt
             @PathVariable(value = "cluster_id") Long clusterId) {
         return new ResponseEntity<>(clusterNodeInfoService.queryNodeName(projectId, clusterId), HttpStatus.OK);
     }
