@@ -1,19 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AgentNodeInfoVO;
@@ -24,6 +11,19 @@ import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author zmf
@@ -197,9 +197,9 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
 
         long total = stringRedisTemplate.opsForList().size(rediskey);
 
-        return stringRedisTemplate
+        return Objects.requireNonNull(stringRedisTemplate
                 .opsForList()
-                .range(rediskey, 0, total - 1)
+                .range(rediskey, 0, total - 1))
                 .stream()
                 .map(node -> JSONObject.parseObject(node, ClusterNodeInfoVO.class))
                 .map(ClusterNodeInfoVO::getNodeName)
