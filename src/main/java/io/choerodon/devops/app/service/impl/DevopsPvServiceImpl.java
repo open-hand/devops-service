@@ -621,7 +621,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
                 V1NodeSelectorRequirement v1NodeSelectorRequirement = new V1NodeSelectorRequirement();
                 v1NodeSelectorRequirement.setKey("kubernetes.io/hostname");
-                v1NodeSelectorRequirement.setOperator("in");
+                v1NodeSelectorRequirement.setOperator("In");
                 v1NodeSelectorRequirement.setValues(Collections.singletonList(localPvResource.getNodeName()));
 
                 v1NodeSelectorTerm.setMatchExpressions(Collections.singletonList(v1NodeSelectorRequirement));
