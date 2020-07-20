@@ -110,6 +110,9 @@ const CreateForm = () => {
         {formDs.current.get('type') === 'NFS' && (
           <TextField name="server" colSpan={3} />
         )}
+        {formDs.current.get('type') === 'LocalPV' && (
+          <Select name="clusterNodeName" clearButton={false} colSpan={3} />
+        )}
       </Form>
       <div className={`${prefixCls}-create-wrap-permission`}>
         <Tips

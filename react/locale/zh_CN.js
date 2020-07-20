@@ -749,6 +749,7 @@ const pvManager = {
   'c7ncd.pv.storage': '存储容量',
   'c7ncd.pv.path': '路径',
   'c7ncd.pv.ip': '服务器IP',
+  'c7ncd.pv.node.name': '节点名称',
   'c7ncd.pv.permission': '权限管理',
   'c7ncd.pv.share': 'PV公开范围',
   'c7ncd.pv.share.tips': 'PV公开范围仅能在已分配对应集群权限的项目中设置',
