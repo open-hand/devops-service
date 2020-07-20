@@ -5,7 +5,11 @@ function getIpRequired({ record }) {
   return record.get('type') === 'NFS';
 }
 
-export default (({ intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs, clusterDs, projectOptionsDs, projectTableDs }) => {
+function getNodeIpRequired({ record }) {
+  return record.get('type') === 'LocalPV';
+}
+
+export default (({ intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs, clusterDs, projectOptionsDs, projectTableDs, nodeNameDs }) => {
   async function checkName(value, name, record) {
     const pa = /^[a-z]([-.a-z0-9]*[a-z0-9])?$/;
     if (!value) return;
@@ -49,6 +53,9 @@ export default (({ intlPrefix, formatMessage, projectId, typeDs, modeDs, storage
           projectOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/clusters/${value}/permission/page_related`;
         }
       }
+      nodeNameDs.removeAll();
+      nodeNameDs.setQueryParameter('clusterId', value);
+      nodeNameDs.query();
     }
   }
 
@@ -61,8 +68,14 @@ export default (({ intlPrefix, formatMessage, projectId, typeDs, modeDs, storage
     },
     transport: {
       create: ({ data: [data] }) => {
-        const res = omit(data, ['__id', '__status', 'storage', 'unit', 'server', 'path', 'projects']);
-        const arr = data.type === 'NFS' ? ['server', 'path'] : ['path'];
+        data.nodeName = data.clusterNodeName;
+        const res = omit(data, ['__id', '__status', 'storage', 'unit', 'server', 'path', 'projects', 'nodeName']);
+        const arr = ['path'];
+        if (data.type === 'NFS') {
+          arr.push('server');
+        } else if (data.type === 'LocalPV') {
+          arr.push('nodeName');
+        }
         res.requestResource = `${data.storage}${data.unit}`;
         res.valueConfig = JSON.stringify(pick(data, arr));
         res.projectIds = data.skipCheckProjectPermission ? [] : compact(map(data.projects, 'projectId') || []);
@@ -91,6 +104,7 @@ export default (({ intlPrefix, formatMessage, projectId, typeDs, modeDs, storage
       { name: 'unit', type: 'string', textField: 'value', defaultValue: 'Gi', options: storageDs },
       { name: 'path', type: 'string', label: formatMessage({ id: `${intlPrefix}.path` }), required: true, validator: checkPath },
       { name: 'server', type: 'string', label: formatMessage({ id: `${intlPrefix}.ip` }), validator: checkIp, dynamicProps: { required: getIpRequired } },
+      { name: 'clusterNodeName', type: 'string', textField: 'value', valueField: 'value', label: formatMessage({ id: `${intlPrefix}.node.name` }), dynamicProps: { required: getNodeIpRequired }, options: nodeNameDs },
       { name: 'skipCheckProjectPermission', type: 'boolean', defaultValue: true },
     ],
     events: {
