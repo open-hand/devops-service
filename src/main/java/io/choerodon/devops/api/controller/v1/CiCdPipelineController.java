@@ -131,7 +131,6 @@ public class CiCdPipelineController {
             @PathVariable(value = "pipeline_id") Long pipelineId,
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
             @RequestParam(value = "gitlab_project_id") Long gitlabProjectId,
             @ApiParam(value = "分支名", required = true)
             @RequestParam(value = "ref") String ref) {
