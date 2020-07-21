@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.AUTH_TYPE_PULL;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_HOST_FEPLOY;
 
 import java.io.IOException;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import sun.misc.BASE64Decoder;
 
@@ -42,8 +44,10 @@ import io.choerodon.devops.app.eventhandler.payload.HostDeployPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.repo.C7nImageDeployDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusDeployDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
@@ -141,6 +145,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     @Autowired
     private AppServiceService applicationService;
 
+    @Autowired
+    private CiPipelineImageService ciPipelineImageService;
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
@@ -288,42 +294,53 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             CdHostDeployConfigVO.ImageDeploy imageDeploy = cdHostDeployConfigVO.getImageDeploy();
             imageDeploy.setValue(new String(decoder.decodeBuffer(imageDeploy.getValue()), "UTF-8"));
             // 0.2
-            HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName());
-//            HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag("DEFAULT_REPO", TypeUtil.objToLong(imageDeploy.getRepoName()), "scp001-go");
-            List<HarborC7nImageTagVo> filterImageTagVoList;
-            if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
-                devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
-                LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-                return status;
-            } else {
-                String pattern = getRegexStr(imageDeploy);
-                filterImageTagVoList = imageTagVo.getImageTagList().stream().filter(t -> Pattern.matches(pattern, t.getTagName())).collect(Collectors.toList());
-                if (CollectionUtils.isEmpty(filterImageTagVoList)) {
+            C7nImageDeployDTO c7nImageDeployDTO = new C7nImageDeployDTO();
+            if (imageDeploy.getDeploySource().equals(HostDeploySource.MATCH_DEPLOY.getValue())) {
+                HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName());
+                List<HarborC7nImageTagVo> filterImageTagVoList;
+                if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
                     devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
                     LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
                     return status;
+                } else {
+                    String pattern = getRegexStr(imageDeploy);
+                    filterImageTagVoList = imageTagVo.getImageTagList().stream().filter(t -> Pattern.matches(pattern, t.getTagName())).collect(Collectors.toList());
+                    if (CollectionUtils.isEmpty(filterImageTagVoList)) {
+                        devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
+                        LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+                        return status;
+                    }
                 }
+                BeanUtils.copyProperties(imageTagVo, c7nImageDeployDTO);
+                c7nImageDeployDTO.setPullCmd(filterImageTagVoList.get(0).getPullCmd());
+            } else {
+                DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
+                if (ObjectUtils.isEmpty(devopsCdPipelineRecordDTO.getGitlabPipelineId())) {
+                    throw new CommonException("error.no.gitlab.pipeline.id");
+                }
+                CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(devopsCdPipelineRecordDTO.getGitlabPipelineId(), imageDeploy.getPipelineTask());
+                HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(devopsCdPipelineRecordDTO.getProjectId(), ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
+                c7nImageDeployDTO.setHarborUrl(harborRepoDTO.getHarborRepoConfig().getRepoUrl());
+                c7nImageDeployDTO.setPullAccount(harborRepoDTO.getPullRobot().getName());
+                c7nImageDeployDTO.setPullPassword(harborRepoDTO.getPullRobot().getToken());
+                c7nImageDeployDTO.setPullCmd("docker pull " + ciPipelineImageDTO.getImageTag());
             }
-
             // 1. 更新状态 记录镜像信息
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
-            HarborC7nRepoImageTagVo imageTagVoRecord = new HarborC7nRepoImageTagVo();
-            BeanUtils.copyProperties(imageTagVo, imageTagVoRecord);
-            imageTagVoRecord.setImageTagList(Collections.singletonList(filterImageTagVoList.get(0)));
             jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
-            jobRecordDTO.setDeployMetadata(gson.toJson(imageTagVoRecord));
+            jobRecordDTO.setDeployMetadata(gson.toJson(c7nImageDeployDTO));
             devopsCdJobRecordService.update(jobRecordDTO);
             // 2.
             sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
             // 3.
             // 3.1
-            dockerLogin(ssh, imageTagVo);
+            dockerLogin(ssh, c7nImageDeployDTO);
             // 3.2
-            dockerPull(ssh, filterImageTagVoList.get(0));
+            dockerPull(ssh, c7nImageDeployDTO);
 
             dockerStop(ssh, imageDeploy);
             // 3.3
-            dockerRun(ssh, imageDeploy, filterImageTagVoList.get(0));
+            dockerRun(ssh, imageDeploy, c7nImageDeployDTO);
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
             LOGGER.info("========================================");
             LOGGER.info("image deploy cd host job success!!!,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
@@ -337,7 +354,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         return status;
     }
 
-    private void dockerLogin(SSHClient ssh, HarborC7nRepoImageTagVo imageTagVo) throws IOException {
+    private void dockerLogin(SSHClient ssh, C7nImageDeployDTO imageTagVo) throws IOException {
         Session session = null;
         try {
             session = ssh.startSession();
@@ -363,7 +380,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
     }
 
-    private void dockerPull(SSHClient ssh, HarborC7nImageTagVo imageTagVo) throws IOException {
+    private void dockerPull(SSHClient ssh, C7nImageDeployDTO imageTagVo) throws IOException {
         Session session = null;
         try {
             session = ssh.startSession();
@@ -383,7 +400,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
     }
 
-    private void dockerRun(SSHClient ssh, CdHostDeployConfigVO.ImageDeploy imageDeploy, HarborC7nImageTagVo imageTagVo) throws IOException {
+    private void dockerRun(SSHClient ssh, CdHostDeployConfigVO.ImageDeploy imageDeploy, C7nImageDeployDTO c7nImageDeployDTO) throws IOException {
         Session session = null;
         try {
             session = ssh.startSession();
@@ -400,7 +417,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
             // 判断镜像是否存在 存在删除 部署
             StringBuilder dockerRunExec = new StringBuilder();
-            dockerRunExec.append(values.replace("${containerName}", imageDeploy.getContainerName()).replace("${imageName}", imageTagVo.getPullCmd().replace("docker pull", "")));
+            dockerRunExec.append(values.replace("${containerName}", imageDeploy.getContainerName()).replace("${imageName}", c7nImageDeployDTO.getPullCmd().replace("docker pull", "")));
             LOGGER.info(dockerRunExec.toString());
             Session.Command cmd = session.exec(dockerRunExec.toString());
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
@@ -485,33 +502,39 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         LOGGER.info("start jar deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
         SSHClient ssh = new SSHClient();
         Boolean status = true;
-        // 停止jar
-        String jarName = String.format("app-%s.jar", GenerateUUID.generateRandomString());
         try {
-            // 0.1
+            // 0.1 查询部署信息
             DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
             CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
             CdHostDeployConfigVO.JarDeploy jarDeploy = cdHostDeployConfigVO.getJarDeploy();
             jarDeploy.setValue(new String(decoder.decodeBuffer(jarDeploy.getValue()), "UTF-8"));
-            DevopsCdPipelineRecordDTO cdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(cdPipelineRecordDTO.getProjectId());
-            List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), jarDeploy.getRepositoryId(), jarDeploy.getGroupId(), jarDeploy.getArtifactId(), jarDeploy.getVersionRegular());
-            if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
-                devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
-                LOGGER.info("no jar to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-                return status;
-            }
-            List<NexusMavenRepoDTO> mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), Collections.singleton(jarDeploy.getRepositoryId()));
-            if (CollectionUtils.isEmpty(mavenRepoDTOList)) {
-                throw new CommonException("error.get.maven.config");
+            C7nNexusDeployDTO c7nNexusDeployDTO = new C7nNexusDeployDTO();
+            if (jarDeploy.getDeploySource().equals(HostDeploySource.MATCH_DEPLOY.getValue())) {
+                DevopsCdPipelineRecordDTO cdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(cdPipelineRecordDTO.getProjectId());
+                List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), jarDeploy.getRepositoryId(), jarDeploy.getGroupId(), jarDeploy.getArtifactId(), jarDeploy.getVersionRegular());
+                if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
+                    devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
+                    LOGGER.info("no jar to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+                    return status;
+                }
+                List<NexusMavenRepoDTO> mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), Collections.singleton(jarDeploy.getRepositoryId()));
+                if (CollectionUtils.isEmpty(mavenRepoDTOList)) {
+                    throw new CommonException("error.get.maven.config");
+                }
+                c7nNexusDeployDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
+                c7nNexusDeployDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
+                c7nNexusDeployDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
+            } else {
+                // 制品部署 根据gitlabPipelineId 任务名称 todo scp
+//                c7nNexusDeployDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
+//                c7nNexusDeployDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
+//                c7nNexusDeployDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
             }
 
-            // 1.
+            // 1.更新流水线状态 记录信息
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
-            C7nNexusDeployDTO c7nNexusDeployDTO = new C7nNexusDeployDTO();
-            c7nNexusDeployDTO.setC7nNexusComponentDTO(nexusComponentDTOList.get(0));
-            c7nNexusDeployDTO.setNexusMavenRepoDTO(mavenRepoDTOList.get(0));
-            c7nNexusDeployDTO.setJarName(jarName);
+            c7nNexusDeployDTO.setJarName(getJarName(c7nNexusDeployDTO.getDownloadUrl()));
             jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
             jobRecordDTO.setDeployMetadata(gson.toJson(c7nNexusDeployDTO));
             devopsCdJobRecordService.update(jobRecordDTO);
@@ -520,8 +543,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
             // 2.1
             sshStopJar(ssh, jobRecordDTO.getJobId());
-            sshExec(ssh, jarName, mavenRepoDTOList.get(0), nexusComponentDTOList.get(0), jarDeploy);
-            devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(jobRecordDTO.getJobId(), jarName);
+            sshExec(ssh, c7nNexusDeployDTO, jarDeploy);
+            devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(jobRecordDTO.getJobId(), c7nNexusDeployDTO.getJarName());
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
         } catch (Exception e) {
             e.printStackTrace();
@@ -556,7 +579,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
     }
 
-    private void sshExec(SSHClient ssh, String jarName, NexusMavenRepoDTO mavenRepoDTO, C7nNexusComponentDTO nexusComponentDTO, CdHostDeployConfigVO.JarDeploy jarDeploy) throws IOException {
+    private void sshExec(SSHClient ssh, C7nNexusDeployDTO c7nNexusDeployDTO, CdHostDeployConfigVO.JarDeploy jarDeploy) throws IOException {
         StringBuilder cmdStr = new StringBuilder();
         cmdStr.append("mkdir temp-jar ").append(System.lineSeparator());
         cmdStr.append("mkdir temp-log ").append(System.lineSeparator());
@@ -566,10 +589,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             session = ssh.startSession();
             // 2.2
             String curlExec = String.format("curl -o %s -u %s:%s %s ",
-                    jarName,
-                    mavenRepoDTO.getNePullUserId(),
-                    mavenRepoDTO.getNePullUserPassword(),
-                    nexusComponentDTO.getDownloadUrl());
+                    c7nNexusDeployDTO.getJarName(),
+                    c7nNexusDeployDTO.getPullUserId(),
+                    c7nNexusDeployDTO.getPullUserPassword(),
+                    c7nNexusDeployDTO.getDownloadUrl());
             cmdStr.append(curlExec).append(System.lineSeparator());
 
             // 2.3
@@ -585,8 +608,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             }
 
 //        String javaJarExec = String.format("echo `nohup %s > sss.log & `", values.replace("${jar}", jarName));
-            String logName = jarName.replace(".jar", ".log");
-            String javaJarExec = String.format("nohup %s > ~/temp-log/%s & ", values.replace("${jar}", jarName), logName);
+            String logName = c7nNexusDeployDTO.getJarName().replace(".jar", ".log");
+            String javaJarExec = String.format("nohup %s > ~/temp-log/%s & ", values.replace("${jar}", c7nNexusDeployDTO.getJarName()), logName);
 
             cmdStr.append(javaJarExec);
             LOGGER.info(cmdStr.toString());
@@ -617,6 +640,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private String getJarName(String url) {
+        String[] arr = url.split("/");
+        return arr[arr.length - 1].replace(".jar", "-") + GenerateUUID.generateRandomString() + ".jar";
     }
 
     private void jobFailed(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
@@ -653,6 +681,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     @Override
+    @Transactional
     public void retryHostDeployJob(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
         DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
         devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
@@ -671,14 +700,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
         CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(cdJobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
         CdHostDeployConfigVO.ImageDeploy imageDeploy = cdHostDeployConfigVO.getImageDeploy();
-        HarborC7nRepoImageTagVo imageTagVoRecord = gson.fromJson(cdJobRecordDTO.getDeployMetadata(), HarborC7nRepoImageTagVo.class);
+        C7nImageDeployDTO imageTagVoRecord = gson.fromJson(cdJobRecordDTO.getDeployMetadata(), C7nImageDeployDTO.class);
         SSHClient ssh = new SSHClient();
         try {
             sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
             dockerLogin(ssh, imageTagVoRecord);
-            dockerPull(ssh, imageTagVoRecord.getImageTagList().get(0));
+            dockerPull(ssh, imageTagVoRecord);
             dockerStop(ssh, imageDeploy);
-            dockerRun(ssh, imageDeploy, imageTagVoRecord.getImageTagList().get(0));
+            dockerRun(ssh, imageDeploy, imageTagVoRecord);
 
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
         } catch (Exception e) {
@@ -695,13 +724,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(cdJobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
         C7nNexusDeployDTO c7nNexusDeployDTO = gson.fromJson(cdJobRecordDTO.getDeployMetadata(), C7nNexusDeployDTO.class);
         SSHClient ssh = new SSHClient();
-        String jarName = String.format("app-%s.jar", GenerateUUID.generateRandomString());
         try {
             sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
             // 2.1
             sshStopJar(ssh, cdJobRecordDTO.getJobId());
-            sshExec(ssh, jarName, c7nNexusDeployDTO.getNexusMavenRepoDTO(), c7nNexusDeployDTO.getC7nNexusComponentDTO(), cdHostDeployConfigVO.getJarDeploy());
-            devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(cdJobRecordDTO.getJobId(), jarName);
+            sshExec(ssh, c7nNexusDeployDTO, cdHostDeployConfigVO.getJarDeploy());
+            devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(cdJobRecordDTO.getJobId(), c7nNexusDeployDTO.getJarName());
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
         } catch (Exception e) {
             jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);

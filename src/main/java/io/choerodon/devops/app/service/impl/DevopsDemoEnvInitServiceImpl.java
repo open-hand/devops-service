@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -57,7 +59,6 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
     private static final String DESTINATION_PATH = "devops";
     private static final String STORE_PATH = "stores";
-    private static final String DEFAULT_REPO = "DEFAULT_REPO";
     private static final String ERROR_VERSION_INSERT = "error.version.insert";
 
     @Value("${demo.data.file.path:demo/demo-data.json}")

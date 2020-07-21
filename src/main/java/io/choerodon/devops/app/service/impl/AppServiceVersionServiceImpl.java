@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.AUTH_TYPE_PULL;
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
@@ -49,10 +52,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private static final String STORE_PATH = "stores";
     private static final String APP_SERVICE = "appService";
     private static final String CHART = "chart";
-    private static final String AUTHTYPE_PULL = "pull";
     private static final String HARBOR_DEFAULT = "harbor_default";
-    private static final String DEFAULT_REPO = "DEFAULT_REPO";
-    private static final String CUSTOM_REPO = "CUSTOM_REPO";
     private static final String ERROR_VERSION_INSERT = "error.version.insert";
 
     @Value("${services.gitlab.url}")
@@ -106,9 +106,9 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
      * 方法中抛出{@link DevopsCiInvalidException}而不是{@link CommonException}是为了返回非200的状态码。
      */
     @Override
-    public void create(String image, String harborConfigId, String token, String version, String commit, MultipartFile files, String ref) {
+    public void create(String image, String harborConfigId, String repoType, String token, String version, String commit, MultipartFile files, String ref) {
         try {
-            doCreate(image, TypeUtil.objToLong(harborConfigId), token, version, commit, files, ref);
+            doCreate(image, TypeUtil.objToLong(harborConfigId), repoType, token, version, commit, files, ref);
         } catch (Exception e) {
             if (e instanceof CommonException) {
                 throw new DevopsCiInvalidException(((CommonException) e).getCode(), e.getCause(), ((CommonException) e).getParameters());
@@ -118,7 +118,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     }
 
-    private void doCreate(String image, Long harborConfigId, String token, String version, String commit, MultipartFile files, String ref) {
+    private void doCreate(String image, Long harborConfigId, String repoType, String token, String version, String commit, MultipartFile files, String ref) {
         AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
 
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
@@ -132,12 +132,12 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         appServiceVersionDTO.setRef(ref);
         appServiceVersionDTO.setVersion(version);
         //根据配置id 查询仓库是自定义还是默认
-        HarborRepoDTO harborRepoDTO = rdupmClient.queryHarborRepoConfig(appServiceDTO.getProjectId(), appServiceDTO.getId()).getBody();
-        appServiceVersionDTO.setHarborConfigId(harborRepoDTO.getHarborRepoConfig().getRepoId());
-        appServiceVersionDTO.setRepoType(harborRepoDTO.getRepoType());
+//        HarborRepoDTO harborRepoDTO = rdupmClient.queryHarborRepoConfig(appServiceDTO.getProjectId(), appServiceDTO.getId()).getBody();
+        appServiceVersionDTO.setHarborConfigId(harborConfigId);
+        appServiceVersionDTO.setRepoType(repoType);
 
         // 查询helm仓库配置id
-        DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART, AUTHTYPE_PULL);
+        DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART, AUTH_TYPE_PULL);
         ConfigVO helmConfig = GSON.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
         String helmUrl = helmConfig.getUrl();
         appServiceVersionDTO.setHelmConfigId(devopsConfigDTO.getId());

@@ -10,10 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoVo;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.feign.RdupmClient;
@@ -109,4 +111,13 @@ public class RdupmClientOperator {
         }
         return response.getBody();
     }
+
+    public HarborRepoDTO queryHarborRepoConfigById(Long projectId, Long harborConfigId, String repoType) {
+        ResponseEntity<HarborRepoDTO> response = rdupmClient.queryHarborRepoConfigById(projectId, harborConfigId, repoType);
+        if (response == null || response.getBody() == null || Objects.isNull(response.getBody().getHarborRepoConfig())) {
+            throw new CommonException("error.query.harbor.repo");
+        }
+        return response.getBody();
+    }
+
 }

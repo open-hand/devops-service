@@ -1,15 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.IOException;
-import java.util.*;
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import com.google.gson.Gson;
-
-import io.choerodon.devops.api.vo.ConfigVO;
-import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
-import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.feign.RdupmClient;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,25 +15,19 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import retrofit2.Response;
-import retrofit2.Retrofit;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.DevopsConfigVO;
-import io.choerodon.devops.app.eventhandler.payload.HarborPayload;
-import io.choerodon.devops.app.service.DevopsConfigService;
-import io.choerodon.devops.app.service.DevopsHarborUserService;
-import io.choerodon.devops.app.service.DevopsProjectService;
+import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.app.service.HarborService;
-import io.choerodon.devops.infra.config.ConfigurationProperties;
-import io.choerodon.devops.infra.config.HarborConfigurationProperties;
-import io.choerodon.devops.infra.dto.harbor.*;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.AppServiceShareRuleDTO;
+import io.choerodon.devops.infra.dto.DevopsConfigDTO;
+import io.choerodon.devops.infra.dto.harbor.HarborAllRepoDTO;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
+import io.choerodon.devops.infra.dto.harbor.User;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.iam.Tenant;
-import io.choerodon.devops.infra.feign.HarborClient;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.handler.RetrofitHandler;
+import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.AppServiceShareRuleMapper;
 
@@ -50,22 +41,8 @@ import io.choerodon.devops.infra.mapper.AppServiceShareRuleMapper;
 @Component
 public class HarborServiceImpl implements HarborService {
     private static final Logger LOGGER = LoggerFactory.getLogger(HarborServiceImpl.class);
-    private static final String HARBOR = "harbor";
-    private static final String AUTHTYPE = "pull";
-    private static final String CUSTOM_REPO = "CUSTOM_REPO";
-    private static final String DEFAULT_REPO = "DEFAULT_REPO";
     private static final Gson gson = new Gson();
 
-    @Autowired
-    private HarborConfigurationProperties harborConfigurationProperties;
-    @Autowired
-    private DevopsConfigService devopsConfigService;
-    @Autowired
-    private DevopsProjectService devopsProjectService;
-    @Autowired
-    private BaseServiceClientOperator baseServiceClientOperator;
-    @Autowired
-    private DevopsHarborUserService devopsHarborUserService;
     @Autowired
     @Lazy
     private RdupmClient rdupmClient;
@@ -137,12 +114,15 @@ public class HarborServiceImpl implements HarborService {
     }
 
     @Override
-    public DevopsConfigDTO queryRepoConfigByIdToDevopsConfig(Long appServcieId, Long projectId, Long harborConfigId, String repoType, String operateType) {
+    public DevopsConfigDTO queryRepoConfigByIdToDevopsConfig(Long appServiceId, Long projectId, Long harborConfigId, String repoType, String operateType) {
         //查询应用服务是否为共享，如果是共享则从原来的的项目下拿仓库
-        HarborRepoDTO harborRepoDTO = new HarborRepoDTO();
-        AppServiceShareRuleDTO appServiceShareRuleDTO = queryShareAppService(appServcieId);
+        HarborRepoDTO harborRepoDTO;
+        AppServiceShareRuleDTO appServiceShareRuleDTO = null;
+        if (appServiceId != null) {
+            appServiceShareRuleDTO = queryShareAppService(appServiceId);
+        }
         if (!Objects.isNull(appServiceShareRuleDTO)) {
-            AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServcieId);
+            AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
             harborRepoDTO = rdupmClient.queryHarborRepoConfigById(appServiceDTO.getProjectId(),
                     harborConfigId, repoType).getBody();
         } else {
@@ -167,7 +147,7 @@ public class HarborServiceImpl implements HarborService {
         ConfigVO configVO = new ConfigVO();
         configVO.setUrl(harborRepoConfig.getRepoUrl());
         //自定义仓库才有默认的邮箱
-        if (AUTHTYPE.equals(operateType)) {
+        if (AUTH_TYPE_PULL.equals(operateType)) {
             if (CUSTOM_REPO.equals(harborRepoDTO.getRepoType())) {
                 configVO.setUserName(harborRepoConfig.getLoginName());
                 configVO.setPassword(harborRepoConfig.getPassword());
@@ -189,7 +169,7 @@ public class HarborServiceImpl implements HarborService {
         configVO.setPrivate(Boolean.TRUE.toString().equals(harborRepoConfig.getIsPrivate()));
 
         devopsHarborConfig.setConfig(gson.toJson(configVO));
-        devopsHarborConfig.setType("harbor");
+        devopsHarborConfig.setType(harborRepoDTO.getRepoType());
         devopsHarborConfig.setId(harborRepoConfig.getRepoId());
         return devopsHarborConfig;
     }

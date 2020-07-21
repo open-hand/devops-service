@@ -1,11 +1,16 @@
 package io.choerodon.devops.infra.dto.harbor;
 
-import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
-import io.choerodon.devops.infra.constant.HarborConstants;
+
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+
+import java.util.List;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-import java.util.List;
+import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
+import io.choerodon.devops.infra.constant.HarborConstants;
 
 /**
  * description
@@ -14,9 +19,6 @@ import java.util.List;
  */
 @ApiModel("Harbor仓库DTO")
 public class HarborRepoDTO {
-    public static final String DEFAULT_REPO = "DEFAULT_REPO";
-    public static final String CUSTOM_REPO = "CUSTOM_REPO";
-
 
     @ApiModelProperty(value = "应用服务ID")
     private Long appServiceId;
