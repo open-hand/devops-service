@@ -27,6 +27,10 @@ public enum CiJobScriptTypeEnum {
     /**
      * 上传软件包到制品库
      */
+    UPLOAD_JAR("upload_jar"),
+    /**
+     * maven发布
+     */
     MAVEN_DEPLOY("maven_deploy");
 
     private final String type;
