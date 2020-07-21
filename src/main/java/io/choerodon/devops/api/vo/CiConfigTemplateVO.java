@@ -22,6 +22,9 @@ public class CiConfigTemplateVO {
     @NotEmpty(message = "error.step.name.cannot.be.null")
     private String name;
 
+    /**
+     * {@link io.choerodon.devops.infra.enums.CiJobScriptTypeEnum}
+     */
     @NotEmpty(message = "error.step.type.cannot.be.empty")
     @ApiModelProperty("步骤类型")
     private String type;

@@ -420,7 +420,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         Set<Long> appServiceIds;
         if (projectOwner) {
-        appServiceIds = appServiceMapper.listByActive(projectId).stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
+            appServiceIds = appServiceMapper.listByActive(projectId).stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
         } else {
             appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
             if (CollectionUtils.isEmpty(appServiceIds)) {
@@ -969,6 +969,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                         config.getDockerFilePath(),
                                         doTlsVerify == null || !doTlsVerify));
                                 break;
+                            // 上传JAR包阶段是没有选择项目依赖的, 同样也可以复用maven deploy的逻辑
+                            case UPLOAD_JAR:
                             case MAVEN_DEPLOY:
                                 List<MavenRepoVO> targetRepos = new ArrayList<>();
                                 boolean hasMavenSettings = buildAndSaveJarDeployMavenSettings(projectId, jobId, config, targetRepos);
