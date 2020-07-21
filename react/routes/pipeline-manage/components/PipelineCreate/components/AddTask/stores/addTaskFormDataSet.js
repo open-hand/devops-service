@@ -1,4 +1,4 @@
-export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, projectId, AddTaskUseStore, organizationId) => {
+export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, projectId, AddTaskUseStore, organizationId, ZpkOptionsDs) => {
   function checkImage(value, name, record) {
     const pa = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}(\/.+)*:.+$/;
     if (value && pa.test(value)) {
@@ -134,10 +134,16 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       textField: 'name',
       valueField: 'repositoryId',
       multiple: true,
-      lookupAxiosConfig: ({ params }) => ({
-        method: 'get',
-        url: `/rdupm/v1/nexus-repositorys/${organizationId}/project/${projectId}/ci/repo/list?repoType=MAVEN&type=hosted`,
-      }),
+      options: ZpkOptionsDs,
+    },
+    {
+      name: 'jar_zpk',
+      type: 'number',
+      label: '目标制品库',
+      textField: 'name',
+      valueField: 'repositoryId',
+      multiple: true,
+      options: ZpkOptionsDs,
     },
     {
       name: 'configType',

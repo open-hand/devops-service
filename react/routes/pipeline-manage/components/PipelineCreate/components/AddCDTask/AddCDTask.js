@@ -44,6 +44,7 @@ export default observer(() => {
     ADDCDTaskUseStore,
     handleOk,
     jobDetail,
+    pipelineStageMainSource,
   } = useAddCDTaskStore();
 
   const [branchsList, setBranchsList] = useState([]);
@@ -53,6 +54,69 @@ export default observer(() => {
   const [jarValues, setJarValues] = useState('# java -jar指令\n# 不可删除${jar}\n# java -jar 后台运行参数会自动添加 不需要在重复添加\n# 其余参数可参考可根据需要添加java -jar ${jar} ');
   const [testStatus, setTestStatus] = useState('');
 
+  function getMetadata(ds) {
+    if (ds.type === 'cdDeploy') {
+      ds.value = Base64.encode(valueIdValues);
+    }
+    if (ds.type === 'cdHost') {
+      ds.hostConnectionVO = {
+        hostIp: ds.hostIp,
+        hostPort: ds.hostPort,
+        accountType: ds.accountType,
+        userName: ds.userName,
+        password: ds.password,
+        accountKey: ds.accountKey,
+      };
+      const currentObj = {
+        deploySource: ds.deploySource,
+        value: Base64.encode(imageDeployValues),
+      };
+      if (ds.hostDeployType === 'customize') {
+        ds.customize = Base64.encode(customValues);
+      } else if (ds.hostDeployType === 'image') {
+        if (ds.deploySource === 'matchDeploy') {
+          const repo = ADDCDTaskUseStore.getRepoList?.find(i => String(i.repoId) === String(ds.repoId));
+          const img = ADDCDTaskUseStore.getImageList?.find(i => String(i.imageId) === String(ds.imageId));
+          ds.imageDeploy = {
+            ...currentObj,
+            repoId: ds.repoId,
+            repoName: repo?.repoName,
+            repoType: repo?.repoType,
+            imageId: ds.imageId,
+            imageName: img?.imageName,
+            matchType: ds.matchType,
+            matchContent: ds.matchContent,
+            containerName: ds.containerName,
+          };
+        } else if (ds.deploySource === 'pipelineDeploy') {
+          ds.imageDeploy = {
+            ...currentObj,
+            pipelineTask: ds.pipelineTask,
+            containerName: ds.containerName,
+          };
+        }
+      } else if (ds.hostDeployType === 'jar') {
+        if (ds.deploySource === 'matchDeploy') {
+          ds.jarDeploy = {
+            ...currentObj,
+            serverName: ds.serverName,
+            repositoryId: ds.repositoryId,
+            groupId: ds.groupId,
+            artifactId: ds.artifactId,
+            versionRegular: ds.versionRegular,
+          };
+        } else if (ds.deploySource === 'pipelineDeploy') {
+          ds.jarDeploy = {
+            ...currentObj,
+            pipelineTask: ds.pipelineTask,
+          };
+        }
+      }
+    }
+    ds.appServiceId = PipelineCreateFormDataSet.current.get('appServiceId');
+    return JSON.stringify(ds).replace(/"/g, "'");
+  }
+
   const handleAdd = async () => {
     const result = await ADDCDTaskDataSet.validate();
     if (result) {
@@ -61,54 +125,11 @@ export default observer(() => {
         if (!await handleTestConnect()) {
           return false;
         }
-        // if (!await handleTestValue()) {
-        //   return false;
-        // }
       }
       const data = {
         ...ds,
         triggerValue: typeof ds.triggerValue === 'object' ? ds.triggerValue?.join(',') : ds.triggerValue,
-        metadata: (function () {
-          if (ds.type === 'cdDeploy') {
-            ds.value = Base64.encode(valueIdValues);
-          }
-          if (ds.type === 'cdHost') {
-            ds.hostConnectionVO = {
-              hostIp: ds.hostIp,
-              hostPort: ds.hostPort,
-              accountType: ds.accountType,
-              userName: ds.userName,
-              password: ds.password,
-              accountKey: ds.accountKey,
-            };
-            if (ds.hostDeployType === 'customize') {
-              ds.customize = Base64.encode(customValues);
-            } else if (ds.hostDeployType === 'image') {
-              ds.imageDeploy = {
-                repoId: ds.repoId,
-                repoName: ADDCDTaskUseStore.getRepoList?.find(i => String(i.repoId) === String(ds.repoId))?.repoName,
-                repoType: ADDCDTaskUseStore.getRepoList?.find(i => String(i.repoId) === String(ds.repoId))?.repoType,
-                imageId: ds.imageId,
-                imageName: ADDCDTaskUseStore.getImageList?.find(i => String(i.imageId) === String(ds.imageId))?.imageName,
-                matchType: ds.matchType,
-                matchContent: ds.matchContent,
-                containerName: ds.containerName,
-                value: Base64.encode(imageDeployValues),
-              };
-            } else if (ds.hostDeployType === 'jar') {
-              ds.jarDeploy = {
-                serverName: ds.serverName,
-                repositoryId: ds.repositoryId,
-                groupId: ds.groupId,
-                artifactId: ds.artifactId,
-                versionRegular: ds.versionRegular,
-                value: Base64.encode(jarValues),
-              };
-            }
-          }
-          ds.appServiceId = PipelineCreateFormDataSet.current.get('appServiceId');
-          return JSON.stringify(ds).replace(/"/g, "'");
-        }()),
+        metadata: getMetadata(ds),
       };
       handleOk(data);
       return true;
@@ -184,33 +205,6 @@ export default observer(() => {
     return res[testStatus];
   };
 
-  // useEffect(() => {
-  //   const type = ADDCDTaskDataSet.current.get('type');
-  //   modal.update({
-  //     okProps: {
-  //       disabled: (function () {
-  //         if (type === 'cdHost') {
-  //           return testStatus === 'failed';
-  //         } else {
-  //           return false;
-  //         }
-  //       }()),
-  //     },
-  //   });
-  // }, [testStatus, ADDCDTaskDataSet.current.get('type')]);
-
-  // const handleTestValue = async () => new Promise((resolve) => {
-  //   const hostDeployType = ADDCDTaskDataSet.current.get('hostDeployType');
-  //   axios.post('/devops/v1/cd_pipeline/check/instruction', {
-  //     type: hostDeployType,
-  //     instruction: hostDeployType === 'image' ? imageDeployValues : jarValues,
-  //   }).then((res) => {
-  //     resolve(res);
-  //   }).catch(() => {
-  //     resolve(false);
-  //   });
-  // });
-
   const handleTestConnect = async () => new Promise((resolve) => {
     const { hostIp, hostPort, userName, password, accountType } = ADDCDTaskDataSet.toData()[0];
     axios.post(`/devops/v1/projects/${projectId}/cicd_pipelines/test_connection`, {
@@ -228,8 +222,24 @@ export default observer(() => {
     });
   });
 
+  const renderRelatedJobOpts = () => {
+    const currentHostDeployType = ADDCDTaskDataSet?.current?.get('hostDeployType');
+    const tempArr = pipelineStageMainSource && pipelineStageMainSource.length > 0 && pipelineStageMainSource.map(item => item?.jobList.slice());
+    const jobArr = tempArr ? tempArr.length > 0 && [].concat.apply(...tempArr) : [];
+    let filterArr;
+    if (jobArr && currentHostDeployType && currentHostDeployType === 'image') {
+      filterArr = jobArr.filter(x => x.configJobTypes?.includes('docker') && x.type === 'build');
+    } else if (currentHostDeployType === 'jar') {
+      filterArr = jobArr.filter(x => (x.configJobTypes?.includes('maven_deploy') || x.configJobTypes?.includes('upload_jar')) && x.type === 'build');
+    }
+    return (
+      filterArr.length > 0 && filterArr.map(item => <Option value={item.name}>{item.name}</Option>)
+    );
+  };
+
   const getOtherConfig = () => {
     function getModeDom() {
+      const currentDepoySource = ADDCDTaskDataSet?.current?.get('deploySource');
       const result = {
         customize: (
           <YamlEditor
@@ -241,15 +251,37 @@ export default observer(() => {
           />
         ),
         image: [
-          <Select newLine colSpan={3} name="repoId" />,
-          <Select colSpan={3} name="imageId" />,
-          <Select colSpan={3} name="matchType">
+          <Select
+            newLine
+            colSpan={3}
+            name="deploySource"
+            showHelp="tooltip"
+            clearButton={false}
+            help="流水线制品部署表示直接使用所选关联构建任务中产生的镜像进行部署；匹配制品部署则表示可自主选择项目镜像仓库中的镜像，并配置镜像版本的匹配规则，后续部署的镜像版本便会遵循此规则。"
+          >
+            <Option value="pipelineDeploy">流水线制品部署</Option>
+            <Option value="matchDeploy">匹配制品部署</Option>
+          </Select>,
+          currentDepoySource === 'pipelineDeploy' && <Select
+            colSpan={3}
+            name="pipelineTask"
+            combo
+            searchable
+            showHelp="tooltip"
+            help={'此处的关联构建任务，仅会查询出该条流水线中存在"Docker构建"步骤的“构建类型”任务。若所选任务中存在多个“Docker构建”步骤，则只会部署第一个“Docker构建”步骤产生的镜像；'}
+            searchMatcher="relateJobName"
+          >
+            {renderRelatedJobOpts()}
+          </Select>,
+          currentDepoySource === 'matchDeploy' && <Select colSpan={3} name="repoId" />,
+          currentDepoySource === 'matchDeploy' && <Select colSpan={3} name="imageId" />,
+          currentDepoySource === 'matchDeploy' && <Select colSpan={3} name="matchType">
             <Option value="refs">模糊匹配</Option>
             <Option value="regex">正则匹配</Option>
             <Option value="exact_match">精确匹配</Option>
             <Option value="exact_exclude">精确排除</Option>
           </Select>,
-          <TextField colSpan={3} name="matchContent" />,
+          currentDepoySource === 'matchDeploy' && <TextField colSpan={3} name="matchContent" />,
           <TextField colSpan={3} name="containerName" />,
           <YamlEditor
             colSpan={6}
@@ -260,11 +292,33 @@ export default observer(() => {
           />,
         ],
         jar: [
-          <Select newLine colSpan={3} name="serverName" />,
-          <Select colSpan={3} name="repositoryId" />,
-          <Select colSpan={3} name="groupId" />,
-          <Select colSpan={3} name="artifactId" />,
-          <TextField colSpan={6} name="versionRegular" />,
+          <Select
+            newLine
+            colSpan={3}
+            name="deploySource"
+            showHelp="tooltip"
+            clearButton={false}
+            help="流水线制品部署表示直接使用所选关联构建任务中生成的jar包进行部署；匹配制品部署则表示可自主选择项目下制品库中的jar包，并需配置jar包版本的正则匹配规则，后续部署的jar包版本便会遵循此规则。"
+          >
+            <Option value="pipelineDeploy">流水线制品部署</Option>
+            <Option value="matchDeploy">匹配制品部署</Option>
+          </Select>,
+          currentDepoySource === 'pipelineDeploy' && <Select
+            colSpan={3}
+            name="pipelineTask"
+            combo
+            searchable
+            showHelp="tooltip"
+            help={'此处的关联构建任务，仅会查询出该条流水线中存在"上传jar包至制品库"或“Maven发布”步骤的“构建类型”任务。若所选任务中存在多个满足条件的步骤，则只会部署所选任务中第一个满足条件的步骤产生的jar包；'}
+            searchMatcher="relateJobName"
+          >
+            {renderRelatedJobOpts()}
+          </Select>,
+          currentDepoySource === 'matchDeploy' && <Select colSpan={3} name="serverName" />,
+          currentDepoySource === 'matchDeploy' && <Select colSpan={3} name="repositoryId" />,
+          currentDepoySource === 'matchDeploy' && <Select colSpan={3} name="groupId" />,
+          currentDepoySource === 'matchDeploy' && <Select colSpan={3} name="artifactId" />,
+          currentDepoySource === 'matchDeploy' && <TextField colSpan={6} name="versionRegular" />,
           <YamlEditor
             colSpan={6}
             newLine
@@ -330,7 +384,18 @@ export default observer(() => {
         <div className="addcdTask-divided" />,
         <p className="addcdTask-title">主机部署</p>,
         <Form style={{ marginTop: 20 }} columns={6} dataSet={ADDCDTaskDataSet}>
-          <SelectBox className="addcdTask-mainMode" colSpan={5} name="hostDeployType">
+          <SelectBox
+            className="addcdTask-mainMode"
+            colSpan={5}
+            name="hostDeployType"
+            onChange={(data) => {
+              ADDCDTaskDataSet.current.set('hostDeployType', data);
+              if (data !== 'customize') {
+                ADDCDTaskDataSet.current.set('deploySource', 'matchDeploy');
+                ADDCDTaskDataSet.current.set('pipelineTask', null);
+              }
+            }}
+          >
             <Option value="image">镜像部署</Option>
             <Option value="jar">jar包部署</Option>
             <Option value="customize">自定义命令</Option>
@@ -396,6 +461,7 @@ export default observer(() => {
             deployType: 'create',
             accountType: 'accountPassword',
             hostDeployType: 'image',
+            deploySource: 'matchDeploy',
           }])}
           colSpan={1}
           name="type"

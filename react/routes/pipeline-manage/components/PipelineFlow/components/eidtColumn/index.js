@@ -33,7 +33,6 @@ const EditItem = (props) => {
     jobDetail,
     PipelineCreateFormDataSet,
     AppServiceOptionsDs,
-    appServiceId,
     appServiceName,
     image,
     openVariableModal,
@@ -47,7 +46,7 @@ const EditItem = (props) => {
   } = usePipelineStageEditStore();
 
   const {
-    editJob, removeStepTask,
+    editJob, removeStepTask, getStepData2,
   } = editBlockStore || stepStore;
 
   function handleEditOk(data) {
@@ -84,6 +83,7 @@ const EditItem = (props) => {
         image={image}
       /> : (<AddCDTask
         jobDetail={jobDetail}
+        pipelineStageMainSource={getStepData2}
         appServiceId={!edit && appServiceName}
         appServiceName={!edit && appServiceName}
         PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
@@ -284,6 +284,7 @@ export default observer((props) => {
         appServiceId={!edit && appServiceName}
         appServiceName={!edit && appServiceName}
         appServiceCode={appServiceCode}
+        pipelineStageMainSource={getStepData2}
         PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
         handleOk={hanleStepCreateOk}
       />),

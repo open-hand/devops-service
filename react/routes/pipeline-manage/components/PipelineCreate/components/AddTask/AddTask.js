@@ -45,6 +45,7 @@ const obj = {
   chart: 'Chart构建',
   go: 'Go语言构建',
   maven_deploy: 'Maven发布',
+  upload_jar: '上传jar包至制品库',
 };
 
 const checkField = {
@@ -148,6 +149,7 @@ const AddTask = observer(() => {
           const share = [];
           let nexusMavenRepoIds;
           let zpk;
+          let jarZpk;
           config && config.forEach((c) => {
             if (c.type === 'upload') {
               uploadFilePattern = c.uploadFilePattern;
@@ -165,6 +167,10 @@ const AddTask = observer(() => {
               if (c.mavenDeployRepoSettings) {
                 zpk = c.mavenDeployRepoSettings.nexusRepoIds;
                 nexusMavenRepoIds = c.nexusMavenRepoIds;
+              }
+            } else if (c.type === 'upload_jar') {
+              if (c.mavenDeployRepoSettings) {
+                jarZpk = c.mavenDeployRepoSettings.nexusRepoIds;
               }
             }
             if (c.mavenSettings) {
@@ -186,6 +192,7 @@ const AddTask = observer(() => {
             dockerArtifactFileName,
             nexusMavenRepoIds,
             zpk,
+            jar_zpk: jarZpk,
             skipDockerTlsVerify,
             triggerValue: jobDetail.triggerValue && jobDetail.triggerType !== 'regex' ? jobDetail.triggerValue.split(',') : jobDetail.triggerValue,
             configType,
@@ -275,6 +282,7 @@ const AddTask = observer(() => {
 
         toUpload: data.type === 'build' && data.share.includes('toUpload'),
         toDownload: data.type === 'build' && data.share.includes('toDownload'),
+        configJobTypes: data.type === 'build' ? steps.map((step) => step.type) : null,
 
         metadata: (function () {
           if (data.type === 'build') {
@@ -316,6 +324,11 @@ const AddTask = observer(() => {
                     nexusRepoIds: data.zpk,
                   };
                   s.nexusMavenRepoIds = data.nexusMavenRepoIds;
+                }
+                if (data.jar_zpk && s.type === 'upload_jar') {
+                  s.mavenDeployRepoSettings = {
+                    nexusRepoIds: data.jar_zpk,
+                  };
                 }
                 return s;
               }),
@@ -939,15 +952,16 @@ const AddTask = observer(() => {
               (function () {
                 if (steps.find(s => s.checked)) {
                   const type = steps.find(s => s.checked).type;
+                  const style = {
+                    width: 339,
+                    marginTop: 30,
+                    marginBottom: 20,
+                  };
                   if (type === 'Maven') {
                     return (
                       <Select
                         name="nexusMavenRepoIds"
-                        style={{
-                          width: 339,
-                          marginTop: 30,
-                          marginBottom: 20,
-                        }}
+                        style={style}
                         renderer={({ text }) => (
                           <Tooltip title={text}>
                             {text}
@@ -959,11 +973,14 @@ const AddTask = observer(() => {
                     return (
                       <Select
                         name="zpk"
-                        style={{
-                          width: 339,
-                          marginTop: 30,
-                          marginBottom: 20,
-                        }}
+                        style={style}
+                      />
+                    );
+                  } else if (type === 'upload_jar') {
+                    return (
+                      <Select
+                        name="jar_zpk"
+                        style={style}
                       />
                     );
                   }
@@ -1100,7 +1117,7 @@ const AddTask = observer(() => {
             (function () {
               if (steps.length > 0) {
                 const type = steps.find(s => s.checked).type;
-                if (type && ['Maven', 'npm', 'go', 'maven_deploy'].includes(type)) {
+                if (type && ['Maven', 'npm', 'go', 'maven_deploy', 'upload_jar'].includes(type)) {
                   return [
                     <div style={{
                       marginLeft: '-16px',

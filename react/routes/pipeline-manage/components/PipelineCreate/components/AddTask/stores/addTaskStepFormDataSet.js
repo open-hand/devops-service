@@ -14,6 +14,9 @@ const optionDs = new DataSet({
   }, {
     name: 'Maven发布',
     value: 'maven_deploy',
+  }, {
+    name: '上传jar包至制品库',
+    value: 'upload_jar',
   }],
 });
 
