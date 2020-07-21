@@ -45,6 +45,7 @@ const obj = {
   chart: 'Chart构建',
   go: 'Go语言构建',
   maven_deploy: 'Maven发布',
+  jar: '上传jar包至制品库',
 };
 
 const checkField = {
@@ -275,6 +276,7 @@ const AddTask = observer(() => {
 
         toUpload: data.type === 'build' && data.share.includes('toUpload'),
         toDownload: data.type === 'build' && data.share.includes('toDownload'),
+        configJobTypes: data.type === 'build' ? steps.map((step) => step.type) : null,
 
         metadata: (function () {
           if (data.type === 'build') {
@@ -939,15 +941,16 @@ const AddTask = observer(() => {
               (function () {
                 if (steps.find(s => s.checked)) {
                   const type = steps.find(s => s.checked).type;
+                  const style = {
+                    width: 339,
+                    marginTop: 30,
+                    marginBottom: 20,
+                  };
                   if (type === 'Maven') {
                     return (
                       <Select
                         name="nexusMavenRepoIds"
-                        style={{
-                          width: 339,
-                          marginTop: 30,
-                          marginBottom: 20,
-                        }}
+                        style={style}
                         renderer={({ text }) => (
                           <Tooltip title={text}>
                             {text}
@@ -959,11 +962,14 @@ const AddTask = observer(() => {
                     return (
                       <Select
                         name="zpk"
-                        style={{
-                          width: 339,
-                          marginTop: 30,
-                          marginBottom: 20,
-                        }}
+                        style={style}
+                      />
+                    );
+                  } else if (type === 'jar') {
+                    return (
+                      <Select
+                        name="zpk"
+                        style={style}
                       />
                     );
                   }
@@ -1100,7 +1106,7 @@ const AddTask = observer(() => {
             (function () {
               if (steps.length > 0) {
                 const type = steps.find(s => s.checked).type;
-                if (type && ['Maven', 'npm', 'go', 'maven_deploy'].includes(type)) {
+                if (type && ['Maven', 'npm', 'go', 'maven_deploy', 'jar'].includes(type)) {
                   return [
                     <div style={{
                       marginLeft: '-16px',
