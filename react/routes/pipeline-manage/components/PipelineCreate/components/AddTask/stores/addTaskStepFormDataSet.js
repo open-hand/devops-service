@@ -16,7 +16,7 @@ const optionDs = new DataSet({
     value: 'maven_deploy',
   }, {
     name: '上传jar包至制品库',
-    value: 'jar',
+    value: 'upload_jar',
   }],
 });
 

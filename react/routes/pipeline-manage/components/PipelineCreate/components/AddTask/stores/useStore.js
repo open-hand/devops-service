@@ -114,6 +114,13 @@ go build -x -i -o ./docker/app -v ./path/to/main.go`,
 # 以下的两个变量 \${CHOERODON_MAVEN_REPOSITORY_ID} \${CHOERODON_MAVEN_REPO_URL} 会在选择制品库后替换为相应的值, 如果没有特别需求, 不建议更改
 mvn clean install -Dmaven.springboot.skip=true -DskipTests=true deploy -DaltDeploymentRepository=\${CHOERODON_MAVEN_REPOSITORY_ID}::default::\${CHOERODON_MAVEN_REPO_URL} -s settings.xml
       `,
+      upload_jar: `
+# 此命令用于将之前构建的jar包发布至制品库, 并不会重新进行构建, 所以请确保使用此命令时, 此前打包的jar的结构是符合预期的
+# -Dfile参数指定了之前打包出的jar包的路径
+# -DpomFile指定此次发布的jar包使用的pom文件
+# 以下的两个变量 \${CHOERODON_MAVEN_REPOSITORY_ID} \${CHOERODON_MAVEN_REPO_URL} 会在选择制品库后替换为相应的值, 如果没有特别需求, 不建议更改
+mvn deploy:deploy-file -Dfile=target/app.jar -DpomFile=pom.xml -Durl=\${CHOERODON_MAVEN_REPO_URL} -DrepositoryId=\${CHOERODON_MAVEN_REPOSITORY_ID} -DrepositoryLayout=default
+      `,
     },
 
     hasDefaultSonar: false,

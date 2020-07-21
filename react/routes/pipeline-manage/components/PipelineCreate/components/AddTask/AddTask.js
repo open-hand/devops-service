@@ -45,7 +45,7 @@ const obj = {
   chart: 'Chart构建',
   go: 'Go语言构建',
   maven_deploy: 'Maven发布',
-  jar: '上传jar包至制品库',
+  upload_jar: '上传jar包至制品库',
 };
 
 const checkField = {
@@ -149,6 +149,7 @@ const AddTask = observer(() => {
           const share = [];
           let nexusMavenRepoIds;
           let zpk;
+          let jarZpk;
           config && config.forEach((c) => {
             if (c.type === 'upload') {
               uploadFilePattern = c.uploadFilePattern;
@@ -166,6 +167,10 @@ const AddTask = observer(() => {
               if (c.mavenDeployRepoSettings) {
                 zpk = c.mavenDeployRepoSettings.nexusRepoIds;
                 nexusMavenRepoIds = c.nexusMavenRepoIds;
+              }
+            } else if (c.type === 'upload_jar') {
+              if (c.mavenDeployRepoSettings) {
+                jarZpk = c.mavenDeployRepoSettings.nexusRepoIds;
               }
             }
             if (c.mavenSettings) {
@@ -187,6 +192,7 @@ const AddTask = observer(() => {
             dockerArtifactFileName,
             nexusMavenRepoIds,
             zpk,
+            jar_zpk: jarZpk,
             skipDockerTlsVerify,
             triggerValue: jobDetail.triggerValue && jobDetail.triggerType !== 'regex' ? jobDetail.triggerValue.split(',') : jobDetail.triggerValue,
             configType,
@@ -318,6 +324,11 @@ const AddTask = observer(() => {
                     nexusRepoIds: data.zpk,
                   };
                   s.nexusMavenRepoIds = data.nexusMavenRepoIds;
+                }
+                if (data.jar_zpk && s.type === 'upload_jar') {
+                  s.mavenDeployRepoSettings = {
+                    nexusRepoIds: data.jar_zpk,
+                  };
                 }
                 return s;
               }),
@@ -965,10 +976,10 @@ const AddTask = observer(() => {
                         style={style}
                       />
                     );
-                  } else if (type === 'jar') {
+                  } else if (type === 'upload_jar') {
                     return (
                       <Select
-                        name="zpk"
+                        name="jar_zpk"
                         style={style}
                       />
                     );
@@ -1106,7 +1117,7 @@ const AddTask = observer(() => {
             (function () {
               if (steps.length > 0) {
                 const type = steps.find(s => s.checked).type;
-                if (type && ['Maven', 'npm', 'go', 'maven_deploy', 'jar'].includes(type)) {
+                if (type && ['Maven', 'npm', 'go', 'maven_deploy', 'upload_jar'].includes(type)) {
                   return [
                     <div style={{
                       marginLeft: '-16px',
