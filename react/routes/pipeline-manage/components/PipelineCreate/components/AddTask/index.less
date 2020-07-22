@@ -16,12 +16,12 @@
     }
   }
   label.c7n-pro-checkbox-wrapper {
-    &:nth-of-type(2){
+    &:nth-of-type(2) {
       margin-left: .7rem;
     }
   }
-
 }
+
 .AddTask_configStep {
   margin-left: -0.24rem;
   margin-right: -0.24rem;
@@ -43,7 +43,7 @@
   border-radius: 4px;
   padding: 20px 16px;
   label.c7n-pro-radio-wrapper {
-    &:nth-of-type(2){
+    &:nth-of-type(2) {
       margin-left: .21rem;
     }
   }
@@ -129,14 +129,18 @@
   }
 }
 .stepformContent {
-  align-items: center;
+  align-items: end;
   display: flex;
   justify-content: space-between;
   position: relative;
   .c7n-pro-validation-message {
     position: absolute;
-    right: 0;
-    bottom: 0;
+    left: 333px;
+    bottom: 20px;
+
+    &:nth-child(2) {
+      left: 0;
+    }
   }
 }
 .addTask_testConnect_success {

@@ -81,6 +81,9 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       name: 'bzmc',
       type: 'string',
       label: '步骤名称',
+      dynamicProps: ({ record, name }) => ({
+        required: record.get('type') === 'build',
+      }),
     },
     //   {
     //   name: 'yhm',
@@ -112,7 +115,7 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
     {
       name: 'dockerContextDir',
       type: 'string',
-      label: 'Docker工作目录',
+      label: '镜像构建上下文',
       required: true,
     },
     {
@@ -124,7 +127,7 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
     {
       name: 'skipDockerTlsVerify',
       type: 'boolean',
-      label: '是否进行证书校验',
+      label: '是否启用TLS校验',
       defaultValue: false,
     },
     {
@@ -134,6 +137,7 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       textField: 'name',
       valueField: 'repositoryId',
       multiple: true,
+      required: true,
       options: ZpkOptionsDs,
     },
     {
@@ -143,6 +147,7 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       textField: 'name',
       valueField: 'repositoryId',
       multiple: true,
+      required: true,
       options: ZpkOptionsDs,
     },
     {
