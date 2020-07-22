@@ -33,6 +33,8 @@ public interface DevopsCdPipelineRecordService {
 
     Boolean cdHostJarDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
+    Boolean cdHostCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
+
     void cdHostDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
     void retryHostDeployJob(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);

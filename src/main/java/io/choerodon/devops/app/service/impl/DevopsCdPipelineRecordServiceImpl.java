@@ -452,7 +452,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
             LOGGER.info(loggerInfo);
             LOGGER.info(loggerError);
-            LOGGER.info("docker run status:{}", cmd.getExitStatus());
+            LOGGER.info("docker stop status:{}", cmd.getExitStatus());
         } finally {
             assert session != null;
             session.close();
@@ -576,6 +576,30 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         return status;
     }
 
+    @Override
+    public Boolean cdHostCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+        LOGGER.info("========================================");
+        LOGGER.info("start custom deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+        SSHClient ssh = new SSHClient();
+        Boolean status = true;
+        try {
+            // 0.1 查询部署信息
+            DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
+            CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
+            String value = new String(decoder.decodeBuffer(cdHostDeployConfigVO.getCustomize().getValues()), "UTF-8");
+            sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
+            sshExecCustom(ssh, value);
+            devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
+        } catch (Exception e) {
+            e.printStackTrace();
+            status = false;
+            jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
+        } finally {
+            closeSsh(ssh, null);
+        }
+        return status;
+    }
+
     private void sshStopJar(SSHClient ssh, Long jobId) throws IOException {
         DevopsCdEnvDeployInfoDTO cdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryByCdJobId(jobId);
         if (cdEnvDeployInfoDTO != null && !StringUtils.isEmpty(cdEnvDeployInfoDTO.getJarName())) {
@@ -642,6 +666,36 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             if (loggerError.contains("Unauthorized") || loggerInfo.contains("Unauthorized")) {
                 throw new CommonException(ERROR_DOWNLOAD_JAY);
             }
+            LOGGER.info(loggerInfo);
+            LOGGER.info(loggerError);
+        } finally {
+            assert session != null;
+            session.close();
+        }
+
+    }
+
+    private void sshExecCustom(SSHClient ssh, String value) throws IOException {
+        Session session = null;
+        try {
+            session = ssh.startSession();
+            String[] strings = value.split("\n");
+            String values = "";
+            for (String s : strings) {
+                if (s.length() > 0 && !s.contains("#") && s.contains("java")) {
+                    values = s;
+                }
+            }
+            if (StringUtils.isEmpty(values) || !checkInstruction("jar", values)) {
+                throw new CommonException("error.instruction");
+            }
+
+            LOGGER.info(values);
+            final Session.Command cmd = session.exec(values);
+            cmd.join(5, TimeUnit.SECONDS);
+            String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
+            String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
+
             LOGGER.info(loggerInfo);
             LOGGER.info(loggerError);
         } finally {
