@@ -39,8 +39,8 @@ export default function useStore() {
     retryJob(projectId, gitlabProjectId, jobId) {
       return axios.get(`/devops/v1/projects/${projectId}/ci_jobs/gitlab_projects/${gitlabProjectId}/gitlab_jobs/${jobId}/retry`);
     },
-    retryCdJob(projectId, pipelineRecordId, gitlabPipelineId, gitlabProjectId) {
-      return axios.get(`devops/v1/projects/${projectId}/cicd_pipelines_record/retry?cd_pipeline_record_id=${pipelineRecordId}&gitlab_pipeline_id=${gitlabPipelineId}&gitlab_project_id=${gitlabProjectId}`);
+    retryCdJob(projectId, pipelineRecordId) {
+      return axios.get(`devops/v1/projects/${projectId}/cicd_pipelines_record/retry_cd_task?cd_pipeline_record_id=${pipelineRecordId}`)
     },
   }));
 }
