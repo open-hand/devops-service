@@ -127,7 +127,7 @@ public class CiController {
             @ApiParam(value = "制品库id", required = true)
             @RequestParam("nexus_repo_id") Long nexusRepoId,
             @ApiParam(value = "GitLab流水线id", required = true)
-            @RequestParam(value = "job名称") Long gitlabPipelineId,
+            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
             @ApiParam(value = "job_name", required = true)
             @RequestParam(value = "job_name") String jobName,
             @ApiParam(value = "token", required = true)
