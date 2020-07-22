@@ -2,6 +2,8 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,9 +14,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.CiPipelineImageVO;
 import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.AppServiceVersionService;
+import io.choerodon.devops.app.service.CiPipelineImageService;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -36,11 +40,14 @@ public class CiController {
 
     private final AppServiceService applicationService;
     private final AppServiceVersionService appServiceVersionService;
+    private final CiPipelineImageService ciPipelineImageService;
 
     public CiController(AppServiceService applicationService,
-                        AppServiceVersionService appServiceVersionService) {
+                        AppServiceVersionService appServiceVersionService,
+                        CiPipelineImageService ciPipelineImageService) {
         this.applicationService = applicationService;
         this.appServiceVersionService = appServiceVersionService;
+        this.ciPipelineImageService = ciPipelineImageService;
     }
 
     /**
@@ -79,6 +86,8 @@ public class CiController {
             @RequestParam String image,
             @ApiParam(value = "harbor_config_id", required = true)
             @RequestParam(value = "harbor_config_id") String harborConfigId,
+            @ApiParam(value = "repo_type", required = true)
+            @RequestParam(value = "repo_type") String repoType,
             @ApiParam(value = "token", required = true)
             @RequestParam String token,
             @ApiParam(value = "版本", required = true)
@@ -88,7 +97,7 @@ public class CiController {
             @ApiParam(value = "taz包", required = true)
             @RequestParam MultipartFile file,
             @RequestParam String ref) {
-        appServiceVersionService.create(image, harborConfigId, token, version, commit, file, ref);
+        appServiceVersionService.create(image, harborConfigId, repoType, token, version, commit, file, ref);
         return ResponseEntity.ok().build();
     }
 
@@ -96,6 +105,15 @@ public class CiController {
     @ApiOperation(value = "查询CI流水线默认的镜像地址")
     @GetMapping("/default_image")
     public ResponseEntity<String> queryDefaultCiImageUrl() {
+        return ResponseEntity.ok(defaultCiImage);
+    }
+
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "查询CI流水线默认的镜像地址")
+    @GetMapping("/record_image")
+    public ResponseEntity createImageRecord(@Valid CiPipelineImageVO ciPipelineImageVO) {
+        ciPipelineImageService.createOrUpdate(ciPipelineImageVO);
         return ResponseEntity.ok(defaultCiImage);
     }
 

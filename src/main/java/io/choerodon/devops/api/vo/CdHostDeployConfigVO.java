@@ -25,6 +25,12 @@ public class CdHostDeployConfigVO {
     private Customize customize;
 
     public class ImageDeploy {
+        @ApiModelProperty("部署来源：matchDeploy(匹配部署)/pipelineDeploy(流水线部署)")
+        private String deploySource;
+
+        @ApiModelProperty("流水线部署 流水线任务名称")
+        private String pipelineTask;
+
         @ApiModelProperty("仓库名")
         private String repoName;
 
@@ -51,6 +57,22 @@ public class CdHostDeployConfigVO {
 
         @ApiModelProperty("容器名称")
         private String containerName;
+
+        public String getDeploySource() {
+            return deploySource;
+        }
+
+        public void setDeploySource(String deploySource) {
+            this.deploySource = deploySource;
+        }
+
+        public String getPipelineTask() {
+            return pipelineTask;
+        }
+
+        public void setPipelineTask(String pipelineTask) {
+            this.pipelineTask = pipelineTask;
+        }
 
         public String getValue() {
             return value;
@@ -126,6 +148,11 @@ public class CdHostDeployConfigVO {
     }
 
     public class JarDeploy {
+        @ApiModelProperty("部署来源：matchDeploy(匹配部署)/pipelineDeploy(流水线部署)")
+        private String deploySource;
+
+        @ApiModelProperty("流水线部署 流水线任务名称")
+        private String pipelineTask;
 
         @ApiModelProperty("服务名")
         private String serverName;
@@ -201,6 +228,22 @@ public class CdHostDeployConfigVO {
 
         public void setRepositoryId(Long repositoryId) {
             this.repositoryId = repositoryId;
+        }
+
+        public String getDeploySource() {
+            return deploySource;
+        }
+
+        public void setDeploySource(String deploySource) {
+            this.deploySource = deploySource;
+        }
+
+        public String getPipelineTask() {
+            return pipelineTask;
+        }
+
+        public void setPipelineTask(String pipelineTask) {
+            this.pipelineTask = pipelineTask;
         }
     }
 

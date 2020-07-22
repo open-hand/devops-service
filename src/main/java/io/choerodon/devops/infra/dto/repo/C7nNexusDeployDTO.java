@@ -7,9 +7,33 @@ package io.choerodon.devops.infra.dto.repo;
  */
 public class C7nNexusDeployDTO {
 
-    private C7nNexusComponentDTO c7nNexusComponentDTO;
+    private String pullUserId;
+    private String pullUserPassword;
+    private String downloadUrl;
 
-    private NexusMavenRepoDTO nexusMavenRepoDTO;
+    public String getPullUserId() {
+        return pullUserId;
+    }
+
+    public void setPullUserId(String pullUserId) {
+        this.pullUserId = pullUserId;
+    }
+
+    public String getPullUserPassword() {
+        return pullUserPassword;
+    }
+
+    public void setPullUserPassword(String pullUserPassword) {
+        this.pullUserPassword = pullUserPassword;
+    }
+
+    public String getDownloadUrl() {
+        return downloadUrl;
+    }
+
+    public void setDownloadUrl(String downloadUrl) {
+        this.downloadUrl = downloadUrl;
+    }
 
     private String jarName;
 
@@ -21,19 +45,4 @@ public class C7nNexusDeployDTO {
         this.jarName = jarName;
     }
 
-    public C7nNexusComponentDTO getC7nNexusComponentDTO() {
-        return c7nNexusComponentDTO;
-    }
-
-    public void setC7nNexusComponentDTO(C7nNexusComponentDTO c7nNexusComponentDTO) {
-        this.c7nNexusComponentDTO = c7nNexusComponentDTO;
-    }
-
-    public NexusMavenRepoDTO getNexusMavenRepoDTO() {
-        return nexusMavenRepoDTO;
-    }
-
-    public void setNexusMavenRepoDTO(NexusMavenRepoDTO nexusMavenRepoDTO) {
-        this.nexusMavenRepoDTO = nexusMavenRepoDTO;
-    }
 }

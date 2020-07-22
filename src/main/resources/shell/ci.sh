@@ -20,6 +20,8 @@ export GROUP_NAME={{ GROUP_NAME }}
 export SONAR_URL={{ SONAR_URL }}
 # SONARQUBE的token
 export SONAR_LOGIN={{ SONAR_LOGIN }}
+# 仓库类型
+export REPO_TYPE={{ REPO_TYPE }}
 # HARBOR配置Id
 export HARBOR_CONFIG_ID={{ HARBOR_CONFIG_ID }}
 # 设置docekr认证配置文件目录
@@ -164,6 +166,7 @@ function chart_build() {
     -H 'Expect:' \
     -F "token=${Token}" \
     -F "harbor_config_id=${HARBOR_CONFIG_ID}" \
+    -F "repo_type=${REPO_TYPE}" \
     -F "version=${CI_COMMIT_TAG}" \
     -F "file=@${FILE_NAME}-${CI_COMMIT_TAG}.tgz" \
     -F "commit=${CI_COMMIT_SHA}" \

@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -504,14 +506,14 @@ public class AppServiceServiceImpl implements AppServiceService {
         devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
         //保存应用服务与harbor仓库的关系
         if (!Objects.isNull(appServiceUpdateDTO.getHarborRepoConfigDTO())) {
-            if (HarborRepoDTO.DEFAULT_REPO.equals(appServiceUpdateDTO.getHarborRepoConfigDTO().getType())) {
+            if (DEFAULT_REPO.equals(appServiceUpdateDTO.getHarborRepoConfigDTO().getType())) {
                 HarborRepoDTO beforeRepo = rdupmClient.queryHarborRepoConfig(projectId, appServiceId).getBody();
                 //如果之前存在非默认仓库与应用服务的关联关系，则删除
-                if (!Objects.isNull(beforeRepo) && !HarborRepoDTO.DEFAULT_REPO.equals(beforeRepo.getRepoType())) {
+                if (!Objects.isNull(beforeRepo) && !DEFAULT_REPO.equals(beforeRepo.getRepoType())) {
                     deleteHarborAppServiceRel(projectId, appServiceDTO.getId());
                 }
             }
-            if (HarborRepoDTO.CUSTOM_REPO.equals((appServiceUpdateDTO.getHarborRepoConfigDTO().getType()))) {
+            if (CUSTOM_REPO.equals((appServiceUpdateDTO.getHarborRepoConfigDTO().getType()))) {
                 deleteHarborAppServiceRel(projectId, appServiceDTO.getId());
                 rdupmClient.saveRelationByService(projectId, appServiceDTO.getId(), appServiceUpdateDTO.getHarborRepoConfigDTO().getRepoId());
             }
@@ -995,6 +997,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{ DOCKER_USERNAME }}", "'" + harborProjectConfig.getUserName() + "'");
             params.put("{{ DOCKER_PASSWORD }}", harborProjectConfig.getPassword());
             params.put("{{ HARBOR_CONFIG_ID }}", harborConfigDTO.getId().toString());
+            params.put("{{ REPO_TYPE }}", harborConfigDTO.getType());
             return FileUtil.replaceReturnString(CI_FILE_TEMPLATE, params);
         } catch (CommonException e) {
 //            LOGGER.warn("Error query ci.sh for app-service with token {} , the ex is ", token, e);
