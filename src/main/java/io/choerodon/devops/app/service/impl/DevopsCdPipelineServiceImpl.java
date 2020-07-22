@@ -162,6 +162,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
     @Autowired
     private DevopsPipelineRecordRelService devopsPipelineRecordRelService;
+    @Autowired
+    private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
 
     @Override
     @Transactional
@@ -426,12 +428,15 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         CustomContextUtil.setUserContext(devopsCdJobRecordDTO.getCreatedBy());
         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
         AppServiceVersionDTO appServiceServiceE = getDeployVersion(pipelineRecordId);
-
         if (appServiceServiceE == null) {
             devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
             return;
         }
-
+        // 没有环境权限，状态置为跳过
+        if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(devopsCdJobRecordDTO.getCreatedBy(), devopsCdEnvDeployInfoDTO.getEnvId()))) {
+            devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
+            return;
+        }
 
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
         appServiceDeployVO.setDeployInfoId(devopsCdJobRecordDTO.getDeployInfoId());
