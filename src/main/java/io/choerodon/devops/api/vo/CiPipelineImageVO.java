@@ -9,6 +9,8 @@ import javax.validation.constraints.NotNull;
  */
 public class CiPipelineImageVO {
     @NotNull
+    private String token;
+    @NotNull
     private Long gitlabPipelineId;
     @NotNull
     private String jobName;
@@ -18,6 +20,14 @@ public class CiPipelineImageVO {
     private Long harborRepoId;
     @NotNull
     private String repoType;
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 
     public Long getGitlabPipelineId() {
         return gitlabPipelineId;

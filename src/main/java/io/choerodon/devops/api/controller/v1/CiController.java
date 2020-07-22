@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.Optional;
-
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
@@ -111,10 +110,10 @@ public class CiController {
 
     @Permission(permissionPublic = true)
     @ApiOperation(value = "查询CI流水线默认的镜像地址")
-    @GetMapping("/record_image")
-    public ResponseEntity createImageRecord(@Valid CiPipelineImageVO ciPipelineImageVO) {
+    @PostMapping("/record_image")
+    public ResponseEntity<Void> createImageRecord(@RequestBody @Valid CiPipelineImageVO ciPipelineImageVO) {
         ciPipelineImageService.createOrUpdate(ciPipelineImageVO);
-        return ResponseEntity.ok(defaultCiImage);
+        return ResponseEntity.ok().build();
     }
 
 

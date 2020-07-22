@@ -57,7 +57,7 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
  * 〈〉
  *
  * @author wanghao
- * @Date 2020/4/2 18:00
+ * @since 2020/4/2 18:00
  */
 @Service
 public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
@@ -964,7 +964,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                 // 不填skipDockerTlsVerify参数或者填TRUE都是跳过证书校验
                                 // TODO 修复 目前后端这个参数的含义是是否跳过证书校验, 前端的含义是是否进行证书校验
                                 Boolean doTlsVerify = config.getSkipDockerTlsVerify();
-                                result.add(GitlabCiUtil.generateDockerScripts(
+                                result.addAll(GitlabCiUtil.generateDockerScripts(
                                         config.getDockerContextDir(),
                                         config.getDockerFilePath(),
                                         doTlsVerify == null || !doTlsVerify));

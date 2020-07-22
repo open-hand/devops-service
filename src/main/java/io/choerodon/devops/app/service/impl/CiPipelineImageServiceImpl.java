@@ -6,8 +6,11 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiPipelineImageVO;
+import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.CiPipelineImageService;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.CiPipelineImageDTO;
+import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.mapper.CiPipelineImageMapper;
 
 /**
@@ -19,9 +22,15 @@ import io.choerodon.devops.infra.mapper.CiPipelineImageMapper;
 public class CiPipelineImageServiceImpl implements CiPipelineImageService {
     @Autowired
     private CiPipelineImageMapper ciPipelineImageMapper;
+    @Autowired
+    private AppServiceService appServiceService;
 
     @Override
     public void createOrUpdate(CiPipelineImageVO ciPipelineImageVO) {
+        AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(ciPipelineImageVO.getToken());
+        if (appServiceDTO == null) {
+            throw new DevopsCiInvalidException("error.token.invalid");
+        }
         CiPipelineImageDTO oldCiPipelineImageDTO = queryByGitlabPipelineId(ciPipelineImageVO.getGitlabPipelineId(), ciPipelineImageVO.getJobName());
         if (oldCiPipelineImageDTO == null || oldCiPipelineImageDTO.getId() == null) {
             CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();

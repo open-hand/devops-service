@@ -1,7 +1,10 @@
 package io.choerodon.devops.infra.dto;
 
+<<<<<<< HEAD
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
+=======
+>>>>>>> [ADD] add script to save image metadata in ci pipeline
 import javax.persistence.Id;
 import javax.persistence.Table;
 
