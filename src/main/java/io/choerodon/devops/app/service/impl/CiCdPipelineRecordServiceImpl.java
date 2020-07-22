@@ -4,11 +4,14 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import java.util.stream.Collectors;
+
+import org.apache.tomcat.util.log.UserDataHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -23,16 +26,11 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
-import io.choerodon.devops.infra.enums.JobStatusEnum;
-import io.choerodon.devops.infra.enums.PipelineStatus;
-import io.choerodon.devops.infra.enums.WorkFlowStatus;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.*;
-import io.choerodon.devops.infra.util.CiCdPipelineUtils;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.GenerateUUID;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
@@ -82,6 +80,21 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 
     @Autowired
     private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
+
+    @Autowired
+    private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
+
+    @Autowired
+    private AppServiceService appServiceService;
+
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
+
+    @Autowired
+    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
+
+    @Autowired
+    private UserAttrService userAttrService;
 
 
     @Override
@@ -154,6 +167,8 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 
     @Override
     public void retryPipeline(Long projectId, Long cdPipelineRecordId, Long gitlabPipelineId, Long gitlabProjectId) {
+        AppServiceDTO appServiceDTO = appServiceService.queryByGitlabProjectId(gitlabProjectId);
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceDTO.getId(), AppServiceEvent.CICD_PIPELINE_RETRY);
         if (ObjectUtils.isEmpty(cdPipelineRecordId)) {
             devopsCiPipelineRecordService.retry(projectId, gitlabPipelineId, gitlabProjectId);
         } else {
@@ -161,21 +176,35 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         }
     }
 
+    private void retryCdPipeline(Long projectId, Long cdPipelineRecordId) {
+        retryCdPipeline(projectId, cdPipelineRecordId, false);
+    }
+
     @Transactional
-    public void retryCdPipeline(Long projectId, Long cdPipelineRecordId) {
-        // 0.1 更新business key
-        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(cdPipelineRecordId);
-        devopsCdPipelineRecordDTO.setBusinessKey(GenerateUUID.generateUUID());
-        devopsCdPipelineRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
-        // 1. 根据装填获取DevopsPipelineDTO
-        DevopsPipelineDTO devopsPipelineDTO = devopsCdPipelineRecordService.createCDWorkFlowDTO(cdPipelineRecordId, true);
-        // 2.更新状态
+    @Override
+    public void retryCdPipeline(Long projectId, Long cdPipelineRecordId, Boolean checkEnvPermission) {
+        // 1.查询是否有任务可重试
         DevopsCdStageRecordDTO cdStageRecordDTO = devopsCdStageRecordMapper.queryFailedOrCancelStage(cdPipelineRecordId);
         DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.queryFailedOrCancelJob(cdStageRecordDTO.getId());
         if (ObjectUtils.isEmpty(cdStageRecordDTO) || ObjectUtils.isEmpty(cdJobRecordDTO)) {
             LOGGER.warn("no job or stage failed!!");
             return;
         }
+        // 1.1 对于部署任务 校验环境权限
+        if (checkEnvPermission && cdJobRecordDTO.getType().equals(JobTypeEnum.CD_DEPLOY.value())) {
+            DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(cdJobRecordDTO.getDeployInfoId());
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCdEnvDeployInfoDTO.getEnvId());
+            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+        }
+
+        // 2. 根据装填获取DevopsPipelineDTO
+        DevopsPipelineDTO devopsPipelineDTO = devopsCdPipelineRecordService.createCDWorkFlowDTO(cdPipelineRecordId, true);
+
+        // 3 更新business key 更新状态
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(cdPipelineRecordId);
+        devopsCdPipelineRecordDTO.setBusinessKey(GenerateUUID.generateUUID());
+        devopsCdPipelineRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
         devopsCdPipelineRecordService.update(devopsCdPipelineRecordDTO);
         devopsCdStageRecordService.updateStatusById(cdStageRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
         devopsCdJobRecordService.updateStatusById(cdJobRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
@@ -204,10 +233,11 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 
     @Override
     public void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref) {
+        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(pipelineId);
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_NEW_PERFORM);
         DevopsCiStageDTO devopsCdStageDTO = new DevopsCiStageDTO();
         devopsCdStageDTO.setCiPipelineId(pipelineId);
         if (devopsCiStageMapper.selectCount(devopsCdStageDTO) == 0) {
-            CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(pipelineId);
             AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(ciCdPipelineVO.getAppServiceId());
             DevopsGitlabCommitDTO devopsGitlabCommitDTO = new DevopsGitlabCommitDTO();
             devopsGitlabCommitDTO.setAppServiceId(appServiceDTO.getId());
@@ -239,6 +269,13 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             devopsCdStageRecordService.updateStatusById(cdStageRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
         }
         if (!ObjectUtils.isEmpty(cdJobRecordDTO)) {
+            if (cdJobRecordDTO.getType().equals(JobTypeEnum.CD_DEPLOY.value())) {
+                DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(cdJobRecordDTO.getDeployInfoId());
+                DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCdEnvDeployInfoDTO.getEnvId());
+                UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+                devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+            }
+
             devopsCdJobRecordService.updateStatusById(cdJobRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
         }
 

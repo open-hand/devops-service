@@ -463,6 +463,8 @@ public interface AppServiceService {
 
     String getToken(Integer gitlabProjectId, String applicationDir, UserAttrDTO userAttrDTO);
 
+    AppServiceDTO queryByGitlabProjectId(Long gitlabProjectId);
+
     /**
      * 查询单个项目下的应用服务
      *

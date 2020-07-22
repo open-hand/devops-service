@@ -2567,6 +2567,13 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
+    public AppServiceDTO queryByGitlabProjectId(Long gitlabProjectId) {
+        AppServiceDTO appServiceDTO = new AppServiceDTO();
+        appServiceDTO.setGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId));
+        return appServiceMapper.selectOne(appServiceDTO);
+    }
+
+    @Override
     public Page<AppServiceVO> listAppByProjectId(Long projectId, Boolean doPage, PageRequest pageable, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         List<AppServiceDTO> appServiceDTOList = appServiceMapper.pageServiceByProjectId(projectId,

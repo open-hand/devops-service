@@ -15,4 +15,6 @@ public interface CiCdPipelineRecordService {
     void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref);
 
     Page<CiCdPipelineRecordVO> pagingPipelineRecord(Long projectId, Long ciPipelineId, PageRequest pageable);
+
+    void retryCdPipeline(Long projectId, Long cdPipelineRecordId, Boolean checkEnvPermission);
 }

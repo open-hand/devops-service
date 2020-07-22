@@ -59,6 +59,19 @@ public class CiCdPipelineRecordController {
         return Results.success();
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "重试cd任务")
+    @GetMapping("/retry_cd_task")
+    public ResponseEntity<Void> retryPipelineCdTask(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "cd流水线记录id", required = true)
+            @RequestParam(value = "cd_pipeline_record_id") Long cdPipelineRecordId) {
+        ciCdPipelineRecordService.retryCdPipeline(projectId, cdPipelineRecordId, true);
+        return Results.success();
+    }
+
     /**
      * Cancel jobs in a pipeline
      */
