@@ -121,7 +121,7 @@ public class CiController {
     }
 
     @Permission(permissionPublic = true)
-    @ApiOperation(value = "存储镜像的元数据")
+    @ApiOperation(value = "存储Jar包的元数据")
     @PostMapping("/save_jar_metadata")
     public ResponseEntity<Void> saveJarMetaData(
             @ApiParam(value = "制品库id", required = true)
