@@ -5,6 +5,7 @@ import forEach from 'lodash/forEach';
 import { Tooltip } from 'choerodon-ui/pro';
 import { usePipelineFlowStore } from '../stores';
 import StageType from '../components/stage-type';
+import Loading from '../../../../../components/loading';
 
 import './index.less';
 
@@ -31,6 +32,7 @@ export default observer((props) => {
   const {
     getStepData,
     loadData,
+    getLoading,
   } = stepStore || {};
 
   useEffect(() => {
@@ -136,7 +138,7 @@ export default observer((props) => {
   }
 
   return (
-    <div className="c7ncd-pipeline-detail">
+    !getLoading ? <div className="c7ncd-pipeline-detail">
       <div className="c7ncd-pipeline-detail-title">
         <span>{name}</span>
         <span className="c7ncd-pipeline-detail-title-appService">{appServiceName ? ` (${appServiceName}) ` : ''}</span>
@@ -179,6 +181,6 @@ export default observer((props) => {
           </div>
         ))}
       </div>
-    </div>
+    </div> : <Loading display />
   );
 });

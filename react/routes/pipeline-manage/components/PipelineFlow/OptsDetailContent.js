@@ -7,7 +7,6 @@ import DetailHeader from './components/detailHeader';
 import DetailColumn from './components/detailColumn';
 import Loading from '../../../../components/loading';
 import EmptyPage from '../../../../components/empty-page';
-import { usePipelineFlowStore } from './stores';
 import { usePipelineManageStore } from '../../stores';
 
 export default observer((props) => {
