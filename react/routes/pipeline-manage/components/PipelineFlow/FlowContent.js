@@ -15,9 +15,6 @@ export default observer(() => {
     handleRefresh,
     treeDs,
   } = usePipelineFlowStore();
-  const {
-    getHasModify, setHasModify,
-  } = stepStore;
 
   const renderPipeline = () => (
     parentId ? <OptsDetailContent
