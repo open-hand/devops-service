@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import static io.choerodon.devops.infra.constant.GitOpsConstants.DEFAULT_PIPELINE_RECORD_SIZE;
 import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
 
+import com.google.gson.reflect.TypeToken;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -340,6 +341,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         List<DevopsCiJobVO> devopsCiJobVOS = ConvertUtils.convertList(devopsCiJobDTOS, DevopsCiJobVO.class);
 
         // 封装CI对象
+        devopsCiJobVOS.forEach(devopsCiJobVO -> {
+            List<CiConfigTemplateVO> CiConfigTemplateVO = gson.fromJson(devopsCiJobVO.getMetadata(), new TypeToken<List<CiConfigTemplateVO>>() {
+            }.getType());
+            devopsCiJobVO.setConfigJobTypes(CiConfigTemplateVO.stream().map(io.choerodon.devops.api.vo.CiConfigTemplateVO::getType).collect(Collectors.toList()));
+        });
         Map<Long, List<DevopsCiJobVO>> ciJobMap = devopsCiJobVOS.stream().collect(Collectors.groupingBy(DevopsCiJobVO::getCiStageId));
         devopsCiStageVOS.forEach(devopsCiStageVO -> {
             List<DevopsCiJobVO> ciJobVOS = ciJobMap.getOrDefault(devopsCiStageVO.getId(), Collections.emptyList());
