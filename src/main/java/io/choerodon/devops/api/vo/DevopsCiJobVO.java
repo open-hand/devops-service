@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.List;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -59,6 +60,17 @@ public class DevopsCiJobVO {
 
     @ApiModelProperty("是否下载共享目录的内容 / 默认为false")
     private Boolean toDownload;
+
+    @ApiModelProperty("ci阶段的构建类型")
+    private List<String> configJobTypes;
+
+    public List<String> getConfigJobTypes() {
+        return configJobTypes;
+    }
+
+    public void setConfigJobTypes(List<String> configJobTypes) {
+        this.configJobTypes = configJobTypes;
+    }
 
     private Long objectVersionNumber;
 
