@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.AUTH_TYPE_PULL;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_HOST_FEPLOY;
 
 import java.io.IOException;
@@ -147,6 +146,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Autowired
     private CiPipelineImageService ciPipelineImageService;
+
+    @Autowired
+    private CiPipelineMavenService ciPipelineMavenService;
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
@@ -509,28 +511,46 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             CdHostDeployConfigVO.JarDeploy jarDeploy = cdHostDeployConfigVO.getJarDeploy();
             jarDeploy.setValue(new String(decoder.decodeBuffer(jarDeploy.getValue()), "UTF-8"));
             C7nNexusDeployDTO c7nNexusDeployDTO = new C7nNexusDeployDTO();
+            DevopsCdPipelineRecordDTO cdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(cdPipelineRecordDTO.getProjectId());
+
+            // 0.2 从制品库获取仓库信息
+            Long nexusRepoId;
+            String groupId;
+            String artifactId;
+            String versionRegular;
+
             if (jarDeploy.getDeploySource().equals(HostDeploySource.MATCH_DEPLOY.getValue())) {
-                DevopsCdPipelineRecordDTO cdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(cdPipelineRecordDTO.getProjectId());
-                List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), jarDeploy.getRepositoryId(), jarDeploy.getGroupId(), jarDeploy.getArtifactId(), jarDeploy.getVersionRegular());
-                if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
-                    devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
-                    LOGGER.info("no jar to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-                    return status;
-                }
-                List<NexusMavenRepoDTO> mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), Collections.singleton(jarDeploy.getRepositoryId()));
-                if (CollectionUtils.isEmpty(mavenRepoDTOList)) {
-                    throw new CommonException("error.get.maven.config");
-                }
-                c7nNexusDeployDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
-                c7nNexusDeployDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
-                c7nNexusDeployDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
+                nexusRepoId = jarDeploy.getRepositoryId();
+                groupId = jarDeploy.getGroupId();
+                artifactId = jarDeploy.getArtifactId();
+                versionRegular = jarDeploy.getVersionRegular();
+
             } else {
-                // 制品部署 根据gitlabPipelineId 任务名称 todo scp
-//                c7nNexusDeployDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
-//                c7nNexusDeployDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
-//                c7nNexusDeployDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
+                if (ObjectUtils.isEmpty(cdPipelineRecordDTO.getGitlabPipelineId())) {
+                    throw new CommonException("error.no.gitlab.pipeline.id");
+                }
+                CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(cdPipelineRecordDTO.getGitlabPipelineId(), jobRecordDTO.getName());
+                nexusRepoId = ciPipelineMavenDTO.getNexusRepoId();
+                groupId = ciPipelineMavenDTO.getGroupId();
+                artifactId = ciPipelineMavenDTO.getArtifactId();
+                versionRegular = "^" + ciPipelineMavenDTO.getVersion() + "$";
             }
+
+            // 0.3 获取并记录信息
+            List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), nexusRepoId, groupId, artifactId, versionRegular);
+            if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
+                devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
+                LOGGER.info("no jar to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+                return true;
+            }
+            List<NexusMavenRepoDTO> mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), Collections.singleton(nexusRepoId));
+            if (CollectionUtils.isEmpty(mavenRepoDTOList)) {
+                throw new CommonException("error.get.maven.config");
+            }
+            c7nNexusDeployDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
+            c7nNexusDeployDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
+            c7nNexusDeployDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
 
             // 1.更新流水线状态 记录信息
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
@@ -541,7 +561,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
             sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
 
-            // 2.1
+            // 2. 执行jar部署
             sshStopJar(ssh, jobRecordDTO.getJobId());
             sshExec(ssh, c7nNexusDeployDTO, jarDeploy);
             devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(jobRecordDTO.getJobId(), c7nNexusDeployDTO.getJarName());

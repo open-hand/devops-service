@@ -11,28 +11,22 @@ import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author scp
- * @date 2020/7/21
+ * @date 2020/7/22
  * @description
  */
 @ModifyAudit
 @VersionAudit
-@Table(name = "devops_ci_pipeline_image")
-public class CiPipelineImageDTO extends AuditDomain {
+@Table(name = "devops_ci_pipeline_maven")
+public class CiPipelineMavenDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long gitlabPipelineId;
     private String jobName;
-    private String imageTag;
-    private Long harborRepoId;
-    private String repoType;
-
-    public CiPipelineImageDTO() {
-    }
-
-    public Long getGitlabPipelineId() {
-        return gitlabPipelineId;
-    }
+    private String groupId;
+    private String artifactId;
+    private String version;
+    private Long nexusRepoId;
 
     public Long getId() {
         return id;
@@ -40,6 +34,10 @@ public class CiPipelineImageDTO extends AuditDomain {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getGitlabPipelineId() {
+        return gitlabPipelineId;
     }
 
     public void setGitlabPipelineId(Long gitlabPipelineId) {
@@ -54,27 +52,35 @@ public class CiPipelineImageDTO extends AuditDomain {
         this.jobName = jobName;
     }
 
-    public String getImageTag() {
-        return imageTag;
+    public String getGroupId() {
+        return groupId;
     }
 
-    public void setImageTag(String imageTag) {
-        this.imageTag = imageTag;
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
 
-    public Long getHarborRepoId() {
-        return harborRepoId;
+    public String getArtifactId() {
+        return artifactId;
     }
 
-    public void setHarborRepoId(Long harborRepoId) {
-        this.harborRepoId = harborRepoId;
+    public void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
     }
 
-    public String getRepoType() {
-        return repoType;
+    public String getVersion() {
+        return version;
     }
 
-    public void setRepoType(String repoType) {
-        this.repoType = repoType;
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public Long getNexusRepoId() {
+        return nexusRepoId;
+    }
+
+    public void setNexusRepoId(Long nexusRepoId) {
+        this.nexusRepoId = nexusRepoId;
     }
 }
