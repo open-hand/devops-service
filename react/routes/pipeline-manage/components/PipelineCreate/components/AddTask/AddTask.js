@@ -96,6 +96,8 @@ const AddTask = observer(() => {
       AddTaskFormDataSet.getField('dockerContextDir').set('required', steps.some(s => s.type === 'docker'));
       AddTaskFormDataSet.getField('dockerFilePath').set('required', steps.some(s => s.type === 'docker'));
       AddTaskFormDataSet.getField('uploadArtifactFileName').set('required', steps.some(s => s.type === 'upload'));
+      AddTaskFormDataSet.getField('zpk').set('required', steps.some(s => s.type === 'maven_deploy'));
+      AddTaskFormDataSet.getField('jar_zpk').set('required', steps.some(s => s.type === 'upload_jar'));
     }
   }, [steps]);
 
@@ -409,6 +411,8 @@ const AddTask = observer(() => {
         AddTaskFormDataSet.getField('dockerContextDir').set('required', false);
         AddTaskFormDataSet.getField('dockerFilePath').set('required', false);
         AddTaskFormDataSet.getField('uploadArtifactFileName').set('required', false);
+        AddTaskFormDataSet.getField('zpk').set('required', false);
+        AddTaskFormDataSet.getField('jar_zpk').set('required', false);
       }
       if (AddTaskFormDataSet.current.get('type') === 'custom') {
         AddTaskFormDataSet.getField('name').set('required', false);
@@ -926,7 +930,7 @@ const AddTask = observer(() => {
         </Select>,
         <div newLine colSpan={4} style={{ display: 'flex', flexDirection: 'column' }} className="AddTask_stepContent">
           {generateSteps()}
-          <div
+          {steps.length !== 0 ? <div
             className="stepformContent"
           >
             <TextField
@@ -941,9 +945,9 @@ const AddTask = observer(() => {
               style={{
                 width: 339,
                 marginTop: 30,
-                marginBottom: 20,
+                marginBottom: AddTaskFormDataSet.current.getField('bzmc').isValid() ? 20 : 40,
                 marginRight: 8,
-                display: steps.length === 0 ? 'none' : 'block',
+                // display: steps.length === 0 ? 'none' : 'block',
               }}
               // newLine
               name="bzmc"
@@ -970,6 +974,7 @@ const AddTask = observer(() => {
                       />
                     );
                   } else if (type === 'maven_deploy') {
+                    style.marginBottom = AddTaskFormDataSet.current.getField('zpk').isValid() ? 20 : 40;
                     return (
                       <Select
                         name="zpk"
@@ -977,6 +982,7 @@ const AddTask = observer(() => {
                       />
                     );
                   } else if (type === 'upload_jar') {
+                    style.marginBottom = AddTaskFormDataSet.current.getField('jar_zpk').isValid() ? 20 : 40;
                     return (
                       <Select
                         name="jar_zpk"
@@ -987,28 +993,30 @@ const AddTask = observer(() => {
                 }
               }())
             }
-          </div>
-          <div style={{ marginBottom: '20px' }}>
+          </div> : null}
+          <div>
             {
               (function () {
                 if (steps.find(s => s.checked)) {
                   const type = steps.find(s => s.checked).type;
                   if (type === 'maven_deploy') {
                     return (
-                      <Select
-                        name="nexusMavenRepoIds"
-                        style={{
-                          width: '100%',
-                          // marginBottom: 20,
-                        }}
-                        help="123"
-                        showHelp="tooltip"
-                        renderer={({ text }) => (
-                          <Tooltip title={text}>
-                            {text}
-                          </Tooltip>
-                        )}
-                      />
+                      <div style={{ marginBottom: 20 }}>
+                        <Select
+                          name="nexusMavenRepoIds"
+                          style={{
+                            width: '100%',
+                            // marginBottom: 20,
+                          }}
+                          help="123"
+                          showHelp="tooltip"
+                          renderer={({ text }) => (
+                            <Tooltip title={text}>
+                              {text}
+                            </Tooltip>
+                          )}
+                        />
+                      </div>
                     );
                   }
                 }
