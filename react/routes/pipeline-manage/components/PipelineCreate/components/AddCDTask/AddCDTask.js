@@ -233,9 +233,13 @@ export default observer(() => {
       filterArr = jobArr.filter(x => (x.configJobTypes?.includes('maven_deploy') || x.configJobTypes?.includes('upload_jar')) && x.type === 'build');
     }
     return (
-      filterArr.length > 0 && filterArr.map(item => <Option value={item.name}>{item.name}</Option>)
+      filterArr && filterArr.length > 0 && filterArr.map(item => <Option value={item.name}>{item.name}</Option>)
     );
   };
+
+  function searchMatcher({ record, text }) {
+    return record.get('pipelineTask').indexOf(text) !== -1;
+  }
 
   const getOtherConfig = () => {
     function getModeDom() {
@@ -265,11 +269,10 @@ export default observer(() => {
           currentDepoySource === 'pipelineDeploy' && <Select
             colSpan={3}
             name="pipelineTask"
-            combo
             searchable
             showHelp="tooltip"
             help={'此处的关联构建任务，仅会查询出该条流水线中存在"Docker构建"步骤的“构建类型”任务。若所选任务中存在多个“Docker构建”步骤，则只会部署第一个“Docker构建”步骤产生的镜像；'}
-            searchMatcher="relateJobName"
+            searchMatcher={searchMatcher}
           >
             {renderRelatedJobOpts()}
           </Select>,
@@ -306,11 +309,10 @@ export default observer(() => {
           currentDepoySource === 'pipelineDeploy' && <Select
             colSpan={3}
             name="pipelineTask"
-            combo
             searchable
             showHelp="tooltip"
             help={'此处的关联构建任务，仅会查询出该条流水线中存在"上传jar包至制品库"或“Maven发布”步骤的“构建类型”任务。若所选任务中存在多个满足条件的步骤，则只会部署所选任务中第一个满足条件的步骤产生的jar包；'}
-            searchMatcher="relateJobName"
+            searchMatcher={searchMatcher}
           >
             {renderRelatedJobOpts()}
           </Select>,
