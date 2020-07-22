@@ -50,8 +50,8 @@ export default observer(() => {
   const [branchsList, setBranchsList] = useState([]);
   const [valueIdValues, setValueIdValues] = useState('');
   const [customValues, setCustomValues] = useState('');
-  const [imageDeployValues, setImageDeployValues] = useState('docker run --name=${containerName} -d ${imageName}');
-  const [jarValues, setJarValues] = useState('# java -jar指令\n# 不可删除${jar}\n# java -jar 后台运行参数会自动添加 不需要在重复添加\n# 其余参数可参考可根据需要添加java -jar ${jar} ');
+  const [imageDeployValues, setImageDeployValues] = useState('# docker run指令\n# 不可删除${containerName}和${imageName}占位符\n# 不可删除 -d: 后台运行容器\n# 其余参数可参考可根据需要添加\ndocker run --name=${containerName} -d ${imageName}');
+  const [jarValues, setJarValues] = useState('# java -jar指令\n# 不可删除${jar}\n# java -jar 后台运行参数会自动添加 不需要在重复添加\n# 其余参数可参考可根据需要添加\njava -jar ${jar} ');
   const [testStatus, setTestStatus] = useState('');
 
   function getMetadata(ds) {
