@@ -115,6 +115,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
     private final DevopsEnvironmentMapper devopsEnvironmentMapper;
     private final DevopsPipelineRecordRelService devopsPipelineRecordRelService;
+    private final DevopsCdPipelineService devopsCdPipelineService;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -146,7 +147,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCdStageRecordService devopsCdStageRecordService,
             DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService,
             DevopsEnvironmentMapper devopsEnvironmentMapper,
-            @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService) {
+            @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService,
+            @Lazy DevopsCdPipelineService devopsCdPipelineService) {
         this.devopsCiCdPipelineMapper = devopsCiCdPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
         this.devopsCiStageService = devopsCiStageService;
@@ -176,6 +178,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsCdEnvDeployInfoService = devopsCdEnvDeployInfoService;
         this.devopsEnvironmentMapper = devopsEnvironmentMapper;
         this.devopsPipelineRecordRelService = devopsPipelineRecordRelService;
+        this.devopsCdPipelineService = devopsCdPipelineService;
     }
 
     private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
@@ -603,6 +606,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             devopsPipelineRecordRelDTO.setCiPipelineRecordId(devopsCiPipelineRecordDTO.getId());
             devopsPipelineRecordRelDTO.setCdPipelineRecordId(PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID);
             devopsPipelineRecordRelService.save(devopsPipelineRecordRelDTO);
+            // 初始化cd流水线记录
+            devopsCdPipelineService.initPipelineRecordWithStageAndJob(pipeline.getId().longValue(), pipeline.getSha(), pipeline.getRef(), ciCdPipelineDTO);
             List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), pipeline.getId(), userAttrDTO.getGitlabUserId().intValue());
             devopsCiJobRecordService.create(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
         } catch (Exception e) {

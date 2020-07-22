@@ -170,71 +170,18 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         CiCdPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
         Long iamUserId = GitUserNameUtil.getIamUserIdByGitlabUserName(pipelineWebHookVO.getUser().getUsername());
         CustomContextUtil.setDefaultIfNull(iamUserId);
-        // 查询流水线是否有cd阶段, 没有cd阶段不做处理
-        List<DevopsCdStageDTO> devopsCdStageDTOList = devopsCdStageService.queryByPipelineId(devopsCiPipelineDTO.getId());
-        if (CollectionUtils.isEmpty(devopsCdStageDTOList)) {
-            return;
-        }
-        Map<Long, DevopsCdStageDTO> devopsCdStageDTOMap = devopsCdStageDTOList.stream().collect(Collectors.toMap(DevopsCdStageDTO::getId, v -> v));
         PipelineWebHookAttributesVO pipelineAttr = pipelineWebHookVO.getObjectAttributes();
-
         String status = pipelineAttr.getStatus();
-        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(pipelineAttr.getId());
+
         LOGGER.info("handler ci pipeline status update, current ci pipeline {} status is {}", pipelineAttr.getId(), status);
+        // 初始化流水线记录
         if (!PipelineStatus.SUCCESS.toValue().equals(status)) {
-            // 校验CD流水线记录是否已经创建，未创建才创建记录，并将记录的初始状态设置为pending
-            if (devopsCdPipelineRecordDTO == null) {
-                LOGGER.info(">>>>>>>>>>>>>>>>>>>> init cd pipeline >>>>>>>>>>>>>>>>>>>>>>>>>>>>", pipelineAttr.getId(), status);
-                // 1. 根据流水线id,查询job列表
-                List<DevopsCdJobDTO> devopsCdJobDTOList = devopsCdJobService.listByPipelineId(devopsCiPipelineDTO.getId());
-
-                // 2. 计算要执行的job
-                List<DevopsCdJobDTO> executeJobList = calculateExecuteJobList(pipelineAttr.getRef(), devopsCdJobDTOList);
-                if (CollectionUtils.isEmpty(executeJobList)) {
-                    return;
-                }
-                Map<Long, List<DevopsCdJobDTO>> executeJobMap = executeJobList.stream().collect(Collectors.groupingBy(DevopsCdJobDTO::getStageId));
-
-                // 3. 统计出要执行的阶段（要执行的job的所属阶段）
-                Set<Long> stageIds = executeJobList.stream().map(DevopsCdJobDTO::getStageId).collect(Collectors.toSet());
-                List<DevopsCdStageDTO> executeStageList = stageIds.stream().map(devopsCdStageDTOMap::get).collect(Collectors.toList());
-
-                // 4. 如果有要执行的阶段、job，则初始化执行记录（初始化记录状态为pending）
-                if (!CollectionUtils.isEmpty(executeStageList)) {
-                    // 保存流水线记录
-                    devopsCdPipelineRecordDTO = initPipelineRecord(devopsCiPipelineDTO, pipelineAttr.getId(), pipelineAttr.getSha(), pipelineAttr.getRef());
-
-                    // 保存流水线记录关系
-                    DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryByGitlabPipelineId(pipelineAttr.getId());
-                    DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryByPipelineIdAndCiPipelineRecordId(devopsCiPipelineDTO.getId(), devopsCiPipelineRecordDTO.getId());
-                    devopsPipelineRecordRelDTO.setCdPipelineRecordId(devopsCdPipelineRecordDTO.getId());
-                    devopsPipelineRecordRelService.update(devopsPipelineRecordRelDTO);
-                    // 创建cd阶段记录
-                    DevopsCdPipelineRecordDTO finalDevopsCdPipelineRecordDTO = devopsCdPipelineRecordDTO;
-                    devopsCdStageDTOList.forEach(stage -> {
-                        DevopsCdStageRecordDTO devopsCdStageRecordDTO = initStageRecord(finalDevopsCdPipelineRecordDTO.getId(), stage);
-                        // 手动流转阶段，添加审核人员记录
-                        if (TriggerTypeEnum.MANUAL.value().equals(stage.getTriggerType())) {
-                            addStageAuditRecord(stage.getId(), devopsCdStageRecordDTO.getId());
-                        }
-                        // 保存job执行记录
-                        List<DevopsCdJobDTO> devopsCdJobDTOS = executeJobMap.get(stage.getId());
-                        devopsCdJobDTOS.forEach(job -> {
-                            DevopsCdJobRecordDTO devopsCdJobRecordDTO = initJobRecord(devopsCdStageRecordDTO.getId(), job);
-                            // 人工卡点任务，添加审核人员记录
-                            if (JobTypeEnum.CD_AUDIT.value().equals(job.getType())) {
-                                addJobAuditRecord(job.getId(), devopsCdJobRecordDTO.getId());
-                            }
-                        });
-                    });
-                }
-                LOGGER.info(">>>>>>>>>>>>>>>>>>>> init cd pipeline {} : {} success>>>>>>>>>>>>>>>>>>>>>>>>>>>>", devopsCdPipelineRecordDTO.getId(), devopsCdPipelineRecordDTO.getPipelineName());
-            }
-
+            initPipelineRecordWithStageAndJob(pipelineAttr.getId(), pipelineAttr.getSha(), pipelineAttr.getRef(), devopsCiPipelineDTO);
         }
 
         // ci流水线执行成功， 开始执行cd流水线
         if (PipelineStatus.SUCCESS.toValue().equals(status)) {
+            DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(pipelineAttr.getId());
             if (devopsCdPipelineRecordDTO == null) {
                 LOGGER.info("current pipeline have no match record.", pipelineAttr.getId());
                 return;
@@ -1014,6 +961,69 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 pipelineWebHookVO.getObjectAttributes().getRef(),
                 pipelineWebHookVO.getObjectAttributes().getId());
 
+    }
+
+    @Override
+    public void initPipelineRecordWithStageAndJob(Long gitlabPipelineId, String commitSha, String ref, CiCdPipelineDTO devopsCiPipelineDTO) {
+
+        // 查询流水线是否有cd阶段, 没有cd阶段不做处理
+        List<DevopsCdStageDTO> devopsCdStageDTOList = devopsCdStageService.queryByPipelineId(devopsCiPipelineDTO.getId());
+        if (CollectionUtils.isEmpty(devopsCdStageDTOList)) {
+            return;
+        }
+        // 校验CD流水线记录是否已经创建，未创建才创建记录，并将记录的初始状态设置为pending
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(gitlabPipelineId);
+        Map<Long, DevopsCdStageDTO> devopsCdStageDTOMap = devopsCdStageDTOList.stream().collect(Collectors.toMap(DevopsCdStageDTO::getId, v -> v));
+        if (devopsCdPipelineRecordDTO == null) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>> init cd pipeline >>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+            // 1. 根据流水线id,查询job列表
+            List<DevopsCdJobDTO> devopsCdJobDTOList = devopsCdJobService.listByPipelineId(devopsCiPipelineDTO.getId());
+
+            // 2. 计算要执行的job
+            List<DevopsCdJobDTO> executeJobList = calculateExecuteJobList(ref, devopsCdJobDTOList);
+            if (CollectionUtils.isEmpty(executeJobList)) {
+                return;
+            }
+            Map<Long, List<DevopsCdJobDTO>> executeJobMap = executeJobList.stream().collect(Collectors.groupingBy(DevopsCdJobDTO::getStageId));
+
+            // 3. 统计出要执行的阶段（要执行的job的所属阶段）
+            Set<Long> stageIds = executeJobList.stream().map(DevopsCdJobDTO::getStageId).collect(Collectors.toSet());
+            List<DevopsCdStageDTO> executeStageList = stageIds.stream().map(devopsCdStageDTOMap::get).collect(Collectors.toList());
+
+            // 4. 如果有要执行的阶段、job，则初始化执行记录（初始化记录状态为pending）
+            if (CollectionUtils.isEmpty(executeStageList)) {
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>> pipeline has no execte stage, skipped >>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+            } else {
+                // 保存流水线记录
+                devopsCdPipelineRecordDTO = initPipelineRecord(devopsCiPipelineDTO, gitlabPipelineId, commitSha, ref);
+
+                // 保存流水线记录关系
+                DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryByGitlabPipelineId(gitlabPipelineId);
+                DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryByPipelineIdAndCiPipelineRecordId(devopsCiPipelineDTO.getId(), devopsCiPipelineRecordDTO.getId());
+                devopsPipelineRecordRelDTO.setCdPipelineRecordId(devopsCdPipelineRecordDTO.getId());
+                devopsPipelineRecordRelService.update(devopsPipelineRecordRelDTO);
+                // 创建cd阶段记录
+                DevopsCdPipelineRecordDTO finalDevopsCdPipelineRecordDTO = devopsCdPipelineRecordDTO;
+                devopsCdStageDTOList.forEach(stage -> {
+                    DevopsCdStageRecordDTO devopsCdStageRecordDTO = initStageRecord(finalDevopsCdPipelineRecordDTO.getId(), stage);
+                    // 手动流转阶段，添加审核人员记录
+                    if (TriggerTypeEnum.MANUAL.value().equals(stage.getTriggerType())) {
+                        addStageAuditRecord(stage.getId(), devopsCdStageRecordDTO.getId());
+                    }
+                    // 保存job执行记录
+                    List<DevopsCdJobDTO> devopsCdJobDTOS = executeJobMap.get(stage.getId());
+                    devopsCdJobDTOS.forEach(job -> {
+                        DevopsCdJobRecordDTO devopsCdJobRecordDTO = initJobRecord(devopsCdStageRecordDTO.getId(), job);
+                        // 人工卡点任务，添加审核人员记录
+                        if (JobTypeEnum.CD_AUDIT.value().equals(job.getType())) {
+                            addJobAuditRecord(job.getId(), devopsCdJobRecordDTO.getId());
+                        }
+                    });
+                });
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>> init cd pipeline {} : {} success>>>>>>>>>>>>>>>>>>>>>>>>>>>>", devopsCdPipelineRecordDTO.getId(), devopsCdPipelineRecordDTO.getPipelineName());
+            }
+
+        }
     }
 
     private void calculatAuditUserName(List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOList, AduitStatusChangeVO aduitStatusChangeVO) {
