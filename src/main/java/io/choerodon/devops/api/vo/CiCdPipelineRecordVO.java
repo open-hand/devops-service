@@ -14,7 +14,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  * @Date 2020/4/7 22:18
  */
 public class CiCdPipelineRecordVO {
-    @Encrypt
+
     private Long devopsPipelineRecordRelId;
     @Encrypt
     //ci 执行记录的id
