@@ -57,7 +57,7 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
  * 〈〉
  *
  * @author wanghao
- * @Date 2020/4/2 18:00
+ * @since 2020/4/2 18:00
  */
 @Service
 public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
@@ -964,7 +964,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                 // 不填skipDockerTlsVerify参数或者填TRUE都是跳过证书校验
                                 // TODO 修复 目前后端这个参数的含义是是否跳过证书校验, 前端的含义是是否进行证书校验
                                 Boolean doTlsVerify = config.getSkipDockerTlsVerify();
-                                result.add(GitlabCiUtil.generateDockerScripts(
+                                result.addAll(GitlabCiUtil.generateDockerScripts(
                                         config.getDockerContextDir(),
                                         config.getDockerFilePath(),
                                         doTlsVerify == null || !doTlsVerify));
@@ -1123,6 +1123,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 }
                 shells.addAll(commands);
             }
+
+            // 只生成一个jar包元数据上传指令用于CD阶段
+            shells.add(GitlabCiUtil.saveJarMetadata((Long) ciConfigTemplateVO.getMavenDeployRepoSettings().getNexusRepoIds().toArray()[0]));
         } else {
             // 如果没有目标仓库信息, 则认为用户是自己填入好了maven发布jar的指令, 不需要渲染
             shells.addAll(templateShells);

@@ -20,7 +20,7 @@ export GROUP_NAME={{ GROUP_NAME }}
 export SONAR_URL={{ SONAR_URL }}
 # SONARQUBE的token
 export SONAR_LOGIN={{ SONAR_LOGIN }}
-# 仓库类型
+# HARBOR仓库类型
 export REPO_TYPE={{ REPO_TYPE }}
 # HARBOR配置Id
 export HARBOR_CONFIG_ID={{ HARBOR_CONFIG_ID }}
@@ -205,6 +205,57 @@ function triggerCdPipeline() {
 
   if [ "$http_status_code" != "204" ]; then
     echo "failed to triggerCdPipeline"
+    exit 1
+  fi
+}
+
+
+############################### 存储镜像元数据, 用于CD阶段主机部署-镜像部署 ################################
+# 无参数
+# 此函数上传镜像构建元数据, 只有任务(job)通过这个函数上传了镜像元数据,
+# 在CD阶段的主机部署-镜像部署中选中了这个任务(job)的任务才能正确部署镜像
+function saveImageMetadata() {
+    curl -X POST "${CHOERODON_URL}/devops/ci/record_image" \
+      --header 'Content-Type: application/json' \
+      -d "{
+        \"token\": \"${Token}\",
+        \"gitlabPipelineId\": ${CI_PIPELINE_ID},
+        \"jobName\": \"${CI_JOB_NAME}\",
+        \"imageTag\": \"${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}\",
+        \"harborRepoId\": ${HARBOR_CONFIG_ID},
+        \"repoType\": \"${REPO_TYPE}\"
+      }" \
+      -o "${CI_COMMIT_SHA}-ci.response"
+
+    # 判断本次上传到devops是否出错
+    response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+    rm "${CI_COMMIT_SHA}-ci.response"
+    if [ "$result_upload_to_devops" != "200" ]; then
+      echo "${response_upload_to_devops}"
+      echo "upload to devops error"
+      exit 1
+    fi
+}
+
+############################### 存储jar包元数据, 用于CD阶段主机部署-jar包部署 ################################
+# $1 maven制品库id
+function saveJarMetadata() {
+  result_upload_to_devops=$(curl -X POST \
+    -H 'Expect:' \
+    -F "token=${Token}" \
+    -F "nexus_repo_id=$1" \
+    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+    -F "job_name=${CI_JOB_NAME}" \
+    -F "file=@pom.xml" \
+    "${CHOERODON_URL}/devops/ci/save_jar_metadata" \
+    -o "${CI_COMMIT_SHA}-ci.response" \
+    -w %{http_code})
+  # 判断本次上传到devops是否出错
+  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+  rm "${CI_COMMIT_SHA}-ci.response"
+  if [ "$result_upload_to_devops" != "200" ]; then
+    echo "$response_upload_to_devops"
+    echo "upload to devops error"
     exit 1
   fi
 }

@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.util;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.List;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -10,12 +11,16 @@ import javax.xml.bind.Marshaller;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 import org.xml.sax.helpers.DefaultHandler;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.infra.dto.CiPipelineMavenDTO;
 import io.choerodon.devops.infra.dto.maven.*;
 
 /**
@@ -36,6 +41,11 @@ public class MavenSettingsUtil {
      * 数组字节流的初始大小
      */
     private static final int BYTE_ARRAY_INIT_SIZE = 3000;
+
+    private static final String PARENT = "parent";
+    private static final String GROUP_ID = "groupId";
+    private static final String VERSION = "version";
+    private static final String ARTIFACT_ID = "artifactId";
 
     /**
      * 生成maven的settings文件
@@ -65,6 +75,67 @@ public class MavenSettingsUtil {
             LOGGER.warn("Maven util: internal errors: failed to generate settings: servers: {}, repositories: {}", servers, repositories);
             throw new CommonException("error.generate.maven.settings");
         }
+    }
+
+    /**
+     * 解析pom文件内容, 生成填充了 groupId, artifactId, version三个字段的{@link CiPipelineMavenDTO}实例
+     *
+     * @param pomContent pom文件内容
+     * @return 填充了 groupId, artifactId, version三个字段的{@link CiPipelineMavenDTO}实例
+     */
+    public static CiPipelineMavenDTO parsePom(String pomContent) {
+        String parentGroupId = null;
+        String parentArtifactId = null;
+        String parentVersion = null;
+        String groupId = null;
+        String artifactId = null;
+        String version = null;
+        // 解析pom
+        SAXReader reader = new SAXReader();
+        try {
+            // 通过reader对象的read方法加载pom.xml文件内容, 获取document对象
+            org.dom4j.Document document = reader.read(new ByteArrayInputStream(pomContent.getBytes(StandardCharsets.UTF_8)));
+            // 通过document对象获取根节点 project
+            Element project = document.getRootElement();
+            // 通过element对象的elementIterator方法获取迭代器
+            Iterator<Element> it = project.elementIterator();
+            // 遍历迭代器，获取根节点中的信息
+            while (it.hasNext()) {
+                Element element = it.next();
+                // 获取parent节点下信息
+                if (PARENT.equals(element.getName())) {
+                    Iterator<Element> itt = element.elementIterator();
+                    while (itt.hasNext()) {
+                        Element parentElement = itt.next();
+                        if (GROUP_ID.equals(parentElement.getName())) {
+                            parentGroupId = parentElement.getStringValue();
+                        }
+                        if (ARTIFACT_ID.equals(parentElement.getName())) {
+                            parentArtifactId = parentElement.getStringValue();
+                        }
+                        if (VERSION.equals(parentElement.getName())) {
+                            parentVersion = parentElement.getStringValue();
+                        }
+                    }
+                }
+                if (GROUP_ID.equals(element.getName())) {
+                    groupId = element.getStringValue();
+                }
+                if (ARTIFACT_ID.equals(element.getName())) {
+                    artifactId = element.getStringValue();
+                }
+                if (VERSION.equals(element.getName())) {
+                    version = element.getStringValue();
+                }
+            }
+        } catch (DocumentException e) {
+            throw new CommonException("error.parse.pom", e.getCause());
+        }
+        CiPipelineMavenDTO ciPipelineMavenDTO = new CiPipelineMavenDTO();
+        ciPipelineMavenDTO.setArtifactId(artifactId != null ? artifactId : parentArtifactId);
+        ciPipelineMavenDTO.setGroupId(groupId != null ? groupId : parentGroupId);
+        ciPipelineMavenDTO.setVersion(version != null ? version : parentVersion);
+        return ciPipelineMavenDTO;
     }
 
     /**

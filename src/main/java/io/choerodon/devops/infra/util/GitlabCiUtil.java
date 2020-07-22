@@ -232,10 +232,19 @@ public class GitlabCiUtil {
      * @param dockerFilePath        dockerfile文件路径
      * @param skipTlsVerify         是否跳过证书校验
      */
-    public static String generateDockerScripts(String dockerBuildContextDir, String dockerFilePath, boolean skipTlsVerify) {
+    public static List<String> generateDockerScripts(String dockerBuildContextDir, String dockerFilePath, boolean skipTlsVerify) {
+        List<String> commands = new ArrayList<>();
+
+        // 在生成镜像的命令前保存镜像的元数据
+        // 放在生成镜像的命令前的原因是:
+        // 1. 如果是多阶段构建的Dockerfile, kaniko会在构建完成后删除文件系统, 导致后续命令无法执行, 所以只能提前
+        // 2. ci阶段失败后, cd阶段不会执行, 所以产生的脏数据不会有影响
+        commands.add("saveImageMetadata");
+
         // 默认跳过证书校验， 之后可以进行配置, 因为自签名的证书不方便进行证书校验
         String rawCommand = "kaniko %s-c $PWD/%s -f $PWD/%s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
-        return String.format(rawCommand, skipTlsVerify ? "--skip-tls-verify " : "", dockerBuildContextDir, dockerFilePath);
+        commands.add(String.format(rawCommand, skipTlsVerify ? "--skip-tls-verify " : "", dockerBuildContextDir, dockerFilePath));
+        return commands;
     }
 
     /**
@@ -251,7 +260,7 @@ public class GitlabCiUtil {
     public static String generateCreateCacheDir(String cacheDir) {
         return "mkdir -p " + Objects.requireNonNull(cacheDir);
     }
-    
+
     public static void processTriggerRefs(CiJob ciJob, String triggerRefs) {
         OnlyExceptPolicy onlyExceptPolicy = new OnlyExceptPolicy();
         List<String> refs = new ArrayList<>();
@@ -297,5 +306,15 @@ public class GitlabCiUtil {
         OnlyExceptPolicy onlyExceptPolicy = new OnlyExceptPolicy();
         onlyExceptPolicy.setRefs(Arrays.asList(items));
         ciJob.setExcept(onlyExceptPolicy);
+    }
+
+    /**
+     * 保存jar包元数据
+     *
+     * @param nexusRepoId nexus制品库id
+     * @return 指令
+     */
+    public static String saveJarMetadata(Long nexusRepoId) {
+        return "saveJarMetadata " + nexusRepoId;
     }
 }
