@@ -42,16 +42,19 @@ public class CiCdPipelineUtils {
         if (!Objects.isNull(devopsCiPipelineRecordVO) && !Objects.isNull(devopsCdPipelineRecordVO)) {
             //计算记录的状态
             if (!PipelineStatus.SUCCESS.toValue().equals(devopsCiPipelineRecordVO.getStatus())) {
-                ciCdPipelineRecordVO.setStatus(devopsCdPipelineRecordVO.getStatus());
+                ciCdPipelineRecordVO.setStatus(devopsCiPipelineRecordVO.getStatus());
+                return;
             }
             if (PipelineStatus.SUCCESS.toValue().equals(devopsCiPipelineRecordVO.getStatus())
                     && PipelineStatus.SUCCESS.toValue().equals(devopsCdPipelineRecordVO.getStatus())) {
                 ciCdPipelineRecordVO.setStatus(PipelineStatus.SUCCESS.toValue());
+                return;
             }
             //如果ci状态成功cd是未执行，则状态为执行中
             if (PipelineStatus.SUCCESS.toValue().equals(devopsCiPipelineRecordVO.getStatus()) &&
                     PipelineStatus.CREATED.toValue().equals(devopsCdPipelineRecordVO.getStatus())) {
                 ciCdPipelineRecordVO.setStatus(PipelineStatus.RUNNING.toValue());
+                return;
             } else {
                 ciCdPipelineRecordVO.setStatus(devopsCdPipelineRecordVO.getStatus());
             }
