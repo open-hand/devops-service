@@ -269,6 +269,13 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             devopsCdStageRecordService.updateStatusById(cdStageRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
         }
         if (!ObjectUtils.isEmpty(cdJobRecordDTO)) {
+            if (cdJobRecordDTO.getType().equals(JobTypeEnum.CD_DEPLOY.value())) {
+                DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(cdJobRecordDTO.getDeployInfoId());
+                DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCdEnvDeployInfoDTO.getEnvId());
+                UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+                devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+            }
+
             devopsCdJobRecordService.updateStatusById(cdJobRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
         }
 
