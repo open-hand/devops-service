@@ -1195,6 +1195,7 @@ const AddTask = observer(() => {
                       <SelectBox
                         style={{
                           marginTop: 20,
+                          width: 150,
                         }}
                         name="skipDockerTlsVerify"
                       >
@@ -1202,7 +1203,7 @@ const AddTask = observer(() => {
                         <Option value={false}>否</Option>
                       </SelectBox>
                       <Tooltip title="是否对harbor域名进行证书校验">
-                        <Icon type="help" style={{ position: 'absolute', top: '1px', left: '83px' }} />
+                        <Icon type="help" style={{ position: 'absolute', top: '1px', left: '96px' }} />
                       </Tooltip>
                     </div>,
                   ];
