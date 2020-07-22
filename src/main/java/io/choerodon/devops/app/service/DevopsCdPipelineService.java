@@ -4,6 +4,7 @@ import io.choerodon.devops.api.vo.AduitStatusChangeVO;
 import io.choerodon.devops.api.vo.AuditCheckVO;
 import io.choerodon.devops.api.vo.AuditResultVO;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
+import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 
 public interface DevopsCdPipelineService {
 
@@ -73,4 +74,5 @@ public interface DevopsCdPipelineService {
 
     void trigerSimpleCDPipeline(PipelineWebHookVO pipelineWebHookVO);
 
+    void initPipelineRecordWithStageAndJob(Long gitlabPipelineId, String commitSha, String ref, CiCdPipelineDTO devopsCiPipelineDTO);
 }
