@@ -159,6 +159,8 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
     name: 'pipelineTask',
     type: 'string',
     label: '关联构建任务',
+    textField: 'pipelineTask',
+    valueField: 'pipelineTask',
     dynamicProps: {
       required: ({ record }) => record.get('type') === 'cdHost' && ((record.get('hostDeployType') === 'image' && record.get('deploySource') === 'pipelineDeploy') || (record.get('hostDeployType') === 'jar' && record.get('deploySource') === 'pipelineDeploy')),
     },
