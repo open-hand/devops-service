@@ -86,7 +86,6 @@ public class DevopsCiJobController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用服务token", required = true)
             @RequestParam(value = "token") String token,
-            @Encrypt
             @ApiParam("猪齿鱼中流水线job id")
             @RequestParam(value = "job_id") Long job_id,
             @ApiParam("猪齿鱼中流水线的step的sequence")
