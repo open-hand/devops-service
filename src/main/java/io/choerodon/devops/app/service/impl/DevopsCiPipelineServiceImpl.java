@@ -1123,6 +1123,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 }
                 shells.addAll(commands);
             }
+
+            // 只生成一个jar包元数据上传指令用于CD阶段
+            shells.add(GitlabCiUtil.saveJarMetadata((Long) ciConfigTemplateVO.getMavenDeployRepoSettings().getNexusRepoIds().toArray()[0]));
         } else {
             // 如果没有目标仓库信息, 则认为用户是自己填入好了maven发布jar的指令, 不需要渲染
             shells.addAll(templateShells);

@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiPipelineImageVO;
@@ -25,6 +26,7 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
     @Autowired
     private AppServiceService appServiceService;
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void createOrUpdate(CiPipelineImageVO ciPipelineImageVO) {
         AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(ciPipelineImageVO.getToken());

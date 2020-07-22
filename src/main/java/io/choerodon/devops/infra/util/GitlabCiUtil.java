@@ -307,4 +307,14 @@ public class GitlabCiUtil {
         onlyExceptPolicy.setRefs(Arrays.asList(items));
         ciJob.setExcept(onlyExceptPolicy);
     }
+
+    /**
+     * 保存jar包元数据
+     *
+     * @param nexusRepoId nexus制品库id
+     * @return 指令
+     */
+    public static String saveJarMetadata(Long nexusRepoId) {
+        return "saveJarMetadata " + nexusRepoId;
+    }
 }

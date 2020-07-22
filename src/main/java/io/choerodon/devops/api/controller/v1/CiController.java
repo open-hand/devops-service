@@ -18,6 +18,7 @@ import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.AppServiceVersionService;
 import io.choerodon.devops.app.service.CiPipelineImageService;
+import io.choerodon.devops.app.service.CiPipelineMavenService;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -40,13 +41,16 @@ public class CiController {
     private final AppServiceService applicationService;
     private final AppServiceVersionService appServiceVersionService;
     private final CiPipelineImageService ciPipelineImageService;
+    private final CiPipelineMavenService ciPipelineMavenService;
 
     public CiController(AppServiceService applicationService,
                         AppServiceVersionService appServiceVersionService,
+                        CiPipelineMavenService ciPipelineMavenService,
                         CiPipelineImageService ciPipelineImageService) {
         this.applicationService = applicationService;
         this.appServiceVersionService = appServiceVersionService;
         this.ciPipelineImageService = ciPipelineImageService;
+        this.ciPipelineMavenService = ciPipelineMavenService;
     }
 
     /**
@@ -109,10 +113,28 @@ public class CiController {
 
 
     @Permission(permissionPublic = true)
-    @ApiOperation(value = "查询CI流水线默认的镜像地址")
+    @ApiOperation(value = "存储镜像的元数据")
     @PostMapping("/record_image")
     public ResponseEntity<Void> createImageRecord(@RequestBody @Valid CiPipelineImageVO ciPipelineImageVO) {
         ciPipelineImageService.createOrUpdate(ciPipelineImageVO);
+        return ResponseEntity.ok().build();
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "存储镜像的元数据")
+    @PostMapping("/save_jar_metadata")
+    public ResponseEntity<Void> saveJarMetaData(
+            @ApiParam(value = "制品库id", required = true)
+            @RequestParam("nexus_repo_id") Long nexusRepoId,
+            @ApiParam(value = "GitLab流水线id", required = true)
+            @RequestParam(value = "job名称") Long gitlabPipelineId,
+            @ApiParam(value = "job_name", required = true)
+            @RequestParam(value = "job_name") String jobName,
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "pom文件", required = true)
+            @RequestParam MultipartFile file) {
+        ciPipelineMavenService.createOrUpdate(nexusRepoId, gitlabPipelineId, jobName, token, file);
         return ResponseEntity.ok().build();
     }
 
