@@ -35,9 +35,8 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
     @Override
     public void createOrUpdate(CiPipelineMavenDTO ciPipelineMavenDTO) {
         CiPipelineMavenDTO oldCiPipelineMavenDTO = queryByGitlabPipelineId(ciPipelineMavenDTO.getGitlabPipelineId(), ciPipelineMavenDTO.getJobName());
-        if (oldCiPipelineMavenDTO == null || oldCiPipelineMavenDTO.getId() == null) {
-            CiPipelineMavenDTO ciPipelineImageDTO = new CiPipelineMavenDTO();
-            if (ciPipelineMavenMapper.insertSelective(ciPipelineImageDTO) != 1) {
+        if (oldCiPipelineMavenDTO == null) {
+            if (ciPipelineMavenMapper.insertSelective(ciPipelineMavenDTO) != 1) {
                 throw new CommonException("error.create.maven.record");
             }
         } else {
