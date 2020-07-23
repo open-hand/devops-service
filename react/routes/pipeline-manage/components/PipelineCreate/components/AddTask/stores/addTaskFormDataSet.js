@@ -132,7 +132,7 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
     },
     {
       name: 'zpk',
-      type: 'number',
+      type: 'string',
       label: '目标制品库',
       textField: 'name',
       valueField: 'repositoryId',
@@ -142,7 +142,7 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
     },
     {
       name: 'jar_zpk',
-      type: 'number',
+      type: 'string',
       label: '目标制品库',
       textField: 'name',
       valueField: 'repositoryId',
