@@ -56,6 +56,9 @@ export default observer(({ addStepDs, curType, optType, appServiceType }) => {
             <SelectBox
               name="triggerType"
               className="addStageForm-triggerType-select"
+              style={{
+                marginTop: '0.123rem',
+              }}
             >
               <Option value="auto">自动流转</Option>
               <Option value="manual">手动流转</Option>
@@ -66,7 +69,7 @@ export default observer(({ addStepDs, curType, optType, appServiceType }) => {
                 className="c7ncd-select-tips-icon"
                 style={{
                   position: 'absolute',
-                  top: '-18px',
+                  top: '-6px',
                   left: '79px',
                 }}
               />
@@ -76,7 +79,10 @@ export default observer(({ addStepDs, curType, optType, appServiceType }) => {
       }
       {
         addStepDs?.current?.get('triggerType') === 'manual' ? (
-          <Select showHelp="tooltip" help="此处的人工审核默认为”或签“的方式，若选择的审核人员为多个，那么其中一个审核通过，便会开始执行下一阶段。" name="cdAuditUserIds" />
+          <Select
+            name="cdAuditUserIds"
+            addonAfter={<Tips helpText="此处的人工审核默认为”或签“的方式，若选择的审核人员为多个，那么其中一个审核通过，便会开始执行下一阶段。" />}
+          />
         ) : ''
       }
     </Form>

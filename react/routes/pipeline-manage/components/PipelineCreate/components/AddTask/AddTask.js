@@ -558,12 +558,12 @@ const AddTask = observer(() => {
             </div>
           </div>
         )) : (
-            <div className="AddTask_stepMapContent">
-              <div className="AddTask_stepAdd">
-                <span onClick={() => handleAddStepItem(0)} style={{ fontSize: 20 }}>+</span>
-              </div>
+          <div className="AddTask_stepMapContent">
+            <div className="AddTask_stepAdd">
+              <span onClick={() => handleAddStepItem(0)} style={{ fontSize: 20 }}>+</span>
             </div>
-          )
+          </div>
+        )
       }
     </div>
   );
@@ -890,20 +890,6 @@ const AddTask = observer(() => {
         }
       });
     }
-    // if (newV.length > oldV.length) {
-    //   //  打钩
-    //   Modal.open({
-    //     key: Modal.key(),
-    //     title: `修改${extra === 'true' ? '私有' : '公有'}依赖仓库`,
-    //     style: {
-    //       width: 380,
-    //     },
-    //     children: <DependRepo handleParentCancel={handleCancel} handleAdd={handleAddRepo} ds={DependRepoDataSet} privateIf={extra === 'true'} />,
-    //     drawer: true,
-    //     okText: '添加',
-    //   });
-    // } else {
-    // }
   };
 
   const renderderBranchs = ({ text }) => (text === '加载更多' ? (
@@ -1206,7 +1192,8 @@ const AddTask = observer(() => {
                         <Icon
                           type="help"
                           className="c7ncd-select-tips-icon"
-                          style={{ position: 'absolute', top: '1px', left: '96px' }} />
+                          style={{ position: 'absolute', top: '1px', left: '96px' }}
+                        />
                       </Tooltip>
                     </div>,
                   ];
@@ -1311,7 +1298,7 @@ const AddTask = observer(() => {
   return (
     <React.Fragment>
       <Form className="addTaskForm" dataSet={AddTaskFormDataSet} columns={4}>
-        <Select name="type" colSpan={2}>
+        <Select name="type" colSpan={1}>
           <Option value="build">构建</Option>
           <Option value="sonar">代码检查</Option>
           <Option value="custom">自定义</Option>
@@ -1319,9 +1306,8 @@ const AddTask = observer(() => {
         </Select>
         {
           AddTaskFormDataSet.current.get('type') !== 'custom' ? [
-            <TextField name="name" colSpan={2} />,
+            <TextField name="name" colSpan={3} />,
             <TextField name="glyyfw" colSpan={1} />,
-
             <div className="matchType" style={{ display: 'inline-flex', position: 'relative' }} colSpan={3}>
               <Select
                 onChange={(value) => {
@@ -1345,45 +1331,45 @@ const AddTask = observer(() => {
                   help="您可在此输入正则表达式来配置触发分支；例：若想匹配以 feature 开头的分支，可以输入 ^feature.*。更多表达式，详见用户手册。若不填写，则默认为所有分支和tag"
                 />
               ) : (
-                  <Select
-                    combo
-                    searchable
-                    multiple
-                    name="triggerValue"
-                    showHelp="tooltip"
-                    help={renderTriggerTypeTips()}
-                    searchMatcher="branchName"
-                    optionRenderer={({ text }) => renderderBranchs({ text })}
-                    maxTagCount={3}
-                    maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
-                      {`+${omittedValues.length}`}
-                    </Tooltip>}
-                    className="addTaskForm-select"
-                    renderer={renderderBranchs}
-                    colSpan={2}
-                  >
-                    {
+                <Select
+                  combo
+                  searchable
+                  multiple
+                  name="triggerValue"
+                  showHelp="tooltip"
+                  help={renderTriggerTypeTips()}
+                  searchMatcher="branchName"
+                  optionRenderer={({ text }) => renderderBranchs({ text })}
+                  maxTagCount={3}
+                  maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
+                    {`+${omittedValues.length}`}
+                  </Tooltip>}
+                  className="addTaskForm-select"
+                  renderer={renderderBranchs}
+                  colSpan={2}
+                >
+                  {
                       branchsList.map(b => (
                         <Option value={b.value}>{b.name}</Option>
                       ))
                     }
-                  </Select>
-                )}
+                </Select>
+              )}
             </div>,
             getImageDom(),
             getShareSettings(),
             AddTaskFormDataSet.current.get('type') !== 'chart' ? getMissionOther() : '',
           ] : [
-              <YamlEditor
-                readOnly={false}
-                colSpan={4}
-                newLine
-                value={customYaml}
-                onValueChange={(valueYaml) => setCustomYaml(valueYaml)}
-                modeChange={false}
-                showError={false}
-              />,
-            ]
+            <YamlEditor
+              readOnly={false}
+              colSpan={4}
+              newLine
+              value={customYaml}
+              onValueChange={(valueYaml) => setCustomYaml(valueYaml)}
+              modeChange={false}
+              showError={false}
+            />,
+          ]
         }
       </Form>
     </React.Fragment>
