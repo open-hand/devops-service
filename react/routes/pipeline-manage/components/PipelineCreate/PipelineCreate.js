@@ -169,7 +169,7 @@ const PipelineCreate = observer(() => {
           showHelp="tooltip"
           optionRenderer={optionRenderer}
           renderer={renderer}
-          help="此处仅能看到您有开发权限的启用状态的应用服务，并要求该应用服务必须有master分支，且尚未有关联的CI流水线"
+          help="此处仅能看到您有开发权限的启用状态的应用服务，并要求该应用服务必须有master分支，且尚未有关联的流水线"
         />
         <TextField style={{ display: 'none' }} />
         <div className="advanced_text" style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
