@@ -261,6 +261,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
         appServiceDeployVO.setEnvironmentId(envId);
         appServiceDeployVO.setType(type);
+        // 设置values为配置库的values和版本的values合并值
         appServiceDeployVO.setValues(appServiceInstanceService.getReplaceResult(versionValue, c7nHelmRelease.getSpec().getValues()).getYaml());
         appServiceDeployVO.setAppServiceId(releaseAppServiceId);
         appServiceDeployVO.setAppServiceVersionId(appServiceVersionDTO.getId());
@@ -274,10 +275,14 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             } else {
                 devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
             }
-            String deployValue = appServiceInstanceService.baseQueryValueByInstanceId(appServiceInstanceDTO.getId());
-            InstanceValueVO instanceValueVO = appServiceInstanceService.getReplaceResult(deployValue, appServiceDeployVO.getValues());
-            if (deployValue != null
-                    && (instanceValueVO.getDeltaYaml() == null || instanceValueVO.getDeltaYaml().equals("") || instanceValueVO.getDeltaYaml().trim().equals(COMPARE_VALUES))
+            // 上次部署的传入values
+            String lastDeployRawValue = appServiceInstanceService.baseQueryValueByInstanceId(appServiceInstanceDTO.getId());
+            // 上次部署values和版本values的合并值
+            String lastDeployMergedValues = appServiceInstanceService.getReplaceResult(versionValue, lastDeployRawValue).getYaml();
+            // (上次部署和版本的合并值)，和 (这次部署和版本values的合并值) 的对比结果
+            InstanceValueVO compareResult = appServiceInstanceService.getReplaceResult(lastDeployMergedValues, appServiceDeployVO.getValues());
+            if (lastDeployRawValue != null
+                    && (compareResult.getDeltaYaml() == null || compareResult.getDeltaYaml().equals("") || compareResult.getDeltaYaml().trim().equals(COMPARE_VALUES))
                     && Objects.equals(appServiceVersionDTO.getId(), devopsEnvCommandDTO.getObjectVersionId())) {
                 appServiceDeployVO.setIsNotChange(true);
             }
