@@ -493,7 +493,7 @@ export default observer(() => {
                 className="addcdTask-triggerValue"
                 name="triggerValue"
                 showHelp="tooltip"
-                help="'您可在此输入正则表达式来配置触发分支；例：若想匹配以 feature 开头的分支，可以输入 ^feature.*。更多表达式，详见用户手册。若不填写，则默认为所有分支和tag'"
+                help="您可在此输入正则表达式来配置触发分支；例：若想匹配以 feature 开头的分支，可以输入 ^feature.*。更多表达式，详见用户手册。若不填写，则默认为所有分支和tag"
               />
             ) : (<Select
               combo

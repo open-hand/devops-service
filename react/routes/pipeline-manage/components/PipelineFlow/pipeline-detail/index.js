@@ -87,7 +87,7 @@ export default observer((props) => {
               {envName ? <span className="c7ncd-pipeline-detail-job-task-deploy-item">部署环境：{envName}</span> : null}
               <span>
                 触发分支：
-                {jobTriggerValue === 'exact_exclude' ? '精确排除<br/>' : ''}
+                {jobTriggerValue === 'exact_exclude' ? '精确排除 ' : ''}
                 {triggerValue}
               </span>
             </div>
@@ -108,7 +108,7 @@ export default observer((props) => {
               <span className="c7ncd-pipeline-detail-job-task-deploy-item">审核模式：{countersigned === 0 ? '或签' : '会签'}</span>
               <span>
                 触发分支：
-                {jobTriggerValue === 'exact_exclude' ? '精确排除<br/>' : ''}
+                {jobTriggerValue === 'exact_exclude' ? '精确排除 ' : ''}
                 {triggerValue}
               </span>
             </div>
@@ -168,7 +168,7 @@ export default observer((props) => {
                 )}
               </div>
             ) : null}
-            {map(jobList, ({ id: jobId, type: jobType, name: jobName, metadata, iamUserDTOS, triggerValue: jobTriggerValue, triggerValue, envName }, index) => (
+            {map(jobList, ({ id: jobId, type: jobType, name: jobName, metadata, iamUserDTOS, triggerType: jobTriggerValue, triggerValue, envName }, index) => (
               <div key={`${stageId}-${jobId}`}>
                 {index && leftLineDom[stageIndex] ? leftLineDom[stageIndex][index] : null}
                 <div className={`c7ncd-pipeline-detail-job c7ncd-pipeline-detail-job-${stageType}`} id={`${id}-${stageIndex}-job-${index}`}>
