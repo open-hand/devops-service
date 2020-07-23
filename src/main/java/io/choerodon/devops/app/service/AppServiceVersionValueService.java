@@ -12,6 +12,8 @@ public interface AppServiceVersionValueService {
     AppServiceVersionValueDTO baseCreate(AppServiceVersionValueDTO
                                                  appServiceVersionValueDTO);
 
+    AppServiceVersionValueDTO baseUpdate(AppServiceVersionValueDTO appServiceVersionValueDTO);
+
     AppServiceVersionValueDTO baseQuery(Long appServiceServiceValueId);
 
     void deleteByIds(Set<Long> valueIds);
