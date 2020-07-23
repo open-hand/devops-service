@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.util;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.util.Assert;
 
@@ -15,6 +16,11 @@ public final class JsonHelper {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private JsonHelper() {
+    }
+
+    static {
+        OBJECT_MAPPER.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+        OBJECT_MAPPER.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
     }
 
     /**

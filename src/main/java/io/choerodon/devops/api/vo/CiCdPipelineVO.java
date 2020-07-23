@@ -36,7 +36,6 @@ public class CiCdPipelineVO {
     private String appServiceCode;
     @ApiModelProperty("gitlab项目id/nullable")
 
-    @Encrypt
     private Long gitlabProjectId;
     @ApiModelProperty("runner镜像地址")
 
