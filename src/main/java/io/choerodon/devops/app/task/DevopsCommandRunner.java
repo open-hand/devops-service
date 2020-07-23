@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.task;
 
-import static io.choerodon.devops.infra.constant.MiscConstants.*;
+import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_CHART_NAME;
+import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
 
 import java.util.HashMap;
 import java.util.Map;
