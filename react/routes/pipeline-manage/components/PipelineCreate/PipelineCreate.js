@@ -65,7 +65,7 @@ const PipelineCreate = observer(() => {
       if (data.devopsCiStageVOS.some(s => s.jobList.length === 0)
         || data.devopsCdStageVOS.some(s => s.jobList.length === 0)
       ) {
-        message.error(`CI流水线中存在空阶段，无法${modal.props.title.includes('创建') ? '创建' : '保存'}`);
+        message.error(`流水线中存在空阶段，无法${modal.props.title.includes('创建') ? '创建' : '保存'}`);
         return false;
       }
       if (dataSource) {
