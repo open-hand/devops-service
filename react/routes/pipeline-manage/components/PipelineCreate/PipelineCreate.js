@@ -4,8 +4,7 @@ import { Form, TextField, Select, SelectBox, Modal, Button, DataSet } from 'choe
 import { message, Icon } from 'choerodon-ui';
 import { observer } from 'mobx-react-lite';
 import { usePipelineCreateStore } from './stores';
-import AddTask from './components/AddTask';
-import { usePipelineManageStore } from '../../stores';
+import Tips from '../../../../components/new-tips';
 import StageEditBlock from '../PipelineFlow/components/stageEditBlock';
 import './pipelineCreate.less';
 
@@ -97,14 +96,6 @@ const PipelineCreate = observer(() => {
 
   modal.handleCancel(handelCancel);
 
-  // const handleChangeImage = (data) => {
-  //   if (data === '0') {
-  //     PipelineCreateFormDataSet.current.set('image', createUseStore.getDefaultImage);
-  //   } else {
-  //     PipelineCreateFormDataSet.current.set('image', '');
-  //   }
-  // };
-
   const handleChangeSelectImage = (data) => {
     if (data === createUseStore.getDefaultImage) {
       PipelineCreateFormDataSet.current.set('selectImage', '0');
@@ -112,19 +103,6 @@ const PipelineCreate = observer(() => {
       PipelineCreateFormDataSet.current.set('selectImage', '1');
     }
   };
-
-  // const handleAddMission = () => {
-  //   Modal.open({
-  //     key: Modal.key(),
-  //     title: '添加任务',
-  //     style: {
-  //       width: '740px',
-  //     },
-  //     children: <AddTask />,
-  //     drawer: true,
-  //     okText: '添加',
-  //   });
-  // };
 
   const handleClickMore = async (e) => {
     e.stopPropagation();
@@ -166,10 +144,9 @@ const PipelineCreate = observer(() => {
           name="appServiceId"
           searchable
           searchMatcher="appServiceName"
-          showHelp="tooltip"
+          addonAfter={<Tips helpText="此处仅能看到您有开发权限的启用状态的应用服务，并要求该应用服务必须有master分支，且尚未有关联的流水线" />}
           optionRenderer={optionRenderer}
           renderer={renderer}
-          help="此处仅能看到您有开发权限的启用状态的应用服务，并要求该应用服务必须有master分支，且尚未有关联的流水线"
         />
         <TextField style={{ display: 'none' }} />
         <div className="advanced_text" style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
@@ -178,25 +155,17 @@ const PipelineCreate = observer(() => {
         {
           expandIf ? (
             <Select
-              // disabled={
-              //   !!(PipelineCreateFormDataSet.current && PipelineCreateFormDataSet.current.get('selectImage') === '0')
-              // }
               combo
               newLine
               colSpan={2}
               name="image"
               onChange={handleChangeSelectImage}
-              showHelp="tooltip"
-              help="CI流程Runner镜像是该条流水线中所有CI任务默认的执行环境。您可直接使用此处给出的默认Runner镜像，或是输入自定义的CI流程Runner镜像"
+              addonAfter={<Tips helpText="CI流程Runner镜像是该条流水线中所有CI任务默认的执行环境。您可直接使用此处给出的默认Runner镜像，或是输入自定义的CI流程Runner镜像" />}
             >
               <Option value={createUseStore.getDefaultImage}>{createUseStore.getDefaultImage}</Option>
             </Select>
           ) : ''
         }
-        {/* <SelectBox name="triggerType"> */}
-        {/*  <Option value="auto">自动触发</Option> */}
-        {/*  <Option disabled value="F">手动触发</Option> */}
-        {/* </SelectBox> */}
       </Form>
       <StageEditBlock
         editBlockStore={editBlockStore}

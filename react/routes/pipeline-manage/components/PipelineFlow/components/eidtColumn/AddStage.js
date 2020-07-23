@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Form, Select, SelectBox, TextField, Tooltip, Icon } from 'choerodon-ui/pro';
+import Tips from '../../../../../../components/new-tips';
 
 const { Option } = Select;
 
@@ -32,9 +33,8 @@ export default observer(({ addStepDs, curType, optType, appServiceType }) => {
   return (
     <Form className="addStageForm" dataSet={addStepDs}>
       <Select
-        showHelp="tooltip"
         name="type"
-        help="CI阶段中支持添加构建、发布Chart、代码检查以及自定义类型的CI任务；CD阶段中支持添加部署、主机部署以及人工卡点的CD任务。且流水线中任何CD阶段后，不能再添加CI阶段"
+        addonAfter={<Tips helpText="CI阶段中支持添加构建、发布Chart、代码检查以及自定义类型的CI任务；CD阶段中支持添加部署、主机部署以及人工卡点的CD任务。且流水线中任何CD阶段后，不能再添加CI阶段" />}
         onOption={({ record }) => ({
           disabled: (record.get('value') === 'CI' && curType && (curType === 'CD')) || (record.get('value') === 'CD' && appServiceType === 'test'),
         })}
@@ -43,7 +43,10 @@ export default observer(({ addStepDs, curType, optType, appServiceType }) => {
         disabled={optType === 'edit'}
       />
       <TextField name="step" />
-      <Select name="parallel">
+      <Select
+        name="parallel"
+        addonAfter={<Tips helpText="目前CI阶段中的任务只支持并行，CD中的阶段仅支持串行" />}
+      >
         <Option value={0}>任务串行</Option>
         <Option value={1}>任务并行</Option>
       </Select>
@@ -58,7 +61,15 @@ export default observer(({ addStepDs, curType, optType, appServiceType }) => {
               <Option value="manual">手动流转</Option>
             </SelectBox>
             <Tooltip title="自动流转表示成功执行完上一阶段后，流水线会自动流转并开始执行此阶段；手动流转则表示上一阶段成功执行后，需要人工审核通过后才能执行此阶段。">
-              <Icon type="help" style={{ position: 'absolute', top: '-19px', left: '79px' }} />
+              <Icon
+                type="help"
+                className="c7ncd-select-tips-icon"
+                style={{
+                  position: 'absolute',
+                  top: '-18px',
+                  left: '79px',
+                }}
+              />
             </Tooltip>
           </div>
         ) : ''

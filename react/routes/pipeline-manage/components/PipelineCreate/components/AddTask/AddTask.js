@@ -558,12 +558,12 @@ const AddTask = observer(() => {
             </div>
           </div>
         )) : (
-          <div className="AddTask_stepMapContent">
-            <div className="AddTask_stepAdd">
-              <span onClick={() => handleAddStepItem(0)} style={{ fontSize: 20 }}>+</span>
+            <div className="AddTask_stepMapContent">
+              <div className="AddTask_stepAdd">
+                <span onClick={() => handleAddStepItem(0)} style={{ fontSize: 20 }}>+</span>
+              </div>
             </div>
-          </div>
-        )
+          )
       }
     </div>
   );
@@ -1203,7 +1203,10 @@ const AddTask = observer(() => {
                         <Option value={false}>否</Option>
                       </SelectBox>
                       <Tooltip title="是否对harbor域名进行证书校验">
-                        <Icon type="help" style={{ position: 'absolute', top: '1px', left: '96px' }} />
+                        <Icon
+                          type="help"
+                          className="c7ncd-select-tips-icon"
+                          style={{ position: 'absolute', top: '1px', left: '96px' }} />
                       </Tooltip>
                     </div>,
                   ];
@@ -1342,45 +1345,45 @@ const AddTask = observer(() => {
                   help="您可在此输入正则表达式来配置触发分支；例：若想匹配以 feature 开头的分支，可以输入 ^feature.*。更多表达式，详见用户手册。若不填写，则默认为所有分支和tag"
                 />
               ) : (
-                <Select
-                  combo
-                  searchable
-                  multiple
-                  name="triggerValue"
-                  showHelp="tooltip"
-                  help={renderTriggerTypeTips()}
-                  searchMatcher="branchName"
-                  optionRenderer={({ text }) => renderderBranchs({ text })}
-                  maxTagCount={3}
-                  maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
-                    {`+${omittedValues.length}`}
-                  </Tooltip>}
-                  className="addTaskForm-select"
-                  renderer={renderderBranchs}
-                  colSpan={2}
-                >
-                  {
+                  <Select
+                    combo
+                    searchable
+                    multiple
+                    name="triggerValue"
+                    showHelp="tooltip"
+                    help={renderTriggerTypeTips()}
+                    searchMatcher="branchName"
+                    optionRenderer={({ text }) => renderderBranchs({ text })}
+                    maxTagCount={3}
+                    maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
+                      {`+${omittedValues.length}`}
+                    </Tooltip>}
+                    className="addTaskForm-select"
+                    renderer={renderderBranchs}
+                    colSpan={2}
+                  >
+                    {
                       branchsList.map(b => (
                         <Option value={b.value}>{b.name}</Option>
                       ))
                     }
-                </Select>
-              )}
+                  </Select>
+                )}
             </div>,
             getImageDom(),
             getShareSettings(),
             AddTaskFormDataSet.current.get('type') !== 'chart' ? getMissionOther() : '',
           ] : [
-            <YamlEditor
-              readOnly={false}
-              colSpan={4}
-              newLine
-              value={customYaml}
-              onValueChange={(valueYaml) => setCustomYaml(valueYaml)}
-              modeChange={false}
-              showError={false}
-            />,
-          ]
+              <YamlEditor
+                readOnly={false}
+                colSpan={4}
+                newLine
+                value={customYaml}
+                onValueChange={(valueYaml) => setCustomYaml(valueYaml)}
+                modeChange={false}
+                showError={false}
+              />,
+            ]
         }
       </Form>
     </React.Fragment>
