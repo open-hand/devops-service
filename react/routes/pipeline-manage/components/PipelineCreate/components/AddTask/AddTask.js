@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Form, Select, TextField, Modal, SelectBox, Button, Password } from 'choerodon-ui/pro';
 import { Icon, Spin, Tooltip } from 'choerodon-ui';
 import { Base64 } from 'js-base64';
+import _ from 'lodash';
 import Tips from '../../../../../../components/new-tips';
 import YamlEditor from '../../../../../../components/yamlEditor';
 import emptyImg from '../../../../../../components/empty-page/image/owner.png';
@@ -936,20 +937,48 @@ const AddTask = observer(() => {
                 } else if (type === 'docker') {
                   return [
                     <div style={{ marginBottom: 20 }}>
-                      <TextField className="dockerContextDir" style={{ width: 312 }} name="dockerContextDir" showHelp="tooltip" help="ContextPath为docker build命令执行上下文路径。填写相对于代码根目录的路径，如docker" />
-                    </div>,
-                    <div style={{ marginBottom: 20 }}>
                       <TextField style={{ width: 312 }} name="dockerFilePath" showHelp="tooltip" help="Dockerfile路径为Dockerfile文件相对于代码库根目录所在路径，如docker/Dockerfile或Dockerfile" />
                     </div>,
-                    <SelectBox
-                      style={{
-                        marginTop: 20,
-                      }}
-                      name="skipDockerTlsVerify"
-                    >
-                      <Option value>是</Option>
-                      <Option value={false}>否</Option>
-                    </SelectBox>,
+                    <div style={{ marginBottom: 20 }}>
+                      <TextField
+                        className="dockerContextDir"
+                        style={{ width: 312 }}
+                        name="dockerContextDir"
+                        showHelp="tooltip"
+                        help="ContextPath为docker build命令执行上下文路径。填写相对于代码根目录的路径，如docker"
+                        onFocus={() => {
+                          let res;
+                          const value = AddTaskFormDataSet.current.get('dockerFilePath');
+                          const arrValue = value.split('');
+                          const lastIndex = _.findLastIndex(arrValue, (o) => o === '/');
+                          if (lastIndex !== -1) {
+                            res = arrValue.slice(0, lastIndex).join('');
+                          } else {
+                            res = '.';
+                          }
+                          AddTaskFormDataSet.current.set('dockerContextDir', res);
+                        }}
+                      />
+                    </div>,
+                    <div style={{ position: 'relative' }}>
+                      <SelectBox
+                        style={{
+                          marginTop: 20,
+                          width: 150,
+                        }}
+                        name="skipDockerTlsVerify"
+                      >
+                        <Option value>是</Option>
+                        <Option value={false}>否</Option>
+                      </SelectBox>
+                      <Tooltip title="是否对harbor域名进行证书校验">
+                        <Icon
+                          type="help"
+                          className="c7ncd-select-tips-icon"
+                          style={{ position: 'absolute', top: '1px', left: '96px' }}
+                        />
+                      </Tooltip>
+                    </div>,
                   ];
                 }
               }

@@ -94,7 +94,7 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
     {
       name: 'dockerContextDir',
       type: 'string',
-      label: 'Docker工作目录',
+      label: '镜像构建上下文',
       required: true,
     },
     {
@@ -106,7 +106,7 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
     {
       name: 'skipDockerTlsVerify',
       type: 'boolean',
-      label: '是否进行证书校验',
+      label: '是否启用TLS校验',
       defaultValue: false,
     },
     {
