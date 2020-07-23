@@ -16,7 +16,7 @@ const detailHeader = ({ devopsPipelineRecordRelId, status, triggerRef, appServic
 
   return (
     <div className="c7ncd-pipelineManage-optsDetail-header">
-      <span>#{devopsPipelineRecordRelId}</span>
+      <span>#{`${devopsPipelineRecordRelId}`}</span>
       <span>
         (<Icon type="widgets_line" /><span>{appServiceName}</span>  -
         <Icon type="branch" />
