@@ -13,6 +13,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.lang3.StringUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -86,6 +87,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private String defaultCiImage;
 
     private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     private final DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
     private final DevopsCiPipelineRecordService devopsCiPipelineRecordService;
@@ -342,9 +344,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         // 封装CI对象
         devopsCiJobVOS.forEach(devopsCiJobVO -> {
-            List<CiConfigTemplateVO> CiConfigTemplateVO = gson.fromJson(devopsCiJobVO.getMetadata(), new TypeToken<List<CiConfigTemplateVO>>() {
-            }.getType());
-            devopsCiJobVO.setConfigJobTypes(CiConfigTemplateVO.stream().map(io.choerodon.devops.api.vo.CiConfigTemplateVO::getType).collect(Collectors.toList()));
+            if (JobTypeEnum.BUILD.value().equals(devopsCiJobVO.getType())) {
+                CiConfigVO ciConfigVO = gson.fromJson(devopsCiJobVO.getMetadata(), CiConfigVO.class);
+                devopsCiJobVO.setConfigJobTypes(ciConfigVO.getConfig().stream().map(io.choerodon.devops.api.vo.CiConfigTemplateVO::getType).collect(Collectors.toList()));
+            }
         });
         Map<Long, List<DevopsCiJobVO>> ciJobMap = devopsCiJobVOS.stream().collect(Collectors.groupingBy(DevopsCiJobVO::getCiStageId));
         devopsCiStageVOS.forEach(devopsCiStageVO -> {
