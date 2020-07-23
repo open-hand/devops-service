@@ -98,6 +98,7 @@ function ClusterItem({
           </Fragment>
         )),
         okText: formatMessage({ id: 'cluster.del.confirm' }),
+        okProps: { color: 'red' },
       });
     }
   }

@@ -760,7 +760,6 @@ const pvManager = {
   'c7ncd.pv.permission.project.delete.des': '确定要删除该项目的权限吗？',
 };
 
-
 const codeManagement = {
   'code-management.branch': '分支',
   'code-management.merge-request': '合并请求',
@@ -776,7 +775,7 @@ const pipelineManage = {
   'c7ncd.pipelineManage.execute.cancel': '取消执行',
   'c7ncd.pipelineManage.execute.retry': '重试',
   'c7ncd.pipelineManage.delete.title': '删除流水线',
-  'c7ncd.pipelineManage.delete.des': '删除CI流水线后，之前上传至存储库的所有软件包也会随之清除；确定删除该条CI流水线吗？',
+  'c7ncd.pipelineManage.delete.des': '确定删除该条CI流水线吗？',
   'c7ncd.pipelineManage.stop.title': '停用流水线',
   'c7ncd.pipelineManage.stop.des': '确定停用该条流水线吗？',
   'c7ncd.pipelineManage.record.detail': '流水线记录详情',
@@ -796,7 +795,7 @@ const pipelineManage = {
   'c7ncd.pipelineManage.status.skipped': '最近执行结果：已跳过',
   'c7ncd.pipelineManage.status.canceled': '最近执行结果：已取消',
   'c7ncd.pipelineManage.record.empty.title': '流水线已跳过',
-  'c7ncd.pipelineManage.record.empty.des': '已跳过该流水线的首次执行。您可直接点击全新执行来重跑流水线',
+  'c7ncd.pipelineManage.record.empty.des': '已跳过该流水线的此次执行。您可直接点击全新执行来重跑流水线',
   'c7ncd.pipelineManage.record.empty.title.other': '阶段信息为空',
   'c7ncd.pipelineManage.record.empty.des.other': '未获取到此次执行的阶段信息',
   'c7ncd.pipelineManage.create.share.title': '共享目录设置',
@@ -1264,7 +1263,6 @@ const pageDetail = {
   'notification.edit.description': '您可在此修改该通知内的环境，触发事件，通知方式以及通知对象。',
   'notification.edit.link': `${docServer}/user-guide/system-configuration/project/devops-notifications`,
 };
-
 
 const cluster = {
   'c7ncd.cluster.node.list': '节点列表',
@@ -2725,7 +2723,6 @@ const zhCN = {
   'resource.mode.upload': '直接上传文件添加',
   'resource.required': '请上传YAML文件',
   'resource.one.file': '仅能上传一个文件',
-
 
   // 删除弹框确认信息
   'instance.delete': '删除实例',
