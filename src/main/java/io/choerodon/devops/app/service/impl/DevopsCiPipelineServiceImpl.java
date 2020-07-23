@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import static io.choerodon.devops.infra.constant.GitOpsConstants.DEFAULT_PIPELINE_RECORD_SIZE;
 import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
 
-import com.google.gson.reflect.TypeToken;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -308,6 +307,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 // 保存ci job信息
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
+                        if (JobTypeEnum.BUILD.value().equals(devopsCiJobVO.getType())) {
+                            // 解密json字符串中的加密的主键
+                            devopsCiJobVO.setMetadata(JsonHelper.marshalByJackson(KeyDecryptHelper.decryptJson(devopsCiJobVO.getMetadata(), CiConfigTemplateVO.class)));
+                        }
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
                         devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
@@ -352,7 +355,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         Map<Long, List<DevopsCiJobVO>> ciJobMap = devopsCiJobVOS.stream().collect(Collectors.groupingBy(DevopsCiJobVO::getCiStageId));
         devopsCiStageVOS.forEach(devopsCiStageVO -> {
             List<DevopsCiJobVO> ciJobVOS = ciJobMap.getOrDefault(devopsCiStageVO.getId(), Collections.emptyList());
-            ciJobVOS.sort(Comparator.comparingLong(DevopsCiJobVO::getId));
+            ciJobVOS = ciJobVOS.stream().peek(job -> {
+                if (JobTypeEnum.BUILD.value().equals(job.getType())) {
+                    // 将json string中字段进行加密
+                    CiConfigTemplateVO ciConfigTemplateVO = JsonHelper.unmarshalByJackson(job.getMetadata(), CiConfigTemplateVO.class);
+                    job.setMetadata(KeyDecryptHelper.encryptJson(ciConfigTemplateVO));
+                }
+            }).sorted(Comparator.comparingLong(DevopsCiJobVO::getId)).collect(Collectors.toList());
             devopsCiStageVO.setJobList(ciJobVOS);
         });
         // ci stage排序
@@ -379,7 +388,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         devopsCdJobVO.setEnvName(devopsEnvironmentDTO.getName());
                     }
                     DevopsCdEnvDeployInfoVO devopsCdEnvDeployInfoVO = ConvertUtils.convertObject(devopsCdEnvDeployInfoDTO, DevopsCdEnvDeployInfoVO.class);
-                    devopsCdJobVO.setMetadata(gson.toJson(devopsCdEnvDeployInfoVO).replace("\"", "\'"));
+                    // 加密json中主键
+                    devopsCdJobVO.setMetadata(KeyDecryptHelper.encryptJson(devopsCdEnvDeployInfoVO).replace("\"", "'"));
                 }
                 //如果是人工审核，返回审核人员信息
                 if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobVO.getType())) {
@@ -393,7 +403,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
         // 封装CD对象
         Map<Long, List<DevopsCdJobVO>> cdJobMap = devopsCdJobVOS.stream().collect(Collectors.groupingBy(DevopsCdJobVO::getStageId));
-        devopsCdStageVOS.stream().forEach(devopsCdStageVO -> {
+        devopsCdStageVOS.forEach(devopsCdStageVO -> {
             List<DevopsCdJobVO> jobMapOrDefault = cdJobMap.getOrDefault(devopsCdStageVO.getId(), Collections.emptyList());
             jobMapOrDefault.sort(Comparator.comparing(DevopsCdJobVO::getId));
             devopsCdStageVO.setJobList(jobMapOrDefault);
@@ -446,8 +456,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         //每条流水线默认展示5条记录
         ciCdPipelineVOS.forEach(ciCdPipelineVO -> {
             List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS = new ArrayList<>();
-            List<DevopsCiPipelineRecordVO> devopsCiPipelineRecordVOS = new ArrayList<>();
-            List<DevopsCdPipelineRecordVO> devopsCdPipelineRecordVOS = new ArrayList<>();
             // 查询cicd关系表
             Page<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOPage = devopsPipelineRecordRelService.pagingPipelineRel(ciCdPipelineVO.getId(), cicdPipelineRel);
             if (!Objects.isNull(devopsPipelineRecordRelDTOPage)) {
@@ -455,7 +463,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
 
             if (!Objects.isNull(devopsPipelineRecordRelDTOPage) && !CollectionUtils.isEmpty(devopsPipelineRecordRelDTOPage.getContent())) {
-                devopsPipelineRecordRelDTOPage.getContent().stream().forEach(devopsPipelineRecordRelDTO -> {
+                devopsPipelineRecordRelDTOPage.getContent().forEach(devopsPipelineRecordRelDTO -> {
                     CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
                     //查询ci记录
                     DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = devopsCiPipelineRecordService.queryByCiPipelineRecordId(devopsPipelineRecordRelDTO.getCiPipelineRecordId());
@@ -1218,7 +1226,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         DevopsCdJobDTO devopsCdJobDTO = ConvertUtils.convertObject(t, DevopsCdJobDTO.class);
         // 环境部署需要保存部署配置信息
         if (JobTypeEnum.CD_DEPLOY.value().equals(t.getType())) {
-            DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = gson.fromJson(t.getMetadata(), DevopsCdEnvDeployInfoDTO.class);
+            // 使用能够解密主键加密的json工具解密
+            DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), DevopsCdEnvDeployInfoDTO.class);
+            // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
+            devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(devopsCdEnvDeployInfoDTO));
             devopsCdEnvDeployInfoDTO.setProjectId(projectId);
             devopsCdEnvDeployInfoService.save(devopsCdEnvDeployInfoDTO);
             devopsCdJobDTO.setDeployInfoId(devopsCdEnvDeployInfoDTO.getId());
