@@ -5,6 +5,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -20,17 +22,31 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 @Table(name = "devops_cd_env_deploy_info")
 public class DevopsCdEnvDeployInfoDTO extends AuditDomain {
+    @Encrypt
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    @Encrypt
     private Long appServiceId;
+
+    @Encrypt
     private Long envId;
+
+    @Encrypt
     private Long valueId;
+
     private Long projectId;
     private String deployType;  // 部署类型：新建实例 create 替换实例 update
+
+    @Encrypt
     private Long instanceId;    // 替换实例时需要
+
     private String instanceName;    // 新建实例时需要
+
+    @Encrypt
     private Long cdJobId; //cd 主机部署jar 部署id
+
     private String jarName; // jar 名称
 
     public Long getCdJobId() {

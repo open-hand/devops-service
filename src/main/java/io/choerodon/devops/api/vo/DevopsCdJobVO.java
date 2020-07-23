@@ -29,6 +29,10 @@ public class DevopsCdJobVO {
     @ApiModelProperty("流水线id")
     private Long pipelineId;
     @ApiModelProperty("任务类型")
+
+    /**
+     * {@link io.choerodon.devops.infra.enums.JobTypeEnum}
+     */
     @NotEmpty(message = "error.job.type.cannot.be.null")
     private String type;
     @ApiModelProperty("触发类型对应的值")
@@ -46,6 +50,8 @@ public class DevopsCdJobVO {
     private String envName;
     @NotNull(message = "error.job.sequence.cannot.be.null")
     private Long sequence;
+
+    @Encrypt
     private Long deployInfoId;
 
     public Long getSequence() {
