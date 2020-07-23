@@ -7,6 +7,7 @@ import { Base64 } from 'js-base64';
 import { observer } from 'mobx-react-lite';
 import { useAddCDTaskStore } from './stores';
 import YamlEditor from '../../../../../../components/yamlEditor';
+import Tips from '../../../../../../components/new-tips';
 
 import './index.less';
 
@@ -259,9 +260,8 @@ export default observer(() => {
             newLine
             colSpan={3}
             name="deploySource"
-            showHelp="tooltip"
             clearButton={false}
-            help="流水线制品部署表示直接使用所选关联构建任务中产生的镜像进行部署；匹配制品部署则表示可自主选择项目镜像仓库中的镜像，并配置镜像版本的匹配规则，后续部署的镜像版本便会遵循此规则。"
+            addonAfter={<Tips helpText="流水线制品部署表示直接使用所选关联构建任务中产生的镜像进行部署；匹配制品部署则表示可自主选择项目镜像仓库中的镜像，并配置镜像版本的匹配规则，后续部署的镜像版本便会遵循此规则。" />}
           >
             <Option value="pipelineDeploy">流水线制品部署</Option>
             <Option value="matchDeploy">匹配制品部署</Option>
@@ -270,8 +270,7 @@ export default observer(() => {
             colSpan={3}
             name="pipelineTask"
             searchable
-            showHelp="tooltip"
-            help={'此处的关联构建任务，仅会查询出该条流水线中存在"Docker构建"步骤的“构建类型”任务。若所选任务中存在多个“Docker构建”步骤，则只会部署第一个“Docker构建”步骤产生的镜像；'}
+            addonAfter={<Tips helpText="此处的关联构建任务，仅会查询出该条流水线中存在'Docker构建'步骤的“构建类型”任务。若所选任务中存在多个“Docker构建”步骤，则只会部署第一个“Docker构建”步骤产生的镜像" />}
             searchMatcher={searchMatcher}
           >
             {renderRelatedJobOpts()}
@@ -299,9 +298,8 @@ export default observer(() => {
             newLine
             colSpan={3}
             name="deploySource"
-            showHelp="tooltip"
             clearButton={false}
-            help="流水线制品部署表示直接使用所选关联构建任务中生成的jar包进行部署；匹配制品部署则表示可自主选择项目下制品库中的jar包，并需配置jar包版本的正则匹配规则，后续部署的jar包版本便会遵循此规则。"
+            addonAfter={<Tips helpText="流水线制品部署表示直接使用所选关联构建任务中生成的jar包进行部署；匹配制品部署则表示可自主选择项目下制品库中的jar包，并需配置jar包版本的正则匹配规则，后续部署的jar包版本便会遵循此规则。" />}
           >
             <Option value="pipelineDeploy">流水线制品部署</Option>
             <Option value="matchDeploy">匹配制品部署</Option>
@@ -310,8 +308,7 @@ export default observer(() => {
             colSpan={3}
             name="pipelineTask"
             searchable
-            showHelp="tooltip"
-            help={'此处的关联构建任务，仅会查询出该条流水线中存在"上传jar包至制品库"或“Maven发布”步骤的“构建类型”任务。若所选任务中存在多个满足条件的步骤，则只会部署所选任务中第一个满足条件的步骤产生的jar包；'}
+            addonAfter={<Tips helpText="此处的关联构建任务，仅会查询出该条流水线中存在'上传jar包至制品库'或“Maven发布”步骤的“构建类型”任务。若所选任务中存在多个满足条件的步骤，则只会部署所选任务中第一个满足条件的步骤产生的jar包；" />}
             searchMatcher={searchMatcher}
           >
             {renderRelatedJobOpts()}
@@ -492,8 +489,7 @@ export default observer(() => {
               <TextField
                 className="addcdTask-triggerValue"
                 name="triggerValue"
-                showHelp="tooltip"
-                help="您可在此输入正则表达式来配置触发分支；例：若想匹配以 feature 开头的分支，可以输入 ^feature.*。更多表达式，详见用户手册。若不填写，则默认为所有分支和tag"
+                addonAfter={<Tips helpText="您可在此输入正则表达式来配置触发分支；例：若想匹配以 feature 开头的分支，可以输入 ^feature.*。更多表达式，详见用户手册。若不填写，则默认为所有分支和tag" />}
               />
             ) : (<Select
               combo
@@ -501,8 +497,7 @@ export default observer(() => {
               multiple
               className="addcdTask-triggerValue"
               name="triggerValue"
-              showHelp="tooltip"
-              help={renderTriggerTypeTips()}
+              addonAfter={<Tips helpText={renderTriggerTypeTips()} />}
               searchMatcher="branchName"
               optionRenderer={({ text }) => renderderBranchs({ text })}
               maxTagCount={2}
@@ -543,8 +538,7 @@ export default observer(() => {
                     <Select
                       style={{ width: '100%' }}
                       name="countersigned"
-                      showHelp="tooltip"
-                      help="会签模式中，需要所有审核人员都审核通过才能通过，审核人员中任一人点击终止，则流水线终止；或签模式中，仅需任一审核人员审核即可，即第一个审核的人点击通过则通过，点击终止则终止"
+                      addonAfter={<Tips helpText="会签模式中，需要所有审核人员都审核通过才能通过，审核人员中任一人点击终止，则流水线终止；或签模式中，仅需任一审核人员审核即可，即第一个审核的人点击通过则通过，点击终止则终止" />}
                     >
                       <Option value={1}>会签</Option>
                       <Option value={0}>或签</Option>
