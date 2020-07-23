@@ -1,8 +1,12 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 public class DevopsCdPipelineDeatilVO {
     private String stageName;
+    @Encrypt
     private Long stageRecordId;
+    @Encrypt
     private Long taskRecordId;
     private String type;
     //判断当前用户能否进行审核，能否看到人工审核这个操作按钮
