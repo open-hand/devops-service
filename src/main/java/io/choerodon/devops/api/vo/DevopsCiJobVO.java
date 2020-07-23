@@ -4,7 +4,6 @@ import java.util.List;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -51,6 +50,9 @@ public class DevopsCiJobVO {
     @ApiModelProperty("触发类型")
     private String triggerType;
 
+    /**
+     * {@link CiConfigVO}
+     */
     @ApiModelProperty("详细信息")
     @NotEmpty(message = "error.job.metadata.cannot.be.null")
     private String metadata;

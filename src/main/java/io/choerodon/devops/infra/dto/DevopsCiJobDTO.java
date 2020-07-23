@@ -40,6 +40,10 @@ public class DevopsCiJobDTO extends AuditDomain {
      */
     @ApiModelProperty("触发类型")
     private String triggerType;
+
+    /**
+     * {@link io.choerodon.devops.api.vo.CiConfigVO}
+     */
     @ApiModelProperty("详细信息")
     private String metadata;
 
