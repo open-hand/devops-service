@@ -17,7 +17,7 @@ import io.choerodon.devops.infra.annotation.WillDeleted;
  */
 @WillDeleted
 public class DevopsCiJobVO {
-
+    @Encrypt
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
