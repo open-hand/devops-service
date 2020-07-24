@@ -309,7 +309,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                         if (JobTypeEnum.BUILD.value().equals(devopsCiJobVO.getType())) {
                             // 解密json字符串中的加密的主键
-                            devopsCiJobVO.setMetadata(JsonHelper.marshalByJackson(KeyDecryptHelper.decryptJson(devopsCiJobVO.getMetadata(), CiConfigTemplateVO.class)));
+                            CiConfigVO decryptedJson = KeyDecryptHelper.decryptJson(devopsCiJobVO.getMetadata(), CiConfigVO.class);
+                            devopsCiJobVO.setMetadata(JsonHelper.marshalByJackson(decryptedJson));
                         }
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
@@ -358,8 +359,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             ciJobVOS = ciJobVOS.stream().peek(job -> {
                 if (JobTypeEnum.BUILD.value().equals(job.getType())) {
                     // 将json string中字段进行加密
-                    CiConfigTemplateVO ciConfigTemplateVO = JsonHelper.unmarshalByJackson(job.getMetadata(), CiConfigTemplateVO.class);
-                    job.setMetadata(KeyDecryptHelper.encryptJson(ciConfigTemplateVO));
+                    CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(job.getMetadata(), CiConfigVO.class);
+                    // 返回给前端要用单引号而不是双引号的字符串
+                    job.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(ciConfigVO)));
                 }
             }).sorted(Comparator.comparingLong(DevopsCiJobVO::getId)).collect(Collectors.toList());
             devopsCiStageVO.setJobList(ciJobVOS);
@@ -389,7 +391,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     }
                     DevopsCdEnvDeployInfoVO devopsCdEnvDeployInfoVO = ConvertUtils.convertObject(devopsCdEnvDeployInfoDTO, DevopsCdEnvDeployInfoVO.class);
                     // 加密json中主键
-                    devopsCdJobVO.setMetadata(KeyDecryptHelper.encryptJson(devopsCdEnvDeployInfoVO).replace("\"", "'"));
+                    devopsCdJobVO.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(devopsCdEnvDeployInfoVO)));
                 }
                 //如果是人工审核，返回审核人员信息
                 if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobVO.getType())) {
