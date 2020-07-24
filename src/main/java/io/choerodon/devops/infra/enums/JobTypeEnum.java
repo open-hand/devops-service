@@ -20,10 +20,11 @@ public enum JobTypeEnum {
      * maven chart 类型
      */
     CHART("chart"),
+
     /**
      * 自定义任务
      */
-    CUSTOMIZE("customize"),
+    CUSTOM("custom"),
 
     /**
      * cd 部署任务
