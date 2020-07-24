@@ -787,7 +787,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 拼接自定义job
         if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS())) {
             List<DevopsCiJobVO> ciJobVOS = ciCdPipelineVO.getDevopsCiStageVOS().stream()
-                    .flatMap(v -> v.getJobList().stream()).filter(job -> JobTypeEnum.CUSTOMIZE.value().equalsIgnoreCase(job.getType()))
+                    .flatMap(v -> v.getJobList().stream()).filter(job -> JobTypeEnum.CUSTOM.value().equalsIgnoreCase(job.getType()))
                     .collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(ciJobVOS)) {
                 for (DevopsCiJobVO job : ciJobVOS) {
@@ -828,7 +828,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         ciCdPipelineVO.getDevopsCiStageVOS().forEach(stageVO -> {
             if (!CollectionUtils.isEmpty(stageVO.getJobList())) {
                 stageVO.getJobList().forEach(job -> {
-                    if (JobTypeEnum.CUSTOMIZE.value().equals(job.getType())) {
+                    if (JobTypeEnum.CUSTOM.value().equals(job.getType())) {
                         return;
                     }
                     CiJob ciJob = new CiJob();

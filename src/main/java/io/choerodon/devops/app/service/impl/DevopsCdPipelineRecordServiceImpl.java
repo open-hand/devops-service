@@ -688,7 +688,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     values = s;
                 }
             }
-            if (StringUtils.isEmpty(values) || !checkInstruction("jar", values)) {
+            if (StringUtils.isEmpty(values)) {
                 throw new CommonException("error.instruction");
             }
 

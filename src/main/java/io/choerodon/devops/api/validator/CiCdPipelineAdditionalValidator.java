@@ -174,7 +174,7 @@ public class CiCdPipelineAdditionalValidator {
      */
     @SuppressWarnings("unchecked")
     private static void validateCustomJobFormat(String stageName, DevopsCdJobVO devopsCiJobVO) {
-        if (!JobTypeEnum.CUSTOMIZE.value().equalsIgnoreCase(devopsCiJobVO.getType())) {
+        if (!JobTypeEnum.CUSTOM.value().equalsIgnoreCase(devopsCiJobVO.getType())) {
             return;
         }
         Yaml yaml = new Yaml();
