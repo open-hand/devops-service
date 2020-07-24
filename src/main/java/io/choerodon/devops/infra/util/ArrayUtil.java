@@ -44,6 +44,12 @@ public class ArrayUtil {
         return list;
     }
 
+    public static <T> Set<T> singleAsSet(T obj) {
+        Set<T> set = new HashSet<>();
+        set.add(obj);
+        return set;
+    }
+
     /**
      * 将所有数组元素按顺序加入到队尾
      *

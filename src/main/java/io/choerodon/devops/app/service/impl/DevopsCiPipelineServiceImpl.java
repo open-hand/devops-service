@@ -905,10 +905,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      * @return 为空表示没有settings配置，不为空表示有
      */
     private List<MavenRepoVO> buildAndSaveMavenSettings(Long projectId, Long jobId, Long sequence, MavenDeployRepoSettings mavenDeployRepoSettings) {
-        if (CollectionUtils.isEmpty(mavenDeployRepoSettings.getNexusRepoIds())) {
+        if (mavenDeployRepoSettings.getNexusRepoIds() == null) {
             return Collections.emptyList();
         }
-        List<NexusMavenRepoDTO> nexusMavenRepoDTOs = rdupmClientOperator.getRepoUserByProject(null, projectId, mavenDeployRepoSettings.getNexusRepoIds());
+        List<NexusMavenRepoDTO> nexusMavenRepoDTOs = rdupmClientOperator.getRepoUserByProject(null, projectId, ArrayUtil.singleAsSet(mavenDeployRepoSettings.getNexusRepoIds()));
 
         if (CollectionUtils.isEmpty(nexusMavenRepoDTOs)) {
             return Collections.emptyList();
