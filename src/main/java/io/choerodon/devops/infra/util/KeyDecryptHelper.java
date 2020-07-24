@@ -112,7 +112,7 @@ public final class KeyDecryptHelper {
         try {
             return SPRINT_OBJECT_MAPPER.readValue(json, type);
         } catch (IOException e) {
-            throw new CommonException("error.decrypt.json");
+            throw new CommonException("error.decrypt.json", e);
         }
     }
 
@@ -128,7 +128,7 @@ public final class KeyDecryptHelper {
         try {
             return SPRINT_OBJECT_MAPPER.writeValueAsString(object);
         } catch (Exception ex) {
-            throw new CommonException("error.encrypt.json");
+            throw new CommonException("error.encrypt.json", ex);
         }
     }
 }

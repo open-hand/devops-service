@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.util;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.util.Assert;
@@ -21,6 +22,7 @@ public final class JsonHelper {
     static {
         OBJECT_MAPPER.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
         OBJECT_MAPPER.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+        OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
     /**
@@ -54,5 +56,15 @@ public final class JsonHelper {
         } catch (IOException e) {
             throw new CommonException("Failed to marshal by jackson. It's unexpected and may be an internal error. The object is: " + object.toString(), e);
         }
+    }
+
+    /**
+     * 将json中的双引号替换为单引号 (不管属性值包括双引号的情况)
+     *
+     * @param json json
+     * @return 单引号的json
+     */
+    public static String singleQuoteWrapped(String json) {
+        return json.replaceAll("\"", "'");
     }
 }
