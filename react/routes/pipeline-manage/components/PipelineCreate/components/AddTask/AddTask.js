@@ -152,7 +152,12 @@ const AddTask = observer(() => {
           let nexusMavenRepoIds;
           let zpk;
           let jarZpk;
-          config && config.forEach((c) => {
+          config && config.forEach((c, cIndex) => {
+            if (cIndex === 0) {
+              c.checked = true;
+            } else {
+              c.checked = false;
+            }
             if (c.type === 'upload') {
               uploadFilePattern = c.uploadFilePattern;
               uploadArtifactFileName = c.artifactFileName;
@@ -206,7 +211,7 @@ const AddTask = observer(() => {
             token,
             password,
             sonarUrl,
-            private: newSteps.length > 0 && newSteps.find(s => s.checked).repos ? ['custom'] : '',
+            private: newSteps.length > 0 && newSteps?.find(s => s.checked)?.repos ? ['custom'] : '',
             share,
           };
           AddTaskFormDataSet.loadData([data]);
@@ -1110,7 +1115,7 @@ const AddTask = observer(() => {
           {
             (function () {
               if (steps.length > 0) {
-                const type = steps.find(s => s.checked).type;
+                const type = steps?.find(s => s.checked)?.type;
                 if (type && ['Maven', 'npm', 'go', 'maven_deploy', 'upload_jar'].includes(type)) {
                   return [
                     <div style={{
