@@ -868,9 +868,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     currentHandler = converters.get(type);
                     if (currentHandler == null) {
                         // 跳过不解析的资源
-                        if (GitOpsConstants.IGNORE_RESOURCES.contains(type)) {
-                            break;
-                        }
+//                        if (GitOpsConstants.IGNORE_RESOURCES.contains(type)) {
+//                            break;
+//                        }
 
                         // 准备默认处理方式，用户环境默认处理方式是作为自定义资源处理，
                         // 系统环境的默认处理方式是抛出异常以表示不支持
