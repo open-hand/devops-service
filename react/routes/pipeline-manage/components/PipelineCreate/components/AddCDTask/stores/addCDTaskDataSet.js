@@ -1,9 +1,26 @@
 import uuidV1 from 'uuid/v1';
+import { axios } from '@choerodon/boot';
 
 function getDefaultInstanceName(appServiceCode) {
   return appServiceCode
     ? `${appServiceCode.substring(0, 24)}-${uuidV1().substring(0, 5)}`
     : uuidV1().substring(0, 30);
+}
+
+async function checkName(value, projectId, record) {
+  if (!record.get('envId')) {
+    return true;
+  }
+  try {
+    const res = await axios.get(`/devops/v1/projects/${projectId}/app_service_instances/check_name?env_id=${record.get('envId')}&instance_name=${value}`);
+    if ((res && res.failed) || !res) {
+      return '实例名称重复';
+    } else {
+      return true;
+    }
+  } catch (err) {
+    return '校验失败';
+  }
 }
 
 export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, appServiceCode) => ({
@@ -59,6 +76,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
     name: 'instanceName',
     type: 'string',
     label: '实例名称',
+    validator: (value, name, record) => checkName(value, projectId, record),
     dynamicProps: {
       required: ({ record }) => record.get('type') === 'cdDeploy' && record.get('deployType') === 'create',
     },
