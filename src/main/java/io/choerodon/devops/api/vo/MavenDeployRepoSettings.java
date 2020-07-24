@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.Set;
-
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -16,13 +14,13 @@ public class MavenDeployRepoSettings {
      * 做成set而不是long类型是处于拓展性考虑
      */
     @ApiModelProperty("nexus的maven仓库在制品库的主键id")
-    private Set<Long> nexusRepoIds;
+    private Long nexusRepoIds;
 
-    public Set<Long> getNexusRepoIds() {
+    public Long getNexusRepoIds() {
         return nexusRepoIds;
     }
 
-    public void setNexusRepoIds(Set<Long> nexusRepoIds) {
+    public void setNexusRepoIds(Long nexusRepoIds) {
         this.nexusRepoIds = nexusRepoIds;
     }
 }
