@@ -73,7 +73,9 @@ export default observer(() => {
         value: Base64.encode(imageDeployValues),
       };
       if (ds.hostDeployType === 'customize') {
-        ds.customize = Base64.encode(customValues);
+        ds.customize = {
+          values: Base64.encode(customValues),
+        };
       } else if (ds.hostDeployType === 'image') {
         if (ds.deploySource === 'matchDeploy') {
           const repo = ADDCDTaskUseStore.getRepoList?.find(i => String(i.repoId) === String(ds.repoId));
@@ -150,7 +152,7 @@ export default observer(() => {
         const metadata = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
         const { hostDeployType } = metadata;
         if (hostDeployType === 'customize') {
-          setCustomValues(Base64.decode(metadata.customize));
+          setCustomValues(Base64.decode(metadata.customize?.values));
         } else if (hostDeployType === 'image') {
           setImageDeployValues(Base64.decode(metadata.imageDeploy.value));
         } else if (hostDeployType === 'jar') {
