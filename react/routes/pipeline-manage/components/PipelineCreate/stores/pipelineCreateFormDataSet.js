@@ -24,7 +24,7 @@ export default (AppServiceOptionsDs, projectId, createUseStore, dataSource) => {
       defaultValue: 20,
     }, {
       name: 'appServiceId',
-      type: 'string',
+      type: 'number',
       label: '关联应用服务',
       required: true,
       textField: 'appServiceName',
