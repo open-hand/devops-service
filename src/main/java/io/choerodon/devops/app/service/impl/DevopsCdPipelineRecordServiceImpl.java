@@ -14,7 +14,9 @@ import java.util.stream.Collectors;
 import com.google.gson.Gson;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
+import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
@@ -741,6 +743,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 //            cdHostImageDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
 //        } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.JAR_DEPLOY.getValue())) {
 //            cdHostJarDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
+//        } else {
+//            cdHostCustomDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
 //        }
         producer.apply(
                 StartSagaBuilder
@@ -1139,7 +1143,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         if (type.equals("jar")) {
             return instruction.contains("${jar}");
         } else {
-            return instruction.contains("${containerName}") && instruction.contains("${imageName}") && instruction.contains(" -d");
+            return instruction.contains("${containerName}") && instruction.contains("${imageName}") && instruction.contains(" -d ");
         }
     }
 

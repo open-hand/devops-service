@@ -23,7 +23,7 @@ public enum JobTypeEnum {
     /**
      * 自定义任务
      */
-    CUSTOM("custom"),
+    CUSTOMIZE("customize"),
 
     /**
      * cd 部署任务
