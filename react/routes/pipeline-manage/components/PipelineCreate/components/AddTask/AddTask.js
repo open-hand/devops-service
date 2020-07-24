@@ -138,7 +138,7 @@ const AddTask = observer(() => {
         } else {
           AddTaskFormDataSet.loadData([jobDetail]);
           if (jobDetail.type === 'custom') {
-            setCustomYaml(jobDetail.metadata);
+            setCustomYaml(Base64.decode(jobDetail.metadata));
           }
         }
         if (!jobDetail.image) {
@@ -240,7 +240,7 @@ const AddTask = observer(() => {
               metadata: '',
             }).replace(/"/g, "'");
           } else if (data.type === 'custom') {
-            return customYaml;
+            return Base64.encode(customYaml);
           }
         }()),
       };
