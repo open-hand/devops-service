@@ -106,6 +106,7 @@ const AddTask = observer(() => {
             if (c.mavenSettings) {
               c.mavenSettings = Base64.decode(c.mavenSettings);
             }
+            c.yaml = Base64.decode(c.script);
           });
           ['toUpload', 'toDownload'].forEach(item => {
             if (jobDetail[item]) {
@@ -201,7 +202,8 @@ const AddTask = observer(() => {
             return JSON.stringify({
               config: steps.map((s, sIndex) => {
                 s.sequence = sIndex;
-                s.script = s.yaml;
+                s.script = Base64.encode(s.yaml);
+                delete s.yaml;
                 if (s.repo) {
                   s.repos = [...(s.repo.publicRepo || []).map(p => {
                     p.private = p.privateIf;
