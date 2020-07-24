@@ -158,6 +158,7 @@ const AddTask = observer(() => {
             } else {
               c.checked = false;
             }
+            c.yaml = c.script;
             if (c.type === 'upload') {
               uploadFilePattern = c.uploadFilePattern;
               uploadArtifactFileName = c.artifactFileName;
