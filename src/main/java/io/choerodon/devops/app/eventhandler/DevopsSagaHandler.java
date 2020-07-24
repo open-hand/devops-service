@@ -165,7 +165,7 @@ public class DevopsSagaHandler {
             concurrentLimitNum = 1,
             maxRetryCount = 3,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            seq = 10)
+            seq = 1)
     public String gitops(String data) {
         devopsGitService.fileResourceSync(JsonHelper.unmarshalByJackson(data, PushWebHookVO.class));
         return data;
