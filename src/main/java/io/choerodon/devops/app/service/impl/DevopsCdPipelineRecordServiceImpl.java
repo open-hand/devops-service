@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -151,6 +152,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Autowired
     private CiPipelineMavenService ciPipelineMavenService;
+
+    @Value("${choerodon.online:true}")
+    private Boolean online;
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
@@ -684,7 +688,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             String[] strings = value.split("\n");
             String values = "";
             for (String s : strings) {
-                if (s.length() > 0 && !s.contains("#") && s.contains("java")) {
+                if (s.length() > 0 && !s.contains("#")) {
                     values = s;
                 }
             }
@@ -736,26 +740,29 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         HostDeployPayload hostDeployPayload = new HostDeployPayload(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         DevopsCdPipelineRecordDTO pipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
         CustomContextUtil.setUserContext(pipelineRecordDTO.getCreatedBy());
+        if (online) {
 
-//        DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(hostDeployPayload.getJobRecordId());
-//        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
-//        if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.IMAGED_DEPLOY.getValue())) {
-//            cdHostImageDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
-//        } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.JAR_DEPLOY.getValue())) {
-//            cdHostJarDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
-//        } else {
-//            cdHostCustomDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
-//        }
-        producer.apply(
-                StartSagaBuilder
-                        .newBuilder()
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withSourceId(pipelineRecordDTO.getProjectId())
-                        .withRefType("pipelineRecordId")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_HOST_FEPLOY),
-                builder -> builder
-                        .withPayloadAndSerialize(hostDeployPayload)
-                        .withRefId(pipelineRecordId.toString()));
+            producer.apply(
+                    StartSagaBuilder
+                            .newBuilder()
+                            .withLevel(ResourceLevel.PROJECT)
+                            .withSourceId(pipelineRecordDTO.getProjectId())
+                            .withRefType("pipelineRecordId")
+                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_HOST_FEPLOY),
+                    builder -> builder
+                            .withPayloadAndSerialize(hostDeployPayload)
+                            .withRefId(pipelineRecordId.toString()));
+        } else {
+            DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(hostDeployPayload.getJobRecordId());
+            CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
+            if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.IMAGED_DEPLOY.getValue())) {
+                cdHostImageDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
+            } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.JAR_DEPLOY.getValue())) {
+                cdHostJarDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
+            } else {
+                cdHostCustomDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
+            }
+        }
     }
 
     @Override
