@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Maven发布jar到maven仓库的配置对象
@@ -13,6 +14,7 @@ public class MavenDeployRepoSettings {
     /**
      * 做成set而不是long类型是处于拓展性考虑
      */
+    @Encrypt
     @ApiModelProperty("nexus的maven仓库在制品库的主键id")
     private Long nexusRepoIds;
 
