@@ -1104,6 +1104,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private List<String> buildMavenJarDeployScripts(final Long projectId, final Long jobId, final boolean hasSettings, CiConfigTemplateVO ciConfigTemplateVO, List<MavenRepoVO> targetMavenRepoVO) {
         List<String> shells = new ArrayList<>();
         // 这里这么写是为了考虑之后可能选了多个仓库, 如果是多个仓库的话, 变量替换不便
+        // TODO 重构逻辑
         List<String> templateShells = GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(ciConfigTemplateVO.getScript()), true, true);
         // 如果有settings配置, 填入获取settings的指令
         if (hasSettings) {
@@ -1149,7 +1150,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
 
             // 只生成一个jar包元数据上传指令用于CD阶段
-            shells.add(GitlabCiUtil.saveJarMetadata((Long) ciConfigTemplateVO.getMavenDeployRepoSettings().getNexusRepoIds().toArray()[0]));
+            shells.add(GitlabCiUtil.saveJarMetadata((Long) ciConfigTemplateVO.getMavenDeployRepoSettings().getNexusRepoIds()));
         } else {
             // 如果没有目标仓库信息, 则认为用户是自己填入好了maven发布jar的指令, 不需要渲染
             shells.addAll(templateShells);
@@ -1172,7 +1173,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         Set<Long> dependencyRepoIds = ciConfigTemplateVO.getNexusMavenRepoIds();
         List<MavenRepoVO> dependencyRepos = ciConfigTemplateVO.getRepos();
 
-        boolean targetRepoEmpty = CollectionUtils.isEmpty(mavenDeployRepoSettings.getNexusRepoIds());
+        boolean targetRepoEmpty = mavenDeployRepoSettings.getNexusRepoIds() == null;
         boolean dependencyRepoIdsEmpty = CollectionUtils.isEmpty(dependencyRepoIds);
         boolean dependencyRepoEmpty = CollectionUtils.isEmpty(dependencyRepos);
 
@@ -1182,7 +1183,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
 
         // 查询制品库
-        List<NexusMavenRepoDTO> nexusMavenRepoDTOs = rdupmClientOperator.getRepoUserByProject(null, projectId, mavenDeployRepoSettings.getNexusRepoIds());
+        List<NexusMavenRepoDTO> nexusMavenRepoDTOs = rdupmClientOperator.getRepoUserByProject(null, projectId, ArrayUtil.singleAsSet(mavenDeployRepoSettings.getNexusRepoIds()));
 
         // 如果填入的仓库信息和制品库查出的结果都为空, 不生成settings文件
         if (CollectionUtils.isEmpty(nexusMavenRepoDTOs) && dependencyRepoEmpty) {
@@ -1193,7 +1194,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         List<MavenRepoVO> mavenRepoVOS = nexusMavenRepoDTOs.stream().map(r -> {
             MavenRepoVO result = convertRepo(r);
             // 目标仓库不为空, 并且目标仓库包含
-            if (!targetRepoEmpty && mavenDeployRepoSettings.getNexusRepoIds().contains(r.getRepositoryId())) {
+            if (!targetRepoEmpty && mavenDeployRepoSettings.getNexusRepoIds().equals(r.getRepositoryId())) {
                 targetRepoContainer.add(result);
             }
             return result;
