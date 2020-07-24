@@ -307,11 +307,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 // 保存ci job信息
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
-                        if (JobTypeEnum.BUILD.value().equals(devopsCiJobVO.getType())) {
-                            // 解密json字符串中的加密的主键
-                            CiConfigVO decryptedJson = KeyDecryptHelper.decryptJson(devopsCiJobVO.getMetadata(), CiConfigVO.class);
-                            devopsCiJobVO.setMetadata(JsonHelper.marshalByJackson(decryptedJson));
-                        }
+                        decryptCiBuildMetadata(devopsCiJobVO);
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
                         devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
@@ -751,6 +747,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 // 保存job信息
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
+                        decryptCiBuildMetadata(devopsCiJobVO);
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setId(null);
                         devopsCiJobDTO.setCiStageId(devopsCiStageVO.getId());
@@ -767,6 +764,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 // 保存job信息
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
+                        decryptCiBuildMetadata(devopsCiJobVO);
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
                         devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
@@ -1263,4 +1261,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return appServiceDeployDTO;
     }
 
+    /**
+     * 将job中的metadata字段解密
+     *
+     * @param devopsCiJobVO job数据
+     */
+    private void decryptCiBuildMetadata(DevopsCiJobVO devopsCiJobVO) {
+        if (JobTypeEnum.BUILD.value().equals(devopsCiJobVO.getType())) {
+            // 解密json字符串中的加密的主键
+            devopsCiJobVO.setMetadata(JsonHelper.marshalByJackson(KeyDecryptHelper.decryptJson(devopsCiJobVO.getMetadata(), CiConfigVO.class)));
+        }
+    }
 }
