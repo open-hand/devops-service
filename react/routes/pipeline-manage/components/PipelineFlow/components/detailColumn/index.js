@@ -317,7 +317,7 @@ const DetailItem = (props) => {
                 shape="circle"
                 size="small"
                 icon="description-o"
-                disabled={itemStatus === 'created'}
+                disabled={itemStatus === 'created' || itemStatus === 'skipped'}
                 onClick={(type !== 'cdDeploy') ? openDescModal : openCdLog}
                 color="primary"
               />
