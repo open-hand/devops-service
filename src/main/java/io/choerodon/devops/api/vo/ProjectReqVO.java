@@ -5,7 +5,6 @@ import java.util.Objects;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class ProjectReqVO {
-    @Encrypt
     private Long id;
     private String name;
     private String code;

@@ -52,7 +52,6 @@ public class DevopsPvReqVO {
 
     @ApiModelProperty("pv公开范围，指定项目id/必填，可为空数组")
     @NotNull(message = "error.project.ids.null")
-    @Encrypt
     private List<Long> projectIds;
 
     @ApiModelProperty("是否跳过项目权限校验/必填")
