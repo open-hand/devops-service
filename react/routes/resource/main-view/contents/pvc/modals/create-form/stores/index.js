@@ -28,6 +28,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
         {
           value: 'HostPath',
         },
+        {
+          value: 'LocalPV',
+        },
       ],
       selection: 'single',
     }), []);
