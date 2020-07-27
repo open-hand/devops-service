@@ -632,7 +632,6 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
 
                 v1PersistentVolumeSpec.setNodeAffinity(nodeAffinity);
-                devopsPvDTO.setValueConfig(JSONObject.toJSONString(v1LocalVolumeSource));
                 break;
         }
         v1PersistentVolume.setSpec(v1PersistentVolumeSpec);
