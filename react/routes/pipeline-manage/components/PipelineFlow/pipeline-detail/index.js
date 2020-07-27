@@ -67,7 +67,7 @@ export default observer((props) => {
     });
     setLeftLineDom(leftList);
     setRightLineDom(rightList);
-  }, [getStepData]);
+  }, [getLoading, getStepData]);
 
   function getJobTask({ jobType: type, metadata, iamUserDTOS, jobTriggerValue, triggerValue, envName }) {
     if (metadata) {

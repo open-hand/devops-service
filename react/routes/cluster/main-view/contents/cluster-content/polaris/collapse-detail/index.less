@@ -39,17 +39,29 @@
     &-mgt {
       border-top: 0.01rem solid #e0e0e0 !important;
       margin-top: .16rem !important;
+
+      .c7n-collapse-header {
+        display: flex;
+      }
+    }
+
+    .c7n-collapse-header {
+      display: flex;
     }
   }
 
   &-header {
-    display: inline-block;
     color: rgba(0, 0, 0, 1);
     font-size: .14rem;
+    width: 100%;
+    display: flex;
 
     &-item {
       width: 2rem;
-      display: inline-block;
+      flex-grow: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
 
       &:first-child,
       &-external {
