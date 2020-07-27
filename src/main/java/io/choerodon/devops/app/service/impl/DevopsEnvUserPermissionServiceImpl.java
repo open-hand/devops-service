@@ -141,6 +141,6 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
             devopsEnvUserPermissionDO = devopsEnvUserPermissionMapper.selectOne(devopsEnvUserPermissionDO);
             return devopsEnvUserPermissionDO != null && devopsEnvUserPermissionDO.getPermitted();
         }
-        return false;
+        return true;
     }
 }
