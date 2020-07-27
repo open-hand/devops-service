@@ -429,11 +429,13 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
         AppServiceVersionDTO appServiceServiceE = getDeployVersion(pipelineRecordId);
         if (appServiceServiceE == null) {
+            LOGGER.info("App have no deploy version, skipped.pipelineRecordId {} stageRecordId: {} jobRecordId: {}", pipelineRecordId, stageRecordId, jobRecordId);
             devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
             return;
         }
         // 没有环境权限，状态置为跳过
         if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(devopsCdEnvDeployInfoDTO.getEnvId(), devopsCdJobRecordDTO.getCreatedBy()))) {
+            LOGGER.info("User have no env Permission, skipped.pipelineRecordId {} stageRecordId: {} jobRecordId: {}", pipelineRecordId, stageRecordId, jobRecordId);
             devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
             return;
         }
@@ -480,6 +482,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         // 如果要部署的版本的commitDate落后于环境中已经部署的版本，则跳过
                         // 如果现在部署的版本落后于已经部署的版本则跳过
                         if (currentCommit.getCommittedDate().before(deploydCommit.getCommittedDate())) {
+                            LOGGER.info("Deploy version is deprecated, skipped.pipelineRecordId {} stageRecordId: {} jobRecordId: {}", pipelineRecordId, stageRecordId, jobRecordId);
                             devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
                             return;
                         }
@@ -512,7 +515,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, e.getMessage());
         }
     }
-
     private void addCreateInfoForAppServiceDeployVO(AppServiceDeployVO appServiceDeployVO, AppServiceVersionDTO appServiceServiceE, DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO, DevopsCdJobRecordDTO devopsCdJobRecordDTO) {
         appServiceDeployVO.setAppServiceVersionId(appServiceServiceE.getId());
         appServiceDeployVO.setEnvironmentId(devopsCdEnvDeployInfoDTO.getEnvId());
