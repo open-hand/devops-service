@@ -25,7 +25,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_env_deploy_info.groovy') {
     changeSet(author: 'scp', id: '2020-07-13-add-column') {
         addColumn(tableName: 'devops_cd_env_deploy_info') {
             column(name: "cd_job_id", type: "BIGINT UNSIGNED", defaultValue: "1")
-            column(name: "jar_name", type: "VARCHAR(20)")
+            column(name: "jar_name", type: "VARCHAR(50)")
         }
     }
 
