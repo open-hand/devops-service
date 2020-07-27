@@ -70,7 +70,6 @@ export default observer(() => {
       };
       const currentObj = {
         deploySource: ds.deploySource,
-        value: Base64.encode(imageDeployValues),
       };
       if (ds.hostDeployType === 'customize') {
         ds.customize = {
@@ -90,12 +89,14 @@ export default observer(() => {
             matchType: ds.matchType,
             matchContent: ds.matchContent,
             containerName: ds.containerName,
+            value: Base64.encode(imageDeployValues),
           };
         } else if (ds.deploySource === 'pipelineDeploy') {
           ds.imageDeploy = {
             ...currentObj,
             pipelineTask: ds.pipelineTask,
             containerName: ds.containerName,
+            value: Base64.encode(imageDeployValues),
           };
         }
       } else if (ds.hostDeployType === 'jar') {
@@ -107,11 +108,13 @@ export default observer(() => {
             groupId: ds.groupId,
             artifactId: ds.artifactId,
             versionRegular: ds.versionRegular,
+            value: Base64.encode(jarValues),
           };
         } else if (ds.deploySource === 'pipelineDeploy') {
           ds.jarDeploy = {
             ...currentObj,
             pipelineTask: ds.pipelineTask,
+            value: Base64.encode(jarValues),
           };
         }
       }
