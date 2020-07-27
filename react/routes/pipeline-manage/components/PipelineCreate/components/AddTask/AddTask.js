@@ -94,7 +94,12 @@ const AddTask = observer(() => {
           let uploadArtifactFileName;
           let dockerArtifactFileName;
           const share = [];
-          config && config.forEach((c) => {
+          config && config.forEach((c, cIndex) => {
+            if (cIndex === 0) {
+              c.checked = true;
+            } else {
+              c.checked = false;
+            }
             if (c.type === 'upload') {
               uploadFilePattern = c.uploadFilePattern;
               uploadArtifactFileName = c.artifactFileName;
