@@ -465,10 +465,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
                     //查询ci记录
                     DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = devopsCiPipelineRecordService.queryByCiPipelineRecordId(devopsPipelineRecordRelDTO.getCiPipelineRecordId());
-//                    devopsCiPipelineRecordVOS.add(devopsCiPipelineRecordVO);
                     //查询cd记录
                     DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = devopsCdPipelineRecordService.queryByCdPipelineRecordId(devopsPipelineRecordRelDTO.getCdPipelineRecordId());
-//                    devopsCdPipelineRecordVOS.add(devopsCdPipelineRecordVO);
                     //cicd
                     if (devopsCiPipelineRecordVO != null && devopsCdPipelineRecordVO != null) {
                         List<StageRecordVO> stageRecordVOS = new ArrayList<>();
@@ -530,6 +528,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 ciCdPipelineVO.setLatestExecuteDate(lastCiCdPipelineRecordVO.getCreatedDate());
             }
         });
+        //跳过执行记录
+        ciCdPipelineVOS.forEach(ciCdPipelineVO -> {
+                    List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS = ciCdPipelineVO.getCiCdPipelineRecordVOS();
+                    if (!CollectionUtils.isEmpty(ciCdPipelineRecordVOS)) {
+                        ciCdPipelineRecordVOS.get(0).setStageRecordVOS(null);
+                    }
+                }
+        );
         return ciCdPipelineVOS;
     }
 

@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
+import io.choerodon.devops.api.vo.BaseDomain;
 import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;;
 import io.choerodon.devops.api.vo.DevopsCdPipelineRecordVO;
 import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
@@ -16,10 +17,10 @@ import io.choerodon.devops.infra.enums.PipelineStatus;
 public class CiCdPipelineUtils {
 
 
-    public static void recordListSort(List<CiCdPipelineRecordVO> list) {
-        Collections.sort(list, new Comparator<CiCdPipelineRecordVO>() {
+    public static <T extends BaseDomain> void recordListSort(List<T> list) {
+        Collections.sort(list, new Comparator<T>() {
             @Override
-            public int compare(CiCdPipelineRecordVO o1, CiCdPipelineRecordVO o2) {
+            public int compare(T o1, T o2) {
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 try {
                     if (o1.getCreatedDate().getTime() > o2.getCreatedDate().getTime()) {
@@ -36,6 +37,7 @@ public class CiCdPipelineUtils {
             }
         });
     }
+
 
 
     public static void calculateStatus(CiCdPipelineRecordVO ciCdPipelineRecordVO, DevopsCiPipelineRecordVO devopsCiPipelineRecordVO, DevopsCdPipelineRecordVO devopsCdPipelineRecordVO) {

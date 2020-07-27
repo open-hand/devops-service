@@ -13,7 +13,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  * @author wanghao
  * @Date 2020/4/7 22:18
  */
-public class CiCdPipelineRecordVO {
+public class CiCdPipelineRecordVO extends BaseDomain {
 
     private Long devopsPipelineRecordRelId;
     @Encrypt
@@ -22,8 +22,7 @@ public class CiCdPipelineRecordVO {
     @Encrypt
     //cd 执行记录的id
     private Long cdRecordId;
-    // cicd 执行记录创建时间
-    private Date createdDate;
+
     @Encrypt
     //gitlab的流水线id
     private Long gitlabPipelineId;
@@ -83,13 +82,6 @@ public class CiCdPipelineRecordVO {
         this.cdRecordId = cdRecordId;
     }
 
-    public Date getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
 
     public Long getGitlabPipelineId() {
         return gitlabPipelineId;

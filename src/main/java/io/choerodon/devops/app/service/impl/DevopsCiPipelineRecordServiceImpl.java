@@ -467,8 +467,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     appServiceVersionDTO.setCommit(commitSha);
                     appServiceVersionDTO.setRef(ref);
                     appServiceVersionDTO.setAppServiceId(ciCdPipelineDTO.getAppServiceId());
-                    AppServiceVersionDTO versionDTO = appServiceVersionMapper.select(appServiceVersionDTO).get(0);
-                    devopsCiJobRecordVO.setChartVersion(versionDTO.getVersion());
+                    List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
+                    if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
+                        devopsCiJobRecordVO.setChartVersion(appServiceVersionDTOS.get(0).getVersion());
+                    }
                 }
             }
         }

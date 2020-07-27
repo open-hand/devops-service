@@ -103,10 +103,11 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         if (Objects.isNull(devopsPipelineRecordRelDTO)) {
             return null;
         }
+        DevopsPipelineRecordRelVO devopsPipelineRecordRelVO = relDtoToRelVO(devopsPipelineRecordRelDTO);
         CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
-        ciCdPipelineRecordVO.setDevopsPipelineRecordRelId(devopsPipelineRecordRelDTO.getId());
-        DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = devopsCiPipelineRecordService.queryPipelineRecordDetails(projectId, devopsPipelineRecordRelDTO.getCiPipelineRecordId());
-        DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = devopsCdPipelineRecordService.queryPipelineRecordDetails(projectId, devopsPipelineRecordRelDTO.getCdPipelineRecordId());
+        ciCdPipelineRecordVO.setDevopsPipelineRecordRelId(devopsPipelineRecordRelVO.getId());
+        DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = devopsCiPipelineRecordService.queryPipelineRecordDetails(projectId, devopsPipelineRecordRelVO.getCiPipelineRecordId());
+        DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = devopsCdPipelineRecordService.queryPipelineRecordDetails(projectId, devopsPipelineRecordRelVO.getCdPipelineRecordId());
         //ci和cd都有记录
         List<StageRecordVO> stageRecordVOS = new ArrayList<>();
         if (devopsCiPipelineRecordVO != null && devopsCdPipelineRecordVO != null) {
@@ -150,7 +151,25 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             CiCdPipelineVO ciCdPipelineVO = ConvertUtils.convertObject(devopsCdPipelineRecordVO.getCiCdPipelineVO(), CiCdPipelineVO.class);
             fillPipelineVO(devopsCdPipelineRecordVO.getUsername(), stageRecordVOS, devopsCdPipelineRecordVO.getCreatedDate(), ciCdPipelineVO, ciCdPipelineRecordVO);
         }
+        //剔除跳过的阶段
+        if (isFirstRecord(devopsPipelineRecordRelVO)) {
+            ciCdPipelineRecordVO.setStageRecordVOS(null);
+        }
         return ciCdPipelineRecordVO;
+    }
+
+    private boolean isFirstRecord(DevopsPipelineRecordRelVO devopsPipelineRecordRelVO) {
+        //如果为流水线的下的第一条记录则返回为null
+        Long pipelineId = devopsPipelineRecordRelVO.getPipelineId();
+        DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
+        recordRelDTO.setPipelineId(pipelineId);
+        List<DevopsPipelineRecordRelDTO> select = devopsPipelineRecordRelMapper.select(recordRelDTO);
+        if (select.size() == 1) {
+            return true;
+        }
+        List<DevopsPipelineRecordRelVO> devopsPipelineRecordRelVOS = ConvertUtils.convertList(select, this::relDtoToRelVO);
+        CiCdPipelineUtils.recordListSort(devopsPipelineRecordRelVOS);
+        return devopsPipelineRecordRelVO.getId().compareTo(devopsPipelineRecordRelVOS.get(0).getId()) == 0 ? true : false;
     }
 
     private void fillPipelineVO(String userName, List<StageRecordVO> stageRecordVOS, Date executeDate, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineRecordVO ciCdPipelineRecordVO) {
@@ -354,6 +373,13 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         ciCdPipelineRecordVO.setCiRecordId(devopsPipelineRecordRelDTO.getCiPipelineRecordId());
         ciCdPipelineRecordVO.setCdRecordId(devopsPipelineRecordRelDTO.getCdPipelineRecordId());
         return ciCdPipelineRecordVO;
+    }
+
+    private DevopsPipelineRecordRelVO relDtoToRelVO(DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO) {
+        DevopsPipelineRecordRelVO devopsPipelineRecordRelVO = new DevopsPipelineRecordRelVO();
+        BeanUtils.copyProperties(devopsPipelineRecordRelDTO, devopsPipelineRecordRelVO);
+        devopsPipelineRecordRelVO.setCreatedDate(devopsPipelineRecordRelDTO.getCreationDate());
+        return devopsPipelineRecordRelVO;
     }
 
     private void assemblePage(List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS, Page<CiCdPipelineRecordVO> ciCdPipelineRecordVO, Page<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS) {
