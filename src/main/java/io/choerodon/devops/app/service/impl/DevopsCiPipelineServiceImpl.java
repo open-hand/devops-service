@@ -218,7 +218,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 保存job信息
             if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                 devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
+                    // 不让数据库存加密的值
+                    processCiJobVO(devopsCiJobVO);
+
                     DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
+
                     devopsCiJobDTO.setCiPipelineId(devopsCiPipelineDTO.getId());
                     devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
                     devopsCiJobVO.setId(devopsCiJobService.create(devopsCiJobDTO).getId());
@@ -247,6 +251,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         DevopsCiPipelineVO devopsCiPipelineVO = ConvertUtils.convertObject(devopsCiPipelineDTO, DevopsCiPipelineVO.class);
         List<DevopsCiStageVO> devopsCiStageVOS = ConvertUtils.convertList(devopsCiStageDTOList, DevopsCiStageVO.class);
         List<DevopsCiJobVO> devopsCiJobVOS = ConvertUtils.convertList(devopsCiJobDTOS, DevopsCiJobVO.class);
+        devopsCiJobVOS.forEach(this::processBeforeQueryJob);
 
         // 封装对象
         Map<Long, List<DevopsCiJobVO>> jobMap = devopsCiJobVOS.stream().collect(Collectors.groupingBy(DevopsCiJobVO::getCiStageId));
@@ -260,6 +265,22 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCiPipelineVO.setStageList(devopsCiStageVOS);
 
         return devopsCiPipelineVO;
+    }
+
+    private void processBeforeQueryJob(DevopsCiJobVO devopsCiJobVO) {
+        if (CiJobTypeEnum.BUILD.value().equals(devopsCiJobVO.getType())) {
+            // 反序列化
+            CiConfigVO ciConfigVO = JSONObject.parseObject(devopsCiJobVO.getMetadata(), CiConfigVO.class);
+            if (!CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
+                // 将script字段加密
+                ciConfigVO.getConfig().forEach(c -> c.setScript(Base64Util.getBase64EncodedString(c.getScript())));
+                // 序列化
+                devopsCiJobVO.setMetadata(JsonHelper.singleQuoteJson(JSONObject.toJSONString(ciConfigVO)));
+            }
+        } else if (CiJobTypeEnum.CUSTOM.value().equals(devopsCiJobVO.getType())){
+            // 加密自定义任务的元数据
+            devopsCiJobVO.setMetadata(Base64Util.getBase64EncodedString(devopsCiJobVO.getMetadata()));
+        }
     }
 
     @Override
@@ -481,6 +502,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 // 保存job信息
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
+                        processCiJobVO(devopsCiJobVO);
+
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setId(null);
                         devopsCiJobDTO.setCiStageId(devopsCiStageVO.getId());
@@ -497,6 +520,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 // 保存job信息
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
+                        processCiJobVO(devopsCiJobVO);
+
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
                         devopsCiJobDTO.setCiPipelineId(ciPipelineId);
@@ -510,6 +535,18 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return devopsCiPipelineMapper.selectByPrimaryKey(ciPipelineId);
     }
 
+    private void processCiJobVO(DevopsCiJobVO devopsCiJobVO) {
+        // 不让数据库存加密的值
+        if (CiJobTypeEnum.BUILD.value().equals(devopsCiJobVO.getType())) {
+            // 将构建类型的stage中的job的每个step进行解析和转化
+            CiConfigVO ciConfigVO = JSONObject.parseObject(devopsCiJobVO.getMetadata(), CiConfigVO.class);
+            if (!CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
+                ciConfigVO.getConfig().forEach(c -> c.setScript(Base64Util.getBase64DecodedString(c.getScript())));
+            }
+            devopsCiJobVO.setConfigVO(ciConfigVO);
+            devopsCiJobVO.setMetadata(JSONObject.toJSONString(ciConfigVO));
+        }
+    }
 
     private void saveCiContent(final Long projectId, Long pipelineId, DevopsCiPipelineVO devopsCiPipelineVO) {
         GitlabCi gitlabCi = buildGitLabCiObject(projectId, devopsCiPipelineVO);
@@ -607,8 +644,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
             return scripts;
         } else if (CiJobTypeEnum.BUILD.value().equals(jobVO.getType())) {
-            // 将构建类型的stage中的job的每个step进行解析和转化
-            CiConfigVO ciConfigVO = JSONObject.parseObject(jobVO.getMetadata(), CiConfigVO.class);
+            // 取出之前反序列化的值
+            CiConfigVO ciConfigVO = jobVO.getConfigVO();
             if (ciConfigVO == null || CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
                 return Collections.emptyList();
             }

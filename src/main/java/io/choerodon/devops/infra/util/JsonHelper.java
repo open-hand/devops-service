@@ -49,4 +49,14 @@ public final class JsonHelper {
             throw new CommonException("Failed to marshal by jackson. It's unexpected and may be an internal error. The object is: " + object.toString(), e);
         }
     }
+
+    /**
+     * 将json里的双引号转为单引号
+     *
+     * @param json 正常的json
+     * @return 双引号转为单引号的json
+     */
+    public static String singleQuoteJson(String json) {
+        return json.replaceAll("\"", "'");
+    }
 }

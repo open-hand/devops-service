@@ -1,11 +1,9 @@
 package io.choerodon.devops.api.vo;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -39,7 +37,7 @@ public class DevopsCiJobVO {
     @NotEmpty(message = "error.job.triggerRefs.cannot.be.null")
     private String triggerRefs;
 
-    @ApiModelProperty("详细信息")
+    @ApiModelProperty("详细信息 / 如果是自定义任务, 这个字段是base64加密过的")
     @NotEmpty(message = "error.job.metadata.cannot.be.null")
     private String metadata;
 
@@ -50,6 +48,11 @@ public class DevopsCiJobVO {
     private Boolean toDownload;
 
     private Long objectVersionNumber;
+
+    @JsonIgnore
+    @Transient
+    @ApiModelProperty("类型为build的job的metadata转为json后的对象")
+    private CiConfigVO configVO;
 
     public Long getId() {
         return id;
@@ -137,5 +140,13 @@ public class DevopsCiJobVO {
 
     public void setToDownload(Boolean toDownload) {
         this.toDownload = toDownload;
+    }
+
+    public CiConfigVO getConfigVO() {
+        return configVO;
+    }
+
+    public void setConfigVO(CiConfigVO configVO) {
+        this.configVO = configVO;
     }
 }
