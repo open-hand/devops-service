@@ -433,7 +433,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             return;
         }
         // 没有环境权限，状态置为跳过
-        if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(devopsCdJobRecordDTO.getCreatedBy(), devopsCdEnvDeployInfoDTO.getEnvId()))) {
+        if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(devopsCdEnvDeployInfoDTO.getEnvId(), devopsCdJobRecordDTO.getCreatedBy()))) {
             devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
             return;
         }
