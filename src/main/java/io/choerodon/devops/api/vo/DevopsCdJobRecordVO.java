@@ -101,8 +101,11 @@ public class DevopsCdJobRecordVO {
         private String appServiceName;
         private String appServiceVersion;
         private String instanceName;
+        @Encrypt
         private Long instanceId;
+        @Encrypt
         private Long appServiceId;
+        @Encrypt
         private Long envId;
 
         public Long getInstanceId() {
