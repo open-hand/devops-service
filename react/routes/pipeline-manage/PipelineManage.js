@@ -18,6 +18,7 @@ import AuditModal from './components/audit-modal';
 import GitlabRunner from './components/gitlab-runner';
 
 import './index.less';
+import MouserOverWrapper from '../../components/MouseOverWrapper';
 
 const recordDetailKey = Modal.key();
 const settingsKey = Modal.key();
@@ -101,7 +102,13 @@ const PipelineManage = observer((props) => {
     Modal.open({
       key: recordDetailKey,
       style: modalStyle,
-      title: formatMessage({ id: `${intlPrefix}.record.detail.title` }, { id: devopsPipelineRecordRelId }),
+      title: <span className={`${prefixCls}-detail-modal-title`}>
+        流水线记录“
+        <MouserOverWrapper width="100px" text={`#${devopsPipelineRecordRelId}`}>
+          <span>{`#${devopsPipelineRecordRelId}`}</span>
+        </MouserOverWrapper>
+        ”的详情
+      </span>,
       children: <RecordDetail
         pipelineRecordId={devopsPipelineRecordRelId}
         intlPrefix={intlPrefix}
