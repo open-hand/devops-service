@@ -1,12 +1,12 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.List;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.Length;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import java.util.List;
 
 
 public class DevopsPvReqVO {
@@ -52,6 +52,7 @@ public class DevopsPvReqVO {
 
     @ApiModelProperty("pv公开范围，指定项目id/必填，可为空数组")
     @NotNull(message = "error.project.ids.null")
+    @Encrypt
     private List<Long> projectIds;
 
     @ApiModelProperty("是否跳过项目权限校验/必填")
