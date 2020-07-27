@@ -195,6 +195,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     public DevopsCiPipelineDTO create(Long projectId, DevopsCiPipelineVO devopsCiPipelineVO) {
         Long iamUserId = TypeUtil.objToLong(GitUserNameUtil.getUserId());
         checkUserPermission(devopsCiPipelineVO.getAppServiceId(), iamUserId);
+        checkNonCiPipelineBefore(devopsCiPipelineVO.getAppServiceId());
         devopsCiPipelineVO.setProjectId(projectId);
 
         // 设置默认镜像
@@ -296,6 +297,23 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         });
 
         return devopsCiPipelineVOS;
+    }
+
+    /**
+     * 校验应用服务之前并不存在流水线
+     *
+     * @param appServiceId 应用服务id
+     */
+    private void checkNonCiPipelineBefore(Long appServiceId) {
+        if (countByAppServiceId(appServiceId) > 0) {
+            throw new CommonException("error.ci.pipeline.exists.for.app.service", appServiceId);
+        }
+    }
+
+    private int countByAppServiceId(Long appServiceId) {
+        DevopsCiPipelineDTO devopsCiPipelineDTO = new DevopsCiPipelineDTO();
+        devopsCiPipelineDTO.setAppServiceId(Objects.requireNonNull(appServiceId));
+        return devopsCiPipelineMapper.selectCount(devopsCiPipelineDTO);
     }
 
     @Override
