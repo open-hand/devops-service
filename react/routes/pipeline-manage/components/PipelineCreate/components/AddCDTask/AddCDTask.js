@@ -392,7 +392,7 @@ export default observer(() => {
             onChange={(data) => {
               ADDCDTaskDataSet.current.set('hostDeployType', data);
               if (data !== 'customize') {
-                ADDCDTaskDataSet.current.set('deploySource', 'matchDeploy');
+                ADDCDTaskDataSet.current.set('deploySource', 'pipelineDeploy');
                 ADDCDTaskDataSet.current.set('pipelineTask', null);
               }
             }}
@@ -462,7 +462,7 @@ export default observer(() => {
             deployType: 'create',
             accountType: 'accountPassword',
             hostDeployType: 'image',
-            deploySource: 'matchDeploy',
+            deploySource: 'pipelineDeploy',
           }])}
           colSpan={1}
           name="type"
