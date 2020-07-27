@@ -84,6 +84,7 @@ const DetailItem = (props) => {
     history,
     location: { search },
     countersigned,
+    chartVersion,
   } = props;
 
   const { gitlabProjectId, appServiceId } = getDetailData && getDetailData.ciCdPipelineVO;
@@ -214,7 +215,9 @@ const DetailItem = (props) => {
         </div>
         <div>
           <span>服务版本:</span>
-          <span>{cdJobAppServiceVersion || '-'}</span>
+          <Tooltip title={cdJobAppServiceVersion}>
+            <span>{cdJobAppServiceVersion || '-'}</span>
+          </Tooltip>
         </div>
         <div>
           <span>生成实例:</span>
@@ -227,7 +230,7 @@ const DetailItem = (props) => {
     );
   };
 
-  function renderCdAudit() {
+  const renderCdAudit = () => {
     const {
       appointUsers,
       reviewedUsers,
@@ -257,7 +260,16 @@ const DetailItem = (props) => {
         </div>
       </main>
     );
-  }
+  };
+
+  const renderChart = () => (
+    <main>
+      <div>
+        <span>生成版本:</span>
+        <span>{chartVersion || '-'}</span>
+      </div>
+    </main>
+  );
 
   function getRetryBtnDisabled() {
     const successAndFailed = itemStatus === 'success' || itemStatus === 'failed';
@@ -271,8 +283,11 @@ const DetailItem = (props) => {
   return (
     <div className="c7n-piplineManage-detail-column-item">
       <header>
-        <StatusDot size={13} status={itemStatus} />
-
+        <StatusDot
+          size={13}
+          status={itemStatus}
+          style={{ lineHeight: '22px' }}
+        />
         <div className="c7n-piplineManage-detail-column-item-sub">
           <Tooltip title={name}>
             <span>{type && `【${jobType[type].name}】`}{name}</span>
@@ -289,6 +304,9 @@ const DetailItem = (props) => {
       }
       {
         type === 'cdAudit' && renderCdAudit()
+      }
+      {
+        type === 'chart' && renderChart()
       }
       <footer>
         {
@@ -401,11 +419,9 @@ export default observer((props) => {
           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="9" viewBox="0 0 28 9">
             <path fill="#6887E8" d="M511.5,131 L520.5,135.5 L511.5,140 L511.5,136 L493,136 L493,135 L511.5,135 L511.5,131 Z" transform="translate(-493 -131)" />
           </svg>
-        ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="9" viewBox="0 0 26 9">
-            <path fill="#F1B42D" d="M917.5,130 L926.5,134.5 L917.5,139 L917.5,135 L913.5,135 L913.5,134 L917.5,134 L917.5,130 Z M905.5,134 L905.5,135 L901.5,135 L901.5,134 L905.5,134 Z M911.5,134 L911.5,135 L907.5,135 L907.5,134 L911.5,134 Z" transform="translate(-901 -130)" />
-          </svg>
-        )}
+        ) : (<svg xmlns="http://www.w3.org/2000/svg" width="28" height="9" viewBox="0 0 26 9">
+          <path fill="#F1B42D" d="M917.5,130 L926.5,134.5 L917.5,139 L917.5,135 L913.5,135 L913.5,134 L917.5,134 L917.5,130 Z M905.5,134 L905.5,135 L901.5,135 L901.5,134 L905.5,134 Z M911.5,134 L911.5,135 L907.5,135 L907.5,134 L911.5,134 Z" transform="translate(-901 -130)" />
+        </svg>)}
       </div>
     </div>
   );

@@ -43,12 +43,13 @@ const statusObj = {
 };
 
 const statusDot = (props) => {
-  const { size, status } = props;
+  const { size, status, style, ...rest } = props;
   return (
     <Tooltip title={statusObj[status].text}>
       <Icon
+        {...rest}
         type={statusObj[status].icon}
-        style={{ fontSize: `${size}px` }}
+        style={{ fontSize: `${size}px`, ...style }}
         className={`c7n-piplineManage-detail-column-status-icon c7n-piplineManage-detail-column-status-icon-${status}`}
       />
     </Tooltip>
