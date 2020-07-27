@@ -35,6 +35,7 @@ spec:
 {{ include "service.microservice.labels" . | indent 8 }}
 {{ include "service.labels.standard" . | indent 8 }}
     spec:
+      terminationGracePeriodSeconds: 30
   {{- if .Values.priorityClassName }}
       priorityClassName: "{{ .Values.priorityClassName }}"
   {{- end }}
@@ -53,6 +54,10 @@ spec:
       - name: {{ .Release.Name }}
         image: {{ include "service.image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c","curl -X POST localhost:{{ .Values.service.port }}/pre_stop"]
         env:
 {{- range $name, $value := .Values.env.open }}
 {{- if ne (len ($value | quote)) 0 }}

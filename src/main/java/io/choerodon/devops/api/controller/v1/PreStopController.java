@@ -34,9 +34,9 @@ public class PreStopController {
     @PostMapping
     @Permission(permissionWithin = true)
     @ApiOperation(value = "释放这个微服务实例所持有的一些资源(比如redis的键),一般由外部的容器根据生命周期调用")
-    public ResponseEntity preStop() {
+    public ResponseEntity<Void> preStop() {
         LOGGER.info("PreStop API is being called...");
         agentGitOpsSocketHandler.removeRedisKeyOfThisMicroService();
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
