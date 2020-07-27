@@ -40,9 +40,7 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.CiPipelineSyncHandler;
-import io.choerodon.devops.infra.mapper.AppServiceMapper;
-import io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper;
-import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
+import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -82,6 +80,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private DevopsCdPipelineService devopsCdPipelineService;
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
     private DevopsPipelineRecordRelService devopsPipelineRecordRelService;
+    private final DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
+    private final AppServiceVersionMapper appServiceVersionMapper;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -103,7 +103,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                              DevopsGitlabCommitService devopsGitlabCommitService,
                                              @Lazy DevopsCdPipelineService devopsCdPipelineService,
                                              @Lazy DevopsCdPipelineRecordService devopsCdPipelineRecordService,
-                                             @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService
+                                             @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService,
+                                             DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
+                                             AppServiceVersionMapper appServiceVersionMapper
     ) {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
@@ -123,6 +125,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         this.devopsCdPipelineService = devopsCdPipelineService;
         this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
         this.devopsPipelineRecordRelService = devopsPipelineRecordRelService;
+        this.devopsCiCdPipelineMapper = devopsCiCdPipelineMapper;
+        this.appServiceVersionMapper = appServiceVersionMapper;
     }
 
     @Override
@@ -451,6 +455,20 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                 || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey());
                     }).collect(Collectors.toList());
                     devopsCiJobRecordVO.setSonarContentVOS(sonarContentVOS);
+                }
+            }
+            //release阶段，添加版本的信息
+            if (JobTypeEnum.CHART.value().equals(devopsCiJobRecordVO.getType())) {
+                CiCdPipelineDTO ciCdPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(devopsCiPipelineRecordDTO.getCiPipelineId());
+                if (!Objects.isNull(ciCdPipelineDTO)) {
+                    String commitSha = devopsCiPipelineRecordVO.getCommit().getCommitSha();
+                    String ref = devopsCiPipelineRecordVO.getCommit().getRef();
+                    AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
+                    appServiceVersionDTO.setCommit(commitSha);
+                    appServiceVersionDTO.setRef(ref);
+                    appServiceVersionDTO.setAppServiceId(ciCdPipelineDTO.getAppServiceId());
+                    AppServiceVersionDTO versionDTO = appServiceVersionMapper.select(appServiceVersionDTO).get(0);
+                    devopsCiJobRecordVO.setChartVersion(versionDTO.getVersion());
                 }
             }
         }

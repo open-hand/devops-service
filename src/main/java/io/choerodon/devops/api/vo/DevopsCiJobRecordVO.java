@@ -44,12 +44,22 @@ public class DevopsCiJobRecordVO {
     private Date finishedDate;
     @ApiModelProperty("job执行时间")
     private Long durationSeconds;
+    @ApiModelProperty("release阶段生成chart的版本")
+    private String chartVersion;
 
     @ApiModelProperty("ci中返回sonar")
     private List<SonarContentVO> sonarContentVOS;
 
     public List<SonarContentVO> getSonarContentVOS() {
         return sonarContentVOS;
+    }
+
+    public String getChartVersion() {
+        return chartVersion;
+    }
+
+    public void setChartVersion(String chartVersion) {
+        this.chartVersion = chartVersion;
     }
 
     public void setSonarContentVOS(List<SonarContentVO> sonarContentVOS) {
