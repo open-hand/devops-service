@@ -22,7 +22,7 @@ export default (({ intlPrefix, formatMessage, projectOptionsDs }) => {
     fields: [
       { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.project.name` }) },
       { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.project.code` }) },
-      { name: 'projectId', type: 'string', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.project` }), options: projectOptionsDs, required: true },
+      { name: 'projectId', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.project` }), options: projectOptionsDs, required: true },
     ],
     events: {
       update: handleUpdate,

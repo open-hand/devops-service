@@ -7,6 +7,6 @@ export default (({ intlPrefix, formatMessage }) => ({
   fields: [
     { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.project.name` }) },
     { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.project.code` }) },
-    { name: 'projectId', type: 'string' },
+    { name: 'projectId', type: 'number' },
   ],
 }));
