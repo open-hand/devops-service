@@ -532,7 +532,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         ciCdPipelineVOS.forEach(ciCdPipelineVO -> {
                     List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS = ciCdPipelineVO.getCiCdPipelineRecordVOS();
                     if (!CollectionUtils.isEmpty(ciCdPipelineRecordVOS)) {
-                        ciCdPipelineRecordVOS.get(ciCdPipelineRecordVOS.size()-1).setStageRecordVOS(null);
+                        ciCdPipelineRecordVOS.get(ciCdPipelineRecordVOS.size() - 1).setStageRecordVOS(null);
                     }
                 }
         );
