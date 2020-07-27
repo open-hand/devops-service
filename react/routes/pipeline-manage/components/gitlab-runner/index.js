@@ -25,7 +25,7 @@ export default function GitlabRunner() {
         它与GitLab CI一起使用，Gitlab CI是Gitlab中包含的开源持续集成服务，用于协调作业。
       </p>
       <blockquote className="warning">
-        注意：若您在安装Choerodon系统时，已经成功部署和配置过GitLab Runner。便不用重复进行以下操作。
+        注意：若在安装Choerodon系统时，已经成功部署和配置过GitLab Runner。便不用重复进行以下操作。
       </blockquote>
       <h3>预备知识</h3>
       <p>
@@ -53,7 +53,7 @@ export default function GitlabRunner() {
       <h3>方式二：手动安装Runner</h3>
       <h4>Step1：获取Runner注册Token</h4>
       <blockquote>
-        Note：此教程注册的Runner属性为共享，若需注册私有Runner或者无法进入Gitlab管理界面，注册Token请在Git项目仓库 Settings &gt CI/CD &gt Runners settings 菜单中获取。
+        {'Note：此教程注册的Runner属性为共享，若需注册私有Runner或者无法进入Gitlab管理界面，注册Token请在Git项目仓库 Settings > CI/CD > Runners settings 菜单中获取。'}
       </blockquote>
       <div className="image-1" />
       <h4>Step2：添加choerodon chart仓库</h4>
@@ -84,7 +84,8 @@ export default function GitlabRunner() {
       </pre>
       <p>- 部署Runner</p>
       <blockquote>
-        Note：启用持久化存储请执行提前创建所对应的物理目录，PV和PVC可使用以下语句进行创建；可在部署命令中添加--debug --dry-run参数，进行渲染预览不进行部署。
+        Note：请确认你所搭建的K8S集群是否已开启RBAC授权（按照本站Kubernetes部署教程部署的集群默认是开启
+        RBAC授权的），若未开启，请删除下面执行命令中的--set rbac.create=true设置后执行。
       </blockquote>
       <pre className="code">
         {DEPLOY_RUNNER}
@@ -97,8 +98,12 @@ export default function GitlabRunner() {
         </CopyToClipboard>
       </pre>
       <p>- 参数</p>
-      <p>1. env.environment.*为CI时Pod的环境变量键值对，*就是环境变量名，等号后面的为该变量的值，这里例子中添加这几个环境变量建议配置，使用Choerodon管理的项目进行CI时会用到它们，若还需其他环境变量请自定义。</p>
-      <p>2. env.persistence.*为CI时Pod的挂载PVC与Pod内目录的键值对，*就是PVC的名称，等号后面的值为要挂载到Pod的哪个目录，这里注意一点用引号引起来。本例中我们新建了两个PVC即runner-maven-pvc、runner-cache-pvc分别挂载到/root/.m2和/cache目录中。</p>
+      <p>
+        1. <span className="code_block">env.environment.*</span>为CI时Pod的环境变量键值对，
+        <span className="code_block">*</span>就是环境变量名，等号后面的为该变量的值，这里例子中添加这几个环境变量建议配置，使用Choerodon管理的项目进行CI时会用到它们，若还需其他环境变量请自定义。</p>
+      <p>2. <span className="code_block">env.persistence.*</span>为CI时Pod的挂载PVC与Pod内目录的键值对，
+        <span className="code_block">*</span>就是PVC的名称，等号后面的值为要挂载到Pod的哪个目录，这里注意一点用引号引起来。
+        本例中我们新建了两个PVC即<span className="code_block">runner-maven-pvc</span>、<span className="code_block">runner-cache-pvc</span>分别挂载到<span className="code_block">/root/.m2</span>和<span className="code_block">/cache</span>目录中。</p>
       <div className="image-2" />
       <p>
         <span>- 更多Runner设置请参考 </span>
