@@ -20,6 +20,7 @@ public class AppServiceDeployVO {
     @NotNull(message = "appversion.not.exist.in.database")
     private Long appServiceVersionId;
 
+    @Encrypt
     @ApiModelProperty("环境id/必填")
     @NotNull(message = "error.env.id.null")
     private Long environmentId;
