@@ -15,7 +15,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_job_record.groovy') {
             column(name: 'trigger_value', type: 'VARCHAR(255)', remarks: '触发方式对应的值')
 
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目ID')
-            column(name: 'metadata', type: 'VARCHAR(2000)', remarks: 'job详细信息，定义了job执行内容')
+            column(name: 'metadata', type: 'TEXT', remarks: 'job详细信息，定义了job执行内容')
 
             column(name: "started_date", type: "DATETIME", remarks: 'job开始执行时间')
             column(name: "finished_date", type: "DATETIME", remarks: 'job结束时间')
