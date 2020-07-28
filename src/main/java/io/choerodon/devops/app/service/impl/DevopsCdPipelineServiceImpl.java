@@ -20,7 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,9 +44,8 @@ import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
-import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.util.CustomContextUtil;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
@@ -70,47 +68,18 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private static final String ERROR_PERMISSION_MISMATCH_FOR_AUDIT = "error.permission.mismatch.for.audit";
     private static final Integer ADMIN = 1;
 
-    private static final String STAGE_NAME = "stageName";
-
-    @Value("${devops.ci.default.image}")
-    private String defaultCiImage;
-
-    @Value("${services.gateway.url}")
-    private String gatewayUrl;
-
     private static final Gson gson = new Gson();
 
-    @Autowired
-    private CiCdPipelineMapper ciCdPipelineMapper;
-    @Autowired
-    private DevopsCdStageMapper devopsCdStageMapper;
-    @Autowired
-    private CiCdJobMapper ciCdJobMapper;
-    @Autowired
-    private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
     @Autowired
     private AppServiceService appServiceService;
     @Autowired
     private DevopsCdStageService devopsCdStageService;
     @Autowired
-    @Lazy
-    private CiCdJobService ciCdJobService;
-    @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
-    @Autowired
-    private DevopsConfigService devopsConfigService;
-    @Autowired
-    private RdupmClientOperator rdupmClientOperator;
-    @Autowired
-    private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private DevopsCdAuditService devopsCdAuditService;
-    @Autowired
-    private PipelineAppDeployService pipelineAppDeployService;
-    @Autowired
-    private DevopsCdAuditMapper devopsCdAuditMapper;
     @Autowired
     private AppServiceService applicationService;
     @Autowired
@@ -120,8 +89,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
     @Autowired
     private DevopsCdStageRecordService devopsCdStageRecordService;
-    @Autowired
-    private DevopsCdStageRecordMapper devopsCdStageRecordMapper;
     @Autowired
     private DevopsCdJobService devopsCdJobService;
     @Autowired
@@ -151,8 +118,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
     @Autowired
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
-    @Autowired
-    private UserAttrService userAttrService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     @Lazy
@@ -539,6 +504,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, e.getMessage());
         }
     }
+
     private void addCreateInfoForAppServiceDeployVO(AppServiceDeployVO appServiceDeployVO, AppServiceVersionDTO appServiceServiceE, DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO, DevopsCdJobRecordDTO devopsCdJobRecordDTO) {
         appServiceDeployVO.setAppServiceVersionId(appServiceServiceE.getId());
         appServiceDeployVO.setEnvironmentId(devopsCdEnvDeployInfoDTO.getEnvId());

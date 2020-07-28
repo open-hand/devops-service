@@ -388,14 +388,16 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     DevopsCdEnvDeployInfoVO devopsCdEnvDeployInfoVO = ConvertUtils.convertObject(devopsCdEnvDeployInfoDTO, DevopsCdEnvDeployInfoVO.class);
                     // 加密json中主键
                     devopsCdJobVO.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(devopsCdEnvDeployInfoVO)));
-                }
-                //如果是人工审核，返回审核人员信息
-                if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobVO.getType())) {
+                } else if (JobTypeEnum.CD_HOST.value().equals(devopsCdJobVO.getType())) {
+                    // 加密json中主键
+                    CdHostDeployConfigVO cdHostDeployConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobVO.getMetadata(), CdHostDeployConfigVO.class);
+                    devopsCdJobVO.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(cdHostDeployConfigVO)));
+                } else if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobVO.getType())) {
+                    //如果是人工审核，返回审核人员信息
                     List<Long> longs = devopsCdAuditService.baseListByOptions(null, null, devopsCdJobVO.getId()).stream().map(DevopsCdAuditDTO::getUserId).collect(Collectors.toList());
                     List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(longs);
                     devopsCdJobVO.setIamUserDTOS(iamUserDTOS);
                     devopsCdJobVO.setCdAuditUserIds(longs);
-
                 }
             }
         }
@@ -1240,9 +1242,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             devopsCdEnvDeployInfoDTO.setProjectId(projectId);
             devopsCdEnvDeployInfoService.save(devopsCdEnvDeployInfoDTO);
             devopsCdJobDTO.setDeployInfoId(devopsCdEnvDeployInfoDTO.getId());
-        }
-        // 如果审核任务，审核人员只有一个人，则默认设置为或签
-        if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
+        } else if (JobTypeEnum.CD_HOST.value().equals(t.getType())){
+            // 使用能够解密主键加密的json工具解密
+            CdHostDeployConfigVO cdHostDeployConfigVO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
+            // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
+            devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdHostDeployConfigVO));
+        } else if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
+            // 如果审核任务，审核人员只有一个人，则默认设置为或签
             if (CollectionUtils.isEmpty(t.getCdAuditUserIds())) {
                 throw new CommonException(ResourceCheckConstant.ERROR_PARAM_IS_INVALID);
             }
