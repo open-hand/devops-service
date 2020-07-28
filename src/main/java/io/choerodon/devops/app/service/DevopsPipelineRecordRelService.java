@@ -20,4 +20,6 @@ public interface DevopsPipelineRecordRelService {
     void update(DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO);
 
     Page<DevopsPipelineRecordRelDTO> pagingPipelineRel(Long id, PageRequest cicdPipelineRel);
+
+    DevopsPipelineRecordRelDTO queryById(Long pipelineRecordRelId);
 }

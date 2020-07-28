@@ -23,6 +23,7 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
@@ -185,13 +186,29 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     }
 
     @Override
-    public void retryPipeline(Long projectId, Long cdPipelineRecordId, Long gitlabPipelineId, Long gitlabProjectId) {
+    public void retryPipeline(Long projectId, Long pipelineRecordRelId, Long gitlabPipelineId, Long gitlabProjectId) {
         AppServiceDTO appServiceDTO = appServiceService.queryByGitlabProjectId(gitlabProjectId);
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceDTO.getId(), AppServiceEvent.CICD_PIPELINE_RETRY);
-        if (ObjectUtils.isEmpty(cdPipelineRecordId)) {
-            devopsCiPipelineRecordService.retry(projectId, gitlabPipelineId, gitlabProjectId);
-        } else {
+        DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryById(pipelineRecordRelId);
+
+        Long ciPipelineRecordId = devopsPipelineRecordRelDTO.getCiPipelineRecordId();
+        Long cdPipelineRecordId = devopsPipelineRecordRelDTO.getCdPipelineRecordId();
+
+        if (PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID.equals(ciPipelineRecordId)) {
             retryCdPipeline(projectId, cdPipelineRecordId);
+        } else {
+            // 查询ci阶段状态
+            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(ciPipelineRecordId);
+
+            if (PipelineStatus.SUCCESS.toValue().equals(devopsCiPipelineRecordDTO.getStatus())) {
+                // ci成功 && 存在cd阶段 则重试cd
+                if (PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID.equals(cdPipelineRecordId)) {
+                    retryCdPipeline(projectId, cdPipelineRecordId);
+                }
+            } else {
+                // ci未完成，则重试ci
+                devopsCiPipelineRecordService.retry(projectId, gitlabPipelineId, gitlabProjectId);
+            }
         }
     }
 
@@ -241,12 +258,33 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     }
 
     @Override
-    public void cancel(Long projectId, Long cdPipelineRecordId, Long gitlabPipelineId, Long gitlabProjectId) {
-        if (ObjectUtils.isEmpty(cdPipelineRecordId)) {
-            devopsCiPipelineRecordService.cancel(projectId, gitlabPipelineId, gitlabProjectId);
+    public void cancel(Long projectId, Long pipelineRecordRelId, Long gitlabPipelineId, Long gitlabProjectId) {
+        DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryById(pipelineRecordRelId);
+        // 首先查询ci阶段状态
+        Long ciPipelineRecordId = devopsPipelineRecordRelDTO.getCiPipelineRecordId();
+        Long cdPipelineRecordId = devopsPipelineRecordRelDTO.getCdPipelineRecordId();
+
+        if (PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID.equals(ciPipelineRecordId)) {
+            cancelCdPipeline(ciPipelineRecordId);
         } else {
-            cancelCdPipeline(cdPipelineRecordId);
+            // 查询ci阶段状态
+            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(ciPipelineRecordId);
+
+            if (PipelineStatus.SUCCESS.toValue().equals(devopsCiPipelineRecordDTO.getStatus())) {
+                // ci成功 && 存在cd阶段 则取消cd
+                if (PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID.equals(cdPipelineRecordId)) {
+                    cancelCdPipeline(cdPipelineRecordId);
+                }
+            } else {
+                // ci未完成，则取消ci、cd
+                devopsCiPipelineRecordService.cancel(projectId, gitlabPipelineId, gitlabProjectId);
+                // 存在cd阶段 则同时取消cd
+                if (PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID.equals(cdPipelineRecordId)) {
+                    cancelCdPipeline(cdPipelineRecordId);
+                }
+            }
         }
+
     }
 
 

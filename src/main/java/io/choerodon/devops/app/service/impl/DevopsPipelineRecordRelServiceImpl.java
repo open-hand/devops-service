@@ -1,14 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
+import org.springframework.util.Assert;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
 import io.choerodon.devops.app.service.DevopsPipelineRecordRelService;
 import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.dto.DevopsPipelineRecordRelDTO;
@@ -29,6 +27,7 @@ public class DevopsPipelineRecordRelServiceImpl implements DevopsPipelineRecordR
 
 
     private static final String ERROR_UPDATE_PIPELINE_RECORD_REL = "error.update.pipeline.record.rel";
+    private static final String ERROR_PIPELINE_RECORD_REL_ID_IS_NULL = "error.pipeline.record.rel.id.is.null";
     @Autowired
     private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
 
@@ -64,5 +63,11 @@ public class DevopsPipelineRecordRelServiceImpl implements DevopsPipelineRecordR
         devopsPipelineRecordRelDTO.setPipelineId(pipelineId);
         Page<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(cicdPipelineRel), () -> devopsPipelineRecordRelMapper.select(devopsPipelineRecordRelDTO));
         return devopsPipelineRecordRelDTOS;
+    }
+
+    @Override
+    public DevopsPipelineRecordRelDTO queryById(Long pipelineRecordRelId) {
+        Assert.notNull(pipelineRecordRelId, ERROR_PIPELINE_RECORD_REL_ID_IS_NULL);
+        return devopsPipelineRecordRelMapper.selectByPrimaryKey(pipelineRecordRelId);
     }
 }
