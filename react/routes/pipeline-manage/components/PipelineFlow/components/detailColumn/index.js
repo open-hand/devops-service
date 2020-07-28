@@ -236,8 +236,8 @@ const DetailItem = (props) => {
       reviewedUsers,
       status: auditJobStatus,
     } = audit || {};
-    const appontUserString = appointUsers.map(x => x.realName).join('，');
-    const reviewedUserStirng = reviewedUsers.map(x => x.realName).join('，');
+    const appontUserString = appointUsers && appointUsers.map(x => x.realName).join('，');
+    const reviewedUserStirng = reviewedUsers && reviewedUsers.map(x => x.realName).join('，');
     const countersignedText = countersigned ? '会签' : '或签';
     const countersignedNullText = countersigned === null ? '-' : countersignedText;
     return (
@@ -266,7 +266,9 @@ const DetailItem = (props) => {
     <main>
       <div>
         <span>生成版本:</span>
-        <span>{chartVersion || '-'}</span>
+        <Tooltip title={chartVersion}>
+          <span>{chartVersion || '-'}</span>
+        </Tooltip>
       </div>
     </main>
   );
