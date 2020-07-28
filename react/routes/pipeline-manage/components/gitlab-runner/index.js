@@ -104,7 +104,46 @@ export default function GitlabRunner() {
       <p>2. <span className="code_block">env.persistence.*</span>为CI时Pod的挂载PVC与Pod内目录的键值对，
         <span className="code_block">*</span>就是PVC的名称，等号后面的值为要挂载到Pod的哪个目录，这里注意一点用引号引起来。
         本例中我们新建了两个PVC即<span className="code_block">runner-maven-pvc</span>、<span className="code_block">runner-cache-pvc</span>分别挂载到<span className="code_block">/root/.m2</span>和<span className="code_block">/cache</span>目录中。</p>
-      <div className="image-2" />
+      <div className="gitlab-runner-table">
+        <table border="1">
+          <tr>
+            <td>参数</td>
+            <td>含义</td>
+          </tr>
+          <tr>
+            <td>rbac.create</td>
+            <td>创建sa及授权</td>
+          </tr>
+          <tr>
+            <td>env.concurrent</td>
+            <td>可以同时进行的CI数量</td>
+          </tr>
+          <tr>
+            <td>env.gitlabUrl</td>
+            <td>Gitlab地址</td>
+          </tr>
+          <tr>
+            <td>env.runnerRegistrationToken</td>
+            <td>Runner注册Token</td>
+          </tr>
+          <tr>
+            <td>env.environment.CHOERODON_URL</td>
+            <td>Choerodon API地址</td>
+          </tr>
+          <tr>
+            <td>env.persistence.runner-maven-pvc</td>
+            <td>持久化数据，此处的<code>runner-maven-pvc</code>为PVC名称,值要挂载到Pod的<code>/root/.m2</code>目录</td>
+          </tr>
+          <tr>
+            <td>env.persistence.runner-cache-pvc</td>
+            <td>持久化数据，此处的<span>runner-cache-pvc</span>为PVC名称,值要挂载到Pod的<code>/cache</code>目录</td>
+          </tr>
+          <tr>
+            <td>enabled_mount_host_docker_sock</td>
+            <td>是否将<code>dockers.sock</code>节点文件挂在到Pod中，以便build docker镜像</td>
+          </tr>
+        </table>
+      </div>
       <p>
         <span>- 更多Runner设置请参考 </span>
         <a
