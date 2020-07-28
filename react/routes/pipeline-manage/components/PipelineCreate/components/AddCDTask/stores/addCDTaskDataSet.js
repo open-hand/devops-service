@@ -65,6 +65,15 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
     lookupAxiosConfig: () => ({
       method: 'get',
       url: `/devops/v1/projects/${projectId}/envs/list_by_active?active=true`,
+      transformResponse: (res) => {
+        let newRes = res;
+        try {
+          newRes = JSON.parse(res);
+          return newRes.filter(r => r.permission);
+        } catch (e) {
+          return newRes;
+        }
+      },
     }),
   }, {
     // name: 'bsms',
