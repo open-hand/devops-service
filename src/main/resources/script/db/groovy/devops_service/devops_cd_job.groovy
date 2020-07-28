@@ -19,9 +19,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_job.groovy') {
             column(name: 'trigger_type', type: 'VARCHAR(255)', remarks: '触发方式', defaultValue: 'refs') {
                 constraints(nullable: false)
             }
-            column(name: 'trigger_value', type: 'VARCHAR(255)', remarks: '触发分支') {
-                constraints(nullable: false)
-            }
+            column(name: 'trigger_value', type: 'VARCHAR(255)', remarks: '触发分支')
+
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目ID') {
                 constraints(nullable: false)
             }
