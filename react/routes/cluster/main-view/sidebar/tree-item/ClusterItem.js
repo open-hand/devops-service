@@ -97,6 +97,7 @@ function ClusterItem({
             {okBtn}{cancelBtn}
           </Fragment>
         )),
+        okProps: { color: 'red' },
         okText: formatMessage({ id: 'cluster.del.confirm' }),
       });
     }
