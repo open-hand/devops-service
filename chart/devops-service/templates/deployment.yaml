@@ -57,7 +57,7 @@ spec:
         lifecycle:
           preStop:
             exec:
-              command: ["/bin/sh", "-c","curl -X POST localhost:{{ .Values.service.port }}/pre_stop"]
+              command: ["/bin/sh", "-c","curl -X POST localhost:{{ .Values.env.open.SERVER_PORT }}/pre_stop"]
         env:
 {{- range $name, $value := .Values.env.open }}
 {{- if ne (len ($value | quote)) 0 }}
