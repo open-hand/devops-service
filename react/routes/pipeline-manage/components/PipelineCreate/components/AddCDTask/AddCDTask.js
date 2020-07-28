@@ -134,7 +134,7 @@ export default observer(() => {
       }
       const data = {
         ...ds,
-        triggerValue: typeof ds.triggerValue === 'object' ? ds.triggerValue?.join(',') : ds.triggerValue,
+        triggerValue: (typeof ds.triggerValue === 'object' ? ds.triggerValue?.join(',') : ds.triggerValue) ?? '',
         metadata: getMetadata(ds),
       };
       handleOk(data);
