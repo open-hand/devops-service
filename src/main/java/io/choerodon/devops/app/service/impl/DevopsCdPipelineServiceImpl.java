@@ -271,17 +271,41 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
     private List<DevopsCdJobDTO> calculateExecuteJobList(String ref, List<DevopsCdJobDTO> devopsCdJobDTOList) {
         return devopsCdJobDTOList.stream().filter(job -> {
+            if (StringUtils.isEmpty(job.getTriggerValue())) {
+                return true;
+            }
             String triggerType = job.getTriggerType();
             // 根据匹配规则，计算出要执行的job
-            if (CiTriggerType.REFS.value().equals(triggerType)
-                    && job.getTriggerValue().contains(ref)) {
-                return true;
-            } else if (CiTriggerType.EXACT_MATCH.value().equals(triggerType)
-                    && job.getTriggerValue().equals(ref)) {
-                return true;
-            } else if (CiTriggerType.EXACT_EXCLUDE.value().equals(triggerType)
-                    && job.getTriggerValue().equals(ref)) {
+            if (CiTriggerType.REFS.value().equals(triggerType)) {
+                String[] matchRefs = job.getTriggerValue().split(",");
+                if (matchRefs.length > 0) {
+                    for (String matchRef : matchRefs) {
+                        if (ref.contains(matchRef)) {
+                            return true;
+                        }
+                    }
+                }
                 return false;
+            } else if (CiTriggerType.EXACT_MATCH.value().equals(triggerType)) {
+                String[] matchRefs = job.getTriggerValue().split(",");
+                if (matchRefs.length > 0) {
+                    for (String matchRef : matchRefs) {
+                        if (ref.equals(matchRef)) {
+                            return false;
+                        }
+                    }
+                }
+                return false;
+            } else if (CiTriggerType.EXACT_EXCLUDE.value().equals(triggerType)) {
+                String[] matchRefs = job.getTriggerValue().split(",");
+                if (matchRefs.length > 0) {
+                    for (String matchRef : matchRefs) {
+                        if (ref.equals(matchRef)) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
             } else if (CiTriggerType.REGEX_MATCH.value().equals(triggerType)) {
                 Pattern pattern = Pattern.compile(job.getTriggerValue());
                 return pattern.matcher(ref).matches();
