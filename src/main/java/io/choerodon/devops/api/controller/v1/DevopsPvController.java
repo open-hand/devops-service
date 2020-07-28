@@ -146,7 +146,6 @@ public class DevopsPvController {
             @Encrypt
             @ApiParam(value = "PvId", required = true)
             @PathVariable(value = "pv_id") Long pvId,
-            @Encrypt
             @ApiParam(value = "要删除的projectId")
             @RequestParam(value = "related_project_id") Long relatedProjectId) {
         devopsPvService.deleteRelatedProjectById(projectId, pvId, relatedProjectId);
