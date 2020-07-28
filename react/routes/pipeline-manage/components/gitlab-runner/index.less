@@ -91,3 +91,36 @@
     margin-bottom: .1rem;
   }
 }
+
+.gitlab-runner-table {
+  table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    empty-cells: show;
+    border: 0.01rem solid #ebedf0;
+    width: 100%;
+    margin: 0.08rem 0 0.16rem;
+    tr {
+      &:first-of-type {
+        td {
+          color: #6b6b6b;
+          font-size: 0.15rem;
+        }
+      }
+      td {
+        color: #314659;
+        padding: 0.16rem 0.24rem;
+        code {
+          margin: 0 0.01rem;
+          background: #f2f4f5;
+          padding: .2em .4em;
+          border-radius: 0.03rem;
+          font-size: .9em;
+          border: 0.01rem solid #eee;
+          color: #314659;
+          font-weight: 300;
+        }
+      }
+    }
+  }
+}
