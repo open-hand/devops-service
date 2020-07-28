@@ -84,9 +84,7 @@ public class CiCdPipelineRecordController {
             @Encrypt
             @RequestParam(value = "cd_pipeline_record_id") Long cdPipelineRecordId,
             @ApiParam(value = "gitlab项目ID", required = true)
-            @Encrypt
             @RequestParam("gitlab_pipeline_id") Long gitlabPipelineId,
-            @Encrypt
             @ApiParam(value = "流水线ID", required = true)
             @RequestParam("gitlab_project_id") Long gitlabProjectId) {
         ciCdPipelineRecordService.cancel(projectId, cdPipelineRecordId, gitlabPipelineId, gitlabProjectId);

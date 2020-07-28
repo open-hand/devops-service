@@ -22,8 +22,6 @@ public class CiCdPipelineRecordVO extends BaseDomain {
     @Encrypt
     //cd 执行记录的id
     private Long cdRecordId;
-
-    @Encrypt
     //gitlab的流水线id
     private Long gitlabPipelineId;
     //cd流水线记录的状态
