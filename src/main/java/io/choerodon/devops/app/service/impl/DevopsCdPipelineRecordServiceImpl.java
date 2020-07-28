@@ -1008,7 +1008,17 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
                 List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
                 calculateJob(devopsCdPipelineRecordVO, devopsCdJobRecordVOS);
+                Boolean flag = Boolean.TRUE;
+                for (DevopsCdJobRecordVO devopsCdJobRecordVO : devopsCdJobRecordVOS) {
+                    if (!JobStatusEnum.CREATED.value().equals(devopsCdJobRecordVO.getStatus())) {
+                        flag = Boolean.FALSE;
+                    }
+                }
                 devopsCdStageRecordVO.setJobRecordVOList(devopsCdJobRecordVOS);
+                //计算stage状态，如果stage里面的阶段任务，全部为未执行，stage状态为未执行
+                if (flag) {
+                    devopsCdStageRecordVO.setStatus(JobStatusEnum.CREATED.value());
+                }
                 //计算stage耗时
                 List<Long> collect = devopsCdJobRecordVOS.stream().filter(devopsCdJobRecordVO -> !Objects.isNull(devopsCdJobRecordVO.getDurationSeconds())).map(DevopsCdJobRecordVO::getDurationSeconds).collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(collect))
