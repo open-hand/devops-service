@@ -45,7 +45,6 @@ public class DevopsCdJobVO {
     private String triggerType;
 
     @ApiModelProperty("详细信息")
-    @NotEmpty(message = "error.job.metadata.cannot.be.null")
     private String metadata;
     private String envName;
     @NotNull(message = "error.job.sequence.cannot.be.null")
