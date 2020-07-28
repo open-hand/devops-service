@@ -118,7 +118,7 @@ const TreeItem = observer(({ record, search }) => {
       gitlabProjectId: record.get('gitlabProjectId'),
       recordId: record.get('gitlabPipelineId'),
       type,
-      cdRecordId: record.get('cdRecordId'),
+      devopsPipelineRecordRelId: record.get('devopsPipelineRecordRelId'),
     });
     if (res) {
       handleRefresh();

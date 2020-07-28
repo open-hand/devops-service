@@ -44,9 +44,9 @@ export default function useStore() {
       this.pageList = data;
     },
 
-    async changeRecordExecute({ projectId, gitlabProjectId, recordId, type, cdRecordId }) {
+    async changeRecordExecute({ projectId, gitlabProjectId, recordId, type, devopsPipelineRecordRelId }) {
       try {
-        const res = await axios.get(`/devops/v1/projects/${projectId}/cicd_pipelines_record/${type}?gitlab_project_id=${gitlabProjectId}&gitlab_pipeline_id=${recordId}${cdRecordId ? `&cd_pipeline_record_id=${cdRecordId}` : ''}`);
+        const res = await axios.get(`/devops/v1/projects/${projectId}/cicd_pipelines_record/${type}?gitlab_project_id=${gitlabProjectId}&gitlab_pipeline_id=${recordId}${devopsPipelineRecordRelId ? `&record_rel_id=${devopsPipelineRecordRelId}` : ''}`);
         return handlePromptError(res);
       } catch (e) {
         Choerodon.handleResponseError(e);

@@ -122,13 +122,13 @@ const PipelineManage = observer((props) => {
   }
 
   async function changeRecordExecute(type) {
-    const { gitlabProjectId, gitlabPipelineId, cdRecordId } = getSelectedMenu;
+    const { gitlabProjectId, gitlabPipelineId, devopsPipelineRecordRelId } = getSelectedMenu;
     const res = await mainStore.changeRecordExecute({
       projectId,
       gitlabProjectId,
       recordId: gitlabPipelineId,
       type,
-      cdRecordId,
+      devopsPipelineRecordRelId,
     });
     if (res) {
       handleRefresh();
