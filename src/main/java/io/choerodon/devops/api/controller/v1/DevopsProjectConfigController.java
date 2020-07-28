@@ -65,7 +65,6 @@ public class DevopsProjectConfigController {
     @ApiOperation(value = "项目下查询配置详情")
     @GetMapping
     public ResponseEntity<DevopsConfigRepVO> query(
-            @Encrypt
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(
