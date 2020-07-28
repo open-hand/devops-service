@@ -92,7 +92,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
       disabled: ({ record }) => !record.get('envId'),
       lookupAxiosConfig: ({ record }) => ({
         method: 'get',
-        url: `/devops/v1/projects/${projectId}/app_service_instances/list_running_and_failed?app_service_id=${PipelineCreateFormDataSet.current.get('appServiceId')}&env_id=${record.get('envId')}`,
+        url: record.get('envId') && `/devops/v1/projects/${projectId}/app_service_instances/list_running_and_failed?app_service_id=${PipelineCreateFormDataSet.current.get('appServiceId')}&env_id=${record.get('envId')}`,
       }),
     },
   }, {
@@ -106,7 +106,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
       disabled: ({ record }) => !record.get('envId'),
       lookupAxiosConfig: ({ record }) => ({
         method: 'get',
-        url: `/devops/v1/projects/${projectId}/deploy_value/list_by_env_and_app?app_service_id=${PipelineCreateFormDataSet.current.get('appServiceId')}&env_id=${record.get('envId')}`,
+        url: record.get('envId') && `/devops/v1/projects/${projectId}/deploy_value/list_by_env_and_app?app_service_id=${PipelineCreateFormDataSet.current.get('appServiceId')}&env_id=${record.get('envId')}`,
         transformResponse: (res) => {
           let newRes = res;
           try {
@@ -217,7 +217,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
       required: ({ record }) => record.get('type') === 'cdHost' && record.get('hostDeployType') === 'image' && record.get('deploySource') === 'matchDeploy',
       lookupAxiosConfig: ({ record }) => ({
         method: 'get',
-        url: `rdupm/v1/harbor-choerodon-repos/listHarborImage?repoId=${record.get('repoId')}&repoType=${(function () {
+        url: (record.get('repoId')) && `rdupm/v1/harbor-choerodon-repos/listHarborImage?repoId=${record.get('repoId')}&repoType=${(function () {
           const lookup = record.getField('repoId').lookup;
           return lookup?.find(l => String(l.repoId) === String(record.get('repoId')))?.repoType;
         }())}`,
@@ -281,7 +281,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
       disabled: ({ record }) => !record.get('serverName'),
       lookupAxiosConfig: ({ record }) => ({
         method: 'get',
-        url: `rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/list?configId=${record.get('serverName')}`,
+        url: record.get('serverName') && `rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/list?configId=${record.get('serverName')}`,
       }),
     },
   }, {
@@ -294,7 +294,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
       disabled: ({ record }) => !record.get('repositoryId'),
       lookupAxiosConfig: ({ record }) => ({
         method: 'get',
-        url: `/rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/groupId?repositoryId=${record.get('repositoryId')}`,
+        url: record.get('repositoryId') && `/rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/groupId?repositoryId=${record.get('repositoryId')}`,
         transformResponse: (data) => {
           try {
             const array = JSON.parse(data);
@@ -320,7 +320,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
       required: ({ record }) => record.get('type') === 'cdHost' && record.get('hostDeployType') === 'jar' && record.get('deploySource') === 'matchDeploy',
       lookupAxiosConfig: ({ record }) => ({
         method: 'get',
-        url: `/rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/artifactId?repositoryId=${record.get('repositoryId')}`,
+        url: record.get('repositoryId') && `/rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/artifactId?repositoryId=${record.get('repositoryId')}`,
         transformResponse: (data) => {
           try {
             const array = JSON.parse(data);
