@@ -46,7 +46,6 @@ public class CiCdPipelineRecordController {
     public ResponseEntity<Void> retryPipeline(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
             @ApiParam(value = "cd流水线记录id", required = true)
             @RequestParam(value = "record_rel_id") Long pipelineRecordRelId,
             @ApiParam(value = "gitlab项目ID", required = true)
@@ -79,7 +78,6 @@ public class CiCdPipelineRecordController {
     public ResponseEntity<Void> cancel(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "cd流水线记录id", required = true)
-            @Encrypt
             @RequestParam(value = "record_rel_id") Long pipelineRecordRelId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @RequestParam("gitlab_pipeline_id") Long gitlabPipelineId,
