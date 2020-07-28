@@ -72,7 +72,6 @@ public class DevopsCiJobController {
     public ResponseEntity<Void> retryJob(
             @PathVariable(value = "project_id") Long projectId,
             @PathVariable(value = "gitlab_project_id") Long gitlabProjectId,
-            @Encrypt
             @PathVariable(value = "job_id") Long jobId) {
         devopsCiJobService.retryJob(projectId, gitlabProjectId, jobId);
         return ResponseEntity.noContent().build();
