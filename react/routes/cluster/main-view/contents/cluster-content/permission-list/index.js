@@ -3,7 +3,6 @@ import { Permission, Action } from '@choerodon/boot';
 import { Table } from 'choerodon-ui/pro';
 import { useClusterContentStore } from '../stores';
 
-
 const { Column } = Table;
 
 export default () => {
@@ -13,7 +12,7 @@ export default () => {
   function renderActions({ record }) {
     const actionData = [
       {
-        service: ['devops-service.devops-cluster.deleteCluster'],
+        service: ['choerodon.code.project.deploy.cluster.cluster-management.ps.permission-manage'],
         text: formatMessage({ id: 'delete' }),
         action: () => {
           PermissionDs.transport.destroy.params = {

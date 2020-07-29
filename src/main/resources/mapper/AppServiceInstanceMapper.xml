@@ -511,18 +511,12 @@
 
 
     <select id="checkCodeExist" resultType="java.lang.Boolean">
-        SELECT count(1) > 0 exist
-        FROM devops_app_service_instance dasi
-        WHERE exists(
-                SELECT count(1)
-                FROM devops_env
-                WHERE dasi.env_id = devops_env.id
-                  AND cluster_id =
-                      (SELECT cluster_id
-                       FROM devops_env
-                       WHERE devops_env.id = #{envId})
-                )
-          and code = #{code}
+        SELECT COUNT(1) > 0
+        FROM devops_cluster dc
+                 LEFT JOIN devops_env de2 ON dc.id = de2.cluster_id
+                 LEFT JOIN devops_app_service_instance dasi ON dasi.env_id = de2.id
+        WHERE dc.id = (SELECT de.cluster_id FROM devops_env de WHERE de.id = #{envId,jdbcType=BIGINT})
+          AND dasi.code = #{code,jdbcType=VARCHAR};
     </select>
 
 

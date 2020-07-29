@@ -33,7 +33,7 @@ public class CiConfigTemplateVO {
     @NotNull(message = "error.step.sequence.cannot.be.null")
     private Long sequence;
 
-    @ApiModelProperty("执行脚本")
+    @ApiModelProperty("执行脚本/Base64加密过, 解决特殊符号问题")
     private String script;
 
     @Encrypt

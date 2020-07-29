@@ -2,7 +2,7 @@ package io.choerodon.devops.api.validator;
 
 import java.util.regex.Pattern;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
@@ -18,8 +18,11 @@ import io.choerodon.devops.app.service.CertificationService;
 public class DevopsCertificationValidator {
     private static final String NAME_PATTERN = "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*";
 
-    @Autowired
-    private CertificationService certificationService;
+    private final CertificationService certificationService;
+
+    public DevopsCertificationValidator(@Lazy CertificationService certificationService) {
+        this.certificationService = certificationService;
+    }
 
     /**
      * check certification

@@ -33,13 +33,12 @@ DevOps Service integrated several open source tools to automate the process of `
 
 ## Dependencies
 
-* `go-register-server`: Register server, in place of `eureka-server`
-* `iam-service`：Iam service
-* `api-gateway`: Gateway service
-* `oauth-server`: Oauth service
-* `manager-service`: Manager service
-* `asgard-service` : Transaction consistency service
-* `notify-service` : Notify service
+* `hzero-register`: Register server, in place of `eureka-server`
+* `hzero-iam`：Iam service
+* `hzero-gateway`: Gateway service
+* `hzero-oauth`: Oauth service
+* `hzero-asgard` : Transaction consistency service
+* `hzero-message` : Notify service
 * `gitlab-service`：Service to communicate with gitlab
 * `workflow-service`：Workflow service
 * `agile-service`：Agile service
@@ -88,6 +87,7 @@ DevOps Service integrated several open source tools to automate the process of `
         maximum-pool-size: 15
     redis:
       host: localhost
+      database: ${SPRING_REDIS_DATABASE:1}
     http:
       encoding:
         charset: UTF-8
@@ -106,7 +106,15 @@ DevOps Service integrated several open source tools to automate the process of `
     helm:
       url: "helm.example.com" # the repository url to place helm charts
     gateway:
-      url: "http://api.example.com" # gateway url
+      url: "http://api.example.com" # the domain of the hzero gateway
+  hzero:
+    websocket:
+      # the path for websocket connection
+      websocket: /websocket
+      # consistent with the redis db above
+      redisDb: ${SPRING_REDIS_DATABASE:1}
+      # the secret for websocket
+      secretKey: devops_ws
   choerodon:
     saga:
       consumer:
@@ -119,20 +127,14 @@ DevOps Service integrated several open source tools to automate the process of `
         enabled: true # enable schedule consume
         thread-num: 1 # thread number for consuming
         poll-interval-ms: 1000 # the interval for polling messages, default 1000ms
+    resource:
+      jwt:
+        ignore: /workflow/**, /sonar/**, /ci, /sonar/info, /v2/api-docs, /agent/**, /ws/**, /gitlab/email, /webhook/**, /v2/choerodon/**, /choerodon/**, /actuator/**, /prometheus, /devops/**, /pre_stop, /websocket
   agent:
     version: "0.5.0" # expect choerodon-agent version for this devops-service version
     serviceUrl: "agent.example.com" # url for choerodon-agent to connect devops-service
     certManagerUrl: "agent.example.com" # the location to store the CertManager for installation
     repoUrl: "helm.example.com" # the location to store the agent package itself for installation
-  eureka:
-    instance:
-      preferIpAddress: true
-      leaseRenewalIntervalInSeconds: 1
-      leaseExpirationDurationInSeconds: 3
-    client:
-      serviceUrl:
-        defaultZone: http://localhost:8000/eureka/
-      registryFetchIntervalSeconds: 1
   mybatis:
     mapperLocations: classpath*:/mapper/*.xml
     configuration:
@@ -155,13 +157,7 @@ DevOps Service integrated several open source tools to automate the process of `
       ConnectTimeout: 50000
       ReadTimeout: 50000
 
-  # 批量部署的请求条数限制
-  devops:
-    batch:
-      deployment:
-        maxSize: 20
-
-  # websocket的最大缓冲区大小，单位字节byte
+  # websocket max buffer size (byte)
   websocket:
     buffer:
       maxTextMessageSize: 4194304

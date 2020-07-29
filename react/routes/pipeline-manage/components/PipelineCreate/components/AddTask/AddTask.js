@@ -5,6 +5,7 @@ import { Form, Select, TextField, Modal, SelectBox, Button, Password } from 'cho
 import _ from 'lodash';
 import { Icon, Spin, Tooltip, Divider } from 'choerodon-ui';
 import { Base64 } from 'js-base64';
+import _ from 'lodash';
 import Tips from '../../../../../../components/new-tips';
 import YamlEditor from '../../../../../../components/yamlEditor';
 import emptyImg from '../../../../../../components/empty-page/image/owner.png';
@@ -158,7 +159,6 @@ const AddTask = observer(() => {
             } else {
               c.checked = false;
             }
-            c.yaml = c.script;
             if (c.type === 'upload') {
               uploadFilePattern = c.uploadFilePattern;
               uploadArtifactFileName = c.artifactFileName;
@@ -184,6 +184,7 @@ const AddTask = observer(() => {
             if (c.mavenSettings) {
               c.mavenSettings = Base64.decode(c.mavenSettings);
             }
+            c.yaml = Base64.decode(c.script);
           });
           ['toUpload', 'toDownload'].forEach(item => {
             if (jobDetail[item]) {
@@ -229,7 +230,7 @@ const AddTask = observer(() => {
             ]
           );
           if (jobDetail.type === 'custom') {
-            setCustomYaml(jobDetail.metadata);
+            setCustomYaml(Base64.decode(jobDetail.metadata));
           }
         }
         if (!jobDetail.image) {
@@ -297,7 +298,8 @@ const AddTask = observer(() => {
             return JSON.stringify({
               config: steps.map((s, sIndex) => {
                 s.sequence = sIndex;
-                s.script = s.yaml;
+                s.script = Base64.encode(s.yaml);
+                delete s.yaml;
                 if (s.repo) {
                   s.repos = [...(s.repo.publicRepo || []).map(p => {
                     p.private = p.privateIf;
@@ -347,7 +349,7 @@ const AddTask = observer(() => {
               metadata: '',
             }).replace(/"/g, "'");
           } else if (data.type === 'custom') {
-            return customYaml;
+            return Base64.encode(customYaml);
           }
         }()),
       };

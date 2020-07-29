@@ -2,7 +2,7 @@
  
 # DevOps Service  
 
-`DevOps Service` DevOps Service是Choerodon平台实现持续交付的基础. 当前版本为: `0.21.0`
+`DevOps Service` DevOps Service是Choerodon平台实现持续交付的基础. 当前版本为: `0.22.0`
 
 DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具，以此形成了计划、编码、测试、部署、运维以及监控的DevOps闭环。
 并且只需通过简单的配置，您便能获得最佳的开发体验。
@@ -33,13 +33,12 @@ DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具
 
 ## 服务依赖
 
-* `go-register-server`: 注册中心，在线上环境代替本地的`eureka-server`
-* `iam-service`：用户服务，与用户有关的操作依赖与此服务
-* `api-gateway`: 网关服务
-* `oauth-server`: 授权服务
-* `manager-service`: 管理服务
-* `asgard-service` : 事务一致性服务
-* `notify-service` : 通知服务
+* `hzero-register`: 注册中心，在线上环境代替本地的`eureka-server`
+* `hzero-iam`：用户服务，与用户有关的操作依赖与此服务
+* `hzero-gateway`: 网关服务
+* `hzero-oauth`: 授权服务
+* `hzero-asgard` : 事务一致性服务
+* `hzero-message` : 通知服务
 * `gitlab-service`：gitlab服务
 * `workflow-service`：工作流服务
 * `agile-service`：敏捷服务，查询与分支有关的敏捷Issue需要依赖此服务
@@ -88,6 +87,7 @@ DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具
         maximum-pool-size: 15 # 数据库连接池连接数
     redis:
       host: localhost
+      database: ${SPRING_REDIS_DATABASE:1}
     http:
       encoding:
         charset: UTF-8
@@ -107,6 +107,14 @@ DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具
       url: "helm.example.com" # 存放helm chart包的仓库地址
     gateway:
       url: "http://api.example.com" # 网关地址
+  hzero:
+    websocket:
+      # 用于连接websocket的路径
+      websocket: /websocket
+      # 与当前服务的redis数据库一致
+      redisDb: ${SPRING_REDIS_DATABASE:1}
+      # 后端长连通信密钥
+      secretKey: devops_ws
   choerodon:
     saga:
       consumer:
@@ -119,20 +127,14 @@ DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具
         enabled: true # 启用任务调度消费端
         thread-num: 1 # 任务调度消费线程数
         poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
+    resource:
+      jwt:
+        ignore: /workflow/**, /sonar/**, /ci, /sonar/info, /v2/api-docs, /agent/**, /ws/**, /gitlab/email, /webhook/**, /v2/choerodon/**, /choerodon/**, /actuator/**, /prometheus, /devops/**, /pre_stop, /websocket
   agent:
     version: "0.5.0" # devops-service此版本所预期的 choerodon-agent 的版本
     serviceUrl: "agent.example.com" # 用于 choerodon-agent 连接 devops-service 的地址
     certManagerUrl: "agent.example.com" # 存放CertManager的地址，用于安装
     repoUrl: "helm.example.com" # 存放agent的地址，用于安装
-  eureka:
-    instance:
-      preferIpAddress: true
-      leaseRenewalIntervalInSeconds: 1
-      leaseExpirationDurationInSeconds: 3
-    client:
-      serviceUrl:
-        defaultZone: http://localhost:8000/eureka/
-      registryFetchIntervalSeconds: 1
   mybatis:
     mapperLocations: classpath*:/mapper/*.xml
     configuration:
@@ -149,14 +151,37 @@ DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具
   ribbon:
     ConnectTimeout: 50000
     ReadTimeout: 50000
-  
+
   asgard-servie:
     ribbon:
       ConnectTimeout: 50000
       ReadTimeout: 50000
 
-  # 批量部署的请求条数限制
   devops:
+    # 流水线生成Gitlab Ci文件中默认的runner 镜像地址
+    ci:
+      default:
+        image: registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.9.1
+      pipeline:
+        sync:
+          executor:
+            # 核心线程池大小
+            corePoolSize: 5
+            # 最大线程池大小
+            maxPoolSize: 8
+          unterminated:
+            # ci流水线对未终结的流水线进行数据补偿的时间阈值, 单位: 毫秒 (默认600秒)
+            thresholdMilliSeconds: 600000
+          pending:
+            # ci流水线对pending的流水线进行数据补偿的时间阈值, 单位: 毫秒 (默认600秒)
+            thresholdMilliSeconds: 600000
+          jobEmpty:
+            # ci流水线对非跳过状态的且没有job信息流水线进行数据补偿的时间阈值, 单位: 毫秒 (默认600秒)
+            thresholdMilliSeconds: 600000
+          refresh:
+            # redisKey的过期时间, 用于控制同一条流水线的刷新间隔, 减少对gitlab的访问次数
+            periodSeconds: 60
+    # 批量部署的请求条数限制
     batch:
       deployment:
         maxSize: 20
@@ -205,3 +230,4 @@ DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具
 ## 如何参与
 
 欢迎参与我们的项目，了解更多有关如何[参与贡献](https://github.com/choerodon/choerodon/blob/master/CONTRIBUTING.md)的信息。 
+
