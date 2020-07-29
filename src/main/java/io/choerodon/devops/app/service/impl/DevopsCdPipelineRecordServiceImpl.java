@@ -15,6 +15,7 @@ import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
+import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -471,7 +472,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         if (hostConnectionVO.getAccountType().equals(CdHostAccountType.PASSWORD.value())) {
             ssh.authPassword(hostConnectionVO.getUserName(), hostConnectionVO.getPassword());
         } else {
-            ssh.authPublickey(hostConnectionVO.getUserName());
+            KeyProvider keyProvider = ssh.loadKeys(hostConnectionVO.getPassword(), null, null);
+            ssh.authPublickey(hostConnectionVO.getUserName(), keyProvider);
         }
     }
 
