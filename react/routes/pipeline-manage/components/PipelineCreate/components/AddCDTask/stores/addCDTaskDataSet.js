@@ -361,23 +361,6 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
     lookupAxiosConfig: () => ({
       method: 'post',
       url: `/devops/v1/projects/${projectId}/users/list_users?page=0&size=20`,
-      transformResponse: (res) => {
-        let tempRes = res;
-        try {
-          tempRes = JSON.parse(res);
-          tempRes.content = tempRes.content.map((item) => {
-            item.realName = `${item.realName}(${item.loginName})`;
-            return item;
-          });
-          return tempRes;
-        } catch (error) {
-          tempRes.content = tempRes.content.map((item) => {
-            item.realName = `${item.realName}(${item.loginName})`;
-            return item;
-          });
-          return tempRes;
-        }
-      },
     }),
     dynamicProps: {
       required: ({ record }) => record.get('type') === 'cdAudit',

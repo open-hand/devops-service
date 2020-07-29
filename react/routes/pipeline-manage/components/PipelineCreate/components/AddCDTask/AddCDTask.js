@@ -538,7 +538,11 @@ export default observer(() => {
           ADDCDTaskDataSet?.current?.get('type') === 'cdAudit' && (
             <div colSpan={3} style={{ display: 'flex' }}>
               <div style={{ width: '47.5%', marginRight: 8 }} colSpan={2}>
-                <Select style={{ width: '100%' }} name="cdAuditUserIds" />
+                <Select
+                  style={{ width: '100%' }}
+                  name="cdAuditUserIds"
+                  optionRenderer={({ value, text, record }) => (`${text}(${record.get('loginName')})`)}
+                />
               </div>
               {
                 ADDCDTaskDataSet?.current?.get('cdAuditUserIds')?.length > 1 && (
