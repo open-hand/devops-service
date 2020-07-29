@@ -1,4 +1,5 @@
 import { DataSet } from 'choerodon-ui/pro';
+import jsonBigint from 'json-bigint';
 
 export default (projectId) => ({
   autoCreate: true,
@@ -48,6 +49,23 @@ export default (projectId) => ({
     lookupAxiosConfig: () => ({
       method: 'post',
       url: `/devops/v1/projects/${projectId}/users/list_users?page=0&size=20`,
+      transformResponse: (res) => {
+        let tempRes = res;
+        try {
+          tempRes = JSON.parse(res);
+          tempRes.content = tempRes.content.map((item) => {
+            item.realName = `${item.realName}(${item.loginName})`;
+            return item;
+          });
+          return tempRes;
+        } catch (error) {
+          tempRes.content = tempRes.content.map((item) => {
+            item.realName = `${item.realName}(${item.loginName})`;
+            return item;
+          });
+          return tempRes;
+        }
+      },
     }),
   }],
 });
