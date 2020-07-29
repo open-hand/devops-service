@@ -733,6 +733,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
     @Override
+    @Async
     public void sendPipelineNotice(Long pipelineRecordId, String type, List<Receiver> receivers, @Nullable Map<String, String> params) {
         doWithTryCatchAndLog(
                 () -> sendPipelineMessage(pipelineRecordId, type, receivers, params, null, null),
@@ -1064,6 +1065,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
     @Override
+    @Async
     public void sendPipelineAuditMassage(String type, String auditUser, Long pipelineRecordId, String stageName, Long stageId) {
         LOGGER.debug("Send pipeline audit message..., the type is {}, auditUser is {}, stageName is {}, stageId is {}", type, auditUser, stageName, stageId);
         doWithTryCatchAndLog(

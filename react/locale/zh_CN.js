@@ -786,7 +786,11 @@ const pipelineManage = {
   'c7ncd.pipelineManage.execute.retry': '重试',
   'c7ncd.pipelineManage.execute.audit': '人工审核',
   'c7ncd.pipelineManage.delete.title': '删除流水线',
+<<<<<<< HEAD
   'c7ncd.pipelineManage.delete.des': '确定删除该条流水线吗？',
+=======
+  'c7ncd.pipelineManage.delete.des': '确定删除该条CI流水线吗？',
+>>>>>>> hotfix-0.22.3
   'c7ncd.pipelineManage.stop.title': '停用流水线',
   'c7ncd.pipelineManage.stop.des': '确定停用该条流水线吗？',
   'c7ncd.pipelineManage.record.detail': '流水线记录详情',
@@ -806,7 +810,7 @@ const pipelineManage = {
   'c7ncd.pipelineManage.status.skipped': '最近执行结果：已跳过',
   'c7ncd.pipelineManage.status.canceled': '最近执行结果：已取消',
   'c7ncd.pipelineManage.record.empty.title': '流水线已跳过',
-  'c7ncd.pipelineManage.record.empty.des': '已跳过流水线的此次执行。您可点击全新执行来重跑流水线',
+  'c7ncd.pipelineManage.record.empty.des': '已跳过该流水线的此次执行。您可直接点击全新执行来重跑流水线',
   'c7ncd.pipelineManage.record.empty.title.other': '阶段信息为空',
   'c7ncd.pipelineManage.record.empty.des.other': '未获取到此次执行的阶段信息',
   'c7ncd.pipelineManage.create.share.title': '共享目录设置',

@@ -67,26 +67,39 @@ public interface AppServiceInstanceMapper extends BaseMapper<AppServiceInstanceD
      */
     Long queryLastCommandId(@Param("instanceId") Long instanceId);
 
-    List<DeployDTO> listDeployTime(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("appServiceIds") Long[] appServiceIds, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
+    List<DeployDTO> listDeployTime(@Param("projectId") Long projectId,
+                                   @Param("envId") Long envId,
+                                   @Param("appServiceIds") Long[] appServiceIds,
+                                   @Param("startTime") Date startTime, @Param("endTime") Date endTime);
 
-    List<DeployDTO> listDeployFrequency(@Param("projectId") Long projectId, @Param("envIds") Long[] envIds, @Param("appServiceId") Long appServiceId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
+    List<DeployDTO> listDeployFrequency(@Param("projectId") Long projectId,
+                                        @Param("envIds") Long[] envIds,
+                                        @Param("appServiceId") Long appServiceId,
+                                        @Param("startTime") Date startTime,
+                                        @Param("endTime") Date endTime);
 
-    String getInstanceResourceDetailJson(@Param("instanceId") Long instanceId, @Param("resourceName") String resourceName, @Param("resourceType") String resourceType);
+    String getInstanceResourceDetailJson(@Param("instanceId") Long instanceId,
+                                         @Param("resourceName") String resourceName,
+                                         @Param("resourceType") String resourceType);
 
     void deleteInstanceRelInfo(@Param("instanceId") Long instanceId);
 
-    Boolean checkCodeExist(@Param("code") String code, @Param("envId") Long envId);
+    Boolean checkCodeExist(@Param("code") String code,
+                           @Param("envId") Long envId);
 
     int countNonDeletedInstances(@Param("appServiceId") Long appServiceId,
                                  @Nullable @Param("projectId") Long projectId);
 
-    int countNonDeletedInstancesWithEnv(@Param("envId") Long envId, @Param("instanceId") Long instanceId);
+    int countNonDeletedInstancesWithEnv(@Param("envId") Long envId,
+                                        @Param("instanceId") Long instanceId);
 
-    void updateStatus(@Param("instanceId") Long instanceId, @Param("status") String status);
+    void updateStatus(@Param("instanceId") Long instanceId,
+                      @Param("status") String status);
 
     List<DevopsEnvAppServiceDTO> listAllDistinctWithoutDeleted();
 
-    List<AppServiceInstanceDTO> listByProjectIdsAndAppServiceId(@Param("projectIds") Set<Long> projectIds, @Param("appServiceId") Long appServiceId);
+    List<AppServiceInstanceDTO> listByProjectIdsAndAppServiceId(@Param("projectIds") Set<Long> projectIds,
+                                                                @Param("appServiceId") Long appServiceId);
 
     List<AppServiceInstanceDTO> queryOtherInstancesOfComponents(
             @Param("envId") Long envId,

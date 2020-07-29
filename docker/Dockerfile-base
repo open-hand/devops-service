@@ -1,13 +1,13 @@
 # devops-base镜像的dockerfile
-FROM dockerhub.azk8s.cn/cdrx/pyinstaller-linux:python3 as pyinstaller
+FROM cdrx/pyinstaller-linux:python3 as pyinstaller
 WORKDIR /home/yaml
 COPY values_yaml.py ./
 RUN pip3 install --no-cache-dir ruamel.yaml==0.15.54 -i https://mirrors.aliyun.com/pypi/simple/
 RUN pyinstaller --noconfirm --clean values_yaml.py
 
-FROM gcr.azk8s.cn/kaniko-project/executor:v0.11.0 as kaniko
+FROM daocloud.io/gcr-mirror/kaniko-project-executor:latest as kaniko
 
-FROM dockerhub.azk8s.cn/library/alpine:3.10
+FROM alpine:3.12.0
 # Install yaml
 COPY --from=pyinstaller /home/yaml/dist/values_yaml /usr/lib/yaml
 # Install kaniko

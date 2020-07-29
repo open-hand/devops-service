@@ -194,4 +194,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
         }
         dropUniqueConstraint(constraintName: "devops_envs_uk_cluster_and_project_code", tableName: "devops_env")
     }
+
+    changeSet(author: 'lihao', id: '2020-07-24-devops_env-modify-column') {
+        sql("ALTER TABLE devops_env MODIFY COLUMN `name` VARCHAR(128)")
+    }
 }

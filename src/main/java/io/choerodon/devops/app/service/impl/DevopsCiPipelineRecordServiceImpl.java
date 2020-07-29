@@ -725,7 +725,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             return 1L;
         }
         UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserName(username);
-        return userAttrE.getIamUserId();
+        return userAttrE != null ? userAttrE.getIamUserId() : 0L;
     }
 
     @Override
