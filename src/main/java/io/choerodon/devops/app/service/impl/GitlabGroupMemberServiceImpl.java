@@ -209,7 +209,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         if (skipNullProject) {
             // 组织层的用户的角色同步不应该因为项目事务失败导致用户权限同步失败
             devopsProjectDTO = devopsProjectService.queryWithoutCheck(projectId);
-            if (devopsProjectDTO == null) {
+            // 这里判断appGroupId是因为脏数据可能为空的情况
+            if (devopsProjectDTO == null || devopsProjectDTO.getDevopsAppGroupId() == null || devopsProjectDTO.getDevopsEnvGroupId() == null) {
                 LOGGER.warn("Skip to sync permission to project with id {} due to null DevOps project. the permission info is {}", projectId, gitlabGroupMemberVO);
                 return;
             }
