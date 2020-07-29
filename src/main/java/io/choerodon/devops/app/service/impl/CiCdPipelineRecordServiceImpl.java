@@ -202,7 +202,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 
             if (PipelineStatus.SUCCESS.toValue().equals(devopsCiPipelineRecordDTO.getStatus())) {
                 // ci成功 && 存在cd阶段 则重试cd
-                if (PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID.equals(cdPipelineRecordId)) {
+                if (!PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID.equals(cdPipelineRecordId)) {
                     retryCdPipeline(projectId, cdPipelineRecordId);
                 }
             } else {
@@ -272,14 +272,14 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 
             if (PipelineStatus.SUCCESS.toValue().equals(devopsCiPipelineRecordDTO.getStatus())) {
                 // ci成功 && 存在cd阶段 则取消cd
-                if (PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID.equals(cdPipelineRecordId)) {
+                if (!PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID.equals(cdPipelineRecordId)) {
                     cancelCdPipeline(cdPipelineRecordId);
                 }
             } else {
                 // ci未完成，则取消ci、cd
                 devopsCiPipelineRecordService.cancel(projectId, gitlabPipelineId, gitlabProjectId);
                 // 存在cd阶段 则同时取消cd
-                if (PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID.equals(cdPipelineRecordId)) {
+                if (!PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID.equals(cdPipelineRecordId)) {
                     cancelCdPipeline(cdPipelineRecordId);
                 }
             }
