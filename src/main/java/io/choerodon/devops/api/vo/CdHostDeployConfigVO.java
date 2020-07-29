@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author scp
@@ -24,7 +25,7 @@ public class CdHostDeployConfigVO {
     @ApiModelProperty("自定义部署customize详情")
     private Customize customize;
 
-    public class ImageDeploy {
+    public static class ImageDeploy {
         @ApiModelProperty("部署来源：matchDeploy(匹配部署)/pipelineDeploy(流水线部署)")
         private String deploySource;
 
@@ -37,12 +38,14 @@ public class CdHostDeployConfigVO {
         @ApiModelProperty("仓库类型")
         private String repoType;
 
+        @Encrypt
         @ApiModelProperty("仓库Id")
         private String repoId;
 
         @ApiModelProperty("镜像名称")
         private String imageName;
 
+        @Encrypt
         @ApiModelProperty("镜像Id")
         private Long imageId;
 
@@ -147,7 +150,7 @@ public class CdHostDeployConfigVO {
         }
     }
 
-    public class JarDeploy {
+    public static class JarDeploy {
         @ApiModelProperty("部署来源：matchDeploy(匹配部署)/pipelineDeploy(流水线部署)")
         private String deploySource;
 
@@ -159,6 +162,7 @@ public class CdHostDeployConfigVO {
         @ApiModelProperty("仓库名")
         private String neRepositoryName;
 
+        @Encrypt
         @ApiModelProperty("仓库id")
         private Long repositoryId;
 
@@ -247,7 +251,7 @@ public class CdHostDeployConfigVO {
         }
     }
 
-    public class Customize {
+    public static class Customize {
 
         @ApiModelProperty("部署values")
         private String values;
