@@ -1146,6 +1146,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         userPayload.setAddGitlabUserIds(Collections.emptyList());
         // 待删除的用户
         userPayload.setDeleteGitlabUserIds(Collections.singletonList(userAttrDTO.getGitlabUserId().intValue()));
+        userPayload.setDevopsEnvironmentDTO(environmentDTO);
         userPayload.setOption(3);
 
         // 发送saga进行相应的gitlab侧的数据处理

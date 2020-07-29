@@ -920,6 +920,12 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         doWithTryCatchAndLog(
                 () -> {
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvUserPayload.getDevopsEnvironmentDTO();
+                    if (devopsEnvironmentDTO == null) {
+                        devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(Objects.requireNonNull(devopsEnvUserPayload.getEnvId()));
+                        if (devopsEnvironmentDTO == null) {
+                            return;
+                        }
+                    }
                     Map<String, String> params = constructParamsForEnv(devopsEnvironmentDTO, projectDTO.getOrganizationId());
                     List<Long> iamUserIds = devopsEnvUserPayload.getIamUserIds();
                     List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(iamUserIds);

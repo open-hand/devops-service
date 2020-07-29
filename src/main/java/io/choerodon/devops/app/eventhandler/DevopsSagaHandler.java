@@ -261,8 +261,7 @@ public class DevopsSagaHandler {
             LOGGER.error("update environment gitlab permission for iam users {} error", devopsEnvUserPayload.getIamUserIds());
             throw e;
         }
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvUserPayload.getDevopsEnvironmentDTO();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvUserPayload.getIamProjectId());
         if (Objects.isNull(projectDTO)) {
             return payload;
         }
