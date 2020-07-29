@@ -7,7 +7,6 @@ import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
-
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -26,10 +25,19 @@ import java.util.Set;
 public interface BaseServiceClient {
 
     @GetMapping(value = "/choerodon/v1/projects/{projectId}")
-    ResponseEntity<ProjectDTO> queryIamProject(@PathVariable("projectId") Long projectId);
+    ResponseEntity<ProjectDTO> queryIamProject(@PathVariable("projectId") Long projectId,
+                                               @RequestParam(value = "with_category_info") Boolean withCategoryInfo,
+                                               @RequestParam(value = "with_user_info") Boolean withUserInfo,
+                                               @RequestParam(value = "with_agile_info") Boolean withAgileInfo);
 
+    /**
+     * @param organizationId 组织id
+     * @param withMoreInfo   获取更详细的组织配置信息以及用户信息
+     * @return
+     */
     @GetMapping(value = "/choerodon/v1/organizations/{organizationId}")
-    ResponseEntity<Tenant> queryOrganizationById(@PathVariable("organizationId") Long organizationId);
+    ResponseEntity<Tenant> queryOrganizationById(@PathVariable("organizationId") Long organizationId,
+                                                 @RequestParam(value = "with_more_info") Boolean withMoreInfo);
 
     /**
      * 根据id集合查询组织

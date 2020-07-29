@@ -2,7 +2,6 @@ package io.choerodon.devops.infra.feign.operator;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
@@ -16,7 +15,6 @@ import io.choerodon.devops.infra.util.FeignParamUtils;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +61,11 @@ public class BaseServiceClientOperator {
     }
 
     public ProjectDTO queryIamProjectById(Long projectId) {
-        ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProject(Objects.requireNonNull(projectId));
+        return queryIamProjectById(projectId, true, true, true);
+    }
+
+    public ProjectDTO queryIamProjectById(Long projectId, Boolean withCategory, Boolean withUserInfo, Boolean withAgileInfo) {
+        ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProject(Objects.requireNonNull(projectId), withCategory, withUserInfo, withAgileInfo);
         ProjectDTO projectDTO = projectDTOResponseEntity.getBody();
         // 判断id是否为空是因为可能会返回 CommonException 但是也会被反序列化为  ProjectDTO
         if (projectDTO == null || projectDTO.getId() == null) {
@@ -73,7 +75,11 @@ public class BaseServiceClientOperator {
     }
 
     public Tenant queryOrganizationById(Long organizationId) {
-        ResponseEntity<Tenant> organizationDTOResponseEntity = baseServiceClient.queryOrganizationById(organizationId);
+        return queryOrganizationById(organizationId, true);
+    }
+
+    public Tenant queryOrganizationById(Long organizationId, Boolean withMoreInfo) {
+        ResponseEntity<Tenant> organizationDTOResponseEntity = baseServiceClient.queryOrganizationById(organizationId, withMoreInfo);
         if (organizationDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
             Tenant tenant = organizationDTOResponseEntity.getBody();
             if (tenant != null && tenant.getTenantId() != null) {
@@ -101,6 +107,7 @@ public class BaseServiceClientOperator {
     public List<ProjectDTO> listIamProjectByOrgId(Long organizationId) {
         return listIamProjectByOrgId(organizationId, null, null, null);
     }
+
     public List<ProjectDTO> listOwnedProjects(Long organizationId, Long userId) {
         return baseServiceClient.listOwnedProjects(organizationId, userId).getBody();
     }

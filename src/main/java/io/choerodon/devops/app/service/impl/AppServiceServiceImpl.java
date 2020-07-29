@@ -616,9 +616,9 @@ public class AppServiceServiceImpl implements AppServiceService {
                                                String type, Boolean doPage,
                                                PageRequest pageable, String params, Boolean checkMember) {
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
         Page<AppServiceDTO> applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params, checkMember);
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId(), false);
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOS.getContent(), urlSlash);
 
@@ -626,11 +626,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         BeanUtils.copyProperties(applicationServiceDTOS, destination, "content");
         if (applicationServiceDTOS.getContent() != null) {
             List<AppServiceDTO> appServiceDTOList = applicationServiceDTOS.getContent();
-            List<Long> createdByIds = appServiceDTOList.stream().map(AppServiceDTO::getCreatedBy).collect(toList());
-            List<Long> lastUpdatedByIds = appServiceDTOList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList());
-            Map<Long, List<IamUserDTO>> createdByUsers = baseServiceClientOperator.listUsersByIds(createdByIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
-            Map<Long, List<IamUserDTO>> lastUpdatedByUsers = baseServiceClientOperator.listUsersByIds(lastUpdatedByIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
-            destination.setContent(applicationServiceDTOS.getContent().stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, createdByUsers, lastUpdatedByUsers)).collect(Collectors.toList()));
+            List<Long> userIds = appServiceDTOList.stream().map(AppServiceDTO::getCreatedBy).collect(toList());
+            userIds.addAll(appServiceDTOList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList()));
+            List<Long> distinctIds = userIds.stream().distinct().collect(toList());
+
+            Map<Long, IamUserDTO> users = baseServiceClientOperator.listUsersByIds(new ArrayList<>(distinctIds)).stream().collect(Collectors.toMap(IamUserDTO::getId, u -> u));
+            destination.setContent(applicationServiceDTOS.getContent().stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, users)).collect(Collectors.toList()));
         } else {
             destination.setContent(new ArrayList<>());
         }
@@ -659,7 +660,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public List<AppServiceRepVO> listByActive(Long projectId) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId,false,false,false);
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         List<AppServiceDTO> applicationDTOServiceList;
         if (projectOwner) {
@@ -672,15 +673,17 @@ public class AppServiceServiceImpl implements AppServiceService {
             applicationDTOServiceList = appServiceMapper.listProjectMembersAppServiceByActive(projectId, appServiceIds, userId);
         }
 
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId(),false);
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-        List<Long> createdByIds = applicationDTOServiceList.stream().map(AppServiceDTO::getCreatedBy).collect(toList());
-        List<Long> lastUpdatedByIds = applicationDTOServiceList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList());
-        Map<Long, List<IamUserDTO>> createdByUsers = baseServiceClientOperator.listUsersByIds(createdByIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
-        Map<Long, List<IamUserDTO>> lastUpdatedByUsers = baseServiceClientOperator.listUsersByIds(lastUpdatedByIds).stream().collect(Collectors.groupingBy(IamUserDTO::getId));
+        List<Long> userIds = applicationDTOServiceList.stream().map(AppServiceDTO::getCreatedBy).collect(toList());
+        userIds.addAll(applicationDTOServiceList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList()));
+
+        List<Long> distinctIds = userIds.stream().distinct().collect(toList());
+        Map<Long, IamUserDTO> users = baseServiceClientOperator.listUsersByIds(new ArrayList<>(distinctIds)).stream().collect(toMap(IamUserDTO::getId, u -> u));
+
         initApplicationParams(projectDTO, organizationDTO, applicationDTOServiceList, urlSlash);
 
-        return applicationDTOServiceList.stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, createdByUsers, lastUpdatedByUsers)).collect(toList());
+        return applicationDTOServiceList.stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, users)).collect(toList());
     }
 
     @Override
@@ -2768,7 +2771,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private Boolean checkEnableCreateAppSvcWithSize(Long projectId, int appSize) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
         if (baseServiceClientOperator.checkOrganizationIsRegistered(projectDTO.getOrganizationId())) {
             ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit();
             AppServiceDTO example = new AppServiceDTO();
@@ -2964,42 +2967,13 @@ public class AppServiceServiceImpl implements AppServiceService {
             throw new CommonException("error.app.project.notMatch");
         }
     }
-
-    private void initApplicationParams(ProjectDTO projectDTO, Tenant
-            organizationDTO, List<AppServiceDTO> applicationDTOS, String urlSlash) {
-        List<String> projectKeys = new ArrayList<>();
-        if (!sonarqubeUrl.equals("")) {
-            SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
-
-            //校验sonarqube地址是否正确
-            try {
-                sonarClient.getUser().execute();
-            } catch (IOException e) {
-                if (e.getCause().getMessage().equals("Connection refused: connect")) {
-                    throw new CommonException("error.connect.sonarqube.fail");
-                }
-            }
-
-            try {
-                Response<Projects> projectsResponse = sonarClient.listProject().execute();
-                if (projectsResponse != null && projectsResponse.raw().code() == 200) {
-                    projectKeys = projectsResponse.body().getComponents().stream().map(Component::getKey).collect(Collectors.toList());
-                }
-            } catch (IOException e) {
-                LOGGER.info(e.getMessage(), e);
-            }
-        }
-
+    private void initApplicationParams(ProjectDTO projectDTO, Tenant organizationDTO, List<AppServiceDTO> applicationDTOS, String urlSlash) {
         for (AppServiceDTO t : applicationDTOS) {
             if (t.getGitlabProjectId() != null) {
                 t.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), t.getCode()));
                 t.setRepoUrl(
                         gitlabUrl + urlSlash + organizationDTO.getTenantNum() + "-" + projectDTO.getCode() + "/"
                                 + t.getCode() + ".git");
-                String key = String.format(SONAR_KEY, organizationDTO.getTenantNum(), projectDTO.getCode(), t.getCode());
-                if (!projectKeys.isEmpty() && projectKeys.contains(key)) {
-                    t.setSonarUrl(sonarqubeUrl);
-                }
             }
         }
     }
@@ -3030,12 +3004,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         return appServiceRepVO;
     }
 
-    public AppServiceRepVO dtoToRepVo(AppServiceDTO appServiceDTO, Map<Long, List<IamUserDTO>> createdByUsers, Map<Long, List<IamUserDTO>> lastUpdatedByUsers) {
+    public AppServiceRepVO dtoToRepVo(AppServiceDTO appServiceDTO, Map<Long, IamUserDTO> users) {
         AppServiceRepVO appServiceRepVO = new AppServiceRepVO();
         BeanUtils.copyProperties(appServiceDTO, appServiceRepVO);
         appServiceRepVO.setFail(appServiceDTO.getFailed());
-        IamUserDTO createUser = null == createdByUsers.get(appServiceDTO.getCreatedBy()) ? null : createdByUsers.get(appServiceDTO.getCreatedBy()).get(0);
-        IamUserDTO updateUser = null == lastUpdatedByUsers.get(appServiceDTO.getLastUpdatedBy()) ? null : lastUpdatedByUsers.get(appServiceDTO.getLastUpdatedBy()).get(0);
+        IamUserDTO createUser = users.get(appServiceDTO.getCreatedBy());
+        IamUserDTO updateUser = users.get(appServiceDTO.getLastUpdatedBy());
         if (createUser != null) {
             appServiceRepVO.setCreateUserName(createUser.getRealName());
             appServiceRepVO.setCreateLoginName(createUser.getLoginName());
