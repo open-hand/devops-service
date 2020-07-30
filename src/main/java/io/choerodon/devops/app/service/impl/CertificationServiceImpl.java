@@ -16,10 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
-import io.choerodon.devops.api.vo.C7nCertificationVO;
-import io.choerodon.devops.api.vo.CertificationRespVO;
-import io.choerodon.devops.api.vo.CertificationVO;
-import io.choerodon.devops.api.vo.ProjectCertificationVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.api.vo.kubernetes.certification.*;
 import io.choerodon.devops.app.service.*;
@@ -104,11 +101,20 @@ public class CertificationServiceImpl implements CertificationService {
     private Gson gson = new Gson();
 
 
+    private C7nCertificationVO processEncryptCertification(C7nCertificationCreateVO c7nCertificationCreateVO) {
+        // TODO hzero 主键加密组件修复后删除
+        C7nCertificationVO certificationVO = ConvertUtils.convertObject(c7nCertificationCreateVO, C7nCertificationVO.class);
+        certificationVO.setCertId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getCertId()));
+        certificationVO.setEnvId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getEnvId()));
+        certificationVO.setId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getId()));
+        return certificationVO;
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createCertification(Long projectId, C7nCertificationVO certificationDTO,
+    public void createCertification(Long projectId, C7nCertificationCreateVO c7nCertificationCreateVO,
                                     MultipartFile key, MultipartFile cert, Boolean isGitOps) {
-
+        C7nCertificationVO certificationDTO = processEncryptCertification(c7nCertificationCreateVO);
         Long envId = certificationDTO.getEnvId();
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);

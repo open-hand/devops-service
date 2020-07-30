@@ -17,10 +17,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.C7nCertificationVO;
-import io.choerodon.devops.api.vo.CertificationRespVO;
-import io.choerodon.devops.api.vo.CertificationVO;
-import io.choerodon.devops.api.vo.ProjectCertificationVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -56,7 +53,7 @@ public class CertificationController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书", required = true)
-            @ModelAttribute C7nCertificationVO certification,
+            @ModelAttribute C7nCertificationCreateVO certification,
             @ApiParam(value = "key文件")
             @RequestParam(value = "key", required = false) MultipartFile key,
             @ApiParam(value = "cert文件")
