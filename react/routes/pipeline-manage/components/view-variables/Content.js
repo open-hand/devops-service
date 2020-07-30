@@ -60,10 +60,14 @@ export default observer(() => {
     <div className={`${prefixCls}-title`}>
       {formatMessage({ id: `${intlPrefix}.settings.project` })}
     </div>
-    {getFormContent(projectFormDs)}
+    {projectFormDs.length ? getFormContent(projectFormDs) : (
+      <span className={`${prefixCls}-title-empty`}>{formatMessage({ id: `${intlPrefix}.settings.project.empty` })}</span>
+    )}
     <div className={`${prefixCls}-title-app`}>
       {formatMessage({ id: `${intlPrefix}.settings.app` })}
     </div>
-    {getFormContent(appFormDs)}
+    {appFormDs.length ? getFormContent(appFormDs) : (
+      <span className={`${prefixCls}-title-empty`}>{formatMessage({ id: `${intlPrefix}.settings.app.empty` })}</span>
+    )}
   </div>);
 });
