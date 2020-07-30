@@ -1,26 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.regex.Pattern;
-import javax.annotation.Nullable;
-
 import com.alibaba.fastjson.JSONArray;
 import com.google.gson.Gson;
-import io.codearte.props2yaml.Props2YAML;
-import org.hzero.websocket.constant.WebSocketConstant;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.hzero.websocket.vo.MsgVO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketMessage;
-import org.springframework.web.socket.WebSocketSession;
-
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.Command;
 import io.choerodon.devops.api.vo.kubernetes.ImagePullSecret;
@@ -41,6 +22,24 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.util.*;
+import io.codearte.props2yaml.Props2YAML;
+import org.hzero.websocket.constant.WebSocketConstant;
+import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.hzero.websocket.vo.MsgVO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketMessage;
+import org.springframework.web.socket.WebSocketSession;
+
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.util.*;
+import java.util.regex.Pattern;
 
 
 /**
@@ -171,7 +170,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         Map<String, String> configs = new HashMap<>();
         configs.put("config.connect", agentServiceUrl);
         configs.put("config.token", devopsClusterDTO.getToken());
-        configs.put("config.clusterId", devopsClusterDTO.getId().toString());
+        configs.put("config.clusterId", "!!str " + devopsClusterDTO.getId().toString());
         configs.put("config.choerodonId", devopsClusterDTO.getChoerodonId());
         configs.put("rbac.create", "true");
         Payload payload = new Payload(
