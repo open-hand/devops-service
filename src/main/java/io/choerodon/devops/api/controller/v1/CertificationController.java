@@ -180,6 +180,7 @@ public class CertificationController {
     public ResponseEntity<CertificationVO> queryByName(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境ID", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "证书名称", required = true)
@@ -204,6 +205,7 @@ public class CertificationController {
     public ResponseEntity<CertificationRespVO> queryById(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "证书ID", required = true)
             @PathVariable(value = "cert_id") Long certId) {
         return Optional.ofNullable(certificationService.queryByCertId(certId))
