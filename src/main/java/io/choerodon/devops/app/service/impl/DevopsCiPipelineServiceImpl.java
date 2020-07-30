@@ -508,6 +508,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         CiCdPipelineUtils.calculateStatus(ciCdPipelineRecordVO, devopsCiPipelineRecordVO, devopsCdPipelineRecordVO);
                         ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
                         ciCdPipelineRecordVOS.add(ciCdPipelineRecordVO);
+
+                        //cicd 跳过执行记录
+                        if (!CollectionUtils.isEmpty(ciCdPipelineRecordVOS)) {
+                            CiCdPipelineUtils.recordListSort(ciCdPipelineRecordVOS);
+                            ciCdPipelineRecordVOS.get(ciCdPipelineRecordVOS.size() - 1).setStageRecordVOS(null);
+                        }
                     }
                     //纯ci
                     if (devopsCiPipelineRecordVO != null && devopsCdPipelineRecordVO == null) {
@@ -550,14 +556,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 ciCdPipelineVO.setLatestExecuteDate(lastCiCdPipelineRecordVO.getCreatedDate());
             }
         });
-        //跳过执行记录
-        ciCdPipelineVOS.forEach(ciCdPipelineVO -> {
-                    List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS = ciCdPipelineVO.getCiCdPipelineRecordVOS();
-                    if (!CollectionUtils.isEmpty(ciCdPipelineRecordVOS)) {
-                        ciCdPipelineRecordVOS.get(ciCdPipelineRecordVOS.size() - 1).setStageRecordVOS(null);
-                    }
-                }
-        );
         return ciCdPipelineVOS;
     }
 
