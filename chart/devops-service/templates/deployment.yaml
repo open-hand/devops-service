@@ -54,10 +54,10 @@ spec:
       - name: {{ .Release.Name }}
         image: {{ include "service.image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/bin/sh", "-c","curl -X POST localhost:{{ .Values.env.open.SERVER_PORT }}/pre_stop"]
+#        lifecycle:
+#          preStop:
+#            exec:
+#              command: ["/bin/sh", "-c","curl -X POST localhost:{{ .Values.env.open.SERVER_PORT }}/pre_stop"]
         env:
 {{- range $name, $value := .Values.env.open }}
 {{- if ne (len ($value | quote)) 0 }}
