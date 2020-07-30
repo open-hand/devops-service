@@ -48,12 +48,13 @@ export default observer((props) => {
     gitlabPipelineId: pipelineRecordId,
     gitlabTriggerRef,
     commit,
+    devopsPipelineRecordRelId: recordDevopsPipelineRecordRelId,
   } = getDetailData;
 
   useEffect(() => {
     const treeStatusList = map(treeStageRecordVOList || [], 'status');
     const detailStatusList = map(stageRecordVOS || [], 'status');
-    if (pipelineRecordId === gitlabPipelineId && (status !== treeStatus || !isEqual(detailStatusList, treeStatusList))) {
+    if (devopsPipelineRecordRelId === recordDevopsPipelineRecordRelId && (status !== treeStatus || !isEqual(detailStatusList, treeStatusList))) {
       treeDs && treeDs.query();
     }
   }, [pipelineRecordId]);
