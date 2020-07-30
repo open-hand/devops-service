@@ -36,8 +36,8 @@ const ValueModalContent = observer((
       values: value || yaml || '',
       instanceId: id,
       type: 'update',
-      environmentId: Number(envId),
-      appServiceId: Number(appServiceId),
+      environmentId: envId,
+      appServiceId,
       appServiceVersionId,
     };
 
