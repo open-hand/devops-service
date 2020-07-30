@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.hzero.starter.keyencrypt.core.EncryptContext;
 import org.hzero.starter.keyencrypt.core.IEncryptionService;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
@@ -29,6 +30,7 @@ public final class KeyDecryptHelper {
      * ObjectMapper是线程安全的 (只要不是正在使用中再进行未经同步的配置操作)
      */
     private static ObjectMapper SPRINT_OBJECT_MAPPER;
+    private static IEncryptionService ENCRYPTION_SERVICE;
 
     private KeyDecryptHelper() {
     }
@@ -40,6 +42,12 @@ public final class KeyDecryptHelper {
         }
     }
 
+    private static void ensureEncryptService() {
+        if (ENCRYPTION_SERVICE == null) {
+            ENCRYPTION_SERVICE = ApplicationContextHelper.getContext().getBean(IEncryptionService.class);
+        }
+    }
+
     /**
      * 用于解密逗号分隔的加密id (用于加密时未提供key的解密过程)
      *
@@ -48,13 +56,13 @@ public final class KeyDecryptHelper {
      */
     @Nullable
     public static String decryptCommaSeparatedIds(@Nullable String commaSeparatedEncryptedIds) {
-        if (commaSeparatedEncryptedIds == null) {
-            return null;
+        if (commaSeparatedEncryptedIds == null || !EncryptContext.isEncrypt()) {
+            return commaSeparatedEncryptedIds;
         }
-        IEncryptionService iEncryptionService = ApplicationContextHelper.getContext().getBean(IEncryptionService.class);
+        ensureEncryptService();
         String[] encryptedIds = commaSeparatedEncryptedIds.split(COMMA);
         for (int i = 0; i < encryptedIds.length; i++) {
-            encryptedIds[i] = iEncryptionService.decrypt(encryptedIds[i], EMPTY);
+            encryptedIds[i] = ENCRYPTION_SERVICE.decrypt(encryptedIds[i], EMPTY);
         }
         return Joiner.on(COMMA).join(encryptedIds);
     }
@@ -67,15 +75,15 @@ public final class KeyDecryptHelper {
      */
     @Nullable
     public static String decryptJsonIds(@Nullable String idJsonArray) {
-        if (idJsonArray == null) {
+        if (idJsonArray == null || !EncryptContext.isEncrypt()) {
             return null;
         }
         List<String> idStringList = GSON.fromJson(idJsonArray, new TypeToken<List<String>>() {
         }.getType());
-        IEncryptionService iEncryptionService = ApplicationContextHelper.getContext().getBean(IEncryptionService.class);
+        ensureEncryptService();
         List<Long> result = new ArrayList<>(idStringList.size());
         for (String s : idStringList) {
-            result.add(Long.valueOf(iEncryptionService.decrypt(s, EMPTY)));
+            result.add(Long.valueOf(ENCRYPTION_SERVICE.decrypt(s, EMPTY)));
         }
         return GSON.toJson(result);
     }
@@ -91,10 +99,17 @@ public final class KeyDecryptHelper {
         if (ids == null || ids.length == 0) {
             return null;
         }
-        IEncryptionService iEncryptionService = ApplicationContextHelper.getContext().getBean(IEncryptionService.class);
+
         Long[] result = new Long[ids.length];
-        for (int i = 0; i < ids.length; i++) {
-            result[i] = Long.parseLong(iEncryptionService.decrypt(ids[i], EMPTY));
+        if (EncryptContext.isEncrypt()) {
+            ensureEncryptService();
+            for (int i = 0; i < ids.length; i++) {
+                result[i] = Long.parseLong(ENCRYPTION_SERVICE.decrypt(ids[i], EMPTY));
+            }
+        } else {
+            for (int i = 0; i < ids.length; i++) {
+                result[i] = Long.parseLong(ids[i]);
+            }
         }
         return result;
     }
@@ -108,11 +123,15 @@ public final class KeyDecryptHelper {
      * @return 对象
      */
     public static <T> T decryptJson(String json, Class<T> type) {
-        ensureInitObjectMapper();
-        try {
-            return SPRINT_OBJECT_MAPPER.readValue(json, type);
-        } catch (IOException e) {
-            throw new CommonException("error.decrypt.json", e);
+        if (EncryptContext.isEncrypt()) {
+            ensureInitObjectMapper();
+            try {
+                return SPRINT_OBJECT_MAPPER.readValue(json, type);
+            } catch (IOException e) {
+                throw new CommonException("error.decrypt.json", e);
+            }
+        } else {
+            return JsonHelper.unmarshalByJackson(json, type);
         }
     }
 
@@ -124,11 +143,30 @@ public final class KeyDecryptHelper {
      * @return 对字段加密后的json数据
      */
     public static <T> String encryptJson(T object) {
-        ensureInitObjectMapper();
-        try {
-            return SPRINT_OBJECT_MAPPER.writeValueAsString(object);
-        } catch (Exception ex) {
-            throw new CommonException("error.encrypt.json", ex);
+        if (EncryptContext.isAllowedEncrypt()) {
+            ensureInitObjectMapper();
+            try {
+                return SPRINT_OBJECT_MAPPER.writeValueAsString(object);
+            } catch (Exception ex) {
+                throw new CommonException("error.encrypt.json", ex);
+            }
+        } else {
+            return JsonHelper.marshalByJackson(object);
+        }
+    }
+
+    /**
+     * 将对象转为字符串然后加密
+     *
+     * @param object 对象
+     * @return 对字段加密后的json数据
+     */
+    public static String encryptValue(Object object) {
+        if (EncryptContext.isAllowedEncrypt()) {
+            ensureEncryptService();
+            return ENCRYPTION_SERVICE.encrypt(String.valueOf(object), EMPTY);
+        } else {
+            return String.valueOf(object);
         }
     }
 }
