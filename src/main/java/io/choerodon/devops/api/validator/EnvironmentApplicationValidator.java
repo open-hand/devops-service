@@ -59,7 +59,7 @@ public class EnvironmentApplicationValidator {
             throw new CommonException("error.app.ids.null");
         }
 
-        Stream.of(appServiceIds).forEach(id -> {
+        appServiceIds.forEach(id -> {
             if (appServiceMapper.selectByPrimaryKey(id) == null) {
                 throw new CommonException("error.app.id.not.exist", id);
             }
