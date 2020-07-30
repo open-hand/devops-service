@@ -823,6 +823,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             }
         } else if (AuditStatusEnum.REFUSED.value().equals(result)) {
             // 审核不通过
+            // 更新审核状态为不通过
+            devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.REFUSED.value());
+            devopsCdAuditRecordService.update(devopsCdAuditRecordDTO);
             // 1. 停止流水线
             workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
             // 更新当前阶段状态为stop
