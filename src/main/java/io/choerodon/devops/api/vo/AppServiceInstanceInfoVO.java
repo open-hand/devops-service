@@ -57,8 +57,11 @@ public class AppServiceInstanceInfoVO {
     private String error;
     @ApiModelProperty("实例所属项目id")
     private Long projectId;
+
+    @Encrypt
     @ApiModelProperty("当前实例生效的commandId/可能为null")
     private Long effectCommandId;
+
     @ApiModelProperty("当前实例生效的版本/可能为null")
     private String effectCommandVersion;
     @ApiModelProperty("当前实例生效的command的状态/可能为null，为")
