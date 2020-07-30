@@ -123,7 +123,7 @@ const ResourceSidebar = injectIntl(inject('AppState')(observer((props) => {
       const { file: { name }, fileList } = value;
       if (!fileList.length) {
         callback(formatMessage({ id: 'resource.required' }));
-      } else if (!name.endsWith('.yml')) {
+      } else if (!name.endsWith('.yml') && !name.endsWith('.yaml')) {
         callback(formatMessage({ id: 'file.type.error' }));
       } else if (fileList.length > 1) {
         callback(formatMessage({ id: 'resource.one.file' }));
@@ -229,7 +229,7 @@ const ResourceSidebar = injectIntl(inject('AppState')(observer((props) => {
             })(
               <Upload
                 // action="//jsonplaceholder.typicode.com/posts/"
-                accept=".yml"
+                accept=".yml, .yaml"
                 disabled={fileDisabled}
                 beforeUpload={beforeUpload}
                 onRemove={removeFile}

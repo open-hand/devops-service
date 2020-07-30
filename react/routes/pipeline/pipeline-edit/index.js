@@ -12,9 +12,9 @@ import StageCreateModal from '../components/stageCreateModal';
 import { STAGE_FLOW_AUTO, STAGE_FLOW_MANUAL, TRIGGER_TYPE_AUTO, TRIGGER_TYPE_MANUAL } from '../components/Constants';
 import InterceptMask from '../../../components/intercept-mask';
 import EmptyPage from '../components/emptyPage';
+
 import './index.less';
 import '../../main.less';
-
 
 const { Item: FormItem } = Form;
 const { Option } = Select;
@@ -93,7 +93,7 @@ export default class PipelineEdit extends Component {
             objectVersionNumber,
             name,
             triggerType,
-            pipelineUserRels: triggerType === STAGE_FLOW_MANUAL ? _.map(users, (item) => Number(item)) : null,
+            pipelineUserRels: triggerType === STAGE_FLOW_MANUAL ? _.map(users, (item) => item) : null,
             pipelineStageVOs,
           })
           .catch((e) => {
