@@ -35,6 +35,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -167,19 +169,30 @@ public class AgentCommandServiceImpl implements AgentCommandService {
 
     private AgentMsgVO buildAgentUpgradeMessage(DevopsClusterDTO devopsClusterDTO) {
         AgentMsgVO msg = new AgentMsgVO();
-        Map<String, String> configs = new HashMap<>();
-        configs.put("config.connect", agentServiceUrl);
-        configs.put("config.token", devopsClusterDTO.getToken());
-        configs.put("config.clusterId", devopsClusterDTO.getId().toString());
-        configs.put("config.choerodonId", devopsClusterDTO.getChoerodonId());
-        configs.put("rbac.create", "true");
+        Map<String, Object> configs = new HashMap<>();
+        Map<String, String> configValues = new HashMap<>();
+        configValues.put("connect", agentServiceUrl);
+        configValues.put("token", devopsClusterDTO.getToken());
+        configValues.put("clusterId", devopsClusterDTO.getId().toString());
+        configValues.put("choerodonId", devopsClusterDTO.getChoerodonId());
+        Map<String, String> rbacValues = new HashMap<>();
+        rbacValues.put("create", "true");
+        configs.put("config", configValues);
+        configs.put("rbac", rbacValues);
+
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setAllowReadOnlyProperties(true);
+
+
+        Yaml yaml = new Yaml(options);
+
         Payload payload = new Payload(
                 "choerodon",
                 agentRepoUrl,
                 "choerodon-cluster-agent",
                 agentExpectVersion,
-                Props2YAML.fromContent(FileUtil.propertiesToString(configs))
-                        .convert(), "choerodon-cluster-agent-" + devopsClusterDTO.getCode(), null);
+                yaml.dump(configs), "choerodon-cluster-agent-" + devopsClusterDTO.getCode(), null);
         msg.setKey(String.format(KEY_FORMAT,
                 devopsClusterDTO.getId(),
                 "choerodon-cluster-agent-" + devopsClusterDTO.getCode()));
