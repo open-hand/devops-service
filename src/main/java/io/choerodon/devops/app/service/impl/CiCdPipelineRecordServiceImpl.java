@@ -126,6 +126,10 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             CiCdPipelineVO ciCdPipelineVO = ConvertUtils.convertObject(devopsCiPipelineRecordVO.getDevopsCiPipelineVO(), CiCdPipelineVO.class);
             //触发人员 执行时间 流程耗时
             fillPipelineVO(devopsCiPipelineRecordVO.getUsername(), stageRecordVOS, devopsCiPipelineRecordVO.getCreatedDate(), ciCdPipelineVO, ciCdPipelineRecordVO);
+            //cicd 剔除跳过的阶段
+            if (isFirstRecord(devopsPipelineRecordRelVO)) {
+                ciCdPipelineRecordVO.setStageRecordVOS(null);
+            }
         }
         //纯ci
         if (devopsCiPipelineRecordVO != null && devopsCdPipelineRecordVO == null) {
@@ -151,10 +155,6 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             ciCdPipelineRecordVO.setCreatedDate(devopsCdPipelineRecordVO.getCreatedDate());
             CiCdPipelineVO ciCdPipelineVO = ConvertUtils.convertObject(devopsCdPipelineRecordVO.getCiCdPipelineVO(), CiCdPipelineVO.class);
             fillPipelineVO(devopsCdPipelineRecordVO.getUsername(), stageRecordVOS, devopsCdPipelineRecordVO.getCreatedDate(), ciCdPipelineVO, ciCdPipelineRecordVO);
-        }
-        //剔除跳过的阶段
-        if (isFirstRecord(devopsPipelineRecordRelVO)) {
-            ciCdPipelineRecordVO.setStageRecordVOS(null);
         }
         return ciCdPipelineRecordVO;
     }
