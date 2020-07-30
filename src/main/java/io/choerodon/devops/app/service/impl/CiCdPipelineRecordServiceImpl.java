@@ -428,7 +428,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 
     private void assemblePage(List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS, Page<CiCdPipelineRecordVO> ciCdPipelineRecordVO, Page<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS) {
         //计算状态
-        calculateRecordStatus(ciCdPipelineRecordVOS);
+//        calculateRecordStatus(ciCdPipelineRecordVOS);
         ciCdPipelineRecordVO.setTotalElements(devopsPipelineRecordRelDTOS.getTotalElements());
         ciCdPipelineRecordVO.setSize(devopsPipelineRecordRelDTOS.getSize());
         ciCdPipelineRecordVO.setNumber(devopsPipelineRecordRelDTOS.getNumber());
