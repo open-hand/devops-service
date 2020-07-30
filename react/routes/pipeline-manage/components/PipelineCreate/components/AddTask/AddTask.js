@@ -1247,25 +1247,36 @@ const AddTask = observer(() => {
   };
 
   const getImageDom = () => [
-    <div colSpan={4} newLine className="advanced_text border-advanced" style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
+    <div
+      colSpan={4}
+      newLine
+      className={`advanced_text border-advanced ${!expandIf && 'border-advanced-after'}`}
+      style={{ cursor: 'pointer' }}
+      onClick={() => setExpandIf(!expandIf)}
+    >
       高级设置<Icon style={{ fontSize: 18 }} type={expandIf ? 'expand_less' : 'expand_more'} />
     </div>,
     expandIf ? (
-      <Select
-        addonAfter={<Tips helpText="流水线制品部署表示直接使用所选关联构建任务中产生的镜像进行部署；匹配制品部署则表示可自主选择项目镜像仓库中的镜像，并配置镜像版本的匹配规则，后续部署的镜像版本便会遵循此规则。" />}
-        onChange={handleChangeImage}
+      <div
+        className={['chart', 'sonar'].includes(AddTaskFormDataSet.current.get('type')) && 'border-advanced-after'}
         newLine
-        combo
         colSpan={4}
-        name="image"
       >
-        <Option value={defaultImage}>{`${defaultImage}${defaultImage === useStore.getDefaultImage ? '(默认)' : ''}`}</Option>
-      </Select>
+        <Select
+          addonAfter={<Tips helpText="流水线制品部署表示直接使用所选关联构建任务中产生的镜像进行部署；匹配制品部署则表示可自主选择项目镜像仓库中的镜像，并配置镜像版本的匹配规则，后续部署的镜像版本便会遵循此规则。" />}
+          onChange={handleChangeImage}
+          combo
+          colSpan={4}
+          name="image"
+        >
+          <Option value={defaultImage}>{`${defaultImage}${defaultImage === useStore.getDefaultImage ? '(默认)' : ''}`}</Option>
+        </Select>
+      </div>
     ) : '',
   ];
 
-  const getShareSettings = () => (expandIf && AddTaskFormDataSet.current.get('type') === 'build' ? (
-    <div newLine colSpan={4}>
+  const getShareSettings = () => (expandIf && AddTaskFormDataSet.current.get('type') === 'build' ? [
+    <div className="border-advanced-after" newLine colSpan={4}>
       <Tips
         title={formatMessage({ id: 'c7ncd.pipelineManage.create.share.title' })}
         helpText={formatMessage({ id: 'c7ncd.pipelineManage.create.share.tips' })}
@@ -1275,8 +1286,8 @@ const AddTask = observer(() => {
         <Option value="toUpload">上传共享目录choerodon-ci-cache</Option>
         <Option value="toDownload">下载共享目录choerodon-ci-cache</Option>
       </SelectBox>
-    </div>
-  ) : null);
+    </div>,
+  ] : null);
 
   function renderTriggerTypeTips() {
     const type = AddTaskFormDataSet.current.get('triggerType');
