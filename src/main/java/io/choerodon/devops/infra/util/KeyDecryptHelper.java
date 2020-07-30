@@ -181,10 +181,10 @@ public final class KeyDecryptHelper {
         if (object == null) {
             throw new CommonException("error.decrypt.value.null");
         }
+        ensureEncryptService();
         if (EncryptContext.isEncrypt()
                 && EncryptContext.isAllowedEncrypt()
                 && ENCRYPTION_SERVICE.isCipher(object)) {
-            ensureEncryptService();
             return Long.valueOf(ENCRYPTION_SERVICE.decrypt(object, EMPTY, TokenUtils.getToken(), true));
         } else {
             return Long.valueOf(object);
