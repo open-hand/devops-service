@@ -169,7 +169,7 @@ export default observer(() => {
       } else if (jobDetail.type === 'cdAudit') {
         if (jobDetail.metadata) {
           const { cdAuditUserIds } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
-          newCdAuditUserIds = cdAuditUserIds;
+          newCdAuditUserIds = [...cdAuditUserIds];
         }
       }
 
@@ -177,7 +177,7 @@ export default observer(() => {
         ...jobDetail,
         ...extra,
         ...(jobDetail.metadata ? JSON.parse(jobDetail.metadata.replace(/'/g, '"')) : {}),
-        cdAuditUserIds: newCdAuditUserIds,
+        cdAuditUserIds: [...newCdAuditUserIds],
         triggerValue: jobDetail.triggerType === 'regex' ? jobDetail.triggerValue : jobDetail.triggerValue?.split(','),
       };
       delete newJobDetail.metadata;
@@ -263,7 +263,7 @@ export default observer(() => {
           <YamlEditor
             colSpan={6}
             newLine
-            className="addcdTask-yamleditor"            
+            className="addcdTask-yamleditor"
             readOnly={false}
             value={customValues}
             onValueChange={(data) => setCustomValues(data)}
@@ -301,7 +301,7 @@ export default observer(() => {
           <TextField colSpan={3} name="containerName" />,
           <YamlEditor
             colSpan={6}
-            className="addcdTask-yamleditor"            
+            className="addcdTask-yamleditor"
             newLine
             readOnly={false}
             value={imageDeployValues}
@@ -336,7 +336,7 @@ export default observer(() => {
           <YamlEditor
             colSpan={6}
             newLine
-            className="addcdTask-yamleditor"            
+            className="addcdTask-yamleditor"
             readOnly={false}
             value={jarValues}
             onValueChange={(data) => setJarValues(data)}
@@ -362,7 +362,7 @@ export default observer(() => {
             colSpan={3}
             newLine
             readOnly={false}
-            className="addcdTask-yamleditor"            
+            className="addcdTask-yamleditor"
             onValueChange={(data) => {
               setValueIdValues(data);
             }}
