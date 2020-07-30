@@ -44,8 +44,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
           appServiceVersionId: versionId,
           type: 'update',
           instanceId: id,
-          environmentId: Number(envId),
-          appServiceId: Number(appServiceId),
+          environmentId: envId,
+          appServiceId,
         });
       }
     }, []);
