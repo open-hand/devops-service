@@ -170,7 +170,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         Map<String, String> configs = new HashMap<>();
         configs.put("config.connect", agentServiceUrl);
         configs.put("config.token", devopsClusterDTO.getToken());
-        configs.put("config.clusterId", "!!str " + devopsClusterDTO.getId().toString());
+        configs.put("config.clusterId", devopsClusterDTO.getId().toString());
         configs.put("config.choerodonId", devopsClusterDTO.getChoerodonId());
         configs.put("rbac.create", "true");
         Payload payload = new Payload(
