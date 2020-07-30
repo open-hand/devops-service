@@ -238,7 +238,6 @@ public class DevopsClusterController {
             @Encrypt
             @ApiParam(value = "集群id", required = true)
             @PathVariable(value = "cluster_id") Long clusterId,
-            @Encrypt
             @ApiParam(value = "要删除权限的项目id", required = true)
             @RequestParam(value = "delete_project_id") Long projectToDelete) {
         devopsClusterService.deletePermissionOfProject(projectId, clusterId, projectToDelete);
