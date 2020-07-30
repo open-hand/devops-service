@@ -69,10 +69,33 @@ export default observer((props) => {
     setRightLineDom(rightList);
   }, [getLoading, getStepData]);
 
-  function getJobTask({ jobType: type, metadata, iamUserDTOS, jobTriggerValue, triggerValue, envName }) {
+  function getJobTask({ jobType: type, metadata, iamUserDTOS, jobTriggerValue, triggerValue, envName, countersigned }) {
+    if (type === 'cdAudit') {
+      return (
+        <div className="c7ncd-pipeline-detail-job-task">
+          <div className="c7ncd-pipeline-detail-job-task-deploy">
+            <span className="c7ncd-pipeline-detail-job-task-deploy-item">
+              审核人员：
+              {map(iamUserDTOS || [], ({ loginName, realName, id: userId }, index) => (
+                <span key={userId}>
+                  {realName}
+                  {index !== iamUserDTOS.length - 1 && ','}
+                </span>
+              ))}
+            </span>
+            <span className="c7ncd-pipeline-detail-job-task-deploy-item">审核模式：{countersigned === 0 ? '或签' : '会签'}</span>
+            <span>
+              触发分支：
+              {jobTriggerValue === 'exact_exclude' ? '精确排除 ' : ''}
+              {triggerValue}
+            </span>
+          </div>
+        </div>
+      );
+    }
     if (metadata) {
       const newData = JSON.parse(metadata.replace(/'/g, '"'));
-      const { sonarUrl, config, countersigned } = newData || {};
+      const { sonarUrl, config } = newData || {};
       let content;
       switch (type) {
         case 'sonar':
@@ -168,12 +191,12 @@ export default observer((props) => {
                 )}
               </div>
             ) : null}
-            {map(jobList, ({ id: jobId, type: jobType, name: jobName, metadata, iamUserDTOS, triggerType: jobTriggerValue, triggerValue, envName }, index) => (
+            {map(jobList, ({ id: jobId, type: jobType, name: jobName, metadata, iamUserDTOS, triggerType: jobTriggerValue, triggerValue, envName, countersigned }, index) => (
               <div key={`${stageId}-${jobId}`}>
                 {index && leftLineDom[stageIndex] ? leftLineDom[stageIndex][index] : null}
                 <div className={`c7ncd-pipeline-detail-job c7ncd-pipeline-detail-job-${stageType}`} id={`${id}-${stageIndex}-job-${index}`}>
                   <div className="c7ncd-pipeline-detail-job-title">【{jobTask[jobType]}】{jobName}</div>
-                  {jobType !== 'custom' && getJobTask({ jobType, metadata, iamUserDTOS, jobTriggerValue, triggerValue, envName })}
+                  {jobType !== 'custom' && getJobTask({ jobType, metadata, iamUserDTOS, jobTriggerValue, triggerValue, envName, countersigned })}
                 </div>
                 {index && stageIndex !== getStepData.length - 1 && rightLineDom[stageIndex] ? rightLineDom[stageIndex][index] : null}
               </div>
