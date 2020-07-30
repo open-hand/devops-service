@@ -596,6 +596,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_SUCCESS, userIds, devopsCdPipelineRecordDTO.getId(), devopsCdStageRecordDTO.getStageName(), devopsCdStageRecordDTO.getStageId());
         } else if (AuditStatusEnum.REFUSED.value().equals(result)) {
             // 审核不通过
+            // 更新审核状态为不通过
+            devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.REFUSED.value());
+            devopsCdAuditRecordService.update(devopsCdAuditRecordDTO);
             // 1. 停止流水线
             workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
             // 2. 更新后续阶段以及任务状态为终止
