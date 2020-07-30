@@ -151,11 +151,13 @@ export default observer(() => {
   useEffect(() => {
     if (jobDetail) {
       let newCdAuditUserIds;
+      let extra = {};
       if (jobDetail.type === 'cdDeploy') {
         const { value } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
         value && setValueIdValues(Base64.decode(value));
       } else if (jobDetail.type === 'cdHost') {
         const metadata = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
+        extra = { ...metadata?.hostConnectionVO, ...metadata?.jarDeploy };
         const { hostDeployType } = metadata;
         if (hostDeployType === 'customize') {
           setCustomValues(Base64.decode(metadata.customize?.values));
@@ -171,6 +173,7 @@ export default observer(() => {
 
       const newJobDetail = {
         ...jobDetail,
+        ...extra,
         ...JSON.parse(jobDetail.metadata.replace(/'/g, '"')),
         cdAuditUserIds: newCdAuditUserIds,
         triggerValue: jobDetail.triggerType === 'regex' ? jobDetail.triggerValue : jobDetail.triggerValue?.split(','),

@@ -786,11 +786,7 @@ const pipelineManage = {
   'c7ncd.pipelineManage.execute.retry': '重试',
   'c7ncd.pipelineManage.execute.audit': '人工审核',
   'c7ncd.pipelineManage.delete.title': '删除流水线',
-<<<<<<< HEAD
-  'c7ncd.pipelineManage.delete.des': '确定删除该条流水线吗？',
-=======
   'c7ncd.pipelineManage.delete.des': '确定删除该条CI流水线吗？',
->>>>>>> hotfix-0.22.3
   'c7ncd.pipelineManage.stop.title': '停用流水线',
   'c7ncd.pipelineManage.stop.des': '确定停用该条流水线吗？',
   'c7ncd.pipelineManage.record.detail': '流水线记录详情',
