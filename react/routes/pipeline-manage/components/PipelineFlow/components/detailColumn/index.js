@@ -248,11 +248,15 @@ const DetailItem = (props) => {
         </div>
         <div>
           <span>指定审核人员:</span>
-          <span>{appontUserString || '-'}</span>
+          <Tooltip title={appontUserString}>
+            <span>{appontUserString || '-'}</span>
+          </Tooltip>
         </div>
         <div>
           <span>已审核人员:</span>
-          <span>{reviewedUserStirng || '-'}</span>
+          <Tooltip title={reviewedUserStirng}>
+            <span>{reviewedUserStirng || '-'}</span>
+          </Tooltip>
         </div>
         <div>
           <span>审核状态:</span>
