@@ -87,7 +87,7 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
         });
         HashMap<String, String> params = new HashMap<>();
         params.put(STAGE_NAME, devopsCdStageRecord.getStageName());
-        sendNotificationService.sendCdPipelineNotice(devopsCdStageRecord.getPipelineRecordId(), MessageCodeConstants.PIPELINE_AUDIT, userList, params);
+        sendNotificationService.sendCdPipelineNotice(devopsCdStageRecord.getPipelineRecordId(), MessageCodeConstants.PIPELINE_STAGE_AUDIT, userList, params);
     }
 
     @Override

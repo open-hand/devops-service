@@ -89,7 +89,7 @@ public class HarborServiceImpl implements HarborService {
                     harborCustomRepoVOS.add(harborRepoConfigDTO);
                 }
             }
-            if (!Objects.isNull(harborDefaultRepoConfig)) {
+            if (!Objects.isNull(harborDefaultRepoConfig) && !Objects.isNull(harborDefaultRepoConfig)) {
                 harborDefaultRepoConfig.setType(DEFAULT_REPO);
                 harborCustomRepoVOS.add(harborDefaultRepoConfig);
             }
