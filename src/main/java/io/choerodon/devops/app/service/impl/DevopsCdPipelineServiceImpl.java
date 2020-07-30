@@ -256,7 +256,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 if (matchRefs.length > 0) {
                     for (String matchRef : matchRefs) {
                         if (ref.equals(matchRef)) {
-                            return false;
+                            return true;
                         }
                     }
                 }
