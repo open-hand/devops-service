@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import org.yaml.snakeyaml.Yaml;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -620,7 +619,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     private ClientVO registerClient(DevopsClusterDTO devopsClusterDTO) {
-        String clientName = GRAFANA_CLIENT_PREFIX + devopsClusterDTO.getId();
+
+        String clientName = GRAFANA_CLIENT_PREFIX + devopsClusterDTO.getName() + UUID.randomUUID().toString().substring(0, 6);
         // 添加客户端
         ClientVO clientVO = baseServiceClientOperator.queryClientByName(devopsClusterDTO.getOrganizationId(), clientName);
         if (clientVO != null && clientVO.getId() != null) {
