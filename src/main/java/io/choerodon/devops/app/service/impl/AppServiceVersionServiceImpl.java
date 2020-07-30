@@ -154,7 +154,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         if (newApplicationVersion != null) {
             try {
                 // 重新上传chart包后更新values
-                updateValues(newApplicationVersion.getId(), values);
+                updateValues(newApplicationVersion.getValueId(), values);
             } finally {
                 FileUtil.deleteDirectories(storeFilePath);
             }
@@ -193,6 +193,11 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         appServiceVersionValueDTO.setId(oldValuesId);
 
         AppServiceVersionValueDTO old = appServiceVersionValueService.baseQuery(oldValuesId);
+
+        if (old == null) {
+            return;
+        }
+
         // values变了才更新
         if (!Objects.equals(old.getValue(), values)) {
             appServiceVersionValueDTO.setValue(values);
