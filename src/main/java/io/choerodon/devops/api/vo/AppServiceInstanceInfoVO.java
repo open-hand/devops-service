@@ -2,9 +2,9 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.nutz.json.JsonIgnore;
 
 /**
  * 展示实例详情页面的单个实例的信息
@@ -32,6 +32,7 @@ public class AppServiceInstanceInfoVO {
      */
     @ApiModelProperty("实例所属应用服务的类型/normal_service,share_service")
     private String appServiceType;
+    @Encrypt
     private Long appServiceVersionId;
     private String versionName;
 
@@ -41,8 +42,11 @@ public class AppServiceInstanceInfoVO {
     private Long objectVersionNumber;
     @ApiModelProperty("实例所属环境是否连接")
     private Boolean connect;
+
+    @Encrypt
     @ApiModelProperty("实例最新的command的版本id")
     private Long commandVersionId;
+
     @ApiModelProperty("实例最新的command所对应的应用服务版本")
     private String commandVersion;
     @ApiModelProperty("实例最新的command所对应的操作类型")
@@ -62,6 +66,7 @@ public class AppServiceInstanceInfoVO {
 
     @JsonIgnore
     @ApiModelProperty(value = "集群id", hidden = true)
+    @Encrypt
     private Long clusterId;
 
     public Long getEffectCommandId() {
