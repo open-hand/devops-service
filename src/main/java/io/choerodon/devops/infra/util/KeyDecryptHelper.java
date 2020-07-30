@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.hzero.core.util.TokenUtils;
 import org.hzero.starter.keyencrypt.core.EncryptContext;
 import org.hzero.starter.keyencrypt.core.IEncryptionService;
 
@@ -159,7 +160,7 @@ public final class KeyDecryptHelper {
      * 将对象转为字符串然后加密
      *
      * @param object 对象
-     * @return 对字段加密后的json数据
+     * @return 加密后的字符串
      */
     public static String encryptValue(Object object) {
         if (EncryptContext.isAllowedEncrypt()) {
@@ -167,6 +168,26 @@ public final class KeyDecryptHelper {
             return ENCRYPTION_SERVICE.encrypt(String.valueOf(object), EMPTY);
         } else {
             return String.valueOf(object);
+        }
+    }
+
+    /**
+     * 解密字符串
+     *
+     * @param object 对象
+     * @return 主键
+     */
+    public static Long decryptValue(String object) {
+        if (object == null) {
+            throw new CommonException("error.decrypt.value.null");
+        }
+        if (EncryptContext.isEncrypt()
+                && EncryptContext.isAllowedEncrypt()
+                && ENCRYPTION_SERVICE.isCipher(object)) {
+            ensureEncryptService();
+            return Long.valueOf(ENCRYPTION_SERVICE.decrypt(object, EMPTY, TokenUtils.getToken(), true));
+        } else {
+            return Long.valueOf(object);
         }
     }
 }

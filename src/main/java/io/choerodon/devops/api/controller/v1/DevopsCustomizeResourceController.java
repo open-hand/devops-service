@@ -1,17 +1,8 @@
 package io.choerodon.devops.api.controller.v1;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqVO;
-import io.choerodon.devops.api.vo.DevopsCustomizeResourceVO;
-import io.choerodon.devops.app.service.DevopsCustomizeResourceService;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.Objects;
+import java.util.Optional;
+import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -24,9 +15,18 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
-import javax.validation.Valid;
-import java.util.Objects;
-import java.util.Optional;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.DevopsCustomizeResourceCreateOrUpdateVO;
+import io.choerodon.devops.api.vo.DevopsCustomizeResourceVO;
+import io.choerodon.devops.app.service.DevopsCustomizeResourceService;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * Created by Sheep on 2019/6/26.
@@ -47,11 +47,11 @@ public class DevopsCustomizeResourceController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "创建其他k8s资源")
+    @ApiOperation(value = "创建或更新其他k8s资源")
     @PostMapping
     public ResponseEntity<Void> createResource(
             @PathVariable(value = "project_id") Long projectId,
-            @ModelAttribute @Valid DevopsCustomizeResourceReqVO devopsCustomizeResourceReqVO,
+            @ModelAttribute @Valid DevopsCustomizeResourceCreateOrUpdateVO devopsCustomizeResourceReqVO,
             BindingResult bindingResult,
             @RequestParam(value = "contentFile", required = false) MultipartFile contentFile) {
         // 底层不能捕获BindException异常，所以这里手动处理抛出CommonException
