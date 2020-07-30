@@ -75,7 +75,6 @@ public class DevopsCiVariableServiceImpl implements DevopsCiVariableService {
 
     @Override
     public void save(Long projectId, String level, Long appServiceId, List<CiVariableVO> ciVariableVOList) {
-        permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
         List<String> keysToDelete;
         List<String> newKeys = ciVariableVOList.stream().map(CiVariableVO::getKey).collect(Collectors.toList());
         switch (level) {
@@ -87,6 +86,7 @@ public class DevopsCiVariableServiceImpl implements DevopsCiVariableService {
                 performUpdate(projectId, level, appServiceId, keysToDelete, ciVariableVOList);
                 break;
             case LEVEL_APP_SERVICE:
+                permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
                 List<CiVariableVO> existCiVariablesOnApp = listKeysOnApp(appServiceId);
                 keysToDelete = existCiVariablesOnApp.stream().filter(ciVariableVO -> !newKeys.contains(ciVariableVO.getKey()))
                         .map(CiVariableVO::getKey)
