@@ -367,7 +367,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                 ciCdPipelineRecordVO.setCdStatus(devopsCdPipelineRecordVO.getStatus());
                 stageRecordVOS.addAll(devopsCdPipelineRecordVO.getDevopsCdStageRecordVOS());
                 ciCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineRecordVO.getDevopsCdPipelineDeatilVO());
-
+                ciCdPipelineRecordVO.setDevopsPipelineRecordRelId(recordVO.getDevopsPipelineRecordRelId());
                 ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
                 ciCdPipelineRecordVOS.add(ciCdPipelineRecordVO);
             }
@@ -381,6 +381,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                 ciCdPipelineRecordVO.setGitlabPipelineId(devopsCiPipelineRecordVO.getGitlabPipelineId());
                 stageRecordVOS.addAll(devopsCiPipelineRecordVO.getStageRecordVOList());
                 ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
+                ciCdPipelineRecordVO.setDevopsPipelineRecordRelId(recordVO.getDevopsPipelineRecordRelId());
                 ciCdPipelineRecordVOS.add(ciCdPipelineRecordVO);
             }
 
@@ -395,6 +396,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                 ciCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineRecordVO.getDevopsCdPipelineDeatilVO());
                 stageRecordVOS.addAll(devopsCdPipelineRecordVO.getDevopsCdStageRecordVOS());
                 ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
+                ciCdPipelineRecordVO.setDevopsPipelineRecordRelId(recordVO.getDevopsPipelineRecordRelId());
                 ciCdPipelineRecordVOS.add(ciCdPipelineRecordVO);
             }
         });
