@@ -1,7 +1,18 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.yaml.snakeyaml.Yaml;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.DevopsCustomizeResourceCreateOrUpdateVO;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqVO;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceVO;
 import io.choerodon.devops.app.service.*;
@@ -18,15 +29,6 @@ import io.choerodon.devops.infra.mapper.DevopsCustomizeResourceMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-import org.yaml.snakeyaml.Yaml;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by Sheep on 2019/6/26.
@@ -73,7 +75,8 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createOrUpdateResource(Long projectId, DevopsCustomizeResourceReqVO devopsCustomizeResourceReqVO, MultipartFile contentFile) {
+    public void createOrUpdateResource(Long projectId, DevopsCustomizeResourceCreateOrUpdateVO createOrUpdateVO, MultipartFile contentFile) {
+        DevopsCustomizeResourceReqVO devopsCustomizeResourceReqVO = processKeyEncrypt(createOrUpdateVO);
 
         String content = devopsCustomizeResourceReqVO.getContent();
 
@@ -152,6 +155,14 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceDTO.getFilePath(), updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
 
+    }
+
+    private DevopsCustomizeResourceReqVO processKeyEncrypt(DevopsCustomizeResourceCreateOrUpdateVO createOrUpdateVO) {
+        // TODO 待hzero兼容 ModelAttribute 注解后删除
+        DevopsCustomizeResourceReqVO devopsCustomizeResourceReqVO = ConvertUtils.convertObject(createOrUpdateVO, DevopsCustomizeResourceReqVO.class);
+        devopsCustomizeResourceReqVO.setEnvId(KeyDecryptHelper.decryptValue(createOrUpdateVO.getEnvId()));
+        devopsCustomizeResourceReqVO.setResourceId(KeyDecryptHelper.decryptValue(createOrUpdateVO.getResourceId()));
+        return devopsCustomizeResourceReqVO;
     }
 
     @Override

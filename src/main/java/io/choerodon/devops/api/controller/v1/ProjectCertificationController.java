@@ -4,6 +4,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.ProjectCertificationCreateUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
@@ -49,7 +50,8 @@ public class ProjectCertificationController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书信息", required = true)
-            @ModelAttribute @Valid ProjectCertificationVO projectCertificationVO,
+            // TODO 等hzero主键加密兼容 ModelAttribute
+            @ModelAttribute @Valid ProjectCertificationCreateUpdateVO projectCertificationVO,
             BindingResult bindingResult,
             @ApiParam(value = "key文件")
             @RequestParam(value = "key", required = false) MultipartFile key,
