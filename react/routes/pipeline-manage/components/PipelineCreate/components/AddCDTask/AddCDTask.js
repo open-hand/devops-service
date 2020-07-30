@@ -263,6 +263,7 @@ export default observer(() => {
           <YamlEditor
             colSpan={6}
             newLine
+            className="addcdTask-yamleditor"            
             readOnly={false}
             value={customValues}
             onValueChange={(data) => setCustomValues(data)}
@@ -300,6 +301,7 @@ export default observer(() => {
           <TextField colSpan={3} name="containerName" />,
           <YamlEditor
             colSpan={6}
+            className="addcdTask-yamleditor"            
             newLine
             readOnly={false}
             value={imageDeployValues}
@@ -334,6 +336,7 @@ export default observer(() => {
           <YamlEditor
             colSpan={6}
             newLine
+            className="addcdTask-yamleditor"            
             readOnly={false}
             value={jarValues}
             onValueChange={(data) => setJarValues(data)}
@@ -359,6 +362,7 @@ export default observer(() => {
             colSpan={3}
             newLine
             readOnly={false}
+            className="addcdTask-yamleditor"            
             onValueChange={(data) => {
               setValueIdValues(data);
             }}
@@ -372,7 +376,7 @@ export default observer(() => {
         <Form columns={2} dataSet={ADDCDTaskDataSet}>
           <TextField colSpan={1} name="hostIp" />
           <TextField colSpan={1} name="hostPort" />
-          <SelectBox colSpan={1} name="accountType">
+          <SelectBox colSpan={1} name="accountType" className="addcdTask-mode">
             <Option value="accountPassword">用户名与密码</Option>
             <Option value="accountKey">用户名与密钥</Option>
           </SelectBox>
