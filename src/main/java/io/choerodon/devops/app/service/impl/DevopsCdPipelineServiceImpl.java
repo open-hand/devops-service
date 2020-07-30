@@ -142,7 +142,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
         LOGGER.info("handler ci pipeline status update, current ci pipeline {} status is {}", pipelineAttr.getId(), status);
         // 初始化流水线记录
-        if (!PipelineStatus.SUCCESS.toValue().equals(status)) {
+        if (!PipelineStatus.SUCCESS.toValue().equals(status) && !PipelineStatus.SKIPPED.toValue().equals(status)) {
             initPipelineRecordWithStageAndJob(pipelineAttr.getId(), pipelineAttr.getSha(), pipelineAttr.getRef(), devopsCiPipelineDTO);
         }
 
