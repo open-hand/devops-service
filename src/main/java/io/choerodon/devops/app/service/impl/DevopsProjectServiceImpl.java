@@ -30,10 +30,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.MapperUtil;
-import io.choerodon.devops.infra.util.PageInfoUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -181,7 +178,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         List<Long> selectedIamUserIds = new ArrayList<>();
         if (!StringUtils.isEmpty(params)) {
             Map maps = JSONObject.parseObject(params, Map.class);
-            selectedIamUserIds = TypeUtil.cast(((JSONArray) maps.get("ids")).toJavaList(Long.class));
+            selectedIamUserIds = KeyDecryptHelper.decryptIdList((JSONArray) maps.get("ids"));
         }
         if (!CollectionUtils.isEmpty(selectedIamUserIds)) {
             List<IamUserDTO> iamUserDTOList = baseServiceClientOperator.queryUsersByUserIds(selectedIamUserIds);
