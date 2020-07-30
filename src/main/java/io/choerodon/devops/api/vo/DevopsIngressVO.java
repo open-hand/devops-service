@@ -27,6 +27,7 @@ public class DevopsIngressVO extends DevopsResourceDataInfoVO {
     private Boolean envStatus;
     private Boolean isUsable;
     private String status;
+    @Encrypt
     private Long certId;
     private String certName;
     private String certStatus;

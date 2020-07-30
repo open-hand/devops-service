@@ -50,6 +50,7 @@ public class DevopsServiceReqVO {
     @ApiModelProperty("目标对象为标签，标签键值对")
     private Map<String, String> selectors;
 
+    @Encrypt
     @ApiModelProperty("目标对象是应用服务下所有实例时，应用服务的id")
     private Long targetAppServiceId;
 
