@@ -12,6 +12,7 @@ import Tips from '../../../../../../components/new-tips';
 import './index.less';
 
 let currentSize = 10;
+let auditMembersCurrentSize = 20;
 
 const originBranchs = [{
   value: 'master',
@@ -54,6 +55,7 @@ export default observer(() => {
   const [imageDeployValues, setImageDeployValues] = useState('# docker run指令\n# 不可删除${containerName}和${imageName}占位符\n# 不可删除 -d: 后台运行容器\n# 其余参数可参考可根据需要添加\ndocker run --name=${containerName} -d ${imageName}');
   const [jarValues, setJarValues] = useState('# java -jar指令\n# 不可删除${jar}\n# java -jar 后台运行参数会自动添加 不需要在重复添加\n# 其余参数可参考可根据需要添加\njava -jar ${jar} ');
   const [testStatus, setTestStatus] = useState('');
+  const [auditUsersList, setAuditUsersList] = useState([]);
 
   function getMetadata(ds) {
     if (ds.type === 'cdDeploy') {
@@ -197,6 +199,10 @@ export default observer(() => {
     }
     initBranchs();
   }, [ADDCDTaskDataSet.current.get('triggerType')]);
+
+  useEffect(() => {
+    getAuditList();
+  }, []);
 
   const getTestDom = () => {
     const res = {
@@ -425,6 +431,35 @@ export default observer(() => {
     return obj[ADDCDTaskDataSet?.current?.get('type')];
   };
 
+  const getAuditList = useCallback(async () => {
+    const url = `/devops/v1/projects/${projectId}/users/list_users?page=0&size=${auditMembersCurrentSize}`;
+    const res = await axios.post(url);
+    if (res.content.length % 20 === 0 && res.content.length !== 0) {
+      res.content.push({
+        name: '加载更多',
+        value: 'more',
+      });
+    }
+    setAuditUsersList(res.content.map((c) => {
+      if (c.realName) {
+        c.name = c.realName;
+        c.value = c.id;
+      }
+      return c;
+    }));
+  }, [auditMembersCurrentSize]);
+
+  const renderderAuditUsersList = ({ text }) => (text === '加载更多' ? (
+    <a
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        auditMembersCurrentSize += 20;
+        getAuditList();
+      }}
+    >{text}</a>
+  ) : text);
+
   const getBranchsList = useCallback(async () => {
     const url = `devops/v1/projects/${projectId}/app_service/${PipelineCreateFormDataSet.current.get('appServiceId')}/git/page_branch_by_options?page=1&size=${currentSize}`;
     const res = await axios.post(url);
@@ -548,10 +583,17 @@ export default observer(() => {
             <div colSpan={3} style={{ display: 'flex' }}>
               <div style={{ width: '47.5%', marginRight: 8 }} colSpan={2}>
                 <Select
+                  multiple
+                  className="addcdTask-auditUsers"
                   style={{ width: '100%' }}
                   name="cdAuditUserIds"
-                  optionRenderer={({ value, text, record }) => (`${text}(${record.get('loginName')})`)}
-                />
+                  optionRenderer={({ text }) => renderderAuditUsersList({ text })}
+                  renderer={renderderAuditUsersList}
+                >
+                  {auditUsersList.map(b => (
+                    <Option value={b.value} disabled={b.value === 'more'}>{b.name}</Option>
+                  ))}
+                </Select>
               </div>
               {
                 ADDCDTaskDataSet?.current?.get('cdAuditUserIds')?.length > 1 && (

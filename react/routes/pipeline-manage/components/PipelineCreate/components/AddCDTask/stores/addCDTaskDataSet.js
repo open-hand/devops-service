@@ -49,10 +49,6 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
     required: true,
     defaultValue: 'refs',
   }, {
-    name: 'triggerValue',
-    type: 'string',
-    label: '触发分支',
-  }, {
     name: 'envId',
     type: 'string',
     label: '环境名称',
@@ -352,16 +348,13 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
       required: ({ record }) => record.get('type') === 'cdHost' && record.get('hostDeployType') === 'jar' && record.get('deploySource') === 'matchDeploy',
     },
   }, {
+    name: 'triggerValue',
+    type: 'string',
+    label: '触发分支',
+  }, {
     name: 'cdAuditUserIds',
     type: 'string',
     label: '审核人员',
-    textField: 'realName',
-    multiple: true,
-    valueField: 'id',
-    lookupAxiosConfig: () => ({
-      method: 'post',
-      url: `/devops/v1/projects/${projectId}/users/list_users?page=0&size=20`,
-    }),
     dynamicProps: {
       required: ({ record }) => record.get('type') === 'cdAudit',
     },
