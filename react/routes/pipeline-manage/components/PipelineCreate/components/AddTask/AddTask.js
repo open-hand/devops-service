@@ -5,7 +5,6 @@ import { Form, Select, TextField, Modal, SelectBox, Button, Password } from 'cho
 import _ from 'lodash';
 import { Icon, Spin, Tooltip, Divider } from 'choerodon-ui';
 import { Base64 } from 'js-base64';
-import _ from 'lodash';
 import Tips from '../../../../../../components/new-tips';
 import YamlEditor from '../../../../../../components/yamlEditor';
 import emptyImg from '../../../../../../components/empty-page/image/owner.png';
