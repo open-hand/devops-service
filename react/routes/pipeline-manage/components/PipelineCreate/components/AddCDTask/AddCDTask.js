@@ -169,7 +169,7 @@ export default observer(() => {
       } else if (jobDetail.type === 'cdAudit') {
         if (jobDetail.metadata) {
           const { cdAuditUserIds } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
-          newCdAuditUserIds = [...cdAuditUserIds];
+          newCdAuditUserIds = cdAuditUserIds && [...cdAuditUserIds];
         }
       }
 
@@ -177,7 +177,7 @@ export default observer(() => {
         ...jobDetail,
         ...extra,
         ...(jobDetail.metadata ? JSON.parse(jobDetail.metadata.replace(/'/g, '"')) : {}),
-        cdAuditUserIds: [...newCdAuditUserIds],
+        cdAuditUserIds: newCdAuditUserIds && [...newCdAuditUserIds],
         triggerValue: jobDetail.triggerType === 'regex' ? jobDetail.triggerValue : jobDetail.triggerValue?.split(','),
       };
       delete newJobDetail.metadata;
