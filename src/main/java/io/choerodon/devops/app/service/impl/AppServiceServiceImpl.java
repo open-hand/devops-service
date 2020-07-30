@@ -1004,7 +1004,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             return FileUtil.replaceReturnString(CI_FILE_TEMPLATE, params);
         } catch (CommonException e) {
 //            LOGGER.warn("Error query ci.sh for app-service with token {} , the ex is ", token, e);
-            throw new DevopsCiInvalidException(e.getCode(), e.getCause(), e.getParameters());
+            throw new DevopsCiInvalidException(e.getCode(), e, e.getParameters());
         }
     }
 

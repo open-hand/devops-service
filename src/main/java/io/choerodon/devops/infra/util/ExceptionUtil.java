@@ -21,9 +21,9 @@ public class ExceptionUtil {
                 throw e;
             }
             if (e instanceof CommonException) {
-                throw new DevopsCiInvalidException(((CommonException) e).getCode(), e.getCause(), ((CommonException) e).getParameters());
+                throw new DevopsCiInvalidException(((CommonException) e).getCode(), e, ((CommonException) e).getParameters());
             }
-            throw new DevopsCiInvalidException(e.getCause());
+            throw new DevopsCiInvalidException(e);
         }
     }
 }
