@@ -6,7 +6,7 @@ function formatData({ data, expandsKeys }) {
   const newData = [];
   function flatData(value, gitlabProjectId, parentId) {
     forEach(value, (item) => {
-      const key = `${parentId ? `${parentId}-` : ''}${item.id || item.ciRecordId || item.cdRecordId}`;
+      const key = `${parentId ? `${parentId}-` : ''}${item.id || item.devopsPipelineRecordRelId}`;
       const newGitlabProjectId = item.gitlabProjectId || gitlabProjectId;
       const newItem = {
         ...item,
@@ -34,7 +34,7 @@ function formatData({ data, expandsKeys }) {
 
 export default ({ projectId, mainStore, editBlockStore, handleSelect }) => ({
   autoCreate: false,
-  autoQuery: true,
+  autoQuery: false,
   selection: 'single',
   primaryKey: 'key',
   idField: 'key',
@@ -78,20 +78,29 @@ export default ({ projectId, mainStore, editBlockStore, handleSelect }) => ({
       record.isSelected = true;
     },
     load: ({ dataSet }) => {
+      function selectFirstRecord() {
+        const newRecord = dataSet.records[0];
+        if (newRecord) {
+          newRecord.isSelected = true;
+          handleSelect(newRecord, mainStore, editBlockStore);
+        }
+      }
+
       mainStore.setPageList({});
-      const record = dataSet.records[0];
       const { key } = mainStore.getSelectedMenu;
       if (key) {
         const selectedRecord = dataSet.find((treeRecord) => key === treeRecord.get('key'));
+        const pattern = new URLSearchParams(window.location.hash);
+        const newPipelineId = pattern.get('pipelineId');
+        const newPipelineIdRecordId = pattern.get('pipelineIdRecordId');
         if (selectedRecord) {
           selectedRecord.isSelected = true;
           handleSelect(selectedRecord, mainStore, editBlockStore);
-          return;
+        } else if (!newPipelineId || !newPipelineIdRecordId) {
+          selectFirstRecord();
         }
-      }
-      if (record) {
-        record.isSelected = true;
-        handleSelect(record, mainStore, editBlockStore);
+      } else {
+        selectFirstRecord();
       }
     },
   },

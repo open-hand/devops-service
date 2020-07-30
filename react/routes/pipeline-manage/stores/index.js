@@ -49,16 +49,21 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
   const treeDs = useMemo(() => new DataSet(TreeDataSet({ projectId, mainStore, editBlockStore, handleSelect })), [projectId]);
 
   useEffect(() => {
-    const { key } = mainStore.getSelectedMenu;
-    if (key) {
-      const selectedRecord = treeDs.find((record) => record.get('key') === key);
-      if (!selectedRecord) {
-        const newRecord = treeDs.records[0];
-        newRecord.isSelected = true;
-        mainStore.setSelectedMenu(newRecord.toData());
-      }
+    // 处理消息铃铛中审核任务的跳转
+    const pattern = new URLSearchParams(window.location.hash);
+    const newPipelineId = pattern.get('pipelineId');
+    const newPipelineIdRecordId = pattern.get('pipelineIdRecordId');
+
+    if (newPipelineId && newPipelineIdRecordId) {
+      mainStore.setSelectedMenu({
+        key: `${newPipelineId}-${newPipelineIdRecordId}`,
+        parentId: newPipelineId,
+        devopsPipelineRecordRelId: newPipelineIdRecordId,
+      });
+      mainStore.setExpandedKeys([newPipelineId]);
     }
-  }, [treeDs.records]);
+    treeDs.query();
+  }, []);
 
   const value = {
     ...props,

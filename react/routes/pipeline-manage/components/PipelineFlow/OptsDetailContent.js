@@ -35,7 +35,7 @@ export default observer((props) => {
   } = detailStore;
 
   useEffect(() => {
-    loadDetailData(projectId, devopsPipelineRecordRelId);
+    devopsPipelineRecordRelId && loadDetailData(projectId, devopsPipelineRecordRelId);
   }, [projectId, cdRecordId, devopsPipelineRecordRelId]);
 
   // stageRecordVOS: 各个详情阶段记录,包括ci和cd的
