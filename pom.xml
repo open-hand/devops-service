@@ -324,6 +324,7 @@
         <dependency>
             <groupId>org.hzero.starter</groupId>
             <artifactId>hzero-starter-keyencrypt</artifactId>
+            <version>1.4.1-BETA.1</version>
         </dependency>
 
     </dependencies>
