@@ -118,6 +118,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final DevopsEnvironmentMapper devopsEnvironmentMapper;
     private final DevopsPipelineRecordRelService devopsPipelineRecordRelService;
     private final DevopsCdPipelineService devopsCdPipelineService;
+    private final DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -150,7 +151,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService,
             DevopsEnvironmentMapper devopsEnvironmentMapper,
             @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService,
-            @Lazy DevopsCdPipelineService devopsCdPipelineService) {
+            @Lazy DevopsCdPipelineService devopsCdPipelineService,
+            DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper) {
         this.devopsCiCdPipelineMapper = devopsCiCdPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
         this.devopsCiStageService = devopsCiStageService;
@@ -181,6 +183,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsEnvironmentMapper = devopsEnvironmentMapper;
         this.devopsPipelineRecordRelService = devopsPipelineRecordRelService;
         this.devopsCdPipelineService = devopsCdPipelineService;
+        this.devopsPipelineRecordRelMapper = devopsPipelineRecordRelMapper;
     }
 
     private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
@@ -509,8 +512,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
                         ciCdPipelineRecordVOS.add(ciCdPipelineRecordVO);
 
-                        //cicd 跳过执行记录
-                        if (!CollectionUtils.isEmpty(ciCdPipelineRecordVOS)) {
+                        //cicd 如果是cicd并且此记录是第一条则跳过
+                        if (!CollectionUtils.isEmpty(ciCdPipelineRecordVOS) && isFirstRecord(devopsPipelineRecordRelDTO)) {
                             CiCdPipelineUtils.recordListSort(ciCdPipelineRecordVOS);
                             ciCdPipelineRecordVOS.get(ciCdPipelineRecordVOS.size() - 1).setStageRecordVOS(null);
                         }
@@ -557,6 +560,26 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
         });
         return ciCdPipelineVOS;
+    }
+
+    private boolean isFirstRecord(DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO) {
+        DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
+        recordRelDTO.setPipelineId(devopsPipelineRecordRelDTO.getPipelineId());
+        List<DevopsPipelineRecordRelDTO> select = devopsPipelineRecordRelMapper.select(recordRelDTO);
+        if (select.size() == 1) {
+            return true;
+        }
+        List<DevopsPipelineRecordRelVO> devopsPipelineRecordRelVOS = ConvertUtils.convertList(select, this::relDtoToRelVO);
+        CiCdPipelineUtils.recordListSort(devopsPipelineRecordRelVOS);
+        return devopsPipelineRecordRelDTO.getId().compareTo(devopsPipelineRecordRelVOS.get(devopsPipelineRecordRelVOS.size() - 1).getId()) == 0 ? true : false;
+
+    }
+
+    private DevopsPipelineRecordRelVO relDtoToRelVO(DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO) {
+        DevopsPipelineRecordRelVO devopsPipelineRecordRelVO = new DevopsPipelineRecordRelVO();
+        BeanUtils.copyProperties(devopsPipelineRecordRelDTO, devopsPipelineRecordRelVO);
+        devopsPipelineRecordRelVO.setCreatedDate(devopsPipelineRecordRelDTO.getCreationDate());
+        return devopsPipelineRecordRelVO;
     }
 
     /**
