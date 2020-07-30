@@ -191,8 +191,13 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private void updateValues(Long oldValuesId, String values) {
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
         appServiceVersionValueDTO.setId(oldValuesId);
-        appServiceVersionValueDTO.setValue(values);
-        appServiceVersionValueService.baseUpdate(appServiceVersionValueDTO);
+
+        AppServiceVersionValueDTO old = appServiceVersionValueService.baseQuery(oldValuesId);
+        // values变了才更新
+        if (!Objects.equals(old.getValue(), values)) {
+            appServiceVersionValueDTO.setValue(values);
+            appServiceVersionValueService.baseUpdate(appServiceVersionValueDTO);
+        }
     }
 
     /**
