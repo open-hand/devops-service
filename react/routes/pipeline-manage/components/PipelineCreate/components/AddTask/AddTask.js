@@ -564,13 +564,11 @@ const AddTask = observer(() => {
               <span onClick={() => handleAddStepItem(index + 1)} style={{ fontSize: 20 }}>+</span>
             </div>
           </div>
-        )) : (
-          <div className="AddTask_stepMapContent">
-            <div className="AddTask_stepAdd">
-              <span onClick={() => handleAddStepItem(0)} style={{ fontSize: 20 }}>+</span>
-            </div>
+        )) : (<div className="AddTask_stepMapContent">
+          <div className="AddTask_stepAdd">
+            <span onClick={() => handleAddStepItem(0)} style={{ fontSize: 20 }}>+</span>
           </div>
-        )
+        </div>)
       }
     </div>
   );
@@ -1204,9 +1202,9 @@ const AddTask = observer(() => {
       let extra;
       if (AddTaskFormDataSet.current.get('authType') === 'username') {
         extra = [
-          <TextField newLine name="username" />,
-          <Password name="password" />,
-          <TextField name="sonarUrl" />,
+          <TextField newLine name="username" colSpan={2} />,
+          <Password name="password" colSpan={2} />,
+          <TextField name="sonarUrl" colSpan={2} />,
         ];
       } else {
         extra = [
@@ -1218,13 +1216,18 @@ const AddTask = observer(() => {
         <SelectBox
           className="addTask_authType"
           name="configType"
+          colSpan={2}
           addonAfter={<Tips helpText={!useStore.getHasDefaultSonar ? '平台暂无默认的SonarQube配置，请在自定义配置中进行添加。' : ''} />}
         >
           <Option value="default">默认配置</Option>
           <Option value="custom">自定义配置</Option>
         </SelectBox>,
         AddTaskFormDataSet.current.get('configType') === 'custom' ? [
-          <SelectBox className="addTask_authType" name="authType">
+          <SelectBox
+            className="addTask_authType"
+            name="authType"
+            colSpan={2}
+          >
             <Option value="username">用户名与密码</Option>
             <Option value="token">Token</Option>
           </SelectBox>,
@@ -1321,45 +1324,41 @@ const AddTask = observer(() => {
                   name="triggerValue"
                   addonAfter={<Tips helpText="您可在此输入正则表达式来配置触发分支；例：若想匹配以 feature 开头的分支，可以输入 ^feature.*。更多表达式，详见用户手册。若不填写，则默认为所有分支和tag" />}
                 />
-              ) : (
-                <Select
-                  combo
-                  searchable
-                  multiple
-                  name="triggerValue"
-                  addonAfter={<Tips helpText={renderTriggerTypeTips()} />}
-                  searchMatcher="branchName"
-                  optionRenderer={({ text }) => renderderBranchs({ text })}
-                  maxTagCount={3}
-                  maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
-                    {`+${omittedValues.length}`}
-                  </Tooltip>}
-                  className="addTaskForm-select"
-                  renderer={renderderBranchs}
-                  colSpan={2}
-                >
-                  {
-                      branchsList.map(b => (
-                        <Option value={b.value}>{b.name}</Option>
-                      ))
-                    }
-                </Select>
-              )}
+              ) : (<Select
+                combo
+                searchable
+                multiple
+                name="triggerValue"
+                addonAfter={<Tips helpText={renderTriggerTypeTips()} />}
+                searchMatcher="branchName"
+                optionRenderer={({ text }) => renderderBranchs({ text })}
+                maxTagCount={3}
+                maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
+                  {`+${omittedValues.length}`}
+                </Tooltip>}
+                className="addTaskForm-select"
+                renderer={renderderBranchs}
+                colSpan={2}
+              >
+                {
+                  branchsList.map(b => (
+                    <Option value={b.value}>{b.name}</Option>
+                  ))
+                }
+              </Select>)}
             </div>,
             getImageDom(),
             getShareSettings(),
             AddTaskFormDataSet.current.get('type') !== 'chart' ? getMissionOther() : '',
-          ] : [
-            <YamlEditor
-              readOnly={false}
-              colSpan={4}
-              newLine
-              value={customYaml}
-              onValueChange={(valueYaml) => setCustomYaml(valueYaml)}
-              modeChange={false}
-              showError={false}
-            />,
-          ]
+          ] : [<YamlEditor
+            readOnly={false}
+            colSpan={4}
+            newLine
+            value={customYaml}
+            onValueChange={(valueYaml) => setCustomYaml(valueYaml)}
+            modeChange={false}
+            showError={false}
+          />]
         }
       </Form>
     </React.Fragment>
