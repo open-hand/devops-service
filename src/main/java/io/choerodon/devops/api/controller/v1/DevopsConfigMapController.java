@@ -114,7 +114,6 @@ public class DevopsConfigMapController {
             @Encrypt
             @ApiParam(value = "环境ID", required = true)
             @RequestParam Long envId,
-            @Encrypt
             @ApiParam(value = "实例ID", required = true)
             @RequestParam String name) {
         return ResponseEntity.ok(devopsConfigMapService.isNameUnique(envId, name));
