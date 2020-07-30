@@ -208,7 +208,7 @@ public final class KeyDecryptHelper {
      */
     public static Long decryptValue(String object) {
         if (object == null) {
-            throw new CommonException("error.decrypt.value.null");
+            return null;
         }
         ensureEncryptService();
         if (EncryptContext.isEncrypt()
