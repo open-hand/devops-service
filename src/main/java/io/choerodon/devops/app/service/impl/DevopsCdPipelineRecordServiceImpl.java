@@ -364,8 +364,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         Session session = null;
         try {
             session = ssh.startSession();
-//            String loginExec = String.format("docker login -u %s -p %s %s", imageTagVo.getPullAccount(), imageTagVo.getPullPassword(), imageTagVo.getHarborUrl());
-            String loginExec = String.format("docker login -u %s -p %s %s", "admin", "Handhand123", imageTagVo.getHarborUrl());
+            String loginExec = String.format("docker login -u %s -p %s %s", imageTagVo.getPullAccount(), imageTagVo.getPullPassword(), imageTagVo.getHarborUrl());
             LOGGER.info(loginExec);
             Session.Command cmd = session.exec(loginExec);
 
@@ -656,7 +655,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 throw new CommonException("error.instruction");
             }
 
-//        String javaJarExec = String.format("echo `nohup %s > sss.log & `", values.replace("${jar}", jarName));
             String logName = c7nNexusDeployDTO.getJarName().replace(".jar", ".log");
             String javaJarExec = String.format("nohup %s > ~/temp-log/%s & ", values.replace("${jar}", c7nNexusDeployDTO.getJarName()), logName);
 
@@ -668,7 +666,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
 
-            if (loggerError.contains("Unauthorized") || loggerInfo.contains("Unauthorized")) {
+            if (loggerError.contains("Unauthorized") || loggerInfo.contains("Unauthorized") || cmd.getExitStatus() != 0) {
                 throw new CommonException(ERROR_DOWNLOAD_JAY);
             }
             LOGGER.info(loggerInfo);
@@ -1134,6 +1132,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             LOGGER.info(IOUtils.readFully(cmd.getInputStream()).toString());
             cmd.join(5, TimeUnit.SECONDS);
             LOGGER.info("\n** exit status: " + cmd.getExitStatus());
+            if (cmd.getExitStatus() != 0) {
+                throw new CommonException("error.test.connection");
+            }
         } catch (IOException e) {
             index = false;
             e.printStackTrace();
