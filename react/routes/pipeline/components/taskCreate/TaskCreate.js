@@ -21,9 +21,9 @@ import {
   AUDIT_MODE_SING, TASK_PARALLEL,
   TRIGGER_TYPE_AUTO,
 } from '../Constants';
+import StatusDot from '../../../../components/status-dot';
 
 import './TaskCreate.less';
-import StatusDot from '../../../../components/status-dot';
 
 const { Sidebar } = Modal;
 const { Item: FormItem } = Form;
@@ -218,7 +218,7 @@ export default class TaskCreate extends Component {
             valueId,
           };
         }
-        const taskUserRels = type === TASK_TYPE_MANUAL ? _.map(users, (item) => Number(item)) : null;
+        const taskUserRels = type === TASK_TYPE_MANUAL ? _.map(users, (item) => item) : null;
         const data = {
           type,
           name,
@@ -484,7 +484,6 @@ export default class TaskCreate extends Component {
     } = this.props;
     PipelineCreateStore.loadConfig(id, envId, appId);
   }
-
 
   loadMoreWrap = (e) => {
     e.stopPropagation();
