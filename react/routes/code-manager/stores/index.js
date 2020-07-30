@@ -26,20 +26,29 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
 
     const checkHasApp = (value, recentApp) => recentApp.some(e => e.id === value);
 
+    function localSet(name, data) {
+      if (typeof data !== 'string') {
+        data = JSON.stringify(data);
+      }
+      localStorage.setItem(name, data);
+    }
+
+    const localGet = (name) => (localStorage.getItem(name) ? JSON.parse(localStorage.getItem(name)) : null);
+
     const unshiftPop = (value, recentApp, recentAppList) => { // 有数据的话又再一次访问这个appservice则把他放到数组第一位
       for (let i = 0; i < recentApp.length; i++) {
-        if (recentApp[i].id === value[0].id) {
+        if (recentApp[i]?.id === value[0]?.id) {
           recentApp.splice(i, 1); // 如果数据组存在该元素，则把该元素删除
           break;
         }
       }
       recentApp.unshift(value[0]);
       recentAppList[projectId] = recentApp;
-      localStorage.setItem('recent-app', JSON.stringify(recentAppList));
+      localSet('recent-app', JSON.stringify(recentAppList));
     };
 
     const setLocalStorage = (value) => {
-      const recentAppList = localStorage.getItem('recent-app') && JSON.parse(localStorage.getItem('recent-app'));
+      const recentAppList = localGet('recent-app');
       const temp = appServiceDs.toData().filter(e => e.id === value);
       const objTemp = {};
       if (recentAppList !== null && recentAppList[projectId]) {
@@ -50,22 +59,21 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
             recentApp.splice(-1, 1);
           }
           recentAppList[projectId] = recentApp;
-          localStorage.setItem('recent-app', JSON.stringify(recentAppList));
+          localSet('recent-app', JSON.stringify(recentAppList));
         } else {
           unshiftPop(temp, recentApp, recentAppList);
         }
       } else if (recentAppList === null) {
         objTemp[projectId] = [temp[0]];
-        localStorage.setItem('recent-app', JSON.stringify(objTemp));
+        localSet('recent-app', JSON.stringify(objTemp));
       } else {
         recentAppList[projectId] = [temp[0]];
-        localStorage.setItem('recent-app', JSON.stringify(recentAppList));
+        localSet('recent-app', JSON.stringify(recentAppList));
       }
     };
 
     const handleDataSetChange = ({ dataSet, record, value, oldValue }) => {
       if (!value) return;
-
       const option = {
         props: {
           children: record.get('name'),
@@ -95,7 +103,7 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
         url: `/devops/v1/projects/${projectId}/app_service/list_by_active`,
         method: 'get',
       });
-      const recentAppList = localStorage.getItem('recent-app') && JSON.parse(localStorage.getItem('recent-app'));
+      const recentAppList = localGet('recent-app');
       appServiceDs.query().then((res) => {
         if (state && state.appServiceId) {
           selectAppDs.current && selectAppDs.current.set('appServiceId', state.appServiceId);
