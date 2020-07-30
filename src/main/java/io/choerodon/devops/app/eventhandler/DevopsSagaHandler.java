@@ -89,6 +89,7 @@ public class DevopsSagaHandler {
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
+    @Lazy
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     @Autowired
     private DevopsCdPipelineService devopsCdPipelineService;
