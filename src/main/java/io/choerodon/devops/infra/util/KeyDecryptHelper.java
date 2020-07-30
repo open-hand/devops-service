@@ -5,6 +5,7 @@ import static org.hzero.core.util.StringPool.EMPTY;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -15,6 +16,7 @@ import com.google.gson.reflect.TypeToken;
 import org.hzero.core.util.TokenUtils;
 import org.hzero.starter.keyencrypt.core.EncryptContext;
 import org.hzero.starter.keyencrypt.core.IEncryptionService;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
@@ -113,6 +115,33 @@ public final class KeyDecryptHelper {
             }
         }
         return result;
+    }
+
+    /**
+     * 解密加密id字符串的列表为Long列表
+     *
+     * @param ids 字符串数组
+     * @return Long数据
+     */
+    public static List<Long> decryptIdList(List<?> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return Collections.emptyList();
+        }
+
+        List<Long> list = new ArrayList<>(ids.size());
+        if (EncryptContext.isEncrypt()) {
+            ensureEncryptService();
+            ids.forEach(encryptedId -> list.add(Long.parseLong(ENCRYPTION_SERVICE.decrypt(String.valueOf(encryptedId), EMPTY))));
+        } else {
+            ids.forEach(encryptedId -> {
+                if (encryptedId instanceof Long) {
+                    list.add((Long) encryptedId);
+                } else {
+                    list.add(Long.parseLong(String.valueOf(encryptedId)));
+                }
+            });
+        }
+        return list;
     }
 
     /**
