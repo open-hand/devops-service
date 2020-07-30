@@ -1001,7 +1001,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 devopsPipelineRecordRelService.update(devopsPipelineRecordRelDTO);
                 // 创建cd阶段记录
                 DevopsCdPipelineRecordDTO finalDevopsCdPipelineRecordDTO = devopsCdPipelineRecordDTO;
-                devopsCdStageDTOList.forEach(stage -> {
+                executeStageList.forEach(stage -> {
                     DevopsCdStageRecordDTO devopsCdStageRecordDTO = initStageRecord(finalDevopsCdPipelineRecordDTO.getId(), stage);
                     // 手动流转阶段，添加审核人员记录
                     if (TriggerTypeEnum.MANUAL.value().equals(stage.getTriggerType())) {
