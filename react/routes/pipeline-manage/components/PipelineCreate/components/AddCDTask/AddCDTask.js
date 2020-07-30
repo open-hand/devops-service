@@ -150,7 +150,7 @@ export default observer(() => {
 
   useEffect(() => {
     if (jobDetail) {
-      let newCdAuditUserIds;
+      let newCdAuditUserIds = jobDetail?.cdAuditUserIds;
       let extra = {};
       if (jobDetail.type === 'cdDeploy') {
         const { value } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
@@ -167,14 +167,16 @@ export default observer(() => {
           setJarValues(Base64.decode(metadata.jarDeploy.value));
         }
       } else if (jobDetail.type === 'cdAudit') {
-        const { cdAuditUserIds } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
-        newCdAuditUserIds = cdAuditUserIds;
+        if (jobDetail.metadata) {
+          const { cdAuditUserIds } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
+          newCdAuditUserIds = cdAuditUserIds;
+        }
       }
 
       const newJobDetail = {
         ...jobDetail,
         ...extra,
-        ...JSON.parse(jobDetail.metadata.replace(/'/g, '"')),
+        ...(jobDetail.metadata ? JSON.parse(jobDetail.metadata.replace(/'/g, '"')) : {}),
         cdAuditUserIds: newCdAuditUserIds,
         triggerValue: jobDetail.triggerType === 'regex' ? jobDetail.triggerValue : jobDetail.triggerValue?.split(','),
       };
