@@ -564,13 +564,11 @@ const AddTask = observer(() => {
               <span onClick={() => handleAddStepItem(index + 1)} style={{ fontSize: 20 }}>+</span>
             </div>
           </div>
-        )) : (
-          <div className="AddTask_stepMapContent">
-            <div className="AddTask_stepAdd">
-              <span onClick={() => handleAddStepItem(0)} style={{ fontSize: 20 }}>+</span>
-            </div>
+        )) : (<div className="AddTask_stepMapContent">
+          <div className="AddTask_stepAdd">
+            <span onClick={() => handleAddStepItem(0)} style={{ fontSize: 20 }}>+</span>
           </div>
-        )
+        </div>)
       }
     </div>
   );
@@ -606,12 +604,6 @@ const AddTask = observer(() => {
       let extra = [];
       if (value === 'Maven') {
         extra = [
-          //   {
-          //   name: '上传软件包至制品库',
-          //   type: 'maven_deploy',
-          //   checked: false,
-          //   yaml: useStore.getYaml.maven_deploy,
-          // },
           {
             name: 'Docker构建',
             type: 'docker',
@@ -940,9 +932,7 @@ const AddTask = observer(() => {
                 marginTop: 30,
                 marginBottom: AddTaskFormDataSet.current.getField('bzmc').isValid() ? 20 : 40,
                 marginRight: 8,
-                // display: steps.length === 0 ? 'none' : 'block',
               }}
-              // newLine
               name="bzmc"
             />
             {
@@ -999,7 +989,6 @@ const AddTask = observer(() => {
                           name="nexusMavenRepoIds"
                           style={{
                             width: '100%',
-                            // marginBottom: 20,
                           }}
                           help="123"
                           showHelp="tooltip"
@@ -1159,8 +1148,7 @@ const AddTask = observer(() => {
                       <TextField
                         style={{ width: 312 }}
                         name="dockerFilePath"
-                        showHelp="tooltip"
-                        help="Dockerfile路径为Dockerfile文件相对于代码库根目录所在路径，如docker/Dockerfile或Dockerfile"
+                        addonAfter={<Tips helpText="Dockerfile路径为Dockerfile文件相对于代码库根目录所在路径，如docker/Dockerfile或Dockerfile" />}
                       />
                     </div>,
                     <div style={{ marginBottom: 20 }}>
@@ -1168,8 +1156,7 @@ const AddTask = observer(() => {
                         className="dockerContextDir"
                         style={{ width: 312 }}
                         name="dockerContextDir"
-                        showHelp="tooltip"
-                        help="ContextPath为docker build命令执行上下文路径。填写相对于代码根目录的路径，如docker"
+                        addonAfter={<Tips helpText="ContextPath为docker build命令执行上下文路径。填写相对于代码根目录的路径，如docker" />}
                         onFocus={() => {
                           let res;
                           const value = AddTaskFormDataSet.current.get('dockerFilePath');
@@ -1215,9 +1202,9 @@ const AddTask = observer(() => {
       let extra;
       if (AddTaskFormDataSet.current.get('authType') === 'username') {
         extra = [
-          <TextField newLine name="username" />,
-          <Password name="password" />,
-          <TextField name="sonarUrl" />,
+          <TextField newLine name="username" colSpan={2} />,
+          <Password name="password" colSpan={2} />,
+          <TextField name="sonarUrl" colSpan={2} />,
         ];
       } else {
         extra = [
@@ -1229,13 +1216,18 @@ const AddTask = observer(() => {
         <SelectBox
           className="addTask_authType"
           name="configType"
-          help={!useStore.getHasDefaultSonar ? '平台暂无默认的SonarQube配置，请在自定义配置中进行添加。' : ''}
+          colSpan={2}
+          addonAfter={<Tips helpText={!useStore.getHasDefaultSonar ? '平台暂无默认的SonarQube配置，请在自定义配置中进行添加。' : ''} />}
         >
           <Option value="default">默认配置</Option>
           <Option value="custom">自定义配置</Option>
         </SelectBox>,
         AddTaskFormDataSet.current.get('configType') === 'custom' ? [
-          <SelectBox className="addTask_authType" name="authType">
+          <SelectBox
+            className="addTask_authType"
+            name="authType"
+            colSpan={2}
+          >
             <Option value="username">用户名与密码</Option>
             <Option value="token">Token</Option>
           </SelectBox>,
@@ -1260,11 +1252,7 @@ const AddTask = observer(() => {
     </div>,
     expandIf ? (
       <Select
-        // disabled={
-        //     !!(AddTaskFormDataSet.current && AddTaskFormDataSet.current.get('selectImage') === '0')
-        //   }
-        showHelp="tooltip"
-        help="CI任务Runner镜像是该CI任务的执行环境。您可直接使用此处给出的默认Runner镜像，或是输入自定义的CI任务Runner镜像"
+        addonAfter={<Tips helpText="流水线制品部署表示直接使用所选关联构建任务中产生的镜像进行部署；匹配制品部署则表示可自主选择项目镜像仓库中的镜像，并配置镜像版本的匹配规则，后续部署的镜像版本便会遵循此规则。" />}
         onChange={handleChangeImage}
         newLine
         combo
@@ -1334,49 +1322,43 @@ const AddTask = observer(() => {
               {AddTaskFormDataSet.current.get('triggerType') === 'regex' ? (
                 <TextField
                   name="triggerValue"
-                  showHelp="tooltip"
-                  help="您可在此输入正则表达式来配置触发分支；例：若想匹配以 feature 开头的分支，可以输入 ^feature.*。更多表达式，详见用户手册。若不填写，则默认为所有分支和tag"
+                  addonAfter={<Tips helpText="您可在此输入正则表达式来配置触发分支；例：若想匹配以 feature 开头的分支，可以输入 ^feature.*。更多表达式，详见用户手册。若不填写，则默认为所有分支和tag" />}
                 />
-              ) : (
-                <Select
-                  combo
-                  searchable
-                  multiple
-                  name="triggerValue"
-                  showHelp="tooltip"
-                  help={renderTriggerTypeTips()}
-                  searchMatcher="branchName"
-                  optionRenderer={({ text }) => renderderBranchs({ text })}
-                  maxTagCount={3}
-                  maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
-                    {`+${omittedValues.length}`}
-                  </Tooltip>}
-                  className="addTaskForm-select"
-                  renderer={renderderBranchs}
-                  colSpan={2}
-                >
-                  {
-                      branchsList.map(b => (
-                        <Option value={b.value}>{b.name}</Option>
-                      ))
-                    }
-                </Select>
-              )}
+              ) : (<Select
+                combo
+                searchable
+                multiple
+                name="triggerValue"
+                addonAfter={<Tips helpText={renderTriggerTypeTips()} />}
+                searchMatcher="branchName"
+                optionRenderer={({ text }) => renderderBranchs({ text })}
+                maxTagCount={3}
+                maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
+                  {`+${omittedValues.length}`}
+                </Tooltip>}
+                className="addTaskForm-select"
+                renderer={renderderBranchs}
+                colSpan={2}
+              >
+                {
+                  branchsList.map(b => (
+                    <Option value={b.value}>{b.name}</Option>
+                  ))
+                }
+              </Select>)}
             </div>,
             getImageDom(),
             getShareSettings(),
             AddTaskFormDataSet.current.get('type') !== 'chart' ? getMissionOther() : '',
-          ] : [
-            <YamlEditor
-              readOnly={false}
-              colSpan={4}
-              newLine
-              value={customYaml}
-              onValueChange={(valueYaml) => setCustomYaml(valueYaml)}
-              modeChange={false}
-              showError={false}
-            />,
-          ]
+          ] : [<YamlEditor
+            readOnly={false}
+            colSpan={4}
+            newLine
+            value={customYaml}
+            onValueChange={(valueYaml) => setCustomYaml(valueYaml)}
+            modeChange={false}
+            showError={false}
+          />]
         }
       </Form>
     </React.Fragment>

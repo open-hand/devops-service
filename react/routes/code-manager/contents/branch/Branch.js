@@ -80,12 +80,13 @@ function Branch(props) {
       </Permission>);
 
   function renderEmpty() {
-    if (!appServiceDs.toData()) {
+    const appServiceData = appServiceDs.toData();
+    if (!appServiceData) {
       return false;
     } else {
-      const appArr = appServiceDs.current && appServiceDs.toData();
-      const select = appArr.filter((item) => item.id === appServiceId);
-      return !select[0].emptyRepository;
+      const appArr = appServiceDs.current && appServiceData;
+      const select = appArr.filter((item) => item?.id === appServiceId);
+      return !select[0]?.emptyRepository;
     }
   }
   // 打开创建分支模态框
