@@ -592,6 +592,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         V1Service v1Service = json.deserialize(msg, V1Service.class);
         if (v1Service.getMetadata().getAnnotations() != null) {
             DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(v1Service.getMetadata().getName(), envId);
+            if (devopsServiceDTO == null) {
+                // 如果数据库没有service的对象, 相关的 env_resource 纪录也不需要
+                return;
+            }
             if (devopsServiceDTO.getType().equals("LoadBalancer") &&
                     v1Service.getStatus() != null &&
                     v1Service.getStatus().getLoadBalancer() != null &&
