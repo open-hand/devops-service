@@ -639,7 +639,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         StringBuilder cmdStr = new StringBuilder();
         cmdStr.append("mkdir -p /temp-jar && ");
         cmdStr.append("mkdir -p /temp-log && ");
-        cmdStr.append("cd /temp-jar && ");
         Session session = null;
         try {
             session = ssh.startSession();
@@ -664,7 +663,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             }
 
             String logName = c7nNexusDeployDTO.getJarName().replace(".jar", ".log");
-            String javaJarExec = String.format("nohup %s > /temp-log/%s 2>&1 &", values.replace("${jar}", c7nNexusDeployDTO.getJarName()), logName);
+            String javaJarExec = String.format("nohup %s > /temp-log/%s 2>&1 &", values.replace("${jar}", "/temp-jar/" + c7nNexusDeployDTO.getJarName()), logName);
 
             cmdStr.append(javaJarExec);
             cmdStr.append(System.lineSeparator());
