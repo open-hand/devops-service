@@ -44,7 +44,6 @@ public class ProjectPipelineController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @PathVariable("gitlab_project_id") Long gitlabProjectId,
-            @Encrypt
             @ApiParam(value = "流水线ID", required = true)
             @PathVariable("pipeline_id") Long pipelineId) {
         return Optional.ofNullable(projectPipelineService.retry(gitlabProjectId, pipelineId))
