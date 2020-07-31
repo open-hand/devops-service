@@ -43,15 +43,15 @@ public class GitUserNameUtil {
         return getGitlabRealUsername(details.getUsername());
     }
 
+    // TODO 调用方修改逻辑
     /**
      * 获取登录用户Id
      *
      * @return userId
      */
-    public static Integer getUserId() {
+    public static Long getUserId() {
         CustomUserDetails details = DetailsHelper.getUserDetails();
-        Long userId = details.getUserId();
-        return TypeUtil.objToInteger(userId);
+        return details.getUserId();
     }
 
     public static String getEmail(){
