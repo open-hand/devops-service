@@ -82,6 +82,7 @@ export default observer(({ addStepDs, curType, optType, appServiceType }) => {
       {
         addStepDs?.current?.get('triggerType') === 'manual' ? (
           <Select
+            searchable
             name="cdAuditUserIds"
             optionRenderer={renderOpts}
             addonAfter={<Tips helpText="此处的人工审核默认为”或签“的方式，若选择的审核人员为多个，那么其中一个审核通过，便会开始执行下一阶段。" />}
