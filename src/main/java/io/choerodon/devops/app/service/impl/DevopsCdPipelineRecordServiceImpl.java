@@ -644,7 +644,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             session = ssh.startSession();
             // 2.2
             String curlExec = String.format("curl -o %s -u %s:%s %s ",
-                    c7nNexusDeployDTO.getJarName(),
+                    "/temp-jar/" + c7nNexusDeployDTO.getJarName(),
                     c7nNexusDeployDTO.getPullUserId(),
                     c7nNexusDeployDTO.getPullUserPassword(),
                     c7nNexusDeployDTO.getDownloadUrl());
