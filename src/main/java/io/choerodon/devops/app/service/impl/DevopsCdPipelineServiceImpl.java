@@ -546,6 +546,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
         // 1. 查询审核人员
         CustomUserDetails details = DetailsHelper.getUserDetails();
+        LOGGER.info("user {} audit stage : pipelineRecordId: {}, stageRecordId: {}, result: {}", details.getUserId(), pipelineRecordId, stageRecordId, result);
+
         List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(stageRecordId);
         Map<Long, DevopsCdAuditRecordDTO> auditRecordDTOMap = devopsCdAuditRecordDTOS.stream().collect(Collectors.toMap(DevopsCdAuditRecordDTO::getUserId, v -> v));
         List<Long> userIds = devopsCdAuditRecordDTOS.stream().map(DevopsCdAuditRecordDTO::getUserId).collect(Collectors.toList());
