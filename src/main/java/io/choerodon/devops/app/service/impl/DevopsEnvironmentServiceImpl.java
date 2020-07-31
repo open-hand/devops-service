@@ -1156,7 +1156,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                         .withLevel(ResourceLevel.PROJECT)
                         .withRefType("env")
                         .withRefId(String.valueOf(envId))
-                        .withJson(JSONObject.toJSONString(userPayload))
+                        .withPayloadAndSerialize(userPayload)
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_ENV_PERMISSION),
                 builder -> {
                 });

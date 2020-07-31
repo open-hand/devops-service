@@ -1,11 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Form, Select, SelectBox, TextField, Tooltip, Icon } from 'choerodon-ui/pro';
+import { axios } from '@choerodon/boot';
 import Tips from '../../../../../../components/new-tips';
 
 const { Option } = Select;
 
-export default observer(({ addStepDs, curType, optType, appServiceType }) => {
+export default observer(({ addStepDs, curType, optType, appServiceType, projectId }) => {
   useEffect(() => {
     const type = addStepDs?.current?.get('type');
     addStepDs.current.set('parallel', type === 'CI' ? 1 : 0);
@@ -30,7 +31,26 @@ export default observer(({ addStepDs, curType, optType, appServiceType }) => {
     return renderer({ text });
   };
 
-  const renderOpts = ({ value, text, record }) => (`${text}(${record.get('loginName')})`);
+  async function handleClickMore(e) {
+    e.stopPropagation();
+    const pageSize = addStepDs.current.get('pageSize') + 20;
+    const url = `/devops/v1/projects/${projectId}/users/list_users?page=0&size=${pageSize}`;
+    const res = await axios.post(url);
+    if (res.content.length % 20 === 0 && res.content.length !== 0) {
+      res.content.push({
+        realName: '加载更多',
+        id: 'more',
+      });
+    }
+    addStepDs.current.set('pageSize', pageSize);
+    addStepDs.getField('cdAuditUserIds').props.lookup = res.content;
+  }
+
+  const renderderAuditUsersList = ({ text, record }) => (text === '加载更多' ? (
+    <a
+      onClick={handleClickMore}
+    >{text}</a>
+  ) : `${text}(${record.get('loginName')})`);
 
   return (
     <Form className="addStageForm" dataSet={addStepDs}>
@@ -83,8 +103,14 @@ export default observer(({ addStepDs, curType, optType, appServiceType }) => {
         addStepDs?.current?.get('triggerType') === 'manual' ? (
           <Select
             searchable
+            searchMatcher="realName"
             name="cdAuditUserIds"
-            optionRenderer={renderOpts}
+            optionRenderer={renderderAuditUsersList}
+            renderer={({ text }) => text}
+            maxTagCount={2}
+            maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
+              {`+${omittedValues.length}`}
+            </Tooltip>}
             addonAfter={<Tips helpText="此处的人工审核默认为”或签“的方式，若选择的审核人员为多个，那么其中一个审核通过，便会开始执行下一阶段。" />}
           />
         ) : ''

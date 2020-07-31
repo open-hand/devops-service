@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_HOST_FEPLOY;
 
 import java.io.IOException;
@@ -329,8 +330,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(devopsCdPipelineRecordDTO.getGitlabPipelineId(), imageDeploy.getPipelineTask());
                 HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(devopsCdPipelineRecordDTO.getProjectId(), ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
                 c7nImageDeployDTO.setHarborUrl(harborRepoDTO.getHarborRepoConfig().getRepoUrl());
-                c7nImageDeployDTO.setPullAccount(harborRepoDTO.getPullRobot().getName());
-                c7nImageDeployDTO.setPullPassword(harborRepoDTO.getPullRobot().getToken());
+                if (ciPipelineImageDTO.getRepoType().equals(CUSTOM_REPO)) {
+                    c7nImageDeployDTO.setPullAccount(harborRepoDTO.getHarborRepoConfig().getLoginName());
+                    c7nImageDeployDTO.setPullPassword(harborRepoDTO.getHarborRepoConfig().getPassword());
+                } else {
+                    c7nImageDeployDTO.setPullAccount(harborRepoDTO.getPullRobot().getName());
+                    c7nImageDeployDTO.setPullPassword(harborRepoDTO.getPullRobot().getToken());
+                }
                 c7nImageDeployDTO.setPullCmd("docker pull " + ciPipelineImageDTO.getImageTag());
             }
             // 1. 更新状态 记录镜像信息
@@ -473,7 +479,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         if (hostConnectionVO.getAccountType().equals(CdHostAccountType.PASSWORD.value())) {
             ssh.authPassword(hostConnectionVO.getUserName(), hostConnectionVO.getPassword());
         } else {
-            KeyProvider keyProvider = ssh.loadKeys(hostConnectionVO.getPassword(), null, null);
+            KeyProvider keyProvider = ssh.loadKeys(hostConnectionVO.getAccountKey(), null, null);
             ssh.authPublickey(hostConnectionVO.getUserName(), keyProvider);
         }
     }
@@ -631,19 +637,18 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     private void sshExec(SSHClient ssh, C7nNexusDeployDTO c7nNexusDeployDTO, CdHostDeployConfigVO.JarDeploy jarDeploy) throws IOException {
         StringBuilder cmdStr = new StringBuilder();
-        cmdStr.append("mkdir temp-jar ").append(System.lineSeparator());
-        cmdStr.append("mkdir temp-log ").append(System.lineSeparator());
-        cmdStr.append("cd temp-jar ").append(System.lineSeparator());
+        cmdStr.append("mkdir -p /temp-jar && ");
+        cmdStr.append("mkdir -p /temp-log && ");
         Session session = null;
         try {
             session = ssh.startSession();
             // 2.2
             String curlExec = String.format("curl -o %s -u %s:%s %s ",
-                    c7nNexusDeployDTO.getJarName(),
+                    "/temp-jar/" + c7nNexusDeployDTO.getJarName(),
                     c7nNexusDeployDTO.getPullUserId(),
                     c7nNexusDeployDTO.getPullUserPassword(),
                     c7nNexusDeployDTO.getDownloadUrl());
-            cmdStr.append(curlExec).append(System.lineSeparator());
+            cmdStr.append(curlExec).append(" && ");
 
             // 2.3
             String[] strings = jarDeploy.getValue().split("\n");
@@ -658,9 +663,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             }
 
             String logName = c7nNexusDeployDTO.getJarName().replace(".jar", ".log");
-            String javaJarExec = String.format("nohup %s > ~/temp-log/%s & ", values.replace("${jar}", c7nNexusDeployDTO.getJarName()), logName);
+            String javaJarExec = String.format("nohup %s > /temp-log/%s 2>&1 &", values.replace("${jar}", "/temp-jar/" + c7nNexusDeployDTO.getJarName()), logName);
 
             cmdStr.append(javaJarExec);
+            cmdStr.append(System.lineSeparator());
             LOGGER.info(cmdStr.toString());
 
             final Session.Command cmd = session.exec(cmdStr.toString());

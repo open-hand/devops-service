@@ -12,7 +12,6 @@ import Tips from '../../../../../../components/new-tips';
 import './index.less';
 
 let currentSize = 10;
-let auditMembersCurrentSize = 20;
 
 const originBranchs = [{
   value: 'master',
@@ -53,9 +52,8 @@ export default observer(() => {
   const [valueIdValues, setValueIdValues] = useState('');
   const [customValues, setCustomValues] = useState('# 自定义ssh指令\n# 比如部署镜像\n# 需要包括部署镜像指令以及二次触发部署的停用删除逻辑\ndocker stop mynginx & docker rm mynginx & docker run --name mynginx -d nginx:latest');
   const [imageDeployValues, setImageDeployValues] = useState('# docker run指令\n# 不可删除${containerName}和${imageName}占位符\n# 不可删除 -d: 后台运行容器\n# 其余参数可参考可根据需要添加\ndocker run --name=${containerName} -d ${imageName}');
-  const [jarValues, setJarValues] = useState('# java -jar指令\n# 不可删除${jar}\n# java -jar 后台运行参数会自动添加 不需要在重复添加\n# 其余参数可参考可根据需要添加\njava -jar ${jar} ');
+  const [jarValues, setJarValues] = useState('# java -jar指令\n# 不可删除${jar}\n# java -jar 后台运行参数会自动添加 不需要在重复添加\n# 其余参数可参考可根据需要添加\njava -jar ${jar} ');
   const [testStatus, setTestStatus] = useState('');
-  const [auditUsersList, setAuditUsersList] = useState([]);
 
   function getMetadata(ds) {
     if (ds.type === 'cdDeploy') {
@@ -159,7 +157,7 @@ export default observer(() => {
         value && setValueIdValues(Base64.decode(value));
       } else if (jobDetail.type === 'cdHost') {
         const metadata = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
-        extra = { ...metadata?.hostConnectionVO, ...metadata?.jarDeploy };
+        extra = { ...metadata?.hostConnectionVO, ...metadata?.jarDeploy, ...metadata?.imageDeploy };
         const { hostDeployType } = metadata;
         if (hostDeployType === 'customize') {
           setCustomValues(Base64.decode(metadata.customize?.values));
@@ -200,10 +198,6 @@ export default observer(() => {
     initBranchs();
   }, [ADDCDTaskDataSet.current.get('triggerType')]);
 
-  useEffect(() => {
-    getAuditList();
-  }, []);
-
   const getTestDom = () => {
     const res = {
       loading: (
@@ -226,13 +220,14 @@ export default observer(() => {
   };
 
   const handleTestConnect = async () => new Promise((resolve) => {
-    const { hostIp, hostPort, userName, password, accountType } = ADDCDTaskDataSet.toData()[0];
+    const { hostIp, hostPort, userName, password, accountType, accountKey } = ADDCDTaskDataSet.toData()[0];
     axios.post(`/devops/v1/projects/${projectId}/cicd_pipelines/test_connection`, {
       hostIp,
       hostPort,
       userName,
       password,
       accountType,
+      accountKey,
     }).then((res) => {
       setTestStatus(res ? 'success' : 'error');
       resolve(res);
@@ -431,34 +426,26 @@ export default observer(() => {
     return obj[ADDCDTaskDataSet?.current?.get('type')];
   };
 
-  const getAuditList = useCallback(async () => {
-    const url = `/devops/v1/projects/${projectId}/users/list_users?page=0&size=${auditMembersCurrentSize}`;
+  async function handleClickMore(e) {
+    e.stopPropagation();
+    const pageSize = ADDCDTaskDataSet.current.get('pageSize') + 20;
+    const url = `/devops/v1/projects/${projectId}/users/list_users?page=0&size=${pageSize}`;
     const res = await axios.post(url);
     if (res.content.length % 20 === 0 && res.content.length !== 0) {
       res.content.push({
-        name: '加载更多',
-        value: 'more',
+        realName: '加载更多',
+        id: 'more',
       });
     }
-    setAuditUsersList(res.content.map((c) => {
-      if (c.realName) {
-        c.name = c.realName;
-        c.value = c.id;
-      }
-      return c;
-    }));
-  }, [auditMembersCurrentSize]);
+    ADDCDTaskDataSet.current.set('pageSize', pageSize);
+    ADDCDTaskDataSet.getField('cdAuditUserIds').props.lookup = res.content;
+  }
 
-  const renderderAuditUsersList = ({ text }) => (text === '加载更多' ? (
+  const renderderAuditUsersList = ({ text, record }) => (text === '加载更多' ? (
     <a
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        auditMembersCurrentSize += 20;
-        getAuditList();
-      }}
+      onClick={handleClickMore}
     >{text}</a>
-  ) : text);
+  ) : `${text}(${record.get('loginName')})`);
 
   const getBranchsList = useCallback(async () => {
     const url = `devops/v1/projects/${projectId}/app_service/${PipelineCreateFormDataSet.current.get('appServiceId')}/git/page_branch_by_options?page=1&size=${currentSize}`;
@@ -583,18 +570,17 @@ export default observer(() => {
             <div colSpan={3} style={{ display: 'flex' }}>
               <div style={{ width: '47.5%', marginRight: 8 }} colSpan={2}>
                 <Select
-                  multiple
                   className="addcdTask-auditUsers"
                   searchable
                   style={{ width: '100%' }}
                   name="cdAuditUserIds"
-                  optionRenderer={({ text }) => renderderAuditUsersList({ text })}
-                  renderer={renderderAuditUsersList}
-                >
-                  {auditUsersList.map(b => (
-                    <Option value={b.value} disabled={b.value === 'more'}>{b.name}</Option>
-                  ))}
-                </Select>
+                  maxTagCount={2}
+                  maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
+                    {`+${omittedValues.length}`}
+                  </Tooltip>}
+                  optionRenderer={renderderAuditUsersList}
+                  renderer={({ text }) => text}
+                />
               </div>
               {
                 ADDCDTaskDataSet?.current?.get('cdAuditUserIds')?.length > 1 && (

@@ -412,10 +412,11 @@ export default observer((props) => {
       <div className="c7n-piplineManage-detail-column-lists">
         <h6>
           任务列表
+          {/* Todo 加上串并行逻辑后优化判断 */}
           <span
-            className={`c7n-piplineManage-stage-type-task c7n-piplineManage-stage-type-task-${parallel ? 'parallel' : 'serial'}`}
+            className={`c7n-piplineManage-stage-type-task c7n-piplineManage-stage-type-task-${parallel || realType === 'CI' ? 'parallel' : 'serial'}`}
           >
-            {parallel ? '任务并行' : '任务串行'}
+            {parallel || realType === 'CI' ? '任务并行' : '任务串行'}
           </span>
         </h6>
         {renderItem()}

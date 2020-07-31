@@ -27,6 +27,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     stepStore,
     addStepDs,
     pipelineId,
+    projectId,
   };
 
   return (

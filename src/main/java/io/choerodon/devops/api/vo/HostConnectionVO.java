@@ -20,8 +20,19 @@ public class HostConnectionVO {
     @ApiModelProperty("密码")
     private String password;
 
+    @ApiModelProperty("密钥")
+    private String accountKey;
+
     @ApiModelProperty("账号配置类型")
     private String accountType;
+
+    public String getAccountKey() {
+        return accountKey;
+    }
+
+    public void setAccountKey(String accountKey) {
+        this.accountKey = accountKey;
+    }
 
     public String getHostIp() {
         return hostIp;

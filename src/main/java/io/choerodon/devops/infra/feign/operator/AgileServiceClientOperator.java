@@ -26,7 +26,7 @@ public class AgileServiceClientOperator {
         try {
             return agileServiceClient.queryIssue(projectId, issueId, organizationId).getBody();
         } catch (Exception e) {
-            throw new CommonException("error.issue.get", e);
+            throw new CommonException("error.issue.get");
         }
     }
 
@@ -38,7 +38,7 @@ public class AgileServiceClientOperator {
         try {
             return agileServiceClient.queryIssues(projectId, ids).getBody();
         } catch (Exception e) {
-            return null;
+            throw new CommonException("error.issues.list.by.id");
         }
     }
 
@@ -46,7 +46,7 @@ public class AgileServiceClientOperator {
         try {
             return agileServiceClient.getActiveSprint(projectId, organizationId).getBody();
         } catch (Exception e) {
-            throw new CommonException(e);
+            throw new CommonException("error.active.sprint.get");
         }
     }
 }

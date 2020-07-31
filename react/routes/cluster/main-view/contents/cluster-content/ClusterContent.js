@@ -18,7 +18,6 @@ const Monitor = lazy(() => import('./monitor'));
 const ComponentManage = lazy(() => import('./component-manage'));
 const Polaris = lazy(() => import('./polaris'));
 
-
 export default observer((props) => {
   const {
     intlPrefix,
@@ -37,7 +36,7 @@ export default observer((props) => {
     contentStore.setTabKey(key);
   };
 
-  const title = useMemo(() => {
+  function title() {
     const record = ClusterDetailDs.current;
     if (record) {
       const name = record.get('name');
@@ -57,13 +56,12 @@ export default observer((props) => {
       </Fragment>;
     }
     return null;
-  }, [ClusterDetailDs.current]);
-
+  }
 
   return (
     <Fragment>
       <Modals />
-      <PageTitle content={title} />
+      <PageTitle content={title()} />
       <Tabs
         animated={false}
         activeKey={contentStore.getTabKey}
