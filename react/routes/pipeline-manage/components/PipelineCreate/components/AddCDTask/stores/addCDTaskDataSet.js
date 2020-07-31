@@ -373,7 +373,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
       data: {
         param: [],
         searchParam: {
-          name: data.params.realName || '',
+          realName: data.params.realName || '',
         },
       },
       transformResponse: (res) => {
