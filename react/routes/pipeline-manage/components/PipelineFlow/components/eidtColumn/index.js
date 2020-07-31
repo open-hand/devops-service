@@ -137,6 +137,7 @@ export default observer((props) => {
   const {
     addStepDs,
     editBlockStore, stepStore,
+    projectId,
   } = usePipelineStageEditStore();
 
   const {
@@ -218,7 +219,7 @@ export default observer((props) => {
         width: 380,
       },
       okText,
-      children: <AddStage curType={curType} optType={optType} addStepDs={addStepDs} appServiceType={appServiceType} />,
+      children: <AddStage projectId={projectId} curType={curType} optType={optType} addStepDs={addStepDs} appServiceType={appServiceType} />,
       onOk: optsFun,
       onCancel: () => addStepDs.reset(),
     });
