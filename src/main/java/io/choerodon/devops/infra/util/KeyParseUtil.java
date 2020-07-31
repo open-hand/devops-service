@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.util;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -34,7 +35,28 @@ public class KeyParseUtil {
      * @return map
      */
     public static Map<String, String> parseKey(String key) {
-        Map<String, String> keyMap = new HashMap<>();
+        return parseKeyInOrder(key, false);
+    }
+
+    /**
+     * 将形如 env:1.namespace:c7n-system 的key解析为map
+     * key的构建规则（由这个类文件中解析的逻辑概括总结）：
+     * ([^.]+:[^.]+\.)(资源类型:资源名称)
+     *
+     * @param key 待解析的key
+     * @return map
+     */
+    public static Map<String, String> parseKeyInOrder(String key) {
+        return parseKeyInOrder(key, true);
+    }
+
+    private static Map<String, String> parseKeyInOrder(String key, boolean inOrder) {
+        Map<String, String> keyMap;
+        if (inOrder) {
+            keyMap = new LinkedHashMap<>();
+        } else {
+            keyMap = new HashMap<>();
+        }
         String[] pairs = key.split("\\.");
         for (String pair : pairs) {
             String[] content = pair.split(":");

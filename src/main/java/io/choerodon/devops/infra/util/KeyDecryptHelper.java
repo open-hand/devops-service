@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.util;
 
 import static io.choerodon.devops.infra.constant.GitOpsConstants.COMMA;
+import static org.hzero.core.util.StringPool.COLON;
 import static org.hzero.core.util.StringPool.EMPTY;
 
 import java.io.IOException;
@@ -207,6 +208,29 @@ public final class KeyDecryptHelper {
      * @return 主键
      */
     public static Long decryptValue(String object) {
+        return decryptValue(object, true);
+    }
+
+    /**
+     * 解密字符串
+     *
+     * @param object             对象
+     * @param ignoreUserConflict 忽视用户的token校验
+     * @return 主键
+     */
+    public static Long decryptValue(String object, boolean ignoreUserConflict) {
+        return decryptValue(object, TokenUtils.getToken(), ignoreUserConflict);
+    }
+
+    /**
+     * 解密字符串
+     *
+     * @param object             对象
+     * @param accessToken        用户的token
+     * @param ignoreUserConflict 忽视用户的token校验
+     * @return 主键
+     */
+    public static Long decryptValue(String object, String accessToken, boolean ignoreUserConflict) {
         if (object == null) {
             return null;
         }
@@ -214,9 +238,59 @@ public final class KeyDecryptHelper {
         if (EncryptContext.isEncrypt()
                 && EncryptContext.isAllowedEncrypt()
                 && ENCRYPTION_SERVICE.isCipher(object)) {
-            return Long.valueOf(ENCRYPTION_SERVICE.decrypt(object, EMPTY, TokenUtils.getToken(), true));
+            return Long.valueOf(ENCRYPTION_SERVICE.decrypt(object, EMPTY, accessToken, ignoreUserConflict));
         } else {
             return Long.valueOf(object);
+        }
+    }
+
+    /**
+     * 解密字符串, 如果不是加密字符串直接返回
+     * 如
+     * =some==   =>   123
+     * some      =>   some
+     *
+     * @param object 对象
+     * @return 主键字符串或者原非加密字符串
+     */
+    public static String decryptValueOrIgnore(String object) {
+        if (object == null) {
+            return null;
+        }
+        ensureEncryptService();
+        if (EncryptContext.isEncrypt()
+                && EncryptContext.isAllowedEncrypt()
+                && ENCRYPTION_SERVICE.isCipher(object)) {
+            return ENCRYPTION_SERVICE.decrypt(object, EMPTY, EMPTY, true);
+        } else {
+            return object;
+        }
+    }
+
+    /**
+     * 为websocket连接下的处理逻辑解密字符串, 如果不是加密字符串直接返回
+     * 如
+     * =some==   =>   123
+     * some      =>   some
+     *
+     * @param object 对象
+     * @return 主键字符串或者原非加密字符串
+     */
+    public static String decryptValueOrIgnoreForWs(String object) {
+        if (object == null) {
+            return null;
+        }
+        ensureEncryptService();
+        // websocket 的背景下, 不能判断当前用户上下文
+        if (ENCRYPTION_SERVICE.isCipher(object)) {
+            try {
+                return ENCRYPTION_SERVICE.decrypt(object, EMPTY, EMPTY, true);
+            } catch (Exception ex) {
+                // 发生异常还是返回原值
+                return object;
+            }
+        } else {
+            return object;
         }
     }
 }

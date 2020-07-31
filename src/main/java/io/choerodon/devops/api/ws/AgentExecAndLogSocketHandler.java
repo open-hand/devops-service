@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.ws;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
-import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -22,14 +21,12 @@ public class AgentExecAndLogSocketHandler {
     @Autowired
     RedisTemplate<String, Object> redisTemplate;
 
-    public boolean beforeHandshake(ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
-        ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) serverHttpRequest;
-        HttpServletRequest request = servletRequest.getServletRequest();
+    public boolean beforeHandshake(ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse, Map<String, Object> attributes) {
 
         //校验ws连接参数是否正确
-        WebSocketTool.checkGroup(request);
-        WebSocketTool.checkKey(request);
-        WebSocketTool.checkClusterId(request);
+        WebSocketTool.checkGroup(attributes);
+        WebSocketTool.checkKey(attributes);
+        WebSocketTool.checkClusterId(attributes);
 
         return true;
     }

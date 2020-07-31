@@ -12,6 +12,7 @@ import org.springframework.web.socket.WebSocketHandler;
 
 import io.choerodon.devops.api.ws.AbstractSocketInterceptor;
 import io.choerodon.devops.api.ws.DevopsExecAndLogSocketHandler;
+import io.choerodon.devops.api.ws.WebSocketTool;
 
 /**
  * @author zmf
@@ -29,6 +30,7 @@ public class FrontLogSocketInterceptor extends AbstractSocketInterceptor {
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) {
-        return devopsExecAndLogSocketHandler.beforeHandshake(request, response);
+        WebSocketTool.preProcessAttributeAboutKeyEncryption(attributes);
+        return devopsExecAndLogSocketHandler.beforeHandshake(request, response, attributes);
     }
 }
