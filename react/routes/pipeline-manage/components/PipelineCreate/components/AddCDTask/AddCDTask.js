@@ -226,13 +226,14 @@ export default observer(() => {
   };
 
   const handleTestConnect = async () => new Promise((resolve) => {
-    const { hostIp, hostPort, userName, password, accountType } = ADDCDTaskDataSet.toData()[0];
+    const { hostIp, hostPort, userName, password, accountType, accountKey } = ADDCDTaskDataSet.toData()[0];
     axios.post(`/devops/v1/projects/${projectId}/cicd_pipelines/test_connection`, {
       hostIp,
       hostPort,
       userName,
       password,
       accountType,
+      accountKey,
     }).then((res) => {
       setTestStatus(res ? 'success' : 'error');
       resolve(res);
