@@ -667,6 +667,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             String javaJarExec = String.format("nohup %s > ~/temp-log/%s & ", values.replace("${jar}", c7nNexusDeployDTO.getJarName()), logName);
 
             cmdStr.append(javaJarExec);
+            cmdStr.append(System.lineSeparator());
             LOGGER.info(cmdStr.toString());
 
             final Session.Command cmd = session.exec(cmdStr.toString());
