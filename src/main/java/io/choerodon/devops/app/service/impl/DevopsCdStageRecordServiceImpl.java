@@ -122,7 +122,7 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
         // 更新流水线状态为待审核
         devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.NOT_AUDIT.toValue());
         // 通知审核人员
-        devopsCdAuditRecordService.sendStageAuditMessage(devopsCdStageRecordDTO);
+        devopsCdAuditRecordService.sendStageAuditMessage(devopsCdStageRecordDTO, pipelineRecordId);
     }
 
     @Override

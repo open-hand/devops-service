@@ -22,9 +22,11 @@ import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdAuditRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO;
+import io.choerodon.devops.infra.dto.DevopsPipelineRecordRelDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdAuditRecordMapper;
+import io.choerodon.devops.infra.mapper.DevopsPipelineRecordRelMapper;
 
 /**
  * @author scp
@@ -35,7 +37,7 @@ import io.choerodon.devops.infra.mapper.DevopsCdAuditRecordMapper;
 public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordService {
 
     private static final String STAGE_NAME = "stageName";
-
+    private static final String REL_ID = "pipelineIdRecordId";
     private static final String ERROR_SAVE_AUDIT_RECORD = "error.save.audit.record";
     private static final String ERROR_UPDATE_AUDIT_RECORD = "error.update.audit.record";
 
@@ -46,6 +48,8 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
 
     @Override
     public List<DevopsCdAuditRecordDTO> queryByStageRecordId(Long stageRecordId) {
@@ -62,7 +66,7 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
     }
 
     @Override
-    public void sendStageAuditMessage(DevopsCdStageRecordDTO devopsCdStageRecord) {
+    public void sendStageAuditMessage(DevopsCdStageRecordDTO devopsCdStageRecord, Long devopsCdPipelineRecordId) {
         // 查询审核人员
         List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = queryByStageRecordId(devopsCdStageRecord.getId());
         if (CollectionUtils.isEmpty(devopsCdAuditRecordDTOS)) {
@@ -87,6 +91,10 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
         });
         HashMap<String, String> params = new HashMap<>();
         params.put(STAGE_NAME, devopsCdStageRecord.getStageName());
+        DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
+        recordRelDTO.setCdPipelineRecordId(devopsCdPipelineRecordId);
+        List<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS = devopsPipelineRecordRelMapper.select(recordRelDTO);
+        params.put(REL_ID, devopsPipelineRecordRelDTOS.get(0).getId().toString());
         sendNotificationService.sendCdPipelineNotice(devopsCdStageRecord.getPipelineRecordId(), MessageCodeConstants.PIPELINE_STAGE_AUDIT, userList, params);
     }
 

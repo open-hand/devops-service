@@ -17,7 +17,7 @@ public interface DevopsCdAuditRecordService {
 
     List<DevopsCdAuditRecordDTO> queryByJobRecordId(Long jobRecordId);
 
-    void sendStageAuditMessage(DevopsCdStageRecordDTO devopsCdStageRecordDTO);
+    void sendStageAuditMessage(DevopsCdStageRecordDTO devopsCdStageRecordDTO, Long devopsCdPipelineRecordId);
 
     void sendJobAuditMessage(Long pipelineRecordId, DevopsCdJobRecordDTO devopsCdJobRecordDTO);
 
