@@ -214,6 +214,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         if (CollectionUtils.isEmpty(stageRecordDTOList)) {
             return null;
         }
+        stageRecordDTOList = stageRecordDTOList.stream().sorted(Comparator.comparing(DevopsCdStageRecordDTO::getSequence)).collect(Collectors.toList());
 
         for (int i = 0; i < stageRecordDTOList.size(); i++) {
             // 3.
@@ -227,6 +228,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             } else {
                 jobRecordDTOList = devopsCdJobRecordMapper.queryRetryJob(stageRecordDTO.getId());
             }
+            jobRecordDTOList = jobRecordDTOList.stream().sorted(Comparator.comparing(DevopsCdJobRecordDTO::getSequence)).collect(Collectors.toList());
             List<DevopsPipelineTaskDTO> taskDTOList = new ArrayList<>();
             if (!CollectionUtils.isEmpty(jobRecordDTOList)) {
                 jobRecordDTOList.forEach(jobRecordDTO -> {
