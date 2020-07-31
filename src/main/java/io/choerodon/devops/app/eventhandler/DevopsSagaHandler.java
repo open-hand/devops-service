@@ -255,7 +255,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String operateEnvPermissionInGitlab(String payload) {
-        DevopsEnvUserPayload devopsEnvUserPayload = gson.fromJson(payload, DevopsEnvUserPayload.class);
+        DevopsEnvUserPayload devopsEnvUserPayload = JsonHelper.unmarshalByJackson(payload, DevopsEnvUserPayload.class);
         try {
             updateUserEnvPermissionService.updateUserPermission(devopsEnvUserPayload);
         } catch (Exception e) {
