@@ -157,7 +157,7 @@ export default observer(() => {
         value && setValueIdValues(Base64.decode(value));
       } else if (jobDetail.type === 'cdHost') {
         const metadata = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
-        extra = { ...metadata?.hostConnectionVO, ...metadata?.jarDeploy };
+        extra = { ...metadata?.hostConnectionVO, ...metadata?.jarDeploy, ...metadata?.imageDeploy };
         const { hostDeployType } = metadata;
         if (hostDeployType === 'customize') {
           setCustomValues(Base64.decode(metadata.customize?.values));
