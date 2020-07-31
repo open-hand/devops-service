@@ -27,6 +27,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdAuditRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsPipelineRecordRelMapper;
+import io.choerodon.devops.infra.util.KeyDecryptHelper;
 
 /**
  * @author scp
@@ -38,6 +39,7 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
 
     private static final String STAGE_NAME = "stageName";
     private static final String REL_ID = "pipelineIdRecordId";
+    private static final String PIPELINE_ID = "pipelineId";
     private static final String ERROR_SAVE_AUDIT_RECORD = "error.save.audit.record";
     private static final String ERROR_UPDATE_AUDIT_RECORD = "error.update.audit.record";
 
@@ -95,6 +97,7 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
         recordRelDTO.setCdPipelineRecordId(devopsCdPipelineRecordId);
         List<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS = devopsPipelineRecordRelMapper.select(recordRelDTO);
         params.put(REL_ID, devopsPipelineRecordRelDTOS.get(0).getId().toString());
+        params.put(PIPELINE_ID, KeyDecryptHelper.encryptValue(devopsPipelineRecordRelDTOS.get(0).getPipelineId()));
         sendNotificationService.sendCdPipelineNotice(devopsCdStageRecord.getPipelineRecordId(), MessageCodeConstants.PIPELINE_STAGE_AUDIT, userList, params);
     }
 
