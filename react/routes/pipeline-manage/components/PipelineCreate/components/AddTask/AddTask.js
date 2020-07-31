@@ -908,7 +908,7 @@ const AddTask = observer(() => {
         <div colSpan={4} className="AddTask_configStep">
           <p>配置步骤</p>
         </div>,
-        <Select onChange={handleChangeBuildTemple} name="gjmb">
+        <Select colSpan={2} onChange={handleChangeBuildTemple} name="gjmb">
           <Option value="Maven">Maven模板</Option>
           <Option value="npm">Npm模板</Option>
           <Option value="go">Go模板</Option>

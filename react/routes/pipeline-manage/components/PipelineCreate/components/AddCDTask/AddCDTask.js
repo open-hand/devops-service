@@ -585,6 +585,7 @@ export default observer(() => {
                 <Select
                   multiple
                   className="addcdTask-auditUsers"
+                  searchable
                   style={{ width: '100%' }}
                   name="cdAuditUserIds"
                   optionRenderer={({ text }) => renderderAuditUsersList({ text })}
