@@ -21,17 +21,17 @@ public class HostConnectionVO {
     private String password;
 
     @ApiModelProperty("密钥")
-    private String accoutKey;
+    private String accountKey;
 
     @ApiModelProperty("账号配置类型")
     private String accountType;
 
-    public String getAccoutKey() {
-        return accoutKey;
+    public String getAccountKey() {
+        return accountKey;
     }
 
-    public void setAccoutKey(String accoutKey) {
-        this.accoutKey = accoutKey;
+    public void setAccountKey(String accountKey) {
+        this.accountKey = accountKey;
     }
 
     public String getHostIp() {

@@ -479,7 +479,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         if (hostConnectionVO.getAccountType().equals(CdHostAccountType.PASSWORD.value())) {
             ssh.authPassword(hostConnectionVO.getUserName(), hostConnectionVO.getPassword());
         } else {
-            KeyProvider keyProvider = ssh.loadKeys(hostConnectionVO.getAccoutKey(), null, null);
+            KeyProvider keyProvider = ssh.loadKeys(hostConnectionVO.getAccountKey(), null, null);
             ssh.authPublickey(hostConnectionVO.getUserName(), keyProvider);
         }
     }
