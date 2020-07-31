@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_HOST_FEPLOY;
 
 import java.io.IOException;
@@ -329,8 +330,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(devopsCdPipelineRecordDTO.getGitlabPipelineId(), imageDeploy.getPipelineTask());
                 HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(devopsCdPipelineRecordDTO.getProjectId(), ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
                 c7nImageDeployDTO.setHarborUrl(harborRepoDTO.getHarborRepoConfig().getRepoUrl());
-                c7nImageDeployDTO.setPullAccount(harborRepoDTO.getPullRobot().getName());
-                c7nImageDeployDTO.setPullPassword(harborRepoDTO.getPullRobot().getToken());
+                if (ciPipelineImageDTO.getRepoType().equals(CUSTOM_REPO)) {
+                    c7nImageDeployDTO.setPullAccount(harborRepoDTO.getHarborRepoConfig().getLoginName());
+                    c7nImageDeployDTO.setPullPassword(harborRepoDTO.getHarborRepoConfig().getPassword());
+                } else {
+                    c7nImageDeployDTO.setPullAccount(harborRepoDTO.getPullRobot().getName());
+                    c7nImageDeployDTO.setPullPassword(harborRepoDTO.getPullRobot().getToken());
+                }
                 c7nImageDeployDTO.setPullCmd("docker pull " + ciPipelineImageDTO.getImageTag());
             }
             // 1. 更新状态 记录镜像信息
