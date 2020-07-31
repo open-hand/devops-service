@@ -1002,6 +1002,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryByPipelineRecordId(devopsCdPipelineRecordVO.getId());
         if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
             List<DevopsCdStageRecordVO> devopsCdStageRecordVOS = ConvertUtils.convertList(devopsCdStageRecordDTOS, this::dtoToVo);
+            devopsCdStageRecordVOS.sort(Comparator.comparing(StageRecordVO::getSequence));
             devopsCdStageRecordVOS.forEach(devopsCdStageRecordVO -> {
                 devopsCdStageRecordVO.setType(StageType.CD.getType());
                 //查询Cd job
