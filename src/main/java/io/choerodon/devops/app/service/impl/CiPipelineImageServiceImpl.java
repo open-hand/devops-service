@@ -13,6 +13,7 @@ import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.CiPipelineImageDTO;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.mapper.CiPipelineImageMapper;
+import io.choerodon.devops.infra.util.ExceptionUtil;
 
 /**
  * @author scp
@@ -33,19 +34,23 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
         if (appServiceDTO == null) {
             throw new DevopsCiInvalidException("error.token.invalid");
         }
-        CiPipelineImageDTO oldCiPipelineImageDTO = queryByGitlabPipelineId(ciPipelineImageVO.getGitlabPipelineId(), ciPipelineImageVO.getJobName());
-        if (oldCiPipelineImageDTO == null || oldCiPipelineImageDTO.getId() == null) {
-            CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
-            BeanUtils.copyProperties(ciPipelineImageVO, ciPipelineImageDTO);
-            if (ciPipelineImageMapper.insertSelective(ciPipelineImageDTO) != 1) {
-                throw new CommonException("error.create.image.record");
+
+        // 异常包装
+        ExceptionUtil.wrapExWithCiEx(() -> {
+            CiPipelineImageDTO oldCiPipelineImageDTO = queryByGitlabPipelineId(ciPipelineImageVO.getGitlabPipelineId(), ciPipelineImageVO.getJobName());
+            if (oldCiPipelineImageDTO == null || oldCiPipelineImageDTO.getId() == null) {
+                CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
+                BeanUtils.copyProperties(ciPipelineImageVO, ciPipelineImageDTO);
+                if (ciPipelineImageMapper.insertSelective(ciPipelineImageDTO) != 1) {
+                    throw new CommonException("error.create.image.record");
+                }
+            } else {
+                BeanUtils.copyProperties(ciPipelineImageVO, oldCiPipelineImageDTO);
+                if (ciPipelineImageMapper.updateByPrimaryKey(oldCiPipelineImageDTO) != 1) {
+                    throw new CommonException("error.update.image.record");
+                }
             }
-        } else {
-            BeanUtils.copyProperties(ciPipelineImageVO, oldCiPipelineImageDTO);
-            if (ciPipelineImageMapper.updateByPrimaryKey(oldCiPipelineImageDTO) != 1) {
-                throw new CommonException("error.update.image.record");
-            }
-        }
+        });
     }
 
     @Override
