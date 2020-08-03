@@ -37,11 +37,9 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
     const localGet = (name) => (localStorage.getItem(name) ? JSON.parse(localStorage.getItem(name)) : null);
 
     const unshiftPop = (value, recentApp, recentAppList) => { // 有数据的话又再一次访问这个appservice则把他放到数组第一位
-      for (let i = 0; i < recentApp.length; i++) {
-        if (recentApp[i]?.id === value[0]?.id) {
-          recentApp.splice(i, 1); // 如果数据组存在该元素，则把该元素删除
-          break;
-        }
+      const deIndex = recentApp.findIndex(e => e?.id === value[0].id);
+      if (deIndex > -1) {
+        recentApp.splice(deIndex, 1); // 如果数据组存在该元素，则把该元素删除
       }
       recentApp.unshift(value[0]);
       recentAppList[projectId] = recentApp;
