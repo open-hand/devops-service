@@ -56,7 +56,7 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
       if (recentAppList !== null && recentAppList[projectId]) {
         const recentApp = recentAppList[projectId];
         if (!checkHasApp(value, recentApp)) { // 先校验localstorage里面有没有这个数据
-          recentApp.unshift(temp[0]);
+          !isEmpty(temp) && recentApp.unshift(temp[0]);
           if (recentApp.length > 5) {
             recentApp.splice(-1, 1);
           }
@@ -66,10 +66,14 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
           unshiftPop(temp, recentApp, recentAppList);
         }
       } else if (recentAppList === null) {
-        objTemp[projectId] = [temp[0]];
+        if (!isEmpty(temp)) {
+          objTemp[projectId] = [temp[0]];
+        }
         localSet('recent-app', JSON.stringify(objTemp));
       } else {
-        recentAppList[projectId] = [temp[0]];
+        if (!isEmpty(temp)) {
+          recentAppList[projectId] = [temp[0]];
+        }
         localSet('recent-app', JSON.stringify(recentAppList));
       }
     };
