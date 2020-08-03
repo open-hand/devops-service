@@ -313,8 +313,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                         // 不让数据库存加密的值
-                        processCiJobVO(devopsCiJobVO);
                         decryptCiBuildMetadata(devopsCiJobVO);
+                        processCiJobVO(devopsCiJobVO);
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
                         devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
