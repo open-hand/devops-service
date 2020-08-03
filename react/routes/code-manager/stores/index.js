@@ -3,6 +3,7 @@ import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import { withRouter } from 'react-router-dom';
+import isEmpty from 'lodash/isEmpty';
 import useStore from './useStore';
 import AppServiceDs from './AppServiceDataSet';
 import SelectAppDataSet from './SelectAppDataSet';
@@ -51,7 +52,7 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
       const recentAppList = localGet('recent-app');
       const temp = appServiceDs.toData().filter(e => e.id === value);
       const objTemp = {};
-      if (recentAppList !== null && recentAppList[projectId]) {
+      if (recentAppList !== null && recentAppList[projectId] && !isEmpty(temp)) {
         const recentApp = recentAppList[projectId];
         if (!checkHasApp(value, recentApp)) { // 先校验localstorage里面有没有这个数据
           recentApp.unshift(temp[0]);
@@ -107,7 +108,7 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
       appServiceDs.query().then((res) => {
         if (state && state.appServiceId) {
           selectAppDs.current && selectAppDs.current.set('appServiceId', state.appServiceId);
-        } else if (recentAppList !== null && recentAppList[projectId]) {
+        } else if (recentAppList !== null && !isEmpty(recentAppList[projectId])) {
           selectAppDs.current && selectAppDs.current.set('appServiceId', recentAppList[projectId][0].id);
         } else if (res && res.length && res.length > 0) {
           selectAppDs.current.set('appServiceId', res[0].id);
