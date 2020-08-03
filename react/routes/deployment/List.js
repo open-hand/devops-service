@@ -22,6 +22,7 @@ import PendingCheckModal from './components/pendingCheckModal';
 import Tips from '../../components/new-tips';
 
 import './index.less';
+import MouserOverWrapper from '../../components/MouseOverWrapper';
 
 const { Column } = Table;
 const { Option } = Select;
@@ -76,7 +77,6 @@ const Deployment = withRouter(observer((props) => {
     }
   }, []);
 
-
   function refresh() {
     envOptionsDs.query();
     pipelineOptionsDs.query();
@@ -105,6 +105,15 @@ const Deployment = withRouter(observer((props) => {
   async function openDetail(pipelineRecordId, type) {
     const deployType = type || listDs.current.get('deployType');
     const deployId = pipelineRecordId || listDs.current.get('deployId');
+    const manualTitle = (
+      <span className={`${prefixCls}-detail-modal-title`}>
+        部署“
+        <MouserOverWrapper width="160px" text={`#${deployId}`}>
+          <span>{`#${deployId}`}</span>
+        </MouserOverWrapper>
+        ”的详情
+      </span>
+    );
     let params;
     switch (deployType) {
       case 'auto':
@@ -130,6 +139,7 @@ const Deployment = withRouter(observer((props) => {
 
         params = {
           style: modalStyle1,
+          title: manualTitle,
           children: <ManualDetail
             record={detailDs.current}
             intlPrefix={intlPrefix}
@@ -140,6 +150,7 @@ const Deployment = withRouter(observer((props) => {
       case 'batch':
         params = {
           style: modalStyle1,
+          title: manualTitle,
           children: <BatchDetail
             recordId={deployId}
             intlPrefix={intlPrefix}
