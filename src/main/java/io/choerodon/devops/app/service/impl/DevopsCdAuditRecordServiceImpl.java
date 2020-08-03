@@ -97,7 +97,9 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
         recordRelDTO.setCdPipelineRecordId(devopsCdPipelineRecordId);
         List<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS = devopsPipelineRecordRelMapper.select(recordRelDTO);
         params.put(REL_ID, devopsPipelineRecordRelDTOS.get(0).getId().toString());
-        params.put(PIPELINE_ID, KeyDecryptHelper.encryptValue(devopsPipelineRecordRelDTOS.get(0).getPipelineId()));
+        if (!CollectionUtils.isEmpty(devopsPipelineRecordRelDTOS)) {
+            params.put(PIPELINE_ID, KeyDecryptHelper.encryptValue(devopsPipelineRecordRelDTOS.get(0).getPipelineId()));
+        }
         sendNotificationService.sendCdPipelineNotice(devopsCdStageRecord.getPipelineRecordId(), MessageCodeConstants.PIPELINE_STAGE_AUDIT, userList, params);
     }
 
@@ -127,6 +129,12 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
         });
         HashMap<String, String> params = new HashMap<>();
         params.put(STAGE_NAME, devopsCdJobRecordDTO.getName());
+        DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
+        recordRelDTO.setCdPipelineRecordId(pipelineRecordId);
+        List<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS = devopsPipelineRecordRelMapper.select(recordRelDTO);
+        if (!CollectionUtils.isEmpty(devopsPipelineRecordRelDTOS)) {
+            params.put(PIPELINE_ID, KeyDecryptHelper.encryptValue(devopsPipelineRecordRelDTOS.get(0).getPipelineId()));
+        }
         sendNotificationService.sendCdPipelineNotice(pipelineRecordId, MessageCodeConstants.PIPELINE_AUDIT, userList, params);
     }
 
