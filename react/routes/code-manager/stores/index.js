@@ -50,7 +50,10 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
       const recentAppList = localGet('recent-app');
       const temp = appServiceDs.toData().filter(e => e.id === value);
       const objTemp = {};
-      if (recentAppList !== null && recentAppList[projectId] && !isEmpty(temp)) {
+      if (isEmpty(temp)) {
+        return;
+      }
+      if (recentAppList !== null && recentAppList[projectId]) {
         const recentApp = recentAppList[projectId];
         if (!checkHasApp(value, recentApp)) { // 先校验localstorage里面有没有这个数据
           recentApp.unshift(temp[0]);
