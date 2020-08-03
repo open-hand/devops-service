@@ -8,7 +8,6 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class ServiceVO {
     private String name;
     private String type;
-    @Encrypt
     private String clusterIp;
     private String externalIp;
     private String port;
