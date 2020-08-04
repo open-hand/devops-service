@@ -185,6 +185,7 @@ const PipelineManage = observer((props) => {
 
   function getHeaderButtons() {
     const { parentId, status, devopsCdPipelineDeatilVO } = getSelectedMenu;
+    const { status: detailStatus, devopsCdPipelineDeatilVO: detailDevopsCdPipelineDeatilVO } = getDetailData;
     const buttons = [{
       permissions: ['choerodon.code.project.develop.ci-pipeline.ps.create'],
       name: formatMessage({ id: `${intlPrefix}.create` }),
@@ -225,6 +226,8 @@ const PipelineManage = observer((props) => {
           group: 2,
         });
       } else {
+        const newStatus = status || detailStatus;
+        const newDevopsCdPipelineDeatilVO = devopsCdPipelineDeatilVO || detailDevopsCdPipelineDeatilVO;
         buttons.push({
           name: formatMessage({ id: `${intlPrefix}.record.detail` }),
           icon: 'find_in_page-o',
@@ -236,21 +239,21 @@ const PipelineManage = observer((props) => {
           name: formatMessage({ id: `${intlPrefix}.execute.cancel` }),
           icon: 'power_settings_new',
           handler: () => changeRecordExecute('cancel'),
-          display: status === 'pending',
+          display: newStatus === 'pending',
           group: 2,
         }, {
           permissions: ['choerodon.code.project.develop.ci-pipeline.ps.retry'],
           name: formatMessage({ id: `${intlPrefix}.execute.retry` }),
           icon: 'refresh',
           handler: () => changeRecordExecute('retry'),
-          display: status === 'failed',
+          display: newStatus === 'failed',
           group: 2,
         }, {
           permissions: ['choerodon.code.project.develop.ci-pipeline.ps.audit'],
           name: formatMessage({ id: `${intlPrefix}.execute.audit` }),
           icon: 'authorize',
           handler: openAuditModal,
-          display: status === 'not_audit' && devopsCdPipelineDeatilVO && devopsCdPipelineDeatilVO.execute,
+          display: newStatus === 'not_audit' && newDevopsCdPipelineDeatilVO && newDevopsCdPipelineDeatilVO.execute,
           group: 2,
         });
       }
