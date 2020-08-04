@@ -21,6 +21,9 @@ const ActivateCluster = (props) => {
 
   return (
     <Fragment>
+      <blockquote className="c7ncd-cluster-activate-note">
+        {formatMessage({ id: 'c7ncd.cluster.activate.note' })}
+      </blockquote>
       <p className="c7ncd-cluster-activate-desc">{formatMessage({ id: 'c7ncd.cluster.activate.desc' })}</p>
       <div className="c7ncd-cluster-activate-wrap">
         <TextArea
@@ -34,7 +37,7 @@ const ActivateCluster = (props) => {
         <span className="c7ncd-cluster-activate-copy">
           <Tooltip placement="right" trigger="hover" title={copyMsg}>
             <div onMouseEnter={mouseEnter}>
-              <CopyToBoard text={cmd} onCopy={handleCopy}>
+              <CopyToBoard text={cmd} onCopy={handleCopy} options={{ format: 'text/plain' }}>
                 <i className="icon icon-library_books" />
               </CopyToBoard>
             </div>
@@ -43,6 +46,5 @@ const ActivateCluster = (props) => {
       </div>
     </Fragment>);
 };
-
 
 export default ActivateCluster;

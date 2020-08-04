@@ -165,11 +165,12 @@ function ClusterItem({
       action: editItem,
     }];
     if (status === 'disconnect') {
-      Data.push({
+      Data.unshift({
         service: ['choerodon.code.project.deploy.cluster.cluster-management.ps.active'],
         text: formatMessage({ id: `${intlPrefix}.activate.header` }),
         action: activateItem,
-      }, {
+      });
+      Data.push({
         service: ['choerodon.code.project.deploy.cluster.cluster-management.ps.delete'],
         text: formatMessage({ id: `${intlPrefix}.action.delete` }),
         action: deleteItem,
