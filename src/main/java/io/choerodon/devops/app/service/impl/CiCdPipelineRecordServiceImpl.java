@@ -130,6 +130,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             if (isFirstRecord(devopsPipelineRecordRelVO)) {
                 ciCdPipelineRecordVO.setStageRecordVOS(null);
             }
+            ciCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineRecordVO.getDevopsCdPipelineDeatilVO());
         }
         //纯ci
         if (devopsCiPipelineRecordVO != null && devopsCdPipelineRecordVO == null) {
@@ -155,6 +156,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             ciCdPipelineRecordVO.setCreatedDate(devopsCdPipelineRecordVO.getCreatedDate());
             CiCdPipelineVO ciCdPipelineVO = ConvertUtils.convertObject(devopsCdPipelineRecordVO.getCiCdPipelineVO(), CiCdPipelineVO.class);
             fillPipelineVO(devopsCdPipelineRecordVO.getUsername(), stageRecordVOS, devopsCdPipelineRecordVO.getCreatedDate(), ciCdPipelineVO, ciCdPipelineRecordVO);
+            ciCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineRecordVO.getDevopsCdPipelineDeatilVO());
         }
         return ciCdPipelineRecordVO;
     }
