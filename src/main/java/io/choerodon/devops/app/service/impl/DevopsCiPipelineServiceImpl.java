@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -434,7 +435,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             CiConfigVO ciConfigVO = JSONObject.parseObject(devopsCiJobVO.getMetadata(), CiConfigVO.class);
             if (!CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
                 // 将script字段加密
-                ciConfigVO.getConfig().forEach(c -> c.setScript(Base64Util.getBase64EncodedString(c.getScript())));
+                ciConfigVO.getConfig().stream().filter(e -> !Objects.isNull(e.getScript())).forEach(c -> c.setScript(Base64Util.getBase64EncodedString(c.getScript())));
                 // 序列化
                 devopsCiJobVO.setMetadata(JsonHelper.singleQuoteWrapped(JSONObject.toJSONString(ciConfigVO)));
             }

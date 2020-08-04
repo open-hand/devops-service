@@ -585,6 +585,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         AppServiceVersionDTO appServiceVersionDTO =
                 appServiceVersionService.baseQuery(appServiceDeployVO.getAppServiceVersionId());
+        CommonExAssertUtil.assertNotNull(appServiceVersionDTO, "error.version.id.not.exist", appServiceDeployVO.getAppServiceVersionId());
+        appServiceDeployVO.setAppServiceId(appServiceVersionDTO.getAppServiceId());
 
         //初始化ApplicationInstanceDTO,DevopsEnvCommandDTO,DevopsEnvCommandValueDTO
         AppServiceInstanceDTO appServiceInstanceDTO = initApplicationInstanceDTO(appServiceDeployVO);

@@ -3,6 +3,7 @@ import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import { withRouter } from 'react-router-dom';
+import isEmpty from 'lodash/isEmpty';
 import useStore from './useStore';
 import AppServiceDs from './AppServiceDataSet';
 import SelectAppDataSet from './SelectAppDataSet';
@@ -36,11 +37,9 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
     const localGet = (name) => (localStorage.getItem(name) ? JSON.parse(localStorage.getItem(name)) : null);
 
     const unshiftPop = (value, recentApp, recentAppList) => { // 有数据的话又再一次访问这个appservice则把他放到数组第一位
-      for (let i = 0; i < recentApp.length; i++) {
-        if (recentApp[i]?.id === value[0]?.id) {
-          recentApp.splice(i, 1); // 如果数据组存在该元素，则把该元素删除
-          break;
-        }
+      const deIndex = recentApp.findIndex(e => e?.id === value[0].id);
+      if (deIndex > -1) {
+        recentApp.splice(deIndex, 1); // 如果数据组存在该元素，则把该元素删除
       }
       recentApp.unshift(value[0]);
       recentAppList[projectId] = recentApp;
@@ -51,10 +50,13 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
       const recentAppList = localGet('recent-app');
       const temp = appServiceDs.toData().filter(e => e.id === value);
       const objTemp = {};
+      if (isEmpty(temp)) {
+        return;
+      }
       if (recentAppList !== null && recentAppList[projectId]) {
         const recentApp = recentAppList[projectId];
         if (!checkHasApp(value, recentApp)) { // 先校验localstorage里面有没有这个数据
-          recentApp.unshift(temp[0]);
+          !isEmpty(temp) && recentApp.unshift(temp[0]);
           if (recentApp.length > 5) {
             recentApp.splice(-1, 1);
           }
@@ -64,10 +66,14 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
           unshiftPop(temp, recentApp, recentAppList);
         }
       } else if (recentAppList === null) {
-        objTemp[projectId] = [temp[0]];
+        if (!isEmpty(temp)) {
+          objTemp[projectId] = [temp[0]];
+        }
         localSet('recent-app', JSON.stringify(objTemp));
       } else {
-        recentAppList[projectId] = [temp[0]];
+        if (!isEmpty(temp)) {
+          recentAppList[projectId] = [temp[0]];
+        }
         localSet('recent-app', JSON.stringify(recentAppList));
       }
     };
@@ -107,7 +113,7 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
       appServiceDs.query().then((res) => {
         if (state && state.appServiceId) {
           selectAppDs.current && selectAppDs.current.set('appServiceId', state.appServiceId);
-        } else if (recentAppList !== null && recentAppList[projectId]) {
+        } else if (recentAppList !== null && !isEmpty(recentAppList[projectId])) {
           selectAppDs.current && selectAppDs.current.set('appServiceId', recentAppList[projectId][0].id);
         } else if (res && res.length && res.length > 0) {
           selectAppDs.current.set('appServiceId', res[0].id);
