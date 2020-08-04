@@ -769,14 +769,14 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private void sendCdPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
         DevopsCdPipelineRecordDTO record = devopsCdPipelineRecordService.queryById(pipelineRecordId);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(record.getProjectId());
+        params.put("pipelineId", KeyDecryptHelper.encryptValue(record.getPipelineId()));
+        params.put("pipelineRecordId", record.getId().toString());
         sendNotices(type, users, constructCdParamsForPipeline(record, projectDTO, params, stageId, stageName), projectDTO.getId());
     }
 
     private Map<String, String> constructParamsForPipeline(PipelineRecordDTO record, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
         return StringMapBuilder.newBuilder()
-                .put("pipelineId", record.getPipelineId())
                 .put("pipelineName", record.getPipelineName())
-                .put("pipelineRecordId", record.getId())
                 .put("projectId", record.getProjectId())
                 .put("projectName", projectDTO.getName())
                 .put("organizationId", projectDTO.getOrganizationId())
@@ -789,9 +789,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     private Map<String, String> constructCdParamsForPipeline(DevopsCdPipelineRecordDTO record, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
         return StringMapBuilder.newBuilder()
-                .put("pipelineId", record.getPipelineId())
                 .put("pipelineName", record.getPipelineName())
-                .put("pipelineRecordId", record.getId())
                 .put("projectId", record.getProjectId())
                 .put("projectName", projectDTO.getName())
                 .put("organizationId", projectDTO.getOrganizationId())
