@@ -488,6 +488,28 @@ export default observer(() => {
     }
   }
 
+  const renderer = ({ record, text, value }) => (
+    <span>
+      {
+        text && (
+          <i
+            style={{
+              display: 'inline-block',
+              marginRight: 3,
+              width: '0.08rem',
+              height: '0.08rem',
+              borderRadius: '50%',
+              backgroundColor: record.get('connected') ? 'rgb(0, 191, 165)' : '#ff9915',
+            }}
+          />
+        )
+      }
+      {text}
+    </span>
+  );
+
+  const optionRenderer = ({ record, text, value }) => renderer({ record, text, value });
+
   return (
     <div className="addcdTask">
       <Form columns={3} dataSet={ADDCDTaskDataSet}>
@@ -554,7 +576,15 @@ export default observer(() => {
         </div>
         {
           ADDCDTaskDataSet?.current?.get('type') === 'cdDeploy' && [
-            <Select colSpan={1} name="envId" />,
+            <Select
+              colSpan={1}
+              name="envId"
+              optionRenderer={optionRenderer}
+              renderer={renderer}
+              onOption={({ record }) => ({
+                disabled: !record.get('connected'),
+              })}
+            />,
             <SelectBox className="addcdTask-mode" newLine colSpan={1} name="deployType">
               <Option value="create">新建实例</Option>
               <Option value="update">替换实例</Option>
