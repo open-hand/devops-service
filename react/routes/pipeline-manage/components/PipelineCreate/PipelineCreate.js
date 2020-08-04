@@ -128,7 +128,10 @@ const PipelineCreate = observer(() => {
   };
 
   const optionRenderer = ({ text }) => (text === '加载更多' ? (
-    <a onClick={handleClickMore}>{text}</a>
+    <a 
+      style={{ width: '100%', height: '100%', display: 'block' }}
+      onClick={handleClickMore}
+    >{text}</a>
   ) : text);
 
   function getAppServiceData() {

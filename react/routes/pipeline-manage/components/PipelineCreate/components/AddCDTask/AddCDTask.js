@@ -479,6 +479,7 @@ export default observer(() => {
 
   const renderderAuditUsersList = ({ text, record }) => (text === '加载更多' ? (
     <a
+      style={{ display: 'block', width: '100%', height: '100%' }}
       onClick={handleClickMore}
     >
       {text}
@@ -505,6 +506,7 @@ export default observer(() => {
 
   const renderderBranchs = ({ text }) => (text === '加载更多' ? (
     <a
+      style={{ width: '100%', height: '100%', display: 'block' }}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -655,11 +657,6 @@ export default observer(() => {
                   onOption={({ dataSet, record }) => ({
                     disabled: record.get('id') === 'more',
                   })}
-                  maxTagPlaceholder={(omittedValues) => (
-                    <Tooltip title={omittedValues.join(',')}>
-                      {`+${omittedValues.length}`}
-                    </Tooltip>
-                  )}
                   optionRenderer={renderderAuditUsersList}
                   renderer={({ text }) => text}
                 />

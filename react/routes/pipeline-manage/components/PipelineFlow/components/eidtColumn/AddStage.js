@@ -50,6 +50,7 @@ export default observer(({ addStepDs, curType, optType, appServiceType, projectI
 
   const renderderAuditUsersList = ({ text, record }) => (text === '加载更多' ? (
     <a
+      style={{ display: 'block', width: '100%', height: '100%' }}
       onClick={handleClickMore}
     >
       {text}
@@ -116,11 +117,6 @@ export default observer(({ addStepDs, curType, optType, appServiceType, projectI
             onOption={({ dataSet, record }) => ({
               disabled: record.get('id') === 'more',
             })}
-            maxTagPlaceholder={(omittedValues) => (
-              <Tooltip title={omittedValues.join(',')}>
-                {`+${omittedValues.length}`}
-              </Tooltip>
-            )}
             addonAfter={<Tips helpText="此处的人工审核默认为”或签“的方式，若选择的审核人员为多个，那么其中一个审核通过，便会开始执行下一阶段。" />}
           />
         ) : ''
