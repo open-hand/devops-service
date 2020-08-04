@@ -51,13 +51,13 @@ export default (projectId) => ({
     textField: 'realName',
     multiple: true,
     valueField: 'id',
-    lookupAxiosConfig: (data) => ({
+    lookupAxiosConfig: ({ params }) => ({
       method: 'post',
       url: `/devops/v1/projects/${projectId}/users/list_users?page=0&size=20`,
       data: {
         param: [],
         searchParam: {
-          realName: data.params.realName || '',
+          realName: params.realName || '',
         },
       },
       transformResponse: (res) => {
