@@ -13,7 +13,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class CiCdPipelineVO {
-    @Encrypt
+    @Encrypt(ignoreUserConflict = true)
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
