@@ -1,6 +1,8 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Form, Select, SelectBox, TextField, Tooltip, Icon } from 'choerodon-ui/pro';
+import {
+  Form, Select, SelectBox, TextField, Tooltip, Icon,
+} from 'choerodon-ui/pro';
 import { axios } from '@choerodon/boot';
 import Tips from '../../../../../../components/new-tips';
 
@@ -10,7 +12,7 @@ export default observer(({ addStepDs, curType, optType, appServiceType, projectI
   useEffect(() => {
     const type = addStepDs?.current?.get('type');
     addStepDs.current.set('parallel', type === 'CI' ? 1 : 0);
-  }, [addStepDs?.current?.get('type')]);
+  }, [addStepDs]);
 
   const renderer = ({ text }) => text;
 
@@ -21,7 +23,7 @@ export default observer(({ addStepDs, curType, optType, appServiceType, projectI
           {renderer({ text })}
         </Tooltip>
       );
-    } else if (text.includes('CD') && appServiceType === 'test') {
+    } if (text.includes('CD') && appServiceType === 'test') {
       return (
         <Tooltip title="测试类型应用服务不能添加CD阶段">
           {renderer({ text })}
@@ -49,7 +51,9 @@ export default observer(({ addStepDs, curType, optType, appServiceType, projectI
   const renderderAuditUsersList = ({ text, record }) => (text === '加载更多' ? (
     <a
       onClick={handleClickMore}
-    >{text}</a>
+    >
+      {text}
+    </a>
   ) : `${text}(${record.get('loginName')})`);
 
   return (
@@ -105,12 +109,18 @@ export default observer(({ addStepDs, curType, optType, appServiceType, projectI
             searchable
             searchMatcher="realName"
             name="cdAuditUserIds"
+            popupCls="addStageForm-cdAuditUserIds-select"
             optionRenderer={renderderAuditUsersList}
             renderer={({ text }) => text}
             maxTagCount={2}
-            maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
-              {`+${omittedValues.length}`}
-            </Tooltip>}
+            onOption={({ dataSet, record }) => ({
+              disabled: record.get('id') === 'more',
+            })}
+            maxTagPlaceholder={(omittedValues) => (
+              <Tooltip title={omittedValues.join(',')}>
+                {`+${omittedValues.length}`}
+              </Tooltip>
+            )}
             addonAfter={<Tips helpText="此处的人工审核默认为”或签“的方式，若选择的审核人员为多个，那么其中一个审核通过，便会开始执行下一阶段。" />}
           />
         ) : ''

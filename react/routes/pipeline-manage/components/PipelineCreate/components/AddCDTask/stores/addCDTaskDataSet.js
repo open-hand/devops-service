@@ -15,15 +15,20 @@ async function checkName(value, projectId, record) {
     const res = await axios.get(`/devops/v1/projects/${projectId}/app_service_instances/check_name?env_id=${record.get('envId')}&instance_name=${value}`);
     if ((res && res.failed) || !res) {
       return '实例名称重复';
-    } else {
-      return true;
     }
+    return true;
   } catch (err) {
     return '校验失败';
   }
 }
 
-export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, appServiceCode) => ({
+export default (
+  projectId,
+  PipelineCreateFormDataSet,
+  organizationId,
+  useStore,
+  appServiceCode,
+) => ({
   autoCreate: true,
   fields: [{
     name: 'type',
@@ -65,7 +70,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
         let newRes = res;
         try {
           newRes = JSON.parse(res);
-          return newRes.filter(r => r.permission);
+          return newRes.filter((r) => r.permission);
         } catch (e) {
           return newRes;
         }
@@ -223,8 +228,8 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
       lookupAxiosConfig: ({ record }) => ({
         method: 'get',
         url: (record.get('repoId')) && `rdupm/v1/harbor-choerodon-repos/listHarborImage?repoId=${record.get('repoId')}&repoType=${(function () {
-          const lookup = record.getField('repoId').lookup;
-          return lookup?.find(l => String(l.repoId) === String(record.get('repoId')))?.repoType;
+          const { lookup } = record.getField('repoId');
+          return lookup?.find((l) => String(l.repoId) === String(record.get('repoId')))?.repoType;
         }())}`,
         transformResponse: (data) => {
           let newData = data;
@@ -380,7 +385,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
         let newRes;
         try {
           newRes = JSON.parse(res);
-          if (newRes.totalElements % 20 !== 0 && newRes.content.length !== 0) {
+          if (newRes.totalElements % 20 === 0 && newRes.content.length !== 0) {
             newRes.content.push({
               id: 'more',
               realName: '加载更多',

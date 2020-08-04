@@ -1,5 +1,4 @@
 import { DataSet } from 'choerodon-ui/pro';
-import jsonBigint from 'json-bigint';
 
 export default (projectId) => ({
   autoCreate: true,
@@ -65,11 +64,7 @@ export default (projectId) => ({
         let newRes;
         try {
           newRes = JSON.parse(res);
-          // debugger;
-          // if (data.params.appServiceName) {
-          //   createUseStore.setSearchAppServiceData(newRes);
-          // }
-          if (newRes.totalElements % 20 !== 0 && newRes.content.length !== 0) {
+          if (newRes.content.length % 20 === 0 && newRes.content.length !== 0) {
             newRes.content.push({
               id: 'more',
               realName: '加载更多',

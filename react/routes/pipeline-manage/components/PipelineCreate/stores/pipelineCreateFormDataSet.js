@@ -8,9 +8,8 @@ export default (AppServiceOptionsDs, projectId, createUseStore, dataSource) => {
     const pa = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}(\/.+)*:.+$/;
     if (value && pa.test(value)) {
       return true;
-    } else {
-      return '请输入格式正确的image镜像';
     }
+    return '请输入格式正确的image镜像';
   }
 
   function handleUpdate({ dataSet, value, name }) {
@@ -18,7 +17,9 @@ export default (AppServiceOptionsDs, projectId, createUseStore, dataSource) => {
       if (value) {
         let appServiceData = dataSet.getField('appServiceId').getLookupData(value);
         if (isEmpty(appServiceData)) {
-          appServiceData = createUseStore.getSearchAppServiceData.find(({ appServiceId }) => appServiceId === value);
+          appServiceData = createUseStore.getSearchAppServiceData.find(
+            ({ appServiceId }) => appServiceId === value,
+          );
         }
         createUseStore.setCurrentAppService(appServiceData || {});
       } else {
@@ -68,36 +69,35 @@ export default (AppServiceOptionsDs, projectId, createUseStore, dataSource) => {
               }
             },
           });
-        } else {
-          return ({
-            method: 'post',
-            url: `/devops/v1/projects/${projectId}/app_service/page_app_services_without_ci?page=0&size=20`,
-            data: {
-              param: [],
-              searchParam: {
-                name: data.params.appServiceName || '',
-              },
-            },
-            transformResponse: (res) => {
-              let newRes;
-              try {
-                newRes = JSONBigint.parse(res);
-                if (data.params.appServiceName) {
-                  createUseStore.setSearchAppServiceData(newRes);
-                }
-                if (newRes.length % 20 === 0 && newRes.length !== 0) {
-                  newRes.push({
-                    appServiceId: 'more',
-                    appServiceName: '加载更多',
-                  });
-                }
-                return newRes;
-              } catch (e) {
-                return res;
-              }
-            },
-          });
         }
+        return ({
+          method: 'post',
+          url: `/devops/v1/projects/${projectId}/app_service/page_app_services_without_ci?page=0&size=20`,
+          data: {
+            param: [],
+            searchParam: {
+              name: data.params.appServiceName || '',
+            },
+          },
+          transformResponse: (res) => {
+            let newRes;
+            try {
+              newRes = JSONBigint.parse(res);
+              if (data.params.appServiceName) {
+                createUseStore.setSearchAppServiceData(newRes);
+              }
+              if (newRes.length % 20 === 0 && newRes.length !== 0) {
+                newRes.push({
+                  appServiceId: 'more',
+                  appServiceName: '加载更多',
+                });
+              }
+              return newRes;
+            } catch (e) {
+              return res;
+            }
+          },
+        });
       },
     }, {
       name: 'selectImage',

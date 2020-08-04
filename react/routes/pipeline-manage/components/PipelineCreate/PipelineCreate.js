@@ -1,6 +1,10 @@
 import { axios } from '@choerodon/boot';
-import React, { useEffect, useState, Fragment, useRef } from 'react';
-import { Form, TextField, Select, SelectBox, Modal, Button, DataSet } from 'choerodon-ui/pro';
+import React, {
+  useEffect, useState, Fragment, useRef,
+} from 'react';
+import {
+  Form, TextField, Select, SelectBox, Modal, Button, DataSet,
+} from 'choerodon-ui/pro';
 import { message, Icon } from 'choerodon-ui';
 import { observer } from 'mobx-react-lite';
 import { usePipelineCreateStore } from './stores';
@@ -31,7 +35,9 @@ const PipelineCreate = observer(() => {
 
   useEffect(() => {
     if (dataSource) {
-      const { name, appServiceId, image, stageList } = dataSource;
+      const {
+        name, appServiceId, image, stageList,
+      } = dataSource;
       PipelineCreateFormDataSet.loadData([{
         name,
         appServiceId,
@@ -48,7 +54,7 @@ const PipelineCreate = observer(() => {
       }
     };
     init();
-  }, []);
+  }, [PipelineCreateFormDataSet, createUseStore, dataSource]);
 
   const handleCreate = async () => {
     const result = await PipelineCreateFormDataSet.validate();
@@ -58,11 +64,11 @@ const PipelineCreate = observer(() => {
         ...dataSource,
         ...origin,
         image: origin.selectImage === '1' ? origin.image : null,
-        devopsCiStageVOS: editBlockStore.getStepData2.filter(s => s.type === 'CI'),
-        devopsCdStageVOS: editBlockStore.getStepData2.filter(s => s.type === 'CD'),
+        devopsCiStageVOS: editBlockStore.getStepData2.filter((s) => s.type === 'CI'),
+        devopsCdStageVOS: editBlockStore.getStepData2.filter((s) => s.type === 'CD'),
       };
-      if (data.devopsCiStageVOS.some(s => s.jobList.length === 0)
-        || data.devopsCdStageVOS.some(s => s.jobList.length === 0)
+      if (data.devopsCiStageVOS.some((s) => s.jobList.length === 0)
+        || data.devopsCdStageVOS.some((s) => s.jobList.length === 0)
       ) {
         message.error(`流水线中存在空阶段，无法${modal.props.title.includes('创建') ? '创建' : '保存'}`);
         return false;
@@ -76,16 +82,14 @@ const PipelineCreate = observer(() => {
           if (res.failed) {
             message.error(res.message);
             return false;
-          } else {
-            res.id && mainStore.setSelectedMenu({ key: String(res.id) });
-            refreshTree();
-            return true;
           }
+          res.id && mainStore.setSelectedMenu({ key: String(res.id) });
+          refreshTree();
+          return true;
         });
       }
-    } else {
-      return false;
     }
+    return false;
   };
 
   const handelCancel = () => {
@@ -149,8 +153,13 @@ const PipelineCreate = observer(() => {
           renderer={renderer}
         />
         <TextField style={{ display: 'none' }} />
-        <div className="advanced_text" style={{ cursor: 'pointer' }} onClick={() => setExpandIf(!expandIf)}>
-          高级设置<Icon style={{ fontSize: 18 }} type={expandIf ? 'expand_less' : 'expand_more'} />
+        <div
+          className="advanced_text"
+          style={{ cursor: 'pointer' }}
+          onClick={() => setExpandIf(!expandIf)}
+        >
+          高级设置
+          <Icon style={{ fontSize: 18 }} type={expandIf ? 'expand_less' : 'expand_more'} />
         </div>
         {
           expandIf ? (
@@ -162,7 +171,11 @@ const PipelineCreate = observer(() => {
               onChange={handleChangeSelectImage}
               addonAfter={<Tips helpText="CI流程Runner镜像是该条流水线中所有CI任务默认的执行环境。您可直接使用此处给出的默认Runner镜像，或是输入自定义的CI流程Runner镜像" />}
             >
-              <Option value={createUseStore.getDefaultImage}>{createUseStore.getDefaultImage}</Option>
+              <Option
+                value={createUseStore.getDefaultImage}
+              >
+                {createUseStore.getDefaultImage}
+              </Option>
             </Select>
           ) : ''
         }
@@ -172,11 +185,16 @@ const PipelineCreate = observer(() => {
         edit
         image={PipelineCreateFormDataSet.current.get('image')}
         appServiceId={PipelineCreateFormDataSet.current.get('appServiceId')}
-        appServiceCode={getAppServiceData()?.appServiceCode || editBlockStore.getMainData?.appServiceCode}
+        appServiceCode={
+          getAppServiceData()?.appServiceCode || editBlockStore.getMainData?.appServiceCode
+        }
         appServiceType={getAppServiceData().type || editBlockStore.getMainData?.appServiceType}
         dataSource={dataSource}
       />
-      <p className="pipeline_createInfo"><Icon style={{ color: 'red', verticalAlign: 'text-bottom' }} type="error" />此页面定义了CI阶段或其中的任务后，GitLab仓库中的.gitlab-ci.yml文件也会同步修改。</p>
+      <p className="pipeline_createInfo">
+        <Icon style={{ color: 'red', verticalAlign: 'text-bottom' }} type="error" />
+        此页面定义了CI阶段或其中的任务后，GitLab仓库中的.gitlab-ci.yml文件也会同步修改。
+      </p>
     </div>
   );
 });
