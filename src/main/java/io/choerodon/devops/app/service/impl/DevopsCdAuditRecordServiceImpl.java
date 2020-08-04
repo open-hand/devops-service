@@ -97,7 +97,7 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
         recordRelDTO.setCdPipelineRecordId(devopsCdPipelineRecordId);
         DevopsPipelineRecordRelDTO relDTO = devopsPipelineRecordRelMapper.selectOne(recordRelDTO);
         params.put(REL_ID, relDTO.getId().toString());
-        params.put(PIPELINE_ID, KeyDecryptHelper.encryptValue(relDTO.getPipelineId()));
+        params.put(PIPELINE_ID, KeyDecryptHelper.encryptValueWithoutToken(relDTO.getPipelineId()));
         sendNotificationService.sendCdPipelineNotice(devopsCdStageRecord.getPipelineRecordId(), MessageCodeConstants.PIPELINE_STAGE_AUDIT, userList, params);
     }
 
@@ -131,7 +131,7 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
         recordRelDTO.setCdPipelineRecordId(pipelineRecordId);
         DevopsPipelineRecordRelDTO relDTO = devopsPipelineRecordRelMapper.selectOne(recordRelDTO);
         params.put(REL_ID, relDTO.getId().toString());
-        params.put(PIPELINE_ID, KeyDecryptHelper.encryptValue(relDTO.getPipelineId()));
+        params.put(PIPELINE_ID, KeyDecryptHelper.encryptValueWithoutToken(relDTO.getPipelineId()));
         sendNotificationService.sendCdPipelineNotice(pipelineRecordId, MessageCodeConstants.PIPELINE_AUDIT, userList, params);
     }
 
