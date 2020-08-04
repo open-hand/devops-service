@@ -37,6 +37,7 @@ export default observer(() => {
     image,
     dataSource: propsDataSource,
   } = usePipelineStageEditStore();
+
   const {
     setStepData,
     getStepData,
@@ -46,7 +47,7 @@ export default observer(() => {
   } = editBlockStore || stepStore;
 
   useEffect(() => {
-    let stageList = appServiceType === 'test' ? defaultData.slice(0, 1) : defaultData;
+    let stageList = appServiceType === 'test' && pipelineId ? defaultData.slice(0, 1) : defaultData;
     if (propsDataSource) {
       stageList = propsDataSource.stageList;
     }
