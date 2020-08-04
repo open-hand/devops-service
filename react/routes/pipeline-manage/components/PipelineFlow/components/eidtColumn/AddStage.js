@@ -6,7 +6,7 @@ import Tips from '../../../../../../components/new-tips';
 
 const { Option } = Select;
 
-export default observer(({ addStepDs, curType, optType, appServiceType, projectId }) => {
+export default observer(({ addStepDs, curType, optType, appServiceType, projectId, firstIf }) => {
   useEffect(() => {
     const type = addStepDs?.current?.get('type');
     addStepDs.current.set('parallel', type === 'CI' ? 1 : 0);
@@ -58,7 +58,7 @@ export default observer(({ addStepDs, curType, optType, appServiceType, projectI
         name="type"
         addonAfter={<Tips helpText="CI阶段中支持添加构建、发布Chart、代码检查以及自定义类型的CI任务；CD阶段中支持添加部署、主机部署以及人工卡点的CD任务。且流水线中任何CD阶段后，不能再添加CI阶段" />}
         onOption={({ record }) => ({
-          disabled: (record.get('value') === 'CI' && curType && (curType === 'CD')) || (record.get('value') === 'CD' && appServiceType === 'test'),
+          disabled: (record.get('value') === 'CI' && curType && (curType === 'CD') && !firstIf) || (record.get('value') === 'CD' && appServiceType === 'test') || (record.get('value') === 'CD' && curType && (curType === 'CI')),
         })}
         optionRenderer={optionRenderer}
         renderer={renderer}
