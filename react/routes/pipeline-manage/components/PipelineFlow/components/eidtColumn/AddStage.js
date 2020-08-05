@@ -12,7 +12,28 @@ export default observer(({ addStepDs, curType, optType, appServiceType, projectI
   useEffect(() => {
     const type = addStepDs?.current?.get('type');
     addStepDs.current.set('parallel', type === 'CI' ? 1 : 0);
+    handleMore();
   }, [addStepDs]);
+
+  async function InitAuditUsers() {
+    if (addStepDs.current?.get('cdAuditUserIds')) {
+      const pageSize = addStepDs.current.get('pageSize');
+      const url = `/devops/v1/projects/${projectId}/users/list_users?page=0&size=${pageSize}`;
+      const res = await axios.post(url, {
+        param: [],
+        searchParam: {},
+        ids: addStepDs?.current?.get('cdAuditUserIds') || [],
+      });
+      if (res.content.length % 20 === 0 && res.content.length !== 0) {
+        res.content.push({
+          realName: '加载更多',
+          id: 'more',
+        });
+      }
+      addStepDs.current.set('pageSize', pageSize);
+      addStepDs.getField('cdAuditUserIds').props.lookup = res.content;
+    }
+  }
 
   const renderer = ({ text }) => text;
 
@@ -33,11 +54,15 @@ export default observer(({ addStepDs, curType, optType, appServiceType, projectI
     return renderer({ text });
   };
 
-  async function handleClickMore(e) {
-    e.stopPropagation();
-    const pageSize = addStepDs.current.get('pageSize') + 20;
+  async function handleMore(e) {
+    e && e.stopPropagation();
+    const pageSize = !e ? addStepDs.current.get('pageSize') : addStepDs.current.get('pageSize') + 20;
     const url = `/devops/v1/projects/${projectId}/users/list_users?page=0&size=${pageSize}`;
-    const res = await axios.post(url);
+    const res = await axios.post(url, {
+      param: [],
+      searchParam: {},
+      ids: addStepDs?.current?.get('cdAuditUserIds') || [],
+    });
     if (res.content.length % 20 === 0 && res.content.length !== 0) {
       res.content.push({
         realName: '加载更多',
@@ -51,7 +76,7 @@ export default observer(({ addStepDs, curType, optType, appServiceType, projectI
   const renderderAuditUsersList = ({ text, record }) => (text === '加载更多' ? (
     <a
       style={{ display: 'block', width: '100%', height: '100%' }}
-      onClick={handleClickMore}
+      onClick={handleMore}
     >
       {text}
     </a>
@@ -113,7 +138,6 @@ export default observer(({ addStepDs, curType, optType, appServiceType, projectI
             popupCls="addStageForm-cdAuditUserIds-select"
             optionRenderer={renderderAuditUsersList}
             renderer={({ text }) => text}
-            maxTagCount={2}
             onOption={({ dataSet, record }) => ({
               disabled: record.get('id') === 'more',
             })}

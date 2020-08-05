@@ -60,7 +60,7 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       label: '构建模板',
     }, {
       name: 'nexusMavenRepoIds',
-      type: 'number',
+      type: 'string',
       label: '项目依赖仓库',
       textField: 'name',
       multiple: true,
