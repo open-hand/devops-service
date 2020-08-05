@@ -120,6 +120,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final DevopsPipelineRecordRelService devopsPipelineRecordRelService;
     private final DevopsCdPipelineService devopsCdPipelineService;
     private final DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
+    private final DevopsDeployValueMapper devopsDeployValueMapper;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -153,7 +154,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsEnvironmentMapper devopsEnvironmentMapper,
             @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService,
             @Lazy DevopsCdPipelineService devopsCdPipelineService,
-            DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper) {
+            DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper,
+            DevopsDeployValueMapper devopsDeployValueMapper
+    ) {
         this.devopsCiCdPipelineMapper = devopsCiCdPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
         this.devopsCiStageService = devopsCiStageService;
@@ -185,6 +188,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsPipelineRecordRelService = devopsPipelineRecordRelService;
         this.devopsCdPipelineService = devopsCdPipelineService;
         this.devopsPipelineRecordRelMapper = devopsPipelineRecordRelMapper;
+        this.devopsDeployValueMapper = devopsDeployValueMapper;
     }
 
     private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
@@ -394,6 +398,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         devopsCdJobVO.setEnvName(devopsEnvironmentDTO.getName());
                     }
                     DevopsCdEnvDeployInfoVO devopsCdEnvDeployInfoVO = ConvertUtils.convertObject(devopsCdEnvDeployInfoDTO, DevopsCdEnvDeployInfoVO.class);
+                    //根据value id 返回values
+                    DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getValueId());
+                    devopsCdEnvDeployInfoVO.setValue(devopsDeployValueDTO.getValue());
                     // 加密json中主键
                     devopsCdJobVO.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(devopsCdEnvDeployInfoVO)));
                 } else if (JobTypeEnum.CD_HOST.value().equals(devopsCdJobVO.getType())) {
