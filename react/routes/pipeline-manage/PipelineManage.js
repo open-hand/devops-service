@@ -140,14 +140,13 @@ const PipelineManage = observer((props) => {
 
   function openAuditModal() {
     const { devopsCdPipelineDeatilVO, parentId } = getSelectedMenu;
-    const { cdRecordId, devopsCdPipelineDeatilVO: detailDevopsCdPipelineDeatilVO } = getDetailData;
-    const parentRecord = treeDs.find((record) => record.get('key') === parentId);
+    const { cdRecordId, devopsCdPipelineDeatilVO: detailDevopsCdPipelineDeatilVO, pipelineName } = getDetailData;
     Modal.open({
       key: auditKey,
       title: formatMessage({ id: `${intlPrefix}.execute.audit` }),
       children: <AuditModal
         cdRecordId={cdRecordId}
-        name={parentRecord ? parentRecord.get('name') : ''}
+        name={pipelineName}
         mainStore={mainStore}
         onClose={handleRefresh}
         checkData={devopsCdPipelineDeatilVO || detailDevopsCdPipelineDeatilVO}
