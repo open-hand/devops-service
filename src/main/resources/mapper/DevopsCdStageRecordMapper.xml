@@ -51,6 +51,6 @@
                 devops_cd_stage_record dcsr
             WHERE
                 dcsr.pipeline_record_id = #{pipelineRecordId}
-                AND (dcsr.`status` = 'pending' or  dcsr.status='running' or dcsr.status = 'canceled')
+                AND (dcsr.`status` = 'pending' or  dcsr.status='running' or dcsr.status = 'created')
     </select>
 </mapper>
