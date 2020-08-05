@@ -51,6 +51,16 @@ public class DevopsCiPipelineRecordVO {
     @ApiModelProperty("最后更新时间")
     private Date lastUpdateDate;
 
+    private Long gitlabProjectId;
+
+    public Long getGitlabProjectId() {
+        return gitlabProjectId;
+    }
+
+    public void setGitlabProjectId(Long gitlabProjectId) {
+        this.gitlabProjectId = gitlabProjectId;
+    }
+
     public Long getId() {
         return id;
     }

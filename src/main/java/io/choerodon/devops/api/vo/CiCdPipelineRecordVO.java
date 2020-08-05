@@ -39,6 +39,25 @@ public class CiCdPipelineRecordVO extends BaseDomain {
     private List<StageRecordVO> stageRecordVOS;
     // 待审核状态是需要一些数据
     private DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO;
+    private String pipelineName;
+    private Long gitlabProjectId;
+
+
+    public Long getGitlabProjectId() {
+        return gitlabProjectId;
+    }
+
+    public void setGitlabProjectId(Long gitlabProjectId) {
+        this.gitlabProjectId = gitlabProjectId;
+    }
+
+    public String getPipelineName() {
+        return pipelineName;
+    }
+
+    public void setPipelineName(String pipelineName) {
+        this.pipelineName = pipelineName;
+    }
 
     public CiCdPipelineVO getCiCdPipelineVO() {
         return ciCdPipelineVO;
