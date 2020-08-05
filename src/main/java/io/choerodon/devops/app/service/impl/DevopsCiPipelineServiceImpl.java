@@ -399,7 +399,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     DevopsCdEnvDeployInfoVO devopsCdEnvDeployInfoVO = ConvertUtils.convertObject(devopsCdEnvDeployInfoDTO, DevopsCdEnvDeployInfoVO.class);
                     //根据value id 返回values
                     DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getValueId());
-                    devopsCdEnvDeployInfoVO.setValue(devopsDeployValueDTO.getValue());
+                    devopsCdEnvDeployInfoVO.setValue(Base64Util.getBase64EncodedString(devopsDeployValueDTO.getValue()));
                     // 加密json中主键
                     devopsCdJobVO.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(devopsCdEnvDeployInfoVO)));
                 } else if (JobTypeEnum.CD_HOST.value().equals(devopsCdJobVO.getType())) {
