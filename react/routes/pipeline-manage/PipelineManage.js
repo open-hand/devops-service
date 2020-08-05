@@ -99,18 +99,20 @@ const PipelineManage = observer((props) => {
 
   function openRecordDetail() {
     const { devopsPipelineRecordRelId } = getSelectedMenu;
+    const { devopsPipelineRecordRelId: detailDevopsPipelineRecordRelId } = getDetailData;
+    const newDevopsPipelineRecordRelId = devopsPipelineRecordRelId || detailDevopsPipelineRecordRelId;
     Modal.open({
       key: recordDetailKey,
       style: modalStyle,
       title: <span className={`${prefixCls}-detail-modal-title`}>
         流水线记录“
-        <MouserOverWrapper width="100px" text={`#${devopsPipelineRecordRelId}`}>
-          <span>{`#${devopsPipelineRecordRelId}`}</span>
+        <MouserOverWrapper width="100px" text={`#${newDevopsPipelineRecordRelId}`}>
+          <span>{`#${newDevopsPipelineRecordRelId}`}</span>
         </MouserOverWrapper>
         ”的详情
       </span>,
       children: <RecordDetail
-        pipelineRecordId={devopsPipelineRecordRelId}
+        pipelineRecordId={newDevopsPipelineRecordRelId}
         intlPrefix={intlPrefix}
         refresh={handleRefresh}
         store={mainStore}
@@ -123,12 +125,13 @@ const PipelineManage = observer((props) => {
 
   async function changeRecordExecute(type) {
     const { gitlabProjectId, gitlabPipelineId, devopsPipelineRecordRelId } = getSelectedMenu;
+    const { gitlabProjectId: detailGitlabProjectId, gitlabPipelineId: detailGitlabPipelineId, devopsPipelineRecordRelId: detailDevopsPipelineRecordRelId } = getDetailData;
     const res = await mainStore.changeRecordExecute({
       projectId,
-      gitlabProjectId,
-      recordId: gitlabPipelineId,
+      gitlabProjectId: gitlabProjectId || detailGitlabProjectId,
+      recordId: gitlabPipelineId || detailGitlabPipelineId,
       type,
-      devopsPipelineRecordRelId,
+      devopsPipelineRecordRelId: devopsPipelineRecordRelId || detailDevopsPipelineRecordRelId,
     });
     if (res) {
       handleRefresh();
@@ -240,14 +243,14 @@ const PipelineManage = observer((props) => {
           name: formatMessage({ id: `${intlPrefix}.execute.cancel` }),
           icon: 'power_settings_new',
           handler: () => changeRecordExecute('cancel'),
-          display: newStatus === 'pending',
+          display: newStatus === 'pending' || newStatus === 'running',
           group: 2,
         }, {
           permissions: ['choerodon.code.project.develop.ci-pipeline.ps.retry'],
           name: formatMessage({ id: `${intlPrefix}.execute.retry` }),
           icon: 'refresh',
           handler: () => changeRecordExecute('retry'),
-          display: newStatus === 'failed',
+          display: newStatus === 'failed' || newStatus === 'canceled',
           group: 2,
         }, {
           permissions: ['choerodon.code.project.develop.ci-pipeline.ps.audit'],
