@@ -618,8 +618,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             StringBuilder stopJar = new StringBuilder();
             stopJar.append(String.format("ps aux|grep %s | grep -v grep |awk '{print  $2}' |xargs kill -9 ", cdEnvDeployInfoDTO.getJarName()));
             stopJar.append(System.lineSeparator());
-            stopJar.append(String.format("cd temp-jar && rm -f %s", cdEnvDeployInfoDTO.getJarName()));
-            stopJar.append(" && cd ../ && cd temp-log &&");
+            stopJar.append(String.format("cd /temp-jar && rm -f %s", cdEnvDeployInfoDTO.getJarName()));
+            stopJar.append(" && cd /temp-log &&");
             stopJar.append(String.format("rm -f %s", cdEnvDeployInfoDTO.getJarName().replace(".jar", ".log")));
             LOGGER.info(stopJar.toString());
             Session session = null;
