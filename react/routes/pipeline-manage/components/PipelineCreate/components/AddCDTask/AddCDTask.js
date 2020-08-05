@@ -186,6 +186,7 @@ export default observer(() => {
       ADDCDTaskDataSet.loadData([newJobDetail]);
     }
     ADDCDTaskDataSet.current.set('glyyfw', appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')));
+    handleClickMore();
   }, [ADDCDTaskDataSet, PipelineCreateFormDataSet, appServiceId, jobDetail]);
 
   useEffect(() => {
@@ -463,10 +464,14 @@ export default observer(() => {
   };
 
   async function handleClickMore(e) {
-    e.stopPropagation();
-    const pageSize = ADDCDTaskDataSet.current.get('pageSize') + 20;
+    e && e.stopPropagation();
+    const pageSize = !e ? 20 : ADDCDTaskDataSet?.current?.get('pageSize') + 20;
     const url = `/devops/v1/projects/${projectId}/users/list_users?page=0&size=${pageSize}`;
-    const res = await axios.post(url);
+    const res = await axios.post(url, {
+      ids: jobDetail?.cdAuditUserIds || [],
+      param: [],
+      searchParam: {},
+    });
     if (res.content.length % 20 === 0 && res.content.length !== 0) {
       res.content.push({
         realName: '加载更多',
@@ -653,7 +658,7 @@ export default observer(() => {
                   searchable
                   style={{ width: '100%' }}
                   name="cdAuditUserIds"
-                  maxTagCount={2}
+                  // maxTagCount={2}
                   onOption={({ dataSet, record }) => ({
                     disabled: record.get('id') === 'more',
                   })}
