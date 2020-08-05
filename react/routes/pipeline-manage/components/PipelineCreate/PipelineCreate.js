@@ -77,6 +77,7 @@ const PipelineCreate = observer(() => {
         await axios.put(`/devops/v1/projects/${projectId}/cicd_pipelines/${dataSource.id}`, data);
         editBlockStore.loadData(projectId, dataSource.id);
         refreshTree();
+        return true;
       } else {
         return createUseStore.axiosCreatePipeline(data, id).then((res) => {
           if (res.failed) {
