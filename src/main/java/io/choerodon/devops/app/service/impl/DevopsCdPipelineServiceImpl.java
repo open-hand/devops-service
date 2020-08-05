@@ -143,7 +143,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         LOGGER.info("handler ci pipeline status update, current ci pipeline {} status is {}", pipelineAttr.getId(), status);
         // 初始化流水线记录
         if (!PipelineStatus.SUCCESS.toValue().equals(status) && !PipelineStatus.SKIPPED.toValue().equals(status)) {
-            initPipelineRecordWithStageAndJob(pipelineAttr.getId(), pipelineAttr.getSha(), pipelineAttr.getRef(), devopsCiPipelineDTO);
+            initPipelineRecordWithStageAndJob(pipelineAttr.getId(), pipelineAttr.getSha(), pipelineAttr.getRef(), pipelineAttr.getTag(), devopsCiPipelineDTO);
         }
 
         // ci流水线执行成功， 开始执行cd流水线
@@ -234,7 +234,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         });
     }
 
-    private List<DevopsCdJobDTO> calculateExecuteJobList(String ref, List<DevopsCdJobDTO> devopsCdJobDTOList) {
+    private List<DevopsCdJobDTO> calculateExecuteJobList(String ref, Boolean tag, List<DevopsCdJobDTO> devopsCdJobDTOList) {
         return devopsCdJobDTOList.stream().filter(job -> {
             if (StringUtils.isEmpty(job.getTriggerValue())) {
                 return true;
@@ -245,6 +245,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 String[] matchRefs = job.getTriggerValue().split(",");
                 if (matchRefs.length > 0) {
                     for (String matchRef : matchRefs) {
+                        if ("tag".equals(matchRef) && Boolean.TRUE.equals(tag)) {
+                            return true;
+                        }
                         if (ref.contains(matchRef)) {
                             return true;
                         }
@@ -314,7 +317,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
 
     @Override
-    public void triggerCdPipeline(String token, String commitSha, String ref, Long gitlabPipelineId) {
+    public void triggerCdPipeline(String token, String commitSha, String ref, Boolean tag, Long gitlabPipelineId) {
         AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
         CiCdPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
 
@@ -336,7 +339,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         List<DevopsCdJobDTO> devopsCdJobDTOList = devopsCdJobService.listByPipelineId(devopsCiPipelineDTO.getId());
 
         // 2. 计算要执行的job
-        List<DevopsCdJobDTO> executeJobList = calculateExecuteJobList(ref, devopsCdJobDTOList);
+        List<DevopsCdJobDTO> executeJobList = calculateExecuteJobList(ref, tag, devopsCdJobDTOList);
         if (CollectionUtils.isEmpty(executeJobList)) {
             return;
         }
@@ -964,12 +967,13 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         triggerCdPipeline(pipelineWebHookVO.getToken(),
                 pipelineWebHookVO.getObjectAttributes().getSha(),
                 pipelineWebHookVO.getObjectAttributes().getRef(),
+                pipelineWebHookVO.getObjectAttributes().getTag(),
                 pipelineWebHookVO.getObjectAttributes().getId());
 
     }
 
     @Override
-    public void initPipelineRecordWithStageAndJob(Long gitlabPipelineId, String commitSha, String ref, CiCdPipelineDTO devopsCiPipelineDTO) {
+    public void initPipelineRecordWithStageAndJob(Long gitlabPipelineId, String commitSha, String ref, Boolean tag, CiCdPipelineDTO devopsCiPipelineDTO) {
 
         // 查询流水线是否有cd阶段, 没有cd阶段不做处理
         List<DevopsCdStageDTO> devopsCdStageDTOList = devopsCdStageService.queryByPipelineId(devopsCiPipelineDTO.getId());
@@ -985,7 +989,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             List<DevopsCdJobDTO> devopsCdJobDTOList = devopsCdJobService.listByPipelineId(devopsCiPipelineDTO.getId());
 
             // 2. 计算要执行的job
-            List<DevopsCdJobDTO> executeJobList = calculateExecuteJobList(ref, devopsCdJobDTOList);
+            List<DevopsCdJobDTO> executeJobList = calculateExecuteJobList(ref, tag, devopsCdJobDTOList);
             if (CollectionUtils.isEmpty(executeJobList)) {
                 return;
             }

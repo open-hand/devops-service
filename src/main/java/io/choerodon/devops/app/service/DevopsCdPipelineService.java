@@ -17,7 +17,7 @@ public interface DevopsCdPipelineService {
      */
     void handleCiPipelineStatusUpdate(PipelineWebHookVO pipelineWebHookVO);
 
-    void triggerCdPipeline(String token, String commit, String ref, Long gitlabPipelineId);
+    void triggerCdPipeline(String token, String commit, String ref, Boolean tag, Long gitlabPipelineId);
 
     void executeCdPipeline(Long pipelineRecordId);
 
@@ -74,5 +74,5 @@ public interface DevopsCdPipelineService {
 
     void trigerSimpleCDPipeline(PipelineWebHookVO pipelineWebHookVO);
 
-    void initPipelineRecordWithStageAndJob(Long gitlabPipelineId, String commitSha, String ref, CiCdPipelineDTO devopsCiPipelineDTO);
+    void initPipelineRecordWithStageAndJob(Long gitlabPipelineId, String commitSha, String ref,  Boolean tag, CiCdPipelineDTO devopsCiPipelineDTO);
 }

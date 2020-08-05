@@ -13,6 +13,7 @@ public class PipelineWebHookAttributesVO {
     private Date createdAt;
     private Date finishedAt;
     private Long duration;
+    private Boolean tag;
 
     public Long getId() {
         return id;
@@ -68,5 +69,13 @@ public class PipelineWebHookAttributesVO {
 
     public void setDuration(Long duration) {
         this.duration = duration;
+    }
+
+    public Boolean getTag() {
+        return tag;
+    }
+
+    public void setTag(Boolean tag) {
+        this.tag = tag;
     }
 }

@@ -12,7 +12,7 @@ public interface CiCdPipelineRecordService {
 
     void cancel(Long projectId, Long pipelineRecordRelId, Long gitlabPipelineId, Long gitlabProjectId);
 
-    void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref);
+    void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref, Boolean tag);
 
     Page<CiCdPipelineRecordVO> pagingPipelineRecord(Long projectId, Long ciPipelineId, PageRequest pageable);
 

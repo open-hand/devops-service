@@ -133,8 +133,9 @@ public class CiCdPipelineController {
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam(value = "gitlab_project_id") Long gitlabProjectId,
             @ApiParam(value = "分支名", required = true)
-            @RequestParam(value = "ref") String ref) {
-        ciCdPipelineRecordService.executeNew(projectId, pipelineId, gitlabProjectId, ref);
+            @RequestParam(value = "ref") String ref,
+            @RequestParam(value = "tag", defaultValue = "false") Boolean tag) {
+        ciCdPipelineRecordService.executeNew(projectId, pipelineId, gitlabProjectId, ref, tag);
         return ResponseEntity.noContent().build();
     }
 

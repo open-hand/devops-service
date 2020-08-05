@@ -291,7 +291,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 
 
     @Override
-    public void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref) {
+    public void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref, Boolean tag) {
         CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(pipelineId);
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_NEW_PERFORM);
         DevopsCiStageDTO devopsCdStageDTO = new DevopsCiStageDTO();
@@ -312,7 +312,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             if (CollectionUtils.isEmpty(commitDTOList)) {
                 throw new CommonException("error.ref.no.commit");
             }
-            devopsCdPipelineService.triggerCdPipeline(appServiceDTO.getToken(), commitDTOList.get(0).getId(), ref, null);
+            devopsCdPipelineService.triggerCdPipeline(appServiceDTO.getToken(), commitDTOList.get(0).getId(), ref, tag,null);
         } else {
             devopsCiPipelineService.executeNew(projectId, pipelineId, gitlabProjectId, ref);
         }
