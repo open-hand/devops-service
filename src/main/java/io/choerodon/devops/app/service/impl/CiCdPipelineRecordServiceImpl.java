@@ -198,7 +198,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     }
 
     @Override
-    public void retryPipeline(Long projectId, Long pipelineRecordRelId, Long gitlabPipelineId, Long gitlabProjectId) {
+    public void retryPipeline(Long projectId, Long pipelineRecordRelId, Long gitlabProjectId) {
         AppServiceDTO appServiceDTO = appServiceService.queryByGitlabProjectId(gitlabProjectId);
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceDTO.getId(), AppServiceEvent.CICD_PIPELINE_RETRY);
         DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryById(pipelineRecordRelId);
@@ -219,7 +219,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                 }
             } else {
                 // ci未完成，则重试ci
-                devopsCiPipelineRecordService.retry(projectId, gitlabPipelineId, gitlabProjectId);
+                devopsCiPipelineRecordService.retry(projectId, devopsCiPipelineRecordDTO.getGitlabPipelineId(), gitlabProjectId);
             }
         }
     }
@@ -271,7 +271,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 
     @Override
     @Transactional
-    public void cancel(Long projectId, Long pipelineRecordRelId, Long gitlabPipelineId, Long gitlabProjectId) {
+    public void cancel(Long projectId, Long pipelineRecordRelId, Long gitlabProjectId) {
         DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryById(pipelineRecordRelId);
         // 首先查询ci阶段状态
         Long ciPipelineRecordId = devopsPipelineRecordRelDTO.getCiPipelineRecordId();
@@ -290,7 +290,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                 }
             } else {
                 // ci未完成，则取消ci、cd
-                devopsCiPipelineRecordService.cancel(projectId, gitlabPipelineId, gitlabProjectId);
+                devopsCiPipelineRecordService.cancel(projectId, devopsCiPipelineRecordDTO.getGitlabPipelineId(), gitlabProjectId);
                 // 存在cd阶段 则同时取消cd
                 if (!PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID.equals(cdPipelineRecordId)) {
                     cancelCdPipeline(cdPipelineRecordId);

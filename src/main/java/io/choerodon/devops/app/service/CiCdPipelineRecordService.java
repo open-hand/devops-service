@@ -8,9 +8,9 @@ public interface CiCdPipelineRecordService {
 
     CiCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long recordRelId);
 
-    void retryPipeline(Long projectId, Long pipelineRecordRelId, Long gitlabPipelineId, Long gitlabProjectId);
+    void retryPipeline(Long projectId, Long pipelineRecordRelId, Long gitlabProjectId);
 
-    void cancel(Long projectId, Long pipelineRecordRelId, Long gitlabPipelineId, Long gitlabProjectId);
+    void cancel(Long projectId, Long pipelineRecordRelId, Long gitlabProjectId);
 
     void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref, Boolean tag);
 
