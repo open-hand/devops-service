@@ -8,32 +8,12 @@ import Tips from '../../../../../../components/new-tips';
 
 const { Option } = Select;
 
-export default observer(({ addStepDs, curType, optType, appServiceType, projectId, firstIf }) => {
+export default observer(({ addStepDs, curType, optType, appServiceType, appServiceId, projectId, firstIf, nextStageType }) => {
   useEffect(() => {
     const type = addStepDs?.current?.get('type');
     addStepDs.current.set('parallel', type === 'CI' ? 1 : 0);
     handleMore();
   }, [addStepDs]);
-
-  async function InitAuditUsers() {
-    if (addStepDs.current?.get('cdAuditUserIds')) {
-      const pageSize = addStepDs.current.get('pageSize');
-      const url = `/devops/v1/projects/${projectId}/users/list_users?page=0&size=${pageSize}`;
-      const res = await axios.post(url, {
-        param: [],
-        searchParam: {},
-        ids: addStepDs?.current?.get('cdAuditUserIds') || [],
-      });
-      if (res.content.length % 20 === 0 && res.content.length !== 0) {
-        res.content.push({
-          realName: '加载更多',
-          id: 'more',
-        });
-      }
-      addStepDs.current.set('pageSize', pageSize);
-      addStepDs.getField('cdAuditUserIds').props.lookup = res.content;
-    }
-  }
 
   const renderer = ({ text }) => text;
 
@@ -44,12 +24,20 @@ export default observer(({ addStepDs, curType, optType, appServiceType, projectI
           {renderer({ text })}
         </Tooltip>
       );
-    } if (text.includes('CD') && appServiceType === 'test') {
-      return (
-        <Tooltip title="测试类型应用服务不能添加CD阶段">
-          {renderer({ text })}
-        </Tooltip>
-      );
+    } if (text.includes('CD')) {
+      if (appServiceId && appServiceType === 'test') {
+        return (
+          <Tooltip title="测试类型应用服务不能添加CD阶段">
+            {renderer({ text })}
+          </Tooltip>
+        );
+      } else if (nextStageType === 'CI') {
+        return (
+          <Tooltip title="CI阶段前，无法添加CD阶段">
+            {renderer({ text })}
+          </Tooltip>
+        );
+      }
     }
     return renderer({ text });
   };
@@ -82,14 +70,39 @@ export default observer(({ addStepDs, curType, optType, appServiceType, projectI
     </a>
   ) : `${text}(${record.get('loginName')})`);
 
+  function hanldeTypeDisabled(record) {
+    const isCi = record.get('value') === 'CI'; // opts得value
+    const isCd = record.get('value') === 'CD';
+    const hasCurTypeCd = curType && curType === 'CD';
+    const hasCurTypeCi = curType && (curType === 'CI');
+    if (firstIf && hasCurTypeCi && isCd) {
+      return true;
+    }
+    if (hasCurTypeCi) {
+      if (nextStageType === 'CD') {
+        return false;
+      } else if (nextStageType === 'CI' && isCd) {
+        return true;
+      } else if (appServiceType === 'test' && isCd) {
+        return true;
+      }
+      return false;
+    } else if (hasCurTypeCd) {
+      if (isCi) return true;
+      if (isCd && appServiceType === 'test') {
+        return false;
+      }
+    }
+  }
+
   return (
     <Form className="addStageForm" dataSet={addStepDs}>
       <Select
         name="type"
         addonAfter={<Tips helpText="CI阶段中支持添加构建、发布Chart、代码检查以及自定义类型的CI任务；CD阶段中支持添加部署、主机部署以及人工卡点的CD任务。且流水线中任何CD阶段后，不能再添加CI阶段" />}
-        onOption={({ record }) => ({
-          disabled: (record.get('value') === 'CI' && curType && (curType === 'CD') && !firstIf) || (record.get('value') === 'CD' && appServiceType === 'test') || (record.get('value') === 'CD' && curType && (curType === 'CI')),
-        })}
+        onOption={({ record }) => (optType !== 'edit' ? {
+          disabled: hanldeTypeDisabled(record),
+        } : {})}
         optionRenderer={optionRenderer}
         renderer={renderer}
         disabled={optType === 'edit'}

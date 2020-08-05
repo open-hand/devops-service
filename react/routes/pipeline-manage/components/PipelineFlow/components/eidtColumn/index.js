@@ -133,7 +133,22 @@ const EditItem = (props) => {
 };
 
 export default observer((props) => {
-  const { jobList, sequence, name, columnIndex, edit, appServiceId, appServiceName, image, type, isLast, parallel, isFirst, triggerType: stageTriggerType, appServiceCode, appServiceType } = props;
+  const { 
+    jobList, 
+    sequence, 
+    name, 
+    columnIndex, 
+    edit, 
+    appServiceId, 
+    appServiceName,
+    image, 
+    type, 
+    parallel, 
+    triggerType: stageTriggerType,
+    appServiceCode,
+    appServiceType,
+    nextStageType,
+  } = props;
   const {
     addStepDs,
     editBlockStore, stepStore,
@@ -219,7 +234,16 @@ export default observer((props) => {
         width: 380,
       },
       okText,
-      children: <AddStage projectId={projectId} curType={curType} optType={optType} addStepDs={addStepDs} appServiceType={appServiceType} firstIf={firstIf} />,
+      children: <AddStage 
+        projectId={projectId} 
+        curType={curType} 
+        optType={optType} 
+        addStepDs={addStepDs} 
+        appServiceType={optType === 'create' ? appServiceType : null} 
+        firstIf={firstIf} 
+        appServiceId={appServiceId}
+        nextStageType={nextStageType}
+      />,
       onOk: optsFun,
       onCancel: () => addStepDs.reset(),
     });
@@ -297,8 +321,6 @@ export default observer((props) => {
     });
   }
 
-  const getType = () => type === 'CI';
-
   const realType = type?.toUpperCase();
 
   return [
@@ -315,7 +337,7 @@ export default observer((props) => {
     <div
       className="c7n-piplineManage-edit-column"
       style={{
-        background: getType() ? 'rgba(245, 246, 250, 1)' : 'rgba(245,248,250,1)',
+        background: type === 'CI' ? 'rgba(245, 246, 250, 1)' : 'rgba(245,248,250,1)',
       }}
     >
       <div className="c7n-piplineManage-edit-column-header">
@@ -373,9 +395,6 @@ export default observer((props) => {
       />
       <div
         className={`c7n-piplineManage-edit-column-arrow c7n-piplineManage-edit-column-arrow-${stageTriggerType}`}
-        // style={{
-        //   display: isFirst ? 'none' : 'block',
-        // }}
       >
         <span />
       </div>

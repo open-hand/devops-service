@@ -42,14 +42,18 @@ export default observer(() => {
     setStepData,
     getStepData,
     getStepData2,
-    loadData,
     getLoading,
   } = editBlockStore || stepStore;
 
   useEffect(() => {
-    let stageList = appServiceType === 'test' && pipelineId ? defaultData.slice(0, 1) : defaultData;
+    let stageList = [];
+    if (appServiceId && appServiceType === 'test') {
+      stageList = [...defaultData.slice(0, 1)];
+    } else {
+      stageList = [...defaultData];
+    }
     if (propsDataSource) {
-      stageList = propsDataSource.stageList;
+      stageList = [...propsDataSource.stageList];
     }
     setStepData(stageList, edit);
   }, [appServiceId]);
@@ -57,20 +61,24 @@ export default observer(() => {
   function renderColumn() {
     const dataSource = edit ? getStepData2 : getStepData;
     if (dataSource && dataSource.length > 0) {
-      return dataSource.map((item, index) => <EditColumn
-        columnIndex={index}
-        key={item.id}
-        isLast={String(index) === String(dataSource.length - 1)}
-        isFirst={index === 0}
-        {...item}
-        edit={edit}
-        pipelineId={pipelineId}
-        appServiceId={appServiceId}
-        appServiceName={appServiceName}
-        appServiceCode={appServiceCode}
-        appServiceType={appServiceType}
-        image={image}
-      />);
+      return dataSource.map((item, index) => {
+        const nextStageType = dataSource[index + 1]?.type && dataSource[index + 1]?.type.toUpperCase();
+        return (<EditColumn
+          {...item}
+          columnIndex={index}
+          key={item.id}
+          isLast={String(index) === String(dataSource.length - 1)}
+          isFirst={index === 0}
+          nextStageType={nextStageType}
+          edit={edit}
+          pipelineId={pipelineId}
+          appServiceId={appServiceId}
+          appServiceName={appServiceName}
+          appServiceCode={appServiceCode}
+          appServiceType={appServiceType}
+          image={image}
+        />);
+      });
     }
   }
 
