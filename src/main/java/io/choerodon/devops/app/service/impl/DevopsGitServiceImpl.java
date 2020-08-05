@@ -351,13 +351,23 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         Map<Long, IamUserDTO> iamUserDTOMap = baseServiceClientOperator.listUsersByIds(createIamUserIds).stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
         Map<Long, IamUserDTO> lastCommitUserDTOMap = baseServiceClientOperator.listUsersByIds(lastCommitIamUserIds).stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
-        Map<Long, IssueDTO> issues = agileServiceClientOperator.listIssueByIds(projectId, issuedIds).stream().collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
+        Map<Long, IssueDTO> issues = null;
+        // 读取敏捷问题列表可能会失败，但是不希望影响查询分支逻辑，所以捕获异常
+        try {
+            issues = agileServiceClientOperator.listIssueByIds(projectId, issuedIds).stream().collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
+        } catch (Exception e) {
+            LOGGER.error("query agile issue failed.", e);
+        }
 
+        Map<Long, IssueDTO> finalIssues = issues;
         devopsBranchVOPageInfo.setContent(devopsBranchDTOPageInfo.getContent().stream().map(t -> {
             IssueDTO issueDTO = null;
-            if (t.getIssueId() != null) {
-                issueDTO = issues.get(t.getIssueId());
+            if (!CollectionUtils.isEmpty(finalIssues)) {
+                if (t.getIssueId() != null) {
+                    issueDTO = finalIssues.get(t.getIssueId());
+                }
             }
+
             Long createUserId = createrIamUserIdAndGitlabUserIdMap.get(t.getUserId());
             IamUserDTO userDTO = createUserId == null ? null : iamUserDTOMap.get(createUserId);
 
