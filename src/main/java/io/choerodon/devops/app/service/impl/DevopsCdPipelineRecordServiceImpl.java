@@ -1003,6 +1003,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = ConvertUtils.convertObject(cdPipelineRecordDTO, DevopsCdPipelineRecordVO.class);
         devopsCdPipelineRecordVO.setUsername(iamUserDTO.getRealName());
         devopsCdPipelineRecordVO.setCreatedDate(cdPipelineRecordDTO.getCreationDate());
+        CiCdPipelineDTO ciCdPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(cdPipelineRecordDTO.getPipelineId());
+        if (Objects.isNull(ciCdPipelineDTO)){
+            return null;
+        }
+        AppServiceDTO serviceDTO = appServiceMapper.selectByPrimaryKey(ciCdPipelineDTO.getAppServiceId());
+        AppServiceDTO appServiceDTO = new AppServiceDTO();
+        devopsCdPipelineRecordVO.setGitlabProjectId(serviceDTO.getGitlabProjectId());
         //查询流水线信息
         CiCdPipelineVO ciCdPipelineVO = devopsCiCdPipelineMapper.queryById(cdPipelineRecordDTO.getPipelineId());
         //添加提交信息

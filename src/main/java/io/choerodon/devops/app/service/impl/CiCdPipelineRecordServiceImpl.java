@@ -165,8 +165,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             fillPipelineVO(devopsCdPipelineRecordVO.getUsername(), stageRecordVOS, devopsCdPipelineRecordVO.getCreatedDate(), ciCdPipelineVO, ciCdPipelineRecordVO);
             ciCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineRecordVO.getDevopsCdPipelineDeatilVO());
             ciCdPipelineRecordVO.setPipelineName(ciCdPipelineDTO.getName());
-            ciCdPipelineRecordVO.setGitlabProjectId(devopsCiPipelineRecordVO.getGitlabProjectId());
-            ciCdPipelineRecordVO.setGitlabPipelineId(devopsCiPipelineRecordVO.getGitlabPipelineId());
+            ciCdPipelineRecordVO.setGitlabPipelineId(devopsCdPipelineRecordVO.getGitlabPipelineId());
         }
         return ciCdPipelineRecordVO;
     }
