@@ -3,15 +3,11 @@ package io.choerodon.devops.app.service.impl;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import java.util.stream.Collectors;
-
-import org.apache.tomcat.util.log.UserDataHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -274,6 +270,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     }
 
     @Override
+    @Transactional
     public void cancel(Long projectId, Long pipelineRecordRelId, Long gitlabPipelineId, Long gitlabProjectId) {
         DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryById(pipelineRecordRelId);
         // 首先查询ci阶段状态
@@ -335,24 +332,27 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     @Transactional
     public void cancelCdPipeline(Long pipelineRecordId) {
         DevopsCdPipelineRecordDTO pipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
-        DevopsCdStageRecordDTO cdStageRecordDTO = devopsCdStageRecordMapper.queryPendingAndRunning(pipelineRecordId);
-        DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.queryPendingAndRunning(cdStageRecordDTO.getId());
-
-        if (!ObjectUtils.isEmpty(cdStageRecordDTO)) {
-            devopsCdStageRecordService.updateStatusById(cdStageRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
+        // 只有未执行、准备中、执行中的流水线可以取消执行
+        if (!PipelineStatus.CREATED.toValue().equals(pipelineRecordDTO.getStatus())
+                && !PipelineStatus.PENDING.toValue().equals(pipelineRecordDTO.getStatus())
+                && !PipelineStatus.RUNNING.toValue().equals(pipelineRecordDTO.getStatus())) {
+            return;
         }
-        if (!ObjectUtils.isEmpty(cdJobRecordDTO)) {
-            if (cdJobRecordDTO.getType().equals(JobTypeEnum.CD_DEPLOY.value())) {
-                DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(cdJobRecordDTO.getDeployInfoId());
-                DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCdEnvDeployInfoDTO.getEnvId());
-                UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-                devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
-            }
+        // 修改流水线记录状态为cancel
+        devopsCdPipelineRecordService.updateStatusById(pipelineRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
+        // 修改stage状态为cancel
+        List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordMapper.queryCreatedOrPendingAndRunning(pipelineRecordId);
+        if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
+            devopsCdStageRecordDTOS.forEach(v -> {
+                devopsCdStageRecordService.updateStatusById(v.getId(), PipelineStatus.CANCELED.toValue());
+                // 修改job状态为cancel
+                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.queryCreatedOrPendingOrRunning(v.getId());
+                if (!CollectionUtils.isEmpty(devopsCdJobRecordDTOS)) {
+                    devopsCdJobRecordDTOS.forEach(m -> devopsCdJobRecordService.updateStatusById(m.getId(), PipelineStatus.CANCELED.toValue()));
 
-            devopsCdJobRecordService.updateStatusById(cdJobRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
+                }
+            });
         }
-
-        devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.CANCELED.toValue());
         workFlowServiceOperator.stopInstance(pipelineRecordDTO.getProjectId(), pipelineRecordDTO.getBusinessKey());
     }
 

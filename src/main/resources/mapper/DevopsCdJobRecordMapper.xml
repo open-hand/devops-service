@@ -48,7 +48,7 @@
                 )
     </select>
 
-    <select id="queryPendingAndRunning"
+    <select id="queryCreatedOrPendingOrRunning"
             resultType="io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO">
             SELECT
                 dcsr.*
@@ -56,7 +56,7 @@
                 devops_cd_job_record dcsr
             WHERE
                 dcsr.stage_record_id = #{stageRecordId}
-                AND (dcsr.`status` = 'PENDING' or  dcsr.status='RUNNING')
+                AND (dcsr.`status` = 'pending' or  dcsr.status='running' or dcsr. status = 'canceled')
     </select>
     <update id="updateNotAuditJobStatus">
         UPDATE devops_cd_job_record

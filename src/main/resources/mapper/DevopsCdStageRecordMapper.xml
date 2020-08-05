@@ -43,7 +43,7 @@
                 AND (dcsr.`status` = 'FAILED' or  dcsr.status='CANCELED')
     </select>
 
-    <select id="queryPendingAndRunning"
+    <select id="queryCreatedOrPendingAndRunning"
             resultType="io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO">
             SELECT
                 dcsr.*
@@ -51,6 +51,6 @@
                 devops_cd_stage_record dcsr
             WHERE
                 dcsr.pipeline_record_id = #{pipelineRecordId}
-                AND (dcsr.`status` = 'PENDING' or  dcsr.status='RUNNING')
+                AND (dcsr.`status` = 'pending' or  dcsr.status='running' or dcsr.status = 'canceled')
     </select>
 </mapper>
