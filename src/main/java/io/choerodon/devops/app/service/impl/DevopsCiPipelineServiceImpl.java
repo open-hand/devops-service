@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -1298,7 +1297,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     private void createUserRel(List<Long> cdAuditUserIds, Long pipelineId, Long stageId, Long jobId) {
-        if (cdAuditUserIds != null && cdAuditUserIds.size() > 0) {
+        if (!CollectionUtils.isEmpty(cdAuditUserIds)) {
             cdAuditUserIds.forEach(t -> {
                 DevopsCdAuditDTO devopsCdAuditDTO = new DevopsCdAuditDTO(pipelineId, stageId, jobId);
                 devopsCdAuditDTO.setUserId(t);
@@ -1318,6 +1317,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), DevopsCdEnvDeployInfoDTO.class);
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(devopsCdEnvDeployInfoDTO));
+            // 将从Audit-domain中继承的这个字段设置为空， 不然会将一些不需要的字段也序列化到输出到json
+            devopsCdEnvDeployInfoDTO.set_innerMap(null);
             devopsCdEnvDeployInfoDTO.setProjectId(projectId);
             devopsCdEnvDeployInfoService.save(devopsCdEnvDeployInfoDTO);
             devopsCdJobDTO.setDeployInfoId(devopsCdEnvDeployInfoDTO.getId());
