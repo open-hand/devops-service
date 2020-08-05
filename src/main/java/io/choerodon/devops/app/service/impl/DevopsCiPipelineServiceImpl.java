@@ -767,15 +767,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     private void buildBeforeScript(GitlabCi gitlabCi) {
-        // 如果全部都是自定义任务, 这个map是空的
-        if (CollectionUtils.isEmpty(gitlabCi.getJobs())) {
-            return;
-        }
-
         List<String> beforeScripts = ArrayUtil.singleAsList(GitOpsConstants.CHOERODON_BEFORE_SCRIPT);
         // 如果有job启用了缓存设置, 就创建缓存目录
-        if (gitlabCi.getJobs().values().stream().anyMatch(j -> j.getCache() != null)) {
-            beforeScripts.add(GitlabCiUtil.generateCreateCacheDir(GitOpsConstants.CHOERODON_CI_CACHE_DIR));
+        // 如果全部都是自定义任务, 这个map是空的
+        if (!CollectionUtils.isEmpty(gitlabCi.getJobs())) {
+            if (gitlabCi.getJobs().values().stream().anyMatch(j -> j.getCache() != null)) {
+                beforeScripts.add(GitlabCiUtil.generateCreateCacheDir(GitOpsConstants.CHOERODON_CI_CACHE_DIR));
+            }
         }
         gitlabCi.setBeforeScript(beforeScripts);
     }
