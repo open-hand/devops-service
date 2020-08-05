@@ -631,7 +631,7 @@ export default observer(() => {
               colSpan={1}
               name="envId"
               optionRenderer={optionRenderer}
-              renderer={renderer}
+              // renderer={renderer}
               onOption={({ record }) => ({
                 disabled: !record.get('connected'),
               })}
