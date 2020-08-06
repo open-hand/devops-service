@@ -456,11 +456,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     DevopsEnvCommandDTO preCommand = devopsEnvCommandService.baseQuery(preInstance.getCommandId());
                     AppServiceVersionRespVO deploydAppServiceVersion = appServiceVersionService.queryById(preCommand.getObjectVersionId());
                     if (preCommand.getObjectVersionId().equals(appServiceDeployVO.getAppServiceVersionId())) {
-                        String oldValue = appServiceInstanceService.baseQueryValueByInstanceId(appServiceDeployVO.getInstanceId());
-                        if (appServiceDeployVO.getValues().trim().equals(oldValue.trim())) {
-                            devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
-                            return;
-                        }
+                        appServiceInstanceService.restartInstance(preInstance.getProjectId(), preInstance.getId());
+                        devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SUCCESS.toValue());
+                        return;
                     }
 
                     AppServiceDTO appServiceDTO = appServiceService.baseQuery(devopsCdEnvDeployInfoDTO.getAppServiceId());
