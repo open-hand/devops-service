@@ -596,7 +596,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      */
     private void checkNonCiPipelineBefore(Long appServiceId) {
         if (countByAppServiceId(appServiceId) > 0) {
-            throw new CommonException("error.ci.pipeline.exists.for.app.service", appServiceId);
+            throw new CommonException("error.ci.pipeline.exists.for.app.service");
         }
     }
 
