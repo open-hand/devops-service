@@ -343,13 +343,13 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordMapper.queryCreatedOrPendingAndRunning(pipelineRecordId);
         if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
             devopsCdStageRecordDTOS.forEach(v -> {
-                devopsCdStageRecordService.updateStatusById(v.getId(), PipelineStatus.CANCELED.toValue());
                 // 修改job状态为cancel
                 List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.queryCreatedOrPendingOrRunning(v.getId());
                 if (!CollectionUtils.isEmpty(devopsCdJobRecordDTOS)) {
+                    devopsCdStageRecordService.updateStatusById(v.getId(), PipelineStatus.CANCELED.toValue());
                     devopsCdJobRecordDTOS.forEach(m -> devopsCdJobRecordService.updateStatusById(m.getId(), PipelineStatus.CANCELED.toValue()));
-
                 }
+
             });
         }
         workFlowServiceOperator.stopInstance(pipelineRecordDTO.getProjectId(), pipelineRecordDTO.getBusinessKey());
