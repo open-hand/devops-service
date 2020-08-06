@@ -56,6 +56,7 @@ export default observer(() => {
   const [imageDeployValues, setImageDeployValues] = useState('# docker run指令\n# 不可删除${containerName}和${imageName}占位符\n# 不可删除 -d: 后台运行容器\n# 其余参数可参考可根据需要添加\ndocker run --name=${containerName} -d ${imageName}\n# jar包下载存放目录为：/temp-jar/xxx.jar 日志存放目录为：/temp-log/xxx.log\n# 请确保用户有该目录操作权限');
   const [jarValues, setJarValues] = useState('# java -jar指令\n# 不可删除${jar}\n# java -jar 后台运行参数会自动添加 不需要在重复添加\n# 其余参数可参考可根据需要添加\njava -jar ${jar} ');
   const [testStatus, setTestStatus] = useState('');
+  const [accountKeyValue, setAccountKeyValue] = useState('');
 
   function getMetadata(ds) {
     if (ds.type === 'cdDeploy') {
@@ -68,7 +69,7 @@ export default observer(() => {
         accountType: ds.accountType,
         userName: ds.userName,
         password: ds.password,
-        accountKey: ds.accountKey,
+        accountKey: accountKeyValue && Base64.encode(accountKeyValue),
       };
       const currentObj = {
         deploySource: ds.deploySource,
@@ -160,6 +161,9 @@ export default observer(() => {
       } else if (jobDetail.type === 'cdHost') {
         const metadata = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
         extra = { ...metadata?.hostConnectionVO, ...metadata?.jarDeploy, ...metadata?.imageDeploy };
+        if (extra?.accountKey) {
+          setAccountKeyValue(Base64.decode(extra.accountKey));
+        }
         const { hostDeployType } = metadata;
         if (hostDeployType === 'customize') {
           setCustomValues(Base64.decode(metadata.customize?.values));
@@ -243,7 +247,7 @@ export default observer(() => {
 
   const handleTestConnect = async () => new Promise((resolve) => {
     const {
-      hostIp, hostPort, userName, password, accountType, accountKey,
+      hostIp, hostPort, userName, password, accountType,
     } = ADDCDTaskDataSet.toData()[0];
     axios.post(`/devops/v1/projects/${projectId}/cicd_pipelines/test_connection`, {
       hostIp,
@@ -251,7 +255,7 @@ export default observer(() => {
       userName,
       password,
       accountType,
-      accountKey,
+      accountKey: accountKeyValue && Base64.encode(accountKeyValue),
     }).then((res) => {
       setTestStatus(res ? 'success' : 'error');
       resolve(res);
@@ -419,7 +423,17 @@ export default observer(() => {
           {
             ADDCDTaskDataSet?.current?.get('accountType') === 'accountPassword' ? (
               <Password colSpan={1} name="password" />
-            ) : (<Password colSpan={1} name="accountKey" />)
+            ) : [
+              <p newLine colSpan={1} className="addcdTask-accountKeyP">密钥</p>,
+              <YamlEditor
+                colSpan={2}
+                newLine
+                readOnly={false}
+                value={accountKeyValue}
+                modeChange={false}
+                onValueChange={(data) => setAccountKeyValue(data)}
+              />,
+            ]
           }
           <div colSpan={2} style={{ display: 'flex', alignItems: 'center' }}>
             <Button

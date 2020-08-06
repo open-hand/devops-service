@@ -164,13 +164,6 @@ export default (
       required: ({ record }) => record.get('type') === 'cdHost' && record.get('accountType') === 'accountPassword',
     },
   }, {
-    name: 'accountKey',
-    type: 'string',
-    label: '密钥',
-    dynamicProps: {
-      required: ({ record }) => record.get('type') === 'cdHost' && record.get('accountType') === 'accountKey',
-    },
-  }, {
     name: 'hostDeployType',
     type: 'string',
     label: '部署模式',
@@ -402,7 +395,7 @@ export default (
             return res;
           }
         },
-      }; 
+      };
     },
   }, {
     name: 'countersigned',
