@@ -778,7 +778,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
         recordRelDTO.setCdPipelineRecordId(record.getId());
         DevopsPipelineRecordRelDTO relDTO = devopsPipelineRecordRelMapper.selectOne(recordRelDTO);
-        params.put("pipelineRecordId", relDTO.getId().toString());
+        params.put("pipelineIdRecordId", relDTO.getId().toString());
         sendNotices(type, users, constructCdParamsForPipeline(record, projectDTO, params, stageId, stageName), projectDTO.getId());
     }
 
