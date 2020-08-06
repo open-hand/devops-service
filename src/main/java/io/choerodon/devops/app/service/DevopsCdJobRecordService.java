@@ -74,5 +74,5 @@ public interface DevopsCdJobRecordService {
      */
     void updateNotAuditJobStatus(Long jobRecordId, String status);
 
-    DevopsCdJobRecordDTO queryJobWithStageRecordIdAndStatus(Long stageRecordId, String status);
+    List<DevopsCdJobRecordDTO> queryJobWithStageRecordIdAndStatus(Long stageRecordId, String status);
 }

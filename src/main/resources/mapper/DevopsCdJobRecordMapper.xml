@@ -24,7 +24,7 @@
 
     </select>
 
-    <select id="queryFirstFailedOrCancelJob"
+    <select id="queryFirstJobByStageRecordIdAndStatus"
             resultType="io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO">
             SELECT
                 dcsr.*
@@ -32,15 +32,12 @@
                 devops_cd_job_record dcsr
             WHERE
                 dcsr.stage_record_id = #{stageRecordId}
-                AND (
-                    dcsr.`status` = 'FAILED'
-                    OR dcsr. STATUS = 'CANCELED'
-                )
+                AND dcsr.`status` = #{status}
             ORDER BY sequence ASC
             LIMIT 1
     </select>
 
-    <select id="queryCreatedOrPending"
+    <select id="queryCreatedOrPendingOrRunning"
             resultType="io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO">
             SELECT
                 dcsr.*
@@ -48,7 +45,7 @@
                 devops_cd_job_record dcsr
             WHERE
                 dcsr.stage_record_id = #{stageRecordId}
-                AND (dcsr.`status` = 'pending' or dcsr. status = 'created')
+                AND (dcsr.`status` = 'pending' or  dcsr.status='running' or dcsr. status = 'created')
     </select>
     <update id="updateNotAuditJobStatus">
         UPDATE devops_cd_job_record

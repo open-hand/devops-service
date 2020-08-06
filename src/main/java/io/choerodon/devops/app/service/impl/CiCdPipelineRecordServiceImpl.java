@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -23,11 +22,17 @@ import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
-import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.AppServiceEvent;
+import io.choerodon.devops.infra.enums.JobStatusEnum;
+import io.choerodon.devops.infra.enums.PipelineStatus;
+import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.*;
-import io.choerodon.devops.infra.util.*;
+import io.choerodon.devops.infra.util.CiCdPipelineUtils;
+import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.GenerateUUID;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
@@ -231,12 +236,29 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     @Override
     public void retryCdPipeline(Long projectId, Long cdPipelineRecordId, Boolean checkEnvPermission) {
         // 1.查询是否有任务可重试
-        DevopsCdStageRecordDTO cdStageRecordDTO = devopsCdStageRecordMapper.queryFirstFailedOrCancelStage(cdPipelineRecordId);
-        DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.queryFirstFailedOrCancelJob(cdStageRecordDTO.getId());
-        if (ObjectUtils.isEmpty(cdStageRecordDTO) || ObjectUtils.isEmpty(cdJobRecordDTO)) {
-            LOGGER.warn("no job or stage failed!!");
+        DevopsCdStageRecordDTO firstStage;
+        DevopsCdJobRecordDTO firstJob;
+
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(cdPipelineRecordId);
+        if (PipelineStatus.CANCELED.toValue().equals(devopsCiPipelineRecordDTO.getStatus())) {
+            firstStage = devopsCdStageRecordMapper.queryFirstStageByPipelineRecordIdAndStatus(cdPipelineRecordId, PipelineStatus.CANCELED.toValue());
+            firstJob = devopsCdJobRecordMapper.queryFirstJobByStageRecordIdAndStatus(firstStage.getId(), PipelineStatus.CANCELED.toValue());
+
+            List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryStageWithPipelineRecordIdAndStatus(cdPipelineRecordId, PipelineStatus.CANCELED.toValue());
+            devopsCdStageRecordDTOS.forEach(devopsCdStageRecordDTO -> {
+                devopsCdStageRecordService.updateStatusById(devopsCdStageRecordDTO.getId(), PipelineStatus.CREATED.toValue());
+                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryJobWithStageRecordIdAndStatus(devopsCdStageRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
+                devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> {
+                    devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.CREATED.toValue());
+                });
+            });
+        } else if (PipelineStatus.FAILED.toValue().equals(devopsCiPipelineRecordDTO.getStatus())) {
+            firstStage = devopsCdStageRecordMapper.queryFirstStageByPipelineRecordIdAndStatus(cdPipelineRecordId, PipelineStatus.FAILED.toValue());
+            firstJob = devopsCdJobRecordMapper.queryFirstJobByStageRecordIdAndStatus(firstStage.getId(), PipelineStatus.FAILED.toValue());
+        } else {
             return;
         }
+
         // 1.1 对于部署任务 校验环境权限
 //        if (checkEnvPermission && cdJobRecordDTO.getType().equals(JobTypeEnum.CD_DEPLOY.value())) {
 //            DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(cdJobRecordDTO.getDeployInfoId());
@@ -253,8 +275,8 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         devopsCdPipelineRecordDTO.setBusinessKey(GenerateUUID.generateUUID());
         devopsCdPipelineRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
         devopsCdPipelineRecordService.update(devopsCdPipelineRecordDTO);
-        devopsCdStageRecordService.updateStatusById(cdStageRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
-        devopsCdJobRecordService.updateStatusById(cdJobRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
+        devopsCdStageRecordService.updateStatusById(firstStage.getId(), PipelineStatus.RUNNING.toValue());
+        devopsCdJobRecordService.updateStatusById(firstJob.getId(), PipelineStatus.RUNNING.toValue());
 
         try {
             CustomUserDetails details = DetailsHelper.getUserDetails();
@@ -337,20 +359,22 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                 && !PipelineStatus.RUNNING.toValue().equals(pipelineRecordDTO.getStatus())) {
             return;
         }
-        // 修改流水线记录状态为cancel
-        devopsCdPipelineRecordService.updateStatusById(pipelineRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
+
+
         // 修改stage状态为cancel
         List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordMapper.queryCreatedOrPendingAndRunning(pipelineRecordId);
         if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
             devopsCdStageRecordDTOS.forEach(v -> {
                 // 修改job状态为cancel
-                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.queryCreatedOrPending(v.getId());
+                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.queryCreatedOrPendingOrRunning(v.getId());
                 if (!CollectionUtils.isEmpty(devopsCdJobRecordDTOS)) {
                     devopsCdStageRecordService.updateStatusById(v.getId(), PipelineStatus.CANCELED.toValue());
                     devopsCdJobRecordDTOS.forEach(m -> devopsCdJobRecordService.updateStatusById(m.getId(), PipelineStatus.CANCELED.toValue()));
                 }
 
             });
+            // 修改流水线记录状态为cancel
+            devopsCdPipelineRecordService.updateStatusById(pipelineRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
         }
         workFlowServiceOperator.stopInstance(pipelineRecordDTO.getProjectId(), pipelineRecordDTO.getBusinessKey());
     }

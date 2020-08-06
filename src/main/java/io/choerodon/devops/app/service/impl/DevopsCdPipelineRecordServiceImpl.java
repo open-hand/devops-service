@@ -911,17 +911,19 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     private void addAuditStateInfo(DevopsCdPipelineRecordVO devopsCdPipelineRecordVO) {
         DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO = new DevopsCdPipelineDeatilVO();
-        DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordService.queryStageWithPipelineRecordIdAndStatus(devopsCdPipelineRecordVO.getId(), PipelineStatus.NOT_AUDIT.toValue());
-        if (devopsCdStageRecordDTO != null) {
+        List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryStageWithPipelineRecordIdAndStatus(devopsCdPipelineRecordVO.getId(), PipelineStatus.NOT_AUDIT.toValue());
+        if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
+            DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordDTOS.get(0);
             // 继续判断阶段中是否还有待审核的任务
-            DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryJobWithStageRecordIdAndStatus(devopsCdStageRecordDTO.getId(), PipelineStatus.NOT_AUDIT.toValue());
-            if (devopsCdJobRecordDTO == null) {
+            List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryJobWithStageRecordIdAndStatus(devopsCdStageRecordDTO.getId(), PipelineStatus.NOT_AUDIT.toValue());
+            if (CollectionUtils.isEmpty(devopsCdJobRecordDTOS)) {
                 DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = devopsCdAuditRecordService.queryByStageRecordIdAndUserId(devopsCdStageRecordDTO.getId(), DetailsHelper.getUserDetails().getUserId());
                 devopsCdPipelineDeatilVO.setType("stage");
                 devopsCdPipelineDeatilVO.setStageName(devopsCdStageRecordDTO.getStageName());
                 devopsCdPipelineDeatilVO.setExecute(devopsCdAuditRecordDTO != null && AuditStatusEnum.NOT_AUDIT.value().equals(devopsCdAuditRecordDTO.getStatus()));
                 devopsCdPipelineDeatilVO.setStageRecordId(devopsCdStageRecordDTO.getId());
             } else {
+                DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordDTOS.get(0);
                 DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = devopsCdAuditRecordService.queryByJobRecordIdAndUserId(devopsCdJobRecordDTO.getId(), DetailsHelper.getUserDetails().getUserId());
                 devopsCdPipelineDeatilVO.setType("task");
                 devopsCdPipelineDeatilVO.setStageName(devopsCdStageRecordDTO.getStageName());

@@ -44,5 +44,5 @@ public interface DevopsCdStageRecordService {
 
     void updateStageStatusStop(Long stageRecordId);
 
-    DevopsCdStageRecordDTO queryStageWithPipelineRecordIdAndStatus(Long pipelineRecordId, String status);
+    List<DevopsCdStageRecordDTO> queryStageWithPipelineRecordIdAndStatus(Long pipelineRecordId, String status);
 }
