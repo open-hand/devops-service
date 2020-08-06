@@ -32,7 +32,7 @@
             )
     </select>
 
-    <select id="queryFailedOrCancelStage"
+    <select id="queryFirstFailedOrCancelStage"
             resultType="io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO">
             SELECT
                 dcsr.*
@@ -41,6 +41,8 @@
             WHERE
                 dcsr.pipeline_record_id = #{pipelineRecordId}
                 AND (dcsr.`status` = 'FAILED' or  dcsr.status='CANCELED')
+            ORDER BY sequence ASC
+            LIMIT 1
     </select>
 
     <select id="queryCreatedOrPendingAndRunning"

@@ -231,8 +231,8 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     @Override
     public void retryCdPipeline(Long projectId, Long cdPipelineRecordId, Boolean checkEnvPermission) {
         // 1.查询是否有任务可重试
-        DevopsCdStageRecordDTO cdStageRecordDTO = devopsCdStageRecordMapper.queryFailedOrCancelStage(cdPipelineRecordId);
-        DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.queryFailedOrCancelJob(cdStageRecordDTO.getId());
+        DevopsCdStageRecordDTO cdStageRecordDTO = devopsCdStageRecordMapper.queryFirstFailedOrCancelStage(cdPipelineRecordId);
+        DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.queryFirstFailedOrCancelJob(cdStageRecordDTO.getId());
         if (ObjectUtils.isEmpty(cdStageRecordDTO) || ObjectUtils.isEmpty(cdJobRecordDTO)) {
             LOGGER.warn("no job or stage failed!!");
             return;

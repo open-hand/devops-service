@@ -13,7 +13,7 @@ public interface DevopsCdJobRecordMapper extends BaseMapper<DevopsCdJobRecordDTO
 
     List<DevopsCdJobRecordDTO> queryRetryJob(@Param("stageRecordId") Long stageRecordId);
 
-    DevopsCdJobRecordDTO queryFailedOrCancelJob(@Param("stageRecordId") Long stageRecordId);
+    DevopsCdJobRecordDTO queryFirstFailedOrCancelJob(@Param("stageRecordId") Long stageRecordId);
 
     List<DevopsCdJobRecordDTO> queryCreatedOrPendingOrRunning(@Param("stageRecordId") Long stageRecordId);
 

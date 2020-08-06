@@ -34,7 +34,7 @@
             )
     </select>
 
-    <select id="queryFailedOrCancelJob"
+    <select id="queryFirstFailedOrCancelJob"
             resultType="io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO">
             SELECT
                 dcsr.*
@@ -46,6 +46,8 @@
                     dcsr.`status` = 'FAILED'
                     OR dcsr. STATUS = 'CANCELED'
                 )
+            ORDER BY sequence ASC
+            LIMIT 1
     </select>
 
     <select id="queryCreatedOrPendingOrRunning"
