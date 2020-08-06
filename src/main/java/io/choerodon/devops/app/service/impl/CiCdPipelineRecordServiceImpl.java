@@ -239,8 +239,8 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         DevopsCdStageRecordDTO firstStage;
         DevopsCdJobRecordDTO firstJob;
 
-        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(cdPipelineRecordId);
-        if (PipelineStatus.CANCELED.toValue().equals(devopsCiPipelineRecordDTO.getStatus())) {
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(cdPipelineRecordId);
+        if (PipelineStatus.CANCELED.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
             firstStage = devopsCdStageRecordMapper.queryFirstStageByPipelineRecordIdAndStatus(cdPipelineRecordId, PipelineStatus.CANCELED.toValue());
             firstJob = devopsCdJobRecordMapper.queryFirstJobByStageRecordIdAndStatus(firstStage.getId(), PipelineStatus.CANCELED.toValue());
 
@@ -252,7 +252,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                     devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.CREATED.toValue());
                 });
             });
-        } else if (PipelineStatus.FAILED.toValue().equals(devopsCiPipelineRecordDTO.getStatus())) {
+        } else if (PipelineStatus.FAILED.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
             firstStage = devopsCdStageRecordMapper.queryFirstStageByPipelineRecordIdAndStatus(cdPipelineRecordId, PipelineStatus.FAILED.toValue());
             firstJob = devopsCdJobRecordMapper.queryFirstJobByStageRecordIdAndStatus(firstStage.getId(), PipelineStatus.FAILED.toValue());
         } else {
@@ -271,7 +271,6 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         DevopsPipelineDTO devopsPipelineDTO = devopsCdPipelineRecordService.createCDWorkFlowDTO(cdPipelineRecordId, true);
 
         // 3 更新business key 更新状态
-        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(cdPipelineRecordId);
         devopsCdPipelineRecordDTO.setBusinessKey(GenerateUUID.generateUUID());
         devopsCdPipelineRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
         devopsCdPipelineRecordService.update(devopsCdPipelineRecordDTO);
