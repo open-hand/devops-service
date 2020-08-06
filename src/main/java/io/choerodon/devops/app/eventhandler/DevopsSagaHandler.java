@@ -397,7 +397,7 @@ public class DevopsSagaHandler {
             // 对于新建实例的部署任务，部署成功后修改为替换实例
             updateDeployTypeToUpdate(appServiceDeployVO.getDeployInfoId(), appServiceInstanceVO);
             DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordService.queryById(devopsCdJobRecordDTO.getId());
-            if (!PipelineStatus.CANCELED.toValue().equals(cdJobRecordDTO.getStatus())) {
+            if (PipelineStatus.RUNNING.toValue().equals(cdJobRecordDTO.getStatus())) {
                 // 更新job状态为success
                 devopsCdJobRecordDTO.setCommandId(appServiceInstanceVO.getCommandId());
                 devopsCdJobRecordDTO.setFinishedDate(new Date());
