@@ -525,7 +525,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>> Userdetails is {}", DetailsHelper.getUserDetails());
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
         CustomContextUtil.setUserContext(devopsCdPipelineRecordDTO.getCreatedBy());
-        if (Boolean.TRUE.equals(status)) {
+        if (Boolean.TRUE.equals(status)
+                && PipelineStatus.RUNNING.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
             startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
         } else {
             workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
