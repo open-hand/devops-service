@@ -417,6 +417,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         LOGGER.info("autoDeploy:pipelineRecordId {} stageRecordId: {} jobRecordId: {}", pipelineRecordId, stageRecordId, jobRecordId);
         //获取数据
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+
+        // 如果部署任务是阶段第一个任务，先修改阶段为运行中
+        devopsCdStageRecordService.updateStatusById(stageRecordId, PipelineStatus.RUNNING.toValue());
+
         CustomContextUtil.setUserContext(devopsCdJobRecordDTO.getCreatedBy());
         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
         AppServiceVersionDTO appServiceServiceE = getDeployVersion(pipelineRecordId);
