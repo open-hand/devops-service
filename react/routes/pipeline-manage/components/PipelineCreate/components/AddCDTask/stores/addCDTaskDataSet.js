@@ -372,31 +372,38 @@ export default (
     textField: 'realName',
     multiple: true,
     valueField: 'id',
-    lookupAxiosConfig: (data) => ({
-      method: 'post',
-      url: `/devops/v1/projects/${projectId}/users/list_users?page=0&size=20`,
-      data: {
-        param: [],
-        searchParam: {
-          realName: data.params.realName || '',
+    lookupAxiosConfig: ({ params, dataSet }) => {
+      let cdAuditIds = dataSet.current?.get('cdAuditUserIds');
+      if (params.realName && params.id) {
+        cdAuditIds = [...cdAuditIds, params.id];
+      }
+      return {
+        method: 'post',
+        url: `/devops/v1/projects/${projectId}/users/list_users?page=0&size=20`,
+        data: {
+          param: [],
+          searchParam: {
+            realName: params.realName || '',
+          },
+          ids: cdAuditIds || [],
         },
-      },
-      transformResponse: (res) => {
-        let newRes;
-        try {
-          newRes = JSON.parse(res);
-          if (newRes.totalElements % 20 === 0 && newRes.content.length !== 0) {
-            newRes.content.push({
-              id: 'more',
-              realName: '加载更多',
-            });
+        transformResponse: (res) => {
+          let newRes;
+          try {
+            newRes = JSON.parse(res);
+            if (newRes.totalElements % 20 === 0 && newRes.content.length !== 0) {
+              newRes.content.push({
+                id: 'more',
+                realName: '加载更多',
+              });
+            }
+            return newRes;
+          } catch (e) {
+            return res;
           }
-          return newRes;
-        } catch (e) {
-          return res;
-        }
-      },
-    }),
+        },
+      }; 
+    },
   }, {
     name: 'countersigned',
     type: 'number',

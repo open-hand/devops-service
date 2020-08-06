@@ -463,14 +463,16 @@ export default observer(() => {
     return obj[ADDCDTaskDataSet?.current?.get('type')];
   };
 
-  async function handleClickMore(e) {
+  async function handleClickMore(e, realName) {
     e && e.stopPropagation();
-    const pageSize = !e ? 20 : ADDCDTaskDataSet?.current?.get('pageSize') + 20;
+    const pageSize = !e ? ADDCDTaskDataSet.current.get('pageSize') : ADDCDTaskDataSet.current.get('pageSize') + 20;
     const url = `/devops/v1/projects/${projectId}/users/list_users?page=0&size=${pageSize}`;
     const res = await axios.post(url, {
-      ids: jobDetail?.cdAuditUserIds || [],
       param: [],
-      searchParam: {},
+      searchParam: {
+        realName: realName || '',
+      },
+      ids: jobDetail?.cdAuditUserIds || [],
     });
     if (res.content.length % 20 === 0 && res.content.length !== 0) {
       res.content.push({
@@ -479,7 +481,11 @@ export default observer(() => {
       });
     }
     ADDCDTaskDataSet.current.set('pageSize', pageSize);
-    ADDCDTaskDataSet.getField('cdAuditUserIds').props.lookup = res.content;
+    if (realName) {
+      ADDCDTaskDataSet.getField('cdAuditUserIds').props.lookup = [...res.content, ...ADDCDTaskDataSet.getField('cdAuditUserIds').props.lookup];
+    } else {
+      ADDCDTaskDataSet.getField('cdAuditUserIds').props.lookup = res.content;
+    }
   }
 
   const renderderAuditUsersList = ({ text, record }) => (text === '加载更多' ? (
@@ -658,10 +664,14 @@ export default observer(() => {
                   searchable
                   style={{ width: '100%' }}
                   name="cdAuditUserIds"
-                  // maxTagCount={2}
+                  maxTagCount={3}
+                  searchMatcher="realName"
                   onOption={({ dataSet, record }) => ({
                     disabled: record.get('id') === 'more',
                   })}
+                  onChange={(value, oldvalue, form) => {
+                    handleClickMore(null);
+                  }}
                   optionRenderer={renderderAuditUsersList}
                   renderer={({ text }) => text}
                 />

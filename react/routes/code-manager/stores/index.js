@@ -25,7 +25,7 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
       location: { state },
     } = props;
 
-    const checkHasApp = (value, recentApp) => recentApp.some(e => e.id === value);
+    const checkHasApp = (value, recentApp) => recentApp.some(e => e?.id === value);
 
     function localSet(name, data) {
       if (typeof data !== 'string') {
@@ -48,7 +48,7 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
 
     const setLocalStorage = (value) => {
       const recentAppList = localGet('recent-app');
-      const temp = appServiceDs.toData().filter(e => e.id === value);
+      const temp = appServiceDs.toData().filter(e => e?.id === value);
       const objTemp = {};
       if (isEmpty(temp)) {
         return;
@@ -114,9 +114,9 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
         if (state && state.appServiceId) {
           selectAppDs.current && selectAppDs.current.set('appServiceId', state.appServiceId);
         } else if (recentAppList !== null && !isEmpty(recentAppList[projectId])) {
-          selectAppDs.current && selectAppDs.current.set('appServiceId', recentAppList[projectId][0].id);
+          selectAppDs.current && selectAppDs.current.set('appServiceId', recentAppList[projectId][0]?.id);
         } else if (res && res.length && res.length > 0) {
-          selectAppDs.current.set('appServiceId', res[0].id);
+          selectAppDs.current.set('appServiceId', res[0]?.id);
         }
       });
     }, [projectId]);

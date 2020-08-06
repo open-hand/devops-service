@@ -13,12 +13,12 @@ export default observer(({ addStepDs, curType, optType, appServiceType, appServi
     const type = addStepDs?.current?.get('type');
     addStepDs.current.set('parallel', type === 'CI' ? 1 : 0);
     handleMore();
-  }, [addStepDs]);
+  }, [addStepDs?.current?.get('type')]);
 
   const renderer = ({ text }) => text;
 
   const optionRenderer = ({ text }) => {
-    if (text.includes('CI') && curType && (curType === 'CD')) {
+    if (text.includes('CI') && curType && (curType === 'CD') && !firstIf) {
       return (
         <Tooltip title="CD阶段后，无法添加CI阶段">
           {renderer({ text })}
@@ -42,13 +42,15 @@ export default observer(({ addStepDs, curType, optType, appServiceType, appServi
     return renderer({ text });
   };
 
-  async function handleMore(e) {
+  async function handleMore(e, realName) {
     e && e.stopPropagation();
     const pageSize = !e ? addStepDs.current.get('pageSize') : addStepDs.current.get('pageSize') + 20;
     const url = `/devops/v1/projects/${projectId}/users/list_users?page=0&size=${pageSize}`;
     const res = await axios.post(url, {
       param: [],
-      searchParam: {},
+      searchParam: {
+        realName: realName || '',
+      },
       ids: addStepDs?.current?.get('cdAuditUserIds') || [],
     });
     if (res.content.length % 20 === 0 && res.content.length !== 0) {
@@ -58,7 +60,11 @@ export default observer(({ addStepDs, curType, optType, appServiceType, appServi
       });
     }
     addStepDs.current.set('pageSize', pageSize);
-    addStepDs.getField('cdAuditUserIds').props.lookup = res.content;
+    if (realName) {
+      addStepDs.getField('cdAuditUserIds').props.lookup = [...res.content, ...addStepDs.getField('cdAuditUserIds').props.lookup];
+    } else {
+      addStepDs.getField('cdAuditUserIds').props.lookup = res.content;
+    }
   }
 
   const renderderAuditUsersList = ({ text, record }) => (text === '加载更多' ? (
@@ -75,8 +81,12 @@ export default observer(({ addStepDs, curType, optType, appServiceType, appServi
     const isCd = record.get('value') === 'CD';
     const hasCurTypeCd = curType && curType === 'CD';
     const hasCurTypeCi = curType && (curType === 'CI');
-    if (firstIf && hasCurTypeCi && isCd) {
-      return true;
+    if (firstIf) {
+      if (hasCurTypeCi && isCd) {
+        return true;
+      } else if (hasCurTypeCd && isCi) {
+        return false;
+      }
     }
     if (hasCurTypeCi) {
       if (nextStageType === 'CD') {
@@ -151,6 +161,10 @@ export default observer(({ addStepDs, curType, optType, appServiceType, appServi
             popupCls="addStageForm-cdAuditUserIds-select"
             optionRenderer={renderderAuditUsersList}
             renderer={({ text }) => text}
+            maxTagCount={3}
+            onChange={(value, oldvalue, form) => {
+              handleMore(null);
+            }}
             onOption={({ dataSet, record }) => ({
               disabled: record.get('id') === 'more',
             })}
