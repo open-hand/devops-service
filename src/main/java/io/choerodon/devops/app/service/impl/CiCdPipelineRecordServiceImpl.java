@@ -277,7 +277,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         Long cdPipelineRecordId = devopsPipelineRecordRelDTO.getCdPipelineRecordId();
 
         if (PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID.equals(ciPipelineRecordId)) {
-            cancelCdPipeline(ciPipelineRecordId);
+            cancelCdPipeline(cdPipelineRecordId);
         } else {
             // 查询ci阶段状态
             DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(ciPipelineRecordId);
