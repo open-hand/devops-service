@@ -18,14 +18,12 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
-import io.choerodon.devops.infra.enums.AppServiceEvent;
-import io.choerodon.devops.infra.enums.JobStatusEnum;
-import io.choerodon.devops.infra.enums.PipelineStatus;
-import io.choerodon.devops.infra.enums.WorkFlowStatus;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.*;
@@ -352,30 +350,46 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     @Transactional
     public void cancelCdPipeline(Long pipelineRecordId) {
         DevopsCdPipelineRecordDTO pipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
-        // 只有未执行、准备中、执行中的流水线可以取消执行
-        if (!PipelineStatus.CREATED.toValue().equals(pipelineRecordDTO.getStatus())
-                && !PipelineStatus.PENDING.toValue().equals(pipelineRecordDTO.getStatus())
-                && !PipelineStatus.RUNNING.toValue().equals(pipelineRecordDTO.getStatus())) {
+        // 只有未执行、执行中的流水线可以取消执行
+
+        if (PipelineStatus.CREATED.toValue().equals(pipelineRecordDTO.getStatus())) {
+            cancelCreateStageAndJob(pipelineRecordId);
+        } else if (PipelineStatus.RUNNING.toValue().equals(pipelineRecordDTO.getStatus())) {
+            List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryStageWithPipelineRecordIdAndStatus(pipelineRecordId, PipelineStatus.RUNNING.toValue());
+
+            if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
+                DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordDTOS.get(0);
+                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryJobWithStageRecordIdAndStatus(devopsCdStageRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
+                if (!CollectionUtils.isEmpty(devopsCdJobRecordDTOS)) {
+                    DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordDTOS.get(0);
+                    if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordDTO.getType())) {
+                        throw new CommonException(PipelineCheckConstant.ERROR_CANCEL_AUDITING_PIPELINE);
+                    }
+                    devopsCdStageRecordService.updateStatusById(devopsCdStageRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
+                }
+            }
+            cancelCreateStageAndJob(pipelineRecordId);
+        } else {
             return;
         }
-
-
-        // 修改stage状态为cancel
-        List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordMapper.queryCreatedOrPendingAndRunning(pipelineRecordId);
-        if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
-            devopsCdStageRecordDTOS.forEach(v -> {
-                // 修改job状态为cancel
-                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.queryCreatedOrPendingOrRunning(v.getId());
-                if (!CollectionUtils.isEmpty(devopsCdJobRecordDTOS)) {
-                    devopsCdStageRecordService.updateStatusById(v.getId(), PipelineStatus.CANCELED.toValue());
-                    devopsCdJobRecordDTOS.forEach(m -> devopsCdJobRecordService.updateStatusById(m.getId(), PipelineStatus.CANCELED.toValue()));
-                }
-
-            });
-            // 修改流水线记录状态为cancel
-            devopsCdPipelineRecordService.updateStatusById(pipelineRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
-        }
+        // 修改流水线记录状态为cancel
+        devopsCdPipelineRecordService.updateStatusById(pipelineRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
         workFlowServiceOperator.stopInstance(pipelineRecordDTO.getProjectId(), pipelineRecordDTO.getBusinessKey());
+    }
+
+    private void cancelCreateStageAndJob(Long pipelineRecordId) {
+        List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryStageWithPipelineRecordIdAndStatus(pipelineRecordId, PipelineStatus.CREATED.toValue());
+        if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
+            devopsCdStageRecordDTOS.forEach(devopsCdStageRecordDTO -> {
+                devopsCdStageRecordService.updateStatusById(devopsCdStageRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
+                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryJobWithStageRecordIdAndStatus(devopsCdStageRecordDTO.getId(), PipelineStatus.CREATED.toValue());
+                if (!CollectionUtils.isEmpty(devopsCdJobRecordDTOS)) {
+                    devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> {
+                        devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
+                    });
+                }
+            });
+        }
     }
 
     @Override
