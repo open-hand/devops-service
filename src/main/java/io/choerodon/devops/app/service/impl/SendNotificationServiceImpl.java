@@ -92,7 +92,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
 
     @Autowired
-    @Lazy
     private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
 
     /**
