@@ -1117,7 +1117,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 if (CommandType.UPDATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
                     AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getInstanceId());
                     if (appServiceInstanceDTO != null) {
-                        cdAuto.setAppServiceName(appServiceInstanceDTO.getCode());
+                        cdAuto.setInstanceName(appServiceInstanceDTO.getCode());
                     }
                 }
                 devopsCdJobRecordVO.setCdAuto(cdAuto);
