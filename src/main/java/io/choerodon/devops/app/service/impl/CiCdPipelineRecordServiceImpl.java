@@ -238,12 +238,12 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             return;
         }
         // 1.1 对于部署任务 校验环境权限
-        if (checkEnvPermission && cdJobRecordDTO.getType().equals(JobTypeEnum.CD_DEPLOY.value())) {
-            DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(cdJobRecordDTO.getDeployInfoId());
-            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCdEnvDeployInfoDTO.getEnvId());
-            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
-        }
+//        if (checkEnvPermission && cdJobRecordDTO.getType().equals(JobTypeEnum.CD_DEPLOY.value())) {
+//            DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(cdJobRecordDTO.getDeployInfoId());
+//            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCdEnvDeployInfoDTO.getEnvId());
+//            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+//            devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+//        }
 
         // 2. 根据装填获取DevopsPipelineDTO
         DevopsPipelineDTO devopsPipelineDTO = devopsCdPipelineRecordService.createCDWorkFlowDTO(cdPipelineRecordId, true);
@@ -344,7 +344,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
             devopsCdStageRecordDTOS.forEach(v -> {
                 // 修改job状态为cancel
-                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.queryCreatedOrPendingOrRunning(v.getId());
+                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.queryCreatedOrPending(v.getId());
                 if (!CollectionUtils.isEmpty(devopsCdJobRecordDTOS)) {
                     devopsCdStageRecordService.updateStatusById(v.getId(), PipelineStatus.CANCELED.toValue());
                     devopsCdJobRecordDTOS.forEach(m -> devopsCdJobRecordService.updateStatusById(m.getId(), PipelineStatus.CANCELED.toValue()));

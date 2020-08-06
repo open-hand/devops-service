@@ -15,7 +15,7 @@ public interface DevopsCdJobRecordMapper extends BaseMapper<DevopsCdJobRecordDTO
 
     DevopsCdJobRecordDTO queryFirstFailedOrCancelJob(@Param("stageRecordId") Long stageRecordId);
 
-    List<DevopsCdJobRecordDTO> queryCreatedOrPendingOrRunning(@Param("stageRecordId") Long stageRecordId);
+    List<DevopsCdJobRecordDTO> queryCreatedOrPending(@Param("stageRecordId") Long stageRecordId);
 
     int updateNotAuditJobStatus(@Param("jobRecordId") Long jobRecordId,
                                 @Param("status") String status);
