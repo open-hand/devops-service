@@ -60,22 +60,29 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private String gitlabUrl;
 
     @Autowired
+    @Lazy
     private AppServiceService appServiceService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
+    @Lazy
     private DevopsMergeRequestService devopsMergeRequestService;
     @Autowired
     private AppServiceMapper appServiceMapper;
     @Autowired
+    @Lazy
     private UserAttrService userAttrService;
     @Autowired
+    @Lazy
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
+    @Lazy
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
+    @Lazy
     private DevopsClusterService devopsClusterService;
     @Autowired
+    @Lazy
     private PipelineRecordService pipelineRecordService;
 
     @Autowired
@@ -85,6 +92,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
 
     @Autowired
+    @Lazy
     private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
 
     /**
