@@ -14,7 +14,7 @@ async function checkName(value, projectId, record) {
   try {
     const res = await axios.get(`/devops/v1/projects/${projectId}/app_service_instances/check_name?env_id=${record.get('envId')}&instance_name=${value}`);
     if ((res && res.failed) || !res) {
-      return '实例名称重复';
+      return '格式有误';
     }
     return true;
   } catch (err) {
@@ -28,6 +28,7 @@ export default (
   organizationId,
   useStore,
   appServiceCode,
+  random,
 ) => ({
   autoCreate: true,
   fields: [{
@@ -116,7 +117,7 @@ export default (
       disabled: ({ record }) => !record.get('envId'),
       lookupAxiosConfig: ({ record }) => ({
         method: 'get',
-        url: record.get('envId') && `/devops/v1/projects/${projectId}/deploy_value/list_by_env_and_app?app_service_id=${PipelineCreateFormDataSet.current.get('appServiceId')}&env_id=${record.get('envId')}`,
+        url: record.get('envId') && `/devops/v1/projects/${projectId}/deploy_value/list_by_env_and_app?app_service_id=${PipelineCreateFormDataSet.current.get('appServiceId')}&env_id=${record.get('envId')}&random=${random}`,
         transformResponse: (res) => {
           let newRes = res;
           try {

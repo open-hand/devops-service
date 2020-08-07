@@ -82,6 +82,7 @@ const EditItem = (props) => {
         AppServiceOptionsDs={edit && AppServiceOptionsDs}
         image={image}
       /> : (<AddCDTask
+        random={Math.random()}
         jobDetail={jobDetail}
         pipelineStageMainSource={getStepData2}
         appServiceId={!edit && appServiceName}
@@ -133,17 +134,17 @@ const EditItem = (props) => {
 };
 
 export default observer((props) => {
-  const { 
-    jobList, 
-    sequence, 
-    name, 
-    columnIndex, 
-    edit, 
-    appServiceId, 
+  const {
+    jobList,
+    sequence,
+    name,
+    columnIndex,
+    edit,
+    appServiceId,
     appServiceName,
-    image, 
-    type, 
-    parallel, 
+    image,
+    type,
+    parallel,
     triggerType: stageTriggerType,
     appServiceCode,
     appServiceType,
@@ -234,13 +235,13 @@ export default observer((props) => {
         width: 380,
       },
       okText,
-      children: <AddStage 
-        projectId={projectId} 
-        curType={curType} 
-        optType={optType} 
-        addStepDs={addStepDs} 
-        appServiceType={optType === 'create' ? appServiceType : null} 
-        firstIf={firstIf} 
+      children: <AddStage
+        projectId={projectId}
+        curType={curType}
+        optType={optType}
+        addStepDs={addStepDs}
+        appServiceType={optType === 'create' ? appServiceType : null}
+        firstIf={firstIf}
         appServiceId={appServiceId}
         nextStageType={nextStageType}
       />,
@@ -306,6 +307,7 @@ export default observer((props) => {
           image={image}
         />
       ) : (<AddCDTask
+        random={Math.random()}
         appServiceId={!edit && appServiceName}
         appServiceName={!edit && appServiceName}
         appServiceCode={appServiceCode}
