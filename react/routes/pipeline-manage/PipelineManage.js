@@ -58,7 +58,7 @@ const PipelineManage = observer((props) => {
         width: 'calc(100vw - 3.52rem)',
       },
       drawer: true,
-      children: <PipelineCreate refreshTree={handleRefresh} editBlockStore={editBlockStore} mainStore={mainStore} />,
+      children: <PipelineCreate mathRandom={Math.random()} refreshTree={handleRefresh} editBlockStore={editBlockStore} mainStore={mainStore} />,
       okText: '创建',
     });
   };

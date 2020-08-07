@@ -3,7 +3,7 @@ import isEmpty from 'lodash/isEmpty';
 
 const dynamicAxios = {};
 
-export default (AppServiceOptionsDs, projectId, createUseStore, dataSource) => {
+export default (AppServiceOptionsDs, projectId, createUseStore, dataSource, mathRandom) => {
   function checkImage(value, name, record) {
     const pa = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}(\/.+)*:.+$/;
     if (value && pa.test(value)) {
@@ -72,7 +72,7 @@ export default (AppServiceOptionsDs, projectId, createUseStore, dataSource) => {
         }
         return ({
           method: 'post',
-          url: `/devops/v1/projects/${projectId}/app_service/page_app_services_without_ci?page=0&size=20`,
+          url: `/devops/v1/projects/${projectId}/app_service/page_app_services_without_ci?page=0&size=20&random=${mathRandom}`,
           data: {
             param: [],
             searchParam: {
