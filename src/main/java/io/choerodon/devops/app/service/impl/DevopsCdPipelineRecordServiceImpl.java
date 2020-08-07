@@ -85,6 +85,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private static final String UNAUTHORIZED = "unauthorized";
     private static final String STAGE = "stage";
     private static final String TASK = "task";
+    private static final String STOP = "stop";
 
     public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdPipelineRecordServiceImpl.class);
 
@@ -1007,7 +1008,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsCdPipelineRecordVO.setUsername(iamUserDTO.getRealName());
         devopsCdPipelineRecordVO.setCreatedDate(cdPipelineRecordDTO.getCreationDate());
         CiCdPipelineDTO ciCdPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(cdPipelineRecordDTO.getPipelineId());
-        if (Objects.isNull(ciCdPipelineDTO)){
+        if (Objects.isNull(ciCdPipelineDTO)) {
             return null;
         }
         AppServiceDTO serviceDTO = appServiceMapper.selectByPrimaryKey(ciCdPipelineDTO.getAppServiceId());
@@ -1099,7 +1100,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 appServiceVersionDTO.setAppServiceId(devopsCdEnvDeployInfoDTO.getAppServiceId());
                 appServiceVersionDTO.setCommit(devopsCdStageRecordVO.getCommitSha());
                 List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
-                if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
+                if (!CollectionUtils.isEmpty(appServiceVersionDTOS) && !StringUtils.endsWithIgnoreCase(STOP, devopsCdStageRecordVO.getStatus())) {
                     cdAuto.setAppServiceVersion(appServiceVersionDTOS.get(0).getVersion());
                 }
                 //创建实例
@@ -1110,7 +1111,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     appServiceInstanceDTO.setEnvId(devopsCdEnvDeployInfoDTO.getEnvId());
                     AppServiceInstanceDTO serviceInstanceDTO = appServiceInstanceMapper.selectOne(appServiceInstanceDTO);
                     if (!Objects.isNull(serviceInstanceDTO)) {
-                        cdAuto.setInstanceName(serviceInstanceDTO.getCode());
+                        if (!StringUtils.endsWithIgnoreCase(STOP, devopsCdStageRecordVO.getStatus())){
+                            cdAuto.setInstanceName(serviceInstanceDTO.getCode());
+                        }
                         cdAuto.setInstanceId(serviceInstanceDTO.getId());
                         cdAuto.setAppServiceId(serviceInstanceDTO.getAppServiceId());
                         cdAuto.setEnvId(serviceInstanceDTO.getEnvId());
