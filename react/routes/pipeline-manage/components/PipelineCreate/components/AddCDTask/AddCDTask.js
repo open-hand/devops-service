@@ -412,7 +412,7 @@ export default observer(() => {
       cdHost: [
         <div className="addcdTask-divided" />,
         <p className="addcdTask-title">主机设置</p>,
-        <Form columns={2} dataSet={ADDCDTaskDataSet}>
+        <Form className="addcdTask-cdHost" columns={2} dataSet={ADDCDTaskDataSet}>
           <TextField colSpan={1} name="hostIp" />
           <TextField colSpan={1} name="hostPort" />
           <SelectBox colSpan={1} name="accountType" className="addcdTask-mode">
