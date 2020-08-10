@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
 import io.choerodon.core.swagger.ChoerodonRouteData;
+import io.choerodon.swagger.annotation.ChoerodonExtraData;
 import io.choerodon.swagger.swagger.extra.ExtraData;
 import io.choerodon.swagger.swagger.extra.ExtraDataManager;
 
@@ -18,7 +19,7 @@ import io.choerodon.swagger.swagger.extra.ExtraDataManager;
  * @author zmf
  * @since 20-5-18
  */
-@Configuration
+@ChoerodonExtraData
 public class DevOpsExtraDataManager implements ExtraDataManager {
     @Autowired
     private org.springframework.core.env.Environment environment;
