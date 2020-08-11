@@ -14,6 +14,7 @@ export function useAddCDTaskStore() {
 export const StoreProvider = injectIntl(inject('AppState')((props) => {
   const {
     children,
+    random,
     // PipelineCreateFormDataSet,
     // AppServiceOptionsDs,
     PipelineCreateFormDataSet,
@@ -27,7 +28,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
   } = props;
 
   const ADDCDTaskUseStore = useStore();
-  const ADDCDTaskDataSet = useMemo(() => new DataSet(addCDTaskDataSet(projectId, PipelineCreateFormDataSet, organizationId, ADDCDTaskUseStore, appServiceCode)), [ADDCDTaskUseStore]);
+  const ADDCDTaskDataSet = useMemo(() => new DataSet(addCDTaskDataSet(projectId, PipelineCreateFormDataSet, organizationId, ADDCDTaskUseStore, appServiceCode, random)), [ADDCDTaskUseStore, random]);
 
   const value = {
     ...props,

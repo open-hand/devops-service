@@ -16,6 +16,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
   const {
     children,
     dataSource,
+    mathRandom,
     AppState: {
       menuType: {
         projectId,
@@ -25,7 +26,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
 
   const createUseStore = useStore();
   const AppServiceOptionsDs = useMemo(() => new DataSet(appServiceOptionsDs(projectId)), []);
-  const PipelineCreateFormDataSet = useMemo(() => new DataSet(pipelineCreateFormDataSet(AppServiceOptionsDs, projectId, createUseStore, dataSource)), [dataSource]);
+  const PipelineCreateFormDataSet = useMemo(() => new DataSet(pipelineCreateFormDataSet(AppServiceOptionsDs, projectId, createUseStore, dataSource, mathRandom)), [dataSource, mathRandom]);
 
   const value = {
     ...props,

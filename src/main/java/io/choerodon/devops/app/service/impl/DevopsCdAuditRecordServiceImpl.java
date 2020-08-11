@@ -95,11 +95,9 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
         params.put(STAGE_NAME, devopsCdStageRecord.getStageName());
         DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
         recordRelDTO.setCdPipelineRecordId(devopsCdPipelineRecordId);
-        List<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS = devopsPipelineRecordRelMapper.select(recordRelDTO);
-        params.put(REL_ID, devopsPipelineRecordRelDTOS.get(0).getId().toString());
-        if (!CollectionUtils.isEmpty(devopsPipelineRecordRelDTOS)) {
-            params.put(PIPELINE_ID, KeyDecryptHelper.encryptValue(devopsPipelineRecordRelDTOS.get(0).getPipelineId()));
-        }
+        DevopsPipelineRecordRelDTO relDTO = devopsPipelineRecordRelMapper.selectOne(recordRelDTO);
+        params.put(REL_ID, relDTO.getId().toString());
+        params.put(PIPELINE_ID, KeyDecryptHelper.encryptValueWithoutToken(relDTO.getPipelineId()));
         sendNotificationService.sendCdPipelineNotice(devopsCdStageRecord.getPipelineRecordId(), MessageCodeConstants.PIPELINE_STAGE_AUDIT, userList, params);
     }
 
@@ -131,10 +129,9 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
         params.put(STAGE_NAME, devopsCdJobRecordDTO.getName());
         DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
         recordRelDTO.setCdPipelineRecordId(pipelineRecordId);
-        List<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS = devopsPipelineRecordRelMapper.select(recordRelDTO);
-        if (!CollectionUtils.isEmpty(devopsPipelineRecordRelDTOS)) {
-            params.put(PIPELINE_ID, KeyDecryptHelper.encryptValue(devopsPipelineRecordRelDTOS.get(0).getPipelineId()));
-        }
+        DevopsPipelineRecordRelDTO relDTO = devopsPipelineRecordRelMapper.selectOne(recordRelDTO);
+        params.put(REL_ID, relDTO.getId().toString());
+        params.put(PIPELINE_ID, KeyDecryptHelper.encryptValueWithoutToken(relDTO.getPipelineId()));
         sendNotificationService.sendCdPipelineNotice(pipelineRecordId, MessageCodeConstants.PIPELINE_AUDIT, userList, params);
     }
 

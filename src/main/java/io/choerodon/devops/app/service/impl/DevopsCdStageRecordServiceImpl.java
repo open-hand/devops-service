@@ -158,7 +158,7 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
     }
 
     @Override
-    public DevopsCdStageRecordDTO queryStageWithPipelineRecordIdAndStatus(Long pipelineRecordId, String status) {
+    public List<DevopsCdStageRecordDTO> queryStageWithPipelineRecordIdAndStatus(Long pipelineRecordId, String status) {
         Assert.notNull(pipelineRecordId, PipelineCheckConstant.ERROR_PIPELINE_RECORD_ID_IS_NULL);
         Assert.notNull(status, PipelineCheckConstant.ERROR_STAGE_STATUS_IS_NULL);
 
@@ -166,6 +166,6 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
         devopsCdStageRecordDTO.setPipelineRecordId(pipelineRecordId);
         devopsCdStageRecordDTO.setStatus(status);
 
-        return devopsCdStageRecordMapper.selectOne(devopsCdStageRecordDTO);
+        return devopsCdStageRecordMapper.select(devopsCdStageRecordDTO);
     }
 }

@@ -66,9 +66,9 @@
     margin-top: 10px;
     & > span:first-child {
       font-size: 13px;
-      font-family: PingFangSC-Regular,PingFang SC;
+      font-family: PingFangSC-Regular, PingFang SC;
       font-weight: 400;
-      color:rgba(58, 52, 95, 1);
+      color: rgba(58, 52, 95, 1);
       line-height: 12px;
     }
   }
@@ -121,13 +121,26 @@
     align-items: center;
     justify-content: space-between;
   }
-
 }
 
 .addStageForm-triggerType-select {
   .c7n-pro-select-box {
     .c7n-pro-radio-wrapper:nth-of-type(2) {
       margin-left: 1.1rem;
+    }
+  }
+}
+.extra-addbutton {
+  position: relative;
+  top: 0.53rem;
+  color: #5266d4;
+  margin-right: 10px;
+  min-width: 0.24rem;
+}
+.addStageForm-cdAuditUserIds-select {
+  .c7n-pro-select-dropdown-menu-item-disabled {
+    label {
+      display: none;
     }
   }
 }

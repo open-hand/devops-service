@@ -143,7 +143,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         LOGGER.info("handler ci pipeline status update, current ci pipeline {} status is {}", pipelineAttr.getId(), status);
         // 初始化流水线记录
         if (!PipelineStatus.SUCCESS.toValue().equals(status) && !PipelineStatus.SKIPPED.toValue().equals(status)) {
-            initPipelineRecordWithStageAndJob(pipelineAttr.getId(), pipelineAttr.getSha(), pipelineAttr.getRef(), devopsCiPipelineDTO);
+            initPipelineRecordWithStageAndJob(pipelineAttr.getId(), pipelineAttr.getSha(), pipelineAttr.getRef(), pipelineAttr.getTag(), devopsCiPipelineDTO);
         }
 
         // ci流水线执行成功， 开始执行cd流水线
@@ -234,7 +234,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         });
     }
 
-    private List<DevopsCdJobDTO> calculateExecuteJobList(String ref, List<DevopsCdJobDTO> devopsCdJobDTOList) {
+    private List<DevopsCdJobDTO> calculateExecuteJobList(String ref, Boolean tag, List<DevopsCdJobDTO> devopsCdJobDTOList) {
         return devopsCdJobDTOList.stream().filter(job -> {
             if (StringUtils.isEmpty(job.getTriggerValue())) {
                 return true;
@@ -245,6 +245,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 String[] matchRefs = job.getTriggerValue().split(",");
                 if (matchRefs.length > 0) {
                     for (String matchRef : matchRefs) {
+                        if ("tag".equals(matchRef) && Boolean.TRUE.equals(tag)) {
+                            return true;
+                        }
                         if (ref.contains(matchRef)) {
                             return true;
                         }
@@ -314,7 +317,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
 
     @Override
-    public void triggerCdPipeline(String token, String commitSha, String ref, Long gitlabPipelineId) {
+    public void triggerCdPipeline(String token, String commitSha, String ref, Boolean tag, Long gitlabPipelineId) {
         AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
         CiCdPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
 
@@ -336,7 +339,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         List<DevopsCdJobDTO> devopsCdJobDTOList = devopsCdJobService.listByPipelineId(devopsCiPipelineDTO.getId());
 
         // 2. 计算要执行的job
-        List<DevopsCdJobDTO> executeJobList = calculateExecuteJobList(ref, devopsCdJobDTOList);
+        List<DevopsCdJobDTO> executeJobList = calculateExecuteJobList(ref, tag, devopsCdJobDTOList);
         if (CollectionUtils.isEmpty(executeJobList)) {
             return;
         }
@@ -414,6 +417,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         LOGGER.info("autoDeploy:pipelineRecordId {} stageRecordId: {} jobRecordId: {}", pipelineRecordId, stageRecordId, jobRecordId);
         //获取数据
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+
+        // 如果部署任务是阶段第一个任务，先修改阶段为运行中
+        devopsCdStageRecordService.updateStatusById(stageRecordId, PipelineStatus.RUNNING.toValue());
+
         CustomContextUtil.setUserContext(devopsCdJobRecordDTO.getCreatedBy());
         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
         AppServiceVersionDTO appServiceServiceE = getDeployVersion(pipelineRecordId);
@@ -452,13 +459,11 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     AppServiceInstanceDTO preInstance = appServiceInstanceService.baseQuery(appServiceDeployVO.getInstanceId());
                     DevopsEnvCommandDTO preCommand = devopsEnvCommandService.baseQuery(preInstance.getCommandId());
                     AppServiceVersionRespVO deploydAppServiceVersion = appServiceVersionService.queryById(preCommand.getObjectVersionId());
-//                    if (preCommand.getObjectVersionId().equals(appServiceDeployVO.getAppServiceVersionId())) {
-//                        String oldValue = appServiceInstanceService.baseQueryValueByInstanceId(appServiceDeployVO.getInstanceId());
-//                        if (appServiceDeployVO.getValues().trim().equals(oldValue.trim())) {
-//                            devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
-//                            return;
-//                        }
-//                    }
+                    if (preCommand.getObjectVersionId().equals(appServiceDeployVO.getAppServiceVersionId())) {
+                        appServiceInstanceService.restartInstance(devopsCdEnvDeployInfoDTO.getProjectId(), preInstance.getId());
+                        devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SUCCESS.toValue());
+                        return;
+                    }
 
                     AppServiceDTO appServiceDTO = appServiceService.baseQuery(devopsCdEnvDeployInfoDTO.getAppServiceId());
 
@@ -522,7 +527,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>> Userdetails is {}", DetailsHelper.getUserDetails());
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
         CustomContextUtil.setUserContext(devopsCdPipelineRecordDTO.getCreatedBy());
-        if (Boolean.TRUE.equals(status)) {
+        if (Boolean.TRUE.equals(status)
+                && PipelineStatus.RUNNING.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
             startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
         } else {
             workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
@@ -964,12 +970,13 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         triggerCdPipeline(pipelineWebHookVO.getToken(),
                 pipelineWebHookVO.getObjectAttributes().getSha(),
                 pipelineWebHookVO.getObjectAttributes().getRef(),
+                pipelineWebHookVO.getObjectAttributes().getTag(),
                 pipelineWebHookVO.getObjectAttributes().getId());
 
     }
 
     @Override
-    public void initPipelineRecordWithStageAndJob(Long gitlabPipelineId, String commitSha, String ref, CiCdPipelineDTO devopsCiPipelineDTO) {
+    public void initPipelineRecordWithStageAndJob(Long gitlabPipelineId, String commitSha, String ref, Boolean tag, CiCdPipelineDTO devopsCiPipelineDTO) {
 
         // 查询流水线是否有cd阶段, 没有cd阶段不做处理
         List<DevopsCdStageDTO> devopsCdStageDTOList = devopsCdStageService.queryByPipelineId(devopsCiPipelineDTO.getId());
@@ -985,7 +992,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             List<DevopsCdJobDTO> devopsCdJobDTOList = devopsCdJobService.listByPipelineId(devopsCiPipelineDTO.getId());
 
             // 2. 计算要执行的job
-            List<DevopsCdJobDTO> executeJobList = calculateExecuteJobList(ref, devopsCdJobDTOList);
+            List<DevopsCdJobDTO> executeJobList = calculateExecuteJobList(ref, tag, devopsCdJobDTOList);
             if (CollectionUtils.isEmpty(executeJobList)) {
                 return;
             }

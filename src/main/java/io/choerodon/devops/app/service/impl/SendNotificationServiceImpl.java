@@ -36,6 +36,7 @@ import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.SendSettingEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
+import io.choerodon.devops.infra.mapper.DevopsPipelineRecordRelMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -59,22 +60,29 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private String gitlabUrl;
 
     @Autowired
+    @Lazy
     private AppServiceService appServiceService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
+    @Lazy
     private DevopsMergeRequestService devopsMergeRequestService;
     @Autowired
     private AppServiceMapper appServiceMapper;
     @Autowired
+    @Lazy
     private UserAttrService userAttrService;
     @Autowired
+    @Lazy
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
+    @Lazy
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
+    @Lazy
     private DevopsClusterService devopsClusterService;
     @Autowired
+    @Lazy
     private PipelineRecordService pipelineRecordService;
 
     @Autowired
@@ -82,6 +90,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Autowired
     @Lazy
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
+
+    @Autowired
+    private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
 
     /**
      * 发送和应用服务失败、启用和停用的消息(调用此方法时注意在外层捕获异常，此方法不保证无异常抛出)
@@ -769,14 +780,18 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private void sendCdPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
         DevopsCdPipelineRecordDTO record = devopsCdPipelineRecordService.queryById(pipelineRecordId);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(record.getProjectId());
+        params.put("pipelineId", KeyDecryptHelper.encryptValueWithoutToken(record.getPipelineId()));
+        //pipelineRecordId是relID
+        DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
+        recordRelDTO.setCdPipelineRecordId(record.getId());
+        DevopsPipelineRecordRelDTO relDTO = devopsPipelineRecordRelMapper.selectOne(recordRelDTO);
+        params.put("pipelineIdRecordId", relDTO.getId().toString());
         sendNotices(type, users, constructCdParamsForPipeline(record, projectDTO, params, stageId, stageName), projectDTO.getId());
     }
 
     private Map<String, String> constructParamsForPipeline(PipelineRecordDTO record, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
         return StringMapBuilder.newBuilder()
-                .put("pipelineId", record.getPipelineId())
                 .put("pipelineName", record.getPipelineName())
-                .put("pipelineRecordId", record.getId())
                 .put("projectId", record.getProjectId())
                 .put("projectName", projectDTO.getName())
                 .put("organizationId", projectDTO.getOrganizationId())
@@ -789,9 +804,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     private Map<String, String> constructCdParamsForPipeline(DevopsCdPipelineRecordDTO record, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
         return StringMapBuilder.newBuilder()
-                .put("pipelineId", record.getPipelineId())
                 .put("pipelineName", record.getPipelineName())
-                .put("pipelineRecordId", record.getId())
                 .put("projectId", record.getProjectId())
                 .put("projectName", projectDTO.getName())
                 .put("organizationId", projectDTO.getOrganizationId())

@@ -3,6 +3,8 @@ package io.choerodon.devops.app.service.impl;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_HOST_FEPLOY;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -83,10 +85,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private static final String UNAUTHORIZED = "unauthorized";
     private static final String STAGE = "stage";
     private static final String TASK = "task";
+    private static final String STOP = "stop";
 
     public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdPipelineRecordServiceImpl.class);
 
-    private static final Gson gson = new Gson();
+    private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final BASE64Decoder decoder = new BASE64Decoder();
     @Autowired
@@ -479,7 +483,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         if (hostConnectionVO.getAccountType().equals(CdHostAccountType.PASSWORD.value())) {
             ssh.authPassword(hostConnectionVO.getUserName(), hostConnectionVO.getPassword());
         } else {
-            KeyProvider keyProvider = ssh.loadKeys(hostConnectionVO.getAccountKey(), null, null);
+            String str = Base64Util.getBase64DecodedString(hostConnectionVO.getAccountKey());
+            KeyProvider keyProvider = ssh.loadKeys(str, null, null);
             ssh.authPublickey(hostConnectionVO.getUserName(), keyProvider);
         }
     }
@@ -618,8 +623,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             StringBuilder stopJar = new StringBuilder();
             stopJar.append(String.format("ps aux|grep %s | grep -v grep |awk '{print  $2}' |xargs kill -9 ", cdEnvDeployInfoDTO.getJarName()));
             stopJar.append(System.lineSeparator());
-            stopJar.append(String.format("cd temp-jar && rm -f %s", cdEnvDeployInfoDTO.getJarName()));
-            stopJar.append(" && cd ../ && cd temp-log &&");
+            stopJar.append(String.format("cd /temp-jar && rm -f %s", cdEnvDeployInfoDTO.getJarName()));
+            stopJar.append(" && cd /temp-log &&");
             stopJar.append(String.format("rm -f %s", cdEnvDeployInfoDTO.getJarName().replace(".jar", ".log")));
             LOGGER.info(stopJar.toString());
             Session session = null;
@@ -907,17 +912,19 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     private void addAuditStateInfo(DevopsCdPipelineRecordVO devopsCdPipelineRecordVO) {
         DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO = new DevopsCdPipelineDeatilVO();
-        DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordService.queryStageWithPipelineRecordIdAndStatus(devopsCdPipelineRecordVO.getId(), PipelineStatus.NOT_AUDIT.toValue());
-        if (devopsCdStageRecordDTO != null) {
+        List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryStageWithPipelineRecordIdAndStatus(devopsCdPipelineRecordVO.getId(), PipelineStatus.NOT_AUDIT.toValue());
+        if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
+            DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordDTOS.get(0);
             // 继续判断阶段中是否还有待审核的任务
-            DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryJobWithStageRecordIdAndStatus(devopsCdStageRecordDTO.getId(), PipelineStatus.NOT_AUDIT.toValue());
-            if (devopsCdJobRecordDTO == null) {
+            List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryJobWithStageRecordIdAndStatus(devopsCdStageRecordDTO.getId(), PipelineStatus.NOT_AUDIT.toValue());
+            if (CollectionUtils.isEmpty(devopsCdJobRecordDTOS)) {
                 DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = devopsCdAuditRecordService.queryByStageRecordIdAndUserId(devopsCdStageRecordDTO.getId(), DetailsHelper.getUserDetails().getUserId());
                 devopsCdPipelineDeatilVO.setType("stage");
                 devopsCdPipelineDeatilVO.setStageName(devopsCdStageRecordDTO.getStageName());
                 devopsCdPipelineDeatilVO.setExecute(devopsCdAuditRecordDTO != null && AuditStatusEnum.NOT_AUDIT.value().equals(devopsCdAuditRecordDTO.getStatus()));
                 devopsCdPipelineDeatilVO.setStageRecordId(devopsCdStageRecordDTO.getId());
             } else {
+                DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordDTOS.get(0);
                 DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = devopsCdAuditRecordService.queryByJobRecordIdAndUserId(devopsCdJobRecordDTO.getId(), DetailsHelper.getUserDetails().getUserId());
                 devopsCdPipelineDeatilVO.setType("task");
                 devopsCdPipelineDeatilVO.setStageName(devopsCdStageRecordDTO.getStageName());
@@ -1000,6 +1007,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = ConvertUtils.convertObject(cdPipelineRecordDTO, DevopsCdPipelineRecordVO.class);
         devopsCdPipelineRecordVO.setUsername(iamUserDTO.getRealName());
         devopsCdPipelineRecordVO.setCreatedDate(cdPipelineRecordDTO.getCreationDate());
+        CiCdPipelineDTO ciCdPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(cdPipelineRecordDTO.getPipelineId());
+        if (Objects.isNull(ciCdPipelineDTO)) {
+            return null;
+        }
+        AppServiceDTO serviceDTO = appServiceMapper.selectByPrimaryKey(ciCdPipelineDTO.getAppServiceId());
+        AppServiceDTO appServiceDTO = new AppServiceDTO();
+        devopsCdPipelineRecordVO.setGitlabProjectId(serviceDTO.getGitlabProjectId());
         //查询流水线信息
         CiCdPipelineVO ciCdPipelineVO = devopsCiCdPipelineMapper.queryById(cdPipelineRecordDTO.getPipelineId());
         //添加提交信息
@@ -1032,6 +1046,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         } else {
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.EMPTY_LIST);
         }
+        // 计算流水线当前停留的审核节点
+        addAuditStateInfo(devopsCdPipelineRecordVO);
         return devopsCdPipelineRecordVO;
     }
 
@@ -1070,7 +1086,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsCdJobRecordVO.setJobExecuteTime();
             //如果是自动部署返回 能点击查看生成实例的相关信息
             if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobRecordVO.getType())) {
-                DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = gson.fromJson(devopsCdJobRecordVO.getMetadata(), DevopsCdEnvDeployInfoDTO.class);
+                DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = null;
+                try {
+                    devopsCdEnvDeployInfoDTO = objectMapper.readValue(devopsCdJobRecordVO.getMetadata(), DevopsCdEnvDeployInfoDTO.class);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 //部署环境 应用服务 生成版本 实例名称
                 DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
                 cdAuto.setEnvName(devopsEnvironmentMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getEnvId()).getName());
@@ -1079,7 +1100,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 appServiceVersionDTO.setAppServiceId(devopsCdEnvDeployInfoDTO.getAppServiceId());
                 appServiceVersionDTO.setCommit(devopsCdStageRecordVO.getCommitSha());
                 List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
-                if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
+                if (!CollectionUtils.isEmpty(appServiceVersionDTOS) && !StringUtils.endsWithIgnoreCase(STOP, devopsCdStageRecordVO.getStatus())) {
                     cdAuto.setAppServiceVersion(appServiceVersionDTOS.get(0).getVersion());
                 }
                 //创建实例
@@ -1090,7 +1111,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     appServiceInstanceDTO.setEnvId(devopsCdEnvDeployInfoDTO.getEnvId());
                     AppServiceInstanceDTO serviceInstanceDTO = appServiceInstanceMapper.selectOne(appServiceInstanceDTO);
                     if (!Objects.isNull(serviceInstanceDTO)) {
-                        cdAuto.setInstanceName(serviceInstanceDTO.getCode());
+                        if (!StringUtils.endsWithIgnoreCase(STOP, devopsCdStageRecordVO.getStatus())){
+                            cdAuto.setInstanceName(serviceInstanceDTO.getCode());
+                        }
                         cdAuto.setInstanceId(serviceInstanceDTO.getId());
                         cdAuto.setAppServiceId(serviceInstanceDTO.getAppServiceId());
                         cdAuto.setEnvId(serviceInstanceDTO.getEnvId());
@@ -1100,7 +1123,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 if (CommandType.UPDATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
                     AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getInstanceId());
                     if (appServiceInstanceDTO != null) {
-                        cdAuto.setAppServiceName(appServiceInstanceDTO.getCode());
+                        cdAuto.setInstanceName(appServiceInstanceDTO.getCode());
+                        cdAuto.setInstanceId(appServiceInstanceDTO.getId());
+                        cdAuto.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
+                        cdAuto.setEnvId(appServiceInstanceDTO.getEnvId());
                     }
                 }
                 devopsCdJobRecordVO.setCdAuto(cdAuto);

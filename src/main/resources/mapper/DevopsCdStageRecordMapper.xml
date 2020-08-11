@@ -16,23 +16,16 @@
     <select id="queryRetryStage"
             resultType="io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO">
         SELECT
-            dcsr1.*
+            dcsr.*
         FROM
-            devops_cd_stage_record dcsr1
+            devops_cd_stage_record dcsr
         WHERE
-            dcsr1.pipeline_record_id = #{pipelineRecordId}
-            AND dcsr1.sequence >= (
-                SELECT
-                    dcsr.sequence
-                FROM
-                    devops_cd_stage_record dcsr
-                WHERE
-                    dcsr.pipeline_record_id = #{pipelineRecordId}
-                    AND (dcsr.`status` = 'FAILED' or  dcsr.status='CANCELED')
-            )
+            dcsr.pipeline_record_id = #{pipelineRecordId}
+            AND (dcsr.`status` = 'FAILED' or  dcsr.status='CANCELED')
+
     </select>
 
-    <select id="queryFailedOrCancelStage"
+    <select id="queryFirstStageByPipelineRecordIdAndStatus"
             resultType="io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO">
             SELECT
                 dcsr.*
@@ -40,10 +33,12 @@
                 devops_cd_stage_record dcsr
             WHERE
                 dcsr.pipeline_record_id = #{pipelineRecordId}
-                AND (dcsr.`status` = 'FAILED' or  dcsr.status='CANCELED')
+                AND dcsr.`status` = #{status}
+            ORDER BY sequence ASC
+            LIMIT 1
     </select>
 
-    <select id="queryPendingAndRunning"
+    <select id="queryCreatedOrPendingAndRunning"
             resultType="io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO">
             SELECT
                 dcsr.*
@@ -51,6 +46,6 @@
                 devops_cd_stage_record dcsr
             WHERE
                 dcsr.pipeline_record_id = #{pipelineRecordId}
-                AND (dcsr.`status` = 'PENDING' or  dcsr.status='RUNNING')
+                AND (dcsr.`status` = 'pending' or  dcsr.status='running' or dcsr.status = 'created')
     </select>
 </mapper>

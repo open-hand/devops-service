@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.dto.repo;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * choerodon nexus服务DTO
@@ -10,7 +11,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel("nexus服务DTO")
 public class C7nNexusServerDTO {
-
+    @Encrypt
     @ApiModelProperty(value = "主键")
     private Long configId;
     @ApiModelProperty(value = "服务名称")

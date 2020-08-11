@@ -1,7 +1,8 @@
 import React, { Fragment, useState, useMemo } from 'react';
-import { Input, Tooltip } from 'choerodon-ui';
+import { Input } from 'choerodon-ui';
+import { Tooltip, Icon } from 'choerodon-ui';
 import CopyToBoard from 'react-copy-to-clipboard';
-import _ from 'lodash';
+import { Choerodon } from '@choerodon/boot';
 
 import './index.less';
 
@@ -11,16 +12,15 @@ const ActivateCluster = (props) => {
   const { formatMessage, cmd } = props;
   const [copyMsg, setCopyMsg] = useState('');
 
-  const mouseEnter = () => {
-    setCopyMsg(formatMessage({ id: 'c7ncd.cluster.activate.desc' }));
-  };
-
   const handleCopy = () => {
-    setCopyMsg(formatMessage({ id: 'c7ncd.cluster.activate.coped' }));
+    Choerodon.prompt('复制成功');
   };
 
   return (
     <Fragment>
+      <blockquote className="c7ncd-cluster-activate-note">
+        {formatMessage({ id: 'c7ncd.cluster.activate.note' })}
+      </blockquote>
       <p className="c7ncd-cluster-activate-desc">{formatMessage({ id: 'c7ncd.cluster.activate.desc' })}</p>
       <div className="c7ncd-cluster-activate-wrap">
         <TextArea
@@ -32,17 +32,19 @@ const ActivateCluster = (props) => {
           value={cmd || ''}
         />
         <span className="c7ncd-cluster-activate-copy">
-          <Tooltip placement="right" trigger="hover" title={copyMsg}>
-            <div onMouseEnter={mouseEnter}>
-              <CopyToBoard text={cmd} onCopy={handleCopy}>
-                <i className="icon icon-library_books" />
-              </CopyToBoard>
-            </div>
+          <Tooltip
+            placement="left"
+            arrowPointAtCenter
+            autoAdjustOverflow={false}
+            title={formatMessage({ id: 'c7ncd.cluster.activate.desc' })}
+          >
+            <CopyToBoard text={cmd} onCopy={handleCopy} options={{ format: 'text/plain' }}>
+              <Icon type="library_books" />
+            </CopyToBoard>
           </Tooltip>
         </span>
       </div>
     </Fragment>);
 };
-
 
 export default ActivateCluster;

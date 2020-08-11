@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -120,6 +119,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final DevopsPipelineRecordRelService devopsPipelineRecordRelService;
     private final DevopsCdPipelineService devopsCdPipelineService;
     private final DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
+    private final DevopsDeployValueMapper devopsDeployValueMapper;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -153,7 +153,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsEnvironmentMapper devopsEnvironmentMapper,
             @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService,
             @Lazy DevopsCdPipelineService devopsCdPipelineService,
-            DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper) {
+            DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper,
+            DevopsDeployValueMapper devopsDeployValueMapper
+    ) {
         this.devopsCiCdPipelineMapper = devopsCiCdPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
         this.devopsCiStageService = devopsCiStageService;
@@ -185,6 +187,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsPipelineRecordRelService = devopsPipelineRecordRelService;
         this.devopsCdPipelineService = devopsCdPipelineService;
         this.devopsPipelineRecordRelMapper = devopsPipelineRecordRelMapper;
+        this.devopsDeployValueMapper = devopsDeployValueMapper;
     }
 
     private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
@@ -313,8 +316,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                         // 不让数据库存加密的值
-                        processCiJobVO(devopsCiJobVO);
                         decryptCiBuildMetadata(devopsCiJobVO);
+                        processCiJobVO(devopsCiJobVO);
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
                         devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
@@ -394,6 +397,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         devopsCdJobVO.setEnvName(devopsEnvironmentDTO.getName());
                     }
                     DevopsCdEnvDeployInfoVO devopsCdEnvDeployInfoVO = ConvertUtils.convertObject(devopsCdEnvDeployInfoDTO, DevopsCdEnvDeployInfoVO.class);
+                    //根据value id 返回values
+                    DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getValueId());
+                    devopsCdEnvDeployInfoVO.setValue(Base64Util.getBase64EncodedString(devopsDeployValueDTO.getValue()));
                     // 加密json中主键
                     devopsCdJobVO.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(devopsCdEnvDeployInfoVO)));
                 } else if (JobTypeEnum.CD_HOST.value().equals(devopsCdJobVO.getType())) {
@@ -590,7 +596,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      */
     private void checkNonCiPipelineBefore(Long appServiceId) {
         if (countByAppServiceId(appServiceId) > 0) {
-            throw new CommonException("error.ci.pipeline.exists.for.app.service", appServiceId);
+            throw new CommonException("error.ci.pipeline.exists.for.app.service");
         }
     }
 
@@ -689,7 +695,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             devopsPipelineRecordRelDTO.setCdPipelineRecordId(PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID);
             devopsPipelineRecordRelService.save(devopsPipelineRecordRelDTO);
             // 初始化cd流水线记录
-            devopsCdPipelineService.initPipelineRecordWithStageAndJob(pipeline.getId().longValue(), pipeline.getSha(), pipeline.getRef(), ciCdPipelineDTO);
+            devopsCdPipelineService.initPipelineRecordWithStageAndJob(pipeline.getId().longValue(), pipeline.getSha(), pipeline.getRef(), pipeline.getTag(), ciCdPipelineDTO);
             List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), pipeline.getId(), userAttrDTO.getGitlabUserId().intValue());
             devopsCiJobRecordService.create(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
         } catch (Exception e) {
@@ -1161,19 +1167,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     private void buildBeforeScript(GitlabCi gitlabCi) {
-        // 如果全部都是自定义任务, 这个map是空的
-        if (CollectionUtils.isEmpty(gitlabCi.getJobs())) {
-            return;
-        }
-
         List<String> beforeScripts = ArrayUtil.singleAsList(GitOpsConstants.CHOERODON_BEFORE_SCRIPT);
         // 如果有job启用了缓存设置, 就创建缓存目录
+        // 如果全部都是自定义任务, 这个map是空的
         if (!CollectionUtils.isEmpty(gitlabCi.getJobs())) {
             if (gitlabCi.getJobs().values().stream().anyMatch(j -> j.getCache() != null)) {
                 beforeScripts.add(GitlabCiUtil.generateCreateCacheDir(GitOpsConstants.CHOERODON_CI_CACHE_DIR));
             }
-            gitlabCi.setBeforeScript(beforeScripts);
         }
+        gitlabCi.setBeforeScript(beforeScripts);
     }
 
     /**
@@ -1298,7 +1300,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     private void createUserRel(List<Long> cdAuditUserIds, Long pipelineId, Long stageId, Long jobId) {
-        if (cdAuditUserIds != null && cdAuditUserIds.size() > 0) {
+        if (!CollectionUtils.isEmpty(cdAuditUserIds)) {
             cdAuditUserIds.forEach(t -> {
                 DevopsCdAuditDTO devopsCdAuditDTO = new DevopsCdAuditDTO(pipelineId, stageId, jobId);
                 devopsCdAuditDTO.setUserId(t);
@@ -1318,6 +1320,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), DevopsCdEnvDeployInfoDTO.class);
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(devopsCdEnvDeployInfoDTO));
+            // 将从Audit-domain中继承的这个字段设置为空， 不然会将一些不需要的字段也序列化到输出到json
+            devopsCdEnvDeployInfoDTO.set_innerMap(null);
             devopsCdEnvDeployInfoDTO.setProjectId(projectId);
             devopsCdEnvDeployInfoService.save(devopsCdEnvDeployInfoDTO);
             devopsCdJobDTO.setDeployInfoId(devopsCdEnvDeployInfoDTO.getId());

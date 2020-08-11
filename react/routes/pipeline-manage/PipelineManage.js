@@ -58,7 +58,7 @@ const PipelineManage = observer((props) => {
         width: 'calc(100vw - 3.52rem)',
       },
       drawer: true,
-      children: <PipelineCreate refreshTree={handleRefresh} editBlockStore={editBlockStore} mainStore={mainStore} />,
+      children: <PipelineCreate mathRandom={Math.random()} refreshTree={handleRefresh} editBlockStore={editBlockStore} mainStore={mainStore} />,
       okText: '创建',
     });
   };
@@ -99,18 +99,20 @@ const PipelineManage = observer((props) => {
 
   function openRecordDetail() {
     const { devopsPipelineRecordRelId } = getSelectedMenu;
+    const { devopsPipelineRecordRelId: detailDevopsPipelineRecordRelId } = getDetailData;
+    const newDevopsPipelineRecordRelId = devopsPipelineRecordRelId || detailDevopsPipelineRecordRelId;
     Modal.open({
       key: recordDetailKey,
       style: modalStyle,
       title: <span className={`${prefixCls}-detail-modal-title`}>
         流水线记录“
-        <MouserOverWrapper width="100px" text={`#${devopsPipelineRecordRelId}`}>
-          <span>{`#${devopsPipelineRecordRelId}`}</span>
+        <MouserOverWrapper width="100px" text={`#${newDevopsPipelineRecordRelId}`}>
+          <span>{`#${newDevopsPipelineRecordRelId}`}</span>
         </MouserOverWrapper>
         ”的详情
       </span>,
       children: <RecordDetail
-        pipelineRecordId={devopsPipelineRecordRelId}
+        pipelineRecordId={newDevopsPipelineRecordRelId}
         intlPrefix={intlPrefix}
         refresh={handleRefresh}
         store={mainStore}
@@ -123,12 +125,13 @@ const PipelineManage = observer((props) => {
 
   async function changeRecordExecute(type) {
     const { gitlabProjectId, gitlabPipelineId, devopsPipelineRecordRelId } = getSelectedMenu;
+    const { gitlabProjectId: detailGitlabProjectId, gitlabPipelineId: detailGitlabPipelineId, devopsPipelineRecordRelId: detailDevopsPipelineRecordRelId } = getDetailData;
     const res = await mainStore.changeRecordExecute({
       projectId,
-      gitlabProjectId,
-      recordId: gitlabPipelineId,
+      gitlabProjectId: gitlabProjectId || detailGitlabProjectId,
+      recordId: gitlabPipelineId || detailGitlabPipelineId,
       type,
-      devopsPipelineRecordRelId,
+      devopsPipelineRecordRelId: devopsPipelineRecordRelId || detailDevopsPipelineRecordRelId,
     });
     if (res) {
       handleRefresh();
@@ -136,17 +139,17 @@ const PipelineManage = observer((props) => {
   }
 
   function openAuditModal() {
-    const { cdRecordId, gitlabPipelineId, devopsCdPipelineDeatilVO, parentId } = getSelectedMenu;
-    const parentRecord = treeDs.find((record) => record.get('key') === parentId);
+    const { devopsCdPipelineDeatilVO, parentId } = getSelectedMenu;
+    const { cdRecordId, devopsCdPipelineDeatilVO: detailDevopsCdPipelineDeatilVO, pipelineName } = getDetailData;
     Modal.open({
       key: auditKey,
       title: formatMessage({ id: `${intlPrefix}.execute.audit` }),
       children: <AuditModal
         cdRecordId={cdRecordId}
-        name={parentRecord ? parentRecord.get('name') : ''}
+        name={pipelineName}
         mainStore={mainStore}
         onClose={handleRefresh}
-        checkData={devopsCdPipelineDeatilVO}
+        checkData={devopsCdPipelineDeatilVO || detailDevopsCdPipelineDeatilVO}
       />,
       movable: false,
     });
@@ -185,6 +188,7 @@ const PipelineManage = observer((props) => {
 
   function getHeaderButtons() {
     const { parentId, status, devopsCdPipelineDeatilVO } = getSelectedMenu;
+    const { status: detailStatus, devopsCdPipelineDeatilVO: detailDevopsCdPipelineDeatilVO } = getDetailData;
     const buttons = [{
       permissions: ['choerodon.code.project.develop.ci-pipeline.ps.create'],
       name: formatMessage({ id: `${intlPrefix}.create` }),
@@ -225,6 +229,8 @@ const PipelineManage = observer((props) => {
           group: 2,
         });
       } else {
+        const newStatus = status || detailStatus;
+        const newDevopsCdPipelineDeatilVO = devopsCdPipelineDeatilVO || detailDevopsCdPipelineDeatilVO;
         buttons.push({
           name: formatMessage({ id: `${intlPrefix}.record.detail` }),
           icon: 'find_in_page-o',
@@ -236,21 +242,21 @@ const PipelineManage = observer((props) => {
           name: formatMessage({ id: `${intlPrefix}.execute.cancel` }),
           icon: 'power_settings_new',
           handler: () => changeRecordExecute('cancel'),
-          display: status === 'pending',
+          display: newStatus === 'pending' || newStatus === 'running',
           group: 2,
         }, {
           permissions: ['choerodon.code.project.develop.ci-pipeline.ps.retry'],
           name: formatMessage({ id: `${intlPrefix}.execute.retry` }),
           icon: 'refresh',
           handler: () => changeRecordExecute('retry'),
-          display: status === 'failed',
+          display: newStatus === 'failed' || newStatus === 'canceled',
           group: 2,
         }, {
           permissions: ['choerodon.code.project.develop.ci-pipeline.ps.audit'],
           name: formatMessage({ id: `${intlPrefix}.execute.audit` }),
           icon: 'authorize',
           handler: openAuditModal,
-          display: status === 'not_audit' && devopsCdPipelineDeatilVO && devopsCdPipelineDeatilVO.execute,
+          display: newStatus === 'not_audit' && newDevopsCdPipelineDeatilVO && newDevopsCdPipelineDeatilVO.execute,
           group: 2,
         });
       }

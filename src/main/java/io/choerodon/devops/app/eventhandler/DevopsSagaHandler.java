@@ -396,14 +396,17 @@ public class DevopsSagaHandler {
             AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(null, appServiceDeployVO, true);
             // 对于新建实例的部署任务，部署成功后修改为替换实例
             updateDeployTypeToUpdate(appServiceDeployVO.getDeployInfoId(), appServiceInstanceVO);
-            // 更新job状态为success
-            devopsCdJobRecordDTO.setCommandId(appServiceInstanceVO.getCommandId());
-            devopsCdJobRecordDTO.setFinishedDate(new Date());
-            if (devopsCdJobRecordDTO.getStartedDate() != null) {
-                devopsCdJobRecordDTO.setDurationSeconds((new Date().getTime() - devopsCdJobRecordDTO.getStartedDate().getTime()) / 1000);
+            DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordService.queryById(devopsCdJobRecordDTO.getId());
+            if (PipelineStatus.RUNNING.toValue().equals(cdJobRecordDTO.getStatus())) {
+                // 更新job状态为success
+                devopsCdJobRecordDTO.setCommandId(appServiceInstanceVO.getCommandId());
+                devopsCdJobRecordDTO.setFinishedDate(new Date());
+                if (devopsCdJobRecordDTO.getStartedDate() != null) {
+                    devopsCdJobRecordDTO.setDurationSeconds((new Date().getTime() - devopsCdJobRecordDTO.getStartedDate().getTime()) / 1000);
+                }
+                devopsCdJobRecordDTO.setStatus(PipelineStatus.SUCCESS.toValue());
+                devopsCdJobRecordService.update(devopsCdJobRecordDTO);
             }
-            devopsCdJobRecordDTO.setStatus(PipelineStatus.SUCCESS.toValue());
-            devopsCdJobRecordService.update(devopsCdJobRecordDTO);
             LOGGER.info("create pipeline auto deploy instance success");
         } catch (Exception e) {
             LOGGER.error("error create pipeline auto deploy instance {}", e);

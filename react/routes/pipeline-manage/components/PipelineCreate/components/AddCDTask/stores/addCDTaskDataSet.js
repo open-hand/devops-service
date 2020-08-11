@@ -14,16 +14,22 @@ async function checkName(value, projectId, record) {
   try {
     const res = await axios.get(`/devops/v1/projects/${projectId}/app_service_instances/check_name?env_id=${record.get('envId')}&instance_name=${value}`);
     if ((res && res.failed) || !res) {
-      return '实例名称重复';
-    } else {
-      return true;
+      return '格式有误';
     }
+    return true;
   } catch (err) {
     return '校验失败';
   }
 }
 
-export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, appServiceCode) => ({
+export default (
+  projectId,
+  PipelineCreateFormDataSet,
+  organizationId,
+  useStore,
+  appServiceCode,
+  random,
+) => ({
   autoCreate: true,
   fields: [{
     name: 'type',
@@ -65,7 +71,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
         let newRes = res;
         try {
           newRes = JSON.parse(res);
-          return newRes.filter(r => r.permission);
+          return newRes.filter((r) => r.permission);
         } catch (e) {
           return newRes;
         }
@@ -111,7 +117,7 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
       disabled: ({ record }) => !record.get('envId'),
       lookupAxiosConfig: ({ record }) => ({
         method: 'get',
-        url: record.get('envId') && `/devops/v1/projects/${projectId}/deploy_value/list_by_env_and_app?app_service_id=${PipelineCreateFormDataSet.current.get('appServiceId')}&env_id=${record.get('envId')}`,
+        url: record.get('envId') && `/devops/v1/projects/${projectId}/deploy_value/list_by_env_and_app?app_service_id=${PipelineCreateFormDataSet.current.get('appServiceId')}&env_id=${record.get('envId')}&random=${random}`,
         transformResponse: (res) => {
           let newRes = res;
           try {
@@ -157,13 +163,6 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
     label: '密码',
     dynamicProps: {
       required: ({ record }) => record.get('type') === 'cdHost' && record.get('accountType') === 'accountPassword',
-    },
-  }, {
-    name: 'accountKey',
-    type: 'string',
-    label: '密钥',
-    dynamicProps: {
-      required: ({ record }) => record.get('type') === 'cdHost' && record.get('accountType') === 'accountKey',
     },
   }, {
     name: 'hostDeployType',
@@ -223,8 +222,8 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
       lookupAxiosConfig: ({ record }) => ({
         method: 'get',
         url: (record.get('repoId')) && `rdupm/v1/harbor-choerodon-repos/listHarborImage?repoId=${record.get('repoId')}&repoType=${(function () {
-          const lookup = record.getField('repoId').lookup;
-          return lookup?.find(l => String(l.repoId) === String(record.get('repoId')))?.repoType;
+          const { lookup } = record.getField('repoId');
+          return lookup?.find((l) => String(l.repoId) === String(record.get('repoId')))?.repoType;
         }())}`,
         transformResponse: (data) => {
           let newData = data;
@@ -367,31 +366,38 @@ export default (projectId, PipelineCreateFormDataSet, organizationId, useStore, 
     textField: 'realName',
     multiple: true,
     valueField: 'id',
-    lookupAxiosConfig: (data) => ({
-      method: 'post',
-      url: `/devops/v1/projects/${projectId}/users/list_users?page=0&size=20`,
-      data: {
-        param: [],
-        searchParam: {
-          realName: data.params.realName || '',
+    lookupAxiosConfig: ({ params, dataSet }) => {
+      let cdAuditIds = dataSet.current?.get('cdAuditUserIds');
+      if (params.realName && params.id) {
+        cdAuditIds = [...cdAuditIds, params.id];
+      }
+      return {
+        method: 'post',
+        url: `/devops/v1/projects/${projectId}/users/list_users?page=0&size=20`,
+        data: {
+          param: [],
+          searchParam: {
+            realName: params.realName || '',
+          },
+          ids: cdAuditIds || [],
         },
-      },
-      transformResponse: (res) => {
-        let newRes;
-        try {
-          newRes = JSON.parse(res);
-          if (newRes.totalElements % 20 !== 0 && newRes.content.length !== 0) {
-            newRes.content.push({
-              id: 'more',
-              realName: '加载更多',
-            });
+        transformResponse: (res) => {
+          let newRes;
+          try {
+            newRes = JSON.parse(res);
+            if (newRes.totalElements % 20 === 0 && newRes.content.length !== 0) {
+              newRes.content.push({
+                id: 'more',
+                realName: '加载更多',
+              });
+            }
+            return newRes;
+          } catch (e) {
+            return res;
           }
-          return newRes;
-        } catch (e) {
-          return res;
-        }
-      },
-    }),
+        },
+      };
+    },
   }, {
     name: 'countersigned',
     type: 'number',

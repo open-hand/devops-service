@@ -3,19 +3,14 @@ package io.choerodon.devops.app.service.impl;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import java.util.stream.Collectors;
-
-import org.apache.tomcat.util.log.UserDataHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -23,6 +18,7 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
@@ -31,7 +27,10 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.*;
-import io.choerodon.devops.infra.util.*;
+import io.choerodon.devops.infra.util.CiCdPipelineUtils;
+import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.GenerateUUID;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
@@ -97,6 +96,9 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     @Autowired
     private UserAttrService userAttrService;
 
+    @Autowired
+    private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
+
 
     @Override
     public CiCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long recordRelId) {
@@ -104,6 +106,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         if (Objects.isNull(devopsPipelineRecordRelDTO)) {
             return null;
         }
+        CiCdPipelineDTO ciCdPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(devopsPipelineRecordRelDTO.getPipelineId());
         DevopsPipelineRecordRelVO devopsPipelineRecordRelVO = relDtoToRelVO(devopsPipelineRecordRelDTO);
         CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
         ciCdPipelineRecordVO.setDevopsPipelineRecordRelId(devopsPipelineRecordRelVO.getId());
@@ -130,6 +133,11 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             if (isFirstRecord(devopsPipelineRecordRelVO)) {
                 ciCdPipelineRecordVO.setStageRecordVOS(null);
             }
+
+            ciCdPipelineRecordVO.setPipelineName(ciCdPipelineDTO.getName());
+            ciCdPipelineRecordVO.setGitlabProjectId(devopsCiPipelineRecordVO.getGitlabProjectId());
+            ciCdPipelineRecordVO.setGitlabPipelineId(devopsCiPipelineRecordVO.getGitlabPipelineId());
+            ciCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineRecordVO.getDevopsCdPipelineDeatilVO());
         }
         //纯ci
         if (devopsCiPipelineRecordVO != null && devopsCdPipelineRecordVO == null) {
@@ -143,6 +151,9 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             ciCdPipelineRecordVO.setCreatedDate(devopsCiPipelineRecordVO.getCreatedDate());
             CiCdPipelineVO ciCdPipelineVO = ConvertUtils.convertObject(devopsCiPipelineRecordVO.getDevopsCiPipelineVO(), CiCdPipelineVO.class);
             fillPipelineVO(devopsCiPipelineRecordVO.getUsername(), stageRecordVOS, devopsCiPipelineRecordVO.getCreatedDate(), ciCdPipelineVO, ciCdPipelineRecordVO);
+            ciCdPipelineRecordVO.setPipelineName(ciCdPipelineDTO.getName());
+            ciCdPipelineRecordVO.setGitlabProjectId(devopsCiPipelineRecordVO.getGitlabProjectId());
+            ciCdPipelineRecordVO.setGitlabPipelineId(devopsCiPipelineRecordVO.getGitlabPipelineId());
         }
         //纯cd
         if (devopsCiPipelineRecordVO == null && devopsCdPipelineRecordVO != null) {
@@ -155,6 +166,9 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             ciCdPipelineRecordVO.setCreatedDate(devopsCdPipelineRecordVO.getCreatedDate());
             CiCdPipelineVO ciCdPipelineVO = ConvertUtils.convertObject(devopsCdPipelineRecordVO.getCiCdPipelineVO(), CiCdPipelineVO.class);
             fillPipelineVO(devopsCdPipelineRecordVO.getUsername(), stageRecordVOS, devopsCdPipelineRecordVO.getCreatedDate(), ciCdPipelineVO, ciCdPipelineRecordVO);
+            ciCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineRecordVO.getDevopsCdPipelineDeatilVO());
+            ciCdPipelineRecordVO.setPipelineName(ciCdPipelineDTO.getName());
+            ciCdPipelineRecordVO.setGitlabPipelineId(devopsCdPipelineRecordVO.getGitlabPipelineId());
         }
         return ciCdPipelineRecordVO;
     }
@@ -186,7 +200,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     }
 
     @Override
-    public void retryPipeline(Long projectId, Long pipelineRecordRelId, Long gitlabPipelineId, Long gitlabProjectId) {
+    public void retryPipeline(Long projectId, Long pipelineRecordRelId, Long gitlabProjectId) {
         AppServiceDTO appServiceDTO = appServiceService.queryByGitlabProjectId(gitlabProjectId);
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceDTO.getId(), AppServiceEvent.CICD_PIPELINE_RETRY);
         DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryById(pipelineRecordRelId);
@@ -207,7 +221,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                 }
             } else {
                 // ci未完成，则重试ci
-                devopsCiPipelineRecordService.retry(projectId, gitlabPipelineId, gitlabProjectId);
+                devopsCiPipelineRecordService.retry(projectId, devopsCiPipelineRecordDTO.getGitlabPipelineId(), gitlabProjectId);
             }
         }
     }
@@ -220,30 +234,46 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     @Override
     public void retryCdPipeline(Long projectId, Long cdPipelineRecordId, Boolean checkEnvPermission) {
         // 1.查询是否有任务可重试
-        DevopsCdStageRecordDTO cdStageRecordDTO = devopsCdStageRecordMapper.queryFailedOrCancelStage(cdPipelineRecordId);
-        DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.queryFailedOrCancelJob(cdStageRecordDTO.getId());
-        if (ObjectUtils.isEmpty(cdStageRecordDTO) || ObjectUtils.isEmpty(cdJobRecordDTO)) {
-            LOGGER.warn("no job or stage failed!!");
+        DevopsCdStageRecordDTO firstStage;
+        DevopsCdJobRecordDTO firstJob;
+
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(cdPipelineRecordId);
+        if (PipelineStatus.CANCELED.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
+            firstStage = devopsCdStageRecordMapper.queryFirstStageByPipelineRecordIdAndStatus(cdPipelineRecordId, PipelineStatus.CANCELED.toValue());
+            firstJob = devopsCdJobRecordMapper.queryFirstJobByStageRecordIdAndStatus(firstStage.getId(), PipelineStatus.CANCELED.toValue());
+
+            List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryStageWithPipelineRecordIdAndStatus(cdPipelineRecordId, PipelineStatus.CANCELED.toValue());
+            devopsCdStageRecordDTOS.forEach(devopsCdStageRecordDTO -> {
+                devopsCdStageRecordService.updateStatusById(devopsCdStageRecordDTO.getId(), PipelineStatus.CREATED.toValue());
+                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryJobWithStageRecordIdAndStatus(devopsCdStageRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
+                devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> {
+                    devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.CREATED.toValue());
+                });
+            });
+        } else if (PipelineStatus.FAILED.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
+            firstStage = devopsCdStageRecordMapper.queryFirstStageByPipelineRecordIdAndStatus(cdPipelineRecordId, PipelineStatus.FAILED.toValue());
+            firstJob = devopsCdJobRecordMapper.queryFirstJobByStageRecordIdAndStatus(firstStage.getId(), PipelineStatus.FAILED.toValue());
+        } else {
             return;
         }
+
         // 1.1 对于部署任务 校验环境权限
-        if (checkEnvPermission && cdJobRecordDTO.getType().equals(JobTypeEnum.CD_DEPLOY.value())) {
-            DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(cdJobRecordDTO.getDeployInfoId());
-            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCdEnvDeployInfoDTO.getEnvId());
-            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
-        }
+//        if (checkEnvPermission && cdJobRecordDTO.getType().equals(JobTypeEnum.CD_DEPLOY.value())) {
+//            DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(cdJobRecordDTO.getDeployInfoId());
+//            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCdEnvDeployInfoDTO.getEnvId());
+//            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+//            devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+//        }
 
         // 2. 根据装填获取DevopsPipelineDTO
         DevopsPipelineDTO devopsPipelineDTO = devopsCdPipelineRecordService.createCDWorkFlowDTO(cdPipelineRecordId, true);
 
         // 3 更新business key 更新状态
-        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(cdPipelineRecordId);
         devopsCdPipelineRecordDTO.setBusinessKey(GenerateUUID.generateUUID());
         devopsCdPipelineRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
         devopsCdPipelineRecordService.update(devopsCdPipelineRecordDTO);
-        devopsCdStageRecordService.updateStatusById(cdStageRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
-        devopsCdJobRecordService.updateStatusById(cdJobRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
+        devopsCdStageRecordService.updateStatusById(firstStage.getId(), PipelineStatus.RUNNING.toValue());
+        devopsCdJobRecordService.updateStatusById(firstJob.getId(), PipelineStatus.RUNNING.toValue());
 
         try {
             CustomUserDetails details = DetailsHelper.getUserDetails();
@@ -258,14 +288,15 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     }
 
     @Override
-    public void cancel(Long projectId, Long pipelineRecordRelId, Long gitlabPipelineId, Long gitlabProjectId) {
+    @Transactional
+    public void cancel(Long projectId, Long pipelineRecordRelId, Long gitlabProjectId) {
         DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryById(pipelineRecordRelId);
         // 首先查询ci阶段状态
         Long ciPipelineRecordId = devopsPipelineRecordRelDTO.getCiPipelineRecordId();
         Long cdPipelineRecordId = devopsPipelineRecordRelDTO.getCdPipelineRecordId();
 
         if (PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID.equals(ciPipelineRecordId)) {
-            cancelCdPipeline(ciPipelineRecordId);
+            cancelCdPipeline(cdPipelineRecordId);
         } else {
             // 查询ci阶段状态
             DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(ciPipelineRecordId);
@@ -277,7 +308,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                 }
             } else {
                 // ci未完成，则取消ci、cd
-                devopsCiPipelineRecordService.cancel(projectId, gitlabPipelineId, gitlabProjectId);
+                devopsCiPipelineRecordService.cancel(projectId, devopsCiPipelineRecordDTO.getGitlabPipelineId(), gitlabProjectId);
                 // 存在cd阶段 则同时取消cd
                 if (!PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID.equals(cdPipelineRecordId)) {
                     cancelCdPipeline(cdPipelineRecordId);
@@ -289,7 +320,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 
 
     @Override
-    public void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref) {
+    public void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref, Boolean tag) {
         CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(pipelineId);
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_NEW_PERFORM);
         DevopsCiStageDTO devopsCdStageDTO = new DevopsCiStageDTO();
@@ -310,7 +341,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             if (CollectionUtils.isEmpty(commitDTOList)) {
                 throw new CommonException("error.ref.no.commit");
             }
-            devopsCdPipelineService.triggerCdPipeline(appServiceDTO.getToken(), commitDTOList.get(0).getId(), ref, null);
+            devopsCdPipelineService.triggerCdPipeline(appServiceDTO.getToken(), commitDTOList.get(0).getId(), ref, tag, null);
         } else {
             devopsCiPipelineService.executeNew(projectId, pipelineId, gitlabProjectId, ref);
         }
@@ -319,25 +350,46 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     @Transactional
     public void cancelCdPipeline(Long pipelineRecordId) {
         DevopsCdPipelineRecordDTO pipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
-        DevopsCdStageRecordDTO cdStageRecordDTO = devopsCdStageRecordMapper.queryPendingAndRunning(pipelineRecordId);
-        DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.queryPendingAndRunning(cdStageRecordDTO.getId());
+        // 只有未执行、执行中的流水线可以取消执行
 
-        if (!ObjectUtils.isEmpty(cdStageRecordDTO)) {
-            devopsCdStageRecordService.updateStatusById(cdStageRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
-        }
-        if (!ObjectUtils.isEmpty(cdJobRecordDTO)) {
-            if (cdJobRecordDTO.getType().equals(JobTypeEnum.CD_DEPLOY.value())) {
-                DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(cdJobRecordDTO.getDeployInfoId());
-                DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCdEnvDeployInfoDTO.getEnvId());
-                UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-                devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+        if (PipelineStatus.CREATED.toValue().equals(pipelineRecordDTO.getStatus())) {
+            cancelCreateStageAndJob(pipelineRecordId);
+        } else if (PipelineStatus.RUNNING.toValue().equals(pipelineRecordDTO.getStatus())) {
+            List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryStageWithPipelineRecordIdAndStatus(pipelineRecordId, PipelineStatus.RUNNING.toValue());
+
+            if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
+                DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordDTOS.get(0);
+                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryJobWithStageRecordIdAndStatus(devopsCdStageRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
+                if (!CollectionUtils.isEmpty(devopsCdJobRecordDTOS)) {
+                    DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordDTOS.get(0);
+                    if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordDTO.getType())) {
+                        throw new CommonException(PipelineCheckConstant.ERROR_CANCEL_AUDITING_PIPELINE);
+                    }
+                    devopsCdStageRecordService.updateStatusById(devopsCdStageRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
+                }
             }
-
-            devopsCdJobRecordService.updateStatusById(cdJobRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
+            cancelCreateStageAndJob(pipelineRecordId);
+        } else {
+            return;
         }
-
-        devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.CANCELED.toValue());
+        // 修改流水线记录状态为cancel
+        devopsCdPipelineRecordService.updateStatusById(pipelineRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
         workFlowServiceOperator.stopInstance(pipelineRecordDTO.getProjectId(), pipelineRecordDTO.getBusinessKey());
+    }
+
+    private void cancelCreateStageAndJob(Long pipelineRecordId) {
+        List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryStageWithPipelineRecordIdAndStatus(pipelineRecordId, PipelineStatus.CREATED.toValue());
+        if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
+            devopsCdStageRecordDTOS.forEach(devopsCdStageRecordDTO -> {
+                devopsCdStageRecordService.updateStatusById(devopsCdStageRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
+                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryJobWithStageRecordIdAndStatus(devopsCdStageRecordDTO.getId(), PipelineStatus.CREATED.toValue());
+                if (!CollectionUtils.isEmpty(devopsCdJobRecordDTOS)) {
+                    devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> {
+                        devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
+                    });
+                }
+            });
+        }
     }
 
     @Override

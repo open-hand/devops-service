@@ -21,6 +21,15 @@ public class DevopsCdEnvDeployInfoVO {
     @Encrypt
     private Long instanceId;    // 替换实例时需要
     private String instanceName;    // 新建实例时需要
+    private String value;
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
 
     public Long getAppServiceId() {
         return appServiceId;

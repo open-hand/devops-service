@@ -82,6 +82,7 @@ const EditItem = (props) => {
         AppServiceOptionsDs={edit && AppServiceOptionsDs}
         image={image}
       /> : (<AddCDTask
+        random={Math.random()}
         jobDetail={jobDetail}
         pipelineStageMainSource={getStepData2}
         appServiceId={!edit && appServiceName}
@@ -133,7 +134,22 @@ const EditItem = (props) => {
 };
 
 export default observer((props) => {
-  const { jobList, sequence, name, columnIndex, edit, appServiceId, appServiceName, image, type, isLast, parallel, isFirst, triggerType: stageTriggerType, appServiceCode, appServiceType } = props;
+  const {
+    jobList,
+    sequence,
+    name,
+    columnIndex,
+    edit,
+    appServiceId,
+    appServiceName,
+    image,
+    type,
+    parallel,
+    triggerType: stageTriggerType,
+    appServiceCode,
+    appServiceType,
+    nextStageType,
+  } = props;
   const {
     addStepDs,
     editBlockStore, stepStore,
@@ -160,11 +176,11 @@ export default observer((props) => {
     window.console.log(e);
   }
 
-  async function createNewStage() {
+  async function createNewStage(firstIf) {
     const res = await addStepDs.validate();
     if (res) {
       const a = addStepDs.toData()[0];
-      addNewStep(columnIndex, addStepDs.toData()[0], edit);
+      addNewStep(firstIf ? -1 : columnIndex, addStepDs.toData()[0], edit);
       addStepDs.reset();
       return true;
     }
@@ -200,7 +216,7 @@ export default observer((props) => {
       }
     </div> : null
   );
-  const openAddStageModal = ({ optType, curType }) => {
+  const openAddStageModal = ({ optType, curType, firstIf = false }) => {
     const title = optType === 'create' ? '添加阶段' : '修改阶段信息';
     const okText = optType === 'create' ? '添加' : '修改';
     if (optType === 'edit') {
@@ -210,7 +226,7 @@ export default observer((props) => {
       addStepDs.current.set('triggerType', triggerType);
       addStepDs.current.set('cdAuditUserIds', cdAuditUserIds && [...cdAuditUserIds]);
     }
-    const optsFun = optType === 'create' ? createNewStage : editStage;
+    const optsFun = optType === 'create' ? () => createNewStage(firstIf) : editStage;
     Modal.open({
       key: Modal.key(),
       title,
@@ -219,7 +235,16 @@ export default observer((props) => {
         width: 380,
       },
       okText,
-      children: <AddStage projectId={projectId} curType={curType} optType={optType} addStepDs={addStepDs} appServiceType={appServiceType} />,
+      children: <AddStage
+        projectId={projectId}
+        curType={curType}
+        optType={optType}
+        addStepDs={addStepDs}
+        appServiceType={optType === 'create' ? appServiceType : null}
+        firstIf={firstIf}
+        appServiceId={appServiceId}
+        nextStageType={nextStageType}
+      />,
       onOk: optsFun,
       onCancel: () => addStepDs.reset(),
     });
@@ -282,6 +307,7 @@ export default observer((props) => {
           image={image}
         />
       ) : (<AddCDTask
+        random={Math.random()}
         appServiceId={!edit && appServiceName}
         appServiceName={!edit && appServiceName}
         appServiceCode={appServiceCode}
@@ -297,15 +323,23 @@ export default observer((props) => {
     });
   }
 
-  const getType = () => type === 'CI';
-
   const realType = type?.toUpperCase();
 
-  return (
+  return [
+    columnIndex === 0 && (
+    <Button
+      className="extra-addbutton"
+      funcType="raised"
+      icon="add"
+      shape="circle"
+      size="small"
+      onClick={() => openAddStageModal({ optType: 'create', curType: type, firstIf: true })}
+    />
+    ),
     <div
       className="c7n-piplineManage-edit-column"
       style={{
-        background: getType() ? 'rgba(245, 246, 250, 1)' : 'rgba(245,248,250,1)',
+        background: type === 'CI' ? 'rgba(245, 246, 250, 1)' : 'rgba(245,248,250,1)',
       }}
     >
       <div className="c7n-piplineManage-edit-column-header">
@@ -363,12 +397,9 @@ export default observer((props) => {
       />
       <div
         className={`c7n-piplineManage-edit-column-arrow c7n-piplineManage-edit-column-arrow-${stageTriggerType}`}
-        style={{
-          display: isFirst ? 'none' : 'block',
-        }}
       >
         <span />
       </div>
-    </div>
-  );
+    </div>,
+  ];
 });

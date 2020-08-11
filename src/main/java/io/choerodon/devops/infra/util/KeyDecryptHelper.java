@@ -202,6 +202,21 @@ public final class KeyDecryptHelper {
     }
 
     /**
+     * 将对象转为字符串然后加密, 针对非前端来的请求的情况
+     *
+     * @param object 对象
+     * @return 加密后的字符串
+     */
+    public static String encryptValueWithoutToken(Object object) {
+        if (EncryptContext.isAllowedEncrypt()) {
+            ensureEncryptService();
+            return ENCRYPTION_SERVICE.encrypt(String.valueOf(object), EMPTY, EMPTY);
+        } else {
+            return String.valueOf(object);
+        }
+    }
+
+    /**
      * 解密字符串
      *
      * @param object 对象

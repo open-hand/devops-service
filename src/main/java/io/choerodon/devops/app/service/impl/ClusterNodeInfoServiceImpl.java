@@ -193,7 +193,9 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
 
     @Override
     public List<String> queryNodeName(Long projectId, Long clusterId) {
-        String rediskey = getRedisClusterKey(clusterId, projectId);
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+
+        String rediskey = getRedisClusterKey(clusterId, devopsClusterDTO.getProjectId());
 
         long total = stringRedisTemplate.opsForList().size(rediskey);
 

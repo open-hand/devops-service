@@ -37,6 +37,15 @@ public class DevopsCdPipelineRecordVO {
     private String ref;
     @ApiModelProperty("提交信息")
     private CustomCommitVO commit;
+    private Integer gitlabProjectId;
+
+    public Integer getGitlabProjectId() {
+        return gitlabProjectId;
+    }
+
+    public void setGitlabProjectId(Integer gitlabProjectId) {
+        this.gitlabProjectId = gitlabProjectId;
+    }
 
     public CustomCommitVO getCommit() {
         return commit;

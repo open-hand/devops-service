@@ -893,6 +893,7 @@ const AddTask = observer(() => {
 
   const renderderBranchs = ({ text }) => (text === '加载更多' ? (
     <a
+      style={{ display: 'block', width: '100%', height: '100%' }}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
