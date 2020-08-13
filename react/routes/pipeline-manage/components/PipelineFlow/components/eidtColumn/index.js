@@ -302,14 +302,14 @@ export default observer((props) => {
           PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
           AppServiceOptionsDs={edit && AppServiceOptionsDs}
           handleOk={hanleStepCreateOk}
-          appServiceId={!edit && appServiceName}
-          appServiceName={!edit && appServiceName}
+          appServiceId={appServiceName}
+          appServiceName={appServiceName}
           image={image}
         />
       ) : (<AddCDTask
         random={Math.random()}
-        appServiceId={!edit && appServiceName}
-        appServiceName={!edit && appServiceName}
+        appServiceId={appServiceName}
+        appServiceName={appServiceName}
         appServiceCode={appServiceCode}
         pipelineStageMainSource={getStepData2}
         PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
