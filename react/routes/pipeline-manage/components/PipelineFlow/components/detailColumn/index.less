@@ -1,3 +1,12 @@
+@success: #00bfa5;
+@running: #4d90fe;
+@pending: #ffb100;
+@failed: #f77a70;
+@canceled: #d8d8d8;
+@skipped: #d8d8d8;
+@stop: #ff7043;
+@not_audit: #f1b42d;
+
 .c7n-piplineManage-detail-column {
   flex: 0 1 auto;
   position: relative;
@@ -15,6 +24,26 @@
       display: none;
     }
   }
+
+  &-success {
+    border-top: 4px solid @success;
+  }
+  &-running {
+    border-top: 4px solid @running;
+  }
+  &-pending {
+    border-top: 4px solid @pending;
+  }
+  &-failed {
+    border-top: 4px solid @failed;
+  }
+  &-stop {
+    border-top: 4px solid @stop;
+  }
+  &-not_audit {
+    border-top: 4px solid @not_audit;
+  }
+
   &-type {
     position: absolute;
     top: 0.5rem;
@@ -52,7 +81,6 @@
       font-weight: 500;
       color: rgba(0, 0, 0, 1);
       line-height: .21rem;
-      margin-left: .06rem;
     }
     span:nth-of-type(3) {
       font-size: .12rem;
