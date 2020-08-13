@@ -402,9 +402,9 @@ export default observer((props) => {
   const realType = type?.toUpperCase();
 
   return (
-    <div className="c7n-piplineManage-detail-column">
+    <div className={`c7n-piplineManage-detail-column c7n-piplineManage-detail-column-${piplineStatus}`}>
       <div className="c7n-piplineManage-detail-column-header">
-        <StatusDot size={17} status={piplineStatus} />
+        {/*<StatusDot size={17} status={piplineStatus} />*/}
         <span>{piplineName}</span>
         <span className={`c7n-piplineManage-stage-type c7n-piplineManage-stage-type-${realType}`}>{realType}</span>
         {seconds ? <span>{renderDuration(seconds)}</span> : null}
