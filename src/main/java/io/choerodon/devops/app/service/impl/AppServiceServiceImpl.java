@@ -1247,7 +1247,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public SonarContentsVO getSonarContent(Long projectId, Long appServiceId) {
         try {
-//todo            checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.SONAR_LIST);
+           checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.SONAR_LIST);
         } catch (GitlabAccessInvalidException e) {
             return null;
         }
